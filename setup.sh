@@ -269,6 +269,47 @@ else
     fi
 fi
 
+# Clone Nablarch official repositories
+print_header "9. Cloning Nablarch Official Repositories"
+
+NAB_OFFICIAL_DIR=".lw/nab-official"
+
+# Create directory if it doesn't exist
+if [ ! -d "$NAB_OFFICIAL_DIR" ]; then
+    print_status info "Creating $NAB_OFFICIAL_DIR directory..."
+    mkdir -p "$NAB_OFFICIAL_DIR"
+    print_status ok "Directory created"
+fi
+
+# Function to clone or update repository
+clone_or_update_repo() {
+    local repo_url="$1"
+    local repo_name=$(basename "$repo_url" .git)
+    local repo_path="$NAB_OFFICIAL_DIR/$repo_name"
+
+    if [ -d "$repo_path" ]; then
+        print_status info "Repository $repo_name already exists, updating..."
+        if git -C "$repo_path" pull; then
+            print_status ok "$repo_name updated"
+        else
+            print_status warning "Failed to update $repo_name"
+        fi
+    else
+        print_status info "Cloning $repo_name..."
+        if git clone "$repo_url" "$repo_path"; then
+            print_status ok "$repo_name cloned"
+        else
+            print_status error "Failed to clone $repo_name"
+            exit 1
+        fi
+    fi
+}
+
+# Clone repositories
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git"
+clone_or_update_repo "https://github.com/nablarch/nablarch-single-module-archetype.git"
+clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git"
+
 # Final summary
 print_header "Setup Completed Successfully!"
 
