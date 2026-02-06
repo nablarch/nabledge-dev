@@ -1,6 +1,6 @@
 ---
 name: git
-description: Git操作を実行する。使い方：/git（対話選択）、/git commit（コミット）、/git branch-create（ブランチ作成）、/git branch-delete（ブランチ削除）、/git worktree-create（ワークツリー作成）、/git worktree-delete（ワークツリー削除）
+description: Git操作を実行する。使い方：/git（対話選択）、/git commit（コミット＆プッシュ）、/git branch-create（ブランチ作成）、/git branch-delete（ブランチ削除）、/git worktree-create（ワークツリー作成）、/git worktree-delete（ワークツリー削除）
 argument-hint: [commit|branch-create|branch-delete|worktree-create|worktree-delete]
 allowed-tools: Bash, Task, AskUserQuestion, Read
 ---
