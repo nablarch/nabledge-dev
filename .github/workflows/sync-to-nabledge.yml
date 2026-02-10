@@ -1,0 +1,58 @@
+name: Sync to nabledge repository
+
+on:
+  push:
+    branches:
+      - dummy-from
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout nabledge-dev
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout nabledge repository
+        uses: actions/checkout@v4
+        with:
+          repository: nablarch/nabledge
+          ref: dummy-to
+          token: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
+          path: nabledge-repo
+
+      - name: Sync nabledge-6 skill
+        run: |
+          # Remove old skill files if exists
+          rm -rf nabledge-repo/.claude/skills/nabledge-6
+
+          # Copy nabledge-6 skill
+          mkdir -p nabledge-repo/.claude/skills
+          cp -r .claude/skills/nabledge-6 nabledge-repo/.claude/skills/
+
+      - name: Commit and Push to nabledge
+        working-directory: nabledge-repo
+        run: |
+          git add .
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          # Create commit message with link to trigger commit
+          TRIGGER_COMMIT_SHA="${{ github.sha }}"
+          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
+
+          git commit -m "Sync nabledge-6 skill from nabledge-dev
+
+Triggered by: ${TRIGGER_COMMIT_URL}"
+
+          git push origin dummy-to
