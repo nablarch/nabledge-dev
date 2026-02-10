@@ -1,0 +1,168 @@
+{
+  "metadata": {
+    "version": "1.1.0",
+    "created": "2026-02-10",
+    "updated": "2026-02-10",
+    "description": "Test scenarios for code-analysis workflow validation (Nablarch batch)",
+    "total_scenarios": 5
+  },
+  "scenarios": [
+    {
+      "id": "code-analysis-001",
+      "category": "code-analysis",
+      "target_code": ".lw/nab-official/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java",
+      "question": "ExportProjectsInPeriodActionの全体構造を理解したい",
+      "expected_components": [
+        "ExportProjectsInPeriodAction (BatchAction)",
+        "ProjectDto (DTO)",
+        "DatabaseRecordReader (Nablarch)",
+        "ObjectMapper (Nablarch)",
+        "FilePathSetting (Nablarch)"
+      ],
+      "expected_knowledge": [
+        "processing/nablarch-batch.json",
+        "handlers/batch/data-read-handler.json",
+        "libraries/file-path-management.json"
+      ],
+      "expected_output_sections": [
+        "Overview",
+        "Architecture",
+        "Components",
+        "Flow",
+        "Nablarch Framework Usage"
+      ],
+      "relevance": "high"
+    },
+    {
+      "id": "code-analysis-002",
+      "category": "code-analysis",
+      "target_code": ".lw/nab-official/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java:initialize",
+      "question": "バッチアクションの初期化処理を詳しく知りたい",
+      "expected_components": [
+        "initialize method",
+        "FilePathSetting",
+        "ObjectMapperFactory",
+        "FileOutputStream"
+      ],
+      "expected_knowledge": [
+        "libraries/file-path-management.json",
+        "processing/nablarch-batch.json"
+      ],
+      "expected_output_sections": [
+        "Overview",
+        "Components",
+        "Flow",
+        "Nablarch Framework Usage"
+      ],
+      "relevance": "high"
+    },
+    {
+      "id": "code-analysis-003",
+      "category": "code-analysis",
+      "target_code": ".lw/nab-official/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java:createReader",
+      "question": "データベースからのデータ読み込み処理を理解したい",
+      "expected_components": [
+        "createReader method",
+        "DatabaseRecordReader",
+        "SqlPStatement",
+        "BusinessDateUtil"
+      ],
+      "expected_knowledge": [
+        "handlers/batch/data-read-handler.json",
+        "libraries/database-access.json",
+        "libraries/business-date.json"
+      ],
+      "expected_output_sections": [
+        "Overview",
+        "Components",
+        "Flow",
+        "Nablarch Framework Usage"
+      ],
+      "relevance": "high"
+    },
+    {
+      "id": "code-analysis-004",
+      "category": "code-analysis",
+      "target_code": ".lw/nab-official/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java:handle",
+      "question": "ファイルへのデータ書き込み処理を詳しく知りたい",
+      "expected_components": [
+        "handle method",
+        "ObjectMapper",
+        "ProjectDto",
+        "EntityUtil"
+      ],
+      "expected_knowledge": [
+        "processing/nablarch-batch.json",
+        "libraries/database-access.json"
+      ],
+      "expected_output_sections": [
+        "Overview",
+        "Components",
+        "Flow",
+        "Nablarch Framework Usage"
+      ],
+      "relevance": "high"
+    },
+    {
+      "id": "code-analysis-005",
+      "category": "code-analysis",
+      "target_code": ".lw/nab-official/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/test/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodActionRequestTest.java",
+      "question": "バッチのテストコード実装を理解したい",
+      "expected_components": [
+        "ExportProjectsInPeriodActionRequestTest (Test)",
+        "PromanBatchRequestTestSupport",
+        "NTF test framework"
+      ],
+      "expected_knowledge": [
+        "tools/ntf-batch-request-test.json",
+        "tools/ntf-test-data.json",
+        "tools/ntf-assertion.json"
+      ],
+      "expected_output_sections": [
+        "Overview",
+        "Components",
+        "Flow",
+        "Nablarch Framework Usage"
+      ],
+      "relevance": "high"
+    }
+  ],
+  "evaluation_criteria": {
+    "workflow_execution": {
+      "description": "ワークフローが正しく実行されたか",
+      "checks": [
+        "code-analysis workflowが実行された",
+        "対象コードが正しく識別された",
+        "依存関係が適切に分析された",
+        "構成要素が適切に分解された",
+        "関連するNablarch知識が検索された"
+      ]
+    },
+    "code_explanation_output": {
+      "description": "出力ドキュメントの品質が適切か",
+      "checks": [
+        "Overview, Architecture, Components, Flow, Nablarch Framework Usageセクションが含まれている",
+        "Mermaid図が適切に生成されている",
+        "構成要素の説明が明確である",
+        "ソースコードへの相対パスリンクが含まれている",
+        "Nablarch知識ファイルへのリンクが含まれている"
+      ]
+    },
+    "knowledge_integration": {
+      "description": "Nablarch知識が適切に引用されているか",
+      "checks": [
+        "expected_knowledgeに含まれる知識ファイルが参照された",
+        "知識ファイルの内容が適切に引用された",
+        "コードと知識の対応関係が明確に説明された"
+      ]
+    },
+    "token_efficiency": {
+      "description": "トークン効率が適切か",
+      "target": "10,000-30,000 tokens per query"
+    },
+    "tool_call_efficiency": {
+      "description": "ツール呼び出し回数が適切か",
+      "target": "15-40 tool calls per query"
+    }
+  }
+}
