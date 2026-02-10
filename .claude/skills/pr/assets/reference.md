@@ -1,157 +1,105 @@
-# PR スキル APIリファレンス
+# GitHub PR Skill - Detailed Reference
 
-このドキュメントでは、prスキルの技術的な詳細を説明します。
+This document describes the detailed technical specifications and workflows of the pr skill.
 
-## コマンド構文
+## Table of Contents
 
-```
-/pr [mode] [pr_number]
-```
+1. [GitHub CLI Terminology](#github-cli-terminology)
+2. [Retrieving Repository Information](#retrieving-repository-information)
+3. [Review Comment Processing Details](#review-comment-processing-details)
+4. [Error Handling Details](#error-handling-details)
+5. [Permission Requirements](#permission-requirements)
 
-### パラメータ
+## GitHub CLI Terminology
 
-- `mode`: 実行モード（`create`, `resolve`, `merge`）。省略可能。
-- `pr_number`: PR番号。省略可能（カレントブランチから自動検索）。
+### Review Related
+- **Review**: A review on a PR (APPROVE, REQUEST_CHANGES, COMMENT)
+- **Review Thread**: A thread of review comments
+- **Comment**: Individual comment
+- **Resolved/Unresolved**: Resolved/unresolved status
+- **Outdated**: Comments on old commits
 
-### モードの判定ロジック
+### PR Related
+- **Number**: PR number (e.g., #123)
+- **State**: PR state (OPEN, CLOSED, MERGED)
+- **Mergeable**: Mergeability (MERGEABLE, CONFLICTING, UNKNOWN)
+- **ReviewDecision**: Review decision (APPROVED, CHANGES_REQUESTED, REVIEW_REQUIRED)
 
-```javascript
-// パターン1: /pr → 引数なし
-//   → PR検索 → AskUserQuestionでモード選択
-if (args === null) {
-  const pr = searchPRForCurrentBranch();
-  const mode = askUserQuestion(pr ? "resolve" : "create");
-}
+## Retrieving Repository Information
 
-// パターン2: /pr create
-//   → mode="create", pr_number=null
-if (args === "create") {
-  mode = "create";
-  pr_number = null;
-}
-
-// パターン3: /pr resolve 123
-//   → mode="resolve", pr_number=123
-if (args.startsWith("resolve ")) {
-  mode = "resolve";
-  pr_number = parseInt(args.split(" ")[1]);
-}
-
-// パターン4: /pr 123
-//   → mode="resolve", pr_number=123
-if (/^\d+$/.test(args)) {
-  mode = "resolve";
-  pr_number = parseInt(args);
-}
-
-// パターン5: /pr merge
-//   → mode="merge", pr_number=null
-if (args === "merge") {
-  mode = "merge";
-  pr_number = null;
-}
-```
-
-## GitHub CLI コマンド
-
-prスキルが内部で使用するgh CLIコマンド一覧。
-
-### リポジトリ情報取得
+### Retrieving Basic Information
 
 ```bash
-# リポジトリの情報を取得
-gh repo view --json defaultBranchRef,owner,name
+# Get repository in owner/repo format
+gh repo view --json nameWithOwner -q .nameWithOwner
+# Example output: "octocat/Hello-World"
 
-# デフォルトブランチ名のみ取得
-gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+# Get default branch
+gh repo view --json defaultBranchRef -q .defaultBranchRef.name
+# Example output: "main"
+
+# Get repository URL
+gh repo view --json url -q .url
+# Example output: "https://github.com/octocat/Hello-World"
 ```
 
-### PR一覧取得
+### Retrieving PR Information
 
 ```bash
-# カレントブランチのPRを検索
-gh pr list --head "{branch_name}" --state open --json number,title,url --jq '.[0]'
+# Get PR information (JSON format)
+gh pr view 123 --json number,title,state,headRefName,baseRefName,url,mergeable,reviewDecision
 
-# 全てのopenなPRを取得
-gh pr list --state open --json number,title,headRefName,url
-```
-
-### PR情報取得
-
-```bash
-# PR詳細を取得
-gh pr view {pr_number} --json number,title,state,headRefName,baseRefName,url,author,mergeable,mergeStateStatus
-
-# PRのコメントとレビューを取得
-gh pr view {pr_number} --json comments,reviews
-```
-
-### PR作成
-
-```bash
-gh pr create \
-  --title "{title}" \
-  --body "{body}" \
-  --base {base_branch} \
-  --head {head_branch}
-```
-
-### PRコメント
-
-```bash
-gh pr comment {pr_number} --body "{comment_body}"
-```
-
-### PRマージ
-
-```bash
-# Squashマージ（リモートブランチを自動削除）
-gh pr merge {pr_number} --squash --delete-branch
-
-# 通常のマージ
-gh pr merge {pr_number} --merge --delete-branch
-
-# Rebaseマージ
-gh pr merge {pr_number} --rebase --delete-branch
-```
-
-## 内部データ構造
-
-### PR情報
-
-```json
+# Example output:
 {
   "number": 123,
-  "title": "feat: ユーザー認証機能を追加",
+  "title": "Add new feature",
   "state": "OPEN",
-  "headRefName": "feature/add-user-auth",
+  "headRefName": "feature/new-feature",
   "baseRefName": "main",
-  "url": "https://github.com/owner/repo/pull/123",
-  "author": {
-    "login": "username"
-  },
+  "url": "https://github.com/octocat/Hello-World/pull/123",
   "mergeable": "MERGEABLE",
-  "mergeStateStatus": "CLEAN"
+  "reviewDecision": "APPROVED"
 }
 ```
 
-### レビュー情報
+### Retrieving PR List
 
+```bash
+# Search for PR of current branch
+gh pr list --head "$(git branch --show-current)" --json number,state
+
+# Filter by state
+gh pr list --state open --json number,title
+gh pr list --state merged --json number,title
+```
+
+## Review Comment Processing Details
+
+### Retrieving Review Threads
+
+```bash
+# Get review threads
+gh pr view 123 --json reviewThreads
+```
+
+Response structure:
 ```json
 {
-  "reviews": [
+  "reviewThreads": [
     {
-      "author": {
-        "login": "reviewer"
-      },
-      "state": "CHANGES_REQUESTED",
-      "body": "レビューコメント本文",
-      "createdAt": "2024-01-01T12:00:00Z",
+      "id": "RT_abc123",
+      "isResolved": false,
+      "isOutdated": false,
+      "path": "src/main.js",
+      "line": 42,
       "comments": [
         {
-          "path": "src/auth.ts",
-          "line": 42,
-          "body": "変数名をより明確にしてください"
+          "id": "RC_def456",
+          "body": "Please improve this logic",
+          "author": {
+            "login": "reviewer"
+          },
+          "createdAt": "2026-02-10T10:00:00Z"
         }
       ]
     }
@@ -159,169 +107,270 @@ gh pr merge {pr_number} --rebase --delete-branch
 }
 ```
 
-## ワークフロー実行
+### Filtering Conditions
 
-各モードは、Taskツールで専用ワークフローを実行します。
+Extracting unresolved review comments:
 
-### create モード
+```javascript
+const unresolvedComments = reviewThreads.filter(thread => {
+  // Must be unresolved
+  if (thread.isResolved !== false) return false;
 
-```
-Task
-  subagent_type: "general-purpose"
-  description: "PR作成フローを実行"
-  prompt: """
-以下のワークフローに従って、GitHub PRを作成してください。
+  // Must not be a comment on an old commit
+  if (thread.isOutdated !== false) return false;
 
-{workflows/create.mdの内容}
+  // Must be a comment on a file (not a general comment)
+  if (!thread.path) return false;
 
-## 入力情報
-- カレントブランチ: {current_branch}
-"""
-```
+  // Must have comments
+  if (!thread.comments || thread.comments.length === 0) return false;
 
-### resolve モード
-
-```
-Task
-  subagent_type: "general-purpose"
-  description: "レビュー対応フローを実行"
-  prompt: """
-以下のワークフローに従って、GitHub PRのレビューコメントに対応してください。
-
-{workflows/resolve.mdの内容}
-
-## 入力情報
-- PR番号: {pr_number}
-- カレントブランチ: {current_branch}
-"""
+  return true;
+});
 ```
 
-### merge モード
+### Replying to Comments
 
-```
-Task
-  subagent_type: "general-purpose"
-  description: "マージフローを実行"
-  prompt: """
-以下のワークフローに従って、GitHub PRをマージしてください。
-
-{workflows/merge.mdの内容}
-
-## 入力情報
-- PR番号: {pr_number}
-"""
+**Comment on entire PR**:
+```bash
+gh pr comment 123 --body "Fixed. Please review."
 ```
 
-## エラーコード
+**Reply to specific review comment** (advanced operation):
+```bash
+# Using GitHub API
+gh api \
+  "repos/{owner}/{repo}/pulls/123/comments/{comment_id}/replies" \
+  -f body="Fixed. Please review."
+```
 
-| エラーコード | 説明 | 対応 |
-|------------|------|------|
-| GH_AUTH_ERROR | gh CLI認証エラー | `gh auth login`を実行 |
-| GH_NOT_FOUND | gh CLIが見つからない | gh CLIをインストール |
-| REPO_NOT_GITHUB | GitHubリポジトリでない | GitHubリポジトリで実行 |
-| BRANCH_INVALID | ブランチが不正 | 正しいブランチから実行 |
-| PR_NOT_FOUND | PRが見つからない | PR番号を確認 |
-| PR_CLOSED | PRがCLOSEDまたはMERGED | OPENのPRを指定 |
-| PR_CONFLICT | マージコンフリクト | コンフリクトを解決 |
-| NO_COMMITS | コミットがない | 変更をコミット |
-| PUSH_REJECTED | プッシュが拒否された | `git pull --rebase`して再プッシュ |
+### Resolving Review Threads
 
-## 設定
+GitHub CLI does not have a direct resolve feature, so use the following methods:
 
-prスキルは、以下の環境変数を使用できます（将来的な拡張）:
+1. **Request reviewer to resolve** (recommended)
+   - Report completion of fix in comment
+   - Reviewer resolves the thread
+
+2. **Use GitHub API** (advanced operation)
+   ```bash
+   # Thread ID required
+   gh api \
+     "repos/{owner}/{repo}/pulls/123/threads/{thread_id}" \
+     -X PATCH \
+     -f resolved=true
+   ```
+
+## Error Handling Details
+
+### Handling Push Failures
 
 ```bash
-# デフォルトのマージ方法（squash/merge/rebase）
-export PR_MERGE_METHOD="squash"
+# When push is rejected
+git push
+# error: failed to push some refs to 'origin'
 
-# PR作成時のレビュアー自動割り当て
-export PR_DEFAULT_REVIEWERS="user1,user2"
+# Solution 1: Rebase
+git pull --rebase origin "$(git branch --show-current)"
+git push
 
-# PR作成時のラベル自動付与
-export PR_DEFAULT_LABELS="enhancement,needs-review"
+# Solution 2: Merge (if there are conflicts)
+git pull origin "$(git branch --show-current)"
+# Resolve conflicts
+git add .
+git commit
+git push
+
+# Solution 3: Force push (use with caution)
+# Not recommended for PRs under review
+git push --force-with-lease
 ```
 
-## 制限事項
-
-1. **gh CLI依存**: GitHub CLIが必須
-2. **認証**: `gh auth login`で認証済みであること
-3. **権限**: リポジトリへの書き込み権限が必要
-4. **ブランチ保護**: 保護ブランチへのマージは追加の権限設定が必要
-5. **レビューコメント**: ファイル単位のコメントのみ対応（行コメントも取得可能だが、複雑な場合は手動対応を推奨）
-
-## トラブルシューティング
-
-### gh CLIが見つからない
+### Handling Merge Conflicts
 
 ```bash
-# インストール（macOS）
-brew install gh
+# Check for conflicts before merge
+git fetch origin main
+git merge-base --is-ancestor origin/main HEAD
+echo $?  # If not 0, merge is needed
 
-# インストール（Linux）
-sudo apt install gh
-
-# 認証
-gh auth login
+# Resolve conflicts
+git merge origin/main
+# Manually resolve conflicts
+git add .
+git commit -m "Resolve merge conflicts"
+git push
 ```
 
-### 認証エラー
+### Authentication Errors
 
 ```bash
-# 認証状態を確認
+# Check GitHub CLI authentication status
 gh auth status
 
-# 再認証
+# Authentication (via browser)
 gh auth login
 
-# トークンを使用
+# Authentication (via token)
 gh auth login --with-token < token.txt
+
+# Required scopes:
+# - repo: Full access
+# - read:org: Read organization information
+# - workflow: GitHub Actions (optional)
 ```
 
-### PR番号がわからない
+### Handling Branch Deletion Failures
 
 ```bash
-# カレントブランチのPRを確認
-gh pr view
+# When local branch deletion fails
+git branch -d feature/my-branch
+# error: The branch is not fully merged.
 
-# 全てのPRを一覧表示
-gh pr list
+# Verify: Check if merge is complete
+git log main..feature/my-branch
+# If no output, it's merged
+
+# Force delete
+git branch -D feature/my-branch
 ```
 
-## 開発者向け情報
+## Permission Requirements
 
-### スキル構造
+### Permissions Required for PR Creation
 
-```
-.claude/skills/pr/
-├── SKILL.md           # スキルのメタ情報とオーケストレーター
-├── workflows/
-│   ├── create.md      # PR作成ワークフロー
-│   ├── resolve.md     # レビュー対応ワークフロー
-│   └── merge.md       # マージワークフロー
-└── assets/
-    ├── examples.md    # 使用例
-    └── reference.md   # このファイル
-```
+| Operation | Minimum Permission | Description |
+|------|---------|------|
+| Push to branch | Write | Write access to repository |
+| Create PR | Write | Permission to create PR |
 
-### 拡張方法
+### Permissions Required for Review Comment Response
 
-新しいモードを追加する場合:
-1. `workflows/`に新しいワークフローファイルを追加
-2. `SKILL.md`の引数解析ロジックに新しいモードを追加
-3. `SKILL.md`のワークフロー実行セクションに新しいモードを追加
-4. `assets/examples.md`に使用例を追加
+| Operation | Minimum Permission | Description |
+|------|---------|------|
+| View review comments | Read | View PR and comments |
+| Add comments | Write | Add comments to PR |
+| Push to branch | Write | Push fix content |
+| Resolve thread | Write | Reviewer or PR author |
 
-### テスト
+### Permissions Required for Merge
 
-各ワークフローは独立しているため、個別にテスト可能:
+| Operation | Minimum Permission | Description |
+|------|---------|------|
+| Merge PR | Write | Depends on repository settings |
+| Delete branch | Write | Delete remote branch |
+
+**Note**: Merging to protected branches requires additional settings (required number of reviews, check requirements, etc.).
+
+## Performance Optimization
+
+### Batch Processing
+
+When processing multiple review comments, consider the following:
+
+1. **Cache file reads**: If there are multiple comments on the same file, reuse once loaded
+2. **Batch commits**: Combine related fixes into one commit
+3. **Optimize pushes**: After making multiple fixes, push only once at the end
+
+### Utilizing JSON Output
 
 ```bash
-# PR作成のテスト
-/pr create
+# Get only necessary fields (using jq filter)
+gh pr view 123 --json number,state,headRefName -q '{number, state, head: .headRefName}'
 
-# レビュー対応のテスト（PRが存在する場合）
-/pr resolve
-
-# マージのテスト（PRがマージ可能な場合）
-/pr merge
+# Process arrays
+gh pr list --json number,title --jq '.[] | select(.title | contains("feat"))'
 ```
+
+## Troubleshooting
+
+### Skill Does Not Start
+
+1. Verify GitHub CLI is properly installed: `gh --version`
+2. Verify authentication is complete: `gh auth status`
+3. Verify `allowed-tools` contains necessary tools
+
+### PR Not Found
+
+1. Verify current branch is correct: `git branch --show-current`
+2. Verify pushed to remote: `git log @{u}..HEAD`
+3. Verify PR actually exists on GitHub: `gh pr list`
+
+### Cannot Retrieve Review Comments
+
+1. Verify PR number is correct
+2. Verify PR is opened
+3. Verify you have permissions (Read or higher)
+
+### Cannot Push Commit
+
+1. Check branch protection rules
+2. Verify remote is up to date: `git fetch && git status`
+3. Check for conflicts: `git pull --rebase`
+
+## Best Practices
+
+1. **Start with small fixes**: Handle simple fixes first, defer complex comments
+2. **Run tests**: Always run related tests after fixes
+3. **Commit messages**: Summarize the content of review feedback
+4. **Ask clear questions**: When in doubt, ask specific questions
+5. **Backup**: For important changes, create local backup branch before merge
+
+## Advanced GitHub CLI Features
+
+### Retrieving Custom Fields
+
+```bash
+# Get custom fields via GraphQL
+gh api graphql -f query='
+  query($owner: String!, $repo: String!, $number: Int!) {
+    repository(owner: $owner, name: $repo) {
+      pullRequest(number: $number) {
+        reviewThreads(first: 100) {
+          nodes {
+            id
+            isResolved
+            path
+            line
+            comments(first: 10) {
+              nodes {
+                body
+                author {
+                  login
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+' -f owner=octocat -f repo=Hello-World -F number=123
+```
+
+### Webhook Configuration
+
+```bash
+# Configure webhook for PR events
+gh api repos/{owner}/{repo}/hooks \
+  -f name=web \
+  -f config[url]=https://example.com/webhook \
+  -f events[]=pull_request \
+  -f events[]=pull_request_review
+```
+
+### Actions Integration
+
+```bash
+# Check workflows related to PR
+gh run list --workflow=CI --json status,conclusion
+
+# Rerun specific workflow
+gh run rerun 123456
+```
+
+## References
+
+- [GitHub CLI Official Documentation](https://cli.github.com/manual/)
+- [GitHub API v4 (GraphQL)](https://docs.github.com/graphql)
+- [GitHub PR Review API](https://docs.github.com/rest/pulls/reviews)

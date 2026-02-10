@@ -1,118 +1,172 @@
-# マージワークフロー
+# Merge Workflow
 
-このワークフローは、PRをマージし、ブランチをクリーンアップします。
+This workflow merges the PR and cleans up branches.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - AskUserQuestion
-- Skill (gitスキルを使用)
+- Skill (for git branch-delete)
 
-## 実行ステップ
+## Execution Steps
 
-### 1. PR情報取得と確認
+### 1. Get and Verify PR Information
 
-**1.1 PR情報を取得**
+**1.1 Get PR Information**
 
 ```bash
-gh pr view {pr_number} --json number,title,state,headRefName,baseRefName,url,mergeable,mergeStateStatus,statusCheckRollup
+gh pr view "$pr_number" --json number,title,state,headRefName,baseRefName,url,mergeable,reviewDecision
 ```
 
-**1.2 マージ可能性チェック**
+**1.2 Check Mergeability**
 
-以下をすべて確認:
+Verify all of the following:
 - `state === "OPEN"`
 - `mergeable === "MERGEABLE"`
-- すべてのステータスチェックが成功している
+- `reviewDecision === "APPROVED"` (depends on project settings)
 
-いずれかが満たされない場合、エラーメッセージを表示して終了:
+If any condition is not met, display error message and exit:
 
 ```
-エラー: PRはマージできない状態です
+Error: PR cannot be merged
 
-以下を確認してください:
-- PRがOPENであること
-- マージコンフリクトがないこと（mergeable: {actual_status}）
-- CI/CDパイプラインが成功していること
-- 必要なレビュー承認が得られていること
+Please verify:
+- PR is OPEN
+- No merge conflicts (mergeable: {actual_status})
+- Required review approvals obtained (reviewDecision: {actual_value})
+- All CI/CD checks passing
 ```
 
-**1.3 ユーザー確認**
-
-AskUserQuestionで最終確認:
-```
-以下のPRをマージします。よろしいですか？
-
-**PR**: {pr_url}
-**タイトル**: {title}
-**ブランチ**: {head_branch} → {base_branch}
-```
-
-選択肢:
-- "はい、マージする"
-- "いいえ、キャンセル"
-
-### 2. マージ実行
-
-ユーザーが承認した場合、マージを実行:
+**1.3 Verify CI/CD Checks**
 
 ```bash
-gh pr merge {pr_number} --squash --delete-branch
+gh pr checks "$pr_number"
 ```
 
-`--squash`: PRの全コミットを1つにまとめてマージ
-`--delete-branch`: マージ後にリモートブランチを自動削除
+Display warning if any checks are failing.
 
-### 3. ローカルブランチのクリーンアップ
+**1.4 User Confirmation**
 
-Skillツールを使用してgitスキルのbranch-deleteサブコマンドを実行:
+Final confirmation with AskUserQuestion:
+```
+Merge the following PR. Is this OK?
+
+**PR**: {pr_url}
+**Title**: {pr_title}
+**Branch**: {headRefName} → {baseRefName}
+```
+
+Options:
+- "Yes, merge"
+- "No, cancel"
+
+### 2. Execute Merge
+
+If user approves, execute merge:
+
+```bash
+gh pr merge "$pr_number" \
+  --squash \
+  --delete-branch
+```
+
+Option descriptions:
+- `--squash`: Squash merge (default) - combine all commits into one
+- `--delete-branch`: Automatically delete remote branch after merge
+
+**Merge Strategy Options**:
+- `--squash`: Squash merge (combine all commits into one)
+- `--merge`: Create merge commit
+- `--rebase`: Rebase and merge
+
+Choose appropriate method based on project settings.
+
+### 3. Local Branch Cleanup
+
+Execute git skill's branch-delete subcommand using Skill tool:
 
 ```
 Skill
   skill: "git"
-  args: "branch-delete {head_branch}"
+  args: "branch-delete {headRefName}"
 ```
 
-gitスキルが自動的に以下を実行:
-- mainブランチに切り替え（必要な場合）
-- mainブランチの更新（fetch + pull）
-- リモートブランチ情報の更新（fetch --prune）
-- ローカルブランチの削除
+Git skill automatically executes:
+- Switch to base branch (if needed)
+- Update base branch (fetch + pull)
+- Verify remote branch deletion (warning only if already deleted)
+- Delete local branch
+- Update remote branch info (fetch --prune)
 
-### 4. 結果表示
+### 4. Display Result
 
 ```
-## マージ完了
+## Merge Complete
 
 **PR**: {pr_url}
-**ブランチ**: {head_branch} → {base_branch}
+**Branch**: {headRefName} → {baseRefName}
 
-### 実行内容
-- PRをマージしました
-- リモートブランチ '{head_branch}' を削除しました
-- ローカルブランチ '{head_branch}' を削除しました
-- ブランチを '{base_branch}' に切り替えました
-- 最新のコードを取得しました
+### Actions Performed
+- Merged PR
+- Deleted remote branch '{headRefName}' (automatically deleted by GitHub)
+- Deleted local branch '{headRefName}'
+- Switched to branch '{baseRefName}'
+- Fetched latest code
 
-お疲れ様でした。
+Good work!
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|--------|------|
-| PRが見つからない | 正しいPR番号を確認 |
-| state !== "OPEN" | PRがすでにCLOSEDまたはMERGEDされている |
-| mergeable !== "MERGEABLE" | マージコンフリクトを解決してから再実行 |
-| ステータスチェック失敗 | CI/CDを修正してから再実行 |
-| マージ権限不足 | リポジトリの権限を確認 |
-| ブランチ削除失敗 | `git branch -D`で強制削除 |
+| Error | Response |
+|-------|----------|
+| PR not found | Verify correct PR number |
+| state !== "OPEN" | PR already closed or merged |
+| mergeable !== "MERGEABLE" | Resolve merge conflicts then retry |
+| reviewDecision !== "APPROVED" | Obtain required review approvals |
+| Check failure | Fix CI/CD then retry |
+| No merge permission | Verify Write or higher permissions |
+| Branch deletion failure | Force delete with `git branch -D` |
 
-## 注意事項
+## Notes
 
-1. **絵文字の使用**: ユーザーが明示的に要求しない限り、絵文字を使わない
-2. **マージ権限**: PRマージにはリポジトリへの書き込み権限が必要
-3. **ステータスチェック**: すべてのCIチェックが成功していることを確認
-4. **リモートブランチ削除**: `--delete-branch`により、GitHub側で自動的にリモートブランチが削除される
-5. **保護ブランチ**: ターゲットブランチが保護されている場合、追加の権限設定が必要
-6. **Squashマージ**: `--squash`により、PRの全コミットが1つにまとめられてマージされる
+1. **Emoji Usage**: Do not use emojis unless user explicitly requests them
+2. **GitHub Permissions**: Requires Write or higher for PR merge (depends on repository settings)
+3. **Protected Branches**: For protected base branches, additional permission settings (required review count, check requirements, etc.) are needed
+4. **Merge Strategy**: Choose from `--squash`, `--merge`, or `--rebase` based on project policy
+5. **Remote Branch Deletion**: `--delete-branch` automatically deletes remote branch on GitHub side
+
+## Merge Strategy Selection
+
+Choose merge strategy based on project policy:
+
+### Squash Merge (Recommended)
+```bash
+gh pr merge "$pr_number" --squash --delete-branch
+```
+- **Benefit**: Simplified commit history
+- **Use case**: General cases like feature development, bug fixes
+
+### Merge Commit
+```bash
+gh pr merge "$pr_number" --merge --delete-branch
+```
+- **Benefit**: Preserves full commit history
+- **Use case**: When detailed commit history should be retained
+
+### Rebase Merge
+```bash
+gh pr merge "$pr_number" --rebase --delete-branch
+```
+- **Benefit**: Linear commit history
+- **Use case**: When avoiding merge commits
+
+## Auto-merge Configuration
+
+To automatically merge when merge conditions are met:
+
+```bash
+gh pr merge "$pr_number" --auto --squash --delete-branch
+```
+
+This will automatically merge once required checks and reviews are complete.

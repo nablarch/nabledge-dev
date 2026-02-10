@@ -1,173 +1,173 @@
-# 作業ブランチ作成ワークフロー
+# Branch Creation Workflow
 
-このワークフローは、mainブランチから作業ブランチを作成します。
+This workflow creates a working branch from the main branch.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - AskUserQuestion
 
-## 実行ステップ
+## Execution Steps
 
-### 1. 事前確認
+### 1. Pre-flight Checks
 
-**1.1 カレントブランチの確認**
+**1.1 Verify Current Branch**
 
 ```bash
 git branch --show-current
 ```
 
-カレントブランチが`main`でない場合はエラー終了:
+If not on `main`, exit with error:
 ```
-エラー: 作業ブランチはmainブランチから作成してください。
-現在のブランチ: {current_branch}
+Error: Working branches must be created from the main branch.
+Current branch: {current_branch}
 
-mainブランチに切り替えるには:
+To switch to main:
 git checkout main
 ```
 
-**1.2 ワーキングツリーの確認**
+**1.2 Verify Clean Working Tree**
 
 ```bash
 git status --porcelain
 ```
 
-未コミットの変更がある場合はエラー終了:
+If uncommitted changes exist, exit with error:
 ```
-エラー: 未コミットの変更があります。
-変更をコミットまたはstashしてから実行してください。
+Error: You have uncommitted changes.
+Please commit or stash changes before proceeding.
 
-変更を確認:
+Check changes:
 git status
 
-変更をstash:
+Stash changes:
 git stash
 ```
 
-**1.3 リモートの最新化**
+**1.3 Update Remote**
 
 ```bash
 git fetch origin main
 git pull origin main
 ```
 
-pullが失敗（conflict）した場合:
+If pull fails (conflicts):
 ```
-エラー: mainブランチの更新に失敗しました。
-コンフリクトを解決してから実行してください。
-```
-
-### 2. ブランチ名の提案
-
-**2.1 作業目的のヒアリング**
-
-AskUserQuestionで作業目的をヒアリング:
-
-```
-質問: このブランチで何を実装・修正しますか？
-header: "作業内容"
-options:
-  - label: "新機能の追加"
-    description: "新しい機能を実装する"
-  - label: "バグ修正"
-    description: "既存のバグを修正する"
-  - label: "リファクタリング"
-    description: "コードの構造を改善する"
-  - label: "ドキュメント更新"
-    description: "ドキュメントを更新する"
+Error: Failed to update main branch.
+Please resolve conflicts before proceeding.
 ```
 
-**2.2 詳細のヒアリング**
+### 2. Propose Branch Names
 
-選択された作業内容に応じて、詳細をヒアリング（自由入力）:
-```
-「{作業内容}」の詳細を教えてください。
-例: ユーザー認証機能、ログイン画面のバグ、API層のリファクタリング等
-```
+**2.1 Ask Work Purpose**
 
-**2.3 ブランチ名の生成**
-
-ヒアリングした内容から、3つのブランチ名候補を生成:
-
-**生成ルール**:
-- プレフィックス: `add-`（新機能）, `fix-`（バグ修正）, `refactor-`（リファクタリング）, `docs-`（ドキュメント）
-- 本体: 詳細から抽出したキーワードを`-`で連結
-- 全て小文字、英数字とハイフンのみ
-
-**例**:
-- 詳細: "ユーザー認証機能を追加"
-  - 候補1: `add-user-auth`
-  - 候補2: `add-authentication`
-  - 候補3: `user-auth-feature`
-
-- 詳細: "ログイン画面のバグ修正"
-  - 候補1: `fix-login-page`
-  - 候補2: `fix-login-bug`
-  - 候補3: `login-page-fix`
-
-**2.4 ブランチ名の選択**
-
-AskUserQuestionで候補から選択:
+Use AskUserQuestion to understand work purpose:
 
 ```
-質問: ブランチ名を選択してください。
-header: "ブランチ名"
-options:
-  - label: "{候補1}"
-    description: "推奨"
-  - label: "{候補2}"
-    description: ""
-  - label: "{候補3}"
-    description: ""
+Question: What will you implement or fix in this branch?
+Header: "Work Type"
+Options:
+  - Label: "New Feature"
+    Description: "Implement a new feature"
+  - Label: "Bug Fix"
+    Description: "Fix an existing bug"
+  - Label: "Refactoring"
+    Description: "Improve code structure"
+  - Label: "Documentation"
+    Description: "Update documentation"
 ```
 
-ユーザーが"Other"を選択した場合、自由入力を受け付ける。
+**2.2 Ask for Details**
 
-**2.5 ブランチ名の重複確認**
+Based on selected work type, ask for details (free text):
+```
+Please provide details about "{work_type}".
+Examples: user authentication, login page bug, API layer refactoring, etc.
+```
+
+**2.3 Generate Branch Names**
+
+Generate 3 branch name candidates from the details:
+
+**Generation Rules**:
+- Prefix: `add-` (feature), `fix-` (bug), `refactor-` (refactor), `docs-` (docs)
+- Body: Keywords from details joined with `-`
+- All lowercase, alphanumeric and hyphens only
+
+**Examples**:
+- Details: "Add user authentication feature"
+  - Candidate 1: `add-user-auth`
+  - Candidate 2: `add-authentication`
+  - Candidate 3: `user-auth-feature`
+
+- Details: "Fix login page bug"
+  - Candidate 1: `fix-login-page`
+  - Candidate 2: `fix-login-bug`
+  - Candidate 3: `login-page-fix`
+
+**2.4 Select Branch Name**
+
+Use AskUserQuestion to select from candidates:
+
+```
+Question: Select branch name.
+Header: "Branch Name"
+Options:
+  - Label: "{candidate1}"
+    Description: "Recommended"
+  - Label: "{candidate2}"
+    Description: ""
+  - Label: "{candidate3}"
+    Description: ""
+```
+
+If user selects "Other", accept free text input.
+
+**2.5 Check for Duplicates**
 
 ```bash
 git branch --list "{branch_name}"
 ```
 
-既に存在する場合はエラー終了:
+If exists, exit with error:
 ```
-エラー: ブランチ「{branch_name}」は既に存在します。
+Error: Branch "{branch_name}" already exists.
 
-別のブランチ名を使用するか、既存ブランチを削除してください:
+Use a different name or delete the existing branch:
 git branch -d {branch_name}
 ```
 
-### 3. ブランチ作成
+### 3. Create Branch
 
-選択されたブランチ名でブランチを作成:
+Create branch with selected name:
 
 ```bash
 git checkout -b {branch_name}
 ```
 
-### 4. 結果表示
+### 4. Display Result
 
 ```
-## 作業ブランチ作成完了
+## Branch Creation Complete
 
-**ブランチ名**: {branch_name}
-**ベースブランチ**: main
+**Branch Name**: {branch_name}
+**Base Branch**: main
 
-作業を開始できます。
-変更をコミットする際は `/git commit` を使用してください。
+You can now start working.
+Use `/git commit` to commit changes.
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|--------|------|
-| main以外のブランチから実行 | mainブランチに切り替えるよう案内 |
-| 未コミットの変更がある | コミットまたはstashするよう案内 |
-| mainの更新に失敗 | コンフリクトを解決するよう案内 |
-| ブランチ名が既に存在 | 別の名前を使用するか、既存ブランチを削除するよう案内 |
+| Error | Response |
+|-------|----------|
+| Not on main branch | Guide to switch to main |
+| Uncommitted changes | Guide to commit or stash |
+| Failed to update main | Guide to resolve conflicts |
+| Branch name exists | Guide to use different name or delete existing |
 
-## 注意事項
+## Important Notes
 
-1. **絵文字の使用**: ユーザーが明示的に要求しない限り、絵文字を使わない
-2. **ブランチ名の品質**: ユーザーの入力から適切なブランチ名を生成する
-3. **安全性**: mainブランチの保護、重複チェック、作業ツリーのクリーン確認
+1. **No emojis**: Never use emojis unless explicitly requested by user
+2. **Branch name quality**: Generate appropriate names from user input
+3. **Safety**: Protect main branch, check duplicates, verify clean working tree

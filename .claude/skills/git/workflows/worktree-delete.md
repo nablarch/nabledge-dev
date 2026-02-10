@@ -1,219 +1,219 @@
-# ワークツリー削除ワークフロー
+# Worktree Deletion Workflow
 
-このワークフローは、既存のワークツリーを削除します。
+This workflow deletes an existing worktree.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - AskUserQuestion
 
-## 実行ステップ
+## Execution Steps
 
-### 1. ワークツリー一覧の取得
+### 1. Get Worktree List
 
-**1.1 ワークツリーリストを取得**
+**1.1 Get Worktree List**
 
 ```bash
 git worktree list
 ```
 
-出力例:
+Output example:
 ```
 <workspace-path>/nab-agents         abc1234 [main]
 <workspace-path>/nab-agents-<branch-name> def5678 [add-feature]
 <workspace-path>/nab-agents-<branch-name>  ghi9012 [fix-bug]
 ```
 
-**1.2 削除可能なワークツリーの抽出**
+**1.2 Extract Deletable Worktrees**
 
-メインワークツリー（最初の行）を除外し、削除可能なワークツリーのリストを作成。
+Exclude the main worktree (first line) to create list of deletable worktrees.
 
-ワークツリーがない場合:
+If no worktrees:
 ```
-情報: 削除可能なワークツリーがありません。
+Info: No deletable worktrees found.
 
-現在のワークツリー一覧:
+Current worktrees:
 {worktree_list}
 ```
 
-### 2. 削除対象ワークツリーの決定
+### 2. Determine Target Worktree
 
-**2.1 引数の確認**
+**2.1 Check Arguments**
 
-引数が指定されている場合、それを削除対象とする。
-引数がない場合、次のステップでユーザーに選択させる。
+If argument is specified, use it as target.
+If no argument, proceed to next step to let user select.
 
-**2.2 削除対象の選択（引数がない場合）**
+**2.2 Select Target (if no argument)**
 
-AskUserQuestionでワークツリーを選択:
+Use AskUserQuestion to select worktree:
 
 ```
-質問: 削除するワークツリーを選択してください。
-header: "ワークツリー削除"
-options:
-  - label: "{path1}"
-    description: "ブランチ: {branch1}"
-  - label: "{path2}"
-    description: "ブランチ: {branch2}"
-  - label: "{path3}"
-    description: "ブランチ: {branch3}"
+Question: Select worktree to delete.
+Header: "Delete Worktree"
+Options:
+  - Label: "{path1}"
+    Description: "Branch: {branch1}"
+  - Label: "{path2}"
+    Description: "Branch: {branch2}"
+  - Label: "{path3}"
+    Description: "Branch: {branch3}"
 ```
 
-### 3. 削除前チェック
+### 3. Pre-deletion Checks
 
-**3.1 メインワークツリーの保護**
+**3.1 Protect Main Worktree**
 
-削除対象がメインワークツリー（カレントリポジトリ）の場合はエラー終了:
+If target is the main worktree (current repository), exit with error:
 ```
-エラー: メインワークツリーは削除できません。
+Error: Cannot delete main worktree.
 ```
 
-**3.2 パスの存在確認**
+**3.2 Verify Path Exists**
 
 ```bash
 test -d {worktree_path}
 ```
 
-パスが存在しない場合はエラー終了:
+If path doesn't exist, exit with error:
 ```
-エラー: ワークツリー「{worktree_path}」が見つかりません。
+Error: Worktree "{worktree_path}" not found.
 
-ワークツリー一覧を確認:
+Check worktree list:
 git worktree list
 ```
 
-**3.3 未コミット変更の確認**
+**3.3 Check for Uncommitted Changes**
 
-削除対象ワークツリーのステータスを確認:
+Check status of target worktree:
 
 ```bash
 git -C {worktree_path} status --porcelain
 ```
 
-未コミットの変更がある場合、警告を表示:
+If uncommitted changes exist, display warning:
 
-AskUserQuestionで確認:
+Use AskUserQuestion to confirm:
 ```
-質問: ワークツリー「{worktree_path}」に未コミットの変更があります。
-削除すると、これらの変更は失われます。本当に削除しますか？
-header: "警告"
-options:
-  - label: "はい、削除する"
-    description: "未コミットの変更が失われます"
-  - label: "いいえ、キャンセル"
-    description: "変更を保存してから削除してください"
+Question: Worktree "{worktree_path}" has uncommitted changes.
+Deletion will lose these changes. Delete anyway?
+Header: "Warning"
+Options:
+  - Label: "Yes, delete it"
+    Description: "Uncommitted changes will be lost"
+  - Label: "No, cancel"
+    Description: "Save changes before deletion"
 
-表示する変更一覧:
+Display changes:
 {git_status_output}
 ```
 
-ユーザーが"キャンセル"を選択した場合、処理を中断:
+If user selects "Cancel", abort:
 ```
-処理をキャンセルしました。
+Operation cancelled.
 
-変更を保存するには:
+To save changes:
 cd {worktree_path}
 /git commit
 ```
 
-### 4. ワークツリーの削除
+### 4. Delete Worktree
 
-**4.1 ワークツリーを削除**
+**4.1 Delete Worktree**
 
 ```bash
 git worktree remove {worktree_path}
 ```
 
-削除に失敗した場合（ロックされている等）、強制削除:
+If deletion fails (locked, etc.), force delete:
 ```bash
 git worktree remove --force {worktree_path}
 ```
 
-それでも失敗した場合:
+If still fails:
 ```
-エラー: ワークツリーの削除に失敗しました。
+Error: Failed to delete worktree.
 
-手動で削除してください:
+Manual deletion:
 rm -rf {worktree_path}
 git worktree prune
 ```
 
-### 5. ブランチの削除確認
+### 5. Branch Deletion Confirmation
 
-**5.1 ブランチの取得**
+**5.1 Get Branch Name**
 
-削除したワークツリーのブランチ名を取得。
+Extract branch name from deleted worktree.
 
-**5.2 マージ済み確認**
+**5.2 Check if Merged**
 
 ```bash
 git branch --merged main | grep "^  {branch_name}$"
 ```
 
-**5.3 ブランチ削除の確認**
+**5.3 Confirm Branch Deletion**
 
-マージ済みの場合、AskUserQuestionでブランチ削除を確認:
+If merged, use AskUserQuestion to confirm branch deletion:
 
 ```
-質問: ブランチ「{branch_name}」はマージ済みです。
-このブランチも削除しますか？
-header: "ブランチ削除"
-options:
-  - label: "はい、削除する"
-    description: "ローカルとリモートから削除"
-  - label: "ローカルのみ削除"
-    description: "リモートは残す"
-  - label: "いいえ、残す"
-    description: "ブランチは残す"
+Question: Branch "{branch_name}" is merged.
+Delete this branch too?
+Header: "Delete Branch"
+Options:
+  - Label: "Yes, delete it"
+    Description: "Delete from local and remote"
+  - Label: "Delete local only"
+    Description: "Keep remote branch"
+  - Label: "No, keep it"
+    Description: "Keep the branch"
 ```
 
-**5.4 ブランチの削除**
+**5.4 Delete Branch**
 
-ユーザーの選択に応じて:
+Based on user selection:
 
-**「はい、削除する」の場合**:
+**"Yes, delete it"**:
 ```bash
 git push origin --delete {branch_name}
 git branch -d {branch_name}
 ```
 
-**「ローカルのみ削除」の場合**:
+**"Delete local only"**:
 ```bash
 git branch -d {branch_name}
 ```
 
-**「いいえ、残す」の場合**:
-削除しない。
+**"No, keep it"**:
+Do nothing.
 
-### 6. 結果表示
+### 6. Display Result
 
 ```
-## ワークツリー削除完了
+## Worktree Deletion Complete
 
-**削除したワークツリー**: {worktree_path}
-**ブランチ**: {branch_name}
+**Deleted Worktree**: {worktree_path}
+**Branch**: {branch_name}
 
-### 実行内容
-- ワークツリー '{worktree_path}' を削除しました
-{ブランチ削除した場合}
-- ローカルブランチ '{branch_name}' を削除しました
-- リモートブランチ 'origin/{branch_name}' を削除しました
-{/ブランチ削除した場合}
+### Actions Performed
+- Deleted worktree '{worktree_path}'
+{if branch deleted}
+- Deleted local branch '{branch_name}'
+- Deleted remote branch 'origin/{branch_name}'
+{/if branch deleted}
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|--------|------|
-| 削除可能なワークツリーがない | ワークツリー一覧を表示 |
-| メインワークツリーの削除試行 | エラーメッセージを表示して終了 |
-| パスが存在しない | 正しいパスを確認 |
-| 未コミット変更あり | 警告を表示してユーザーに確認 |
-| 削除失敗 | 強制削除を試行、それでも失敗した場合は手動削除を案内 |
+| Error | Response |
+|-------|----------|
+| No deletable worktrees | Display worktree list |
+| Attempted to delete main worktree | Display error and exit |
+| Path doesn't exist | Verify correct path |
+| Uncommitted changes | Display warning and ask user to confirm |
+| Deletion failed | Attempt force delete, guide to manual deletion if failed |
 
-## 注意事項
+## Important Notes
 
-1. **絵文字の使用**: ユーザーが明示的に要求しない限り、絵文字を使わない
-2. **安全性優先**: 未コミット変更がある場合は警告を表示
-3. **メインワークツリーの保護**: メインワークツリーは削除を拒否
-4. **ブランチ削除**: マージ済みブランチは自動的に削除を提案
+1. **No emojis**: Never use emojis unless explicitly requested by user
+2. **Safety first**: Warn if uncommitted changes exist
+3. **Main worktree protection**: Refuse deletion of main worktree
+4. **Branch deletion**: Automatically suggest deletion for merged branches

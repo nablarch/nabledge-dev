@@ -1,47 +1,47 @@
-# コミット・プッシュワークフロー
+# Commit and Push Workflow
 
-このワークフローは、変更をコミットしてリモートにプッシュします。
+This workflow commits changes and pushes them to the remote repository.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - AskUserQuestion
 
-## 実行ステップ
+## Execution Steps
 
-### 1. 事前確認
+### 1. Pre-flight Checks
 
-**1.1 カレントブランチの確認**
+**1.1 Check Current Branch**
 
 ```bash
 git branch --show-current
 ```
 
-カレントブランチが`main`または`master`の場合は警告表示（エラーではない）:
+If on `main` or `master`, display warning (not an error):
 ```
-警告: mainブランチに直接コミットしようとしています。
-作業ブランチで作業することを推奨します。
+Warning: You are about to commit directly to the main branch.
+It is recommended to work on a feature branch.
 
-続行しますか？
+Do you want to continue?
 ```
 
-**1.2 変更の確認**
+**1.2 Check for Changes**
 
 ```bash
 git status --porcelain
 ```
 
-変更がない場合はエラー終了:
+If no changes, exit with error:
 ```
-エラー: コミットする変更がありません。
+Error: No changes to commit.
 
-現在の状態を確認:
+Check current status:
 git status
 ```
 
-### 2. 変更の分析
+### 2. Analyze Changes
 
-**2.1 ステージングされていない変更とステージング済み変更の取得**
+**2.1 Get Staged and Unstaged Changes**
 
 ```bash
 git status
@@ -49,74 +49,83 @@ git diff HEAD --stat
 git diff HEAD
 ```
 
-**2.2 機密ファイルのチェック**
+**2.2 Detect Sensitive Files**
 
-変更ファイルリストから以下のパターンを検出:
+Detect the following patterns:
 - `.env`, `.env.*`
 - `*credentials*`, `*secret*`, `*password*`
 - `*.key`, `*.pem`
 - `config/database.yml`, `config/secrets.yml`
 
-機密ファイルが含まれる場合は警告:
+If sensitive files detected, display warning:
 ```
-警告: 以下の機密ファイルが含まれています:
+Warning: The following sensitive files were detected:
 - {file1}
 - {file2}
 
-これらのファイルはコミットから除外されます。
+These files will be excluded from the commit.
 ```
 
-**2.3 コミット対象ファイルの決定**
+**2.3 Determine Files to Commit**
 
-機密ファイルを除外したファイルリストを作成。
+Create file list excluding sensitive files.
 
-### 3. コミットメッセージの生成
+### 3. Generate Commit Message
 
-**3.1 変更内容の分析**
+**3.1 Analyze Changes**
 
-diffとファイル名から以下を判定:
-- **変更タイプ**: feat, fix, refactor, update, docs, test, chore
-- **変更対象**: 主要な変更対象（ファイル名やdiffから抽出）
-- **変更の目的**: diffの内容から推測
+Determine from diff and file names:
+- **Change type**: feat, fix, refactor, update, docs, test, chore
+- **Change target**: Main subject of changes (from file names and diff)
+- **Change purpose**: Inferred from diff content
 
-**3.2 メッセージの生成**
+**3.2 Generate Message**
 
-Claude.mdのルール「目的または意図が伝わるタイトル」に従い、以下の形式で生成:
+Follow project commit rules (`.claude/rules/commit-rules.md`):
 
 ```
-{type}: {目的・意図を表す簡潔な説明}
+{type}: {concise description conveying purpose/intent}
 
-Co-Authored-By: Claude (jp.anthropic.claude-sonnet-4-5-20250929-v1:0) <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ```
 
-**タイプ別の例**:
-- `feat: ユーザー認証機能を追加`
-- `fix: ログイン時のセッションタイムアウトを修正`
-- `refactor: API層のエラーハンドリングを改善`
-- `update: ユーザー設定画面のUIを改善`
-- `docs: READMEにセットアップ手順を追加`
+**Type Examples**:
+- `feat: Add user authentication feature`
+- `fix: Fix session timeout on login`
+- `refactor: Improve error handling in API layer`
+- `update: Improve user settings UI`
+- `docs: Add setup guide to README`
 
-**生成ルール**:
-- 1行目は50文字以内を目標（最大70文字）
-- 日本語で記述
-- 「〜を追加」「〜を修正」など、動作を明確に
-- 技術的な詳細は不要（タイトルのみ）
+**Generation Rules**:
+- First line: Target 50 chars (max 70)
+- Follow project language requirements (check `.claude/rules/commit-rules.md`)
+- Convey "why" not just "what"
+- Use clear action verbs ("add", "fix", "improve")
+- No technical details in title
 
-### 4. コミットの実行
+**Project-Specific Commit Rules** (from `.claude/rules/commit-rules.md`):
+1. **Split by purpose**: Each commit = one purpose (feature/fix/refactor)
+2. **Write clearly**: Describe why the change was made
+3. **Language**: Follow project requirements for commit message language
+4. **Format**: `<type>: <summary>`
+5. **Test code**: Can be included in same commit as implementation
+6. **Always push**: Push immediately after commit to prevent work loss
 
-**4.1 ファイルのステージング**
+### 4. Execute Commit
 
-機密ファイルを除外してステージング:
+**4.1 Stage Files**
+
+Stage files individually, excluding sensitive files:
 
 ```bash
 git add {file1} {file2} {file3} ...
 ```
 
-**重要**: `git add -A` や `git add .` は使用しない（機密ファイルの誤コミット防止）
+**Important**: Never use `git add -A` or `git add .` to prevent accidental sensitive file commits.
 
-**4.2 コミット**
+**4.2 Commit**
 
-HEREDOC形式でコミット:
+Use HEREDOC format:
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -125,64 +134,65 @@ EOF
 )"
 ```
 
-### 5. リモートへのプッシュ
+### 5. Push to Remote
 
-**5.1 プッシュ**
+**5.1 Push**
 
 ```bash
 git push -u origin {current_branch}
 ```
 
-**5.2 プッシュ失敗時の対応**
+**5.2 Handle Push Failures**
 
-rejected（リモートに新しいコミットがある）場合:
+If rejected (remote has new commits):
 
 ```bash
 git pull --rebase origin {current_branch}
 ```
 
-rebase中にコンフリクトが発生した場合:
+If rebase conflicts occur:
 ```
-エラー: コンフリクトが発生しました。
-以下のファイルを手動で解決してください:
+Error: Conflicts detected.
+Please resolve the following files manually:
 {conflict_files}
 
-解決後:
+After resolution:
 git add {resolved_files}
 git rebase --continue
 git push
 ```
 
-rebaseが成功した場合、再度プッシュ:
+If rebase succeeds, push again:
 ```bash
 git push
 ```
 
-### 6. 結果表示
+### 6. Display Result
 
 ```
-## コミット完了
+## Commit Complete
 
-**ブランチ**: {current_branch}
-**コミットメッセージ**: {commit_message_first_line}
-**変更ファイル**: {file_count}件
+**Branch**: {current_branch}
+**Commit Message**: {commit_message_first_line}
+**Changed Files**: {file_count} files
 
-変更がリモートにプッシュされました。
+Changes have been pushed to remote.
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|--------|------|
-| 変更がない | ファイルを編集してから実行するよう案内 |
-| 機密ファイル検出 | 自動除外して続行（警告表示） |
-| コンフリクト発生 | 手動解決の手順を案内 |
-| プッシュ失敗 | rebaseして再プッシュ |
-| rebase失敗 | 手動解決の手順を案内 |
+| Error | Response |
+|-------|----------|
+| No changes | Guide to edit files before running |
+| Sensitive files detected | Auto-exclude and continue (show warning) |
+| Conflicts detected | Guide to manual resolution |
+| Push failed | Rebase and retry push |
+| Rebase failed | Guide to manual resolution |
 
-## 注意事項
+## Important Notes
 
-1. **絵文字の使用**: ユーザーが明示的に要求しない限り、絵文字を使わない
-2. **機密ファイルの保護**: 自動検出して除外、警告を表示
-3. **コミットメッセージの品質**: Claude.mdのルールに従い、目的・意図が伝わるタイトルを生成
-4. **安全なステージング**: `git add .` は使用せず、ファイルを個別に指定
+1. **No emojis**: Never use emojis unless explicitly requested by user
+2. **Sensitive file protection**: Auto-detect and exclude, display warning
+3. **Message quality**: Follow project rules - convey purpose/intent
+4. **Safe staging**: Never use `git add .`, specify files individually
+5. **Always push**: Project rule requires immediate push after commit

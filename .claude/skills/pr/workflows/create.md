@@ -1,126 +1,151 @@
-# PR作成ワークフロー
+# PR Creation Workflow
 
-このワークフローは、カレントブランチからmainへのPRを作成します。
+This workflow creates a PR from the current branch to main.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - Read
 
-## 実行ステップ
+## Execution Steps
 
-### 1. 事前確認
+### 1. Pre-flight Checks
 
-**1.1 カレントブランチの確認**
+**1.1 Verify Current Branch**
 
 ```bash
 git branch --show-current
 ```
 
-カレントブランチが`main`または`master`の場合はエラー終了:
+If current branch is `main` or `master`, exit with error:
 ```
-エラー: mainブランチからPRは作成できません。
-feature/issueブランチを作成してから実行してください。
+Error: Cannot create PR from main branch.
+Please create a feature/issue branch first.
 ```
 
-**1.2 デフォルトブランチの取得**
+**1.2 Get Default Branch**
 
 ```bash
-gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+default_branch=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
 ```
 
-デフォルトブランチ名を取得（通常は"main"または"master"）。
-
-**1.3 コミット履歴の確認**
+**1.3 Check Commit History**
 
 ```bash
-git log {default_branch}..HEAD --oneline
+git log "$default_branch"..HEAD --oneline
 ```
 
-コミットがない場合はエラー終了:
+If no commits exist, exit with error:
 ```
-エラー: {default_branch}からの新しいコミットがありません。
-変更をコミットしてから実行してください。
+Error: No new commits from {default_branch}.
+Please commit your changes first.
 ```
 
-**1.4 リモートへのプッシュ確認**
+**1.4 Verify Remote Push**
 
 ```bash
 git status
 ```
 
-"Your branch is ahead of"または"branch and 'origin/xxx' have diverged"がある場合、プッシュが必要:
+If "Your branch is ahead of" or "have diverged" appears, push is needed:
 ```bash
-git push -u origin {current_branch}
+git push -u origin "$(git branch --show-current)"
 ```
 
-プッシュが失敗（rejected）した場合:
+If push fails (rejected):
 ```bash
-git pull --rebase origin {current_branch}
+git pull --rebase origin "$(git branch --show-current)"
 git push
 ```
 
-### 2. PRタイトルと説明を生成
+### 2. Generate PR Title and Description
 
-**2.1 コミット履歴とdiffを取得**
+**2.1 Get Commit History and Diff**
 
 ```bash
-git log {default_branch}..HEAD --format="%s"
-git diff {default_branch}...HEAD --stat
+git log "$default_branch"..HEAD --format="%s"
+git diff "$default_branch"...HEAD --stat
 ```
 
-**2.2 タイトルと説明の生成**
+**2.2 Generate Title and Description**
 
-コミット履歴とdiffを分析し、以下の形式で生成:
+Analyze commit history and diff, generate in the following format:
 
-**タイトル**: 主要な変更を要約（70文字以内）
-- 例: "feat: ユーザー認証機能を追加"
-- 例: "fix: ログイン時のセッションタイムアウトを修正"
+**Title**: Summarize main changes (within 70 characters)
+- Example: "feat: Add user authentication feature"
+- Example: "fix: Fix session timeout on login"
 
-**説明**:
+**Description**:
 ```markdown
-## 変更概要
-{変更の目的と内容を1-3文で説明}
+## Summary
+{Describe purpose and content of changes in 1-3 sentences}
 
-## 変更内容
-{主要な変更点を箇条書き}
+## Changes
+{List main changes as bullet points}
 
-## テスト
-- [ ] 動作確認完了
-- [ ] テスト追加/更新（必要な場合）
+## Testing
+- [ ] Manual testing completed
+- [ ] Tests added/updated (if needed)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
-### 3. PR作成
+### 3. Create PR
 
-生成したタイトルと説明でPRを作成:
+Create PR with generated title and description:
 
 ```bash
-gh pr create --title "{generated_title}" --body "{generated_description}" --base {default_branch} --head {current_branch}
+gh pr create \
+  --title "{generated_title}" \
+  --body "{generated_description}" \
+  --base "$default_branch" \
+  --head "$current_branch"
 ```
 
-### 4. 結果表示
+### 4. Display Result
 
 ```
-## PR作成完了
+## PR Creation Complete
 
 **PR**: {pr_url}
-**ブランチ**: {source_branch} → {target_branch}
-**タイトル**: {title}
+**Branch**: {source_branch} → {target_branch}
+**Title**: {title}
 
-レビュアーにレビューを依頼してください。
+Please request review from reviewers.
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|--------|------|
-| mainブランチから実行 | feature/issueブランチから実行するよう案内 |
-| コミットがない | 変更をコミットしてから実行するよう案内 |
-| プッシュ失敗 | `git pull --rebase`して再プッシュ |
-| gh CLI認証エラー | `gh auth login`で認証 |
+| Error | Response |
+|-------|----------|
+| Execute from main branch | Guide to execute from feature/issue branch |
+| No commits | Guide to commit changes first |
+| Push failure | `git pull --rebase` and retry push |
+| Authentication error | Authenticate with `gh auth login` |
 
-## 注意事項
+## Notes
 
-1. **絵文字の使用**: ユーザーが明示的に要求しない限り、絵文字を使わない
-2. **タイトルの品質**: コミットメッセージが不適切な場合、自分で適切なタイトルを生成
-3. **gh CLI**: GitHub CLIが必要。未インストールの場合はインストールを案内
+1. **Emoji Usage**: Do not use emojis unless user explicitly requests them
+2. **GitHub Permissions**: Requires Write or higher permissions
+3. **Title Quality**: Generate appropriate title if commit messages are inadequate
+4. **HEREDOC Usage**: Use HEREDOC for multi-line PR body to ensure correct formatting
+
+### HEREDOC Usage Example
+
+```bash
+gh pr create \
+  --title "feat: Add user authentication" \
+  --body "$(cat <<'EOF'
+## Summary
+Added user authentication feature.
+
+## Changes
+- Implemented login form
+- Added session management
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)" \
+  --base main \
+  --head feature/auth
+```

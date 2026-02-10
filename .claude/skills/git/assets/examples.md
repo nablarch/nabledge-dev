@@ -1,506 +1,357 @@
-# Gitスキル - 使用例
+# Git Skill - Usage Examples
 
-このドキュメントでは、gitスキルの実際の使用例を紹介します。
+## Basic Workflows
 
-## 基本的な使用例
+### 1. Create Working Branch
 
-### 1. 作業ブランチ作成
-
-#### シナリオ: mainブランチから新機能開発用のブランチを作成
+**Scenario**: Create new feature branch from main
 
 ```bash
-# mainブランチにいることを確認
+# Verify on main branch
 git branch --show-current
 # main
 
-# 作業ブランチを作成
+# Create working branch
 /git branch-create
 ```
 
-**実行内容**:
-1. mainブランチであることを確認
-2. 作業ツリーがクリーンであることを確認
-3. 作業目的をヒアリング（新機能、バグ修正等）
-4. ブランチ名を3つ提案
-5. ユーザーが選択したブランチ名で作成
-
-**対話例**:
+**Interaction**:
 ```
-質問: このブランチで何を実装・修正しますか？
-→ 「新機能の追加」を選択
+Q: What will you implement or fix in this branch?
+→ Select "New Feature"
 
-詳細を教えてください。
-→ 「ユーザー認証機能」と入力
+Q: Please provide details.
+→ Enter "user authentication feature"
 
-ブランチ名を選択してください。
-→ 「add-user-auth」を選択（推奨）
+Q: Select branch name.
+→ Select "add-user-auth" (Recommended)
 ```
 
-**出力例**:
+**Output**:
 ```
-## 作業ブランチ作成完了
+## Branch Creation Complete
 
-**ブランチ名**: add-user-auth
-**ベースブランチ**: main
+**Branch Name**: add-user-auth
+**Base Branch**: main
 
-作業を開始できます。
-変更をコミットする際は `/git commit` を使用してください。
+You can now start working.
+Use `/git commit` to commit changes.
 ```
 
-### 2. コミット・プッシュ
+### 2. Commit and Push
 
-#### シナリオ: 変更をConventional Commits形式でコミットしてプッシュ
+**Scenario**: Commit changes with conventional commit format
 
 ```bash
-# 作業ブランチで変更を加える
-# （コードを書く）
+# Make changes
+# (write code)
 
-# コミット
+# Commit
 /git commit
 ```
 
-**実行内容**:
-1. 変更を分析（git status、git diff）
-2. Conventional Commits形式のメッセージを自動生成
-3. ユーザーに確認
-4. 機密ファイルを除外してステージング
-5. コミット・プッシュ
-
-**対話例**:
+**Output**:
 ```
-以下のメッセージでコミットします。よろしいですか？
+## Commit Complete
 
-feat: ユーザー認証機能を追加
+**Branch**: add-user-auth
+**Commit Message**: feat: Add user authentication feature
+**Changed Files**: 3 files
 
-Co-Authored-By: Claude (jp.anthropic.claude-sonnet-4-5-20250929-v1:0) <noreply@anthropic.com>
-
-変更ファイル:
-- src/auth/login.ts
-- src/auth/register.ts
-- src/types/user.ts
-
-→ 「はい、コミットする」を選択
+Changes have been pushed to remote.
 ```
 
-**出力例**:
-```
-## コミット完了
+### 3. Delete Merged Branch
 
-**ブランチ**: add-user-auth
-**コミットメッセージ**: feat: ユーザー認証機能を追加
-**変更ファイル**: 3件
-
-変更がリモートにプッシュされました。
-```
-
-### 3. ブランチ削除
-
-#### シナリオ: マージ済みブランチを削除
+**Scenario**: Delete branch after merge
 
 ```bash
-# 任意のブランチから実行
 /git branch-delete
 ```
 
-**実行内容**:
-1. マージ済みブランチの一覧を取得
-2. ユーザーに削除対象を選択させる
-3. mainブランチに切り替え
-4. リモートとローカルのブランチを削除
-
-**対話例**:
+**Interaction**:
 ```
-削除するブランチを選択してください。
-→ 「add-user-auth」を選択（マージ済み）
+Q: Select branch to delete.
+→ Select "add-user-auth" (Merged)
 ```
 
-**出力例**:
+**Output**:
 ```
-## ブランチ削除完了
+## Branch Deletion Complete
 
-**削除したブランチ**: add-user-auth
+**Deleted Branch**: add-user-auth
 
-### 実行内容
-- リモートブランチ 'origin/add-user-auth' を削除しました
-- ローカルブランチ 'add-user-auth' を削除しました
-- mainブランチに切り替えました
-- 最新のコードを取得しました
+### Actions Performed
+- Deleted remote branch 'origin/add-user-auth'
+- Deleted local branch 'add-user-auth'
+- Switched to main branch
+- Fetched latest code
 ```
 
-#### シナリオ: 特定のブランチを指定して削除
+### 4. Create Worktree
+
+**Scenario**: Create worktree for urgent bug fix
 
 ```bash
-# ブランチ名を指定
-/git branch-delete old-feature
-```
-
-**実行内容**:
-1. 指定されたブランチがマージ済みか確認
-2. マージ済みの場合のみ削除
-
-### 4. ワークツリー作成
-
-#### シナリオ: 緊急バグ修正のためのワークツリーを作成
-
-```bash
-# メインリポジトリで実行
+# From main repository
 /git worktree-create
 ```
 
-**実行内容**:
-1. 作業目的をヒアリング
-2. ブランチ名を3つ提案
-3. ワークツリーパスを決定（`{親ディレクトリ}/{リポジトリ名}-{ブランチ名}`）
-4. ユーザーに確認してワークツリーを作成
-
-**対話例**:
+**Interaction**:
 ```
-このワークツリーで何を実装・修正しますか？
-→ 「バグ修正」を選択
+Q: What will you implement or fix in this worktree?
+→ Select "Bug Fix"
 
-詳細を教えてください。
-→ 「ログイン画面のバグ」と入力
+Q: Please provide details.
+→ Enter "login page bug"
 
-ブランチ名を選択してください。
-→ 「fix-login-page」を選択
+Q: Select branch name.
+→ Select "fix-login-page"
 
-以下のパスにワークツリーを作成します。よろしいですか？
-パス: <workspace-path>/nab-agents-<branch-name>
-ブランチ: fix-login-page
-ベース: main
-→ 「はい、作成する」を選択
+Q: Create worktree at the following path. OK?
+→ Select "Yes, create it"
 ```
 
-**出力例**:
+**Output**:
 ```
-## ワークツリー作成完了
+## Worktree Creation Complete
 
-**パス**: <workspace-path>/nab-agents-<branch-name>
-**ブランチ**: fix-login-page
-**ベースブランチ**: main
+**Path**: <workspace-path>/nab-agents-fix-login-page
+**Branch**: fix-login-page
+**Base Branch**: main
 
-### 移動コマンド
-cd <workspace-path>/nab-agents-<branch-name>
+### Move to Worktree
+cd <workspace-path>/nab-agents-fix-login-page
 
-移動後、作業を開始できます。
-変更をコミットする際は `/git commit` を使用してください。
+You can now start working.
+Use `/git commit` to commit changes.
 ```
 
-### 5. ワークツリー削除
+### 5. Delete Worktree
 
-#### シナリオ: 作業完了後のワークツリーを削除
+**Scenario**: Delete worktree after completing work
 
 ```bash
-# 任意の場所から実行
 /git worktree-delete
 ```
 
-**実行内容**:
-1. 既存のワークツリー一覧を表示
-2. ユーザーに削除対象を選択させる
-3. 未コミット変更がある場合は警告
-4. ワークツリーを削除
-5. マージ済みブランチの削除を提案
-
-**対話例**:
+**Interaction**:
 ```
-削除するワークツリーを選択してください。
-→ 「<workspace-path>/nab-agents-<branch-name>」を選択
+Q: Select worktree to delete.
+→ Select "<workspace-path>/nab-agents-fix-login-page"
 
-ブランチ「fix-login-page」はマージ済みです。
-このブランチも削除しますか？
-→ 「はい、削除する」を選択（ローカルとリモートから削除）
+Q: Branch "fix-login-page" is merged. Delete this branch too?
+→ Select "Yes, delete it"
 ```
 
-**出力例**:
+**Output**:
 ```
-## ワークツリー削除完了
+## Worktree Deletion Complete
 
-**削除したワークツリー**: <workspace-path>/nab-agents-<branch-name>
-**ブランチ**: fix-login-page
+**Deleted Worktree**: <workspace-path>/nab-agents-fix-login-page
+**Branch**: fix-login-page
 
-### 実行内容
-- ワークツリー '<workspace-path>/nab-agents-<branch-name>' を削除しました
-- ローカルブランチ 'fix-login-page' を削除しました
-- リモートブランチ 'origin/fix-login-page' を削除しました
+### Actions Performed
+- Deleted worktree '<workspace-path>/nab-agents-fix-login-page'
+- Deleted local branch 'fix-login-page'
+- Deleted remote branch 'origin/fix-login-page'
 ```
 
-#### シナリオ: 特定のワークツリーを指定して削除
+## Advanced Scenarios
+
+### 6. Auto-exclude Sensitive Files
+
+**Scenario**: Commit includes .env file
 
 ```bash
-# ワークツリーパスを指定
-/git worktree-delete <workspace-path>/nab-agents-<branch-name>
-```
-
-## 高度な使用例
-
-### 6. 機密ファイルの自動除外
-
-#### シナリオ: .envファイルが含まれる変更をコミット
-
-```bash
-# .envファイルを含む変更
 /git commit
 ```
 
-**実行内容**:
-1. 機密ファイル（.env）を検出
-2. 警告を表示
-3. 機密ファイルを除外してコミット
-
-**出力例**:
+**Output**:
 ```
-警告: 以下の機密ファイルが含まれています:
+Warning: The following sensitive files were detected:
 - .env
 - config/secrets.yml
 
-これらのファイルはコミットから除外されます。
+These files will be excluded from the commit.
 
-## コミット完了
+## Commit Complete
 
-**ブランチ**: add-feature
-**コミットメッセージ**: feat: 新機能を追加
-**変更ファイル**: 5件（機密ファイル2件を除外）
+**Branch**: add-feature
+**Commit Message**: feat: Add new feature
+**Changed Files**: 5 files (2 sensitive files excluded)
 ```
 
-### 7. 未コミット変更があるワークツリーの削除
+### 7. Delete Worktree with Uncommitted Changes
 
-#### シナリオ: 変更を保存せずにワークツリーを削除
+**Scenario**: Worktree has uncommitted changes
 
 ```bash
-/git worktree-delete <workspace-path>/nab-agents-<branch-name>
+/git worktree-delete <workspace-path>/nab-agents-experimental
 ```
 
-**実行内容**:
-1. 未コミット変更を検出
-2. 警告を表示してユーザーに確認
-
-**対話例**:
+**Interaction**:
 ```
-ワークツリー「<workspace-path>/nab-agents-<branch-name>」に未コミットの変更があります。
-削除すると、これらの変更は失われます。本当に削除しますか？
+Q: Worktree has uncommitted changes. Deletion will lose these changes. Delete anyway?
 
-変更一覧:
+Changes:
 M  src/experimental.ts
 ?? src/test.ts
 
-→ 「はい、削除する」または「いいえ、キャンセル」を選択
+→ Select "Yes, delete it" or "No, cancel"
 ```
 
-### 8. プッシュ失敗時の自動リカバリ
+### 8. Auto-recovery from Push Failure
 
-#### シナリオ: リモートに新しいコミットがありプッシュが失敗
+**Scenario**: Remote has new commits, push fails
 
 ```bash
 /git commit
 ```
 
-**実行内容**:
-1. コミット成功
-2. プッシュ失敗（rejected）
-3. 自動的にrebaseして再プッシュ
-
-**出力例**:
+**Output**:
 ```
-コミット完了。リモートにプッシュ中...
-リモートに新しいコミットがあります。rebaseして再プッシュします...
+Commit complete. Pushing to remote...
+Remote has new commits. Rebasing and retrying push...
 
-## コミット完了
+## Commit Complete
 
-**ブランチ**: add-feature
-**コミットメッセージ**: feat: 新機能を追加
-**変更ファイル**: 3件
+**Branch**: add-feature
+**Commit Message**: feat: Add new feature
+**Changed Files**: 3 files
 
-変更がリモートにプッシュされました。
+Changes have been pushed to remote.
 ```
 
-## エラー時の対応例
+## Error Handling Examples
 
-### ケース1: main以外から作業ブランチを作成しようとした
+### Not on Main Branch
 
 ```bash
 git checkout feature-branch
 /git branch-create
 ```
 
-**出力**:
+**Output**:
 ```
-エラー: 作業ブランチはmainブランチから作成してください。
-現在のブランチ: feature-branch
+Error: Working branches must be created from the main branch.
+Current branch: feature-branch
 
-mainブランチに切り替えるには:
+To switch to main:
 git checkout main
 ```
 
-### ケース2: 未マージブランチを削除しようとした
+### Unmerged Branch Deletion Attempt
 
 ```bash
 /git branch-delete unmerged-branch
 ```
 
-**出力**:
+**Output**:
 ```
-エラー: ブランチ「unmerged-branch」はまだマージされていません。
+Error: Branch "unmerged-branch" is not yet merged.
 
-マージされていないブランチを削除する場合は、手動で強制削除してください:
+To force delete unmerged branches, use manual command:
 git branch -D unmerged-branch
 
-注意: 強制削除すると、マージされていない変更が失われます。
+Warning: Force deletion will lose unmerged changes.
 ```
 
-### ケース3: 変更がない状態でコミットしようとした
+### No Changes to Commit
 
 ```bash
 /git commit
 ```
 
-**出力**:
+**Output**:
 ```
-エラー: コミットする変更がありません。
+Error: No changes to commit.
 
-現在の状態を確認:
+Check current status:
 git status
 ```
 
-### ケース4: ブランチ名が既に存在
+### Branch Name Already Exists
 
 ```bash
 /git branch-create
-# → ブランチ名「add-feature」を選択
+# → Select "add-feature" → Already exists
 ```
 
-**出力**:
+**Output**:
 ```
-エラー: ブランチ「add-feature」は既に存在します。
+Error: Branch "add-feature" already exists.
 
-別のブランチ名を使用するか、既存ブランチを削除してください:
+Use a different name or delete the existing branch:
 git branch -d add-feature
 ```
 
-## 実際のワークフロー例
+## Complete Development Workflow
 
-### フルサイクル: 機能開発からマージまで
+### Full Cycle: Feature Development to Merge
 
 ```bash
-# 1. 作業ブランチを作成
+# 1. Create working branch
 /git branch-create
-# → 「新機能の追加」→「ユーザープロフィール機能」→「add-user-profile」
+# → "New Feature" → "user profile feature" → "add-user-profile"
 
-# 2. 機能を実装
-# （コードを書く）
+# 2. Implement feature
+# (write code)
 
-# 3. コミット
+# 3. Commit
 /git commit
-# → コミット完了、自動プッシュ
+# → Auto-committed and pushed
 
-# 4. MRを作成
+# 4. Create MR
 /mr create
-# → MR作成完了
+# → MR created
 
-# 5. レビューコメントに対応
+# 5. Handle review comments
 /mr resolve
-# → 修正完了、リプライ送信
+# → Fixed and replied
 
-# 6. マージ
+# 6. Merge
 /mr merge
-# → マージ完了
+# → Merged
 
-# 7. ブランチを削除
+# 7. Delete branch
 /git branch-delete
-# → ブランチ削除完了
+# → Branch deleted
 ```
 
-### ワークツリーを使った並行作業
+### Parallel Work with Worktree
 
 ```bash
-# メインリポジトリで機能A開発中
+# Main repository: developing feature-a
 cd <workspace-path>/nab-agents
-# ブランチ: add-feature-a
+# Branch: add-feature-a
 
-# 緊急バグ修正のためワークツリー作成
+# Create worktree for urgent bug fix
 /git worktree-create
-# → fix-critical-bug ワークツリー作成
+# → fix-critical-bug worktree created
 
-# ワークツリーに移動してバグ修正
-cd <workspace-path>/nab-agents-<branch-name>
-# （バグを修正）
+# Move to worktree and fix bug
+cd <workspace-path>/nab-agents-fix-critical-bug
+# (fix bug)
 /git commit
 /mr create
 /mr merge
 
-# ワークツリーを削除
+# Delete worktree
 /git worktree-delete
-# → ワークツリー削除完了
+# → Worktree deleted
 
-# メインリポジトリに戻って機能A開発を続行
+# Return to main repository and continue feature-a
 cd <workspace-path>/nab-agents
-# （機能Aの開発を続ける）
+# (continue feature-a development)
 ```
 
-### 複数ブランチの並行開発
+## Team Development Tips
 
-```bash
-# メインリポジトリ: feature-a開発
-cd <workspace-path>/nab-agents
-git checkout add-feature-a
-
-# ワークツリー1: feature-b開発
-/git worktree-create
-# → <workspace-path>/nab-agents-<branch-name>
-
-# ワークツリー2: feature-c開発
-/git worktree-create
-# → <workspace-path>/nab-agents-<branch-name>
-
-# それぞれで独立して作業
-# 各ワークツリーで /git commit, /mr create を実行
-
-# 作業完了後、ワークツリーを削除
-/git worktree-delete
-# → feature-b, feature-c のワークツリーを順次削除
-```
-
-## チーム開発でのヒント
-
-1. **ブランチ命名規則**:
-   - `add-`: 新機能追加
-   - `fix-`: バグ修正
-   - `refactor-`: リファクタリング
-   - `docs-`: ドキュメント更新
-
-2. **コミットの粒度**:
-   - 目的単位でコミット
-   - 大きな変更は複数のコミットに分割
-   - `/git commit` で自動的に適切なメッセージが生成される
-
-3. **ワークツリーの活用**:
-   - 緊急バグ修正: 作業中のブランチを残してワークツリーで修正
-   - 並行開発: 複数の機能を同時進行
-   - レビュー対応: メインの作業を残してワークツリーでレビュー対応
-
-4. **ブランチのクリーンアップ**:
-   - MRマージ後は `/git branch-delete` で定期的にクリーンアップ
-   - マージ済みブランチのみ削除される（安全）
-
-## カスタマイズ例
-
-### プロジェクト固有のワークフロー
-
-プロジェクトによっては、SKILL.mdをフォークして以下のようなカスタマイズが可能です:
-
-1. **ブランチ命名規則のカスタマイズ**:
-   - チケット番号を含める（例: `PROJ-123-add-feature`）
-   - チーム名をプレフィックスに追加
-
-2. **コミットメッセージテンプレート**:
-   - プロジェクト固有のルールを追加
-   - Jiraチケット番号の自動挿入
-
-3. **自動テスト実行**:
-   - コミット前に自動的にテストを実行
-   - テストが失敗した場合はコミットを中断
-
-4. **通知の追加**:
-   - Slack等への通知をフックで実装
-
-詳細なカスタマイズ方法は、Claude Codeの公式ドキュメントを参照してください。
+1. **Branch naming**: Use consistent prefixes (`add-`, `fix-`, `refactor-`, `docs-`)
+2. **Commit granularity**: One purpose per commit; split large changes
+3. **Worktree usage**:
+   - Urgent bug fixes while preserving current work
+   - Parallel development of multiple features
+   - Review response without interrupting main work
+4. **Branch cleanup**: Use `/git branch-delete` regularly after merges

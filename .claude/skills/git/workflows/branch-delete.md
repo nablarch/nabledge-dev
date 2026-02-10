@@ -1,157 +1,157 @@
-# ブランチ削除ワークフロー
+# Branch Deletion Workflow
 
-このワークフローは、マージ済みブランチをローカルとリモートから削除します。
+This workflow deletes merged branches from local and remote repositories.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - AskUserQuestion
 
-## 実行ステップ
+## Execution Steps
 
-### 1. 削除対象ブランチの決定
+### 1. Determine Target Branch
 
-**1.1 引数の確認**
+**1.1 Check Arguments**
 
-引数が指定されている場合、それを削除対象とする。
-引数がない場合、次のステップでユーザーに選択させる。
+If argument is specified, use it as target.
+If no argument, proceed to next step to let user select.
 
-**1.2 削除可能なブランチの取得**
+**1.2 Get Deletable Branches**
 
 ```bash
 git branch --merged main
 ```
 
-結果からmainブランチを除外し、削除可能なブランチのリストを作成。
+Exclude main branch from results to create list of deletable branches.
 
-ブランチがない場合:
+If no branches:
 ```
-情報: 削除可能なマージ済みブランチがありません。
+Info: No merged branches to delete.
 
-マージ済みブランチの一覧を確認:
+Check merged branches:
 git branch --merged main
 ```
 
-**1.3 削除対象の選択（引数がない場合）**
+**1.3 Select Target (if no argument)**
 
-AskUserQuestionでブランチを選択:
+Use AskUserQuestion to select branch:
 
 ```
-質問: 削除するブランチを選択してください。
-header: "ブランチ削除"
-options:
-  - label: "{branch1}"
-    description: "マージ済み"
-  - label: "{branch2}"
-    description: "マージ済み"
-  - label: "{branch3}"
-    description: "マージ済み"
+Question: Select branch to delete.
+Header: "Delete Branch"
+Options:
+  - Label: "{branch1}"
+    Description: "Merged"
+  - Label: "{branch2}"
+    Description: "Merged"
+  - Label: "{branch3}"
+    Description: "Merged"
 ```
 
-### 2. 削除前チェック
+### 2. Pre-deletion Checks
 
-**2.1 mainブランチの保護**
+**2.1 Protect Main Branch**
 
-削除対象が`main`または`master`の場合はエラー終了:
+If target is `main` or `master`, exit with error:
 ```
-エラー: mainブランチは削除できません。
+Error: Cannot delete main branch.
 ```
 
-**2.2 マージ済み確認**
+**2.2 Verify Merged Status**
 
 ```bash
 git branch --merged main | grep "^  {branch_name}$"
 ```
 
-マージされていない場合はエラー終了:
+If not merged, exit with error:
 ```
-エラー: ブランチ「{branch_name}」はまだマージされていません。
+Error: Branch "{branch_name}" is not yet merged.
 
-マージされていないブランチを削除する場合は、手動で強制削除してください:
+To force delete unmerged branches, use manual command:
 git branch -D {branch_name}
 
-注意: 強制削除すると、マージされていない変更が失われます。
+Warning: Force deletion will lose unmerged changes.
 ```
 
-**2.3 カレントブランチの確認**
+**2.3 Check Current Branch**
 
 ```bash
 git branch --show-current
 ```
 
-カレントブランチが削除対象の場合、mainブランチに切り替え:
+If current branch is the target, switch to main:
 ```bash
 git checkout main
 ```
 
-### 3. mainブランチの更新
+### 3. Update Main Branch
 
 ```bash
 git fetch origin main
 git pull origin main
 ```
 
-### 4. ブランチの削除
+### 4. Delete Branch
 
-**4.1 リモートブランチの削除**
+**4.1 Delete Remote Branch**
 
 ```bash
 git push origin --delete {branch_name}
 ```
 
-リモートブランチが存在しない場合のエラーは無視（警告のみ表示）:
+If remote branch doesn't exist, ignore error (show warning only):
 ```
-警告: リモートブランチ「{branch_name}」は既に削除されています。
+Warning: Remote branch "{branch_name}" is already deleted.
 ```
 
-権限エラーの場合:
+If permission error:
 ```
-エラー: リモートブランチの削除に失敗しました。
-リポジトリへの書き込み権限を確認してください。
+Error: Failed to delete remote branch.
+Please verify you have write access to the repository.
 
-ローカルブランチのみ削除する場合:
+To delete local branch only:
 git branch -d {branch_name}
 ```
 
-**4.2 ローカルブランチの削除**
+**4.2 Delete Local Branch**
 
 ```bash
 git branch -d {branch_name}
 ```
 
-### 5. リモートブランチ情報の更新
+### 5. Update Remote Branch Info
 
 ```bash
 git fetch --prune
 ```
 
-### 6. 結果表示
+### 6. Display Result
 
 ```
-## ブランチ削除完了
+## Branch Deletion Complete
 
-**削除したブランチ**: {branch_name}
+**Deleted Branch**: {branch_name}
 
-### 実行内容
-- リモートブランチ 'origin/{branch_name}' を削除しました
-- ローカルブランチ '{branch_name}' を削除しました
-- mainブランチに切り替えました
-- 最新のコードを取得しました
+### Actions Performed
+- Deleted remote branch 'origin/{branch_name}'
+- Deleted local branch '{branch_name}'
+- Switched to main branch
+- Fetched latest code
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|--------|------|
-| 削除可能なブランチがない | マージ済みブランチを確認 |
-| mainブランチの削除試行 | エラーメッセージを表示して終了 |
-| 未マージブランチ | 手動での強制削除を案内 |
-| リモートブランチが存在しない | 警告のみ表示してローカル削除を継続 |
-| 権限不足 | リポジトリの権限を確認するよう案内 |
+| Error | Response |
+|-------|----------|
+| No deletable branches | Check merged branches |
+| Attempted to delete main | Display error and exit |
+| Unmerged branch | Guide to manual force deletion |
+| Remote branch doesn't exist | Show warning only, continue with local deletion |
+| Insufficient permissions | Guide to check repository permissions |
 
-## 注意事項
+## Important Notes
 
-1. **絵文字の使用**: ユーザーが明示的に要求しない限り、絵文字を使わない
-2. **安全性優先**: マージ済みブランチのみ削除、未マージは強制削除を案内
-3. **mainブランチの保護**: mainブランチは削除を拒否
-4. **リモート優先**: リモートブランチを先に削除してから、ローカルブランチを削除
+1. **No emojis**: Never use emojis unless explicitly requested by user
+2. **Safety first**: Only delete merged branches, guide to manual force deletion for unmerged
+3. **Main branch protection**: Refuse deletion of main branch
+4. **Remote priority**: Delete remote branch first, then local branch

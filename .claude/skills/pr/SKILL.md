@@ -1,132 +1,135 @@
 ---
 name: pr
-description: GitHub PRの作成・レビュー対応・マージを統合的に実行する。「PR作って」「レビュー対応して」「マージして」などで使用。サブコマンドで機能を指定可能（create|resolve|merge）。PR番号指定なしの場合、カレントブランチから自動検索。gh CLI必須。
-argument-hint: [create|resolve|merge] [PR番号]
-allowed-tools: Bash, Task, AskUserQuestion, Read
+description: Unified orchestrator for GitHub PR operations (create/resolve/merge). Use with commands like "create PR", "respond to reviews", "merge PR". Supports subcommands (create/resolve/merge). Without PR number, automatically detects from current branch.
+argument-hint: [create|resolve|merge] [PR number]
+allowed-tools: Bash, Task, AskUserQuestion
 ---
 
-# GitHub PR統合管理（オーケストレーター）
+# GitHub PR Unified Management (Orchestrator)
 
-このスキルは、GitHub PRに関する3つの操作を統合的に実行します:
-- **create**: カレントブランチからmainへのPRを作成
-- **resolve**: レビューコメントに対して修正→コミット→リプライ
-- **merge**: PRをマージし、ブランチをクリーンアップ
+This skill executes three GitHub PR operations in an integrated manner:
+- **create**: Create PR from current branch to main
+- **resolve**: Fix → Commit → Reply to unresolved review comments
+- **merge**: Merge PR and cleanup branches
 
-各操作は、Taskツールで別コンテキストの専用ワークフローを実行します。
+Each operation executes a dedicated workflow in a separate context using the Task tool.
 
-## 実行フロー
+## Execution Flow
 
-### 1. 引数解析
+### 1. Argument Parsing
 
-`$ARGUMENTS`を解析してモードとPR番号を判定:
+Parse `$ARGUMENTS` to determine mode and PR number:
 
 ```javascript
-// パターン1: /pr → 引数なし → AskUserQuestionでモード選択
-// パターン2: /pr create → mode="create", pr_number=null
-// パターン3: /pr resolve 123 → mode="resolve", pr_number=123
-// パターン4: /pr 123 → mode="resolve", pr_number=123
-// パターン5: /pr merge → mode="merge", pr_number=null
+// Pattern 1: /pr → no args → Select mode with AskUserQuestion
+// Pattern 2: /pr create → mode="create", pr_number=null
+// Pattern 3: /pr resolve 123 → mode="resolve", pr_number=123
+// Pattern 4: /pr 123 → mode="resolve", pr_number=123
+// Pattern 5: /pr merge → mode="merge", pr_number=null
 ```
 
-**引数なしの場合**: まずカレントブランチのPRを検索してコンテキストを取得し、AskUserQuestionツールでモードを選択:
-- PR検索結果に基づいて推奨オプションを提示
-- 質問: "どのPR操作を実行しますか？"
-- 選択肢（頻度順、推奨オプションを最初に表示）:
-  1. PRが存在する場合: "レビュー対応 (resolve) (推奨)" を最初に表示
-  2. PRが存在しない場合: "PR作成 (create) (推奨)" を最初に表示
-  3. その他の選択肢を頻度順に表示: "レビュー対応 (resolve)", "PR作成 (create)", "マージ (merge)"
+**When no arguments provided**: First search for PR from current branch to get context, then select mode with AskUserQuestion tool:
+- Present recommended options based on PR search results
+- Question: "Which PR operation would you like to execute?"
+- Options (ordered by frequency, recommended option first):
+  1. If PR exists: Show "Respond to reviews (resolve) (Recommended)" first
+  2. If PR doesn't exist: Show "Create PR (create) (Recommended)" first
+  3. Other options in frequency order: "Respond to reviews (resolve)", "Create PR (create)", "Merge (merge)"
 
-### 2. リポジトリ情報取得
+### 2. Get Repository Information
 
 ```bash
-git remote get-url origin
+gh repo view --json nameWithOwner -q .nameWithOwner
 ```
 
-GitHub CLIがリポジトリ情報を自動認識。
+Output format: `owner/repo`
 
-### 3. PR自動検索（pr_number=nullの場合）
+### 3. Auto-detect PR (when pr_number=null)
 
-カレントブランチのPRを検索:
+Search for PR from current branch:
 
 ```bash
-git branch --show-current
-gh pr list --head "{current_branch}" --state open --json number,title,url --jq '.[0]'
+current_branch=$(git branch --show-current)
+gh pr list --head "$current_branch" --json number,state --jq '.[0].number'
 ```
 
-**判定ロジック**:
-- 結果が1件以上 + pr_number=null → pr_number={PR番号}
-- 結果が0件 + pr_number=null → エラー（PRが見つからない場合）
+**Detection Logic**:
+- Result exists + pr_number=null → pr_number={detected PR number}
+- Result empty + pr_number=null → Continue if mode="create", otherwise error
 
-### 4. ワークフロー実行
+### 4. Execute Workflow
 
-modeに応じて、Taskツールで専用ワークフローを実行:
+Execute dedicated workflow with Task tool according to mode:
 
-#### A. create モード
-
-```
-Task
-  subagent_type: "general-purpose"
-  description: "PR作成フローを実行"
-  prompt: "以下のワークフローに従って、GitHub PRを作成してください。
-
-{workflows/create.mdの内容を読み込んで展開}
-
-## 入力情報
-- カレントブランチ: {current_branch}
-"
-```
-
-**workflows/create.mdを読み込んで実行**: Readツールで`workflows/create.md`を読み込み、その内容をpromptに含める。
-
-#### B. resolve モード
+#### A. create Mode
 
 ```
 Task
   subagent_type: "general-purpose"
-  description: "レビュー対応フローを実行"
-  prompt: "以下のワークフローに従って、GitHub PRのレビューコメントに対応してください。
+  description: "Execute PR creation flow"
+  prompt: "Please create a GitHub PR following the workflow below.
 
-{workflows/resolve.mdの内容を読み込んで展開}
+{Load and expand contents of workflows/create.md}
 
-## 入力情報
-- PR番号: {pr_number}
-- カレントブランチ: {current_branch}
+## Input Information
+- Repository: {owner/repo}
+- Current Branch: {current_branch}
 "
 ```
 
-**workflows/resolve.mdを読み込んで実行**
+**Load and execute workflows/create.md**: Use Read tool to load `workflows/create.md` and include its contents in the prompt.
 
-#### C. merge モード
+#### B. resolve Mode
 
 ```
 Task
   subagent_type: "general-purpose"
-  description: "マージフローを実行"
-  prompt: "以下のワークフローに従って、GitHub PRをマージしてください。
+  description: "Execute review response flow"
+  prompt: "Please respond to GitHub PR review comments following the workflow below.
 
-{workflows/merge.mdの内容を読み込んで展開}
+{Load and expand contents of workflows/resolve.md}
 
-## 入力情報
-- PR番号: {pr_number}
+## Input Information
+- Repository: {owner/repo}
+- PR Number: {pr_number}
+- Current Branch: {current_branch}
 "
 ```
 
-**workflows/merge.mdを読み込んで実行**
+**Load and execute workflows/resolve.md**
 
-## 実装の注意点
+#### C. merge Mode
 
-1. **引数なしの場合**: PR検索結果に基づいて推奨オプションを提示し、AskUserQuestionでモードを選択（ユーザーフレンドリー）
-2. **エラーハンドリング**: PRが見つからない場合やgh CLIが利用できない場合は、明確なエラーメッセージを表示
-3. **ブランチ確認**: mainブランチからcreateを実行しようとした場合はエラー
-4. **Taskツールの使用**: 各ワークフローは別コンテキストで実行されるため、オーケストレーター側では結果を受け取るのみ
+```
+Task
+  subagent_type: "general-purpose"
+  description: "Execute merge flow"
+  prompt: "Please merge the GitHub PR following the workflow below.
 
-## エラーハンドリング
+{Load and expand contents of workflows/merge.md}
 
-| エラー | 対応 |
-|--------|------|
-| gh CLIが利用不可 | `gh auth login`で認証を実行 |
-| GitHubリポジトリでない | GitHubリポジトリであることを確認 |
-| PR番号無効/PRが見つからない | 正しいPR番号を確認する |
-| mainブランチからcreate実行 | feature/issueブランチから実行するよう案内 |
+## Input Information
+- Repository: {owner/repo}
+- PR Number: {pr_number}
+"
+```
 
-詳細な使用例は`assets/examples.md`、APIリファレンスは`assets/reference.md`を参照してください。
+**Load and execute workflows/merge.md**
+
+## Implementation Notes
+
+1. **When no arguments provided**: Present recommended options based on PR search results, select mode with AskUserQuestion (user-friendly)
+2. **Error Handling**: Display clear error messages when repository information cannot be retrieved or PR search fails
+3. **Branch Validation**: Error if attempting to execute create from main branch
+4. **Task Tool Usage**: Each workflow executes in a separate context, orchestrator only receives results
+
+## Error Handling
+
+| Error | Response |
+|-------|----------|
+| gh CLI unavailable | Guide user to run `gh auth login` |
+| Cannot get git remote | Verify repository is on GitHub |
+| Invalid PR number / PR not found | Verify correct PR number |
+| Execute create from main branch | Guide to execute from feature/issue branch |
+
+For detailed usage examples, see `assets/examples.md`. For reference, see `assets/reference.md`.
