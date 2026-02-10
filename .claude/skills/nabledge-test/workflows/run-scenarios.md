@@ -1,468 +1,238 @@
 # Run Scenarios Workflow
 
-Execute test scenarios for specified nabledge skill version.
+## Mission Success Criteria
 
-## Your Mission
+You PASS this workflow if and only if:
+1. Result file exists at `.claude/skills/nabledge-test/results/{timestamp}/{category}/{scenario_id}.md`
+2. Work log exists at `work/{YYYYMMDD}/scenario-test.md`
 
-You are a **Test Executor** for the nabledge skill. Your job:
-1. Load a test scenario from JSON
-2. Call the nabledge skill using the Skill tool
-3. Capture its output
-4. Evaluate the output
-5. Save results to files
-
-**Success criteria**: Two files created:
-- Result file: `.claude/skills/nabledge-test/results/{timestamp}/{category}/{scenario_id}.md`
-- Work log: `work/{YYYYMMDD}/scenario-test.md`
+If either file is missing when you finish, you FAILED.
 
 ---
 
-## Input
+## Input Parameters
 
-- **version**: "6" or "5"
-- **scenario_id**: (Optional) Specific scenario to test, or null for all
-
-## Output
-
-- Scenario result files in `results/YYYYMMDD-HHMM/<category>/<scenario-id>.md`
-- Work log summary in `work/YYYYMMDD/scenario-test.md`
+- **version**: e.g., "6"
+- **scenario_id**: e.g., "6-handlers-001"
 
 ---
 
-## Execution Checklist
+## STEP 1: Setup
 
-Use this checklist to ensure you complete all steps:
+Create timestamp and directories:
 
-- [ ] 1. Create test session directory with timestamp
-- [ ] 2. Load scenario from JSON file
-- [ ] 3. **Execute nabledge skill** using Skill tool (not direct answer)
-- [ ] 4. Capture complete skill output (do not summarize)
-- [ ] 5. Evaluate output (check sections, keywords)
-- [ ] 6. **Create result file** using Write tool
-- [ ] 7. **Create work log** using Write tool
-- [ ] 8. Display summary to user
+```bash
+timestamp=$(date '+%Y%m%d-%H%M') && \
+mkdir -p .claude/skills/nabledge-test/results/${timestamp} && \
+mkdir -p work/$(date '+%Y%m%d') && \
+echo "${timestamp}" > /tmp/test_timestamp.txt && \
+echo "TIMESTAMP: ${timestamp}"
+```
+
+Save the timestamp value.
 
 ---
 
-## Step-by-Step Execution
+## STEP 2: Load Scenario
 
-### Step 1: Setup
-
-**1.1 Verify scenarios directory exists**
+Load scenario metadata using jq:
 
 ```bash
-ls .claude/skills/nabledge-test/scenarios/${version}/
+jq --arg id "6-handlers-001" '.scenarios[] | select(.id == $id)' .claude/skills/nabledge-test/scenarios/6/keyword-search.json
 ```
 
-Expected: `code-analysis.json`, `keyword-search.json`
-
-If not found:
-```
-Error: No scenarios found for version {version}.
-Available versions: 6 (Nablarch 6)
-```
-
-**1.2 Create test session directory**
-
-```bash
-timestamp=$(date '+%Y%m%d-%H%M')
-mkdir -p .claude/skills/nabledge-test/results/${timestamp}
-echo "Test session: ${timestamp}"
-```
-
-Example output: `Test session: 20260210-2045`
+Extract these values:
+- `id` → scenario_id
+- `category` → category
+- `question` → question
+- `expected_keywords` → expected_keywords (array)
 
 ---
 
-### Step 2: Load Scenario
+## STEP 3: Execute nabledge-6 Skill
 
-**2.1 Determine scenario file from ID pattern**
+⚠️ **Use Skill tool to invoke nabledge-6**
 
-For scenario ID like `6-handlers-001`:
-- Extract version: `6`
-- Extract category: `handlers`
-- Map to file: `handlers` → `keyword-search.json`
-
-Mapping rules:
-- `code-analysis` → `code-analysis.json`
-- `handlers`, `libraries`, `tools`, `processing`, `adapters` → `keyword-search.json`
-
-```bash
-# Example for 6-handlers-001
-scenario_file=".claude/skills/nabledge-test/scenarios/6/keyword-search.json"
 ```
-
-**2.2 Extract scenario data using jq**
-
-```bash
-scenario_json=$(jq --arg id "6-handlers-001" '.scenarios[] | select(.id == $id)' "${scenario_file}")
-category=$(echo "${scenario_json}" | jq -r '.category')
-question=$(echo "${scenario_json}" | jq -r '.question')
-```
-
-Example output:
-```
-category: handlers
-question: データリードハンドラでファイルを読み込むにはどうすればいいですか？
-```
-
-**2.3 Verify scenario exists**
-
-If not found:
-```bash
-echo "Error: Scenario '6-handlers-001' not found."
-echo "Available scenarios:"
-jq -r '.scenarios[].id' scenarios/6/*.json | sort
-```
-
----
-
-### Step 3: Execute Nabledge Skill
-
-**⚠️ CRITICAL: Use Skill tool, not direct answer**
-
-You must invoke the nabledge skill. Do NOT answer the question yourself.
-
-**3.1 Determine workflow type**
-
-Based on category:
-- `code-analysis` → use `code-analysis` workflow
-- `handlers`, `libraries`, `tools`, `processing`, `adapters` → use `keyword-search` workflow
-
-**3.2 Call Skill tool**
-
-Record start time, then call Skill:
-
-```bash
-start_time=$(date '+%Y-%m-%d %H:%M:%S')
-```
-
-**For keyword-search (handlers, libraries, etc.):**
-```
-Skill
+Skill tool:
   skill: "nabledge-6"
   args: "keyword-search
 
-Question: データリードハンドラでファイルを読み込むにはどうすればいいですか？"
+Question: {question from step 2}"
 ```
 
-**For code-analysis:**
-```
-Skill
-  skill: "nabledge-6"
-  args: "code-analysis
-
-Target: path/to/file.java
-Question: この処理の構造を説明してください"
-```
-
-**3.3 Capture skill output**
-
-Store the **complete output** from the Skill tool. This will be evaluated in the next step.
-
-Example of what you'll receive:
-```
-## データリードハンドラでファイルを読み込む方法
-
-DataReadHandlerでファイルを読み込むには...
-[長い説明が続く]
-```
-
-Record end time:
-```bash
-end_time=$(date '+%Y-%m-%d %H:%M:%S')
-```
+**Capture the COMPLETE output** from the Skill tool. Do not summarize.
 
 ---
 
-### Step 4: Evaluate Output
+## STEP 4: Evaluate Output
 
-**4.1 Check expected sections (if defined in scenario)**
+Check each keyword in `expected_keywords` against skill output (case-insensitive):
+- Found → matched list
+- Not found → missing list
 
-```bash
-# Extract expected sections from scenario JSON
-expected_sections=$(echo "${scenario_json}" | jq -r '.expected_output_sections[]? // empty')
-```
+Calculate:
+- `matched_count` = matched list length
+- `total_count` = expected_keywords length
+- `match_percentage` = (matched_count / total_count) * 100
 
-For each expected section, check if it appears in the skill output:
-- Look for markdown headers like `## 概要`, `## 実装手順`
-- Count found vs. missing sections
-
-**4.2 Check expected keywords (if defined in scenario)**
-
-```bash
-expected_keywords=$(echo "${scenario_json}" | jq -r '.expected_keywords[]? // empty')
-```
-
-For each keyword, check if it appears in the skill output (case-insensitive).
-
-Calculate match rate: `keyword_found / keyword_total * 100`
-
-**4.3 Determine status**
-
-Logic:
-- Status starts as `PASS`
-- If keyword match rate < 80%: `PARTIAL`
-- If expected sections are missing: `PARTIAL`
-- If skill output contains "error" or "failed": `FAIL`
+Determine status:
+- If output contains "error" → `FAIL`
+- Else if match_percentage >= 80 → `PASS`
+- Else → `PARTIAL`
 
 ---
 
-### Step 5: Create Result File
+## STEP 5: CREATE RESULT FILE
 
-**⚠️ MANDATORY: Use Write tool to create this file**
+⚠️ **DO THIS NOW. Use Write tool.**
 
-**5.1 Create result directory**
-
-```bash
-result_dir=".claude/skills/nabledge-test/results/${timestamp}/${category}"
-mkdir -p "${result_dir}"
-```
-
-Example: `.claude/skills/nabledge-test/results/20260210-2045/handlers/`
-
-**5.2 Build file path**
+Create directory:
 
 ```bash
-result_file_path="${result_dir}/${scenario_id}.md"
+timestamp=$(cat /tmp/test_timestamp.txt) && \
+mkdir -p .claude/skills/nabledge-test/results/${timestamp}/{category}
 ```
 
-Example: `.claude/skills/nabledge-test/results/20260210-2045/handlers/6-handlers-001.md`
+Call Write tool:
 
-**5.3 Write result file**
+**file_path**: `.claude/skills/nabledge-test/results/{timestamp}/{category}/{scenario_id}.md`
 
-Use Write tool with this content (substitute actual values):
+**content**:
 
 ```markdown
-# Scenario Result: 6-handlers-001
+# Scenario Result: {scenario_id}
 
 ## Metadata
 
 | Item | Value |
 |------|-------|
-| Scenario ID | 6-handlers-001 |
-| Category | handlers |
-| Test Date | 2026-02-10 |
-| Test Time | 20:45:32 |
-| Status | PASS |
+| Scenario ID | {scenario_id} |
+| Category | {category} |
+| Test Date | {YYYY-MM-DD} |
+| Status | {PASS/PARTIAL/FAIL} |
 
 ## Test Input
 
-**Question**: データリードハンドラでファイルを読み込むにはどうすればいいですか？
+**Question**: {question}
 
-**Target**: N/A
+## Evaluation
 
-## Execution Results
+### Expected Keywords: {matched_count}/{total_count} ({match_percentage}%)
 
-### Expected Sections
+**Matched**:
+- {keyword1}
+- {keyword2}
+...
 
-- Overview
-- Implementation Steps
-- Example Code
-
-### Expected Keywords
-
-5/6 (83%)
-
-### Matched Keywords
-- DataReadHandler
-- ファイル読み込み
-- ObjectMapper
-- BatchAction
-- createReader
-
-### Missing Keywords
-- None
+**Missing**:
+- {keyword1}
+...
 
 ## Skill Output
 
 ```
-[Complete output from nabledge-6 skill goes here]
+{PASTE COMPLETE SKILL OUTPUT - DO NOT TRUNCATE}
 ```
 
-## Evaluation
-
-### Status Determination
-
-- Keyword match rate: 83% (≥80%) ✓
-- Expected sections: All found ✓
-- No errors detected ✓
-
-Result: PASS
-
-## Status: PASS
+## Status: {PASS/PARTIAL/FAIL}
 ```
 
-**5.4 Verify file created**
+Verify immediately:
 
 ```bash
-ls -lh "${result_file_path}"
+timestamp=$(cat /tmp/test_timestamp.txt) && \
+ls -lh .claude/skills/nabledge-test/results/${timestamp}/{category}/{scenario_id}.md
 ```
 
-Expected output: `-rw-r--r-- 1 user user 12K Feb 10 20:45 .../6-handlers-001.md`
+If ls fails, you FAILED. Stop and report error.
 
 ---
 
-### Step 6: Create Work Log
+## STEP 6: CREATE WORK LOG
 
-**⚠️ MANDATORY: Use Write tool to create this file**
+⚠️ **DO THIS NOW. Use Write tool.**
 
-**6.1 Create work log directory**
+Call Write tool:
 
-```bash
-work_log_dir="work/$(date '+%Y%m%d')"
-mkdir -p "${work_log_dir}"
-```
+**file_path**: `work/{YYYYMMDD}/scenario-test.md` (e.g., work/20260210/scenario-test.md)
 
-Example: `work/20260210/`
-
-**6.2 Calculate statistics**
-
-For single scenario mode:
-- Total: 1
-- Pass/Fail/Partial: Based on status from Step 4.3
-
-For all scenarios mode:
-- Count results by status
-- Calculate percentages
-
-**6.3 Write work log**
-
-Use Write tool at `work/20260210/scenario-test.md`:
+**content**:
 
 ```markdown
-# Scenario Test: Nablarch 6
+# Scenario Test: Nablarch {version}
 
 ## Metadata
 
-- Date: 2026-02-10
-- Test Session: 20260210-2045
+- Date: {YYYY-MM-DD}
+- Test Session: {timestamp}
 - Total Scenarios: 1
 
 ## Results
 
-| Status | Count | Percentage |
-|--------|-------|------------|
-| Pass   | 1     | 100%       |
-| Fail   | 0     | 0%         |
-| Partial | 0    | 0%         |
+| Status | Count |
+|--------|-------|
+| Pass   | {1 if PASS, else 0} |
+| Fail   | {1 if FAIL, else 0} |
+| Partial | {1 if PARTIAL, else 0} |
 
 ## Scenarios Executed
 
-- 6-handlers-001: PASS
-
-## Key Findings
-
-All tests passed successfully. The nabledge-6 skill correctly answered questions about DataReadHandler file reading.
+- {scenario_id}: {PASS/PARTIAL/FAIL}
 
 ## Details
 
-Full test results: `.claude/skills/nabledge-test/results/20260210-2045/`
+Full test results: `.claude/skills/nabledge-test/results/{timestamp}/`
 
 ## Next Steps
 
-- Review result file for detailed output
-- Run additional scenarios if needed
-- Use `/nabledge-test evaluate-results 20260210-2045` for detailed review
+Use `/nabledge-test evaluate-results {timestamp}` for detailed review.
 ```
+
+Verify immediately:
+
+```bash
+ls -lh work/$(date '+%Y%m%d')/scenario-test.md
+```
+
+If ls fails, you FAILED. Stop and report error.
 
 ---
 
-### Step 7: Display Summary
+## STEP 7: Success Report
 
-Show this summary to the user:
+Verify both files exist:
+
+```bash
+timestamp=$(cat /tmp/test_timestamp.txt) && \
+echo "=== RESULT FILE ===" && \
+ls -lh .claude/skills/nabledge-test/results/${timestamp}/{category}/{scenario_id}.md && \
+echo "=== WORK LOG ===" && \
+ls -lh work/$(date '+%Y%m%d')/scenario-test.md && \
+echo "=== SUCCESS ==="
+```
+
+Display:
 
 ```
 ## Test Execution Complete
 
-✓ Test session: 20260210-2045
-✓ Scenarios executed: 1
-✓ Status: 1 PASS, 0 FAIL, 0 PARTIAL
+✓ Test session: {timestamp}
+✓ Scenario: {scenario_id}
+✓ Status: {PASS/PARTIAL/FAIL}
+✓ Keyword match: {matched_count}/{total_count} ({match_percentage}%)
 
-**Results**:
-- Result file: .claude/skills/nabledge-test/results/20260210-2045/handlers/6-handlers-001.md
-- Work log: work/20260210/scenario-test.md
+**Files created**:
+- Result: .claude/skills/nabledge-test/results/{timestamp}/{category}/{scenario_id}.md
+- Work log: work/{YYYYMMDD}/scenario-test.md
 
 **Next step**:
-/nabledge-test evaluate-results 20260210-2045
+/nabledge-test evaluate-results {timestamp}
 ```
 
 ---
 
-## Error Handling
+## Failure Recovery
 
-| Situation | Action |
-|-----------|--------|
-| Scenario file not found | Display error with available scenario IDs |
-| Scenario ID not in JSON | List all available IDs from that version |
-| Skill tool fails | Record status as FAIL, capture error in result file, continue workflow |
-| Cannot create result file | Display error, show file path, exit |
-| Cannot create work log | Display error, show directory path, exit |
-
----
-
-## Examples
-
-### Example 1: Single Scenario Success
-
-Input: `version=6`, `scenario_id=6-handlers-001`
-
-Flow:
-1. Create `.claude/skills/nabledge-test/results/20260210-2045/`
-2. Load from `scenarios/6/keyword-search.json`
-3. Call `Skill tool: nabledge-6 keyword-search`
-4. Capture output (2000 characters)
-5. Evaluate: 5/6 keywords found (83%), PASS
-6. Write `.../handlers/6-handlers-001.md` (3KB)
-7. Write `work/20260210/scenario-test.md` (500 bytes)
-8. Display summary
-
-Output files:
-- `.claude/skills/nabledge-test/results/20260210-2045/handlers/6-handlers-001.md` ✓
-- `work/20260210/scenario-test.md` ✓
-
-### Example 2: Scenario Not Found
-
-Input: `version=6`, `scenario_id=6-invalid-999`
-
-Flow:
-1. Try to load from JSON
-2. Not found
-3. Display error:
-```
-Error: Scenario '6-invalid-999' not found.
-
-Available scenarios:
-6-adapters-001
-6-code-analysis-001
-6-code-analysis-002
-6-handlers-001
-6-libraries-001
-...
-```
-
----
-
-## Common Mistakes to Avoid
-
-1. ❌ Answering the scenario question yourself instead of calling Skill tool
-2. ❌ Summarizing or filtering the skill output instead of capturing it completely
-3. ❌ Forgetting to create result files using Write tool
-4. ❌ Creating result files but forgetting work log
-5. ❌ Not using absolute paths for file operations
-6. ❌ Not verifying files were actually created
-
-## Success Checklist (Final)
-
-Before reporting completion, verify:
-
-✅ Test session directory created
-✅ Scenario loaded from JSON
-✅ Skill tool invoked (not direct answer)
-✅ Skill output captured completely
-✅ Evaluation performed (sections, keywords, status)
-✅ Result file created using Write tool
-✅ Work log created using Write tool
-✅ Summary displayed to user
-
-If all checkboxes are checked, the test run was successful.
+If you reach this section without completing steps 5 and 6, you FAILED.
+Report which files are missing and why.
