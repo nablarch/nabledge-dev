@@ -57,6 +57,8 @@ This workflow searches the knowledge index (index.toon) using keyword matching t
 
 1. Read knowledge/index.toon (93 entries, format: `Title, hint1 hint2 ..., path.json`)
 2. For each entry, match your extracted keywords against hints:
+   - **Use Level 1 (Technical domain) + Level 2 (Technical component) keywords only**
+   - Level 3 (Functional) keywords are NOT used in this step
    - Case-insensitive matching
    - Partial matching allowed (e.g., "ページ" matches "ページング")
    - Count matched hints per entry
@@ -75,7 +77,12 @@ This workflow searches the knowledge index (index.toon) using keyword matching t
    ```bash
    jq '.index' knowledge/features/libraries/universal-dao.json
    ```
-2. Match your keywords against section hints (same matching rules as Step 1)
+2. Match your keywords against section hints:
+   - **Use Level 2 (Technical component) + Level 3 (Functional) keywords**
+   - Level 1 (Technical domain) keywords are NOT used in this step
+   - Level 2 is reused from Step 1 (acts as a bridge between file and section selection)
+   - Case-insensitive matching, partial matching allowed
+   - Count matched hints per section
 3. Keep sections with ≥1 matched hint
 4. Stop when you have 20-30 candidate sections total
 
@@ -117,9 +124,13 @@ Use the returned sections to answer the user's question (knowledge files only).
 
 **Request**: "ページングを実装したい"
 
-**Step 1**: Extract keywords → Technical domain: ["データベース"], Component: ["DAO", "UniversalDao"], Functional: ["ページング", "per", "page"]
-**Step 1**: Match against index.toon → universal-dao.json (5 hints), database-access.json (2 hints)
-**Step 2**: Extract sections → universal-dao/paging, universal-dao/overview, database-access/query
+**Extract keywords at 3 levels**:
+- Level 1 (Technical domain): ["データベース", "database"]
+- Level 2 (Technical component): ["DAO", "UniversalDao", "O/Rマッパー"]
+- Level 3 (Functional): ["ページング", "paging", "per", "page", "limit", "offset"]
+
+**Step 1**: Match against index.toon using L1+L2 → universal-dao.json (matched: データベース, DAO), database-access.json (matched: データベース)
+**Step 2**: Extract sections using L2+L3 → universal-dao/paging (matched: DAO, ページング, per, page), universal-dao/overview (matched: DAO)
 **Step 3**: Section-judgement → Only universal-dao/paging judged as High (2), others filtered as None
 **Result**: 1 section with pagination API and examples
 
@@ -129,3 +140,9 @@ Use the returned sections to answer the user's question (knowledge files only).
 - Uses Read tool for index.toon and Bash+jq for extracting section indexes
 - Final relevance scoring happens in section-judgement workflow
 - Expected output: 5-15 relevant sections filtered by section-judgement
+
+**Keyword level usage strategy**:
+- **Level 2 acts as a bridge**: Used in both file selection (Step 1) and section selection (Step 2)
+- **File selection (index.toon)**: L1 (broad technical domain) + L2 (specific technology) → narrows down to 10-15 files
+- **Section selection (.index)**: L2 (specific technology) + L3 (specific function) → narrows down to 20-30 sections
+- This two-stage filtering with L2 overlap ensures high precision while maintaining recall
