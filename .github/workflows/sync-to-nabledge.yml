@@ -51,11 +51,6 @@ jobs:
           TRIGGER_COMMIT_SHA="${{ github.sha }}"
           TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
 
-          git commit -m "$(cat <<EOF
-Sync nabledge-6 skill from nabledge-dev
-
-Triggered by: ${TRIGGER_COMMIT_URL}
-EOF
-)"
+          git commit -m "Sync nabledge-6 skill from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
 
           git push origin dummy-to
