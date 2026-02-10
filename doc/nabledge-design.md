@@ -230,34 +230,82 @@ nabledge-6/
 
 ---
 
-### 2.5 検索アーキテクチャ
+### 2.5 検索設計
 
-#### 検索方式
+#### 検索の全体フロー
 
-**keyword-search**:
-index.toonの検索ヒントでキーワードマッチを行います。3段階のキーワード抽出により、技術領域・技術要素・機能の観点から検索します。
+ユーザーの依頼から必要な知識を特定するまでの流れを説明します。
 
-**設計判断**: 現状、keyword-searchだけで十分な検索精度が得られています。将来的に検索精度の向上が必要になった場合は、intent-search（目的→カテゴリ、対象→ファイルで絞り込む方式）の導入を検討します。
+```
+ユーザー依頼（例：「ページングを実装したい」）
+  ↓
+① 3段階キーワード抽出
+  ↓
+② ファイル選定（index.toonで検索）
+  ↓
+③ セクション選定（ファイル内indexで検索）
+  ↓
+④ 関連度判定（High/Partial/None）
+  ↓
+⑤ 検索結果構造化（pointers）
+  ↓
+⑥ コンテキスト管理（上位N件抽出）
+```
 
-#### 検索結果構造（pointers）
+#### ① 3段階キーワード抽出
 
+ユーザーの依頼から、以下の3段階でキーワードを抽出します。
+
+| レベル | 名称 | 説明 | 例 |
+|:-----:|------|------|-----|
+| Level 1 | Technical domain（技術領域） | データベース, バッチ, ハンドラ, Web, REST, テスト など | データベース, database |
+| Level 2 | Technical component（技術要素） | DAO, JDBC, JPA, Bean Validation, JSON, XML など | DAO, UniversalDao, O/Rマッパー |
+| Level 3 | Functional（機能） | ページング, 検索, 登録, 更新, 削除, 接続, コミット など | ページング, paging, per, page, limit, offset |
+
+**例**: 依頼「ページングを実装したい」→ 3段階のキーワードに分解
+
+#### ② ファイル選定（index.toon）
+
+**使用するキーワード**: Level 1（技術領域）+ Level 2（技術要素）
+
+**index.toonの構造**:
+```toon
+# Nabledge-6 Knowledge Index
+
+files[N,]{path,hints}:
+  features/handlers/common/global-error-handler.json, グローバルエラーハンドラ GlobalErrorHandler 未捕捉例外 エラーハンドリング 例外処理
+  features/libraries/universal-dao.json, ユニバーサルDAO UniversalDao CRUD 検索 ページング データベース DAO
+```
+
+- TOON形式でJSONより30-60%トークン削減
+- 93エントリ、約650検索ヒント → 約5-7Kトークン
+- 各ファイルのパスと検索ヒント（Level 1 + Level 2）を記載
+
+**マッチング例**: 「データベース」「DAO」で `universal-dao.json` が候補に
+
+#### ③ セクション選定（ファイル内index）
+
+**使用するキーワード**: Level 2（技術要素）+ Level 3（機能）
+
+**ファイル内indexの構造**:
 ```json
 {
-  "files": [
-    { "id": "F1", "path": "features/libraries/universal-dao.json", "relevance": 2 }
-  ],
-  "sections": [
-    { "file_id": "F1", "section": "paging", "relevance": 2, "matched_hints": ["ページング", "per", "page"] }
+  "index": [
+    { "id": "overview", "hints": ["UniversalDao", "ユニバーサルDAO"] },
+    { "id": "paging", "hints": ["ページング", "paging", "per", "page", "limit", "offset"] },
+    { "id": "search", "hints": ["検索", "search", "条件指定"] }
   ]
 }
 ```
 
-**設計判断**:
-- sections を関連度降順でソートすることで、最重要セクションから読めます
-- files でファイル単位の重要度を把握できます
-- ファイルパスは1回だけ出現し、file_idで参照します（重複排除）
+- 各セクションの検索ヒント（Level 2 + Level 3）を記載
+- セクション単位で関連度を判定
 
-#### 関連度定義
+**マッチング例**: 「ページング」「paging」で `paging` セクションが候補に
+
+#### ④ 関連度判定
+
+ファイルとセクションそれぞれに関連度を付与します。
 
 | レベル | 値 | 判断基準 |
 |:------:|:---:|---------|
@@ -267,66 +315,58 @@ index.toonの検索ヒントでキーワードマッチを行います。3段階
 
 **ファイルの関連度**: そのファイル内のセクション関連度の最大値
 
-**設計判断**: 情報検索分野の標準的なgraded relevanceを採用します。3段階で十分な精度が得られます。
+**例**: `universal-dao.json`
+- `paging` セクション: High (2)
+- `search` セクション: Partial (1)
+- `overview` セクション: Partial (1)
+→ ファイルの関連度 = 2 (最大値)
 
----
+#### ⑤ 検索結果構造化（pointers）
 
-### 2.6 インデックス設計（index.toon）
+検索結果をpointers構造で返します。
 
-#### TOON形式
-
-```toon
-# Nabledge-6 Knowledge Index
-
-files[N,]{path,hints}:
-  features/handlers/common/global-error-handler.json, グローバルエラーハンドラ GlobalErrorHandler 未捕捉例外 エラーハンドリング 例外処理
-  features/libraries/universal-dao.json, ユニバーサルDAO UniversalDao CRUD 検索 ページング
+```json
+{
+  "files": [
+    { "id": "F1", "path": "features/libraries/universal-dao.json", "relevance": 2, "matched_hints": ["データベース", "DAO"] }
+  ],
+  "sections": [
+    { "file_id": "F1", "section": "paging", "relevance": 2, "matched_hints": ["ページング", "paging", "per", "page"] },
+    { "file_id": "F1", "section": "search", "relevance": 1, "matched_hints": ["検索"] }
+  ]
+}
 ```
 
-**構造**:
-- `files[N,]{path,hints}:` → N件の配列、フィールドはpath, hints
-- 各行: `パス, スペース区切りの検索ヒント`
+**構造の特徴**:
+- `sections` を関連度降順でソート → 最重要セクションから読める
+- `files` でファイル単位の重要度を把握
+- ファイルパスは1回だけ出現、`file_id` で参照（重複排除）
+- `matched_hints` で判断根拠を追跡可能
 
-**規模**: 93エントリ、約650検索ヒント → 約5-7Kトークン
+#### ⑥ コンテキスト管理（上位N件抽出）
 
-**設計判断**: TOON形式はJSONより30-60%トークン削減します。LLMフレンドリーで高効率です。
+関連度の高いセクションを抽出します。
 
-#### 検索ヒント設計指針
+| 項目 | 推奨値 | 根拠 |
+|------|--------|------|
+| sections | 上位10件 | 1セクション平均500トークン × 10 = 約5,000トークン（コンテキストの2.5%） |
 
-**3段階のキーワード抽出**:
+**動的調整**:
+- High（2点）のセクションが10件未満 → Partial（1点）も含めて最大15件まで拡張
+- High（2点）のセクションが20件以上 → 上位15件まで拡張
+- コンテキスト使用率が80%超 → セクション数を減らす（最小5件）
 
-検索ヒントは、以下の3段階でキーワードを抽出します。
+**設計判断**:
+- セクション単位で抽出することで、ファイル全体（約7,000トークン）ではなく必要最小限（約500トークン）に抑えます
+- 全60ファイル（約420,000トークン）をコンテキストウィンドウ（200,000トークン）内で運用可能にします
 
-1. **Technical domain（技術領域）**: データベース, バッチ, ハンドラ, Web, REST, テスト など
-2. **Technical component（技術要素）**: DAO, JDBC, JPA, Bean Validation, JSON, XML など
-3. **Functional（機能）**: ページング, 検索, 登録, 更新, 削除, 接続, コミット など
+#### 将来の拡張
 
-**検索ヒントの使い分け**:
-- **ファイル選定（index.toon）**: レベル1（技術領域）とレベル2（技術要素）を使用
-- **セクション選定（各ファイルのindex）**: レベル2（技術要素）とレベル3（機能）を使用
-
-**例**: 依頼「ページングを実装したい」の場合
-- Level 1（技術領域）: ["データベース", "database"]
-- Level 2（技術要素）: ["DAO", "UniversalDao", "O/Rマッパー"]
-- Level 3（機能）: ["ページング", "paging", "per", "page", "limit", "offset"]
-
-→ ファイル選定: Level 1 + Level 2 でマッチング
-→ セクション選定: Level 2 + Level 3 でマッチング
-
-**基本指針**:
-
-| 項目 | 指針 |
-|------|------|
-| 言語 | 日本語基本。公式で英語のものはそのまま |
-| 語数 | ファイル: 5-10語、セクション: 3-5語 |
-| 順序 | 広い技術領域→詳細（降順）例: `DB 接続 コネクション` |
-| 表記揺れ | 複数表記を含める（例: DB, データベース, database） |
-
-**設計判断**: 3段階でキーワードを網羅的に抽出し、2段階以上でマッチさせることで検索精度を向上させます。
+現状、keyword-searchだけで十分な検索精度が得られています。将来的に検索精度の向上が必要になった場合は、intent-search（目的→カテゴリ、対象→ファイルで絞り込む方式）の導入を検討します。
 
 ---
 
-### 2.7 知識ファイル設計（JSONスキーマ）
+### 2.6 知識ファイル設計
 
 #### 共通構造
 
