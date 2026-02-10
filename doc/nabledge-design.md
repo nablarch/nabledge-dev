@@ -1,18 +1,7 @@
 # Nabledge設計書
 
-**作成日**: 2026年2月10日
-**バージョン**: 1.5
+**更新日**: 2026年2月10日
 **ステータス**: Draft
-
-## 変更履歴
-
-| バージョン | 日付 | 変更内容 |
-|----------|------|---------|
-| 1.5 | 2026/02/10 | 検索設計の全面見直し（3段階キーワード抽出+2段階検索プロセス） |
-| 1.4 | 2026/02/10 | 代行業務の整理、文体統一 |
-| 1.3 | 2026/02/10 | アーキテクチャレビュー反映 |
-| 1.2 | 2026/02/10 | MCP削除、簡潔化 |
-| 1.0 | 2026/02/09 | 初版作成 |
 
 ---
 
@@ -306,7 +295,7 @@ files[N,]{path,hints}:
 
 #### ④ 関連度判定
 
-ファイルとセクションそれぞれに関連度を付与します。
+候補となったセクションの実際の内容を読み、ユーザーの依頼に対する関連度を判定します。
 
 | レベル | 値 | 判断基準 |
 |:------:|:---:|---------|
@@ -435,8 +424,7 @@ files[N,]{path,hints}:
 
 #### フェーズ1: Nabバッチ（FW）- バッチフレームワーク完成（優先度: 最高）
 
-**期間**: 1週間
-**作業量**: 約1.5時間（作成45分 + 品質チェック45分）
+**期間**: 1～2週間
 **対象**: バッチ専用ハンドラ約10個、バッチで使うライブラリ約5個
 **目的**: なるべく早くAIのメリットを感じてもらうことです
 
@@ -448,23 +436,18 @@ files[N,]{path,hints}:
 
 #### フェーズ2: Nabバッチ（NTF）- テストフレームワーク完成
 
-**期間**: 3日
-**作業量**: 約30分
-**対象**: NTF関連の残り約1-2個
+**期間**: 1～2週間
+**対象**: NTF関連約1-2個
 
 #### フェーズ3: REST（API）- RESTful Webサービス対応
 
-**期間**: 1週間
-**作業量**: 約1時間
+**期間**: 1～2週間
 **対象**: RESTful処理方式1個、REST専用ハンドラ約5個、REST関連ライブラリ約3個
 
-#### フェーズ4: 残り - 網羅性確保
+#### フェーズ4: 網羅性確保
 
-**期間**: 1週間
-**作業量**: 約1.5時間
+**期間**: 1～2週間
 **対象**: アダプタ約12個、共通ハンドラ約5個、チェック項目2個、その他約5個
-
-**全体作業量**: 約4.5時間（作成2.5時間 + 品質チェック2時間）
 
 ---
 
@@ -487,54 +470,3 @@ files[N,]{path,hints}:
 - コード例が動作する最小形であること
 - 出典（official_doc_urls）を全ての情報に付与すること
 - 対象外情報（Jakarta Batch等）を含まないこと
-
----
-
-## 4. 参考資料
-
-### 4.1 公式ドキュメント
-
-| カテゴリ | URL |
-|---------|-----|
-| **Nablarch解説書** | https://nablarch.github.io/docs/LATEST/doc/ |
-| **Nablarchバッチ** | https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/index.html |
-| **RESTful Webサービス** | https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/rest/index.html |
-| **標準ハンドラ** | https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/index.html |
-| **ライブラリ** | https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/index.html |
-| **テスティングFW** | https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/index.html |
-| **システム開発ガイド** | https://fintan.jp/page/252 |
-| **Nablarchパターン集** | https://fintan.jp/page/252/2/ |
-| **Nablarchアンチパターン** | https://fintan.jp/page/252/5/ |
-
-### 4.2 リポジトリ
-
-| 対象 | GitHub URL |
-|------|-----------|
-| **nablarch-example-batch** | https://github.com/nablarch/nablarch-example-batch |
-| **nablarch-example-rest** | https://github.com/nablarch/nablarch-example-rest |
-
----
-
-## まとめ
-
-### 本設計書で定義したこと
-
-1. **代行業務10個**と優先度を明確化しました
-2. **知識タイプ3つを定義**し、作成単位を決定しました（約60個）
-3. **検索設計**を明確化しました
-   - 3段階キーワード抽出（技術領域・技術要素・機能）
-   - 2段階検索プロセス（ファイル選定→セクション選定）
-   - 関連度3段階判定（High/Partial/None）
-   - セクション単位抽出（上位10件 ≈ 5,000トークン）
-4. **TOON形式インデックス**を採用しました（30-60%トークン削減）
-5. **4フェーズの実装計画**を策定しました（総作業時間約4.5時間）
-
-### 次のアクション
-
-1. フェーズ1を実施します（バッチフレームワーク知識の拡充 ≈ 1.5時間）
-2. 仮説検証を行います（代行精度と工数削減の実測）
-3. 効果測定後、フェーズ2以降へ進みます
-
----
-
-**以上**

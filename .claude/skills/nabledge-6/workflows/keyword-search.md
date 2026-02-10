@@ -56,16 +56,18 @@ This workflow searches the knowledge index (index.toon) using keyword matching t
 **Matching process**:
 
 1. Read knowledge/index.toon (93 entries, format: `Title, hint1 hint2 ..., path.json`)
-2. For each entry, match your extracted keywords against hints:
-   - **Use Level 1 (Technical domain) + Level 2 (Technical component) keywords only**
-   - Level 3 (Functional) keywords are NOT used in this step
+2. For each entry, match your extracted keywords against hints using this **scoring strategy**:
+   - L1 (Technical domain) or L2 (Technical component) keyword match: **+2 points** per hint
+   - L3 (Functional) keyword match: **+1 point** per hint
    - Case-insensitive matching
    - Partial matching allowed (e.g., "ページ" matches "ページング")
-   - Count matched hints per entry
-3. Sort files by matched hint count (descending)
-4. Select top 10-15 files with ≥1 matched hint
+   - Sum up all matched hint scores for each entry
+3. Sort files by total score (descending)
+4. Select top 10-15 files with score ≥2
 
-**Output**: List of candidate files with their matched hints counts.
+**Rationale**: L1+L2 keywords indicate the technical domain/component, which is more reliable for file selection. L3 keywords provide additional context but are weighted lower to avoid over-matching on functional terms that may appear across many files.
+
+**Output**: List of candidate files with their scores and matched hints breakdown.
 
 ### Step 2: Extract candidate sections
 
@@ -77,16 +79,18 @@ This workflow searches the knowledge index (index.toon) using keyword matching t
    ```bash
    jq '.index' knowledge/features/libraries/universal-dao.json
    ```
-2. Match your keywords against section hints:
-   - **Use Level 2 (Technical component) + Level 3 (Functional) keywords**
-   - Level 1 (Technical domain) keywords are NOT used in this step
-   - Level 2 is reused from Step 1 (acts as a bridge between file and section selection)
+2. Match your keywords against section hints using this **scoring strategy**:
+   - L2 (Technical component) keyword match: **+2 points** per hint
+   - L3 (Functional) keyword match: **+2 points** per hint
+   - L1 (Technical domain) keywords are **not scored** (too broad for section-level matching)
    - Case-insensitive matching, partial matching allowed
-   - Count matched hints per section
-3. Keep sections with ≥1 matched hint
+   - Sum up all matched hint scores for each section
+3. Keep sections with score ≥2
 4. Stop when you have 20-30 candidate sections total
 
-**Output**: List of candidates with file_path, section_id, and matched_hints.
+**Rationale**: At section level, both technical components (L2) and specific functions (L3) are equally important for identifying the right content. L1 keywords are too broad for section discrimination.
+
+**Output**: List of candidates with file_path, section_id, score, and matched_hints breakdown.
 
 ### Step 3: Judge relevance and return results
 
@@ -98,11 +102,19 @@ This workflow searches the knowledge index (index.toon) using keyword matching t
     {
       "file_path": "features/libraries/universal-dao.json",
       "section": "paging",
-      "matched_hints": ["ページング", "per", "page"]
+      "score": 7,
+      "matched_hints": [
+        {"hint": "DAO", "level": "L2", "points": 2},
+        {"hint": "ページング", "level": "L3", "points": 2},
+        {"hint": "per", "level": "L3", "points": 2},
+        {"hint": "page", "level": "L3", "points": 1}
+      ]
     }
   ]
 }
 ```
+
+**Note**: The detailed score breakdown is optional for section-judgement. A simplified format with just `matched_hints: ["DAO", "ページング", "per", "page"]` is also acceptable.
 
 Section-judgement will:
 - Read actual section content
@@ -129,10 +141,20 @@ Use the returned sections to answer the user's question (knowledge files only).
 - Level 2 (Technical component): ["DAO", "UniversalDao", "O/Rマッパー"]
 - Level 3 (Functional): ["ページング", "paging", "per", "page", "limit", "offset"]
 
-**Step 1**: Match against index.toon using L1+L2 → universal-dao.json (matched: データベース, DAO), database-access.json (matched: データベース)
-**Step 2**: Extract sections using L2+L3 → universal-dao/paging (matched: DAO, ページング, per, page), universal-dao/overview (matched: DAO)
-**Step 3**: Section-judgement → Only universal-dao/paging judged as High (2), others filtered as None
-**Result**: 1 section with pagination API and examples
+**Step 1**: Match against index.toon with scoring
+- universal-dao.json: score=7 (データベース[L1]:2 + DAO[L2]:2 + O/Rマッパー[L2]:2 + ページング[L3]:1)
+- database-access.json: score=2 (データベース[L1]:2)
+- Top files selected: universal-dao.json, database-access.json
+
+**Step 2**: Extract sections with scoring
+- universal-dao/paging: score=7 (DAO[L2]:2 + ページング[L3]:2 + per[L3]:2 + page[L3]:1)
+- universal-dao/overview: score=4 (DAO[L2]:2 + O/Rマッパー[L2]:2)
+- universal-dao/crud: score=2 (DAO[L2]:2)
+- Candidates: paging (score=7), overview (score=4), crud (score=2)
+
+**Step 3**: Section-judgement → paging judged as High (2), overview as Partial (1), crud as None (0)
+
+**Result**: 1 primary section (paging) with pagination API and examples
 
 ## Notes
 
@@ -141,8 +163,19 @@ Use the returned sections to answer the user's question (knowledge files only).
 - Final relevance scoring happens in section-judgement workflow
 - Expected output: 5-15 relevant sections filtered by section-judgement
 
-**Keyword level usage strategy**:
-- **Level 2 acts as a bridge**: Used in both file selection (Step 1) and section selection (Step 2)
-- **File selection (index.toon)**: L1 (broad technical domain) + L2 (specific technology) → narrows down to 10-15 files
-- **Section selection (.index)**: L2 (specific technology) + L3 (specific function) → narrows down to 20-30 sections
-- This two-stage filtering with L2 overlap ensures high precision while maintaining recall
+**Scoring strategy rationale**:
+
+| Stage | L1 Weight | L2 Weight | L3 Weight | Rationale |
+|-------|-----------|-----------|-----------|-----------|
+| **File selection** | +2 | +2 | +1 | L1/L2 identify technical domain/component (primary discriminator). L3 provides context (secondary). |
+| **Section selection** | 0 | +2 | +2 | L2/L3 identify specific technology/function (equal importance). L1 too broad for section-level. |
+
+**Why weighted scoring?**:
+- **Deterministic**: Same input always produces same scores (no ambiguous judgment)
+- **Flexible**: Handles edge cases (L3-only matches get lower scores but aren't excluded)
+- **Debuggable**: Score breakdown makes it clear why files/sections were selected
+- **L2 acts as bridge**: Used in both stages with high weight, ensuring continuity between file→section selection
+
+**Threshold settings**:
+- File selection: ≥2 points ensures at least 1 L1 or L2 match
+- Section selection: ≥2 points ensures at least 1 L2 or L3 match
