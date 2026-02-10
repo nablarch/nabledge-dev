@@ -1,6 +1,6 @@
 # Nabledge Test Skill
 
-Testing framework for nabledge skills (nabledge-6, nabledge-5, nabledge-1.4).
+Testing framework for nabledge skills (versions 6, 5).
 
 ## Execution Flow
 
@@ -9,9 +9,10 @@ Testing framework for nabledge skills (nabledge-6, nabledge-5, nabledge-1.4).
 Extract workflow and parameters from invocation:
 
 ```
-/nabledge-test                                    → No args → AskUserQuestion for workflow
-/nabledge-test run-scenarios <version>            → workflow="run-scenarios", version=<version>
-/nabledge-test evaluate-results <session-dir>     → workflow="evaluate-results", session_dir=<session-dir>
+/nabledge-test                                     → No args → AskUserQuestion for workflow
+/nabledge-test run-scenarios 6                     → workflow="run-scenarios", version="6", scenario_id=null (all)
+/nabledge-test run-scenarios 6 6-handlers-001      → workflow="run-scenarios", version="6", scenario_id="6-handlers-001" (single)
+/nabledge-test evaluate-results <session-dir>      → workflow="evaluate-results", session_dir=<session-dir>
 ```
 
 **If no args**: Use AskUserQuestion to select workflow:
@@ -36,6 +37,7 @@ Task
 
 ## Input Context
 - Version: {version}
+- Scenario ID: {scenario_id} (if null, execute all scenarios)
 "
 ```
 
@@ -68,6 +70,7 @@ Task
 |-------|----------|
 | Invalid workflow | Use AskUserQuestion for workflow selection |
 | Missing version (run-scenarios) | List available versions, ask user to select |
+| Scenario ID not found | Display error with available scenario IDs for the specified version |
 | Missing session dir (evaluate-results) | List available sessions, ask user to select |
 | Scenarios not found | Display error with available versions |
 | Session not found | Display error with available sessions |

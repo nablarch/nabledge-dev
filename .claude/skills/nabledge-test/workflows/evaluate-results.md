@@ -60,7 +60,7 @@ Extract scenario file names (e.g., "code-analysis", "keyword-search").
 
 For each identified scenario file:
 - Determine version from session (check which version's scenarios were used)
-- Load original scenario JSON file from `scenarios/{version}/{scenario-file-name}-scenarios.json`
+- Load original scenario JSON file from `scenarios/{version}/{scenario-file-name}.json`
 - Extract evaluation criteria
 
 **2.3 Load All Result Files**
@@ -185,7 +185,7 @@ Tool call optimization:
 
 **5.1 Create Review File**
 
-Use template from `templates/review.md` and populate with:
+Generate review markdown with the following structure:
 
 - **Test Session Metadata**: Date, time, directory, counts
 - **Summary**: Overall assessment, pass rates by category
