@@ -1,58 +1,72 @@
 # nabledge-dev
 
-言語は日本語
+## Language Rules
 
-## 概要
+**All content in this repository must be in English**, including:
+- Code comments
+- Documentation (README, design docs, work logs)
+- Commit messages
+- Test scenarios and results
+- Skill definitions and workflows
 
-このリポジトリは **Nablarchエージェント用の構造化知識基盤（スキル）** を作成・管理するためのものです。
-
-- **nabledge-6**: Nablarch 6（Jakarta EE 10、Java 17以上）用のスキル
-- **nabledge-5**: Nablarch 5（Java EE 7/8、Java 8以上）用のスキル
-
-AI（Claude Code / GitHub Copilot）がNablarch開発を代行するための構造化された知識を提供します。
+**Exception**: nabledge-x skills' user-facing messages should be in Japanese, as they are designed for Nablarch users in Japan.
 
 ---
 
-## ディレクトリ構成
+## Overview
+
+This repository contains **nabledge skills** for AI agents to assist with Nablarch development.
+
+- **nabledge-6**: Skill for Nablarch 6 (Jakarta EE 10, Java 17+)
+- **nabledge-5**: Skill for Nablarch 5 (Java EE 7/8, Java 8+)
+
+These skills enable AI (Claude Code / GitHub Copilot) to autonomously perform Nablarch development tasks.
+
+---
+
+## Directory Structure
 
 ```
 nabledge-dev/
 ├── .claude/
 │   └── skills/
-│       ├── nabledge-6/            # Nablarch 6 スキル（作成予定）
-│       └── nabledge-5/            # Nablarch 5 スキル（作成予定）
+│       ├── nabledge-6/            # Nablarch 6 skill (in development)
+│       ├── nabledge-5/            # Nablarch 5 skill (planned)
+│       └── nabledge-test/         # Testing framework for nabledge skills
 │
 ├── .lw/
-│   ├── research/                  # 調査・設計ドキュメント
-│   └── nab-official/              # Nablarch公式情報（クローン）
+│   ├── research/                  # Research & design documents
+│   └── nab-official/              # Nablarch official documentation (cloned)
 │
-└── CLAUDE.md                      # このファイル
+├── work/                          # Work logs (daily)
+│
+└── CLAUDE.md                      # This file
 ```
 
 ---
 
-## 対象範囲
+## Scope
 
-### 対象
+### In Scope
 
-| 項目 | 説明 |
-|-----|------|
-| **Nablarchバッチ（都度起動型）** | FILE to DB、DB to DB、DB to FILE パターン |
-| **RESTful Webサービス** | JAX-RSサポート、REST API実装 |
+| Item | Description |
+|------|-------------|
+| **Nablarch Batch (On-demand)** | FILE to DB, DB to DB, DB to FILE patterns |
+| **RESTful Web Services** | JAX-RS support, REST API implementation |
 
-### 対象外
+### Out of Scope
 
-| 項目 | 理由 |
-|-----|------|
-| Jakarta Batch | 仕様書で対象外と明記 |
-| 常駐バッチ（テーブルキュー型） | 仕様書で対象外と明記 |
-| ウェブアプリケーション（JSP/画面系） | バッチ・REST以外は対象外 |
-| メッセージング（MOM） | 対象外 |
+| Item | Reason |
+|------|--------|
+| Jakarta Batch | Explicitly excluded in specification |
+| Resident Batch (Table Queue) | Explicitly excluded in specification |
+| Web Applications (JSP/UI) | Focus on batch & REST only |
+| Messaging (MOM) | Out of scope |
 
 ---
 
-## 詳細設計
+## Design Documentation
 
-スキルの詳細なアーキテクチャ設計は以下を参照：
+Refer to the detailed architecture design:
 
-- [Step 3: 構造化アーキテクチャ設計](.lw/research/step3-architecture-design.md)
+- [Nabledge Design Document](doc/nabledge-design.md)
