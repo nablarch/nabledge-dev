@@ -1,11 +1,11 @@
 # Nabledge-6 Plugin
 
-Nablarch 6 skill for AI-assisted development with Claude Code.
+Nablarch 6 skill for AI-assisted development.
 
 ## Features
 
 - **Knowledge Search**: Search Nablarch 6 documentation and best practices
-- **Code Analysis**: Analyze Nablarch code with structured templates
+- **Code Analysis**: Analyze application code from Nablarch perspective
 
 ## Installation
 
@@ -33,23 +33,16 @@ Nablarch 6 skill for AI-assisted development with Claude Code.
 /nabledge-6 code-analysis
 ```
 
-## Coverage
+## Coverage and Scope
 
-### Supported Features
+### Nablarch Version
+- Nablarch 6u3
+
+### Supported Features (In Scope)
 - On-demand Batch (FILE to DB, DB to DB, DB to FILE)
 - RESTful Web Services (JAX-RS)
 - Handlers and Libraries
 - Tools and Testing
-
-### Nablarch Versions
-- Nablarch 6u2
-- Nablarch 6u3
-
-## Scope
-
-### In Scope
-- Batch processing (On-demand)
-- RESTful web services (JAX-RS)
 
 ### Out of Scope
 - Jakarta Batch
