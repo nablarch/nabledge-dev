@@ -1,0 +1,71 @@
+# nabledge-dev
+
+## Language Rules
+
+**All content in this repository must be in English**, including:
+- Code comments
+- Documentation (README, design docs, work logs)
+- Commit messages
+- Test scenarios and results
+- Skill definitions and workflows
+
+**Exception**: nabledge-x skills' user-facing messages should be in Japanese, as they are designed for Nablarch users in Japan.
+
+---
+
+## Overview
+
+This repository contains **nabledge skills** for AI agents to assist with Nablarch development.
+
+- **nabledge-6**: Skill for Nablarch 6 (Jakarta EE 10, Java 17+)
+- **nabledge-5**: Skill for Nablarch 5 (Java EE 7/8, Java 8+)
+
+These skills enable AI (Claude Code / GitHub Copilot) to autonomously perform Nablarch development tasks.
+
+---
+
+## Directory Structure
+
+```
+nabledge-dev/
+├── .claude/
+│   └── skills/
+│       ├── nabledge-6/            # Nablarch 6 skill (in development)
+│       └── nabledge-5/            # Nablarch 5 skill (planned)
+│
+├── .lw/
+│   ├── research/                  # Research & design documents
+│   └── nab-official/              # Nablarch official documentation (cloned)
+│
+├── work/                          # Work logs (daily)
+│
+└── CLAUDE.md                      # This file
+```
+
+---
+
+## Scope
+
+### In Scope
+
+| Item | Description |
+|------|-------------|
+| **Nablarch Batch (On-demand)** | FILE to DB, DB to DB, DB to FILE patterns |
+| **RESTful Web Services** | JAX-RS support, REST API implementation |
+
+### Out of Scope
+
+| Item | Reason |
+|------|--------|
+| Jakarta Batch | Explicitly excluded in specification |
+| Resident Batch (Table Queue) | Explicitly excluded in specification |
+| Web Applications (JSP/UI) | Focus on batch & REST only |
+| Messaging (MOM) | Out of scope |
+
+---
+
+## Design Documentation
+
+Refer to the detailed architecture design:
+
+- [Nabledge Design Document](doc/nabledge-design.md)
