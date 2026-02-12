@@ -2,6 +2,8 @@
 
 Nablarch knowledge development
 
+**Documentation**: [Design Document](doc/nabledge-design.md) - Comprehensive architecture and design details
+
 ## Prerequisites
 
 - WSL2 / Ubuntu
