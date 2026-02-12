@@ -241,32 +241,23 @@ See example content in the actual plugin/README.md file in the repository.
 
 ## Version Management Strategy
 
-### Semantic Versioning
+Store `plugin.json` and `CHANGELOG.md` in `.claude/skills/nabledge-6/plugin/` directory.
 
-Follow [Semantic Versioning 2.0.0](https://semver.org/):
+### CI Validation
 
-- **MAJOR**: Incompatible API changes (e.g., SKILL.md structure change)
-- **MINOR**: New knowledge files, new features (backward compatible)
-- **PATCH**: Bug fixes, knowledge corrections
+Add validation step to fail sync workflow if version files are not updated:
 
-### Version Management
+```yaml
+- name: Validate version updates
+  run: |
+    # Check if plugin.json or CHANGELOG.md were modified in the last commit
+    if ! git diff HEAD~1 HEAD --name-only | grep -q "plugin/plugin.json\|plugin/CHANGELOG.md"; then
+      echo "Error: plugin.json or CHANGELOG.md must be updated before sync"
+      exit 1
+    fi
+```
 
-Store `plugin.json` in `.claude/skills/nabledge-6/plugin/plugin.json` with version field.
-
-Update version manually when releasing:
-
-1. Edit `.claude/skills/nabledge-6/plugin/plugin.json` to update version
-2. Update `.claude/skills/nabledge-6/plugin/CHANGELOG.md` with release notes
-3. Commit and push to dummy-from branch
-4. GitHub Action syncs to nabledge repository
-5. Tag nabledge repository with same version (e.g., `v0.2.0`)
-6. Create GitHub release
-
-This approach allows:
-- ✅ Version controlled in development repo
-- ✅ Reviewable during development
-- ✅ No dynamic generation needed
-- ✅ Simple and maintainable
+This ensures developers always update version information when making changes that trigger a sync.
 
 ## Workflow File Structure
 
@@ -381,10 +372,11 @@ Developer
 
 When moving from dummy branches to production:
 
-- nabledge-dev: `dummy-from` → `develop` or `main`
-- nabledge: `dummy-to` → `main`
+- **nabledge-dev**: `dummy-from` → `main` (trigger branch for sync)
+  - `develop` will be used for development → `main` for releases
+- **nabledge**: `dummy-to` → `main` (distribution branch)
 
-Update workflow trigger accordingly.
+Update workflow trigger accordingly when transitioning.
 
 ## Implementation Checklist
 
