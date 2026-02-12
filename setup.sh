@@ -272,32 +272,37 @@ fi
 # Clone Nablarch official repositories
 print_header "9. Cloning Nablarch Official Repositories"
 
-NAB_OFFICIAL_DIR=".lw/nab-official"
+NAB_OFFICIAL_V6_DIR=".lw/nab-official/v6"
+NAB_OFFICIAL_V5_DIR=".lw/nab-official/v5"
 
-# Create directory if it doesn't exist
-if [ ! -d "$NAB_OFFICIAL_DIR" ]; then
-    print_status info "Creating $NAB_OFFICIAL_DIR directory..."
-    mkdir -p "$NAB_OFFICIAL_DIR"
-    print_status ok "Directory created"
-fi
+# Create directories
+for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" ".lw/research"; do
+    if [ ! -d "$dir" ]; then
+        print_status info "Creating $dir directory..."
+        mkdir -p "$dir"
+        print_status ok "Directory created"
+    fi
+done
 
-# Function to clone or update repository
+# Enhanced clone_or_update_repo function with branch support
 clone_or_update_repo() {
     local repo_url="$1"
+    local target_dir="$2"
+    local branch="${3:-main}"  # Default to main if not specified
     local repo_name=$(basename "$repo_url" .git)
-    local repo_path="$NAB_OFFICIAL_DIR/$repo_name"
+    local repo_path="$target_dir/$repo_name"
 
     if [ -d "$repo_path" ]; then
         print_status info "Repository $repo_name already exists, updating..."
-        if git -C "$repo_path" pull; then
-            print_status ok "$repo_name updated"
+        if git -C "$repo_path" checkout "$branch" && git -C "$repo_path" pull; then
+            print_status ok "$repo_name updated (branch: $branch)"
         else
             print_status warning "Failed to update $repo_name"
         fi
     else
-        print_status info "Cloning $repo_name..."
-        if git clone "$repo_url" "$repo_path"; then
-            print_status ok "$repo_name cloned"
+        print_status info "Cloning $repo_name (branch: $branch)..."
+        if git clone -b "$branch" "$repo_url" "$repo_path"; then
+            print_status ok "$repo_name cloned (branch: $branch)"
         else
             print_status error "Failed to clone $repo_name"
             exit 1
@@ -305,10 +310,17 @@ clone_or_update_repo() {
     fi
 }
 
-# Clone repositories
-clone_or_update_repo "https://github.com/nablarch/nablarch-document.git"
-clone_or_update_repo "https://github.com/nablarch/nablarch-single-module-archetype.git"
-clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git"
+# Clone Nablarch 6 repositories (main branch)
+print_status info "Setting up Nablarch 6 repositories..."
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git" "$NAB_OFFICIAL_V6_DIR" "main"
+clone_or_update_repo "https://github.com/nablarch/nablarch-single-module-archetype.git" "$NAB_OFFICIAL_V6_DIR" "main"
+clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git" "$NAB_OFFICIAL_V6_DIR" "main"
+
+# Clone Nablarch 5 repositories (v5-main branch)
+print_status info "Setting up Nablarch 5 repositories..."
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git" "$NAB_OFFICIAL_V5_DIR" "v5-main"
+clone_or_update_repo "https://github.com/nablarch/nablarch-single-module-archetype.git" "$NAB_OFFICIAL_V5_DIR" "v5-main"
+# Note: nablarch-system-development-guide not cloned for v5 (no v5 version exists)
 
 # Final summary
 print_header "Setup Completed Successfully!"
