@@ -36,11 +36,34 @@ nabledge-dev/
 ├── .lw/
 │   ├── research/                  # Research & design documents
 │   └── nab-official/              # Nablarch official documentation (cloned)
+│       ├── v6/                    # Version 6 documentation (main branch)
+│       └── v5/                    # Version 5 documentation (v5-main branch)
 │
 ├── work/                          # Work logs (daily)
 │
 └── CLAUDE.md                      # This file
 ```
+
+---
+
+## Nablarch Official Documentation
+
+The `.lw/nab-official/` directory contains cloned Nablarch official repositories for reference when creating knowledge files.
+
+### Repository Versions
+
+| Repository | v6 | v5 | Notes |
+|------------|----|----|-------|
+| **nablarch-document** | ✓ (main) | ✓ (v5-main) | Official framework documentation |
+| **nablarch-single-module-archetype** | ✓ (main) | ✓ (v5-main) | Maven archetype for single-module projects |
+| **nablarch-system-development-guide** | ✓ (main) | - | System development guide (latest/v6 only) |
+
+### Note for nabledge-5 Development
+
+When creating knowledge files for **nabledge-5**, use the following sources:
+- **Framework docs**: Use `.lw/nab-official/v5/nablarch-document/` (v5-specific)
+- **Archetype**: Use `.lw/nab-official/v5/nablarch-single-module-archetype/` (v5-specific)
+- **Development guide**: Reference `.lw/nab-official/v6/nablarch-system-development-guide/` (no v5 version exists; v6 guide applies)
 
 ---
 
