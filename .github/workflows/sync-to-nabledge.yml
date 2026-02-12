@@ -8,16 +8,20 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout nabledge-dev
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Configure Git
+      - name: Validate version updates
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Check if plugin.json or CHANGELOG.md were modified in the last commit
+          if ! git diff HEAD~1 HEAD --name-only | grep -q "plugin/plugin.json\|plugin/CHANGELOG.md"; then
+            echo "Error: plugin.json or CHANGELOG.md must be updated before sync"
+            exit 1
+          fi
 
       - name: Checkout nabledge repository
         uses: actions/checkout@v4
@@ -27,30 +31,56 @@ jobs:
           token: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
           path: nabledge-repo
 
-      - name: Sync nabledge-6 skill
+      - name: Clean nabledge repository
         run: |
-          # Remove old skill files if exists
-          rm -rf nabledge-repo/.claude/skills/nabledge-6
+          cd nabledge-repo
+          # Remove all files except .git/
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 
-          # Copy nabledge-6 skill
-          mkdir -p nabledge-repo/.claude/skills
-          cp -r .claude/skills/nabledge-6 nabledge-repo/.claude/skills/
+      - name: Transform to plugin structure
+        run: |
+          # Use transform script
+          .github/scripts/transform-to-plugin.sh . nabledge-repo
+
+      - name: Update CHANGELOG.md
+        run: |
+          TRIGGER_COMMIT_SHA="${{ github.sha }}"
+          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
+          DATE=$(date +%Y-%m-%d)
+
+          # Append sync entry to CHANGELOG
+          sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/CHANGELOG.md
+
+      - name: Validate plugin structure
+        run: |
+          # Check required files exist
+          test -f nabledge-repo/.claude-plugin/plugin.json
+          test -f nabledge-repo/skills/nabledge-6/SKILL.md
+          test -f nabledge-repo/README.md
+          test -f nabledge-repo/LICENSE
+
+          # Validate plugin.json format
+          jq empty nabledge-repo/.claude-plugin/plugin.json
+
+      - name: Configure Git
+        working-directory: nabledge-repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit and Push to nabledge
         working-directory: nabledge-repo
         run: |
           git add .
 
-          # Check if there are changes to commit
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
 
-          # Create commit message with link to trigger commit
           TRIGGER_COMMIT_SHA="${{ github.sha }}"
           TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
 
-          git commit -m "Sync nabledge-6 skill from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
+          git commit -m "Sync nabledge-6 plugin from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
 
           git push origin dummy-to
