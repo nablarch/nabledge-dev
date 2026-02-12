@@ -225,99 +225,19 @@ nabledge/
 
 ## README.md Template
 
-The generated README.md should include:
+The plugin README.md (stored in `.claude/skills/nabledge-6/plugin/README.md`) should include:
 
-```markdown
-# Nabledge-6: Nablarch 6 Plugin for Claude Code
+- Plugin name and description
+- Features (Knowledge Search, Code Analysis)
+- Installation instructions (`/plugin marketplace add nablarch/nabledge`)
+- Usage examples (`/nabledge-6`, `/nabledge-6 "question"`, `/nabledge-6 code-analysis`)
+- Knowledge coverage (batch, REST, handlers, libraries, tools)
+- Scope (in/out of scope)
+- Version information (Nablarch 6u2/6u3, plugin version)
+- License (Apache 2.0)
+- Repository links (distribution and development)
 
-Structured knowledge base for Nablarch 6 framework with code analysis capabilities.
-
-## Features
-
-- **Knowledge Search**: Query Nablarch 6 APIs, patterns, configurations
-- **Code Analysis**: Analyze existing Nablarch code and generate documentation
-
-## Installation
-
-### Prerequisites
-
-- [Claude Code CLI](https://claude.com/claude-code) installed
-- Nablarch 6 project
-
-### Install Plugin
-
-```bash
-# In Claude Code
-/plugin marketplace add nablarch/nabledge
-
-# Enable plugin (if not auto-enabled)
-/plugin enable nabledge-6
-```
-
-## Usage
-
-### Interactive Mode
-
-```bash
-/nabledge-6
-```
-
-Shows greeting and lets you choose between knowledge search and code analysis.
-
-### Knowledge Search
-
-```bash
-/nabledge-6 "UniversalDaoの使い方"
-/nabledge-6 "バッチ処理の実装方法"
-```
-
-### Code Analysis
-
-```bash
-/nabledge-6 code-analysis
-```
-
-Then specify target code (class, feature, or package).
-
-## Knowledge Coverage
-
-- Nablarch batch processing (On-demand)
-- RESTful web services (JAX-RS)
-- Core handlers (DB connection, transaction, data read)
-- Core libraries (UniversalDao, database access, validation, etc.)
-- Testing framework (NTF)
-- Security checklist
-
-See [docs/](docs/) for detailed knowledge documentation.
-
-## Scope
-
-### In Scope
-
-- Nablarch Batch (On-demand)
-- RESTful Web Services
-
-### Out of Scope
-
-- Jakarta Batch
-- Resident Batch (Table Queue)
-- Web Applications (JSP/UI)
-- Messaging (MOM)
-
-## Version
-
-- **Target**: Nablarch 6u2 / 6u3
-- **Plugin Version**: 0.1.0
-
-## License
-
-Apache License 2.0 - See [LICENSE](LICENSE)
-
-## Repository
-
-- **Distribution**: https://github.com/nablarch/nabledge
-- **Development**: https://github.com/nablarch/nabledge-dev
-```
+See example content in the actual plugin/README.md file in the repository.
 
 ## Version Management Strategy
 
