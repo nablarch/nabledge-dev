@@ -10,8 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Initial release of nabledge-6 skill
 - Knowledge search functionality for Nablarch 6 documentation
 - Code analysis capability with structured templates
-- Support for batch processing (On-demand batch)
-- Support for RESTful web services (JAX-RS)
-- Coverage for Nablarch 6u2 and 6u3
+- Basic batch processing knowledge
+- Database access libraries
+- Testing framework basics
+- Security checklist
 
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/v0.1

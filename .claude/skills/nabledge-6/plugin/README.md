@@ -46,17 +46,13 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skill
 ### Nablarch Version
 - Nablarch 6u3
 
-### Supported Features
-- On-demand Batch (FILE to DB, DB to DB, DB to FILE)
-- RESTful Web Services (JAX-RS)
-- Handlers and Libraries
-- Tools and Testing
+### Coverage
+- Batch processing basics
+- Database access
+- Testing framework basics
+- Security checklist
 
-### Out of Scope
-- Jakarta Batch
-- Resident Batch (Table Queue)
-- Web Applications (JSP/UI)
-- Messaging (MOM)
+Note: This is an initial release with limited coverage. More features will be added in future versions.
 
 ## Versioning
 
