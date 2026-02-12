@@ -31,8 +31,7 @@ nabledge-dev/
 ├── .claude/
 │   └── skills/
 │       ├── nabledge-6/            # Nablarch 6 skill (in development)
-│       ├── nabledge-5/            # Nablarch 5 skill (planned)
-│       └── nabledge-test/         # Testing framework for nabledge skills
+│       └── nabledge-5/            # Nablarch 5 skill (planned)
 │
 ├── .lw/
 │   ├── research/                  # Research & design documents

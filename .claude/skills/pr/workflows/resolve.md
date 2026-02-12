@@ -44,18 +44,24 @@ Options:
 
 ### 2. Get Unresolved Review Comments
 
-**2.1 Get Review Threads**
+**2.1 Get Review Comments**
 
 ```bash
-gh pr view "$pr_number" --json reviewThreads
+gh api "repos/{owner}/{repo}/pulls/$pr_number/comments" --jq '.[] | select(.in_reply_to_id == null)'
+```
+
+Get repository owner and name:
+```bash
+owner=$(gh repo view --json owner -q .owner.login)
+repo=$(gh repo view --json name -q .name)
 ```
 
 **2.2 Filtering**
 
-Extract only comments meeting all these conditions:
-- `thread.isResolved === false`
-- `thread.isOutdated === false`
-- `thread.path !== null` (comments on files)
+Extract only comments meeting these conditions:
+- Not a reply (no `in_reply_to_id`)
+- Has not been replied to yet (check if comment has replies)
+- Not outdated (`original_position` should exist or match `position`)
 
 If 0 unresolved comments:
 ```
@@ -75,10 +81,13 @@ For each unresolved comment, execute the following:
 **3.1 Analysis**
 
 Get comment information:
+- `comment.id`: Comment ID (required for replying)
 - `comment.body`: Comment body
 - `comment.path`: File to fix
 - `comment.line`: Line number (if exists)
-- `comment.author.login`: Reviewer name
+- `comment.user.login`: Reviewer name
+
+Store the comment ID for later use in replies.
 
 Use Read tool to load file and check relevant section.
 
@@ -136,10 +145,15 @@ repo_url=$(gh repo view --json url -q .url)
 
 **3.4 Reply**
 
+Reply directly to the review comment using the stored comment ID:
+
 **For fixes**:
 
 ```bash
-gh pr comment "$pr_number" --body "$(cat <<'EOF'
+gh api \
+  -X POST \
+  "repos/$owner/$repo/pulls/$pr_number/comments" \
+  -f body="$(cat <<'EOF'
 Fixed
 
 **Commit**: {repo_url}/commit/{commit_sha}
@@ -148,23 +162,28 @@ Fixed
 
 Co-Authored-By: Claude (jp.anthropic.claude-sonnet-4-5-20250929-v1:0) <noreply@anthropic.com>
 EOF
-)"
+)" \
+  -F in_reply_to=${comment_id}
 ```
 
 **For questions**:
 
 ```bash
-gh pr comment "$pr_number" --body "$(cat <<'EOF'
+gh api \
+  -X POST \
+  "repos/$owner/$repo/pulls/$pr_number/comments" \
+  -f body="$(cat <<'EOF'
 Please clarify
 
 {Question content}
 
 Co-Authored-By: Claude (jp.anthropic.claude-sonnet-4-5-20250929-v1:0) <noreply@anthropic.com>
 EOF
-)"
+)" \
+  -F in_reply_to=${comment_id}
 ```
 
-**Note**: `gh pr comment` adds a comment to the overall PR. Direct replies to specific review comments require advanced operations using `gh api`.
+**Note**: This creates threaded replies directly under review comments using the `in_reply_to` parameter, providing better context and reviewer experience.
 
 ### 4. Resolve Review Comments
 
@@ -210,19 +229,4 @@ Please request reviewer to resolve threads
 4. **Test Execution**: Run related tests if they exist after fixing
 5. **Multiple Files**: When one comment requires multiple file fixes, fix all before creating a single commit
 6. **Thread Resolution**: GitHub CLI lacks direct resolve functionality, so request reviewer resolution
-
-## Advanced Operation: Reply to Specific Comments
-
-To reply directly to specific review comments, use GitHub API:
-
-```bash
-# Get review comment ID (from reviewThreads)
-comment_id="{thread.comments[0].id}"
-
-# Add reply
-gh api \
-  "repos/{owner}/{repo}/pulls/{pr_number}/comments/$comment_id/replies" \
-  -f body="Fixed. Please review."
-```
-
-However, PR-level comments are usually sufficient, so use this as needed.
+7. **Threaded Replies**: Always reply directly to review comments for better threading and reviewer experience
