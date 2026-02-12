@@ -34,10 +34,15 @@ nabledge-dev/
 │           │   ├── features/
 │           │   ├── checks/
 │           │   └── releases/
-│           └── docs/
-│               ├── features/
-│               ├── checks/
-│               └── releases/
+│           ├── docs/
+│           │   ├── features/
+│           │   ├── checks/
+│           │   └── releases/
+│           └── plugin/
+│               ├── plugin.json
+│               ├── README.md
+│               ├── LICENSE
+│               └── CHANGELOG.md
 ```
 
 **Characteristics**:
@@ -92,10 +97,10 @@ nabledge/
 | `.claude/skills/nabledge-6/assets/` | `assets/` | Move to root |
 | `.claude/skills/nabledge-6/knowledge/` | `knowledge/` | Move to root |
 | `.claude/skills/nabledge-6/docs/` | `docs/` | Move to root |
-| (not exists) | `.claude-plugin/plugin.json` | Generate |
-| (not exists) | `README.md` | Generate |
-| (not exists) | `LICENSE` | Copy or Generate |
-| (not exists) | `CHANGELOG.md` | Generate |
+| `.claude/skills/nabledge-6/plugin/plugin.json` | `.claude-plugin/plugin.json` | Move |
+| `.claude/skills/nabledge-6/plugin/README.md` | `README.md` | Move |
+| `.claude/skills/nabledge-6/plugin/LICENSE` | `LICENSE` | Move |
+| `.claude/skills/nabledge-6/plugin/CHANGELOG.md` | `CHANGELOG.md` | Move and update |
 
 ## GitHub Action Design
 
@@ -120,12 +125,12 @@ nabledge/
 2. Checkout nabledge repository (dummy-to branch)
 3. **Transform to plugin structure**:
    - Create `.claude-plugin/` directory
-   - Generate `plugin.json` manifest
    - Move `SKILL.md` to `skills/nabledge-6/SKILL.md`
    - Move `workflows/`, `assets/`, `knowledge/`, `docs/` to root
-   - Generate `README.md` if not exists
-   - Copy or generate `LICENSE` if not exists
-   - Update or generate `CHANGELOG.md`
+   - Move `plugin/plugin.json` to `.claude-plugin/plugin.json`
+   - Move `plugin/README.md` to root
+   - Move `plugin/LICENSE` to root
+   - Move `plugin/CHANGELOG.md` to root and update with sync info
 4. Commit and push to nabledge repository
 
 ### Workflow Steps Detail
@@ -174,65 +179,15 @@ nabledge/
     cp -r .claude/skills/nabledge-6/assets nabledge-repo/
     cp -r .claude/skills/nabledge-6/knowledge nabledge-repo/
     cp -r .claude/skills/nabledge-6/docs nabledge-repo/
+
+    # Move plugin files to root
+    cp .claude/skills/nabledge-6/plugin/plugin.json nabledge-repo/.claude-plugin/
+    cp .claude/skills/nabledge-6/plugin/README.md nabledge-repo/
+    cp .claude/skills/nabledge-6/plugin/LICENSE nabledge-repo/
+    cp .claude/skills/nabledge-6/plugin/CHANGELOG.md nabledge-repo/
 ```
 
-#### Step 4: Generate plugin.json
-
-```yaml
-- name: Generate plugin.json
-  run: |
-    cat > nabledge-repo/.claude-plugin/plugin.json <<'EOF'
-    {
-      "name": "nabledge-6",
-      "version": "0.1.0",
-      "description": "Nablarch 6 framework knowledge base and code analysis for Claude Code",
-      "author": {
-        "name": "TIS Inc.",
-        "url": "https://github.com/nablarch"
-      },
-      "homepage": "https://github.com/nablarch/nabledge",
-      "repository": "https://github.com/nablarch/nabledge",
-      "license": "Apache-2.0",
-      "keywords": ["nablarch", "nablarch-6", "java", "batch", "rest", "jakarta-ee"]
-    }
-    EOF
-```
-
-**Note**: Version should be dynamic (extracted from tags or VERSION file)
-
-#### Step 5: Generate README.md
-
-```yaml
-- name: Generate README.md
-  run: |
-    if [ ! -f nabledge-repo/README.md ]; then
-      cat > nabledge-repo/README.md <<'EOF'
-    # Nabledge-6: Nablarch 6 Plugin for Claude Code
-
-    [Content to be generated - see README Template section below]
-    EOF
-    fi
-```
-
-#### Step 6: Copy LICENSE
-
-```yaml
-- name: Copy LICENSE
-  run: |
-    if [ ! -f nabledge-repo/LICENSE ]; then
-      # Copy from nabledge-dev or generate
-      if [ -f LICENSE ]; then
-        cp LICENSE nabledge-repo/
-      else
-        # Generate Apache 2.0 license
-        cat > nabledge-repo/LICENSE <<'EOF'
-        [Apache 2.0 license text]
-        EOF
-      fi
-    fi
-```
-
-#### Step 7: Update CHANGELOG.md
+#### Step 4: Update CHANGELOG.md
 
 ```yaml
 - name: Update CHANGELOG.md
@@ -241,24 +196,13 @@ nabledge/
     TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
     DATE=$(date +%Y-%m-%d)
 
-    if [ ! -f nabledge-repo/CHANGELOG.md ]; then
-      # Create initial CHANGELOG
-      cat > nabledge-repo/CHANGELOG.md <<EOF
-    # Changelog
-
-    ## [0.1.0] - ${DATE}
-
-    ### Added
-    - Initial release
-    - Synced from: ${TRIGGER_COMMIT_URL}
-    EOF
-    else
-      # Append sync entry
-      sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/CHANGELOG.md
-    fi
+    # Append sync entry to CHANGELOG
+    sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/CHANGELOG.md
 ```
 
-#### Step 8: Commit and push
+**Note**: The plugin.json, README.md, LICENSE, and CHANGELOG.md are now stored in the development repository and reviewed during development, rather than being generated each time.
+
+#### Step 5: Commit and push
 
 ```yaml
 - name: Commit and Push to nabledge
@@ -385,37 +329,24 @@ Follow [Semantic Versioning 2.0.0](https://semver.org/):
 - **MINOR**: New knowledge files, new features (backward compatible)
 - **PATCH**: Bug fixes, knowledge corrections
 
-### Version Sources
+### Version Management
 
-**Option 1: Git Tags** (Recommended)
+Store `plugin.json` in `.claude/skills/nabledge-6/plugin/plugin.json` with version field.
 
-```bash
-# Extract version from latest tag
-VERSION=$(git describe --tags --abbrev=0)
-```
+Update version manually when releasing:
 
-**Option 2: VERSION file**
+1. Edit `.claude/skills/nabledge-6/plugin/plugin.json` to update version
+2. Update `.claude/skills/nabledge-6/plugin/CHANGELOG.md` with release notes
+3. Commit and push to dummy-from branch
+4. GitHub Action syncs to nabledge repository
+5. Tag nabledge repository with same version (e.g., `v0.2.0`)
+6. Create GitHub release
 
-Create `VERSION` file in nabledge-dev:
-
-```
-0.1.0
-```
-
-Workflow reads this file and uses it in plugin.json.
-
-**Option 3: Manual in plugin.json template**
-
-Store plugin.json template in nabledge-dev repository, update manually.
-
-### Recommendation
-
-Use **Option 2 (VERSION file)** for simplicity:
-
-1. Create `VERSION` file in nabledge-dev
-2. Update version when releasing
-3. GitHub Action reads VERSION and generates plugin.json
-4. Tag nabledge repository with same version
+This approach allows:
+- ✅ Version controlled in development repo
+- ✅ Reviewable during development
+- ✅ No dynamic generation needed
+- ✅ Simple and maintainable
 
 ## Workflow File Structure
 
@@ -501,7 +432,8 @@ Developer
 ### Release Process
 
 1. **Prepare release** in nabledge-dev:
-   - Update VERSION file (e.g., `0.1.0` → `0.2.0`)
+   - Update `.claude/skills/nabledge-6/plugin/plugin.json` version (e.g., `0.1.0` → `0.2.0`)
+   - Update `.claude/skills/nabledge-6/plugin/CHANGELOG.md` with release notes
    - Update docs if needed
    - Test locally
 
@@ -536,14 +468,15 @@ Update workflow trigger accordingly.
 
 ## Implementation Checklist
 
-- [ ] Create VERSION file in nabledge-dev
+- [ ] Create `.claude/skills/nabledge-6/plugin/` directory in nabledge-dev
+- [ ] Create `plugin.json` in plugin directory
+- [ ] Create `README.md` in plugin directory
+- [ ] Create or copy `LICENSE` to plugin directory
+- [ ] Create `CHANGELOG.md` in plugin directory
 - [ ] Create transform-to-plugin.sh script
 - [ ] Update sync-to-nabledge.yml workflow
-  - [ ] Add transformation steps
-  - [ ] Add plugin.json generation
-  - [ ] Add README.md generation
-  - [ ] Add LICENSE copy
-  - [ ] Add CHANGELOG.md update
+  - [ ] Add transformation steps to move plugin files
+  - [ ] Add CHANGELOG.md update with sync info
   - [ ] Add validation steps
 - [ ] Test locally with transform script
 - [ ] Test GitHub Action with dummy-from push
