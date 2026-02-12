@@ -9,8 +9,16 @@ Nablarch 6 skill for AI-assisted development.
 
 ## Installation
 
+### For Claude Code (WSL)
+
 ```bash
 /plugin marketplace add nablarch/nabledge
+```
+
+### For GitHub Copilot (WSL or GitBash)
+
+```bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skills/nabledge-6/scripts/setup.sh | bash
 ```
 
 ## Usage
@@ -33,12 +41,12 @@ Nablarch 6 skill for AI-assisted development.
 /nabledge-6 code-analysis
 ```
 
-## Coverage and Scope
+## Scope
 
 ### Nablarch Version
 - Nablarch 6u3
 
-### Supported Features (In Scope)
+### Supported Features
 - On-demand Batch (FILE to DB, DB to DB, DB to FILE)
 - RESTful Web Services (JAX-RS)
 - Handlers and Libraries
