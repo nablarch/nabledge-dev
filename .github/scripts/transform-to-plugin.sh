@@ -30,7 +30,7 @@ cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/marketplace.json" "$DEST_DIR/.c
 # Copy marketplace README and LICENSE to root
 echo "Copying marketplace README and LICENSE..."
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/marketplace-README.md" "$DEST_DIR/README.md"
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/LICENSE" "$DEST_DIR/"
+cp "$SOURCE_DIR/LICENSE" "$DEST_DIR/"
 
 # Copy nabledge-6 plugin files
 echo "Copying nabledge-6 plugin..."
@@ -49,7 +49,6 @@ cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/plugins/nabledge-6
 
 # Plugin-specific files
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/README.md" "$DEST_DIR/plugins/nabledge-6/"
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/LICENSE" "$DEST_DIR/plugins/nabledge-6/"
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/CHANGELOG.md" "$DEST_DIR/plugins/nabledge-6/"
 
 echo "Transformation complete!"
