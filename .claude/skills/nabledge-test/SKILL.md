@@ -18,8 +18,9 @@ nabledge-test 6 --category handlers # Category
 ## How it works
 
 1. Load scenario from `scenarios/nabledge-6/scenarios.json`
-2. Invoke skill-creator eval mode
-3. Save results to `work/YYYYMMDD/test-<id>-<timestamp>.md`
+2. Call skill-creator to execute and evaluate
+3. Read results from workspace
+4. Save summary to `work/YYYYMMDD/test-<id>-<timestamp>.md`
 
 ## When invoked
 
@@ -29,41 +30,101 @@ Format: `nabledge-test <version> [<scenario-id> | --all | --category <cat>]`
 
 ### Step 2: Load scenario
 
+From `scenarios/nabledge-6/scenarios.json`:
+
 ```json
 {
   "id": "handlers-001",
-  "prompt": "データリードハンドラでファイルを読み込むには？",
-  "expectations": [
-    "Response includes 'DataReadHandler'",
-    "Token usage is between 5000 and 15000"
-  ]
+  "question": "データリードハンドラでファイルを読み込むには？",
+  "keywords": ["DataReadHandler", "DataReader", "ファイル読み込み"],
+  "sections": ["overview", "usage"]
 }
 ```
 
-### Step 3: Invoke skill-creator
+### Step 2b: Convert to expectations
 
-Read and follow: `.claude/skills/skill-creator/references/eval-mode.md`
-
-Key steps:
-- Setup workspace (ask user for location, suggest `nabledge-test-workspace/`)
-- Execute: Spawn executor agent with nabledge-<version> skill
-- Grade: Spawn grader agent
-- Get results: transcript.md, grading.json, metrics.json, timing.json
-
-### Step 4: Save to work log
-
-Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md` with:
-- Scenario (prompt, expectations count)
-- Results (from grading.json)
-- Metrics (tokens, tool calls, duration)
-- Link to transcript in workspace
-
-### Step 5: Display summary
+Build expectations list for skill-creator:
 
 ```
-✓ handlers-001: PASS (7/8 expectations)
+expectations = []
+
+# Add keyword checks
+for keyword in scenario.keywords:
+    expectations.append(f"Response includes '{keyword}'")
+
+# Add section checks
+if scenario.sections:
+    section_list = " or ".join([f"'{s}'" for s in scenario.sections])
+    expectations.append(f"Response mentions {section_list} sections")
+
+# Add default metrics (always)
+expectations.append("Token usage is between 5000 and 15000")
+expectations.append("Tool calls are between 10 and 20")
+```
+
+### Step 3: Call skill-creator
+
+Use Skill tool with converted expectations:
+
+```
+Skill(
+  skill="skill-creator",
+  args="Run eval mode: test nabledge-6 skill with prompt '<scenario.question>' and these expectations: <converted_expectations_list>. Use workspace nabledge-test-workspace/. Don't ask user for workspace location."
+)
+```
+
+skill-creator will:
+- Execute nabledge-6 with the question
+- Grade expectations
+- Save results to `nabledge-test-workspace/`
+
+### Step 4: Read results from workspace
+
+After skill-creator completes, read:
+- `nabledge-test-workspace/eval-<id>/with_skill/transcript.md`
+- `nabledge-test-workspace/eval-<id>/with_skill/grading.json`
+- `nabledge-test-workspace/eval-<id>/with_skill/timing.json`
+
+### Step 5: Generate summary report
+
+Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md`:
+
+```markdown
+# Test: <scenario-id>
+
+**Date**: <timestamp>
+**Question**: <scenario.question>
+
+## Scenario
+- **Keywords** (<count>): <list>
+- **Sections** (<count>): <list>
+
+## Results
+
+**Pass Rate**: <passed>/<total> (<percent>%)
+
+### Expectations
+- ✓ Response includes 'keyword1'
+- ✗ Response includes 'keyword2'
+- ✓ Response mentions 'section1' or 'section2' sections
+- ✓ Token usage is between 5000 and 15000
+- ✗ Tool calls are between 10 and 20
+
+## Metrics
+- **Duration**: <seconds>s
+- **Tool Calls**: <count>
+- **Tokens**: <estimate>
+
+## Transcript
+See: nabledge-test-workspace/eval-<id>/with_skill/transcript.md
+```
+
+### Step 6: Display summary
+
+```
+✓ handlers-001: PASS (7/8 expectations, 87.5%)
   Report: work/20260213/test-handlers-001-153045.md
-  Workspace: nabledge-test-workspace/nabledge-6/handlers-001/
+  Transcript: nabledge-test-workspace/eval-handlers-001/with_skill/transcript.md
 ```
 
 ## Scenarios
