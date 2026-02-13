@@ -4,6 +4,13 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9] - 2026-02-13
+
+### Changed
+- セットアップスクリプトをリポジトリルートに配置（UX改善）
+- setup-6-cc.sh, setup-6-ghc.sh にリネーム（より明確な命名）
+- インストールコマンドのパスを短縮
+
 ## [0.8] - 2026-02-13
 
 ### Changed
@@ -55,6 +62,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - テスティングフレームワークの基礎
 - セキュリティチェックリスト
 
+[0.9]: https://github.com/nablarch/nabledge/releases/tag/0.9
 [0.8]: https://github.com/nablarch/nabledge/releases/tag/0.8
 [0.7]: https://github.com/nablarch/nabledge/releases/tag/0.7
 [0.6]: https://github.com/nablarch/nabledge/releases/tag/0.6
