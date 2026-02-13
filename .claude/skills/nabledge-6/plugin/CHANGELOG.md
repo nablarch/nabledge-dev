@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Users should install via: `/plugin marketplace add nablarch/nabledge` then `/plugin install nabledge-6@nabledge`
 - Simplified license management: single LICENSE at repository root applies to entire marketplace
 
+### Fixed
+- Fix plugin.json schema to comply with Claude Code specification
+  - Changed author from string to object format
+  - Changed repository from object to string format
+  - Removed unsupported engines field
+
 ## [0.1] - 2026-02-12
 
 ### Added
