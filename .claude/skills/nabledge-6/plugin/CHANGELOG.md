@@ -4,6 +4,11 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.3] - 2026-02-13
+
+### Fixed
+- READMEのsetup.sh URLを配布リポジトリのパスに修正（.claude/skills/ → plugins/）
+
 ## [0.2] - 2026-02-13
 
 ### Fixed
@@ -20,5 +25,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - テスティングフレームワークの基礎
 - セキュリティチェックリスト
 
+[0.3]: https://github.com/nablarch/nabledge/releases/tag/0.3
 [0.2]: https://github.com/nablarch/nabledge/releases/tag/0.2
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/0.1
