@@ -143,3 +143,24 @@ jobs:
           git commit -m "Sync nabledge marketplace from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
 
           git push origin dummy-to
+
+      - name: Create and push version tag
+        working-directory: nabledge-repo
+        run: |
+          # Extract version from plugin.json
+          VERSION=$(jq -r '.version' plugins/nabledge-6/.claude-plugin/plugin.json)
+          TAG_NAME="v${VERSION}"
+
+          echo "Creating tag: ${TAG_NAME}"
+
+          # Check if tag already exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${TAG_NAME}"; then
+            echo "Tag ${TAG_NAME} already exists on remote, skipping tag creation"
+            exit 0
+          fi
+
+          # Create and push tag
+          git tag -a "${TAG_NAME}" -m "Release version ${VERSION}"
+          git push origin "${TAG_NAME}"
+
+          echo "Successfully created and pushed tag: ${TAG_NAME}"

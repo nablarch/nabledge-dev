@@ -41,6 +41,8 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 
 ### Claude Code
 
+#### 個人用インストール
+
 ```bash
 # マーケットプレイスを追加
 /plugin marketplace add nablarch/nabledge
@@ -48,6 +50,38 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 # プラグインをインストール
 /plugin install nabledge-6@nabledge
 ```
+
+#### チーム設定（推奨）
+
+プロジェクトメンバー全員で利用する場合は、プロジェクトスコープでインストール：
+
+```bash
+# マーケットプレイスを追加
+/plugin marketplace add nablarch/nabledge
+
+# プロジェクトスコープでインストール
+/plugin install nabledge-6@nabledge --scope project
+```
+
+または、`.claude/settings.json` に直接記述：
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "nabledge",
+      "source": "https://github.com/nablarch/nabledge.git"
+    }
+  ],
+  "enabledPlugins": {
+    "nabledge-6@nabledge": {
+      "enabled": true
+    }
+  }
+}
+```
+
+このファイルをGitにコミットすると、チームメンバーがリポジトリをクローンした際に自動的にプラグインのインストールが促されます。
 
 ### GitHub Copilot (WSL / GitBash)
 
@@ -80,3 +114,37 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 ```
 
 現在のプロジェクトのコードをNablarchの観点から分析します。Actionクラス、ハンドラ構成、データベースアクセスパターンなどを評価し、改善提案を提供します。
+
+## バージョンアップ
+
+### Claude Code
+
+マーケットプレイスは起動時に自動更新されます。手動で更新する場合：
+
+```bash
+# マーケットプレイスを更新（最新版を取得）
+/plugin marketplace update nabledge
+
+# 特定バージョンを指定する場合
+/plugin marketplace add nablarch/nabledge#v0.2
+```
+
+プラグインを再インストール：
+
+```bash
+/plugin install nabledge-6@nabledge
+```
+
+### GitHub Copilot (WSL / GitBash)
+
+セットアップスクリプトを再実行：
+
+```bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skills/nabledge-6/scripts/setup.sh | bash
+```
+
+特定バージョンを指定する場合：
+
+```bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/v0.2/.claude/skills/nabledge-6/scripts/setup.sh | bash
+```

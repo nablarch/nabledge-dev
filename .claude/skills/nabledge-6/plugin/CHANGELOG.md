@@ -4,6 +4,17 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.3] - 2026-02-13
+
+### Added
+- チーム設定方法をREADMEに追加（プロジェクトスコープインストール）
+- バージョンアップ方法を追加（Claude Code、GitHub Copilot）
+- 自動タグ作成機能をGitHub Actionに追加
+
+### Changed
+- インストールコマンドに`--scope project`オプションを追加
+- マーケットプレイスREADMEにバージョン管理情報を追加
+
 ## [0.2] - 2026-02-13
 
 ### Changed
