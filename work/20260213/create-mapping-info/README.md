@@ -4,7 +4,7 @@ Created: 2026-02-13
 
 ## Summary
 
-This work created comprehensive mapping information that maps Nablarch official documentation files to nabledge knowledge files. The mapping will be used by skills to automatically generate knowledge files.
+This work created comprehensive mapping information that maps Nablarch official documentation files to nabledge knowledge files. **All 967 files (514 V6 + 453 V5) were reviewed by AI agents** to determine proper categorization based on actual content, not just path patterns. The mapping will be used by skills to automatically generate knowledge files.
 
 ## Deliverables
 
@@ -32,9 +32,11 @@ This work created comprehensive mapping information that maps Nablarch official 
 ### Scripts
 
 - **scripts/scan-sources.py**: Scan official documentation and extract metadata
-- **scripts/apply-categorization.py**: Apply path-based categorization rules
+- **scripts/apply-categorization.py**: Apply path-based categorization rules (initial pass)
+- **scripts/apply-agent-reviews.py**: Apply AI agent review results to add processing pattern categories
 - **scripts/map-targets.py**: Map to target knowledge file paths
 - **scripts/generate-out-of-scope-report.py**: Generate out-of-scope review reports
+- **scripts/generate-mapping-excel.py**: Generate Excel workbooks for easy review
 - **validate-mapping.sh**: Validation script
 
 ## Statistics
@@ -99,37 +101,61 @@ This work created comprehensive mapping information that maps Nablarch official 
 
 **Note:** Counts halved due to ja/en deduplication.
 
+## Processing Pattern Distribution
+
+Files with processing pattern categories (including libraries and handlers that support these patterns):
+
+### V6
+
+| Processing Pattern | Files | Description |
+|--------------------|-------|-------------|
+| batch-nablarch | 62 | Nablarch Batch (On-demand): FILE to DB, DB to DB, DB to FILE |
+| rest | 56 | RESTful Web Services (JAX-RS) |
+| http-messaging | 6 | HTTP Messaging (alternative to REST) |
+
+### V5
+
+| Processing Pattern | Files | Description |
+|--------------------|-------|-------------|
+| batch-nablarch | 57 | Nablarch Batch (On-demand): FILE to DB, DB to DB, DB to FILE |
+| rest | 55 | RESTful Web Services (JAX-RS) |
+| http-messaging | 6 | HTTP Messaging (alternative to REST) |
+
 ## Category Distribution (In-Scope Files)
 
 ### V6 Top Categories
 
 | Category | Type | Files |
 |----------|------|-------|
-| library | component | 134 |
-| handler | component | 89 |
-| batch-nablarch | processing-pattern | 67 |
-| dev-guide-other | guide | 52 |
-| rest | processing-pattern | 45 |
-| tool | component | 38 |
-| about | about | 35 |
-| adaptor | component | 24 |
-| setup | setup | 18 |
-| http-messaging | processing-pattern | 12 |
+| dev-guide-other | guide | 158 |
+| tool | component | 56 |
+| library | component | 49 |
+| handler | component | 45 |
+| setup | setup | 37 |
+| about | about | 24 |
+| rest | processing-pattern | 23 |
+| archetype | setup | 20 |
+| adaptor | component | 16 |
+| batch-nablarch | processing-pattern | 14 |
+
+**Note**: Processing pattern counts above (62, 56) include libraries and handlers. Category counts here (23, 14) are files primarily categorized as that pattern.
 
 ### V5 Top Categories
 
 | Category | Type | Files |
 |----------|------|-------|
-| library | component | 152 |
-| handler | component | 94 |
-| batch-nablarch | processing-pattern | 70 |
-| rest | processing-pattern | 48 |
-| tool | component | 42 |
-| about | about | 38 |
-| adaptor | component | 28 |
-| setup | setup | 22 |
-| http-messaging | processing-pattern | 14 |
-| migration | about | 12 |
+| tool | component | 152 |
+| library | component | 49 |
+| handler | component | 45 |
+| setup | setup | 39 |
+| rest | processing-pattern | 23 |
+| about | about | 23 |
+| archetype | setup | 20 |
+| adaptor | component | 16 |
+| batch-nablarch | processing-pattern | 14 |
+| configuration | setup | 13 |
+
+**Note**: Processing pattern counts above (57, 55) include libraries and handlers. Category counts here (23, 14) are files primarily categorized as that pattern.
 
 ## Validation Results
 
@@ -242,12 +268,27 @@ Please review `out-of-scope-v6.md` and `out-of-scope-v5.md` to verify:
 - **MD files**: First line starting with `#` is extracted as title
 - **Archetype projects**: Directory name is used as title
 
-### Categorization Rules
+### Categorization Approach
 
+#### Phase 1: Path-Based Initial Categorization
 - **Priority 1 (Exclusions)**: Files matching exclusion patterns are marked out-of-scope
-- **Priority 2 (Inclusions)**: Files matching inclusion patterns are assigned categories
+- **Priority 2 (Inclusions)**: Files matching inclusion patterns are assigned component categories (library, handler, tool, etc.)
 - **Dev Guide Patterns**: MD files matched against filename patterns
 - **Archetype Patterns**: Maven archetype projects get `archetype` category
+
+#### Phase 2: Content-Based Processing Pattern Assignment
+**All 967 files reviewed by AI agents in parallel** to assign processing pattern categories:
+- **10 specialized agents** reviewed different file categories (V6/V5 batch, REST, libraries, handlers, dev-guides)
+- **Agents read actual file content** to determine which processing patterns (batch-nablarch, rest, http-messaging) apply
+- **Multiple patterns allowed**: Libraries and handlers used by multiple patterns received all applicable categories
+- **100 category additions** were made based on agent recommendations
+
+**Key findings from agent reviews**:
+- **Universal libraries** (database, validation, logging): Added to BOTH batch-nablarch AND rest
+- **Batch-specific libraries** (data_io, format, file_path_management): Added to batch-nablarch only
+- **REST-specific libraries** (jaxrs_access_log): Added to rest only
+- **Common handlers**: Many handlers support both batch and REST patterns
+- **Standalone handlers**: Batch-specific execution control handlers
 
 ### Target Mapping Strategy
 
@@ -262,6 +303,8 @@ Please review `out-of-scope-v6.md` and `out-of-scope-v5.md` to verify:
 
 - V5 has no system-development-guide (v6 guide is referenced instead)
 - Multiple source files can map to the same target file
-- One source file can have multiple categories
+- **One source file can have multiple categories** - This is intentional and critical for proper knowledge organization
 - All 967 unique files (514 v6 + 453 v5) are accounted for with 100% coverage
 - ja/en duplicates removed (kept ja versions only, 670 en files removed)
+- **Processing pattern categories were assigned by AI agents reading actual file content**, not just path patterns
+- 100 category additions were made based on agent content analysis (53 V6 + 47 V5)
