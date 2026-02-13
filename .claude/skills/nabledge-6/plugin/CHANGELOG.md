@@ -4,6 +4,13 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+- Migrated to Claude Code marketplace distribution structure
+- Plugin now distributed via marketplace catalog (nablarch/nabledge)
+- Users should install via: `/plugin marketplace add nablarch/nabledge` then `/plugin install nabledge-6@nablarch-nabledge`
+
 ## [0.1] - 2026-02-12
 
 ### Added
