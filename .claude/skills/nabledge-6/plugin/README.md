@@ -49,10 +49,7 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh
 
 実行後、`.claude/settings.json`が自動的に作成または更新されます。このファイルをGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンしてClaude Codeを起動すると、自動的にプラグインのインストールが促されます。
 
-**必要な環境**: `jq` コマンド（JSONパーサー）
-- Ubuntu/Debian: `sudo apt-get install jq`
-- macOS: `brew install jq`
-- Windows (WSL): `sudo apt-get install jq`
+**注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
 
 ### GitHub Copilot (WSL / GitBash)
 
@@ -63,6 +60,8 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.s
 ```
 
 実行後、`.claude` ディレクトリがプロジェクトに作成されます。このディレクトリをGitにコミット・プッシュしてください。チームメンバーも同じスキルを利用できるようになります。
+
+**注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
 
 ## 使い方
 

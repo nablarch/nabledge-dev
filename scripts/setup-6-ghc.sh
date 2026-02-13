@@ -33,6 +33,66 @@ cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.
 # Clean up
 rm -rf "$TEMP_DIR"
 
+# Check if jq is installed, if not, try to install it
+if ! command -v jq &> /dev/null; then
+    echo ""
+    echo "jq is not installed. The nabledge-6 skill requires jq to run."
+    echo "Attempting to install..."
+
+    # Detect OS
+    OS="$(uname -s)"
+    case "$OS" in
+        Linux*)
+            echo "Detected Linux/WSL environment"
+            echo "Installing jq via apt-get (requires sudo)..."
+            sudo apt-get update && sudo apt-get install -y jq
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            echo "Detected GitBash environment"
+            echo "Downloading jq..."
+            JQ_URL="https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe"
+            JQ_PATH="/usr/bin/jq.exe"
+            curl -L -o "$JQ_PATH" "$JQ_URL"
+            chmod +x "$JQ_PATH"
+            ;;
+        Darwin*)
+            echo "Detected macOS"
+            echo "Please install jq manually:"
+            echo "  brew install jq"
+            echo ""
+            echo "Setup complete! The nabledge-6 skill is now available in your project."
+            echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+            echo ""
+            echo "IMPORTANT: Please install jq before using the skill."
+            exit 0
+            ;;
+        *)
+            echo "Error: Unsupported OS: $OS"
+            echo "Please install jq manually: https://stedolan.github.io/jq/download/"
+            echo ""
+            echo "Setup complete! The nabledge-6 skill is now available in your project."
+            echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+            echo ""
+            echo "IMPORTANT: Please install jq before using the skill."
+            exit 0
+            ;;
+    esac
+
+    # Verify installation
+    if ! command -v jq &> /dev/null; then
+        echo "Warning: Failed to install jq automatically"
+        echo "Please install jq manually: https://stedolan.github.io/jq/download/"
+        echo ""
+        echo "Setup complete! The nabledge-6 skill is now available in your project."
+        echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+        echo ""
+        echo "IMPORTANT: Please install jq before using the skill."
+        exit 0
+    fi
+
+    echo "jq installed successfully!"
+fi
+
 echo ""
 echo "Setup complete! The nabledge-6 skill is now available in your project."
 echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"

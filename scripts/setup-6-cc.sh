@@ -23,14 +23,46 @@ mkdir -p "$PROJECT_ROOT/.claude"
 
 SETTINGS_FILE="$PROJECT_ROOT/.claude/settings.json"
 
-# Check if jq is installed
+# Check if jq is installed, if not, try to install it
 if ! command -v jq &> /dev/null; then
-    echo "Error: jq is required but not installed."
-    echo "Please install jq:"
-    echo "  - Ubuntu/Debian: sudo apt-get install jq"
-    echo "  - macOS: brew install jq"
-    echo "  - Windows (WSL): sudo apt-get install jq"
-    exit 1
+    echo "jq is not installed. Attempting to install..."
+
+    # Detect OS
+    OS="$(uname -s)"
+    case "$OS" in
+        Linux*)
+            echo "Detected Linux/WSL environment"
+            echo "Installing jq via apt-get (requires sudo)..."
+            sudo apt-get update && sudo apt-get install -y jq
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            echo "Detected GitBash environment"
+            echo "Downloading jq..."
+            JQ_URL="https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe"
+            JQ_PATH="/usr/bin/jq.exe"
+            curl -L -o "$JQ_PATH" "$JQ_URL"
+            chmod +x "$JQ_PATH"
+            ;;
+        Darwin*)
+            echo "Detected macOS"
+            echo "Please install jq manually:"
+            echo "  brew install jq"
+            exit 1
+            ;;
+        *)
+            echo "Error: Unsupported OS: $OS"
+            echo "Please install jq manually: https://stedolan.github.io/jq/download/"
+            exit 1
+            ;;
+    esac
+
+    # Verify installation
+    if ! command -v jq &> /dev/null; then
+        echo "Error: Failed to install jq"
+        exit 1
+    fi
+
+    echo "jq installed successfully!"
 fi
 
 # Initialize settings.json if it doesn't exist
