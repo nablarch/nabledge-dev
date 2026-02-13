@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Migrated to Claude Code marketplace distribution structure
 - Plugin now distributed via marketplace catalog (nablarch/nabledge)
-- Users should install via: `/plugin marketplace add nablarch/nabledge` then `/plugin install nabledge-6@nablarch-nabledge`
+- Users should install via: `/plugin marketplace add nablarch/nabledge` then `/plugin install nabledge-6@nabledge`
 - Simplified license management: single LICENSE at repository root applies to entire marketplace
 
 ## [0.1] - 2026-02-12

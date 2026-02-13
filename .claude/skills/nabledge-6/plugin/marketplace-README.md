@@ -18,7 +18,7 @@ Nablarch 6 skill for AI-assisted development.
 /plugin marketplace add nablarch/nabledge
 
 # Install nabledge-6 plugin
-/plugin install nabledge-6@nablarch-nabledge
+/plugin install nabledge-6@nabledge
 ```
 
 **Usage**:
