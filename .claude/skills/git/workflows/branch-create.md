@@ -57,92 +57,83 @@ Error: Failed to update main branch.
 Please resolve conflicts before proceeding.
 ```
 
-### 2. Propose Branch Names
+### 2. Get Issue Number and Create Branch Name
 
-**2.1 Ask Work Purpose**
+**2.1 Ask for Issue Number**
 
-Use AskUserQuestion to understand work purpose:
+Use AskUserQuestion to get the issue number:
 
 ```
-Question: What will you implement or fix in this branch?
-Header: "Work Type"
+Question: What is the issue number for this work?
+Header: "Issue"
 Options:
-  - Label: "New Feature"
-    Description: "Implement a new feature"
-  - Label: "Bug Fix"
-    Description: "Fix an existing bug"
-  - Label: "Refactoring"
-    Description: "Improve code structure"
-  - Label: "Documentation"
-    Description: "Update documentation"
+  - Label: "I have an issue number"
+    Description: "Branch will be named issue-<number>"
+  - Label: "No issue yet"
+    Description: "Create an issue first"
 ```
 
-**2.2 Ask for Details**
-
-Based on selected work type, ask for details (free text):
+If user selects "No issue yet", exit with guidance:
 ```
-Please provide details about "{work_type}".
-Examples: user authentication, login page bug, API layer refactoring, etc.
-```
+Please create an issue first using GitHub issues.
+This ensures work is tracked and follows issue-driven development.
 
-**2.3 Generate Branch Names**
-
-Generate 3 branch name candidates from the details:
-
-**Generation Rules**:
-- Prefix: `add-` (feature), `fix-` (bug), `refactor-` (refactor), `docs-` (docs)
-- Body: Keywords from details joined with `-`
-- All lowercase, alphanumeric and hyphens only
-
-**Examples**:
-- Details: "Add user authentication feature"
-  - Candidate 1: `add-user-auth`
-  - Candidate 2: `add-authentication`
-  - Candidate 3: `user-auth-feature`
-
-- Details: "Fix login page bug"
-  - Candidate 1: `fix-login-page`
-  - Candidate 2: `fix-login-bug`
-  - Candidate 3: `login-page-fix`
-
-**2.4 Select Branch Name**
-
-Use AskUserQuestion to select from candidates:
-
-```
-Question: Select branch name.
-Header: "Branch Name"
-Options:
-  - Label: "{candidate1}"
-    Description: "Recommended"
-  - Label: "{candidate2}"
-    Description: ""
-  - Label: "{candidate3}"
-    Description: ""
+To create an issue:
+1. Go to GitHub repository
+2. Click "Issues" → "New issue"
+3. Follow the format in .claude/rules/issues.md
+4. Return here with the issue number
 ```
 
-If user selects "Other", accept free text input.
+If user selects "I have an issue number", ask for the number (free text).
 
-**2.5 Check for Duplicates**
+**2.2 Validate Issue**
+
+Verify the issue exists using gh CLI:
 
 ```bash
-git branch --list "{branch_name}"
+gh issue view {issue_number}
+```
+
+If issue doesn't exist, exit with error:
+```
+Error: Issue #{issue_number} not found.
+
+Please verify the issue number or create the issue first:
+gh issue create
+```
+
+**2.3 Generate Branch Name**
+
+Branch name is always: `issue-{issue_number}`
+
+**Example**:
+- Issue #42 → Branch: `issue-42`
+- Issue #123 → Branch: `issue-123`
+
+**2.4 Check for Duplicates**
+
+```bash
+git branch --list "issue-{issue_number}"
 ```
 
 If exists, exit with error:
 ```
-Error: Branch "{branch_name}" already exists.
+Error: Branch "issue-{issue_number}" already exists.
 
-Use a different name or delete the existing branch:
-git branch -d {branch_name}
+To work on existing branch:
+git checkout issue-{issue_number}
+
+To delete and recreate:
+git branch -D issue-{issue_number}
 ```
 
 ### 3. Create Branch
 
-Create branch with selected name:
+Create branch with issue-based name:
 
 ```bash
-git checkout -b {branch_name}
+git checkout -b issue-{issue_number}
 ```
 
 ### 4. Display Result
@@ -150,10 +141,11 @@ git checkout -b {branch_name}
 ```
 ## Branch Creation Complete
 
-**Branch Name**: {branch_name}
+**Branch Name**: issue-{issue_number}
+**Issue**: #{issue_number}
 **Base Branch**: main
 
-You can now start working.
+You can now start working on this issue.
 Use `/git commit` to commit changes.
 ```
 
@@ -169,5 +161,7 @@ Use `/git commit` to commit changes.
 ## Important Notes
 
 1. **No emojis**: Never use emojis unless explicitly requested by user
-2. **Branch name quality**: Generate appropriate names from user input
-3. **Safety**: Protect main branch, check duplicates, verify clean working tree
+2. **Issue-driven development**: All branches must be linked to a GitHub issue
+3. **Branch naming**: Always use `issue-<number>` format for consistency
+4. **Safety**: Protect main branch, check duplicates, verify clean working tree
+5. **Issue validation**: Always verify issue exists before creating branch

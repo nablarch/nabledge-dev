@@ -29,73 +29,75 @@ dirname $(pwd)
 
 - Parent directory: `<workspace-parent-path>`
 
-### 2. Propose Branch Names
+### 2. Get Issue Number and Create Branch Name
 
-**2.1 Ask Work Purpose**
+**2.1 Ask for Issue Number**
 
-Use AskUserQuestion to understand work purpose:
+Use AskUserQuestion to get the issue number:
 
 ```
-Question: What will you implement or fix in this worktree?
-Header: "Work Type"
+Question: What is the issue number for this work?
+Header: "Issue"
 Options:
-  - Label: "New Feature"
-    Description: "Implement a new feature"
-  - Label: "Bug Fix"
-    Description: "Fix an existing bug"
-  - Label: "Refactoring"
-    Description: "Improve code structure"
-  - Label: "Documentation"
-    Description: "Update documentation"
+  - Label: "I have an issue number"
+    Description: "Worktree will be named issue-<number>"
+  - Label: "No issue yet"
+    Description: "Create an issue first"
 ```
 
-**2.2 Ask for Details**
-
-Based on selected work type, ask for details (free text):
+If user selects "No issue yet", exit with guidance:
 ```
-Please provide details about "{work_type}".
-Examples: user authentication, login page bug, API layer refactoring, etc.
-```
+Please create an issue first using GitHub issues.
+This ensures work is tracked and follows issue-driven development.
 
-**2.3 Generate Branch Names**
-
-Generate 3 branch name candidates from the details:
-
-**Generation Rules**:
-- Prefix: `add-` (feature), `fix-` (bug), `refactor-` (refactor), `docs-` (docs)
-- Body: Keywords from details joined with `-`
-- All lowercase, alphanumeric and hyphens only
-
-**2.4 Select Branch Name**
-
-Use AskUserQuestion to select from candidates:
-
-```
-Question: Select branch name.
-Header: "Branch Name"
-Options:
-  - Label: "{candidate1}"
-    Description: "Recommended"
-  - Label: "{candidate2}"
-    Description: ""
-  - Label: "{candidate3}"
-    Description: ""
+To create an issue:
+1. Go to GitHub repository
+2. Click "Issues" → "New issue"
+3. Follow the format in .claude/rules/issues.md
+4. Return here with the issue number
 ```
 
-If user selects "Other", accept free text input.
+If user selects "I have an issue number", ask for the number (free text).
 
-**2.5 Check for Duplicates**
+**2.2 Validate Issue**
+
+Verify the issue exists using gh CLI:
 
 ```bash
-git branch --list "{branch_name}"
+gh issue view {issue_number}
+```
+
+If issue doesn't exist, exit with error:
+```
+Error: Issue #{issue_number} not found.
+
+Please verify the issue number or create the issue first:
+gh issue create
+```
+
+**2.3 Generate Branch Name**
+
+Branch name is always: `issue-{issue_number}`
+
+**Example**:
+- Issue #42 → Branch: `issue-42`
+- Issue #123 → Branch: `issue-123`
+
+**2.4 Check for Duplicates**
+
+```bash
+git branch --list "issue-{issue_number}"
 ```
 
 If exists, exit with error:
 ```
-Error: Branch "{branch_name}" already exists.
+Error: Branch "issue-{issue_number}" already exists.
 
-Use a different name or delete the existing branch:
-git branch -d {branch_name}
+To work on existing branch in a new worktree:
+git worktree add {path} issue-{issue_number}
+
+To delete and recreate:
+git branch -D issue-{issue_number}
 ```
 
 ### 3. Determine Worktree Path
@@ -104,13 +106,13 @@ git branch -d {branch_name}
 
 ```bash
 parent_dir=$(dirname $(pwd))
-repo_name=$(basename $(pwd))
-worktree_path="${parent_dir}/${repo_name}-${branch_name}"
+worktree_path="${parent_dir}/issue-{issue_number}"
 ```
 
 Example:
-- Current: `<workspace-path>/nab-agents`
-- Worktree: `<workspace-path>/nab-agents-<branch-name>`
+- Current: `<workspace-path>/nabledge-dev`
+- Issue #42 → Worktree: `<workspace-path>/issue-42`
+- Issue #123 → Worktree: `<workspace-path>/issue-123`
 
 **3.2 Check Path Existence**
 
@@ -122,7 +124,8 @@ If exists, exit with error:
 ```
 Error: Path "{worktree_path}" already exists.
 
-Use a different branch name or delete the existing directory.
+Delete the existing directory or use a different issue number:
+rm -rf {worktree_path}
 ```
 
 **3.3 Confirm Path**
@@ -140,7 +143,8 @@ Options:
 
 Display info:
 Path: {worktree_path}
-Branch: {branch_name}
+Branch: issue-{issue_number}
+Issue: #{issue_number}
 Base: main
 ```
 
@@ -156,7 +160,7 @@ git pull origin main
 **4.2 Create Worktree**
 
 ```bash
-git worktree add -b {branch_name} {worktree_path} main
+git worktree add -b issue-{issue_number} {worktree_path} main
 ```
 
 If creation fails:
@@ -175,13 +179,14 @@ Please verify:
 ## Worktree Creation Complete
 
 **Path**: {worktree_path}
-**Branch**: {branch_name}
+**Branch**: issue-{issue_number}
+**Issue**: #{issue_number}
 **Base Branch**: main
 
 ### Move to Worktree
 cd {worktree_path}
 
-You can now start working.
+You can now start working on this issue.
 Use `/git commit` to commit changes.
 ```
 
@@ -198,6 +203,8 @@ Use `/git commit` to commit changes.
 ## Important Notes
 
 1. **No emojis**: Never use emojis unless explicitly requested by user
-2. **Path naming convention**: `{parent_dir}/{repo_name}-{branch_name}`
-3. **Branch name quality**: Generate appropriate names from user input
-4. **Base branch**: Always branch from main
+2. **Path naming convention**: `{parent_dir}/issue-{issue_number}`
+3. **Branch naming convention**: `issue-{issue_number}`
+4. **Issue-driven development**: All worktrees must be linked to a GitHub issue
+5. **Issue validation**: Always verify issue exists before creating worktree
+6. **Base branch**: Always branch from main
