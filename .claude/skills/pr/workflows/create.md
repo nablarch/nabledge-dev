@@ -138,62 +138,22 @@ Analyze commit history and diff using the following algorithm:
 - Extract context from commit message bodies (not just subjects)
 - Identify files with most changes from `git diff --stat`
 - If issue exists, read it with `gh issue view ${issue_number} --json body -q .body` and extract success criteria
-- Generate description following the template below
+- Generate description following the appropriate template
 
-**Description Template**:
+**Template Selection**:
+- **With issue**: Use `.claude/skills/pr/templates/pr-with-issue.md`
+- **Without issue**: Use `.claude/skills/pr/templates/pr-without-issue.md`
 
-If issue number provided:
-```markdown
-Closes #${issue_number}
+**Template Usage**:
 
-## Approach
-[Describe the solution strategy and key design decisions. Explain WHY this approach was chosen, any alternatives considered, and trade-offs made.]
+Read the appropriate template file and replace placeholders:
+- `[ISSUE_NUMBER]` → Actual issue number
+- `[Describe the solution...]` → Generated approach description from commits and diff
+- `[List implementation...]` → Generated task list from commits
+- `[Criterion X from issue]` → Extracted from issue success criteria
+- `[How this was verified]` → Evidence from implementation (file paths, test results)
 
-## Tasks
-[List implementation tasks completed as checkboxes]
-- [x] Task 1
-- [x] Task 2
-- [x] Task 3
-
-## Expert Review
-
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
-
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-
-## Success Criteria Check
-
-[Read the issue body and extract success criteria section, then create verification table]
-
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| [Criterion 1 from issue] | ✅ Met / ❌ Not Met | [How this was verified] |
-| [Criterion 2 from issue] | ✅ Met / ❌ Not Met | [How this was verified] |
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-```
-
-If no issue number:
-```markdown
-## Summary
-[Describe purpose and content of changes in 1-3 sentences]
-
-## Changes
-[List main changes as bullet points]
-- Change 1
-- Change 2
-
-## Testing
-- [ ] Manual testing completed
-- [ ] Tests added/updated (if needed)
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-```
+See `.claude/skills/pr/templates/` for complete template structure and examples.
 
 ### 3. Create PR
 
@@ -284,7 +244,9 @@ pr_url=$(gh pr view --json url -q .url)
 echo "PR created: ${pr_url}"
 ```
 
-### 4. Display Result
+### 4. Display Result and Request Review
+
+Display the PR URL and guide user to review on GitHub:
 
 ```
 ## PR Creation Complete
@@ -293,7 +255,21 @@ echo "PR created: ${pr_url}"
 **Branch**: ${current_branch} → ${target_branch}
 **Title**: ${generated_title}
 
-Please request review from reviewers.
+---
+
+📝 **Next Steps: Review on GitHub**
+
+Please open the PR URL above and review/edit the following on GitHub:
+- Title (check clarity and length)
+- Description (Approach, Tasks, Success Criteria)
+- Reviewers (add team members)
+- Assignees (assign yourself or others)
+- Labels (add appropriate labels)
+- Milestone (if applicable)
+
+You can edit the PR as many times as needed on GitHub before requesting review.
+
+Once satisfied with the PR content, request review from appropriate team members.
 ```
 
 ## Error Handling
@@ -314,3 +290,5 @@ Please request review from reviewers.
 4. **HEREDOC Usage**: ALWAYS use HEREDOC for multi-line PR body to ensure correct formatting
 5. **Branch Strategy**: PRs should target `develop` by default (see `.claude/rules/branch-strategy.md`)
 6. **Variable Syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
+7. **PR Templates**: Use templates from `.claude/skills/pr/templates/` directory for consistent formatting
+8. **GitHub Review**: PRs are created immediately but users can edit them on GitHub before requesting review

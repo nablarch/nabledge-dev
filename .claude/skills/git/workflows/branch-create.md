@@ -88,10 +88,14 @@ Please create an issue first using GitHub issues.
 This ensures work is tracked and follows issue-driven development.
 
 To create an issue:
-1. Go to GitHub repository
+1. Go to GitHub repository: gh repo view --web
 2. Click "Issues" → "New issue"
-3. Follow the format in .claude/rules/issues.md
-4. Return here with the issue number
+3. Follow the format in .claude/rules/issues.md:
+   - Title: "As a [role], I want [goal] so that [benefit]"
+   - Body: Situation / Pain / Benefit / Success Criteria
+4. Save the issue on GitHub
+5. Review and edit the issue content on GitHub (you can edit it as many times as needed)
+6. Return here with the issue number
 
 If user provides an issue number, validate it is numeric:
 
