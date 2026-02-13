@@ -1,62 +1,23 @@
-# Nablarch スキルマーケットプレイス
+# Nabledge
 
-Claude CodeとGitHub Copilot向けのNablarch AI支援開発スキルです。
+Nabledgeは、NablarchによるAI支援開発スキルです。Claude CodeやGitHub Copilotといったコーディングエージェントに対して、Nablarchの知識とワークフローを提供します。
 
-## 利用可能なプラグイン
+コーディングエージェントはNablarchのような企業フレームワークの知識を十分に持っていません。Nabledgeを導入することで、エージェントがNablarchのドキュメントやベストプラクティスを参照しながら開発を支援できるようになります。
 
-### nabledge-6
+## プラグイン
 
-Nablarch 6のAI支援開発スキルです。
+| プラグイン | 対応バージョン | 状態 |
+|-----------|-------------|------|
+| [nabledge-6](plugins/nabledge-6/README.md) | Nablarch 6u3 | 提供中 |
+| nabledge-5 | Nablarch 5 | 今後提供予定 |
 
-**機能**:
-- 知識検索: Nablarch 6のドキュメントとベストプラクティスを検索
-- コード分析: Nablarchの観点からアプリケーションコードを分析
-
-**インストール**:
-```bash
-# マーケットプレイスを追加
-/plugin marketplace add nablarch/nabledge
-
-# nabledge-6 プラグインをインストール
-/plugin install nabledge-6@nabledge
-```
-
-**使い方**:
-```bash
-# 基本的な使い方
-/nabledge-6
-
-# 知識検索
-/nabledge-6 "バッチ処理の実装方法を教えて"
-
-# コード分析
-/nabledge-6 code-analysis
-```
-
-**対応範囲**: Nablarch 6u3
-
-できること:
-- バッチ処理の基礎知識の検索
-- データベースアクセスの実装方法の検索
-- テスティングフレームワークの使い方の検索
-- セキュリティチェックリストの確認
-- プロジェクトコードのNablarch観点での分析
-
-今後対応予定:
-- RESTful Webサービスの知識
-- ハンドラの詳細仕様
-- より詳細なコード分析機能
-
-詳細は [plugins/nabledge-6/README.md](plugins/nabledge-6/README.md) を参照してください。
-
-### nabledge-5 (Coming Soon)
-
-Nablarch 5のAI支援開発スキルは今後提供予定です。
+インストール方法や使い方は各プラグインのREADMEを参照してください。
 
 ## バージョニング
 
-各プラグインは独立したバージョン管理を行っています：
-- **nabledge-6**: `minor.patch` 形式を使用（例: 0.1, 1.0, 2.0）
+各プラグインは独立したバージョン管理を行っています。
+
+- nabledge-6: `minor.patch` 形式を使用（例: 0.1, 1.0, 2.0）
 - プラグイン名がすでにNablarchのメジャーバージョンを示しています
 
 ## ライセンス
