@@ -4,6 +4,12 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.2] - 2026-02-13
+
+### Fixed
+- setup.shのバグ修正：配布リポジトリの構造に合わせてコピー処理を修正
+- Gitリポジトリ外でも実行可能に改善
+
 ## [0.1] - 2026-02-13
 
 ### Added
@@ -14,4 +20,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - テスティングフレームワークの基礎
 - セキュリティチェックリスト
 
+[0.2]: https://github.com/nablarch/nabledge/releases/tag/0.2
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/0.1

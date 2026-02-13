@@ -1,28 +1,39 @@
 #!/bin/bash
 set -e
 
-# Navigate to repository root
-cd "$(git rev-parse --show-toplevel)"
+# Navigate to repository root (or current directory if not in git repo)
+if git rev-parse --show-toplevel &>/dev/null; then
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+else
+  PROJECT_ROOT="$(pwd)"
+fi
 
 echo "Setting up Nabledge-6 skill for GitHub Copilot..."
+echo "Project root: $PROJECT_ROOT"
 
-# Download .claude directory from nablarch/nabledge repository
+# Download nabledge-6 plugin from nablarch/nabledge repository
 REPO_URL="https://github.com/nablarch/nabledge"
 TEMP_DIR=$(mktemp -d)
 
-echo "Downloading .claude directory from $REPO_URL..."
+echo "Downloading nabledge-6 plugin from $REPO_URL..."
 cd "$TEMP_DIR"
 git clone --depth 1 --filter=blob:none --sparse "$REPO_URL"
 cd nabledge
-git sparse-checkout set .claude
+git sparse-checkout set plugins/nabledge-6
 
-# Copy .claude directory to project root
-echo "Copying .claude directory to project..."
-cd -
-cp -r "$TEMP_DIR/nabledge/.claude" .
+# Create .claude/skills directory structure in project
+echo "Creating .claude/skills directory structure..."
+mkdir -p "$PROJECT_ROOT/.claude/skills"
+
+# Copy nabledge-6 plugin to .claude/skills/
+echo "Copying nabledge-6 plugin to project..."
+cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
 # Clean up
 rm -rf "$TEMP_DIR"
 
+echo ""
 echo "Setup complete! The nabledge-6 skill is now available in your project."
+echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6/"
+echo ""
 echo "You can use it with GitHub Copilot by typing '/nabledge-6' in your editor."
