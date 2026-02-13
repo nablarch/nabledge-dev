@@ -85,8 +85,10 @@ def scan_md_files(base_dir: str) -> List[Dict]:
         return results
 
     for md_file in base_path.rglob('*.md'):
-        # Skip node_modules and hidden directories
-        if any(part.startswith('.') or part == 'node_modules' for part in md_file.parts):
+        # Skip node_modules and hidden directories within the scanned tree
+        # (not the parent path components)
+        rel_parts = md_file.relative_to(base_path).parts
+        if any(part.startswith('.') or part == 'node_modules' for part in rel_parts):
             continue
 
         rel_path = str(md_file.relative_to(base_path.parent.parent.parent))
