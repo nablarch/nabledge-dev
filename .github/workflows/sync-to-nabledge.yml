@@ -48,8 +48,8 @@ jobs:
           TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
           DATE=$(date +%Y-%m-%d)
 
-          # Append sync entry to CHANGELOG
-          sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/CHANGELOG.md
+          # Append sync entry to nabledge-6 plugin CHANGELOG
+          sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/plugins/nabledge-6/CHANGELOG.md
 
       - name: Validate marketplace structure
         run: |
