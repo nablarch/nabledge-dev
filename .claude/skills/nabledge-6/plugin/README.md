@@ -33,17 +33,23 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skill
 /nabledge-6
 ```
 
+スキルを起動し、対話的にNablarchに関する質問や、コード分析を行うことができます。
+
 ### 知識検索
 
 ```bash
 /nabledge-6 "バッチ処理の実装方法を教えて"
 ```
 
+Nablarch 6のドキュメントやベストプラクティスから知識を検索し、回答を得ることができます。質問は日本語でも英語でも可能です。
+
 ### コード分析
 
 ```bash
 /nabledge-6 code-analysis
 ```
+
+現在のプロジェクトのコードをNablarchの観点から分析します。Actionクラス、ハンドラ構成、データベースアクセスパターンなどを評価し、改善提案を提供します。
 
 ## カバー範囲
 

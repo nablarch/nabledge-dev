@@ -17,6 +17,11 @@ if [ ! -d "$SOURCE_DIR/.claude/skills/nabledge-6" ]; then
   exit 1
 fi
 
+if [ ! -d "$SOURCE_DIR/.claude/marketplace" ]; then
+  echo "Error: Source directory does not contain .claude/marketplace"
+  exit 1
+fi
+
 # Create marketplace directories
 echo "Creating marketplace directory structure..."
 mkdir -p "$DEST_DIR/.claude-plugin"
@@ -25,11 +30,11 @@ mkdir -p "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6"
 
 # Copy marketplace.json to root
 echo "Copying marketplace.json..."
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/marketplace.json" "$DEST_DIR/.claude-plugin/"
+cp "$SOURCE_DIR/.claude/marketplace/.claude-plugin/marketplace.json" "$DEST_DIR/.claude-plugin/"
 
 # Copy marketplace README and LICENSE to root
 echo "Copying marketplace README and LICENSE..."
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/marketplace-README.md" "$DEST_DIR/README.md"
+cp "$SOURCE_DIR/.claude/marketplace/README.md" "$DEST_DIR/README.md"
 cp "$SOURCE_DIR/LICENSE" "$DEST_DIR/"
 
 # Copy nabledge-6 plugin files
