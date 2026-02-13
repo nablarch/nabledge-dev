@@ -13,7 +13,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - データベースアクセスライブラリ
 - テスティングフレームワークの基礎
 - セキュリティチェックリスト
-- Claude Code用セットアップスクリプト（setup-6-cc.sh、jq自動インストール対応）
-- GitHub Copilot用セットアップスクリプト（setup-6-ghc.sh、jq自動インストール対応）
 
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/0.1
