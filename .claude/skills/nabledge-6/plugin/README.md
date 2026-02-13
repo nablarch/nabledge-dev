@@ -58,7 +58,7 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 プロジェクトルートで以下のコマンドを実行：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/scripts/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup.sh | bash
 ```
 
 実行後、`.claude` ディレクトリがプロジェクトに作成されます。このディレクトリをGitにコミット・プッシュしてください。チームメンバーも同じスキルを利用できるようになります。
@@ -106,7 +106,7 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 セットアップスクリプトを再実行：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/scripts/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup.sh | bash
 ```
 
 更新後、`.claude` ディレクトリの変更をGitにコミット・プッシュしてください。
