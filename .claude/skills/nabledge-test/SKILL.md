@@ -75,12 +75,12 @@ Read .claude/skills/skill-creator/agents/grader.md
 
 ### Step 5: Setup workspace
 
-**Fixed workspace**: `nabledge-test-workspace/eval-<scenario-id>/`
+**Workspace location**: `work/YYYYMMDD/nabledge-test/eval-<scenario-id>-HHMMSS/` (timestamp-based to avoid conflicts)
 
 Create structure:
 ```
-nabledge-test-workspace/
-└── eval-<scenario-id>/
+work/YYYYMMDD/nabledge-test/
+└── eval-<scenario-id>-HHMMSS/
     ├── with_skill/
     │   ├── outputs/
     │   │   ├── transcript.md
@@ -90,7 +90,7 @@ nabledge-test-workspace/
 ```
 
 ```bash
-mkdir -p nabledge-test-workspace/eval-<scenario-id>/with_skill/outputs
+mkdir -p work/$(date +%Y%m%d)/nabledge-test/eval-<scenario-id>-$(date +%H%M%S)/with_skill/outputs
 ```
 
 ### Step 6: Execute nabledge-6 inline - Follow executor.md
@@ -300,10 +300,10 @@ Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md`:
 - **Response Length**: <chars> chars
 
 ## Transcript
-See: nabledge-test-workspace/eval-<id>/with_skill/outputs/transcript.md
+See: work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
 
 ## Grading
-See: nabledge-test-workspace/eval-<id>/with_skill/grading.json
+See: work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 ```
 
 ### Step 9: Display summary
@@ -311,7 +311,7 @@ See: nabledge-test-workspace/eval-<id>/with_skill/grading.json
 ```
 ✓ handlers-001: PASS (7/8 expectations, 87.5%)
   Report: work/20260213/test-handlers-001-153045.md
-  Transcript: nabledge-test-workspace/eval-handlers-001/with_skill/outputs/transcript.md
+  Transcript: work/20260213/nabledge-test/eval-handlers-001-153045/with_skill/outputs/transcript.md
 ```
 
 ## Dependencies
@@ -324,4 +324,4 @@ See: nabledge-test-workspace/eval-<id>/with_skill/grading.json
 - nabledge-test follows skill-creator's eval-mode procedures
 - Does NOT invoke skill-creator as a skill
 - Manually executes executor and grader steps
-- Workspace: fixed at `nabledge-test-workspace/`
+- Workspace: `work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/` (timestamp-based to avoid conflicts)
