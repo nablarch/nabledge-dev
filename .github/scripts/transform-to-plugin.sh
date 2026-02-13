@@ -35,7 +35,7 @@ cp "$SOURCE_DIR/.claude/marketplace/.claude-plugin/marketplace.json" "$DEST_DIR/
 # Copy marketplace README and LICENSE to root
 echo "Copying marketplace README and LICENSE..."
 cp "$SOURCE_DIR/.claude/marketplace/README.md" "$DEST_DIR/README.md"
-cp "$SOURCE_DIR/LICENSE" "$DEST_DIR/"
+cp "$SOURCE_DIR/.claude/marketplace/LICENSE" "$DEST_DIR/"
 
 # Copy nabledge-6 plugin files
 echo "Copying nabledge-6 plugin..."
