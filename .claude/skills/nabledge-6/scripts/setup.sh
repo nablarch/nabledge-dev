@@ -13,11 +13,12 @@ echo "Project root: $PROJECT_ROOT"
 
 # Download nabledge-6 plugin from nablarch/nabledge repository
 REPO_URL="https://github.com/nablarch/nabledge"
+BRANCH="dummy-to"
 TEMP_DIR=$(mktemp -d)
 
-echo "Downloading nabledge-6 plugin from $REPO_URL..."
+echo "Downloading nabledge-6 plugin from $REPO_URL (branch: $BRANCH)..."
 cd "$TEMP_DIR"
-git clone --depth 1 --filter=blob:none --sparse "$REPO_URL"
+git clone --depth 1 --filter=blob:none --sparse --branch "$BRANCH" "$REPO_URL"
 cd nabledge
 git sparse-checkout set plugins/nabledge-6
 
