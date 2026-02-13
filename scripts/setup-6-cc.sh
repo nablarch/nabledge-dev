@@ -14,7 +14,7 @@ echo "Project root: $PROJECT_ROOT"
 # Configuration
 REPO_OWNER="nablarch"
 REPO_NAME="nabledge"
-BRANCH="dummy-to"
+BRANCH="main"
 MARKETPLACE_NAME="nabledge"
 PLUGIN_NAME="nabledge-6"
 

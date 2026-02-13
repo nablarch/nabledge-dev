@@ -13,7 +13,7 @@ echo "Project root: $PROJECT_ROOT"
 
 # Download nabledge-6 plugin from nablarch/nabledge repository
 REPO_URL="https://github.com/nablarch/nabledge"
-BRANCH="dummy-to"
+BRANCH="main"
 TEMP_DIR=$(mktemp -d)
 
 echo "Downloading nabledge-6 plugin from $REPO_URL (branch: $BRANCH)..."
