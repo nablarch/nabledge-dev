@@ -68,12 +68,12 @@ Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md` with:
 
 ## Scenarios
 
-5 essential scenarios covering core functionality:
-- handlers-001: DataReadHandler file reading
-- libraries-001: UniversalDao paging
-- tools-001: NTF test data preparation
-- processing-001: Nablarch batch architecture
-- code-analysis-001: Existing code analysis
+5 most frequently asked scenarios (selected by practical usage):
+- processing-005: Batch startup (beginners' first hurdle)
+- libraries-001: UniversalDao paging (highest implementation frequency)
+- handlers-001: DataReadHandler file reading (batch basics)
+- processing-004: Error handling (implementation essential)
+- processing-002: BatchAction implementation (business logic)
 
 ## Dependencies
 
