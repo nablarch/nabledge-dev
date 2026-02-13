@@ -73,15 +73,8 @@ jobs:
           # Read first line (# Changelog)
           head -n 1 "$CHANGELOG_FILE" > "$TEMP_FILE"
 
-          # Add new unreleased section
-          cat >> "$TEMP_FILE" <<EOF
-
-## [Unreleased] - ${DATE}
-
-### Changed
-- Synced from: ${TRIGGER_COMMIT_URL}
-
-EOF
+          # Add new unreleased section using printf
+          printf "\n## [Unreleased] - %s\n\n### Changed\n- Synced from: %s\n\n" "$DATE" "$TRIGGER_COMMIT_URL" >> "$TEMP_FILE"
 
           # Append rest of original file
           tail -n +2 "$CHANGELOG_FILE" >> "$TEMP_FILE"
