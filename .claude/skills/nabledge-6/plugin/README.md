@@ -99,13 +99,6 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 /plugin marketplace update nabledge
 ```
 
-特定バージョンを指定したい場合は、マーケットプレイスを再追加：
-
-```bash
-# 特定バージョンをタグで指定
-/plugin marketplace add nablarch/nabledge#v0.5
-```
-
 実行後、更新された`.claude/settings.json`をGitにコミット・プッシュしてください。
 
 ### GitHub Copilot (WSL / GitBash)
@@ -114,12 +107,6 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skills/nabledge-6/scripts/setup.sh | bash
-```
-
-特定バージョンを指定する場合：
-
-```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/v0.3/.claude/skills/nabledge-6/scripts/setup.sh | bash
 ```
 
 更新後、`.claude` ディレクトリの変更をGitにコミット・プッシュしてください。
