@@ -43,14 +43,16 @@ This work created comprehensive mapping information that maps Nablarch official 
 
 | Metric | Count | Percentage |
 |--------|-------|------------|
-| **Total files** | 687 | 100% |
-| **In scope** | 546 | 79.5% |
-| **Out of scope** | 141 | 20.5% |
+| **Total files** | 514 | 100% |
+| **In scope** | 443 | 86.2% |
+| **Out of scope** | 71 | 13.8% |
 | **Needs review** | 0 | 0% |
+
+**Note:** ja/en duplicate files have been deduplicated (kept ja versions only).
 
 #### V6 Source Breakdown
 
-- nablarch-document: 667 RST files
+- nablarch-document: 336 RST files (ja only, en duplicates removed)
 - nablarch-system-development-guide: 158 MD files (including dev guide patterns)
 - nablarch-single-module-archetype: 10 archetype projects (20 representative files)
 
@@ -58,25 +60,29 @@ This work created comprehensive mapping information that maps Nablarch official 
 
 | Reason | Files |
 |--------|-------|
-| Web applications (JSP/UI) | 86 |
-| Jakarta Batch (JSR 352) | 26 |
-| DB Messaging (Resident Batch) | 16 |
-| MOM Messaging | 10 |
-| Messaging (other) | 2 |
+| Web applications (JSP/UI) | 43 |
+| Jakarta Batch (JSR 352) | 13 |
+| DB Messaging (Resident Batch) | 8 |
+| MOM Messaging | 5 |
+| Messaging (other) | 1 |
 | Test files and tooling | 1 |
+
+**Note:** Counts halved due to ja/en deduplication.
 
 ### V5 Mapping
 
 | Metric | Count | Percentage |
 |--------|-------|------------|
-| **Total files** | 792 | 100% |
-| **In scope** | 649 | 81.9% |
-| **Out of scope** | 143 | 18.1% |
+| **Total files** | 453 | 100% |
+| **In scope** | 381 | 84.1% |
+| **Out of scope** | 72 | 15.9% |
 | **Needs review** | 0 | 0% |
+
+**Note:** ja/en duplicate files have been deduplicated (kept ja versions only).
 
 #### V5 Source Breakdown
 
-- nablarch-document: 772 RST files
+- nablarch-document: 435 RST files (ja only, en duplicates removed)
 - nablarch-single-module-archetype: 9 archetype projects (18 representative files)
 - Note: No system-development-guide for v5 (v6 guide is used as reference)
 
@@ -84,12 +90,14 @@ This work created comprehensive mapping information that maps Nablarch official 
 
 | Reason | Files |
 |--------|-------|
-| Web applications (JSP/UI) | 88 |
-| Jakarta Batch (JSR 352) | 26 |
-| DB Messaging (Resident Batch) | 16 |
-| MOM Messaging | 10 |
-| Messaging (other) | 2 |
+| Web applications (JSP/UI) | 44 |
+| Jakarta Batch (JSR 352) | 13 |
+| DB Messaging (Resident Batch) | 8 |
+| MOM Messaging | 5 |
+| Messaging (other) | 1 |
 | Test files and tooling | 1 |
+
+**Note:** Counts halved due to ja/en deduplication.
 
 ## Category Distribution (In-Scope Files)
 
@@ -255,4 +263,5 @@ Please review `out-of-scope-v6.md` and `out-of-scope-v5.md` to verify:
 - V5 has no system-development-guide (v6 guide is referenced instead)
 - Multiple source files can map to the same target file
 - One source file can have multiple categories
-- All 1,479 files (687 v6 + 792 v5) are accounted for with 100% coverage
+- All 967 unique files (514 v6 + 453 v5) are accounted for with 100% coverage
+- ja/en duplicates removed (kept ja versions only, 670 en files removed)
