@@ -1,61 +1,61 @@
-# Nablarch Skills Marketplace
+# Nablarch スキルマーケットプレイス
 
-Nablarch skills for AI-assisted development using Claude Code and GitHub Copilot.
+Claude CodeとGitHub Copilot向けのNablarch AI支援開発スキルです。
 
-## Available Plugins
+## 利用可能なプラグイン
 
 ### nabledge-6
 
-Nablarch 6 skill for AI-assisted development.
+Nablarch 6のAI支援開発スキルです。
 
-**Features**:
-- Knowledge Search: Search Nablarch 6 documentation and best practices
-- Code Analysis: Analyze application code from Nablarch perspective
+**機能**:
+- 知識検索: Nablarch 6のドキュメントとベストプラクティスを検索
+- コード分析: Nablarchの観点からアプリケーションコードを分析
 
-**Installation**:
+**インストール**:
 ```bash
-# Add marketplace
+# マーケットプレイスを追加
 /plugin marketplace add nablarch/nabledge
 
-# Install nabledge-6 plugin
+# nabledge-6 プラグインをインストール
 /plugin install nabledge-6@nabledge
 ```
 
-**Usage**:
+**使い方**:
 ```bash
-# Basic usage
+# 基本的な使い方
 /nabledge-6
 
-# Knowledge search
-/nabledge-6 "How do I implement batch processing?"
+# 知識検索
+/nabledge-6 "バッチ処理の実装方法を教えて"
 
-# Code analysis
+# コード分析
 /nabledge-6 code-analysis
 ```
 
-**Coverage**: Nablarch 6u3
-- Batch processing basics
-- Database access
-- Testing framework basics
-- Security checklist
+**カバー範囲**: Nablarch 6u3
+- バッチ処理の基礎
+- データベースアクセス
+- テスティングフレームワークの基礎
+- セキュリティチェックリスト
 
-See [plugins/nabledge-6/README.md](plugins/nabledge-6/README.md) for details.
+詳細は [plugins/nabledge-6/README.md](plugins/nabledge-6/README.md) を参照してください。
 
 ### nabledge-5 (Coming Soon)
 
-Nablarch 5 skill for AI-assisted development will be available in the future.
+Nablarch 5のAI支援開発スキルは今後提供予定です。
 
-## Versioning
+## バージョニング
 
-Each plugin has independent versioning:
-- **nabledge-6**: Uses `minor.patch` format (e.g., 0.1, 1.0, 2.0)
-- Plugin name already indicates Nablarch major version
+各プラグインは独立したバージョン管理を行っています：
+- **nabledge-6**: `minor.patch` 形式を使用（例: 0.1, 1.0, 2.0）
+- プラグイン名がすでにNablarchのメジャーバージョンを示しています
 
-## License
+## ライセンス
 
 Apache-2.0
 
-## Links
+## リンク
 
-- Distribution Repository: https://github.com/nablarch/nabledge
-- Development Repository: https://github.com/nablarch/nabledge-dev
+- 配布リポジトリ: https://github.com/nablarch/nabledge
+- 開発リポジトリ: https://github.com/nablarch/nabledge-dev

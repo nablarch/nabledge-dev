@@ -1,72 +1,76 @@
-# Nabledge-6 Plugin
+# Nabledge-6 プラグイン
 
-Nablarch 6 skill for AI-assisted development.
+Nablarch 6のAI支援開発スキルです。
 
-## Features
+## 機能
 
-- **Knowledge Search**: Search Nablarch 6 documentation and best practices
-- **Code Analysis**: Analyze application code from Nablarch perspective
+- **知識検索**: Nablarch 6のドキュメントとベストプラクティスを検索
+- **コード分析**: Nablarchの観点からアプリケーションコードを分析
 
-## Installation
+## インストール
 
-### For Claude Code (WSL)
+### Claude Code
 
 ```bash
+# マーケットプレイスを追加
 /plugin marketplace add nablarch/nabledge
+
+# プラグインをインストール
+/plugin install nabledge-6@nabledge
 ```
 
-### For GitHub Copilot (WSL or GitBash)
+### GitHub Copilot (WSL / GitBash)
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skills/nabledge-6/scripts/setup.sh | bash
 ```
 
-## Usage
+## 使い方
 
-### Basic Usage
+### 基本的な使い方
 
 ```bash
 /nabledge-6
 ```
 
-### Knowledge Search
+### 知識検索
 
 ```bash
-/nabledge-6 "How do I implement batch processing?"
+/nabledge-6 "バッチ処理の実装方法を教えて"
 ```
 
-### Code Analysis
+### コード分析
 
 ```bash
 /nabledge-6 code-analysis
 ```
 
-## Scope
+## カバー範囲
 
-### Nablarch Version
+### Nablarchバージョン
 - Nablarch 6u3
 
-### Coverage
-- Batch processing basics
-- Database access
-- Testing framework basics
-- Security checklist
+### 対応内容
+- バッチ処理の基礎
+- データベースアクセス
+- テスティングフレームワークの基礎
+- セキュリティチェックリスト
 
-Note: This is an initial release with limited coverage. More features will be added in future versions.
+注：初回リリースのため、カバー範囲は限定的です。今後のバージョンで機能を追加していきます。
 
-## Versioning
+## バージョニング
 
-This plugin uses a `minor.patch` versioning scheme:
-- **Minor** (first digit): Incremented for feature additions (e.g., 0.1 → 1.0 → 2.0)
-- **Patch** (second digit): Incremented for bug fixes and small changes (e.g., 0.1 → 0.2, 1.0 → 1.1)
+このプラグインは `minor.patch` 形式のバージョニングを使用します：
+- **Minor**（1桁目）: 機能追加時にインクリメント（例: 0.1 → 1.0 → 2.0）
+- **Patch**（2桁目）: バグ修正と小変更時にインクリメント（例: 0.1 → 0.2, 1.0 → 1.1）
 
-The plugin name `nabledge-6` already indicates the major version (Nablarch 6), so the plugin version itself uses a simplified two-digit format. This approach keeps versioning straightforward while maintaining clear compatibility with Nablarch 6.
+プラグイン名 `nabledge-6` がすでにメジャーバージョン（Nablarch 6）を示しているため、プラグインバージョンは2桁の簡略形式を使用します。
 
-## License
+## ライセンス
 
 Apache-2.0
 
-## Links
+## リンク
 
-- Distribution Repository: nablarch/nabledge
-- Development Repository: nablarch/nabledge-dev
+- 配布リポジトリ: https://github.com/nablarch/nabledge
+- 開発リポジトリ: https://github.com/nablarch/nabledge-dev
