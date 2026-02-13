@@ -66,6 +66,15 @@ Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md` with:
   Workspace: nabledge-test-workspace/nabledge-6/handlers-001/
 ```
 
+## Scenarios
+
+5 essential scenarios covering core functionality:
+- handlers-001: DataReadHandler file reading
+- libraries-001: UniversalDao paging
+- tools-001: NTF test data preparation
+- processing-001: Nablarch batch architecture
+- code-analysis-001: Existing code analysis
+
 ## Dependencies
 
 - skill-creator (evaluation engine)
