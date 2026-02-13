@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Changed author from string to object format
   - Changed repository from object to string format
   - Removed unsupported engines field
+- Fix marketplace.json schema to comply with Claude Code specification
+  - Moved homepage, repository, license from root to plugin entry
+  - Changed repository from object to string format in plugin entry
 
 ## [0.1] - 2026-02-12
 
