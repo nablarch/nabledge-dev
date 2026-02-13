@@ -31,6 +31,18 @@ Please create a feature/issue branch first.
 default_branch=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
 echo "Repository default branch: ${default_branch}"
 
+# Verify develop branch exists
+if ! git rev-parse --verify develop &>/dev/null; then
+  echo "Error: Branch 'develop' does not exist in this repository."
+  echo ""
+  echo "Please create 'develop' branch first:"
+  echo "  git checkout -b develop main"
+  echo "  git push -u origin develop"
+  echo ""
+  echo "Or update .claude/rules/branch-strategy.md if using different branch names."
+  exit 1
+fi
+
 # For PR creation, always target develop (see .claude/rules/branch-strategy.md)
 if [[ "$default_branch" == "develop" ]]; then
   target_branch="develop"
