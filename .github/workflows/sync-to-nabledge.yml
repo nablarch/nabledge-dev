@@ -67,7 +67,27 @@ jobs:
           DATE=$(date +%Y-%m-%d)
 
           # Append sync entry to nabledge-6 plugin CHANGELOG
-          sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/plugins/nabledge-6/CHANGELOG.md
+          CHANGELOG_FILE="nabledge-repo/plugins/nabledge-6/CHANGELOG.md"
+          TEMP_FILE=$(mktemp)
+
+          # Read first line (# Changelog)
+          head -n 1 "$CHANGELOG_FILE" > "$TEMP_FILE"
+
+          # Add new unreleased section
+          cat >> "$TEMP_FILE" <<EOF
+
+## [Unreleased] - ${DATE}
+
+### Changed
+- Synced from: ${TRIGGER_COMMIT_URL}
+
+EOF
+
+          # Append rest of original file
+          tail -n +2 "$CHANGELOG_FILE" >> "$TEMP_FILE"
+
+          # Replace original file
+          mv "$TEMP_FILE" "$CHANGELOG_FILE"
 
       - name: Validate marketplace structure
         run: |
