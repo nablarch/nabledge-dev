@@ -89,9 +89,8 @@ fi
 
 If no issue number detected from branch name, use the AskUserQuestion tool to prompt the user:
 - Question: "What is the issue number this PR addresses?"
-- Provide two options: "I have an issue number" and "No issue number"
-- If user selects "I have an issue number", they will provide the number via text input
-- If user selects "No issue number", proceed without issue linking
+- User must provide the issue number via text input
+- Issue number is required (issue-driven development standard)
 
 If user provides an issue number, validate it is numeric:
 
@@ -140,13 +139,9 @@ Analyze commit history and diff using the following algorithm:
 - If issue exists, read it with `gh issue view ${issue_number} --json body -q .body` and extract success criteria
 - Generate description following the appropriate template
 
-**Template Selection**:
-- **With issue**: Use `.claude/skills/pr/templates/pr-with-issue.md`
-- **Without issue**: Use `.claude/skills/pr/templates/pr-without-issue.md`
-
 **Template Usage**:
 
-Read the appropriate template file and replace placeholders:
+Use `.claude/skills/pr/templates/pr-template.md` and replace placeholders:
 - `[ISSUE_NUMBER]` → Actual issue number
 - `[Describe the solution...]` → Generated approach description from commits and diff
 - `[List implementation...]` → Generated task list from commits
@@ -159,9 +154,8 @@ See `.claude/skills/pr/templates/` for complete template structure and examples.
 
 **IMPORTANT**: Use HEREDOC syntax for multi-line PR body to ensure correct formatting.
 
-**HEREDOC Syntax Examples**:
+**HEREDOC Syntax Example**:
 
-**With Issue Number**:
 ```bash
 gh pr create \
   --title "feat: Add user authentication" \
@@ -201,29 +195,6 @@ EOF
 )" \
   --base develop \
   --head issue-42
-```
-
-**Without Issue Number**:
-```bash
-gh pr create \
-  --title "chore: Update dependencies" \
-  --body "$(cat <<'EOF'
-## Summary
-Updated project dependencies to latest versions.
-
-## Changes
-- Updated npm packages to address security vulnerabilities
-- Updated GitHub Actions to latest versions
-
-## Testing
-- [x] All tests pass
-- [x] Build succeeds
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)" \
-  --base develop \
-  --head update-deps
 ```
 
 **Execute PR Creation**:
@@ -267,7 +238,8 @@ Display the PR URL and guide user to review on GitHub:
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |
-| Issue not found | Create issue first or proceed without linking |
+| Issue not found | Create issue first (required for issue-driven development) |
+| No issue number provided | Prompt user for issue number (required) |
 
 ## Notes
 
@@ -277,5 +249,6 @@ Display the PR URL and guide user to review on GitHub:
 4. **HEREDOC Usage**: ALWAYS use HEREDOC for multi-line PR body to ensure correct formatting
 5. **Branch Strategy**: PRs should target `develop` by default (see `.claude/rules/branch-strategy.md`)
 6. **Variable Syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
-7. **PR Templates**: Use templates from `.claude/skills/pr/templates/` directory for consistent formatting
+7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
+9. **Issue Required**: All PRs must reference a GitHub issue (issue-driven development standard)

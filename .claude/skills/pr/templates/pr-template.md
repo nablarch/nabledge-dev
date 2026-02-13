@@ -1,6 +1,6 @@
-# PR Template: With Issue Reference
+# PR Template
 
-Use this template when creating a PR that closes a specific GitHub issue.
+This is the standard template for all pull requests. All PRs must reference a GitHub issue following issue-driven development.
 
 ## Template Structure
 
@@ -41,10 +41,10 @@ Closes #[ISSUE_NUMBER]
 
 ## Usage in Workflows
 
-This template should be used when:
-- The PR addresses a specific GitHub issue
-- The branch name follows `issue-<number>` convention
-- Success criteria need to be verified against the issue
+This template is used for all PRs following issue-driven development:
+- All PRs must close a GitHub issue
+- Branch name follows `issue-<number>` convention
+- Success criteria are verified against the issue
 
 ## Placeholder Replacement
 
