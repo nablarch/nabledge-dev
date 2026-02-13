@@ -51,6 +51,7 @@ cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/workflows" "$DEST_DIR/plugins/nable
 cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/assets" "$DEST_DIR/plugins/nabledge-6/"
 cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/knowledge" "$DEST_DIR/plugins/nabledge-6/"
 cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/plugins/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/scripts" "$DEST_DIR/plugins/nabledge-6/"
 
 # Plugin-specific files
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/README.md" "$DEST_DIR/plugins/nabledge-6/"
