@@ -4,6 +4,13 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.5] - 2026-02-13
+
+### Changed
+- Claude Codeのインストール手順をコマンドベースに修正
+- settings.jsonは手動作成ではなく、コマンド実行で自動更新される流れを明記
+- バージョン指定もコマンドで実行（マーケットプレイス再追加）
+
 ## [0.4] - 2026-02-13
 
 ### Changed

@@ -41,25 +41,17 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 
 ### Claude Code
 
-プロジェクトルートに `.claude/settings.json` を作成：
+プロジェクトルートで以下のコマンドを実行：
 
-```json
-{
-  "extraKnownMarketplaces": [
-    {
-      "name": "nabledge",
-      "source": "https://github.com/nablarch/nabledge.git"
-    }
-  ],
-  "enabledPlugins": {
-    "nabledge-6@nabledge": {
-      "enabled": true
-    }
-  }
-}
+```bash
+# マーケットプレイスを追加
+/plugin marketplace add nablarch/nabledge
+
+# プロジェクトスコープでインストール
+/plugin install nabledge-6@nabledge --scope project
 ```
 
-このファイルをGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンすると、自動的にプラグインのインストールが促されます。
+実行後、`.claude/settings.json`が自動的に更新されます。このファイルをGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンすると、自動的にプラグインのインストールが促されます。
 
 ### GitHub Copilot (WSL / GitBash)
 
@@ -103,20 +95,14 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 
 マーケットプレイスは起動時に自動更新されます。
 
-特定バージョンを指定したい場合は、`.claude/settings.json` を編集：
+特定バージョンを指定したい場合は、マーケットプレイスを再追加：
 
-```json
-{
-  "extraKnownMarketplaces": [
-    {
-      "name": "nabledge",
-      "source": "https://github.com/nablarch/nabledge.git#v0.3"
-    }
-  ]
-}
+```bash
+# 特定バージョンをタグで指定
+/plugin marketplace add nablarch/nabledge#v0.4
 ```
 
-変更後、ファイルをGitにコミット・プッシュしてください。
+実行後、更新された`.claude/settings.json`をGitにコミット・プッシュしてください。
 
 ### GitHub Copilot (WSL / GitBash)
 
