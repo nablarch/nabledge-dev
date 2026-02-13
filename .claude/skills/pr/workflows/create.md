@@ -244,7 +244,7 @@ pr_url=$(gh pr view --json url -q .url)
 echo "PR created: ${pr_url}"
 ```
 
-### 4. Display Result and Request Review
+### 4. Display Result
 
 Display the PR URL and guide user to review on GitHub:
 
@@ -255,21 +255,8 @@ Display the PR URL and guide user to review on GitHub:
 **Branch**: ${current_branch} → ${target_branch}
 **Title**: ${generated_title}
 
----
-
-📝 **Next Steps: Review on GitHub**
-
-Please open the PR URL above and review/edit the following on GitHub:
-- Title (check clarity and length)
-- Description (Approach, Tasks, Success Criteria)
-- Reviewers (add team members)
-- Assignees (assign yourself or others)
-- Labels (add appropriate labels)
-- Milestone (if applicable)
-
-You can edit the PR as many times as needed on GitHub before requesting review.
-
-Once satisfied with the PR content, request review from appropriate team members.
+📝 Please review the PR description on GitHub.
+   If any changes are needed, let me know and I will update it.
 ```
 
 ## Error Handling
@@ -291,4 +278,4 @@ Once satisfied with the PR content, request review from appropriate team members
 5. **Branch Strategy**: PRs should target `develop` by default (see `.claude/rules/branch-strategy.md`)
 6. **Variable Syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 7. **PR Templates**: Use templates from `.claude/skills/pr/templates/` directory for consistent formatting
-8. **GitHub Review**: PRs are created immediately but users can edit them on GitHub before requesting review
+8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
