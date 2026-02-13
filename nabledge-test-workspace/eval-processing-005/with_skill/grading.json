@@ -1,0 +1,101 @@
+{
+  "expectations": [
+    {
+      "text": "Response includes 'バッチ起動'",
+      "passed": true,
+      "evidence": "Found '都度起動バッチ' (line 118) and 'バッチ' combined with '起動' throughout response including title 'バッチの起動方法' (line 93)"
+    },
+    {
+      "text": "Response includes 'Main'",
+      "passed": true,
+      "evidence": "Found 'Mainクラスの実装詳細' in the missing information section (line 141)"
+    },
+    {
+      "text": "Response includes 'コマンドライン'",
+      "passed": true,
+      "evidence": "Found 'コマンドライン引数' multiple times (lines 103, 132) as core part of the answer"
+    },
+    {
+      "text": "Response includes '起動クラス'",
+      "passed": false,
+      "evidence": "No exact match for '起動クラス' found in the response. Related terms like 'アクションのクラス名' (line 100) and 'Mainクラス' (line 141) are present but not the specific term '起動クラス'"
+    },
+    {
+      "text": "Response includes '実行'",
+      "passed": true,
+      "evidence": "Found '実行' multiple times: '実行します' (line 95), '実行' (lines 119, 123)"
+    },
+    {
+      "text": "Response mentions 'launch' or 'execution' sections",
+      "passed": false,
+      "evidence": "No section names 'launch' or 'execution' were mentioned. The response used sections: overview, request-path, batch-types, handler-queue-each-time from nablarch-batch.json as documented in transcript"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 2,
+    "total": 6,
+    "pass_rate": 0.67
+  },
+  "execution_metrics": {
+    "tool_calls": {
+      "Read": 3,
+      "Bash": 6,
+      "Write": 0,
+      "Grep": 0,
+      "Glob": 0
+    },
+    "total_tool_calls": 9,
+    "total_steps": 9,
+    "errors_encountered": 0,
+    "output_chars": 2547,
+    "transcript_chars": 5858
+  },
+  "timing": {
+    "executor_start": "2026-02-13T08:38:03Z",
+    "executor_end": "2026-02-13T08:40:14Z",
+    "executor_duration_seconds": 131,
+    "grader_start": "2026-02-13T08:49:32Z",
+    "grader_end": null,
+    "grader_duration_seconds": 0,
+    "total_duration_seconds": 131
+  },
+  "claims": [
+    {
+      "claim": "Nablarch batch is launched with java command",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Response states 'javaコマンドから直接起動するスタンドアロンアプリケーション' which matches knowledge file content"
+    },
+    {
+      "claim": "Command-line format is -requestPath=Class/ID",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Correctly describes format with example from knowledge file"
+    },
+    {
+      "claim": "Main class implementation details are missing from knowledge",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Accurately identifies gap in knowledge files and directs users to official documentation"
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Response mentions 'launch' or 'execution' sections",
+        "reason": "This expectation may be misaligned with actual knowledge structure. The knowledge files use Japanese section names (batch-types, request-path) not English names like 'launch' or 'execution'. Consider revising to check for section usage or content coverage rather than specific section name mentions."
+      },
+      {
+        "assertion": "Response includes '起動クラス'",
+        "reason": "This exact term may not appear in official Nablarch documentation. The knowledge files use 'アクションのクラス名' and 'Mainクラス' instead. Consider whether checking for the concept (entry point class) rather than exact term would be more meaningful."
+      }
+    ],
+    "overall": "Most expectations are reasonable, but 2 may need adjustment to match actual knowledge file terminology and structure."
+  }
+}

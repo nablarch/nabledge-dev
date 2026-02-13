@@ -93,17 +93,28 @@ nabledge-test-workspace/
 mkdir -p nabledge-test-workspace/eval-<scenario-id>/with_skill/outputs
 ```
 
-### Step 6: Execute - Follow executor.md
+### Step 6: Execute nabledge-6 inline - Follow executor.md
+
+**CRITICAL**: Do NOT use the Skill tool. Execute nabledge-<version> instructions directly in this conversation to maintain workflow continuity.
 
 **Record start time**:
 ```bash
 date -u +%Y-%m-%dT%H:%M:%SZ > start_time.txt
 ```
 
-**Execute nabledge-<version> skill**:
+**Load nabledge-<version> skill procedures**:
+```bash
+Read .claude/skills/nabledge-<version>/SKILL.md
+Read .claude/skills/nabledge-<version>/workflows/keyword-search.md
+Read .claude/skills/nabledge-<version>/workflows/section-judgement.md
+Read .claude/skills/nabledge-<version>/knowledge/index.toon
 ```
-Skill(nabledge-<version>, args=<scenario.question>)
-```
+
+**Execute the question <scenario.question> by following nabledge-<version> procedures**:
+- Apply keyword-search workflow to identify relevant knowledge files
+- Use section-judgement workflow to select appropriate sections
+- Generate response following nabledge-<version> guidelines
+- **Track every tool call** (Read, Bash, Grep) for metrics
 
 **While executing, track**:
 - Tool calls made (Read, Bash, Grep, etc.)
@@ -128,22 +139,26 @@ None provided
 
 ## Execution
 
-### Step 1: Load skill
-**Action**: Skill tool invoked nabledge-<version>
-**Tool**: Skill
-**Result**: Skill loaded successfully
+### Step 1: Load skill workflows and knowledge index
+**Action**: Read nabledge-<version> skill procedures
+**Tool**: Read (4 calls)
+- SKILL.md
+- workflows/keyword-search.md
+- workflows/section-judgement.md
+- knowledge/index.toon
+**Result**: Successfully loaded workflows and knowledge index
 
-### Step 2: Execute knowledge search
-**Action**: Read knowledge/index.toon
-**Tool**: Read
-**Result**: <summary>
+### Step 2: Execute knowledge search (keyword-search workflow)
+**Action**: Extract keywords and match against index
+**Tool**: Mental analysis + Read
+**Result**: <summary of keyword extraction and file selection>
 
-### Step 3: Read knowledge files
-**Action**: Read data-read-handler.json
-**Tool**: Read
-**Result**: <summary>
+### Step 3: Read candidate sections (section-judgement workflow)
+**Action**: Read specific sections from knowledge files
+**Tool**: Bash (jq)
+**Result**: <summary of sections read>
 
-(... continue for each tool call ...)
+(... continue for each significant action ...)
 
 ## Output Files
 None created (response was inline)
@@ -190,6 +205,8 @@ date -u +%Y-%m-%dT%H:%M:%SZ > end_time.txt
   "total_duration_seconds": <duration>
 }
 ```
+
+**After writing timing.json, immediately proceed to Step 7 without stopping. This is a continuous evaluation workflow.**
 
 ### Step 7: Grade - Follow grader.md
 
