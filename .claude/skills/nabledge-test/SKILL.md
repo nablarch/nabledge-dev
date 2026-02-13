@@ -1,43 +1,33 @@
 ---
 name: nabledge-test
-description: Test nabledge-6 or nabledge-5 skills using skill-creator eval mode. Loads scenarios in eval format and delegates execution/grading to skill-creator. Results saved to work/YYYYMMDD/.
+description: Test nabledge-6/5 using skill-creator. Loads eval scenarios, delegates to skill-creator, saves results to work/YYYYMMDD/.
 ---
 
 # Nabledge-Test
 
-Thin wrapper for testing nabledge skills via skill-creator.
+Thin wrapper for testing nabledge skills.
 
 ## Usage
 
 ```bash
-nabledge-test 6 handlers-001    # Single scenario
-nabledge-test 6 --all           # All scenarios
-nabledge-test 6 --category handlers
-nabledge-test 5 libraries-001   # Future: nabledge-5
+nabledge-test 6 handlers-001        # Single test
+nabledge-test 6 --all               # All tests
+nabledge-test 6 --category handlers # Category
 ```
 
 ## How it works
 
-1. **Load scenario**: Read `scenarios/nabledge-6/scenarios.json`
-2. **Invoke skill-creator**: Use eval mode with the scenario
-3. **Save results**: Write to `work/YYYYMMDD/test-<id>-<timestamp>.md`
+1. Load scenario from `scenarios/nabledge-6/scenarios.json`
+2. Invoke skill-creator eval mode
+3. Save results to `work/YYYYMMDD/test-<id>-<timestamp>.md`
 
-That's it. skill-creator handles everything else.
+## When invoked
 
-## Execution
+### Step 1: Parse arguments
 
-When invoked:
+Format: `nabledge-test <version> [<scenario-id> | --all | --category <cat>]`
 
-### Parse arguments
-
-- `<version>`: 6 or 5
-- `<scenario-id>`: e.g., handlers-001
-- `--all`: Execute all scenarios
-- `--category <cat>`: Execute category
-
-### Load scenario
-
-Read from `scenarios/nabledge-<version>/scenarios.json`:
+### Step 2: Load scenario
 
 ```json
 {
@@ -50,46 +40,25 @@ Read from `scenarios/nabledge-<version>/scenarios.json`:
 }
 ```
 
-### Invoke skill-creator eval mode
+### Step 3: Invoke skill-creator
 
-Use skill-creator:
+Read and follow: `.claude/skills/skill-creator/references/eval-mode.md`
 
-```
-Read skill-creator/references/eval-mode.md
-Follow the eval workflow:
-  - Setup workspace (ask user for location)
-  - Execute (spawn executor agent with nabledge-<version> skill)
-  - Grade (spawn grader agent)
-  - Read results (transcript.md, grading.json, metrics.json)
-```
+Key steps:
+- Setup workspace (ask user for location, suggest `nabledge-test-workspace/`)
+- Execute: Spawn executor agent with nabledge-<version> skill
+- Grade: Spawn grader agent
+- Get results: transcript.md, grading.json, metrics.json, timing.json
 
-### Save results to work log
+### Step 4: Save to work log
 
-Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md`:
+Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md` with:
+- Scenario (prompt, expectations count)
+- Results (from grading.json)
+- Metrics (tokens, tool calls, duration)
+- Link to transcript in workspace
 
-```markdown
-# Test: <scenario-id>
-
-**Date**: <timestamp>
-**Status**: <overall pass/fail>
-
-## Scenario
-- Prompt: <prompt>
-- Expectations: <count>
-
-## Results
-<Copy from grading.json>
-
-## Transcript
-<Link to transcript.md in workspace>
-
-## Metrics
-- Tokens: <from metrics.json>
-- Tool calls: <from metrics.json>
-- Duration: <from timing.json>
-```
-
-### Display summary
+### Step 5: Display summary
 
 ```
 ✓ handlers-001: PASS (7/8 expectations)
@@ -97,19 +66,7 @@ Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md`:
   Workspace: nabledge-test-workspace/nabledge-6/handlers-001/
 ```
 
-## Multiple scenarios (--all or --category)
-
-Execute each scenario sequentially, save individual reports, then generate summary:
-
-`work/YYYYMMDD/test-summary-<timestamp>.md`
-
-## Scenarios
-
-Located in `scenarios/nabledge-<version>/scenarios.json` (eval format).
-
-30 scenarios for nabledge-6: handlers (5), libraries (5), tools (5), processing (5), adapters (5), code-analysis (5).
-
 ## Dependencies
 
-- **skill-creator**: Evaluation engine
-- **nabledge-6** or **nabledge-5**: Target skill
+- skill-creator (evaluation engine)
+- nabledge-6 or nabledge-5 (target skill)
