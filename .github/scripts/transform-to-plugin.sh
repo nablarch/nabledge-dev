@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-# Transform nabledge-6 skill from development format to plugin format
+# Transform nabledge skills from development format to marketplace format
 # Usage: ./transform-to-plugin.sh <source-dir> <dest-dir>
 
 SOURCE_DIR="${1:-.}"
 DEST_DIR="${2:-nabledge-repo}"
 
-echo "Transforming nabledge-6 skill to plugin format..."
+echo "Transforming nabledge skills to marketplace format..."
 echo "Source: $SOURCE_DIR"
 echo "Destination: $DEST_DIR"
 
@@ -17,35 +17,43 @@ if [ ! -d "$SOURCE_DIR/.claude/skills/nabledge-6" ]; then
   exit 1
 fi
 
-# Create plugin directories
-echo "Creating plugin directory structure..."
+# Create marketplace directories
+echo "Creating marketplace directory structure..."
 mkdir -p "$DEST_DIR/.claude-plugin"
-mkdir -p "$DEST_DIR/skills/nabledge-6"
+mkdir -p "$DEST_DIR/plugins/nabledge-6/.claude-plugin"
+mkdir -p "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6"
 
-# Move SKILL.md to skills/nabledge-6/
-echo "Copying SKILL.md..."
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/SKILL.md" "$DEST_DIR/skills/nabledge-6/"
+# Copy marketplace.json to root
+echo "Copying marketplace.json..."
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/marketplace.json" "$DEST_DIR/.claude-plugin/"
 
-# Move supporting directories to root
-echo "Copying workflows..."
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/workflows" "$DEST_DIR/"
-
-echo "Copying assets..."
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/assets" "$DEST_DIR/"
-
-echo "Copying knowledge..."
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/knowledge" "$DEST_DIR/"
-
-echo "Copying docs..."
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/"
-
-# Move plugin files to root
-echo "Copying plugin files..."
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/plugin.json" "$DEST_DIR/.claude-plugin/"
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/README.md" "$DEST_DIR/"
+# Copy marketplace README and LICENSE to root
+echo "Copying marketplace README and LICENSE..."
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/marketplace-README.md" "$DEST_DIR/README.md"
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/LICENSE" "$DEST_DIR/"
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/CHANGELOG.md" "$DEST_DIR/"
+
+# Copy nabledge-6 plugin files
+echo "Copying nabledge-6 plugin..."
+
+# Plugin metadata
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/plugin.json" "$DEST_DIR/plugins/nabledge-6/.claude-plugin/"
+
+# SKILL.md
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/SKILL.md" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
+
+# Supporting directories
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/workflows" "$DEST_DIR/plugins/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/assets" "$DEST_DIR/plugins/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/knowledge" "$DEST_DIR/plugins/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/plugins/nabledge-6/"
+
+# Plugin-specific files
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/README.md" "$DEST_DIR/plugins/nabledge-6/"
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/LICENSE" "$DEST_DIR/plugins/nabledge-6/"
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/CHANGELOG.md" "$DEST_DIR/plugins/nabledge-6/"
 
 echo "Transformation complete!"
 echo ""
-echo "Plugin structure created in: $DEST_DIR"
+echo "Marketplace structure created in: $DEST_DIR"
+echo "  - Marketplace: $DEST_DIR/.claude-plugin/marketplace.json"
+echo "  - Plugin: $DEST_DIR/plugins/nabledge-6/"

@@ -51,16 +51,44 @@ jobs:
           # Append sync entry to CHANGELOG
           sed -i "/^# Changelog/a \\\n## [Unreleased] - ${DATE}\\\n\\\n### Changed\\\n- Synced from: ${TRIGGER_COMMIT_URL}\\\n" nabledge-repo/CHANGELOG.md
 
-      - name: Validate plugin structure
+      - name: Validate marketplace structure
         run: |
-          # Check required files exist
-          test -f nabledge-repo/.claude-plugin/plugin.json
-          test -f nabledge-repo/skills/nabledge-6/SKILL.md
-          test -f nabledge-repo/README.md
-          test -f nabledge-repo/LICENSE
+          echo "Validating marketplace structure..."
 
-          # Validate plugin.json format
-          jq empty nabledge-repo/.claude-plugin/plugin.json
+          # Check marketplace files exist
+          test -f nabledge-repo/.claude-plugin/marketplace.json || { echo "Error: marketplace.json not found"; exit 1; }
+          test -f nabledge-repo/README.md || { echo "Error: Root README.md not found"; exit 1; }
+          test -f nabledge-repo/LICENSE || { echo "Error: Root LICENSE not found"; exit 1; }
+
+          # Check nabledge-6 plugin structure
+          test -f nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json || { echo "Error: nabledge-6/plugin.json not found"; exit 1; }
+          test -f nabledge-repo/plugins/nabledge-6/skills/nabledge-6/SKILL.md || { echo "Error: nabledge-6/SKILL.md not found"; exit 1; }
+          test -f nabledge-repo/plugins/nabledge-6/README.md || { echo "Error: nabledge-6/README.md not found"; exit 1; }
+          test -f nabledge-repo/plugins/nabledge-6/LICENSE || { echo "Error: nabledge-6/LICENSE not found"; exit 1; }
+          test -f nabledge-repo/plugins/nabledge-6/CHANGELOG.md || { echo "Error: nabledge-6/CHANGELOG.md not found"; exit 1; }
+
+          # Check nabledge-6 supporting directories
+          test -d nabledge-repo/plugins/nabledge-6/workflows || { echo "Error: nabledge-6/workflows not found"; exit 1; }
+          test -d nabledge-repo/plugins/nabledge-6/assets || { echo "Error: nabledge-6/assets not found"; exit 1; }
+          test -d nabledge-repo/plugins/nabledge-6/knowledge || { echo "Error: nabledge-6/knowledge not found"; exit 1; }
+          test -d nabledge-repo/plugins/nabledge-6/docs || { echo "Error: nabledge-6/docs not found"; exit 1; }
+
+          # Validate JSON formats
+          echo "Validating JSON formats..."
+          jq empty nabledge-repo/.claude-plugin/marketplace.json || { echo "Error: Invalid marketplace.json"; exit 1; }
+          jq empty nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json || { echo "Error: Invalid plugin.json"; exit 1; }
+
+          # Validate marketplace.json structure
+          echo "Validating marketplace.json structure..."
+          jq -e '.name' nabledge-repo/.claude-plugin/marketplace.json > /dev/null || { echo "Error: marketplace.json missing 'name' field"; exit 1; }
+          jq -e '.plugins' nabledge-repo/.claude-plugin/marketplace.json > /dev/null || { echo "Error: marketplace.json missing 'plugins' array"; exit 1; }
+
+          # Validate plugin.json structure
+          echo "Validating plugin.json structure..."
+          jq -e '.name' nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json > /dev/null || { echo "Error: plugin.json missing 'name' field"; exit 1; }
+          jq -e '.version' nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json > /dev/null || { echo "Error: plugin.json missing 'version' field"; exit 1; }
+
+          echo "Marketplace structure validation passed!"
 
       - name: Configure Git
         working-directory: nabledge-repo
@@ -81,6 +109,6 @@ jobs:
           TRIGGER_COMMIT_SHA="${{ github.sha }}"
           TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
 
-          git commit -m "Sync nabledge-6 plugin from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
+          git commit -m "Sync nabledge marketplace from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
 
           git push origin dummy-to
