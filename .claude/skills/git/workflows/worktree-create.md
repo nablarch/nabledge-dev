@@ -38,11 +38,11 @@ if ! git rev-parse --verify develop &>/dev/null; then
   echo "  git checkout -b develop main"
   echo "  git push -u origin develop"
   echo ""
-  echo "Or update .claude/rules/branch-strategy.md if using different branch names."
+  echo "Or update the workflow if using different branch names."
   exit 1
 fi
 
-# For worktree creation, always use develop as base (see .claude/rules/branch-strategy.md)
+# For worktree creation, always use develop as base
 if [[ "$default_branch" == "develop" ]]; then
   base_branch="develop"
 else
@@ -285,7 +285,7 @@ code ${worktree_path}
 3. **Branch naming convention**: `issue-${issue_number}`
 4. **Issue-driven development**: All worktrees must be linked to a GitHub issue
 5. **Issue validation**: Always verify issue exists before creating worktree
-6. **Base branch**: Always branch from `develop`, not `main` (see `.claude/rules/branch-strategy.md`)
+6. **Base branch**: Always branch from `develop`, not `main`
 7. **Variable syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 8. **Path safety**: Validate parent directory permissions and path availability
 9. **Worktree cleanup**: Use `git worktree remove` instead of `rm -rf` for proper cleanup

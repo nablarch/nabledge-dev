@@ -39,11 +39,11 @@ if ! git rev-parse --verify develop &>/dev/null; then
   echo "  git checkout -b develop main"
   echo "  git push -u origin develop"
   echo ""
-  echo "Or update .claude/rules/branch-strategy.md if using different branch names."
+  echo "Or update the workflow if using different branch names."
   exit 1
 fi
 
-# For PR creation, always target develop (see .claude/rules/branch-strategy.md)
+# For PR creation, always target develop
 if [[ "$default_branch" == "develop" ]]; then
   target_branch="develop"
 else
@@ -124,43 +124,156 @@ fi
 echo "Validated issue #${issue_number} exists"
 ```
 
-**2.2 Get Commit History and Diff**
+**2.2 Gather Information**
+
+Collect all necessary information for PR generation:
 
 ```bash
-echo "Analyzing commits and changes..."
-git log "${target_branch}"..HEAD --format="%s"
-git diff "${target_branch}"...HEAD --stat
+# Get commit history
+echo "Analyzing commits..."
+commits=$(git log "${target_branch}"..HEAD --format="%s%n%b")
+
+# Get diff statistics
+echo "Analyzing changes..."
+diff_stat=$(git diff "${target_branch}"...HEAD --stat)
+
+# Get issue body
+echo "Fetching issue details..."
+issue_body=$(gh issue view "$issue_number" --json body -q .body)
 ```
 
-**2.3 Generate Title and Description**
+**2.3 Load PR Template**
 
-Analyze commit history and diff using the following algorithm:
+Use the Read tool to load `.claude/skills/pr/templates/pr-template.md`.
 
-**Title Generation Logic**:
-- If only 1 commit: Use the commit message subject line
-- If multiple commits: Identify the common theme across commit messages
-- If commit messages are unclear (e.g., "fix", "update"): Analyze the diff to determine primary change type
-- Format: `<type>: <description>` where type is one of: feat, fix, refactor, docs, test, chore
-- MUST be under 70 characters
-- Example: "feat: Add JWT authentication middleware"
-- Example: "fix: Resolve session timeout on login"
+The template contains the following structure with placeholders:
+```markdown
+Closes #[ISSUE_NUMBER]
 
-**Description Generation Logic**:
-- Extract context from commit message bodies (not just subjects)
-- Identify files with most changes from `git diff --stat`
-- If issue exists, read it with `gh issue view ${issue_number} --json body -q .body` and extract success criteria
-- Generate description following the appropriate template
+## Approach
+[Describe the solution...]
 
-**Template Usage**:
+## Tasks
+[List implementation...]
 
-Use `.claude/skills/pr/templates/pr-template.md` and replace placeholders:
-- `[ISSUE_NUMBER]` → Actual issue number
-- `[Describe the solution...]` → Generated approach description from commits and diff
-- `[List implementation...]` → Generated task list from commits
-- `[Criterion X from issue]` → Extracted from issue success criteria
-- `[How this was verified]` → Evidence from implementation (file paths, test results)
+## Expert Review
+[Review table]
 
-See `.claude/skills/pr/templates/` for complete template structure and examples.
+## Success Criteria Check
+[Criterion X from issue] | Status | Evidence
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+**2.4 Generate Title**
+
+Analyze commits to generate appropriate PR title:
+
+**Title Generation Rules**:
+1. If only 1 commit: Use the commit message subject line
+2. If multiple commits: Identify common theme across commit messages
+3. If commit messages unclear (e.g., "fix", "update"): Analyze diff to determine primary change type
+4. Format: `<type>: <description>` where type is one of: feat, fix, refactor, docs, test, chore
+5. MUST be under 70 characters
+
+**Examples**:
+- "feat: Add JWT authentication middleware"
+- "fix: Resolve session timeout on login"
+- "refactor: Extract validation logic to separate module"
+
+**2.5 Generate Description with Placeholder Replacement**
+
+Replace each placeholder in the loaded template:
+
+**Step 1: Replace [ISSUE_NUMBER]**
+```
+Closes #[ISSUE_NUMBER]
+↓
+Closes #42
+```
+
+**Step 2: Replace [Describe the solution...]**
+- Summarize the approach from commit message bodies
+- Identify key design decisions from changed files (using diff_stat)
+- Explain WHY this approach was chosen
+- Example output:
+  ```
+  Implemented session-based authentication using JWT tokens. Chose this
+  approach for stateless authentication and better scalability compared
+  to server-side sessions.
+  ```
+
+**Step 3: Replace [List implementation...]**
+- Extract task list from commit messages (subjects)
+- Format as checkbox list with all items checked
+- Example output:
+  ```
+  - [x] Create login form component
+  - [x] Implement JWT token generation
+  - [x] Add authentication middleware
+  - [x] Write integration tests
+  ```
+
+**Step 4: Keep Expert Review Table as-is**
+- Do not modify the Expert Review table
+- Leave all status fields as "⚪ Not Reviewed"
+
+**Step 5: Replace Success Criteria Section**
+- Parse issue_body to extract success criteria
+- Look for lines starting with `- [ ]` or `- [x]` under "Success Criteria" heading
+- For each criterion, create a table row:
+  - Criterion: The criterion text
+  - Status: "✅ Met" (if implemented) or "❌ Not Met"
+  - Evidence: Specific file paths, line numbers, or test names
+- Example output:
+  ```
+  | Criterion | Status | Evidence |
+  |-----------|--------|----------|
+  | Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
+  | Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
+  ```
+
+**Step 6: Add Attribution**
+- Keep the attribution line at the end:
+  ```
+  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+  ```
+
+**Example Complete Output**:
+```markdown
+Closes #42
+
+## Approach
+Implemented session-based authentication using JWT tokens. Chose this approach
+for stateless authentication and better scalability compared to server-side sessions.
+
+## Tasks
+- [x] Create login form component
+- [x] Implement JWT token generation
+- [x] Add authentication middleware
+- [x] Write integration tests
+
+## Expert Review
+
+> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+
+| Aspect | Status | Comments |
+|--------|--------|----------|
+| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+
+## Success Criteria Check
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
+| Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
+| Invalid credentials show error message | ✅ Met | Error handling tested in auth.test.js:92 |
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
 
 ### 3. Create PR
 
@@ -259,7 +372,7 @@ Display the PR URL and guide user to review on GitHub:
 2. **GitHub Permissions**: Requires Write or higher permissions
 3. **Title Quality**: Generate appropriate title if commit messages are inadequate
 4. **HEREDOC Usage**: ALWAYS use HEREDOC for multi-line PR body to ensure correct formatting
-5. **Branch Strategy**: PRs should target `develop` by default (see `.claude/rules/branch-strategy.md`)
+5. **Branch Strategy**: PRs should target `develop` by default
 6. **Variable Syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent

@@ -26,11 +26,11 @@ if ! git rev-parse --verify develop &>/dev/null; then
   echo "  git checkout -b develop main"
   echo "  git push -u origin develop"
   echo ""
-  echo "Or update .claude/rules/branch-strategy.md if using different branch names."
+  echo "Or update the workflow if using different branch names."
   exit 1
 fi
 
-# For branch creation, always use develop as base (see .claude/rules/branch-strategy.md)
+# For branch creation, always use develop as base
 if [[ "$default_branch" == "develop" ]]; then
   base_branch="develop"
 else
@@ -203,5 +203,5 @@ Use `/git commit` to commit changes.
 3. **Branch naming**: Always use `issue-<number>` format for consistency
 4. **Safety**: Protect main/develop branches, check duplicates, verify clean working tree
 5. **Issue validation**: Always verify issue exists before creating branch
-6. **Branch strategy**: Branches are created from `develop`, not `main` (see `.claude/rules/branch-strategy.md`)
+6. **Branch strategy**: Branches are created from `develop`, not `main`
 7. **Variable syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
