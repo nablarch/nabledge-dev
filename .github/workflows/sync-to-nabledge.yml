@@ -151,8 +151,8 @@ jobs:
       - name: Create and push version tag
         working-directory: nabledge-repo
         run: |
-          # Extract version from plugin.json
-          VERSION=$(jq -r '.version' plugins/nabledge-6/.claude-plugin/plugin.json)
+          # Extract version from marketplace.json
+          VERSION=$(jq -r '.metadata.version' .claude-plugin/marketplace.json)
           TAG_NAME="${VERSION}"
 
           echo "Creating tag: ${TAG_NAME}"
