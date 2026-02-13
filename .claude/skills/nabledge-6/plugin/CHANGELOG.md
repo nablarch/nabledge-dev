@@ -4,6 +4,13 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.4] - 2026-02-13
+
+### Changed
+- READMEをチーム設定前提に簡素化
+- マーケットプレイスREADMEをシンプルな構成に戻す
+- インストール手順を「settings.jsonをGitにプッシュ」「.claudeディレクトリをGitにプッシュ」に明確化
+
 ## [0.3] - 2026-02-13
 
 ### Added

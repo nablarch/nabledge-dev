@@ -13,68 +13,6 @@ Nabledgeは、NablarchによるAI支援開発スキルです。Claude CodeやGit
 
 インストール方法や使い方は各プラグインのREADMEを参照してください。
 
-## チーム設定
-
-プロジェクトメンバー全員がNabledgeプラグインを利用できるよう、プロジェクトスコープで設定できます。
-
-### 設定方法
-
-プロジェクトルートに `.claude/settings.json` を作成し、以下を追加：
-
-```json
-{
-  "extraKnownMarketplaces": [
-    {
-      "name": "nabledge",
-      "source": "https://github.com/nablarch/nabledge.git"
-    }
-  ],
-  "enabledPlugins": {
-    "nabledge-6@nabledge": {
-      "enabled": true
-    }
-  }
-}
-```
-
-このファイルをGitにコミットすると、チームメンバーがリポジトリをクローンした際に自動的にプラグインのインストールが促されます。
-
-### VS Codeでの設定
-
-VS Codeでは `.vscode/settings.json` に以下を追加：
-
-```json
-{
-  "github.copilot.chat.codeGeneration.instructions": [
-    {
-      "text": "Nablarch framework knowledge is available via nabledge-6 skill"
-    }
-  ]
-}
-```
-
-### バージョンアップ
-
-#### Claude Code
-
-マーケットプレイスは起動時に自動更新されます。手動で更新する場合：
-
-```bash
-# マーケットプレイスを更新
-/plugin marketplace update nabledge
-
-# 特定バージョンを指定する場合
-/plugin marketplace add nablarch/nabledge#v0.2
-```
-
-#### VS Code (GitHub Copilot)
-
-最新版を再インストール：
-
-```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/.claude/skills/nabledge-6/scripts/setup.sh | bash
-```
-
 ## バージョニング
 
 各プラグインは独立したバージョン管理を行っています。
