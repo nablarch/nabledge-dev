@@ -17,10 +17,28 @@ jobs:
 
       - name: Validate version updates
         run: |
-          # Check if plugin.json or CHANGELOG.md were modified in the last commit
-          if ! git diff HEAD~1 HEAD --name-only | grep -q "plugin/plugin.json\|plugin/CHANGELOG.md"; then
-            echo "Error: plugin.json or CHANGELOG.md must be updated before sync"
-            exit 1
+          # Get list of changed files
+          CHANGED_FILES=$(git diff HEAD~1 HEAD --name-only)
+
+          # Check if only infrastructure files were changed
+          INFRA_ONLY=true
+          while IFS= read -r file; do
+            if [[ ! "$file" =~ ^\.github/ ]] && \
+               [[ ! "$file" =~ plugin/marketplace ]] && \
+               [[ "$file" != *"transform-to-plugin.sh"* ]]; then
+              INFRA_ONLY=false
+              break
+            fi
+          done <<< "$CHANGED_FILES"
+
+          # If non-infrastructure files changed, require version update
+          if [ "$INFRA_ONLY" = false ]; then
+            if ! echo "$CHANGED_FILES" | grep -q "plugin/plugin.json\|plugin/CHANGELOG.md"; then
+              echo "Error: plugin.json or CHANGELOG.md must be updated before sync"
+              exit 1
+            fi
+          else
+            echo "Infrastructure-only changes detected, skipping version validation"
           fi
 
       - name: Checkout nabledge repository
