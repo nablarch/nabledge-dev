@@ -22,30 +22,19 @@ git clone --depth 1 --filter=blob:none --sparse --branch "$BRANCH" "$REPO_URL"
 cd nabledge
 git sparse-checkout set plugins/nabledge-6
 
-# Create .claude/skills/nabledge-6 directory
-SKILL_DIR="$PROJECT_ROOT/.claude/skills/nabledge-6"
-echo "Creating skill directory structure..."
-mkdir -p "$SKILL_DIR"
+# Create .claude/skills directory
+echo "Creating .claude/skills directory..."
+mkdir -p "$PROJECT_ROOT/.claude/skills"
 
-# Copy skill files from plugins/nabledge-6/skills/nabledge-6/ to .claude/skills/nabledge-6/
-echo "Copying skill files..."
-if [ -d "$TEMP_DIR/nabledge/plugins/nabledge-6/skills/nabledge-6" ]; then
-  cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6/skills/nabledge-6/"* "$SKILL_DIR/"
-fi
-
-# Copy supporting directories from plugin root to skill directory
-echo "Copying supporting directories..."
-for dir in workflows assets knowledge docs scripts; do
-  if [ -d "$TEMP_DIR/nabledge/plugins/nabledge-6/$dir" ]; then
-    cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6/$dir" "$SKILL_DIR/"
-  fi
-done
+# Copy skills/nabledge-6 directory as-is
+echo "Copying nabledge-6 skill to project..."
+cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
 # Clean up
 rm -rf "$TEMP_DIR"
 
 echo ""
 echo "Setup complete! The nabledge-6 skill is now available in your project."
-echo "Location: $SKILL_DIR"
+echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
 echo ""
 echo "You can use it with GitHub Copilot by typing '/nabledge-6' in your editor."

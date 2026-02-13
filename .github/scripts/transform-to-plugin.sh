@@ -43,15 +43,13 @@ echo "Copying nabledge-6 plugin..."
 # Plugin metadata
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/plugin.json" "$DEST_DIR/plugins/nabledge-6/.claude-plugin/"
 
-# SKILL.md
+# Copy skill content (SKILL.md and supporting directories)
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/SKILL.md" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
-
-# Supporting directories
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/workflows" "$DEST_DIR/plugins/nabledge-6/"
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/assets" "$DEST_DIR/plugins/nabledge-6/"
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/knowledge" "$DEST_DIR/plugins/nabledge-6/"
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/plugins/nabledge-6/"
-cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/scripts" "$DEST_DIR/plugins/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/workflows" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/assets" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/knowledge" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/scripts" "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6/"
 
 # Plugin-specific files
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/README.md" "$DEST_DIR/plugins/nabledge-6/"
