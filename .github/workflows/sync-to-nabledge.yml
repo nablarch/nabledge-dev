@@ -103,6 +103,11 @@ jobs:
           test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/assets || { echo "Error: nabledge-6/skills/nabledge-6/assets not found"; exit 1; }
           test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/knowledge || { echo "Error: nabledge-6/skills/nabledge-6/knowledge not found"; exit 1; }
           test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/docs || { echo "Error: nabledge-6/skills/nabledge-6/docs not found"; exit 1; }
+          test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/scripts || { echo "Error: nabledge-6/skills/nabledge-6/scripts not found"; exit 1; }
+
+          # Check setup scripts exist
+          test -f nabledge-repo/plugins/nabledge-6/skills/nabledge-6/scripts/setup-cc.sh || { echo "Error: setup-cc.sh not found"; exit 1; }
+          test -f nabledge-repo/plugins/nabledge-6/skills/nabledge-6/scripts/setup-ghc.sh || { echo "Error: setup-ghc.sh not found"; exit 1; }
 
           # Validate JSON formats
           echo "Validating JSON formats..."

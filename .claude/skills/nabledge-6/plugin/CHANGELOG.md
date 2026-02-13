@@ -4,6 +4,13 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.8] - 2026-02-13
+
+### Changed
+- セットアップスクリプトを分離：setup-cc.sh（Claude Code用）とsetup-ghc.sh（GitHub Copilot用）
+- setup-cc.shがsettings.jsonを自動編集（extraKnownMarketplaces + enabledPlugins）
+- 既存設定との安全なマージをサポート
+
 ## [0.7] - 2026-02-13
 
 ### Fixed
@@ -48,6 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - テスティングフレームワークの基礎
 - セキュリティチェックリスト
 
+[0.8]: https://github.com/nablarch/nabledge/releases/tag/0.8
 [0.7]: https://github.com/nablarch/nabledge/releases/tag/0.7
 [0.6]: https://github.com/nablarch/nabledge/releases/tag/0.6
 [0.5]: https://github.com/nablarch/nabledge/releases/tag/0.5

@@ -44,21 +44,22 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 プロジェクトルートで以下のコマンドを実行：
 
 ```bash
-# マーケットプレイスを追加
-/plugin marketplace add nablarch/nabledge
-
-# プロジェクトスコープでインストール
-/plugin install nabledge-6@nabledge --scope project
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup-cc.sh | bash
 ```
 
-実行後、`.claude/settings.json`が自動的に更新されます。このファイルをGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンすると、自動的にプラグインのインストールが促されます。
+実行後、`.claude/settings.json`が自動的に作成または更新されます。このファイルをGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンしてClaude Codeを起動すると、自動的にプラグインのインストールが促されます。
+
+**必要な環境**: `jq` コマンド（JSONパーサー）
+- Ubuntu/Debian: `sudo apt-get install jq`
+- macOS: `brew install jq`
+- Windows (WSL): `sudo apt-get install jq`
 
 ### GitHub Copilot (WSL / GitBash)
 
 プロジェクトルートで以下のコマンドを実行：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup-ghc.sh | bash
 ```
 
 実行後、`.claude` ディレクトリがプロジェクトに作成されます。このディレクトリをGitにコミット・プッシュしてください。チームメンバーも同じスキルを利用できるようになります。
@@ -93,10 +94,10 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 
 ### Claude Code
 
-最新版に更新：
+セットアップスクリプトを再実行：
 
 ```bash
-/plugin marketplace update nabledge
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup-cc.sh | bash
 ```
 
 実行後、更新された`.claude/settings.json`をGitにコミット・プッシュしてください。
@@ -106,7 +107,7 @@ Nablarch 6のドキュメントやベストプラクティスから知識を検�
 セットアップスクリプトを再実行：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/plugins/nabledge-6/skills/nabledge-6/scripts/setup-ghc.sh | bash
 ```
 
 更新後、`.claude` ディレクトリの変更をGitにコミット・プッシュしてください。
