@@ -2,60 +2,122 @@
 
 保守開発における「既存設計書」「既存コード」「Nabledge」の関係性
 
+## 登場人物
+
+```mermaid
+flowchart LR
+    dev["👤 開発者"]
+    design["📋 既存設計書<br/>（Excel, Word）"]
+    code["💻 既存コード<br/>（Java, SQL, JSP）"]
+    nabledge["🤖 Nabledge<br/>（AI Agent）"]
+
+    style nabledge fill:#e1f5e1
+    style design fill:#fff4e6
+    style code fill:#e6f3ff
+    style dev fill:#ffe6f0
+```
+
+## 保守開発シナリオ：既存バッチへの項目追加
+
+### ❶ タスク理解
+
 ```mermaid
 flowchart TB
-    subgraph actors["登場人物"]
-        dev["👤 開発者"]
-        design["📋 既存設計書<br/>（Excel, Word）"]
-        code["💻 既存コード<br/>（Java, SQL, JSP）"]
-        nabledge["🤖 Nabledge<br/>（AI Agent）"]
-    end
+    dev["👤 開発者"]
+    design["📋 既存設計書"]
+    code["💻 既存コード"]
+    nabledge["🤖 Nabledge"]
 
-    subgraph scenario["保守開発シナリオ：既存バッチへの項目追加"]
+    dev -->|"このバッチどうなってる？"| design
+    design -->|"❌ 古い、不完全"| dev
 
-        subgraph step1["❶ タスク理解"]
-            dev -->|"このバッチどうなってる？"| design
-            design -->|"古い、不完全"| dev
-            design -.->|"読み込み・理解"| nabledge
-            code -.->|"読み込み・理解"| nabledge
-            nabledge -->|"最新の処理フロー図<br/>関連ファイル一覧"| dev
-        end
+    design -.->|"読み込み・理解"| nabledge
+    code -.->|"読み込み・理解"| nabledge
+    nabledge -->|"✅ 最新の処理フロー図<br/>✅ 関連ファイル一覧"| dev
 
-        subgraph step2["❷ 影響範囲特定"]
-            dev -->|"項目追加したら<br/>何に影響する？"| code
-            code -->|"複雑で追いきれない"| dev
-            code -.->|"依存関係分析"| nabledge
-            nabledge -->|"影響箇所リスト<br/>リスク評価"| dev
-        end
+    style nabledge fill:#e1f5e1
+    style design fill:#fff4e6
+    style code fill:#e6f3ff
+    style dev fill:#ffe6f0
+```
 
-        subgraph step3["❸ 実装"]
-            dev -->|"既存パターンで<br/>実装したい"| code
-            code -->|"類似コード探すのが大変"| dev
-            code -.->|"パターン抽出"| nabledge
-            nabledge -->|"パターン踏襲コード生成"| dev
-            dev -->|"確認・承認"| code
-        end
+### ❷ 影響範囲特定
 
-        subgraph step4["❹ PG・UT"]
-            dev -->|"単体テストケース<br/>どう書く？"| design
-            design -->|"テスト観点が古い"| dev
-            code -.->|"実装を分析"| nabledge
-            nabledge -->|"テストコード・データ生成<br/>リグレッション観点"| dev
-        end
+```mermaid
+flowchart TB
+    dev["👤 開発者"]
+    code["💻 既存コード"]
+    nabledge["🤖 Nabledge"]
 
-        subgraph step5["❺ 結合テスト"]
-            dev -->|"結合テストで動かない！<br/>何が原因？"| code
-            code -->|"複数機能の連携が<br/>複雑すぎる"| dev
-            code -.->|"統合時の問題分析"| nabledge
-            design -.->|"設計の整合性確認"| nabledge
-            nabledge -->|"設計ミス指摘<br/>統合エラー原因特定<br/>リグレッション影響分析"| dev
-        end
-    end
+    dev -->|"項目追加したら何に影響する？"| code
+    code -->|"❌ 複雑で追いきれない"| dev
 
-    step1 --> step2
-    step2 --> step3
-    step3 --> step4
-    step4 --> step5
+    code -.->|"依存関係分析"| nabledge
+    nabledge -->|"✅ 影響箇所リスト<br/>✅ リスク評価"| dev
+
+    style nabledge fill:#e1f5e1
+    style code fill:#e6f3ff
+    style dev fill:#ffe6f0
+```
+
+### ❸ 実装
+
+```mermaid
+flowchart TB
+    dev["👤 開発者"]
+    code1["💻 既存コード"]
+    nabledge["🤖 Nabledge"]
+    code2["💻 新規コード"]
+
+    dev -->|"既存パターンで実装したい"| code1
+    code1 -->|"❌ 類似コード探すのが大変"| dev
+
+    code1 -.->|"パターン抽出"| nabledge
+    nabledge -->|"✅ パターン踏襲<br/>コード生成"| dev
+    dev -->|"確認・承認"| code2
+
+    style nabledge fill:#e1f5e1
+    style code1 fill:#e6f3ff
+    style code2 fill:#e6f3ff
+    style dev fill:#ffe6f0
+```
+
+### ❹ PG・UT
+
+```mermaid
+flowchart TB
+    dev["👤 開発者"]
+    design["📋 既存設計書"]
+    code["💻 既存コード"]
+    nabledge["🤖 Nabledge"]
+
+    dev -->|"単体テストケースどう書く？"| design
+    design -->|"❌ テスト観点が古い"| dev
+
+    code -.->|"実装を分析"| nabledge
+    nabledge -->|"✅ テストコード生成<br/>✅ テストデータ生成<br/>✅ リグレッション観点"| dev
+
+    style nabledge fill:#e1f5e1
+    style design fill:#fff4e6
+    style code fill:#e6f3ff
+    style dev fill:#ffe6f0
+```
+
+### ❺ 結合テスト
+
+```mermaid
+flowchart TB
+    dev["👤 開発者"]
+    design["📋 既存設計書"]
+    code["💻 既存コード"]
+    nabledge["🤖 Nabledge"]
+
+    dev -->|"結合テストで動かない！<br/>何が原因？"| code
+    code -->|"❌ 複数機能の連携が<br/>複雑すぎる"| dev
+
+    code -.->|"統合時の<br/>問題分析"| nabledge
+    design -.->|"設計の<br/>整合性確認"| nabledge
+    nabledge -->|"✅ 設計ミス指摘<br/>✅ 統合エラー原因特定<br/>✅ リグレッション影響分析"| dev
 
     style nabledge fill:#e1f5e1
     style design fill:#fff4e6
