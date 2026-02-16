@@ -10,7 +10,7 @@
 ## プロセスフロー図
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph req["要件定義者"]
         A1[機能要件書<br/>業務フロー図]
     end
