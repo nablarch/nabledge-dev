@@ -33,6 +33,28 @@ source .env
 claude
 ```
 
+## Branch Strategy
+
+This repository uses a two-branch strategy for controlled releases:
+
+| Branch | Purpose | Workflow |
+|--------|---------|----------|
+| **main** | Development branch | All development work is merged here via pull requests |
+| **release** | Release branch | Receives merges from main when ready to release. Triggers automatic deployment to [nablarch/nabledge](https://github.com/nablarch/nabledge) |
+
+### Deployment Flow
+
+```
+Development → main (via PR) → release (manual merge) → nablarch/nabledge (auto-deploy)
+```
+
+When changes are pushed to the `release` branch, GitHub Actions automatically:
+1. Transforms the skill content to marketplace plugin structure
+2. Deploys to the `main` branch in [nablarch/nabledge](https://github.com/nablarch/nabledge)
+3. Creates version tags
+
+This allows maintainers to control release timing by deciding when to merge main → release.
+
 ## Usage
 
 ### Using nabledge-6 Skill
@@ -52,9 +74,9 @@ Analyze existing code:
 proman-batchモジュール全体の構造を教えてください
 ```
 
-### Example Questions
+### Example Topics
 
-See [test scenarios](.claude/skills/nabledge-6/tests/scenarios.md) for 30+ example questions covering:
+The nabledge-6 skill covers:
 - Handlers (transaction management, data reading, DB connections)
 - Libraries (UniversalDao, database access, file path management)
 - Tools (NTF testing framework)
