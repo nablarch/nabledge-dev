@@ -17,6 +17,7 @@ NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-main}"
 
 # Build repository URL
 REPO_URL="https://github.com/${NABLEDGE_REPO}"
+REPO_NAME="${NABLEDGE_REPO##*/}"
 BRANCH="$NABLEDGE_BRANCH"
 TEMP_DIR=$(mktemp -d)
 
@@ -25,7 +26,7 @@ echo "Branch: $BRANCH"
 echo "Downloading nabledge-6 plugin from $REPO_URL (branch: $BRANCH)..."
 cd "$TEMP_DIR"
 git clone --depth 1 --filter=blob:none --sparse --branch "$BRANCH" "$REPO_URL"
-cd nabledge
+cd "$REPO_NAME"
 git sparse-checkout set plugins/nabledge-6
 
 # Create .claude/skills directory
@@ -34,7 +35,7 @@ mkdir -p "$PROJECT_ROOT/.claude/skills"
 
 # Copy skills/nabledge-6 directory as-is
 echo "Copying nabledge-6 skill to project..."
-cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
+cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
 # Clean up
 rm -rf "$TEMP_DIR"
