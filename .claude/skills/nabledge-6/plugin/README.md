@@ -1,6 +1,12 @@
 # Nabledge-6
 
-Nablarch 6のAI支援開発スキルです。
+> **⚠️ 評価版**
+> 現在、評価版として公開しています。知識・ワークフローともにカバー範囲は限定的です。
+> フィードバックをもとに継続的に拡充していきます。
+
+## 目的
+
+AIコーディングエージェント（Claude Code、GitHub Copilot）は、Nablarchのような企業フレームワークの知識を十分に持っていません。Nabledge-6は、エージェントにNablarch 6のドキュメントとベストプラクティスを提供し、開発支援の精度を向上させます。
 
 ## 機能
 
@@ -35,11 +41,9 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 - **影響調査**: 変更による影響範囲をNablarchの構造を踏まえて調査
 - **コードレビュー**: Nablarchの規約やベストプラクティスに基づくレビュー
 
-注：評価版のため、知識・ワークフローともにカバー範囲は限定的です。フィードバックをもとに拡充していきます。
-
 ## 利用ガイド
 
 使用するAIツールに応じて、以下のガイドを参照してください。
 
-- **[Claude Code利用ガイド](USAGE-CC.md)** - Claude Codeでの利用方法
-- **[GitHub Copilot利用ガイド](USAGE-GHC.md)** - GitHub Copilotでの利用方法
+- **[Claude Code利用ガイド](GUIDE-CC.md)** - Claude Codeでの利用方法
+- **[GitHub Copilot利用ガイド](GUIDE-GHC.md)** - GitHub Copilotでの利用方法

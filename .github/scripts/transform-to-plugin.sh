@@ -53,8 +53,8 @@ cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/docs" "$DEST_DIR/plugins/nabledge-6
 # Plugin-specific files
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/README.md" "$DEST_DIR/plugins/nabledge-6/"
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/CHANGELOG.md" "$DEST_DIR/plugins/nabledge-6/"
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/USAGE-CC.md" "$DEST_DIR/plugins/nabledge-6/"
-cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/USAGE-GHC.md" "$DEST_DIR/plugins/nabledge-6/"
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/GUIDE-CC.md" "$DEST_DIR/plugins/nabledge-6/"
+cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/GUIDE-GHC.md" "$DEST_DIR/plugins/nabledge-6/"
 
 # Copy setup scripts to root
 echo "Copying setup scripts to root..."
