@@ -9,13 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - Environment variable support for setup scripts (`NABLEDGE_REPO`, `NABLEDGE_BRANCH`) to enable testing and custom repository usage
 - Separate usage guides: `GUIDE-CC.md` for Claude Code and `GUIDE-GHC.md` for GitHub Copilot
-- Purpose statement in README to clarify why this skill is needed
 
 ### Changed
 - Split documentation into focused guides (README.md for overview, GUIDE-CC.md and GUIDE-GHC.md for detailed instructions)
-- Moved evaluation notice to top of README for better visibility
-- Clarified installation prerequisites in usage guides (Claude Code requires CC installed, GitHub Copilot requires WSL or GitBash)
-- Fixed environment variable usage examples in usage guides (download script first, then execute with env vars)
+- Enhanced evaluation notice to clarify purpose: experience knowledge impact, understand workflow possibilities, and gather requirements
+- Clarified installation prerequisites in guides (Claude Code requires CC installed, GitHub Copilot requires WSL or GitBash)
+- Updated usage instructions to emphasize natural language interaction as primary method, with manual execution as optional
+- Removed environment variable customization from user guides (developer-only information)
 
 ## [0.1] - 2026-02-13
 

@@ -28,47 +28,40 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.s
 - セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）
 - macOSでは手動インストールが必要です: `brew install jq`
 
-### 環境変数でカスタマイズ (オプション)
-
-リポジトリやブランチをカスタマイズする場合:
-
-```bash
-# テストブランチを使用する場合
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh -o setup.sh
-NABLEDGE_BRANCH=test-to bash setup.sh
-
-# フォーク版を使用する場合
-curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-ghc.sh -o setup.sh
-NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom bash setup.sh
-```
-
 ## 使い方
 
 ### 基本的な使い方
 
-エディタで以下のようにスキルを呼び出します：
+自然言語でNablarchに関する質問や依頼をするだけで、GitHub Copilotが自動的にnabledge-6スキルを使用します。
+
+**例**:
+```
+Nablarchのバッチ処理の実装方法を教えて
+```
+
+```
+このプロジェクトのコードをNablarchの観点から分析して
+```
+
+```
+UniversalDaoの使い方を教えて
+```
+
+### 手動実行（オプション）
+
+明示的にスキルを指定したい場合は、エディタで以下のコマンドを実行できます：
 
 ```bash
 /nabledge-6
 ```
 
-スキルを起動し、対話的にNablarchに関する質問や、コード分析を行うことができます。
+対話的にNablarchに関する質問や、コード分析を行うことができます。
 
-### 知識検索
-
-```bash
-/nabledge-6 "バッチ処理の実装方法を教えて"
-```
-
-Nablarch 6のドキュメントやベストプラクティスから知識を検索し、回答を得ることができます。質問は日本語でも英語でも可能です。
-
-### コード分析
+コード分析を直接実行する場合:
 
 ```bash
 /nabledge-6 code-analysis
 ```
-
-現在のプロジェクトのコードをNablarchの観点から分析します。Actionクラス、ハンドラ構成、データベースアクセスパターンなどを評価し、改善提案を提供します。
 
 ## バージョンアップ
 
