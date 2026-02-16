@@ -18,11 +18,32 @@ The workflow triggers when changes are pushed to the release branch in nabledge-
 
 ## Results
 
-Successfully updated workflow configuration. Commit a39c34b created on branch `fix-workflow-branch-references`.
+### Test Deployment
+Successfully tested deployment to test-to branch:
+- Workflow run: https://github.com/nablarch/nabledge-dev/actions/runs/22049794371
+- Deployment target: test-to branch in nablarch/nabledge
+- Status: ✅ All steps succeeded
+
+### Verification Results
+1. ✅ Marketplace structure deployed correctly
+2. ✅ setup-6-cc.sh script works (generates settings.json)
+3. ✅ setup-6-ghc.sh script works (copies skill to .claude/skills/)
+4. ✅ All skill files properly structured
+
+### Production Configuration
+Set final configuration:
+- Trigger: release branch
+- Deploy to: main branch (nablarch/nabledge)
+
+Commits:
+- 349a313: Test configuration
+- eb2c509: Production configuration
+
+PR #25 created: https://github.com/nablarch/nabledge-dev/pull/25
 
 ## Next steps
 
-1. Push branch and create PR to main
-2. Test deployment after merging PR (workflow will trigger on push to main)
-3. Verify that deployment to release branch succeeds
+1. Merge PR #25 to main
+2. Merge main → release to trigger deployment
+3. Verify deployment to nablarch/nabledge main branch succeeds
 4. Close issue #24 after successful verification
