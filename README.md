@@ -54,32 +54,3 @@ When changes are pushed to the `release` branch, GitHub Actions automatically:
 3. Creates version tags
 
 This allows maintainers to control release timing by deciding when to merge main → release.
-
-## Usage
-
-### Using nabledge-6 Skill
-
-Ask questions about Nablarch 6 framework:
-
-```
-データリードハンドラでファイルを読み込むにはどうすればいいですか？
-UniversalDaoでページングを実装したい
-トランザクション管理ハンドラの設定方法を教えてください
-```
-
-Analyze existing code:
-
-```
-このActionクラスの構造を説明して
-proman-batchモジュール全体の構造を教えてください
-```
-
-### Example Topics
-
-The nabledge-6 skill covers:
-- Handlers (transaction management, data reading, DB connections)
-- Libraries (UniversalDao, database access, file path management)
-- Tools (NTF testing framework)
-- Processing (Nablarch batch architecture)
-- Adapters (SLF4J logging)
-- Code Analysis (understanding existing code structure)
