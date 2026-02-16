@@ -34,13 +34,6 @@ jobs:
           # Use transform script
           .github/scripts/transform-to-plugin.sh . nabledge-repo
 
-      - name: Update CHANGELOG.md
-        run: |
-          .github/scripts/update-changelog.sh \
-            nabledge-repo/plugins/nabledge-6/CHANGELOG.md \
-            "${{ github.sha }}" \
-            "${{ github.repository }}"
-
       - name: Validate marketplace structure
         run: .github/scripts/validate-marketplace.sh nabledge-repo
 
