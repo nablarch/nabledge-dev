@@ -33,31 +33,49 @@ source .env
 claude
 ```
 
-## Usage
+## Branch Strategy
 
-### Using nabledge-6 Skill
+This repository uses a two-branch strategy for controlled releases:
 
-Ask questions about Nablarch 6 framework:
+| Branch | Purpose | Workflow |
+|--------|---------|----------|
+| **main** | Development branch | All development work is merged here via pull requests |
+| **release** | Release branch | Receives merges from main when ready to release. Triggers automatic deployment to [nablarch/nabledge](https://github.com/nablarch/nabledge) |
 
-```
-データリードハンドラでファイルを読み込むにはどうすればいいですか？
-UniversalDaoでページングを実装したい
-トランザクション管理ハンドラの設定方法を教えてください
-```
-
-Analyze existing code:
+### Deployment Flow
 
 ```
-このActionクラスの構造を説明して
-proman-batchモジュール全体の構造を教えてください
+Development → main (via PR) → release (manual merge) → nablarch/nabledge (auto-deploy)
 ```
 
-### Example Questions
+When changes are pushed to the `release` branch, GitHub Actions automatically:
+1. Transforms the skill content to marketplace plugin structure
+2. Deploys to the `main` branch in [nablarch/nabledge](https://github.com/nablarch/nabledge)
+3. Creates version tags
 
-See [test scenarios](.claude/skills/nabledge-6/tests/scenarios.md) for 30+ example questions covering:
-- Handlers (transaction management, data reading, DB connections)
-- Libraries (UniversalDao, database access, file path management)
-- Tools (NTF testing framework)
-- Processing (Nablarch batch architecture)
-- Adapters (SLF4J logging)
-- Code Analysis (understanding existing code structure)
+This allows maintainers to control release timing by deciding when to merge main → release.
+
+## Development
+
+### Testing nabledge Skills
+
+Use the `nabledge-test` skill to validate nabledge-6 functionality:
+
+```
+# Run a single test scenario
+/nabledge-test 6 handlers-001
+
+# Run all test scenarios
+/nabledge-test 6 --all
+
+# Run tests for a specific category
+/nabledge-test 6 --category handlers
+```
+
+Test scenarios are defined in `.claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json`. Results are saved to `work/YYYYMMDD/test-<id>-<timestamp>.md`.
+
+The nabledge-test skill uses skill-creator's evaluation procedures to verify:
+- Correct workflow execution (keyword-search, section-judgement)
+- Expected keywords present in responses
+- Relevant sections identified from knowledge files
+- Knowledge file content used (not LLM training data)

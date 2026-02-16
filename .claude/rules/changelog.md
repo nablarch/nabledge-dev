@@ -97,10 +97,28 @@ Start adding `[Unreleased]` section only when next development begins.
 
 ## Version Update Rule
 
-CHANGELOG must be updated when:
+### What to Document
+
+CHANGELOG must be updated **only for changes that affect the deployed content** in nablarch/nabledge repository:
+
+**Include (deployed content)**:
+- Plugin content (`.claude/skills/nabledge-6/`)
+- Marketplace metadata (`.claude/marketplace/`)
+- Setup scripts (`scripts/setup-6-*.sh`)
+- User-facing documentation (README, GUIDE, CHANGELOG)
+- Knowledge files, workflows, assets
+
+**Exclude (not deployed)**:
+- GitHub Actions workflows (`.github/workflows/`)
+- Transform scripts (`.github/scripts/`)
+- Development tools and test files
+- Work logs (`work/`)
+- Repository infrastructure (`.claude/rules/`, `setup.sh`, etc.)
+
+### Change Categories
+
+Document changes in these categories:
 - Adding new features (Added)
 - Modifying existing features (Changed)
 - Fixing bugs (Fixed)
 - Removing features (Removed)
-
-Infrastructure changes (GitHub Actions, transform scripts) do not require CHANGELOG updates.
