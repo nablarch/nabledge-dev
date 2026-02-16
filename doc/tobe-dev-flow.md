@@ -34,6 +34,7 @@ flowchart TB
     end
 
     subgraph designer_tobe["要件定義者・設計者<br/>(人間がYAML作成)"]
+        direction LR
         D1[画面設計]
         D2[バッチ設計]
         D3[Webサービス設計]
@@ -65,10 +66,14 @@ flowchart TB
     B4 --> C1
     C1 --> C2
     C2 --> D1
-    D1 --> D2
-    D2 --> D3
-    D3 --> D4
-    D4 --> D5
+    C2 --> D2
+    C2 --> D3
+    C2 --> D4
+    C2 --> D5
+    D1 --> F1
+    D2 --> F1
+    D3 --> F1
+    D4 --> F1
     D5 --> F1
     F1 --> E1
     C3 --> C4
