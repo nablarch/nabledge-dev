@@ -26,11 +26,11 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.s
 
 VS Code の設定でスキル機能を有効にする必要があります：
 
-1. VS Code の設定を開く（`Cmd/Ctrl + ,`）
-2. 「GitHub Copilot」を検索
-3. 「Skills」または「スキル」関連の設定を探して有効化
+1. VS Code の設定を開く（`Ctrl + ,` または歯車アイコンをクリック）
+2. 検索ボックスに `chat.useAgentSkills` と入力
+3. 「Chat: Use Agent Skills」のチェックボックスをオンにする
 
-**注**: 設定項目名は GitHub Copilot のバージョンによって異なる場合があります。詳細は GitHub Copilot の公式ドキュメントを参照してください。
+設定後、VS Code を再起動すると `/nabledge-6` スキルが使用可能になります。
 
 ### 3. チーム共有
 
