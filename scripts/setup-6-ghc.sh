@@ -100,8 +100,31 @@ if ! command -v jq &> /dev/null; then
     echo "jq installed successfully!"
 fi
 
+# Configure VS Code settings for GitHub Copilot skills
+echo "Configuring VS Code settings for GitHub Copilot skills..."
+mkdir -p "$PROJECT_ROOT/.vscode"
+
+if [ -f "$PROJECT_ROOT/.vscode/settings.json" ]; then
+    # Existing file - check if chat.useAgentSkills already exists
+    if jq -e '.["chat.useAgentSkills"]' "$PROJECT_ROOT/.vscode/settings.json" > /dev/null 2>&1; then
+        echo "chat.useAgentSkills setting already exists in .vscode/settings.json"
+    else
+        # Add setting to existing file
+        jq '. + {"chat.useAgentSkills": true}' "$PROJECT_ROOT/.vscode/settings.json" > "$PROJECT_ROOT/.vscode/settings.json.tmp"
+        mv "$PROJECT_ROOT/.vscode/settings.json.tmp" "$PROJECT_ROOT/.vscode/settings.json"
+        echo "Added chat.useAgentSkills to existing .vscode/settings.json"
+    fi
+else
+    # Create new file
+    echo '{"chat.useAgentSkills": true}' | jq '.' > "$PROJECT_ROOT/.vscode/settings.json"
+    echo "Created .vscode/settings.json with chat.useAgentSkills setting"
+fi
+
 echo ""
 echo "Setup complete! The nabledge-6 skill is now available in your project."
 echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+echo ""
+echo "GitHub Copilot skills have been enabled in .vscode/settings.json"
+echo "Commit .vscode/settings.json to share this configuration with your team."
 echo ""
 echo "You can use it with GitHub Copilot by typing '/nabledge-6' in your editor."

@@ -20,21 +20,17 @@ Nabledge-6を GitHub Copilot で使用するためのガイドです。
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh | bash
 ```
 
-実行後、`.claude` ディレクトリがプロジェクトに作成されます。このディレクトリ内のスキル定義を GitHub Copilot が自動的に認識します。
+実行後、以下のファイルが自動的に作成されます：
+- `.claude/skills/nabledge-6/` - スキル定義（GitHub Copilot が自動認識）
+- `.vscode/settings.json` - VS Code 設定（GitHub Copilot スキル機能を有効化）
 
-### 2. VS Code でスキルを有効化
+### 2. チーム共有
 
-VS Code の設定でスキル機能を有効にする必要があります：
+`.claude` ディレクトリと `.vscode/settings.json` をGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンすると、自動的に以下が有効になります：
+- nabledge-6 スキルの利用
+- GitHub Copilot スキル機能の有効化
 
-1. VS Code の設定を開く（`Ctrl + ,` または歯車アイコンをクリック）
-2. 検索ボックスに `chat.useAgentSkills` と入力
-3. 「Chat: Use Agent Skills」のチェックボックスをオンにする
-
-設定後、VS Code を再起動すると `/nabledge-6` スキルが使用可能になります。
-
-### 3. チーム共有
-
-`.claude` ディレクトリをGitにコミット・プッシュしてください。チームメンバーも同じスキルを利用できるようになります。
+**注**: チームメンバーは VS Code を再起動する必要があります。
 
 ## 使い方
 

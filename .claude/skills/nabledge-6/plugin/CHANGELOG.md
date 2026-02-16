@@ -9,6 +9,7 @@ nabledge-6プラグインの主な変更内容を記録しています。
 ### 追加
 - セットアップスクリプトの環境変数サポート（`NABLEDGE_REPO`, `NABLEDGE_BRANCH`）により、テストやカスタムリポジトリの使用が可能に
 - 利用ガイドの分離：Claude Code向け `GUIDE-CC.md` と GitHub Copilot向け `GUIDE-GHC.md`
+- GitHub Copilotセットアップスクリプトによる `.vscode/settings.json` の自動設定（`chat.useAgentSkills`）により、チーム全体でスキル機能を共有可能に
 
 ### 変更
 - コード分析ワークフローの説明を修正（ドキュメント生成機能であり、改善提案は行わない）
