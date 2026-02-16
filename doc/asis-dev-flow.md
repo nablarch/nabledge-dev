@@ -11,29 +11,29 @@
 
 ```mermaid
 flowchart LR
-    subgraph 要件定義者
+    subgraph req["要件定義者"]
         A1[機能要件書<br/>業務フロー図]
     end
 
-    subgraph アーキテクト_要件
+    subgraph arch_req["アーキテクト"]
         A2[非機能要件書]
     end
 
-    subgraph アーキテクト_設計
+    subgraph arch_design["アーキテクト"]
         B1[基盤コンポーネント設計<br/>方式設計書]
         B2[開発標準の策定<br/>コーディング規約<br/>UI標準]
         B3[サンプル実装]
         E1[環境構築]
     end
 
-    subgraph データアナリスト
+    subgraph data["データアナリスト"]
         C1[DB設計-論理<br/>ER図]
         C2[DB設計-物理<br/>テーブル定義書]
         C3[データパターン<br/>洗い出し]
         E7[共通テストデータ<br/>作成]
     end
 
-    subgraph 要件定義者・設計者
+    subgraph designer["要件定義者・設計者"]
         D1[画面設計]
         D2[バッチ設計]
         D3[Webサービス設計]
@@ -43,7 +43,7 @@ flowchart LR
         F3[テスト実行]
     end
 
-    subgraph アプリケーションエンジニア
+    subgraph appeng["アプリケーションエンジニア"]
         E2[アプリ実装<br/>業務アクション<br/>業務フォーム<br/>画面JSP]
         E3[単体テストケース<br/>設計]
         E4[クラス単体テスト<br/>作成]
@@ -51,7 +51,7 @@ flowchart LR
         E6[取引単体テスト<br/>実施]
     end
 
-    subgraph インフラ
+    subgraph infra["インフラ"]
         F1[結合テスト<br/>環境構築]
     end
 
