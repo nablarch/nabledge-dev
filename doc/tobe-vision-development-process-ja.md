@@ -18,41 +18,52 @@
 
 **出典**: [Nablarchを使用した開発の流れ.xlsx](../.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarchを使用した開発の流れ.xlsx)
 
+### ロール別色分け凡例
+
+| 色 | ロール |
+|----|--------|
+| 🟥 薄いピンク | 要件定義者 |
+| 🟧 薄いオレンジ | アーキテクト |
+| 🟦 薄い青 | データアナリスト |
+| 🟩 薄い緑 | 要件定義者／設計者 |
+| 🟨 薄い黄色 | アプリケーションエンジニア |
+| 🟪 薄い紫 | インフラ |
+
 ```mermaid
 graph TB
     subgraph req["要件定義"]
-        A1["機能要件書・業務フロー図<br/>(要件定義者)"]
-        A2["非機能要件書<br/>(アーキテクト)"]
+        A1["機能要件書・業務フロー図"]
+        A2["非機能要件書"]
     end
 
     subgraph design["設計"]
-        B1["基盤コンポーネント設計<br/>(アーキテクト)"]
-        B2["開発標準の策定<br/>(アーキテクト)"]
-        B3["サンプル実装<br/>(アーキテクト)"]
-        C1["DB設計-論理<br/>(データアナリスト)"]
-        C2["DB設計-物理<br/>(データアナリスト)"]
-        C3["データパターン洗い出し<br/>(データアナリスト)"]
-        D1["画面設計<br/>(要件定義者・設計者)"]
-        D2["バッチ設計<br/>(要件定義者・設計者)"]
-        D3["Webサービス設計<br/>(要件定義者・設計者)"]
-        D4["共通コンポーネント設計<br/>(要件定義者・設計者)"]
-        D5["外部IF設計<br/>(要件定義者・設計者)"]
+        B1["基盤コンポーネント設計"]
+        B2["開発標準の策定"]
+        B3["サンプル実装"]
+        C1["DB設計-論理"]
+        C2["DB設計-物理"]
+        C3["データパターン洗い出し"]
+        D1["画面設計"]
+        D2["バッチ設計"]
+        D3["Webサービス設計"]
+        D4["共通コンポーネント設計"]
+        D5["外部IF設計"]
     end
 
     subgraph pgut["PG・UT"]
-        E1["環境構築<br/>(アーキテクト)"]
-        E2["アプリ実装<br/>(アプリケーションエンジニア)"]
-        E3["単体テストケース設計<br/>(アプリケーションエンジニア)"]
-        E4["クラス単体テスト作成<br/>(アプリケーションエンジニア)"]
-        E5["クラス単体テスト実施<br/>(アプリケーションエンジニア)"]
-        E6["取引単体テスト実施<br/>(アプリケーションエンジニア)"]
-        E7["共通テストデータ作成<br/>(データアナリスト)"]
+        E1["環境構築"]
+        E2["アプリ実装"]
+        E3["単体テストケース設計"]
+        E4["クラス単体テスト作成"]
+        E5["クラス単体テスト実施"]
+        E6["取引単体テスト実施"]
+        E7["共通テストデータ作成"]
     end
 
     subgraph it["結合テスト"]
-        F1["結合テスト環境構築<br/>(インフラ)"]
-        F2["テストケース作成<br/>(要件定義者・設計者)"]
-        F3["テスト実行<br/>(要件定義者・設計者)"]
+        F1["結合テスト環境構築"]
+        F2["テストケース作成"]
+        F3["テスト実行"]
     end
 
     A1 --> B1
@@ -81,10 +92,39 @@ graph TB
     F1 --> F2
     F2 --> F3
 
+    %% 要件定義者
     style A1 fill:#ffe4e1
+
+    %% アーキテクト
+    style A2 fill:#fff4e1
     style B1 fill:#fff4e1
+    style B2 fill:#fff4e1
+    style B3 fill:#fff4e1
+    style E1 fill:#fff4e1
+
+    %% データアナリスト
     style C1 fill:#e1f4ff
-    style E1 fill:#e1ffe1
+    style C2 fill:#e1f4ff
+    style C3 fill:#e1f4ff
+    style E7 fill:#e1f4ff
+
+    %% 要件定義者／設計者
+    style D1 fill:#e1ffe1
+    style D2 fill:#e1ffe1
+    style D3 fill:#e1ffe1
+    style D4 fill:#e1ffe1
+    style D5 fill:#e1ffe1
+    style F2 fill:#e1ffe1
+    style F3 fill:#e1ffe1
+
+    %% アプリケーションエンジニア
+    style E2 fill:#fffacd
+    style E3 fill:#fffacd
+    style E4 fill:#fffacd
+    style E5 fill:#fffacd
+    style E6 fill:#fffacd
+
+    %% インフラ
     style F1 fill:#f4e1ff
 ```
 
@@ -126,42 +166,53 @@ graph TB
 
 **重要**: 設計書は全て**YAML形式**で管理（AI可読化）
 
+### ロール別色分け凡例
+
+| 色 | ロール | 協働モデル |
+|----|--------|-----------|
+| 🟥 薄いピンク | 要件定義者 | 人間主導 + AI技術実現性チェック |
+| 🟧 薄いオレンジ | アーキテクト | AI生成 + 人間承認 |
+| 🟦 薄い青 | データアナリスト | 人間主導 + AI整合性チェック |
+| 🟩 薄い緑 | 要件定義者／設計者 | 人間がYAML作成 |
+| 🟨 薄い黄色 | アプリケーションエンジニア | AI生成 + 人間承認 |
+| 🟪 薄い紫 | インフラ | AI自動化 + 人間確認 |
+
 ```mermaid
 graph TB
     subgraph req_tobe["要件定義"]
-        A1["機能要件書-YAML<br/>(要件定義者+AI技術実現性チェック)"]
-        A2["非機能要件書-YAML<br/>(アーキテクト+AIパターン提案)"]
+        A1["機能要件書-YAML"]
+        A2["非機能要件書-YAML"]
     end
 
     subgraph design_tobe["設計"]
-        B1["基盤コンポーネント設計-YAML<br/>(AI生成+アーキテクト承認)"]
-        B2["開発標準-YAML<br/>(AI生成+アーキテクト承認)"]
-        B3["パターン検証<br/>(AI自動検証)"]
-        C1["DB設計-論理-YAML<br/>(データアナリスト+AI整合性)"]
-        C2["DB設計-物理-YAML<br/>(AI生成+データアナリスト承認)"]
-        C3["データパターン-YAML<br/>(AI補助+データアナリスト承認)"]
-        D1["画面設計-YAML<br/>(要件定義者・設計者)"]
-        D2["バッチ設計-YAML<br/>(要件定義者・設計者)"]
-        D3["Webサービス設計-YAML<br/>(要件定義者・設計者)"]
-        D4["共通コンポーネント設計-YAML<br/>(要件定義者・設計者+AI補助)"]
-        D5["外部IF設計-YAML<br/>(要件定義者・設計者+AI補助)"]
+        B1["基盤コンポーネント設計-YAML"]
+        B2["開発標準-YAML"]
+        B3["パターン検証"]
+        C1["DB設計-論理-YAML"]
+        C2["DB設計-物理-YAML"]
+        C3["データパターン-YAML"]
+        D1["画面設計-YAML"]
+        D2["バッチ設計-YAML"]
+        D3["Webサービス設計-YAML"]
+        D4["共通コンポーネント設計-YAML"]
+        D5["外部IF設計-YAML"]
     end
 
     subgraph pgut_tobe["PG・UT"]
-        E1["環境構築<br/>(AI自動化+アーキテクト確認)"]
-        E2["アプリ実装<br/>(AIがYAMLから生成+エンジニア承認)"]
-        E3["単体テストケース設計<br/>(AI生成+エンジニア承認)"]
-        E4["クラス単体テスト作成<br/>(AI生成+エンジニア確認)"]
-        E5["クラス単体テスト実施<br/>(AI自動実行+エンジニア確認)"]
-        E6["取引単体テスト実施<br/>(エンジニア+AI補助)"]
-        E7["コードレビュー<br/>(AI一次+シニアエンジニア最終)"]
-        E8["共通テストデータ作成<br/>(AI生成+データアナリスト承認)"]
+        E1["環境構築"]
+        E2["アプリ実装"]
+        E3["単体テストケース設計"]
+        E4["クラス単体テスト作成"]
+        E5["クラス単体テスト実施"]
+        E6["取引単体テスト実施"]
+        E7["コードレビュー"]
+        E8["共通テストデータ作成"]
     end
 
     subgraph it_tobe["結合テスト"]
-        F1["結合テスト環境構築<br/>(AI自動化+インフラ確認)"]
-        F2["テストケース作成<br/>(AI生成+要件定義者・設計者確認)"]
-        F3["テスト実行<br/>(要件定義者・設計者+AIバグ分析)"]
+        F1["結合テスト環境構築"]
+        F2["テストケース作成"]
+        F3["テスト実行"]
     end
 
     A1 --> B1
@@ -191,10 +242,40 @@ graph TB
     F1 --> F2
     F2 --> F3
 
+    %% 要件定義者
     style A1 fill:#ffe4e1
+
+    %% アーキテクト
+    style A2 fill:#fff4e1
     style B1 fill:#fff4e1
+    style B2 fill:#fff4e1
+    style B3 fill:#fff4e1
+    style E1 fill:#fff4e1
+
+    %% データアナリスト
     style C1 fill:#e1f4ff
-    style E1 fill:#e1ffe1
+    style C2 fill:#e1f4ff
+    style C3 fill:#e1f4ff
+    style E8 fill:#e1f4ff
+
+    %% 要件定義者／設計者
+    style D1 fill:#e1ffe1
+    style D2 fill:#e1ffe1
+    style D3 fill:#e1ffe1
+    style D4 fill:#e1ffe1
+    style D5 fill:#e1ffe1
+    style F2 fill:#e1ffe1
+    style F3 fill:#e1ffe1
+
+    %% アプリケーションエンジニア
+    style E2 fill:#fffacd
+    style E3 fill:#fffacd
+    style E4 fill:#fffacd
+    style E5 fill:#fffacd
+    style E6 fill:#fffacd
+    style E7 fill:#fffacd
+
+    %% インフラ
     style F1 fill:#f4e1ff
 ```
 
