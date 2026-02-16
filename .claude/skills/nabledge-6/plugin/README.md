@@ -57,10 +57,12 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh
 
 ```bash
 # テストブランチを使用する場合
-NABLEDGE_BRANCH=test-to curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh -o setup.sh
+NABLEDGE_BRANCH=test-to bash setup.sh
 
 # フォーク版を使用する場合
-NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-cc.sh | bash
+curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-cc.sh -o setup.sh
+NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom bash setup.sh
 ```
 
 ### GitHub Copilot
@@ -84,10 +86,12 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.s
 
 ```bash
 # テストブランチを使用する場合
-NABLEDGE_BRANCH=test-to curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh -o setup.sh
+NABLEDGE_BRANCH=test-to bash setup.sh
 
 # フォーク版を使用する場合
-NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-ghc.sh | bash
+curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-ghc.sh -o setup.sh
+NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom bash setup.sh
 ```
 
 ## 使い方
