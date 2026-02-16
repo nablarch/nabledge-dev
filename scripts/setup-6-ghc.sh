@@ -11,15 +11,22 @@ fi
 echo "Setting up Nabledge-6 skill for GitHub Copilot..."
 echo "Project root: $PROJECT_ROOT"
 
-# Download nabledge-6 plugin from nablarch/nabledge repository
-REPO_URL="https://github.com/nablarch/nabledge"
-BRANCH="main"
+# Configuration (can be overridden with environment variables)
+NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
+NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-main}"
+
+# Build repository URL
+REPO_URL="https://github.com/${NABLEDGE_REPO}"
+REPO_NAME="${NABLEDGE_REPO##*/}"
+BRANCH="$NABLEDGE_BRANCH"
 TEMP_DIR=$(mktemp -d)
 
+echo "Repository: $NABLEDGE_REPO"
+echo "Branch: $BRANCH"
 echo "Downloading nabledge-6 plugin from $REPO_URL (branch: $BRANCH)..."
 cd "$TEMP_DIR"
 git clone --depth 1 --filter=blob:none --sparse --branch "$BRANCH" "$REPO_URL"
-cd nabledge
+cd "$REPO_NAME"
 git sparse-checkout set plugins/nabledge-6
 
 # Create .claude/skills directory
@@ -28,7 +35,7 @@ mkdir -p "$PROJECT_ROOT/.claude/skills"
 
 # Copy skills/nabledge-6 directory as-is
 echo "Copying nabledge-6 skill to project..."
-cp -r "$TEMP_DIR/nabledge/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
+cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
 # Clean up
 rm -rf "$TEMP_DIR"
@@ -93,8 +100,31 @@ if ! command -v jq &> /dev/null; then
     echo "jq installed successfully!"
 fi
 
+# Configure VS Code settings for GitHub Copilot skills
+echo "Configuring VS Code settings for GitHub Copilot skills..."
+mkdir -p "$PROJECT_ROOT/.vscode"
+
+if [ -f "$PROJECT_ROOT/.vscode/settings.json" ]; then
+    # Existing file - check if chat.useAgentSkills already exists
+    if jq -e '.["chat.useAgentSkills"]' "$PROJECT_ROOT/.vscode/settings.json" > /dev/null 2>&1; then
+        echo "chat.useAgentSkills setting already exists in .vscode/settings.json"
+    else
+        # Add setting to existing file
+        jq '. + {"chat.useAgentSkills": true}' "$PROJECT_ROOT/.vscode/settings.json" > "$PROJECT_ROOT/.vscode/settings.json.tmp"
+        mv "$PROJECT_ROOT/.vscode/settings.json.tmp" "$PROJECT_ROOT/.vscode/settings.json"
+        echo "Added chat.useAgentSkills to existing .vscode/settings.json"
+    fi
+else
+    # Create new file
+    echo '{"chat.useAgentSkills": true}' | jq '.' > "$PROJECT_ROOT/.vscode/settings.json"
+    echo "Created .vscode/settings.json with chat.useAgentSkills setting"
+fi
+
 echo ""
 echo "Setup complete! The nabledge-6 skill is now available in your project."
 echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
 echo ""
-echo "You can use it with GitHub Copilot by typing '/nabledge-6' in your editor."
+echo "GitHub Copilot skills have been enabled in .vscode/settings.json"
+echo "Commit .vscode/settings.json to share this configuration with your team."
+echo ""
+echo "You can now use nabledge-6 with GitHub Copilot by asking questions in natural language."

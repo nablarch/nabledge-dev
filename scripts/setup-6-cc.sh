@@ -11,12 +11,19 @@ fi
 echo "Setting up Nabledge-6 plugin for Claude Code..."
 echo "Project root: $PROJECT_ROOT"
 
-# Configuration
-REPO_OWNER="nablarch"
-REPO_NAME="nabledge"
-BRANCH="main"
+# Configuration (can be overridden with environment variables)
+NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
+NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-main}"
+
+# Parse repository owner and name from NABLEDGE_REPO
+REPO_OWNER="${NABLEDGE_REPO%/*}"
+REPO_NAME="${NABLEDGE_REPO#*/}"
+BRANCH="$NABLEDGE_BRANCH"
 MARKETPLACE_NAME="nabledge"
 PLUGIN_NAME="nabledge-6"
+
+echo "Repository: $NABLEDGE_REPO"
+echo "Branch: $BRANCH"
 
 # Create .claude directory if it doesn't exist
 mkdir -p "$PROJECT_ROOT/.claude"

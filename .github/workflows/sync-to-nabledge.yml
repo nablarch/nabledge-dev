@@ -3,7 +3,7 @@ name: Sync to nabledge repository
 on:
   push:
     branches:
-      - main
+      - refactor-extract-workflow-scripts
 
 jobs:
   sync:
@@ -16,155 +16,38 @@ jobs:
           fetch-depth: 0
 
       - name: Validate version updates
-        run: |
-          # Get list of changed files
-          CHANGED_FILES=$(git diff HEAD~1 HEAD --name-only)
-
-          # Check if only infrastructure files were changed
-          INFRA_ONLY=true
-          while IFS= read -r file; do
-            if [[ ! "$file" =~ ^\.github/ ]] && \
-               [[ ! "$file" =~ ^\.claude/marketplace ]] && \
-               [[ ! "$file" =~ ^\.claude/rules/ ]] && \
-               [[ "$file" != *"transform-to-plugin.sh"* ]]; then
-              INFRA_ONLY=false
-              break
-            fi
-          done <<< "$CHANGED_FILES"
-
-          # If non-infrastructure files changed, require version update
-          if [ "$INFRA_ONLY" = false ]; then
-            if ! echo "$CHANGED_FILES" | grep -q "plugin/plugin.json\|plugin/CHANGELOG.md\|marketplace/.claude-plugin/marketplace.json"; then
-              echo "Error: plugin.json, CHANGELOG.md, or marketplace.json must be updated before sync"
-              exit 1
-            fi
-          else
-            echo "Infrastructure-only changes detected, skipping version validation"
-          fi
+        run: .github/scripts/validate-version-updates.sh
 
       - name: Checkout nabledge repository
         uses: actions/checkout@v4
         with:
           repository: nablarch/nabledge
-          ref: main
+          ref: test-to
           token: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
           path: nabledge-repo
 
       - name: Clean nabledge repository
-        run: |
-          cd nabledge-repo
-          # Remove all files except .git/
-          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+        run: .github/scripts/clean-repository.sh nabledge-repo
 
       - name: Transform to plugin structure
         run: |
           # Use transform script
           .github/scripts/transform-to-plugin.sh . nabledge-repo
 
-      - name: Update CHANGELOG.md
-        run: |
-          TRIGGER_COMMIT_SHA="${{ github.sha }}"
-          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
-          DATE=$(date +%Y-%m-%d)
-
-          # Append sync entry to nabledge-6 plugin CHANGELOG
-          CHANGELOG_FILE="nabledge-repo/plugins/nabledge-6/CHANGELOG.md"
-          TEMP_FILE=$(mktemp)
-
-          # Read first line (# Changelog)
-          head -n 1 "$CHANGELOG_FILE" > "$TEMP_FILE"
-
-          # Add new unreleased section using printf
-          printf "\n## [Unreleased] - %s\n\n### Changed\n- Synced from: %s\n\n" "$DATE" "$TRIGGER_COMMIT_URL" >> "$TEMP_FILE"
-
-          # Append rest of original file
-          tail -n +2 "$CHANGELOG_FILE" >> "$TEMP_FILE"
-
-          # Replace original file
-          mv "$TEMP_FILE" "$CHANGELOG_FILE"
-
       - name: Validate marketplace structure
-        run: |
-          echo "Validating marketplace structure..."
-
-          # Check marketplace files exist
-          test -f nabledge-repo/.claude-plugin/marketplace.json || { echo "Error: marketplace.json not found"; exit 1; }
-          test -f nabledge-repo/README.md || { echo "Error: Root README.md not found"; exit 1; }
-          test -f nabledge-repo/LICENSE || { echo "Error: Root LICENSE not found"; exit 1; }
-
-          # Check nabledge-6 plugin structure
-          test -f nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json || { echo "Error: nabledge-6/plugin.json not found"; exit 1; }
-          test -f nabledge-repo/plugins/nabledge-6/skills/nabledge-6/SKILL.md || { echo "Error: nabledge-6/SKILL.md not found"; exit 1; }
-          test -f nabledge-repo/plugins/nabledge-6/README.md || { echo "Error: nabledge-6/README.md not found"; exit 1; }
-          test -f nabledge-repo/plugins/nabledge-6/CHANGELOG.md || { echo "Error: nabledge-6/CHANGELOG.md not found"; exit 1; }
-
-          # Check nabledge-6 supporting directories (inside skills/nabledge-6/)
-          test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/workflows || { echo "Error: nabledge-6/skills/nabledge-6/workflows not found"; exit 1; }
-          test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/assets || { echo "Error: nabledge-6/skills/nabledge-6/assets not found"; exit 1; }
-          test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/knowledge || { echo "Error: nabledge-6/skills/nabledge-6/knowledge not found"; exit 1; }
-          test -d nabledge-repo/plugins/nabledge-6/skills/nabledge-6/docs || { echo "Error: nabledge-6/skills/nabledge-6/docs not found"; exit 1; }
-
-          # Check setup scripts exist at root
-          test -f nabledge-repo/setup-6-cc.sh || { echo "Error: setup-6-cc.sh not found at root"; exit 1; }
-          test -f nabledge-repo/setup-6-ghc.sh || { echo "Error: setup-6-ghc.sh not found at root"; exit 1; }
-
-          # Validate JSON formats
-          echo "Validating JSON formats..."
-          jq empty nabledge-repo/.claude-plugin/marketplace.json || { echo "Error: Invalid marketplace.json"; exit 1; }
-          jq empty nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json || { echo "Error: Invalid plugin.json"; exit 1; }
-
-          # Validate marketplace.json structure
-          echo "Validating marketplace.json structure..."
-          jq -e '.name' nabledge-repo/.claude-plugin/marketplace.json > /dev/null || { echo "Error: marketplace.json missing 'name' field"; exit 1; }
-          jq -e '.plugins' nabledge-repo/.claude-plugin/marketplace.json > /dev/null || { echo "Error: marketplace.json missing 'plugins' array"; exit 1; }
-
-          # Validate plugin.json structure
-          echo "Validating plugin.json structure..."
-          jq -e '.name' nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json > /dev/null || { echo "Error: plugin.json missing 'name' field"; exit 1; }
-          jq -e '.version' nabledge-repo/plugins/nabledge-6/.claude-plugin/plugin.json > /dev/null || { echo "Error: plugin.json missing 'version' field"; exit 1; }
-
-          echo "Marketplace structure validation passed!"
-
-      - name: Configure Git
-        working-directory: nabledge-repo
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+        run: .github/scripts/validate-marketplace.sh nabledge-repo
 
       - name: Commit and Push to nabledge
         working-directory: nabledge-repo
         run: |
-          git add .
-
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-
-          TRIGGER_COMMIT_SHA="${{ github.sha }}"
-          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${TRIGGER_COMMIT_SHA}"
-
-          git commit -m "Sync nabledge marketplace from nabledge-dev" -m "Triggered by: ${TRIGGER_COMMIT_URL}"
-
-          git push origin main
+          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          ../.github/scripts/commit-and-push.sh \
+            "Sync nabledge marketplace from nabledge-dev" \
+            "Triggered by: ${TRIGGER_COMMIT_URL}" \
+            "test-to"
 
       - name: Create and push version tag
         working-directory: nabledge-repo
         run: |
-          # Extract version from marketplace.json
           VERSION=$(jq -r '.metadata.version' .claude-plugin/marketplace.json)
-          TAG_NAME="${VERSION}"
-
-          echo "Creating tag: ${TAG_NAME}"
-
-          # Check if tag already exists on remote
-          if git ls-remote --tags origin | grep -q "refs/tags/${TAG_NAME}"; then
-            echo "Tag ${TAG_NAME} already exists on remote, skipping tag creation"
-            exit 0
-          fi
-
-          # Create and push tag
-          git tag -a "${TAG_NAME}" -m "Release version ${VERSION}"
-          git push origin "${TAG_NAME}"
-
-          echo "Successfully created and pushed tag: ${TAG_NAME}"
+          ../.github/scripts/create-version-tag.sh "$VERSION"

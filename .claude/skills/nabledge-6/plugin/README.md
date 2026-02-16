@@ -1,6 +1,14 @@
 # Nabledge-6
 
-Nablarch 6のAI支援開発スキルです。
+> **⚠️ 評価版について**
+>
+> 現在、評価版として公開しています。本スキルの目的は以下の通りです：
+>
+> - **知識あり/なしの違いを体感する**: AIエージェント（Claude Code、GitHub Copilot）は、Nablarchのような企業フレームワークの知識を十分に持っていません。本スキルを導入することで、Nablarch固有の知識を活用した開発支援が可能になります
+> - **ワークフローの実行イメージを掴む**: コード分析などのワークフローを実際に試すことで、AIエージェントによる開発支援の可能性を理解できます
+> - **現場からの要望を集める**: 実際に使用していただき、どのような機能や知識が必要か、フィードバックをお寄せください
+>
+> 知識・ワークフローともにカバー範囲は限定的ですが、フィードバックをもとに継続的に拡充していきます。
 
 ## 機能
 
@@ -28,85 +36,16 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 
 現在提供しているワークフロー:
 
-- **コード分析**: Nablarchの観点からプロジェクトコードを分析し、改善提案を行う
+- **コード分析**: Nablarchの観点からプロジェクトコードを分析し、構造や依存関係を可視化したドキュメントを生成する
 
 今後追加予定のワークフロー:
 
 - **影響調査**: 変更による影響範囲をNablarchの構造を踏まえて調査
 - **コードレビュー**: Nablarchの規約やベストプラクティスに基づくレビュー
 
-注：評価版のため、知識・ワークフローともにカバー範囲は限定的です。フィードバックをもとに拡充していきます。
+## 利用ガイド
 
-## インストール
+使用するAIツールに応じて、以下のガイドを参照してください。
 
-### Claude Code
-
-プロジェクトルートで以下のコマンドを実行：
-
-```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
-```
-
-実行後、`.claude/settings.json`が自動的に作成または更新されます。このファイルをGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンしてClaude Codeを起動すると、自動的にプラグインのインストールが促されます。
-
-**注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
-
-### GitHub Copilot (WSL / GitBash)
-
-プロジェクトルートで以下のコマンドを実行：
-
-```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh | bash
-```
-
-実行後、`.claude` ディレクトリがプロジェクトに作成されます。このディレクトリをGitにコミット・プッシュしてください。チームメンバーも同じスキルを利用できるようになります。
-
-**注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
-
-## 使い方
-
-### 基本的な使い方
-
-```bash
-/nabledge-6
-```
-
-スキルを起動し、対話的にNablarchに関する質問や、コード分析を行うことができます。
-
-### 知識検索
-
-```bash
-/nabledge-6 "バッチ処理の実装方法を教えて"
-```
-
-Nablarch 6のドキュメントやベストプラクティスから知識を検索し、回答を得ることができます。質問は日本語でも英語でも可能です。
-
-### コード分析
-
-```bash
-/nabledge-6 code-analysis
-```
-
-現在のプロジェクトのコードをNablarchの観点から分析します。Actionクラス、ハンドラ構成、データベースアクセスパターンなどを評価し、改善提案を提供します。
-
-## バージョンアップ
-
-### Claude Code
-
-セットアップスクリプトを再実行：
-
-```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
-```
-
-実行後、更新された`.claude/settings.json`をGitにコミット・プッシュしてください。
-
-### GitHub Copilot (WSL / GitBash)
-
-セットアップスクリプトを再実行：
-
-```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh | bash
-```
-
-更新後、`.claude` ディレクトリの変更をGitにコミット・プッシュしてください。
+- **[Claude Code利用ガイド](GUIDE-CC.md)** - Claude Codeでの利用方法
+- **[GitHub Copilot利用ガイド](GUIDE-GHC.md)** - GitHub Copilotでの利用方法
