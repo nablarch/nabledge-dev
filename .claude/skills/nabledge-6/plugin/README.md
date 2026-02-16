@@ -41,6 +41,8 @@ Nablarchの知識を活用した開発支援ワークフローを提供します
 
 ### Claude Code
 
+**前提条件**: Claude Code がインストール済みであること
+
 プロジェクトルートで以下のコマンドを実行：
 
 ```bash
@@ -51,7 +53,12 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh
 
 **注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
 
-### GitHub Copilot (WSL / GitBash)
+### GitHub Copilot
+
+**前提条件**: WSL または GitBash 環境
+
+- VS Code のターミナルを使用する場合は、ターミナルを WSL または GitBash に設定してください
+- PowerShell や Command Prompt では動作しません
 
 プロジェクトルートで以下のコマンドを実行：
 
@@ -101,7 +108,7 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh
 
 実行後、更新された`.claude/settings.json`をGitにコミット・プッシュしてください。
 
-### GitHub Copilot (WSL / GitBash)
+### GitHub Copilot
 
 セットアップスクリプトを再実行：
 

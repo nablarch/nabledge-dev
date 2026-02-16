@@ -4,6 +4,11 @@ All notable changes to the nabledge-6 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+- Clarified installation prerequisites in README (Claude Code requires CC installed, GitHub Copilot requires WSL or GitBash)
+
 ## [0.1] - 2026-02-13
 
 ### Added
