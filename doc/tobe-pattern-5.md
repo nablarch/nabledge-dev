@@ -117,7 +117,7 @@ flowchart TB
 
     code -.->|"統合時の<br/>問題分析"| nabledge
     design -.->|"設計の<br/>整合性確認"| nabledge
-    nabledge -->|"✅ 設計ミス指摘<br/>✅ 統合エラー原因特定<br/>✅ リグレッション影響分析"| dev
+    nabledge -->|"✅ 設計ミス指摘<br/>✅ 結合エラー原因特定<br/>✅ リグレッション影響分析"| dev
 
     style nabledge fill:#e1f5e1
     style design fill:#fff4e6
