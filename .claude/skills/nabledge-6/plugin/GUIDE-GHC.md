@@ -36,28 +36,19 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.s
 
 ### 基本的な使い方
 
-GitHub Copilot でスキルを使用するには、**スキル名とメッセージを組み合わせて**指定します：
+自然言語でNablarchに関する質問や依頼をするだけで、GitHub Copilotが自動的にnabledge-6スキルを使用します。
 
+**例**:
 ```
-/nabledge-6 Nablarchのバッチ処理の実装方法を教えて
-```
-
-```
-/nabledge-6 このプロジェクトのコードをNablarchの観点から分析して
+Nablarchのバッチ処理の実装方法を教えて
 ```
 
 ```
-/nabledge-6 UniversalDaoの使い方を教えて
+このプロジェクトのコードをNablarchの観点から分析して
 ```
 
-**重要**: メッセージだけではスキルが使用されません。必ず `/nabledge-6` を先頭に付けてください。
-
-### コード分析
-
-コード分析ワークフローを実行する場合：
-
 ```
-/nabledge-6 code-analysis
+UniversalDaoの使い方を教えて
 ```
 
 ## バージョンアップ
