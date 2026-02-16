@@ -1,8 +1,8 @@
-# Changelog
+# 変更履歴
 
-All notable changes to the Nabledge marketplace will be documented in this file.
+Nabledgeマーケットプレイス全体の主な変更内容を記録しています。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づいています。
 
 ## バージョン対応表
 
@@ -29,7 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - テスティングフレームワークの基礎
 - セキュリティチェックリスト
 
-詳細は [nabledge-6 CHANGELOG](plugins/nabledge-6/CHANGELOG.md) を参照してください。
+詳細は [nabledge-6 変更履歴](plugins/nabledge-6/CHANGELOG.md) を参照してください。
 
 #### nabledge-5
 

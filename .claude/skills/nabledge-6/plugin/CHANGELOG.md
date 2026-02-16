@@ -1,28 +1,28 @@
-# Changelog
+# 変更履歴
 
-All notable changes to the nabledge-6 plugin will be documented in this file.
+nabledge-6プラグインの主な変更内容を記録しています。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づいています。
 
 ## [Unreleased]
 
-### Added
-- Environment variable support for setup scripts (`NABLEDGE_REPO`, `NABLEDGE_BRANCH`) to enable testing and custom repository usage
-- Separate usage guides: `GUIDE-CC.md` for Claude Code and `GUIDE-GHC.md` for GitHub Copilot
+### 追加
+- セットアップスクリプトの環境変数サポート（`NABLEDGE_REPO`, `NABLEDGE_BRANCH`）により、テストやカスタムリポジトリの使用が可能に
+- 利用ガイドの分離：Claude Code向け `GUIDE-CC.md` と GitHub Copilot向け `GUIDE-GHC.md`
 
-### Changed
-- Corrected code analysis workflow description (generates documentation, does not provide improvement suggestions)
-- Split documentation into focused guides (README.md for overview, GUIDE-CC.md and GUIDE-GHC.md for detailed instructions)
-- Enhanced evaluation notice to clarify purpose: experience knowledge impact, understand workflow possibilities, and gather requirements
-- Clarified installation prerequisites and procedures in GitHub Copilot guide (WSL/GitBash required, VS Code settings, skill usage format)
-- Explained why PowerShell/Command Prompt doesn't work (jq command requirement)
-- Updated GitHub Copilot usage to require `/nabledge-6 message` format (message-only doesn't invoke skill)
-- Updated usage instructions to emphasize natural language interaction as primary method for Claude Code
-- Removed environment variable customization from user guides (developer-only information)
-- Removed macOS-specific notes (out of scope for WSL/GitBash prerequisites)
-- Simplified version documentation: removed complex version section from README, users always install latest by default
-- Added version upgrade sections to usage guides with tag specification examples for specific versions
-- Created marketplace CHANGELOG with version correspondence table linking to plugin CHANGELOGs
+### 変更
+- コード分析ワークフローの説明を修正（ドキュメント生成機能であり、改善提案は行わない）
+- ドキュメントを目的別に分離（README.mdは概要、GUIDE-CC.mdとGUIDE-GHC.mdは詳細手順）
+- 評価版の目的を明確化：知識の有無による違いの体感、ワークフローの理解、現場からの要望収集
+- GitHub Copilot利用ガイドのインストール前提条件と手順を明確化（WSL/GitBash必須、VS Code設定、スキル使用形式）
+- PowerShell/Command Promptが動作しない理由を説明（jqコマンド要件）
+- GitHub Copilotの使用方法を更新：`/nabledge-6 メッセージ`形式が必要（メッセージのみではスキルが呼び出されない）
+- Claude Codeの利用方法を更新：自然言語での対話を主要な使用方法として強調
+- 利用ガイドから環境変数カスタマイズを削除（開発者向け情報のため）
+- macOS固有の注意事項を削除（WSL/GitBash前提のためスコープ外）
+- バージョン管理の説明を簡素化：READMEから複雑なバージョンセクションを削除、ユーザーは常に最新版をインストール
+- 利用ガイドにバージョンアップセクションを追加：タグ指定による特定バージョンのインストール例を記載
+- マーケットプレイス全体のCHANGELOGを作成：バージョン対応表とプラグインCHANGELOGへのリンク
 
 ## [0.1] - 2026-02-13
 
