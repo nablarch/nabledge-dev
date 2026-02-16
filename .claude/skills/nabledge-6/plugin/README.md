@@ -53,6 +53,16 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh
 
 **注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
 
+**環境変数でカスタマイズ** (オプション):
+
+```bash
+# テストブランチを使用する場合
+NABLEDGE_BRANCH=test-to curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
+
+# フォーク版を使用する場合
+NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-cc.sh | bash
+```
+
 ### GitHub Copilot
 
 **前提条件**: WSL または GitBash 環境
@@ -69,6 +79,16 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.s
 実行後、`.claude` ディレクトリがプロジェクトに作成されます。このディレクトリをGitにコミット・プッシュしてください。チームメンバーも同じスキルを利用できるようになります。
 
 **注**: セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）。macOSでは手動インストールが必要です（`brew install jq`）。
+
+**環境変数でカスタマイズ** (オプション):
+
+```bash
+# テストブランチを使用する場合
+NABLEDGE_BRANCH=test-to curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-ghc.sh | bash
+
+# フォーク版を使用する場合
+NABLEDGE_REPO=mycompany/nabledge-fork NABLEDGE_BRANCH=custom curl -sSL https://raw.githubusercontent.com/mycompany/nabledge-fork/custom/setup-6-ghc.sh | bash
+```
 
 ## 使い方
 

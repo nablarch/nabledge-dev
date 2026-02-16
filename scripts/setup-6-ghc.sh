@@ -11,11 +11,17 @@ fi
 echo "Setting up Nabledge-6 skill for GitHub Copilot..."
 echo "Project root: $PROJECT_ROOT"
 
-# Download nabledge-6 plugin from nablarch/nabledge repository
-REPO_URL="https://github.com/nablarch/nabledge"
-BRANCH="main"
+# Configuration (can be overridden with environment variables)
+NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
+NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-main}"
+
+# Build repository URL
+REPO_URL="https://github.com/${NABLEDGE_REPO}"
+BRANCH="$NABLEDGE_BRANCH"
 TEMP_DIR=$(mktemp -d)
 
+echo "Repository: $NABLEDGE_REPO"
+echo "Branch: $BRANCH"
 echo "Downloading nabledge-6 plugin from $REPO_URL (branch: $BRANCH)..."
 cd "$TEMP_DIR"
 git clone --depth 1 --filter=blob:none --sparse --branch "$BRANCH" "$REPO_URL"

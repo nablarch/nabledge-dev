@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Environment variable support for setup scripts (`NABLEDGE_REPO`, `NABLEDGE_BRANCH`) to enable testing and custom repository usage
+
 ### Changed
 - Clarified installation prerequisites in README (Claude Code requires CC installed, GitHub Copilot requires WSL or GitBash)
 
