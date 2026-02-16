@@ -11,53 +11,74 @@
 
 ```mermaid
 flowchart TB
-    subgraph req_tobe["要件定義者<br/>(人間主導+AI技術実現性チェック)"]
-        A1[要件定義]
+    %% 要件定義工程
+    subgraph phase1["要件定義工程"]
+        subgraph req["要件定義者<br/>(人間主導+AI技術実現性チェック)"]
+            A1[要件定義<br/>+AI技術実現性チェック]
+        end
+        subgraph arch1["アーキテクト<br/>(人間主導+AIパターン提案)"]
+            A2[非機能要件定義<br/>方式設計<br/>+AIパターン提案]
+        end
     end
 
-    subgraph arch_req_tobe["アーキテクト<br/>(人間主導+AIパターン提案)"]
-        A2[方式設計]
+    %% 設計工程
+    subgraph phase2["設計工程"]
+        subgraph arch2["アーキテクト<br/>(AI生成+人間承認)"]
+            B1[基盤コンポーネント設計<br/>AI生成]
+            B2[開発標準の策定<br/>AI生成]
+            B3[パターン検証<br/>AI自動検証]
+            B4[サンプル実装]
+        end
+        subgraph data1["データアナリスト<br/>(人間主導+AI整合性チェック)"]
+            C1[ドメイン定義設計<br/>+AI整合性チェック]
+            C2[DB設計-論理<br/>+AI整合性チェック]
+            C3[DB設計-物理<br/>+AI整合性チェック]
+            C4[データパターン洗い出し]
+        end
+        subgraph designer1["要件定義者・設計者<br/>(人間がYAML作成)"]
+            D1[画面設計<br/>YAML形式]
+            D2[バッチ設計<br/>YAML形式]
+            D3[Webサービス設計<br/>YAML形式]
+            D4[共通コンポーネント設計<br/>YAML形式]
+            D5[外部IF設計<br/>YAML形式]
+        end
     end
 
-    subgraph arch_design_tobe["アーキテクト<br/>(AI生成+人間承認)"]
-        B1[基盤コンポーネント設計]
-        B2[開発標準の策定]
-        B3[パターン検証]
-        B4[サンプル実装]
+    %% PG・UT工程
+    subgraph phase3["PG・UT工程"]
+        subgraph arch3["アーキテクト<br/>(AI生成+人間承認)"]
+            E1[基盤コンポーネント実装<br/>AI生成]
+            E2[チェック<br/>AI一次チェック]
+        end
+        subgraph infra1["インフラ<br/>(AI自動化+人間確認)"]
+            E3[環境構築<br/>AI自動化]
+        end
+        subgraph appeng["アプリケーションエンジニア<br/>(AI生成+人間承認)"]
+            E4[単体テストケース設計<br/>AI生成]
+            E5[SQL検証<br/>AI補助]
+            E6[アプリ実装<br/>AIがYAMLから生成]
+            E7[クラス単体テスト作成<br/>AI生成]
+            E8[クラス単体テスト実施<br/>AI自動実行]
+            E9[取引単体テスト実施<br/>+AI補助]
+            E10[コードレビュー<br/>AI一次レビュー]
+        end
+        subgraph data2["データアナリスト"]
+            E11[共通テストデータ作成<br/>AI生成]
+        end
     end
 
-    subgraph data_tobe["データアナリスト<br/>(人間主導+AI整合性チェック)"]
-        C1[DB設計-論理]
-        C2[DB設計-物理]
-        C3[データパターン洗い出し]
-        C4[共通テストデータ作成<br/>AI生成]
+    %% 結合テスト工程
+    subgraph phase4["結合テスト工程"]
+        subgraph infra2["インフラ<br/>(AI自動化+人間確認)"]
+            F1[結合テスト環境構築<br/>AI自動構築]
+        end
+        subgraph designer2["要件定義者・設計者"]
+            F2[テストケース作成<br/>AI生成]
+            F3[テスト実行<br/>+AIバグ分析]
+        end
     end
 
-    subgraph designer_tobe["要件定義者・設計者<br/>(人間がYAML作成)"]
-        direction LR
-        D1[画面設計]
-        D2[バッチ設計]
-        D3[Webサービス設計]
-        D4[共通コンポーネント設計]
-        D5[外部IF設計]
-        D6[テストケース作成<br/>AI生成]
-        D7[テスト実行<br/>+AIバグ分析]
-    end
-
-    subgraph appeng_tobe["アプリケーションエンジニア<br/>(AI生成+人間承認)"]
-        E1[アプリ実装<br/>AIがYAMLから生成]
-        E2[単体テストケース設計<br/>AI生成]
-        E3[クラス単体テスト作成<br/>AI生成]
-        E4[クラス単体テスト実施<br/>AI自動実行]
-        E5[取引単体テスト実施<br/>+AI補助]
-        E6[コードレビュー<br/>AI一次レビュー]
-    end
-
-    subgraph infra_tobe["インフラ<br/>(AI自動化+人間確認)"]
-        F1[環境構築<br/>AI自動化]
-        F2[結合テスト環境構築<br/>AI自動構築]
-    end
-
+    %% 依存関係
     A1 --> A2
     A2 --> B1
     B1 --> B2
@@ -65,30 +86,34 @@ flowchart TB
     B3 --> B4
     B4 --> C1
     C1 --> C2
-    C2 --> D1
-    C2 --> D2
-    C2 --> D3
-    C2 --> D4
-    C2 --> D5
-    D1 --> F1
-    D2 --> F1
-    D3 --> F1
-    D4 --> F1
-    D5 --> F1
-    F1 --> E1
-    C3 --> C4
-    D1 --> E2
-    D2 --> E2
-    D3 --> E2
-    E1 --> E6
-    E2 --> E3
-    E3 --> E4
+    C2 --> C3
+    C3 --> D1
+    C3 --> D2
+    C3 --> D3
+    C3 --> D4
+    C3 --> D5
+    D1 --> E3
+    D2 --> E3
+    D3 --> E3
+    D4 --> E3
+    D5 --> E3
+    B4 --> E1
+    E1 --> E2
+    E3 --> E6
+    D1 --> E4
+    D2 --> E4
+    D3 --> E4
     E4 --> E5
-    E5 --> F2
-    E6 --> F2
-    C4 --> D6
-    F2 --> D6
-    D6 --> D7
+    E5 --> E6
+    E6 --> E10
+    E10 --> E7
+    E7 --> E8
+    E8 --> E9
+    C4 --> E11
+    E9 --> F1
+    E11 --> F1
+    F1 --> F2
+    F2 --> F3
 ```
 
 ---
