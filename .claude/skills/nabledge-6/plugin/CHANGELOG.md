@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Clarified installation prerequisites in README (Claude Code requires CC installed, GitHub Copilot requires WSL or GitBash)
+- Fixed environment variable usage examples in README (download script first, then execute with env vars)
 
 ## [0.1] - 2026-02-13
 
