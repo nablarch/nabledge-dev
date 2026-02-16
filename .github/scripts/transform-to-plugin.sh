@@ -32,9 +32,10 @@ mkdir -p "$DEST_DIR/plugins/nabledge-6/skills/nabledge-6"
 echo "Copying marketplace.json..."
 cp "$SOURCE_DIR/.claude/marketplace/.claude-plugin/marketplace.json" "$DEST_DIR/.claude-plugin/"
 
-# Copy marketplace README and LICENSE to root
-echo "Copying marketplace README and LICENSE..."
+# Copy marketplace README, CHANGELOG, and LICENSE to root
+echo "Copying marketplace README, CHANGELOG, and LICENSE..."
 cp "$SOURCE_DIR/.claude/marketplace/README.md" "$DEST_DIR/README.md"
+cp "$SOURCE_DIR/.claude/marketplace/CHANGELOG.md" "$DEST_DIR/CHANGELOG.md"
 cp "$SOURCE_DIR/.claude/marketplace/LICENSE" "$DEST_DIR/"
 
 # Copy nabledge-6 plugin files
