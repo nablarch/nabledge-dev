@@ -21,11 +21,6 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh
 
 `.claude/settings.json` をGitにコミット・プッシュしてください。チームメンバーがリポジトリをクローンしてClaude Codeを起動すると、自動的にプラグインのインストールが促されます。
 
-### 注意事項
-
-- セットアップスクリプトは必要に応じて `jq` コマンドを自動インストールします（Linux/WSL/GitBash環境）
-- macOSでは手動インストールが必要です: `brew install jq`
-
 ## 使い方
 
 ### 基本的な使い方

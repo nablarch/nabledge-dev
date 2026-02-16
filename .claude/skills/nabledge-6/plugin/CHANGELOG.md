@@ -13,9 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Split documentation into focused guides (README.md for overview, GUIDE-CC.md and GUIDE-GHC.md for detailed instructions)
 - Enhanced evaluation notice to clarify purpose: experience knowledge impact, understand workflow possibilities, and gather requirements
-- Clarified installation prerequisites in guides (Claude Code requires CC installed, GitHub Copilot requires WSL or GitBash)
-- Updated usage instructions to emphasize natural language interaction as primary method, with manual execution as optional
+- Clarified installation prerequisites and procedures in GitHub Copilot guide (WSL/GitBash required, VS Code settings, skill usage format)
+- Explained why PowerShell/Command Prompt doesn't work (jq command requirement)
+- Updated GitHub Copilot usage to require `/nabledge-6 message` format (message-only doesn't invoke skill)
+- Updated usage instructions to emphasize natural language interaction as primary method for Claude Code
 - Removed environment variable customization from user guides (developer-only information)
+- Removed macOS-specific notes (out of scope for WSL/GitBash prerequisites)
 
 ## [0.1] - 2026-02-13
 
