@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Separate usage guides: `GUIDE-CC.md` for Claude Code and `GUIDE-GHC.md` for GitHub Copilot
 
 ### Changed
+- Corrected code analysis workflow description (generates documentation, does not provide improvement suggestions)
 - Split documentation into focused guides (README.md for overview, GUIDE-CC.md and GUIDE-GHC.md for detailed instructions)
 - Enhanced evaluation notice to clarify purpose: experience knowledge impact, understand workflow possibilities, and gather requirements
 - Clarified installation prerequisites and procedures in GitHub Copilot guide (WSL/GitBash required, VS Code settings, skill usage format)
