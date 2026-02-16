@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated usage instructions to emphasize natural language interaction as primary method for Claude Code
 - Removed environment variable customization from user guides (developer-only information)
 - Removed macOS-specific notes (out of scope for WSL/GitBash prerequisites)
+- Simplified version documentation: removed complex version section from README, users always install latest by default
+- Added version upgrade sections to usage guides with tag specification examples for specific versions
+- Created marketplace CHANGELOG with version correspondence table linking to plugin CHANGELOGs
 
 ## [0.1] - 2026-02-13
 
