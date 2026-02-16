@@ -3,7 +3,7 @@ name: Sync to nabledge repository
 on:
   push:
     branches:
-      - fix-workflow-branch-references
+      - release
 
 jobs:
   sync:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nablarch/nabledge
-          ref: test-to
+          ref: main
           token: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
           path: nabledge-repo
 
@@ -44,7 +44,7 @@ jobs:
           ../.github/scripts/commit-and-push.sh \
             "Sync nabledge marketplace from nabledge-dev" \
             "Triggered by: ${TRIGGER_COMMIT_URL}" \
-            "test-to"
+            "main"
 
       - name: Create and push version tag
         working-directory: nabledge-repo
