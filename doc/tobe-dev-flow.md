@@ -10,7 +10,7 @@
 ## プロセスフロー図
 
 ```mermaid
-graph LR
+flowchart LR
     subgraph 要件定義者_ToBe["要件定義者<br/>(人間主導+AI技術実現性チェック)"]
         A1[機能要件書-YAML<br/>業務フロー図]
     end
