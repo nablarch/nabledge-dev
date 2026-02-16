@@ -6,15 +6,15 @@ Updated `.github/workflows/sync-to-nabledge.yml` to align with new branch struct
 
 ### Changed files
 - `.github/workflows/sync-to-nabledge.yml`
-  - Line 6: Trigger branch changed from `refactor-extract-workflow-scripts` to `main`
-  - Line 25: Checkout ref changed from `test-to` to `release`
-  - Line 47: Push target changed from `test-to` to `release`
+  - Line 6: Trigger branch changed from `refactor-extract-workflow-scripts` to `release`
+  - Line 25: Checkout ref changed from `test-to` to `main`
+  - Line 47: Push target changed from `test-to` to `main`
 
 ### Branch strategy
-- **main**: Development branch (receives ongoing work)
-- **release**: Production release branch (controlled release timing)
+- **main**: Development branch (receives ongoing work, merged via PRs)
+- **release**: Release branch (ready for deployment)
 
-The workflow now automatically deploys changes from main to release branch when changes are pushed to main.
+The workflow triggers when changes are pushed to the release branch in nabledge-dev, and deploys to the main branch in nablarch/nabledge repository.
 
 ## Results
 
