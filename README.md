@@ -61,15 +61,15 @@ This allows maintainers to control release timing by deciding when to merge main
 
 Use the `nabledge-test` skill to validate nabledge-6 functionality:
 
-```bash
+```
 # Run a single test scenario
-nabledge-test 6 handlers-001
+/nabledge-test 6 handlers-001
 
 # Run all test scenarios
-nabledge-test 6 --all
+/nabledge-test 6 --all
 
 # Run tests for a specific category
-nabledge-test 6 --category handlers
+/nabledge-test 6 --category handlers
 ```
 
 Test scenarios are defined in `.claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json`. Results are saved to `work/YYYYMMDD/test-<id>-<timestamp>.md`.
