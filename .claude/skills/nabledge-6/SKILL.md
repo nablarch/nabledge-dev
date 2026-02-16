@@ -17,6 +17,7 @@ Structured knowledge base for Nablarch 6 framework, covering batch processing an
 - **Knowledge search**: Learn Nablarch APIs, patterns, configurations, troubleshooting
 - **Code analysis**: Understand existing code structure, dependencies, and design
 - **Development support**: Feature implementation, code review, error investigation
+- **Testing**: Validate version update checks
 
 ## How to use
 
