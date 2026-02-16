@@ -2,31 +2,64 @@
 
 保守開発でよく聞く困りごとと、Nabledgeによる解決策
 
+## 😫 困りごと1: 調査に時間がかかる
+
 ```mermaid
-mindmap
-    root((保守開発の<br/>困りごと))
-        調査に時間がかかる
-            既存コードがどこにあるか分からない
-                ✅ Nabledge: 自然言語検索で即座に特定
-            処理の流れが追えない
-                ✅ Nabledge: フロー図を自動生成
-            設計書とコードが乖離している
-                ✅ Nabledge: コードから実態を読み解く
-        影響範囲が分からず不安
-            共通部品を変更したら何に影響する？
-                ✅ Nabledge: 依存関係分析で影響箇所を特定
-            予期せぬバグが本番で発生
-                ✅ Nabledge: リグレッションテスト観点を自動抽出
-        実装パターンがバラバラ
-            人によってコードの書き方が違う
-                ✅ Nabledge: 既存パターンを自動で踏襲
-            レビューで指摘されて手戻り
-                ✅ Nabledge: 事前にアンチパターンを検出
-        属人化が進んでいる
-            特定の人しか分からない
-                ✅ Nabledge: 暗黙知を形式知化、誰でもアクセス
-            新規参画者のキャッチアップに時間がかかる
-                ✅ Nabledge: Q&Aで即座に回答、学習を加速
+flowchart TB
+    problem1["❌ 既存コードがどこにあるか分からない"]
+    solution1["✅ Nabledge: 自然言語検索で即座に特定"]
+
+    problem2["❌ 処理の流れが追えない"]
+    solution2["✅ Nabledge: フロー図を自動生成"]
+
+    problem3["❌ 設計書とコードが乖離している"]
+    solution3["✅ Nabledge: コードから実態を読み解く"]
+
+    problem1 --> solution1
+    problem2 --> solution2
+    problem3 --> solution3
+```
+
+## 😰 困りごと2: 影響範囲が分からず不安
+
+```mermaid
+flowchart TB
+    problem1["❌ 共通部品を変更したら何に影響する？"]
+    solution1["✅ Nabledge: 依存関係分析で影響箇所を特定"]
+
+    problem2["❌ 予期せぬバグが本番で発生"]
+    solution2["✅ Nabledge: リグレッションテスト観点を自動抽出"]
+
+    problem1 --> solution1
+    problem2 --> solution2
+```
+
+## 😵 困りごと3: 実装パターンがバラバラ
+
+```mermaid
+flowchart TB
+    problem1["❌ 人によってコードの書き方が違う"]
+    solution1["✅ Nabledge: 既存パターンを自動で踏襲"]
+
+    problem2["❌ レビューで指摘されて手戻り"]
+    solution2["✅ Nabledge: 事前にアンチパターンを検出"]
+
+    problem1 --> solution1
+    problem2 --> solution2
+```
+
+## 😢 困りごと4: 属人化が進んでいる
+
+```mermaid
+flowchart TB
+    problem1["❌ 特定の人しか分からない"]
+    solution1["✅ Nabledge: 暗黙知を形式知化、誰でもアクセス"]
+
+    problem2["❌ 新規参画者のキャッチアップに時間がかかる"]
+    solution2["✅ Nabledge: Q&Aで即座に回答、学習を加速"]
+
+    problem1 --> solution1
+    problem2 --> solution2
 ```
 
 ## 困りごと別ソリューション詳細

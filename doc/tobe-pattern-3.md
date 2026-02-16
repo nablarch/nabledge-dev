@@ -2,45 +2,64 @@
 
 **タスク例**: 既存の「プロジェクト登録バッチ」に新規項目（プロジェクト期間）を追加
 
+## 1️⃣ 既存機能の理解（5分）
+
 ```mermaid
 flowchart TB
-    subgraph scenario["保守開発タスク：既存バッチへの項目追加"]
+    s1a["💬 開発者<br/>「プロジェクト登録バッチの処理を教えて」"]
+    s1b["✅ Nabledge出力<br/>フロー図、入力ファイル形式、DB更新内容"]
+    s1c["✅ Nabledge出力<br/>関連ファイル一覧（Action、Form、Entity、SQL）"]
 
-        subgraph step1["1️⃣ 既存機能の理解（5分）"]
-            s1a["💬 Nabledge: 「プロジェクト登録バッチの処理を教えて」"]
-            s1b["📊 出力: フロー図、入力ファイル形式、DB更新内容"]
-            s1c["📁 出力: 関連ファイル一覧（Action、Form、Entity、SQL）"]
-        end
+    s1a --> s1b
+    s1b --> s1c
+```
 
-        subgraph step2["2️⃣ 影響範囲の特定（3分）"]
-            s2a["💬 Nabledge: 「プロジェクト期間項目を追加したら何に影響する？」"]
-            s2b["🎯 出力: 変更が必要なファイル・テーブル一覧"]
-            s2c["⚠️ 出力: 影響を受ける他機能（画面、API、他バッチ）"]
-        end
+## 2️⃣ 影響範囲の特定（3分）
 
-        subgraph step3["3️⃣ 実装（15分）"]
-            s3a["💬 Nabledge: 「既存パターンで項目追加のコード生成」"]
-            s3b["⚙️ 出力: Form、Entity、SQLの修正コード"]
-            s3c["👤 人間: コード確認・承認"]
-        end
+```mermaid
+flowchart TB
+    s2a["💬 開発者<br/>「プロジェクト期間項目を追加したら何に影響する？」"]
+    s2b["✅ Nabledge出力<br/>変更が必要なファイル・テーブル一覧"]
+    s2c["✅ Nabledge出力<br/>影響を受ける他機能（画面、API、他バッチ）"]
 
-        subgraph step4["4️⃣ テスト準備（10分）"]
-            s4a["💬 Nabledge: 「追加項目のテストケース生成」"]
-            s4b["🧪 出力: 単体テストコード、テストデータCSV"]
-            s4c["📋 出力: リグレッションテスト観点リスト"]
-        end
+    s2a --> s2b
+    s2b --> s2c
+```
 
-        subgraph step5["5️⃣ レビュー準備（5分）"]
-            s5a["💬 Nabledge: 「コードレビュー実施」"]
-            s5b["✅ 出力: コーディング規約チェック結果"]
-            s5c["💡 出力: 改善提案（リファクタリング余地）"]
-        end
-    end
+## 3️⃣ 実装（15分）
 
-    step1 --> step2
-    step2 --> step3
-    step3 --> step4
-    step4 --> step5
+```mermaid
+flowchart TB
+    s3a["💬 開発者<br/>「既存パターンで項目追加のコード生成」"]
+    s3b["✅ Nabledge出力<br/>Form、Entity、SQLの修正コード"]
+    s3c["👤 人間<br/>コード確認・承認"]
+
+    s3a --> s3b
+    s3b --> s3c
+```
+
+## 4️⃣ テスト準備（10分）
+
+```mermaid
+flowchart TB
+    s4a["💬 開発者<br/>「追加項目のテストケース生成」"]
+    s4b["✅ Nabledge出力<br/>単体テストコード、テストデータCSV"]
+    s4c["✅ Nabledge出力<br/>リグレッションテスト観点リスト"]
+
+    s4a --> s4b
+    s4b --> s4c
+```
+
+## 5️⃣ レビュー準備（5分）
+
+```mermaid
+flowchart TB
+    s5a["💬 開発者<br/>「コードレビュー実施」"]
+    s5b["✅ Nabledge出力<br/>コーディング規約チェック結果"]
+    s5c["✅ Nabledge出力<br/>改善提案（リファクタリング余地）"]
+
+    s5a --> s5b
+    s5b --> s5c
 ```
 
 ## 従来との比較
