@@ -11,77 +11,79 @@
 
 ```mermaid
 flowchart TB
-    subgraph 要件定義者_ToBe["要件定義者<br/>(人間主導+AI技術実現性チェック)"]
-        A1[機能要件書-YAML<br/>業務フロー図]
+    subgraph req_tobe["要件定義者<br/>(人間主導+AI技術実現性チェック)"]
+        A1[要件定義]
     end
 
-    subgraph アーキテクト_要件_ToBe["アーキテクト<br/>(人間主導+AIパターン提案)"]
-        A2[非機能要件書-YAML]
+    subgraph arch_req_tobe["アーキテクト<br/>(人間主導+AIパターン提案)"]
+        A2[方式設計]
     end
 
-    subgraph アーキテクト_設計_ToBe["アーキテクト<br/>(AI生成+人間承認)"]
-        B1[基盤コンポーネント<br/>設計-YAML]
-        B2[開発標準-YAML]
-        B3[パターン検証<br/>AI自動検証]
-        E1[環境構築<br/>AI自動化]
+    subgraph arch_design_tobe["アーキテクト<br/>(AI生成+人間承認)"]
+        B1[基盤コンポーネント設計]
+        B2[開発標準の策定]
+        B3[パターン検証]
+        B4[サンプル実装]
     end
 
-    subgraph データアナリスト_ToBe["データアナリスト<br/>(人間主導+AI整合性チェック)"]
-        C1[DB設計-論理<br/>YAML]
-        C2[DB設計-物理<br/>YAML]
-        C3[データパターン<br/>YAML]
-        E8[共通テストデータ<br/>AI生成]
+    subgraph data_tobe["データアナリスト<br/>(人間主導+AI整合性チェック)"]
+        C1[DB設計-論理]
+        C2[DB設計-物理]
+        C3[データパターン洗い出し]
+        C4[共通テストデータ作成<br/>AI生成]
     end
 
-    subgraph 要件定義者・設計者_ToBe["要件定義者・設計者<br/>(人間がYAML作成)"]
-        D1[画面設計-YAML]
-        D2[バッチ設計-YAML]
-        D3[Webサービス<br/>設計-YAML]
-        D4[共通コンポーネント<br/>設計-YAML]
-        D5[外部IF設計<br/>YAML]
-        F2[テストケース作成<br/>AI生成]
-        F3[テスト実行<br/>+AIバグ分析]
+    subgraph designer_tobe["要件定義者・設計者<br/>(人間がYAML作成)"]
+        D1[画面設計]
+        D2[バッチ設計]
+        D3[Webサービス設計]
+        D4[共通コンポーネント設計]
+        D5[外部IF設計]
+        D6[テストケース作成<br/>AI生成]
+        D7[テスト実行<br/>+AIバグ分析]
     end
 
-    subgraph アプリケーションエンジニア_ToBe["アプリケーションエンジニア<br/>(AI生成+人間承認)"]
-        E2[アプリ実装<br/>AIがYAMLから生成]
-        E3[単体テストケース<br/>AI生成]
-        E4[クラス単体テスト<br/>AI生成]
-        E5[クラス単体テスト<br/>AI自動実行]
-        E6[取引単体テスト<br/>+AI補助]
-        E7[コードレビュー<br/>AI一次レビュー]
+    subgraph appeng_tobe["アプリケーションエンジニア<br/>(AI生成+人間承認)"]
+        E1[アプリ実装<br/>AIがYAMLから生成]
+        E2[単体テストケース設計<br/>AI生成]
+        E3[クラス単体テスト作成<br/>AI生成]
+        E4[クラス単体テスト実施<br/>AI自動実行]
+        E5[取引単体テスト実施<br/>+AI補助]
+        E6[コードレビュー<br/>AI一次レビュー]
     end
 
-    subgraph インフラ_ToBe["インフラ<br/>(AI自動化+人間確認)"]
-        F1[結合テスト環境<br/>AI自動構築]
+    subgraph infra_tobe["インフラ<br/>(AI自動化+人間確認)"]
+        F1[環境構築<br/>AI自動化]
+        F2[結合テスト環境構築<br/>AI自動構築]
     end
 
     A1 --> A2
     A2 --> B1
     B1 --> B2
     B2 --> B3
-    B3 --> C1
+    B3 --> B4
+    B4 --> C1
     C1 --> C2
     C2 --> D1
     D1 --> D2
     D2 --> D3
     D3 --> D4
     D4 --> D5
-    D5 --> E1
-    E1 --> E2
-    C3 --> E8
-    D1 --> E3
-    D2 --> E3
-    D3 --> E3
-    E2 --> E7
+    D5 --> F1
+    F1 --> E1
+    C3 --> C4
+    D1 --> E2
+    D2 --> E2
+    D3 --> E2
+    E1 --> E6
+    E2 --> E3
     E3 --> E4
     E4 --> E5
-    E5 --> E6
-    E6 --> F1
-    E7 --> F1
-    E8 --> F2
-    F1 --> F2
-    F2 --> F3
+    E5 --> F2
+    E6 --> F2
+    C4 --> D6
+    F2 --> D6
+    D6 --> D7
 ```
 
 ---
