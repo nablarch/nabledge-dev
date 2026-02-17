@@ -15,7 +15,7 @@ Nabledge-6を Claude Code で使用するためのガイドです。
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
 ```
 
-実行後、`.claude/skills/nabledge-6/` ディレクトリが作成され、スキルファイルがコピーされます。Claude Code は自動的にスキルを認識し、再起動は不要です。
+実行後、`.claude/skills/nabledge-6/` ディレクトリが作成され、スキルファイルがコピーされます。Claude Codeを起動するだけですぐにスキルが使えます。
 
 ### チーム共有
 
