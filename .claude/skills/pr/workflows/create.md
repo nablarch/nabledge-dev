@@ -1,6 +1,6 @@
 # PR Creation Workflow
 
-This workflow creates a PR from the current branch to the development branch (typically `develop`).
+This workflow creates a PR from the current branch to the main branch.
 
 ## Required Tools
 
@@ -19,37 +19,20 @@ current_branch=$(git branch --show-current)
 echo "Current branch: ${current_branch}"
 ```
 
-If current branch is `main`, `master`, or `develop`, exit with error:
+If current branch is `main` or `master`, exit with error:
 
-Error: Cannot create PR from the main/develop branch.
+Error: Cannot create PR from the main/master branch.
 Please create a feature/issue branch first.
 
-**1.2 Get Development Branch**
+**1.2 Get Target Branch**
 
 ```bash
-# Get repository default branch (should be develop)
+# Get repository default branch
 default_branch=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
 echo "Repository default branch: ${default_branch}"
 
-# Verify develop branch exists
-if ! git rev-parse --verify develop &>/dev/null; then
-  echo "Error: Branch 'develop' does not exist in this repository."
-  echo ""
-  echo "Please create 'develop' branch first:"
-  echo "  git checkout -b develop main"
-  echo "  git push -u origin develop"
-  echo ""
-  echo "Or update the workflow if using different branch names."
-  exit 1
-fi
-
-# For PR creation, always target develop
-if [[ "$default_branch" == "develop" ]]; then
-  target_branch="develop"
-else
-  echo "WARNING: Repository default is ${default_branch}, but using 'develop' per branch strategy"
-  target_branch="develop"
-fi
+# For PR creation, always target main (default branch)
+target_branch="$default_branch"
 
 echo "PR will target: ${target_branch}"
 ```
@@ -318,7 +301,7 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )" \
-  --base develop \
+  --base main \
   --head issue-42
 ```
 
@@ -359,7 +342,7 @@ Display the PR URL and guide user to review on GitHub:
 
 | Error | Response |
 |-------|----------|
-| Execute from main/develop branch | Guide to execute from feature/issue branch |
+| Execute from main/master branch | Guide to execute from feature/issue branch |
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |
@@ -372,7 +355,7 @@ Display the PR URL and guide user to review on GitHub:
 2. **GitHub Permissions**: Requires Write or higher permissions
 3. **Title Quality**: Generate appropriate title if commit messages are inadequate
 4. **HEREDOC Usage**: ALWAYS use HEREDOC for multi-line PR body to ensure correct formatting
-5. **Branch Strategy**: PRs should target `develop` by default
+5. **Branch Strategy**: PRs should target `main` (default branch) by default
 6. **Variable Syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
