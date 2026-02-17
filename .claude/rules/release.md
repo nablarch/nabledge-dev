@@ -87,7 +87,7 @@ git push origin main
 If both nabledge-6 and nabledge-5 changed:
 - Update each skill CHANGELOG separately
 - Marketplace version = highest version (compare MINOR first, then PATCH)
-- Example: nabledge-6 0.2 + nabledge-5 0.1.1 → marketplace 0.2
+- Example: nabledge-6 0.2 + nabledge-5 0.1 → marketplace 0.2
 
 ## Related Documents
 
