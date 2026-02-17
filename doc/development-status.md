@@ -22,10 +22,9 @@
 ## 次の作業 (2026-02-23週)
 
 - バッチの追加
-  - 対象: Nablarchバッチ（都度起動バッチのみ）
-  - 対象外: JSR352バッチ、常駐バッチ、テーブルキュー型メッセージング、MOM
-  - 詳細: [CLAUDE.md](../CLAUDE.md#scope) を参照
+  - スコープ詳細: [nabledge-design.md § 1.5 スコープ](nabledge-design.md#15-スコープ) を参照
 - チェック項目の追加
+  - 詳細: [nabledge-design.md § 2.2 知識タイプ](nabledge-design.md#22-知識タイプ) を参照
 
 ## 今後の作業 (3月)
 
