@@ -6,6 +6,8 @@ nabledge-6プラグインの主な変更内容を記録しています。
 
 ## [Unreleased]
 
+## [0.2] - 2026-02-17
+
 ### 修正
 - Claude Codeのセットアップスクリプトがマーケットプレイス設定ではなく `.claude/skills/` ディレクトリへ直接スキルをインストールするように変更し、初回起動時に再起動なしで即座に認識されるようになりました (Issue #27)
 
@@ -14,4 +16,5 @@ nabledge-6プラグインの主な変更内容を記録しています。
 ### 追加
 - 評価版として、Nablarch 6のバッチ処理に関する基礎知識とコード分析ワークフローを提供
 
+[0.2]: https://github.com/nablarch/nabledge/releases/tag/0.2
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/0.1
