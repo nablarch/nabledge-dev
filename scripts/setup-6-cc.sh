@@ -8,31 +8,43 @@ else
   PROJECT_ROOT="$(pwd)"
 fi
 
-echo "Setting up Nabledge-6 plugin for Claude Code..."
+echo "Setting up Nabledge-6 skill for Claude Code..."
 echo "Project root: $PROJECT_ROOT"
 
 # Configuration (can be overridden with environment variables)
 NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-main}"
 
-# Parse repository owner and name from NABLEDGE_REPO
-REPO_OWNER="${NABLEDGE_REPO%/*}"
-REPO_NAME="${NABLEDGE_REPO#*/}"
+# Build repository URL
+REPO_URL="https://github.com/${NABLEDGE_REPO}"
+REPO_NAME="${NABLEDGE_REPO##*/}"
 BRANCH="$NABLEDGE_BRANCH"
-MARKETPLACE_NAME="nabledge"
-PLUGIN_NAME="nabledge-6"
+TEMP_DIR=$(mktemp -d)
 
 echo "Repository: $NABLEDGE_REPO"
 echo "Branch: $BRANCH"
+echo "Downloading nabledge-6 skill from $REPO_URL (branch: $BRANCH)..."
+cd "$TEMP_DIR"
+git clone --depth 1 --filter=blob:none --sparse --branch "$BRANCH" "$REPO_URL"
+cd "$REPO_NAME"
+git sparse-checkout set plugins/nabledge-6
 
-# Create .claude directory if it doesn't exist
-mkdir -p "$PROJECT_ROOT/.claude"
+# Create .claude/skills directory
+echo "Creating .claude/skills directory..."
+mkdir -p "$PROJECT_ROOT/.claude/skills"
 
-SETTINGS_FILE="$PROJECT_ROOT/.claude/settings.json"
+# Copy skills/nabledge-6 directory as-is
+echo "Copying nabledge-6 skill to project..."
+cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
+
+# Clean up
+rm -rf "$TEMP_DIR"
 
 # Check if jq is installed, if not, try to install it
 if ! command -v jq &> /dev/null; then
-    echo "jq is not installed. Attempting to install..."
+    echo ""
+    echo "jq is not installed. The nabledge-6 skill requires jq to run."
+    echo "Attempting to install..."
 
     # Detect OS
     OS="$(uname -s)"
@@ -54,71 +66,45 @@ if ! command -v jq &> /dev/null; then
             echo "Detected macOS"
             echo "Please install jq manually:"
             echo "  brew install jq"
-            exit 1
+            echo ""
+            echo "Setup complete! The nabledge-6 skill is now available in your project."
+            echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+            echo ""
+            echo "IMPORTANT: Please install jq before using the skill."
+            exit 0
             ;;
         *)
             echo "Error: Unsupported OS: $OS"
             echo "Please install jq manually: https://stedolan.github.io/jq/download/"
-            exit 1
+            echo ""
+            echo "Setup complete! The nabledge-6 skill is now available in your project."
+            echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+            echo ""
+            echo "IMPORTANT: Please install jq before using the skill."
+            exit 0
             ;;
     esac
 
     # Verify installation
     if ! command -v jq &> /dev/null; then
-        echo "Error: Failed to install jq"
-        exit 1
+        echo "Warning: Failed to install jq automatically"
+        echo "Please install jq manually: https://stedolan.github.io/jq/download/"
+        echo ""
+        echo "Setup complete! The nabledge-6 skill is now available in your project."
+        echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
+        echo ""
+        echo "IMPORTANT: Please install jq before using the skill."
+        exit 0
     fi
 
     echo "jq installed successfully!"
 fi
 
-# Initialize settings.json if it doesn't exist
-if [ ! -f "$SETTINGS_FILE" ]; then
-    echo "Creating new settings.json..."
-    echo '{}' > "$SETTINGS_FILE"
-fi
-
-# Read current settings
-CURRENT_SETTINGS=$(cat "$SETTINGS_FILE")
-
-# Build marketplace configuration
-MARKETPLACE_CONFIG=$(jq -n \
-  --arg repo "$REPO_OWNER/$REPO_NAME" \
-  --arg branch "$BRANCH" \
-  '{
-    "source": {
-      "source": "github",
-      "repo": $repo,
-      "ref": $branch
-    }
-  }')
-
-# Build plugin configuration
-PLUGIN_KEY="${PLUGIN_NAME}@${MARKETPLACE_NAME}"
-
-# Merge configurations
-UPDATED_SETTINGS=$(echo "$CURRENT_SETTINGS" | jq \
-  --arg marketplace_name "$MARKETPLACE_NAME" \
-  --argjson marketplace_config "$MARKETPLACE_CONFIG" \
-  --arg plugin_key "$PLUGIN_KEY" \
-  '
-  .extraKnownMarketplaces = (.extraKnownMarketplaces // {}) |
-  .extraKnownMarketplaces[$marketplace_name] = $marketplace_config |
-  .enabledPlugins = (.enabledPlugins // {}) |
-  .enabledPlugins[$plugin_key] = true
-  ')
-
-# Write updated settings
-echo "$UPDATED_SETTINGS" > "$SETTINGS_FILE"
-
 echo ""
-echo "Setup complete! The nabledge-6 plugin configuration has been added to:"
-echo "$SETTINGS_FILE"
+echo "Setup complete! The nabledge-6 skill is now available in your project."
+echo "Location: $PROJECT_ROOT/.claude/skills/nabledge-6"
 echo ""
-echo "Next steps:"
-echo "1. Commit .claude/settings.json to your repository"
-echo "2. When team members clone the repository and start Claude Code,"
-echo "   they will be prompted to install the marketplace and plugin"
+echo "Claude Code will automatically recognize the skill without restart."
+echo "Commit the .claude/skills/ directory to share this skill with your team."
 echo ""
-echo "You can verify the configuration with:"
-echo "  cat $SETTINGS_FILE"
+echo "You can now use nabledge-6 with Claude Code by typing /nabledge-6"

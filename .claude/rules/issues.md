@@ -67,6 +67,106 @@ Checkboxes that verify benefit achievement. Each criterion should be:
 - [ ] Success criteria are written as verifiable checkboxes
 ```
 
+## Bug-Specific Success Criteria
+
+For issues describing bugs, failures, or incidents, include additional success criteria beyond the standard format. These criteria ensure thorough investigation and prevention of recurrence.
+
+### Why Bugs Need Additional Criteria
+
+Bugs represent system failures that, if not properly understood, will likely recur. Standard success criteria verify that the bug is fixed, but bug-specific criteria ensure we learn from the failure and prevent similar issues.
+
+### Required Bug Criteria Template
+
+Include these criteria for all bug-related issues:
+
+```markdown
+### Success Criteria
+
+[Standard criteria verifying the fix works]
+
+#### Investigation and Prevention
+
+- [ ] Root cause identified with reproducible test demonstrating the issue
+- [ ] Issue verified as resolved in test environment
+- [ ] Workaround documented (if applicable before fix deployed)
+- [ ] Horizontal check completed documenting method, results, and status
+- [ ] Recurrence prevention measures implemented (tests, docs, process changes)
+- [ ] Post-mortem created in work/YYYYMMDD/ following standardized format
+```
+
+### Bug Criteria Explained
+
+| Criterion | Purpose | What to Document |
+|-----------|---------|------------------|
+| **Root cause with test** | Verify deep understanding | Reproducible test script or steps showing the bug |
+| **Fix verification** | Confirm resolution | Test results showing bug no longer occurs |
+| **Workaround documentation** | Help users before fix deployed | Temporary solution or mitigation steps |
+| **Horizontal check** | Find similar issues | Method used, files checked, findings, resolution status |
+| **Prevention measures** | Stop recurrence | Tests added, docs updated, process changed |
+| **Post-mortem** | Capture learning | Analysis following `.claude/rules/postmortem.md` format |
+
+### Examples
+
+#### Bug with Workaround
+
+```markdown
+**Title:** As a developer, I want database migrations to run reliably so that I can deploy with confidence
+
+**Success Criteria:**
+
+- [ ] Migration script handles schema conflicts gracefully
+- [ ] Migration runs successfully on test database
+- [ ] Deployment documentation updated with migration steps
+
+#### Investigation and Prevention
+
+- [ ] Root cause identified: concurrent migrations lacked locking mechanism
+- [ ] Test script created demonstrating race condition
+- [ ] Issue verified resolved with distributed lock implementation
+- [ ] Workaround documented: run migrations single-threaded with manual coordination
+- [ ] Horizontal check completed: examined all migration scripts for similar concurrency issues
+- [ ] Prevention: added migration lock table, updated deployment runbook
+- [ ] Post-mortem: work/20260120/postmortem-migration-race-condition.md
+```
+
+#### Bug Without Workaround
+
+```markdown
+**Title:** As a user, I want consistent API responses so that I can parse them reliably
+
+**Success Criteria:**
+
+- [ ] API returns standardized error format in all failure cases
+- [ ] Response schema validated with automated tests
+- [ ] API documentation updated with error format examples
+
+#### Investigation and Prevention
+
+- [ ] Root cause identified: legacy error handler bypassed standard formatter
+- [ ] Test suite added covering all error code paths
+- [ ] Issue verified resolved: all error responses now use standard format
+- [ ] Workaround: Not applicable (client-side parsing could not mitigate)
+- [ ] Horizontal check completed: audited all API endpoints for error handling consistency
+- [ ] Prevention: added lint rule requiring standard error formatter, updated contribution guide
+- [ ] Post-mortem: work/20260125/postmortem-api-error-format-inconsistency.md
+```
+
+### When Workaround is Not Applicable
+
+Document "Not applicable" with brief explanation:
+- **Bug not affecting users**: "Not applicable - issue only in development environment"
+- **Fix deployed immediately**: "Not applicable - fix deployed before user exposure"
+- **No viable workaround**: "Not applicable - no client-side mitigation possible"
+
+### Integration with Post-mortem
+
+The post-mortem document provides detailed analysis. Bug success criteria verify that analysis was completed and learning was captured.
+
+**Success Criteria**: Checkboxes confirming work done
+**Post-mortem**: Detailed analysis of what happened and why
+
+Both are required for significant bugs.
+
 ## Complete Example
 
 ```markdown
