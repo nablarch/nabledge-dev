@@ -109,16 +109,22 @@ cd "$NEW_METHOD_DIR"
 echo "Running updated setup-6-cc.sh..."
 echo ""
 
-# Set environment to test local version
-export PROJECT_ROOT="$NEW_METHOD_DIR"
-export NABLEDGE_REPO="nablarch/nabledge"
-export NABLEDGE_BRANCH="main"
+# Initialize as git repo (setup script expects git repo)
+git init > /dev/null 2>&1
 
-# Run setup script
-if bash "$SCRIPT_DIR/setup-6-cc.sh" > /dev/null 2>&1; then
+# Capture setup output for debugging
+SETUP_OUTPUT_FILE="$TEST_BASE_DIR/setup-output.log"
+
+# Run setup script from within test directory with environment overrides
+cd "$NEW_METHOD_DIR"
+if NABLEDGE_REPO="nablarch/nabledge" NABLEDGE_BRANCH="main" bash "$SCRIPT_DIR/setup-6-cc.sh" > "$SETUP_OUTPUT_FILE" 2>&1; then
     echo "Setup script completed successfully"
+    echo "(See $SETUP_OUTPUT_FILE for full output)"
 else
     echo -e "${RED}❌${NC} Setup script failed"
+    echo ""
+    echo "Setup output:"
+    cat "$SETUP_OUTPUT_FILE"
     exit 1
 fi
 

@@ -71,6 +71,16 @@ Checkboxes that verify benefit achievement. Each criterion should be:
 
 For issues describing bugs, failures, or incidents, include additional success criteria beyond the standard format. These criteria ensure thorough investigation and prevention of recurrence.
 
+### Severity-Based Application
+
+Apply these criteria based on bug severity:
+
+| Severity | Apply Full Criteria? | Notes |
+|----------|---------------------|-------|
+| **Critical/High** | Yes - All criteria required | Affects users, blocks development, or reveals systemic issues |
+| **Medium** | Recommended | Use judgment - apply if bug has unclear root cause or recurrence risk |
+| **Low** | Optional | Simple typos or obvious fixes may skip horizontal check and post-mortem |
+
 ### Why Bugs Need Additional Criteria
 
 Bugs represent system failures that, if not properly understood, will likely recur. Standard success criteria verify that the bug is fixed, but bug-specific criteria ensure we learn from the failure and prevent similar issues.

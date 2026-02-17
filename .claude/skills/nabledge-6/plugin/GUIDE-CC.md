@@ -56,6 +56,51 @@ UniversalDaoの使い方を教えて
 /nabledge-6 code-analysis
 ```
 
+## トラブルシューティング
+
+### スキルが認識されない
+
+**確認事項**:
+1. `.claude/skills/nabledge-6/SKILL.md` ファイルが存在するか確認
+   ```bash
+   ls -la .claude/skills/nabledge-6/SKILL.md
+   ```
+
+2. Claude Codeを再起動
+   ```bash
+   # Claude Codeを完全に終了してから再起動
+   ```
+
+3. セットアップスクリプトを再実行
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
+   ```
+
+### エラーメッセージが表示される
+
+**"command not found"**:
+- Claude Codeが正しくインストールされているか確認
+- PATHが正しく設定されているか確認
+
+**"Permission denied"**:
+- `.claude/` ディレクトリの書き込み権限を確認
+- `chmod -R u+w .claude/` で権限を付与
+
+**"jq: command not found"**:
+- jqがインストールされているか確認: `jq --version`
+- 未インストールの場合、セットアップスクリプトを再実行
+
+### セットアップスクリプトが失敗する
+
+**"plugins/nabledge-6 directory not found"**:
+- リポジトリ構造が変更された可能性があります
+- Issue報告: https://github.com/nablarch/nabledge/issues
+
+**"Installation verification failed"**:
+- ネットワーク接続を確認
+- 一時ディレクトリ (`/tmp`) に十分な空き容量があるか確認
+- セットアップスクリプトを再実行
+
 ## バージョンアップ
 
 ### 最新版へのアップデート（推奨）

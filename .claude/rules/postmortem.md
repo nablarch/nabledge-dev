@@ -1,5 +1,9 @@
 # Post-mortem Format
 
+**Audience**: This guide is for both human developers and AI agents conducting incident analysis.
+
+**Quick Start**: See the [Template](#template) section for a ready-to-use format.
+
 A post-mortem is a blameless analysis of an incident, bug, or failure that documents what happened, why it happened, and how to prevent similar issues in the future.
 
 ## Purpose
