@@ -4,25 +4,25 @@ This document describes the process for releasing new versions of nabledge skill
 
 ## Overview
 
-Nabledge uses semantic versioning and maintains CHANGELOGs at two levels:
+Nabledge maintains CHANGELOGs at two levels:
 1. **Skill-level**: `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
 2. **Marketplace-level**: `.claude/marketplace/CHANGELOG.md`
 
-## Semantic Versioning
+**Version numbering**: User decides the version number. AI provides suggestions based on change analysis, but the final decision is always the user's.
 
-Follow [Semantic Versioning 2.0.0](https://semver.org/):
+## Version Proposal Guidelines (Reference Only)
+
+Semantic Versioning 2.0.0 is used as a **reference for proposals**, but not mandatory:
 
 **Format**: MAJOR.MINOR.PATCH (e.g., 1.2.3)
 
-| Component | Increment When | Example |
+| Component | Suggested When | Example |
 |-----------|----------------|---------|
 | **MAJOR** | Breaking changes (incompatible API changes) | Knowledge structure change requiring skill updates |
 | **MINOR** | New features (backward-compatible) | New knowledge added, new workflows |
 | **PATCH** | Bug fixes (backward-compatible) | Documentation fixes, knowledge corrections |
 
-**Pre-1.0 versions** (0.x.y):
-- 0.MINOR.PATCH - Any change can be breaking
-- Use for initial development and evaluation
+**Note**: Users may choose any version number format they prefer (e.g., 0.1, 1.0.0, 2024.02, v1-alpha). The proposal logic provides suggestions only.
 
 ## Release Process Steps
 
@@ -51,56 +51,61 @@ Unreleased changes for nabledge-6:
 [Changes from CHANGELOG.md Unreleased section]
 ```
 
-### Step 2: Propose Version Number
+### Step 2: Propose Version Number (Suggestion Only)
 
 **2.1 Analyze Change Type**
 
-Determine version increment based on changes:
+Analyze unreleased changes to understand what changed:
 
 ```bash
 # Check categories in Unreleased section
 grep -A 20 "## \[Unreleased\]" .claude/skills/nabledge-6/plugin/CHANGELOG.md
 ```
 
-**2.2 Version Proposal Logic**
+**2.2 Generate Suggestion**
 
-| Changes Include | Proposal |
-|----------------|----------|
-| **Breaking changes** (major refactoring, API changes) | Increment MAJOR |
-| **New features** (Added section) | Increment MINOR |
-| **Only bug fixes** (Fixed section) | Increment PATCH |
-| **Documentation only** (not user-facing) | No release needed |
+Provide version suggestion based on semantic versioning guidelines (if applicable):
 
-**2.3 Present Proposal**
+| Changes Include | Suggestion | Rationale |
+|----------------|------------|-----------|
+| **Breaking changes** | Example: 0.1 → 1.0 or 0.2 | Major change |
+| **New features** | Example: 0.1 → 0.2 | New functionality |
+| **Only bug fixes** | Example: 0.1 → 0.1.1 | Bug fixes only |
+| **Documentation only** | Example: No release | Non-functional changes |
+
+**2.3 Present Suggestion to User**
 
 ```
 Current version: 0.1
 Unreleased changes: Bug fixes (Fixed section only)
 
-Proposed version: 0.1.1
-
-Rationale: Patch increment for backward-compatible bug fixes.
+Suggested version: 0.1.1
+Rationale: Based on semantic versioning - patch increment for bug fixes.
 Includes setup script improvement (Issue #27) which fixes
 first-startup recognition issue.
 
-Approve version 0.1.1? (y/n)
+What version number would you like to use for this release?
 ```
 
-### Step 3: User Confirmation
+**Important**: This is a suggestion only. User may choose any version number.
 
-Use AskUserQuestion tool:
+### Step 3: User Decides Version Number
+
+Use AskUserQuestion tool to let user choose:
 
 ```
-Question: "Confirm release version for nabledge-6"
+Question: "What version number for nabledge-6 release?"
 Options:
-- "0.1.1 (Recommended)" - Use proposed patch version
-- "0.2.0" - Minor version if you consider this a feature
-- "Custom" - User specifies different version
+- "0.1.1" - Use suggested version (based on semantic versioning)
+- "0.2" - Alternative version
+- "Custom" - Specify your own version number
 ```
 
-**Validation**:
-- Version must be greater than current version
-- Must follow semantic versioning format (MAJOR.MINOR.PATCH)
+**User provides version number**: Accept any format the user specifies.
+
+**Validation** (minimal):
+- Version should be different from current version (warn if same)
+- No other format restrictions - user decides
 
 ### Step 4: Update Skill CHANGELOG
 
@@ -299,15 +304,18 @@ git tag -a 0.2.0-rc.1 -m "Release candidate 1 for version 0.2.0"
 gh release create 0.2.0-rc.1 --prerelease
 ```
 
-## Version Numbering Examples
+## Version Numbering Examples (Reference Only)
 
-| Current | Changes | New Version | Rationale |
-|---------|---------|-------------|-----------|
-| 0.1.0 | Bug fixes only | 0.1.1 | Patch increment |
-| 0.1.1 | New knowledge added | 0.2.0 | Minor increment (new features) |
-| 0.9.0 | First stable release | 1.0.0 | Major (stable API) |
-| 1.2.3 | Breaking workflow change | 2.0.0 | Major (breaking change) |
-| 1.2.3 | New workflow added | 1.3.0 | Minor (backward-compatible feature) |
+These are examples of how semantic versioning **could** be applied, but users may choose any numbering scheme:
+
+| Current | Changes | Suggested | Alternative Valid Choices |
+|---------|---------|-----------|---------------------------|
+| 0.1 | Bug fixes only | 0.1.1 | 0.2, 2026.02, 0.1-patch1 |
+| 0.1.1 | New knowledge added | 0.2.0 or 0.2 | 1.0, 0.1.2, next |
+| 0.9.0 | First stable release | 1.0.0 or 1.0 | 2026.1, stable, v1 |
+| 1.2.3 | Breaking workflow change | 2.0.0 | 1.3, next-major, 2.0 |
+
+**Note**: AI suggests versions based on semantic versioning guidelines, but accepts any version number the user specifies.
 
 ## Automation Notes
 
