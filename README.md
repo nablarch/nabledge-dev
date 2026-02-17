@@ -82,3 +82,11 @@ The nabledge-test skill uses skill-creator's evaluation procedures to verify:
 - Expected keywords present in responses
 - Relevant sections identified from knowledge files
 - Knowledge file content used (not LLM training data)
+
+## Feedback
+
+### For published nabledge skills
+Report issues or request features in [nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) - this helps users search and find solutions.
+
+### For unreleased development work
+Report issues or discuss changes in [nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues).
