@@ -73,7 +73,7 @@ To release a new version to [nablarch/nabledge](https://github.com/nablarch/nabl
 3. **Merge main to release and push**:
    ```bash
    git checkout release
-   git merge main
+   git merge --ff-only origin/main
    git push origin release
    ```
 
