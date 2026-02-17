@@ -2,7 +2,10 @@
 
 Nablarch knowledge development
 
-**Documentation**: [Design Document](doc/nabledge-design.md) - Comprehensive architecture and design details
+## Documents
+
+- [Design Document](doc/nabledge-design.md) - Architecture and design details
+- [Development Status](doc/development-status.md) - Current progress and roadmap
 
 ## Prerequisites
 
