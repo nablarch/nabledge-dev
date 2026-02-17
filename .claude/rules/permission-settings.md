@@ -1,23 +1,27 @@
 # Permission Settings
 
-Claude Code permissions are controlled by `.claude/settings.json`.
+Permissions are controlled by `.claude/settings.json`.
 
-## Design Policy
+## Policy
 
-| Category | Purpose | Description |
-|------|------|------|
-| **allow** | Permit frequently used commands/tools | Reduce user confirmation (ask) and improve development efficiency |
-| **deny** | Restrict allow | Protect host, protect confidential information, prevent destructive actions |
-| **ask** | Everything else | User decides individually |
+- **allow**: Frequently used commands (git, npm, pytest, etc.)
+- **deny**: Security exceptions within allowed commands
+- **ask**: Everything else (default)
 
-## Protection Perspectives for deny (Restrictions on allow)
+## Security Restrictions
 
-| Perspective | Rule | Reason |
-|------|--------|------|
-| **Exceptions to allow** | Prohibit `git clone http*`, `git clone git@*` within `git *`<br>Prohibit `rm -rf /`, `rm -rf /*` within `rm *` | Prevent downloading malicious code via network<br>Prevent system root deletion |
-| **Confidential Information Protection** | Prohibit `.env`, `.aws`, `.ssh` in `Read/Edit/Write` | Prevent leakage of credentials, private keys, environment variables |
-| **Host Protection** | Prohibit `/mnt/*`, `*.exe` in all allowed commands/tools | Prevent unauthorized access to Windows host areas from WSL environment |
+Commands in `allow` have specific `deny` exceptions:
 
-※ Commands not in allow (`sudo`, `dd`, `curl`, `reboot`, etc.) automatically become ask and require user judgment
+**Network protection:**
+- Deny `git clone http*`, `git clone git@*` (prevent malicious code download)
 
-Refer to `.claude/settings.json` for specific settings.
+**Confidential data:**
+- Deny `.env`, `.aws`, `.ssh` in Read/Edit/Write operations
+
+**Host protection (WSL):**
+- Deny `/mnt/*`, `*.exe` access (prevent Windows host access)
+
+**System protection:**
+- Deny `rm -rf /`, `rm -rf /*` (prevent root deletion)
+
+Destructive commands not in `allow` (`sudo`, `dd`, `curl`, `reboot`) automatically require user confirmation.
