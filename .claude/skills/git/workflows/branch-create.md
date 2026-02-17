@@ -133,20 +133,41 @@ fi
 echo "Issue #${issue_number} confirmed"
 ```
 
-**2.3 Generate Branch Name**
+**2.3 Ask for Descriptive Name**
 
-Branch name is always: `issue-${issue_number}`
+Use the AskUserQuestion tool to prompt the user:
+- Question: "Enter a short description for this branch (use lowercase English words separated by hyphens)"
+- Provide one example option: "Example: plugin-first-startup-recognition"
+- User will provide descriptive text via text input
 
-Example:
-- Issue #42 → Branch: `issue-42`
-- Issue #123 → Branch: `issue-123`
+Validate the descriptive name:
 
 ```bash
-branch_name="issue-${issue_number}"
+if ! [[ "$descriptive_name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+  echo "Error: Branch description must contain only lowercase letters, numbers, and hyphens"
+  echo "Valid examples:"
+  echo "  - add-validation"
+  echo "  - fix-bug-123"
+  echo "  - update-docs"
+  exit 1
+fi
+echo "Descriptive name validated: ${descriptive_name}"
+```
+
+**2.4 Generate Branch Name**
+
+Branch name format: `${issue_number}-${descriptive_name}`
+
+Example:
+- Issue #42, description "add-validation" → Branch: `42-add-validation`
+- Issue #27, description "plugin-first-startup-recognition" → Branch: `27-plugin-first-startup-recognition`
+
+```bash
+branch_name="${issue_number}-${descriptive_name}"
 echo "Branch name will be: ${branch_name}"
 ```
 
-**2.4 Check for Duplicates**
+**2.5 Check for Duplicates**
 
 ```bash
 if git branch --list "${branch_name}" | grep -q .; then
@@ -200,7 +221,7 @@ Use `/git commit` to commit changes.
 
 1. **No emojis**: Never use emojis unless explicitly requested by user
 2. **Issue-driven development**: All branches must be linked to a GitHub issue
-3. **Branch naming**: Always use `issue-<number>` format for consistency
+3. **Branch naming**: Always use `<number>-<descriptive-name>` format (e.g., `27-plugin-first-startup-recognition`) for clarity
 4. **Safety**: Protect main/develop branches, check duplicates, verify clean working tree
 5. **Issue validation**: Always verify issue exists before creating branch
 6. **Branch strategy**: Branches are created from `develop`, not `main`
