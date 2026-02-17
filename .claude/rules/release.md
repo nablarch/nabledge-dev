@@ -10,6 +10,17 @@ Nabledge maintains CHANGELOGs at two levels:
 
 **Version numbering**: User decides the version number. AI provides suggestions based on change analysis, but the final decision is always the user's.
 
+**Release process** (7 steps):
+1. Review Unreleased changes
+2. Propose version number (AI suggestion)
+3. User decides version number
+4. Update skill CHANGELOG
+5. Update marketplace CHANGELOG
+6. Update JSON metadata files (plugin.json, marketplace.json)
+7. Commit and push changes
+
+**Note**: Git tags and GitHub releases are created manually after commit is merged.
+
 ## Version Numbering Format
 
 **Nabledge-specific format**: MINOR.PATCH (2-digit)
@@ -163,22 +174,61 @@ Use today's date in YYYY-MM-DD format.
 - If only nabledge-5 changed: Use nabledge-5 version
 - If multiple skills changed: Use highest version number (compare MINOR first, then PATCH)
 
-### Step 6: Commit and Tag
+### Step 6: Update JSON Metadata Files
 
-**6.1 Create Release Commit**
+**6.1 Update Plugin JSON**
+
+Update version in `.claude/skills/nabledge-6/plugin/plugin.json`:
+
+```json
+{
+  "name": "nabledge-6",
+  "version": "0.1.1",
+  ...
+}
+```
+
+**6.2 Update Marketplace JSON**
+
+Update version in `.claude/marketplace/.claude-plugin/marketplace.json`:
+
+```json
+{
+  "name": "nabledge",
+  "metadata": {
+    "version": "0.1.1",
+    ...
+  },
+  ...
+}
+```
+
+**Note**: Both JSON files must match the marketplace version determined in Step 5.
+
+### Step 7: Commit Changes
+
+**7.1 Stage All Release Files**
 
 ```bash
 git add .claude/skills/nabledge-6/plugin/CHANGELOG.md
+git add .claude/skills/nabledge-6/plugin/plugin.json
 git add .claude/marketplace/CHANGELOG.md
+git add .claude/marketplace/.claude-plugin/marketplace.json
+```
 
+**7.2 Create Release Commit**
+
+```bash
 git commit -m "$(cat <<'EOF'
 Release nabledge-6 version 0.1.1
 
-Update CHANGELOGs for nabledge-6 version 0.1.1 release.
+Update CHANGELOGs and version metadata for nabledge-6 version 0.1.1 release.
 
 Changes:
-- Move Unreleased section to version 0.1.1
+- Move Unreleased section to version 0.1.1 in skill CHANGELOG
 - Update marketplace version table
+- Update plugin.json version to 0.1.1
+- Update marketplace.json version to 0.1.1
 
 See CHANGELOG.md for detailed changes.
 
@@ -187,59 +237,13 @@ EOF
 )"
 ```
 
-**6.2 Create Git Tag**
+**7.3 Push to Remote**
 
 ```bash
-git tag -a 0.1.1 -m "nabledge-6 version 0.1.1
-
-Bug fixes:
-- Claude Code setup script first-startup recognition (Issue #27)
-
-See CHANGELOG.md for full details."
-
-git push origin main --tags
+git push origin main
 ```
 
-### Step 7: Create GitHub Release
-
-**7.1 Use gh CLI**
-
-```bash
-gh release create 0.1.1 \
-  --title "nabledge-6 v0.1.1" \
-  --notes "$(cat <<'EOF'
-## nabledge-6 v0.1.1
-
-### 修正
-
-- Claude Codeのセットアップスクリプトがマーケットプレイス設定ではなく `.claude/skills/` ディレクトリへ直接スキルをインストールするように変更し、初回起動時に再起動なしで即座に認識されるようになりました ([#27](https://github.com/nablarch/nabledge-dev/issues/27))
-
-### インストール
-
-**Claude Code**:
-\`\`\`bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/0.1.1/setup-6-cc.sh | bash
-\`\`\`
-
-**GitHub Copilot**:
-\`\`\`bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/0.1.1/setup-6-ghc.sh | bash
-\`\`\`
-
----
-
-**Full Changelog**: https://github.com/nablarch/nabledge/compare/0.1...0.1.1
-EOF
-)"
-```
-
-**7.2 Release Notes Template**
-
-Required sections:
-- Version heading
-- Changes (in Japanese, from CHANGELOG)
-- Installation instructions
-- Full changelog link
+**Note**: Git tags and GitHub releases are created manually as needed.
 
 ## Pre-Release Checklist
 
@@ -253,19 +257,25 @@ Before starting release process:
 
 ## Post-Release Tasks
 
-After release:
+After release commit is merged to main:
 
-1. **Verify Release**
-   - Test installation from release tag
-   - Verify setup scripts work with new version
+1. **Verify Changes**
+   - Confirm all version numbers updated correctly
+   - Test setup scripts work with new version
+   - Verify CHANGELOG links are correct
 
-2. **Announce**
+2. **Create Tag and GitHub Release** (Manual)
+   - Create git tag: `git tag -a <version> -m "<message>"`
+   - Push tag: `git push origin <version>`
+   - Create GitHub release with release notes from CHANGELOG
+
+3. **Announce**
    - Update project README if needed
    - Notify team/users if breaking changes
 
-3. **Start Next Development**
+4. **Start Next Development**
    - Ensure Unreleased section exists in CHANGELOGs
-   - Update version in development if needed
+   - Ready for next set of changes
 
 ## Special Cases
 
