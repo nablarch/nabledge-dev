@@ -62,13 +62,9 @@ This allows maintainers to control release timing by deciding when to merge main
 
 To release a new version to [nablarch/nabledge](https://github.com/nablarch/nabledge):
 
-1. **Update version files** (follow `.claude/rules/release.md`):
-   - Update `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
-   - Update `.claude/skills/nabledge-6/plugin/plugin.json`
-   - Update `.claude/marketplace/.claude-plugin/marketplace.json`
-   - Update `.claude/marketplace/CHANGELOG.md`
+1. **Ask Claude Code to prepare release** - Claude Code will follow `.claude/rules/release.md` to update version files and create a PR
 
-2. **Merge to main** via pull request
+2. **Merge the release PR to main**
 
 3. **Merge main to release and push**:
    ```bash
