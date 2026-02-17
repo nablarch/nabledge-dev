@@ -59,15 +59,17 @@ Nabledgeが対象とする代行作業を優先度別に整理しました。優
 
 **対象**
 
-- Nablarchバッチ（都度起動型）
+- Nablarchバッチ
+  - 都度起動バッチ
+  - 常駐バッチ
+  - テーブルをキューとして使ったメッセージング
 - RESTful Webサービス
 
 **対象外**
 
-- Jakarta Batch
-- 常駐バッチ
+- JSR352バッチ
+- MOM（Message Oriented Middleware）
 - ウェブアプリケーション（JSP/画面）
-- メッセージング（MOM）
 
 **対象バージョン**
 
