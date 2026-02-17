@@ -58,6 +58,31 @@ When changes are pushed to the `release` branch, GitHub Actions automatically:
 
 This allows maintainers to control release timing by deciding when to merge main → release.
 
+### Release Procedure
+
+To release a new version to [nablarch/nabledge](https://github.com/nablarch/nabledge):
+
+1. **Update version files** (follow `.claude/rules/release.md`):
+   - Update `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
+   - Update `.claude/skills/nabledge-6/plugin/plugin.json`
+   - Update `.claude/marketplace/.claude-plugin/marketplace.json`
+   - Update `.claude/marketplace/CHANGELOG.md`
+
+2. **Merge to main** via pull request
+
+3. **Merge main to release and push**:
+   ```bash
+   git checkout release
+   git merge main
+   git push origin release
+   ```
+
+4. GitHub Actions will automatically:
+   - Validate version consistency (marketplace.json = CHANGELOG.md)
+   - Validate version increment (new version > latest tag in nablarch/nabledge)
+   - Deploy to nablarch/nabledge
+   - Create version tag
+
 ## Development
 
 ### Testing nabledge Skills
