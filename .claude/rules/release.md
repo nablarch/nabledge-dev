@@ -10,19 +10,20 @@ Nabledge maintains CHANGELOGs at two levels:
 
 **Version numbering**: User decides the version number. AI provides suggestions based on change analysis, but the final decision is always the user's.
 
-## Version Proposal Guidelines (Reference Only)
+## Version Numbering Format
 
-Semantic Versioning 2.0.0 is used as a **reference for proposals**, but not mandatory:
+**Nabledge-specific format**: MINOR.PATCH (2-digit)
 
-**Format**: MAJOR.MINOR.PATCH (e.g., 1.2.3)
+The skill name already includes the major version (nabledge-6 = version 6.x.x), so version numbers use only MINOR and PATCH components.
 
-| Component | Suggested When | Example |
-|-----------|----------------|---------|
-| **MAJOR** | Breaking changes (incompatible API changes) | Knowledge structure change requiring skill updates |
-| **MINOR** | New features (backward-compatible) | New knowledge added, new workflows |
-| **PATCH** | Bug fixes (backward-compatible) | Documentation fixes, knowledge corrections |
+**Format**: MINOR.PATCH (e.g., 0.1, 0.2, 0.1.1)
 
-**Note**: Users may choose any version number format they prefer (e.g., 0.1, 1.0.0, 2024.02, v1-alpha). The proposal logic provides suggestions only.
+| Component | When to Increment | Example |
+|-----------|-------------------|---------|
+| **MINOR** | Feature additions (new knowledge, workflows, functionality) | 0.1 → 0.2 |
+| **PATCH** | Small fixes and bug fixes only | 0.1 → 0.1.1 |
+
+**Note**: Backward compatibility is not verified in this project. Use MINOR increment for any feature addition, PATCH increment for fixes and small improvements only.
 
 ## Release Process Steps
 
@@ -64,14 +65,13 @@ grep -A 20 "## \[Unreleased\]" .claude/skills/nabledge-6/plugin/CHANGELOG.md
 
 **2.2 Generate Suggestion**
 
-Provide version suggestion based on semantic versioning guidelines (if applicable):
+Provide version suggestion based on nabledge versioning rules:
 
 | Changes Include | Suggestion | Rationale |
 |----------------|------------|-----------|
-| **Breaking changes** | Example: 0.1 → 1.0 or 0.2 | Major change |
-| **New features** | Example: 0.1 → 0.2 | New functionality |
-| **Only bug fixes** | Example: 0.1 → 0.1.1 | Bug fixes only |
-| **Documentation only** | Example: No release | Non-functional changes |
+| **Feature additions** | Example: 0.1 → 0.2 | New knowledge, workflows, or functionality added |
+| **Only fixes/improvements** | Example: 0.1 → 0.1.1 | Bug fixes or small improvements only |
+| **Documentation only** | Example: No release | Non-functional changes (unless affecting deployed docs) |
 
 **2.3 Present Suggestion to User**
 
@@ -80,7 +80,7 @@ Current version: 0.1
 Unreleased changes: Bug fixes (Fixed section only)
 
 Suggested version: 0.1.1
-Rationale: Based on semantic versioning - patch increment for bug fixes.
+Rationale: Only fixes and improvements, no new features.
 Includes setup script improvement (Issue #27) which fixes
 first-startup recognition issue.
 
@@ -96,8 +96,8 @@ Use AskUserQuestion tool to let user choose:
 ```
 Question: "What version number for nabledge-6 release?"
 Options:
-- "0.1.1" - Use suggested version (based on semantic versioning)
-- "0.2" - Alternative version
+- "0.1.1" - Use suggested version (fixes only)
+- "0.2" - Alternative version (if considering as feature addition)
 - "Custom" - Specify your own version number
 ```
 
@@ -105,7 +105,7 @@ Options:
 
 **Validation** (minimal):
 - Version should be different from current version (warn if same)
-- No other format restrictions - user decides
+- Recommended format: MINOR.PATCH (e.g., 0.2, 0.1.1) but user decides
 
 ### Step 4: Update Skill CHANGELOG
 
@@ -160,8 +160,8 @@ Use today's date in YYYY-MM-DD format.
 **5.2 Marketplace Version**
 
 - If only nabledge-6 changed: Use nabledge-6 version
-- If multiple skills changed: Use highest version number
-- If breaking change in any skill: Increment MAJOR
+- If only nabledge-5 changed: Use nabledge-5 version
+- If multiple skills changed: Use highest version number (compare MINOR first, then PATCH)
 
 ### Step 6: Commit and Tag
 
@@ -279,9 +279,9 @@ When releasing multiple skills simultaneously:
 4. Release notes include all skill changes
 
 **Example**:
-- nabledge-6: 0.1.0 → 0.2.0 (new features)
-- nabledge-5: 0.1.0 → 0.1.1 (bug fixes)
-- Marketplace: 0.1.0 → 0.2.0 (use highest)
+- nabledge-6: 0.1 → 0.2 (new features)
+- nabledge-5: 0.1 → 0.1.1 (bug fixes)
+- Marketplace: 0.1 → 0.2 (use highest)
 
 ### Hotfix Release
 
@@ -298,24 +298,26 @@ For testing before official release:
 
 ```bash
 # Create pre-release tag
-git tag -a 0.2.0-rc.1 -m "Release candidate 1 for version 0.2.0"
+git tag -a 0.2-rc.1 -m "Release candidate 1 for version 0.2"
 
 # Mark as pre-release in GitHub
-gh release create 0.2.0-rc.1 --prerelease
+gh release create 0.2-rc.1 --prerelease
 ```
 
-## Version Numbering Examples (Reference Only)
+## Version Numbering Examples
 
-These are examples of how semantic versioning **could** be applied, but users may choose any numbering scheme:
+Nabledge uses MINOR.PATCH format. Examples based on change type:
 
-| Current | Changes | Suggested | Alternative Valid Choices |
-|---------|---------|-----------|---------------------------|
-| 0.1 | Bug fixes only | 0.1.1 | 0.2, 2026.02, 0.1-patch1 |
-| 0.1.1 | New knowledge added | 0.2.0 or 0.2 | 1.0, 0.1.2, next |
-| 0.9.0 | First stable release | 1.0.0 or 1.0 | 2026.1, stable, v1 |
-| 1.2.3 | Breaking workflow change | 2.0.0 | 1.3, next-major, 2.0 |
+| Current | Changes | Suggested | Rationale |
+|---------|---------|-----------|-----------|
+| 0.1 | Bug fixes only | 0.1.1 | Patch increment for fixes only |
+| 0.1 | Setup script fix (Issue #27) | 0.1.1 | Small improvement, no new features |
+| 0.1.1 | New knowledge files added | 0.2 | Feature addition (new knowledge) |
+| 0.1.1 | New workflow added | 0.2 | Feature addition (new capability) |
+| 0.2 | Documentation improvements only | 0.2.1 | Small fixes without features |
+| 0.9 | Major knowledge expansion | 0.10 | Feature addition (MINOR can exceed 9) |
 
-**Note**: AI suggests versions based on semantic versioning guidelines, but accepts any version number the user specifies.
+**Note**: AI suggests versions based on nabledge rules, but user has final decision.
 
 ## Automation Notes
 
