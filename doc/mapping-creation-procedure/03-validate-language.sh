@@ -84,29 +84,33 @@ check_file_types() {
     local rst_count=$(grep -c '\.rst$' "$filtered_file")
     local md_count=$(grep -c '\.md$' "$filtered_file")
     local xml_count=$(grep -c '\.xml$' "$filtered_file")
-    local other_count=$(grep -cvE '\.(rst|md|xml)$' "$filtered_file")
+    local config_count=$(grep -c '\.config$' "$filtered_file")
+    local txt_count=$(grep -c '\.txt$' "$filtered_file")
+    local other_count=$(grep -cvE '\.(rst|md|xml|config|txt)$' "$filtered_file")
     other_count=$(echo "$other_count" | tr -d ' ')
 
     echo "  $version:"
     echo "    - .rst files: $rst_count"
     echo "    - .md files: $md_count"
     echo "    - .xml files: $xml_count"
+    echo "    - .config files: $config_count"
+    echo "    - .txt files: $txt_count"
 
     if [ "$other_count" -gt 0 ]; then
         echo "    ❌ Unexpected file types: $other_count"
         ((ERRORS++))
     else
-        echo "    ✅ All files are .rst, .md, or .xml"
+        echo "    ✅ All files are .rst, .md, .xml, .config, or .txt"
     fi
 
-    # Check all .md are from dev guide
-    local bad_md=$(grep '\.md$' "$filtered_file" | grep -v "nablarch-system-development-guide" | wc -l)
+    # Check all .md are from dev guide or archetype README.md
+    local bad_md=$(grep '\.md$' "$filtered_file" | grep -v "nablarch-system-development-guide" | grep -v "README.md" | wc -l)
     bad_md=$(echo "$bad_md" | tr -d ' ')
     if [ "$bad_md" -gt 0 ]; then
-        echo "    ❌ $bad_md .md files not from development guide"
+        echo "    ❌ $bad_md .md files not from development guide or README.md"
         ((ERRORS++))
     else
-        echo "    ✅ All .md files from development guide"
+        echo "    ✅ All .md files from development guide or README.md"
     fi
 
     # Check all .xml are from archetypes (excluding build parents)
@@ -125,6 +129,26 @@ check_file_types() {
     else
         echo "    ✅ Build parent poms excluded"
     fi
+
+    # Check all .config are from spotbugs/published-config
+    local bad_config=$(grep '\.config$' "$filtered_file" | grep -v "spotbugs/published-config" | wc -l)
+    bad_config=$(echo "$bad_config" | tr -d ' ')
+    if [ "$bad_config" -gt 0 ]; then
+        echo "    ❌ $bad_config .config files not from spotbugs/published-config"
+        ((ERRORS++))
+    else
+        echo "    ✅ All .config files from spotbugs/published-config"
+    fi
+
+    # Check all .txt are config.txt from jspanalysis
+    local bad_txt=$(grep '\.txt$' "$filtered_file" | grep -v "config.txt" | wc -l)
+    bad_txt=$(echo "$bad_txt" | tr -d ' ')
+    if [ "$bad_txt" -gt 0 ]; then
+        echo "    ❌ $bad_txt .txt files not config.txt"
+        ((ERRORS++))
+    else
+        echo "    ✅ All .txt files are config.txt"
+    fi
 }
 
 check_file_types "$TMP_DIR/files-v6-filtered.txt" "v6"
@@ -139,20 +163,20 @@ v6_count=$(wc -l < "$TMP_DIR/files-v6-filtered.txt")
 v5_count=$(wc -l < "$TMP_DIR/files-v5-filtered.txt")
 
 # Expected ranges (based on known official doc structure)
-# v6: ~330 rst (en) + ~160 md (guide) + ~9 xml (archetypes) = ~500
-# v5: ~340 rst (en/ja mix) + ~0 md (no v5 guide) + ~9 xml = ~350
+# v6: ~336 rst + ~167 md + ~9 xml + ~90 config + ~3 txt = ~605
+# v5: ~433 rst + ~9 md + ~9 xml + ~90 config + ~3 txt = ~544
 
 echo "  v6: $v6_count files"
-if [ "$v6_count" -lt 400 ] || [ "$v6_count" -gt 600 ]; then
-    echo "    ⚠️  Outside expected range (400-600)"
+if [ "$v6_count" -lt 550 ] || [ "$v6_count" -gt 650 ]; then
+    echo "    ⚠️  Outside expected range (550-650)"
     echo "    This may indicate missing files or incorrect filtering"
 else
     echo "    ✅ Within expected range"
 fi
 
 echo "  v5: $v5_count files"
-if [ "$v5_count" -lt 300 ] || [ "$v5_count" -gt 500 ]; then
-    echo "    ⚠️  Outside expected range (300-500)"
+if [ "$v5_count" -lt 500 ] || [ "$v5_count" -gt 600 ]; then
+    echo "    ⚠️  Outside expected range (500-600)"
     echo "    This may indicate missing files or incorrect filtering"
 else
     echo "    ✅ Within expected range"
