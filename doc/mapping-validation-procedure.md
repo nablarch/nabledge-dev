@@ -22,31 +22,16 @@ Mapping files define the relationship between official documentation and target 
 
 ## Prerequisites
 
-### 1. Design Document Update Required
+### 1. Design Document Reference
 
-**Current Issue**: Design document (doc/nabledge-design.md section 2.4) only defines:
-```
-knowledge/
-├── features/
-│   ├── handlers/
-│   ├── libraries/
-│   ├── processing/
-│   ├── tools/
-│   └── adapters/
-├── checks/
-└── releases/
-```
+**Directory Structure**: Defined in [Design Document Section 2.4](nabledge-design.md#24-ファイル構成)
 
-**Mapping files include additional directories**:
-- `about/` (type=about)
-- `setup/` (type=setup)
-- `guides/` (type=guide)
-- `migration/` (type=about/migration)
+The design document includes:
+- Complete knowledge directory structure (including `about/`, `setup/`, `guides/`, `migration/`)
+- Category type → directory mapping table
+- Naming conventions for each category
 
-**Action Required**: Update design document section 2.4 to include:
-1. Complete directory structure
-2. Category type → directory mapping table
-3. Naming conventions for each category
+Refer to the design document for the authoritative directory structure and mapping rules.
 
 ---
 
@@ -87,11 +72,11 @@ For each mapping entry, validate:
 
 ## Validation Process
 
-### Phase 1: Design Document Update
-1. Create category type → directory mapping table
-2. Define naming conventions
-3. Update doc/nabledge-design.md section 2.4
-4. User review and approval
+### Phase 1: Design Document Update ✅ COMPLETED
+1. ✅ Created category type → directory mapping table
+2. ✅ Defined naming conventions
+3. ✅ Updated doc/nabledge-design.md section 2.4
+4. Ready for validation execution
 
 ### Phase 2: Automated Validation Script
 Create Python validation script to check:
@@ -179,12 +164,16 @@ Output: Validation checklist with results
 - Web Applications (JSP/UI) - `web`
 - MOM Messaging - `messaging-mom`
 
-### Category Type → Directory Mapping (To be defined in Phase 1)
+### Category Type → Directory Mapping
+
+See [Design Document Section 2.4](nabledge-design.md#24-ファイル構成) for the complete mapping table.
+
+Quick reference:
 
 | Category Type | Directory | Example |
 |--------------|-----------|---------|
 | processing-pattern | features/processing/ | nablarch-batch.json |
-| component (handler) | features/handlers/ | data-read-handler.json |
+| component (handler) | features/handlers/{batch,common,rest}/ | data-read-handler.json |
 | component (library) | features/libraries/ | universal-dao.json |
 | component (adaptor) | features/adapters/ | slf4j-adapter.json |
 | component (tool) | features/tools/ | ntf-overview.json |
@@ -223,11 +212,12 @@ Output: Validation checklist with results
 
 ## Next Steps
 
-1. **User Decision**: Approve design document update approach
-2. **Phase 1**: Update design document with directory structure
-3. **Phase 2**: Create automated validation script
-4. **Phase 3**: Execute AI content validation (967 entries)
-5. **Phase 4**: Fix issues and generate final report
+1. ✅ **Phase 1**: Design document updated with directory structure
+2. **Phase 2**: Create automated validation script (optional - mechanical checks)
+3. **Phase 3**: Execute AI content validation (967 entries)
+4. **Phase 4**: Fix issues and generate final report
+
+**Current Status**: Ready to begin Phase 2 or Phase 3
 
 ---
 

@@ -280,8 +280,16 @@ nabledge-6/
 ├── SKILL.md                    # スキル定義
 ├── knowledge/                  # 知識
 │   ├── index.toon              # 検索インデックス（TOON形式）
+│   ├── overview.json           # Framework overview
+│   ├── about/                  # Framework fundamentals
+│   ├── setup/                  # Project setup and configuration
+│   ├── guides/                 # Development guides
+│   ├── migration/              # Migration guides
 │   ├── features/               # ① 機能・実装パターン
 │   │   ├── handlers/           # ハンドラ単位
+│   │   │   ├── batch/          # バッチ専用ハンドラ
+│   │   │   ├── common/         # 共通ハンドラ
+│   │   │   └── rest/           # REST専用ハンドラ
 │   │   ├── libraries/          # ライブラリ単位
 │   │   ├── processing/         # 処理方式単位
 │   │   ├── tools/              # ツール単位
@@ -293,6 +301,21 @@ nabledge-6/
 ├── assets/                     # アセット
 └── docs/                       # 人向け閲覧用（JSON→MD自動変換）
 ```
+
+#### カテゴリタイプとディレクトリの対応
+
+| Category Type | Directory | Description | Example |
+|--------------|-----------|-------------|---------|
+| processing-pattern | `features/processing/` | Processing patterns (batch, REST, messaging) | `nablarch-batch.json` |
+| component (handler) | `features/handlers/{batch,common,rest}/` | Request handlers by processing type | `data-read-handler.json` |
+| component (library) | `features/libraries/` | Framework libraries | `universal-dao.json` |
+| component (adaptor) | `features/adapters/` | Third-party integration adaptors | `slf4j-adapter.json` |
+| component (tool) | `features/tools/` | Testing and development tools | `ntf-overview.json` |
+| setup | `setup/` | Project setup, blank projects, configuration | `blank-project.json` |
+| guide | `guides/` | Development patterns and anti-patterns | `dev-guide-pattern.json` |
+| check | `checks/` | Security, deprecated API, published API checks | `security.json` |
+| about | `about/` | Framework overview, policy, concepts | `framework-concept.json` |
+| about (migration) | `migration/` | Migration guides between versions | `v5-to-v6.json` |
 
 **命名規則**
 
