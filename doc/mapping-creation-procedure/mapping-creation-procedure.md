@@ -195,9 +195,16 @@ doc/mapping-creation-procedure/02-collect-files.sh
 ```
 
 **What it does**:
-1. Find all `.rst`, `.md`, `.xml` files in official documentation
+1. Find all `.rst`, `.md`, `.xml`, `.config`, `.txt` files in official documentation
 2. Extract file metadata (path, type, language)
 3. Generate file list
+
+**File types collected**:
+- `.rst` - reStructuredText documentation files
+- `.md` - Markdown documentation and README files
+- `.xml` - POM files from archetype projects
+- `.config` - Published API definition files (from `spotbugs/published-config/`)
+- `.txt` - JSP static analysis configuration files (`config.txt`)
 
 **Output**:
 - `work/YYYYMMDD/mapping/files-v6.txt` - All v6 files
@@ -222,8 +229,10 @@ doc/mapping-creation-procedure/02-collect-files.sh
 3. Select `/ja/` version if `/en/` does not exist
 4. Filter by file type:
    - `.rst` - All files
-   - `.md` - All files from dev guide
+   - `.md` - From dev guide OR archetype README.md
    - `.xml` - Only archetype `pom.xml` files (exclude build configs)
+   - `.config` - Only from `spotbugs/published-config/` directories
+   - `.txt` - Only `config.txt` from `jspanalysis/` or `JspStaticAnalysis/` directories
 
 **Execution**:
 ```bash

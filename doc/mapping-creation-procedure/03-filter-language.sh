@@ -1,6 +1,6 @@
 #!/bin/bash
 # Phase 3: Apply Language Priority and File Type Filtering
-# Selects /en/ over /ja/ and filters by file type
+# Selects /en/ over /ja/ and filters by file type (.rst, .md, .xml, .config, .txt)
 
 set -euo pipefail
 
@@ -38,8 +38,9 @@ process_files() {
                 include=true
                 ;;
             md)
-                # Include only .md from development guide
-                if echo "$file" | grep -q "nablarch-system-development-guide"; then
+                # Include .md from development guide OR archetype README.md
+                if echo "$file" | grep -q "nablarch-system-development-guide" || \
+                   echo "$file" | grep -Eq "nablarch-single-module-archetype/.*/README\.md$"; then
                     include=true
                 fi
                 ;;
@@ -51,6 +52,18 @@ process_files() {
                        ! echo "$file" | grep -q "nablarch-archetype-parent"; then
                         include=true
                     fi
+                fi
+                ;;
+            config)
+                # Include only .config from spotbugs/published-config directory
+                if echo "$file" | grep -q "spotbugs/published-config"; then
+                    include=true
+                fi
+                ;;
+            txt)
+                # Include only config.txt from jspanalysis or toolbox directories
+                if echo "$file" | grep -Eq "(jspanalysis|JspStaticAnalysis)/config\.txt$"; then
+                    include=true
                 fi
                 ;;
         esac
@@ -151,8 +164,10 @@ cat > "$WORK_DIR/language-selection.md" <<EOF
 1. **Language Priority**: English (/en/) preferred, Japanese (/ja/) fallback if no English version
 2. **File Type Filtering**:
    - .rst: All files included
-   - .md: Only from nablarch-system-development-guide
+   - .md: From nablarch-system-development-guide OR archetype README.md
    - .xml: Only pom.xml from archetypes (exclude build parent poms)
+   - .config: Only from spotbugs/published-config directories
+   - .txt: Only config.txt from jspanalysis/JspStaticAnalysis directories
 
 ## Nablarch v6
 
@@ -163,6 +178,8 @@ By file type (after filtering):
   - .rst: $(grep '\.rst$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
   - .md: $(grep '\.md$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
   - .xml: $(grep '\.xml$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
+  - .config: $(grep '\.config$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
+  - .txt: $(grep '\.txt$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
 
 By language (after filtering):
   - /en/: $(grep "/en/" "$WORK_DIR/files-v6-filtered.txt" | wc -l)
@@ -180,6 +197,8 @@ By file type (after filtering):
   - .rst: $(grep '\.rst$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
   - .md: $(grep '\.md$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
   - .xml: $(grep '\.xml$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
+  - .config: $(grep '\.config$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
+  - .txt: $(grep '\.txt$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
 
 By language (after filtering):
   - /en/: $(grep "/en/" "$WORK_DIR/files-v5-filtered.txt" | wc -l)

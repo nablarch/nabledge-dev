@@ -26,11 +26,14 @@ V6_ARCHETYPE=".lw/nab-official/v6/nablarch-single-module-archetype"
 {
     find "$V6_DOCS" -name "*.rst" 2>/dev/null || true
     find "$V6_DOCS" -name "*.md" 2>/dev/null || true
+    find "$V6_DOCS" -name "config.txt" 2>/dev/null || true
     find "$V6_GUIDE" -name "*.rst" 2>/dev/null || true
     find "$V6_GUIDE" -name "*.md" 2>/dev/null || true
     find "$V6_ARCHETYPE" -name "*.rst" 2>/dev/null || true
     find "$V6_ARCHETYPE" -name "*.md" 2>/dev/null || true
     find "$V6_ARCHETYPE" -name "pom.xml" 2>/dev/null || true
+    find "$V6_ARCHETYPE" -path "*/spotbugs/published-config/*.config" 2>/dev/null || true
+    find "$V6_ARCHETYPE" -path "*/jspanalysis/config.txt" 2>/dev/null || true
 } | sort > "$WORK_DIR/files-v6-all.txt"
 
 v6_count=$(wc -l < "$WORK_DIR/files-v6-all.txt")
@@ -47,9 +50,12 @@ V5_ARCHETYPE=".lw/nab-official/v5/nablarch-single-module-archetype"
 {
     find "$V5_DOCS" -name "*.rst" 2>/dev/null || true
     find "$V5_DOCS" -name "*.md" 2>/dev/null || true
+    find "$V5_DOCS" -name "config.txt" 2>/dev/null || true
     find "$V5_ARCHETYPE" -name "*.rst" 2>/dev/null || true
     find "$V5_ARCHETYPE" -name "*.md" 2>/dev/null || true
     find "$V5_ARCHETYPE" -name "pom.xml" 2>/dev/null || true
+    find "$V5_ARCHETYPE" -path "*/spotbugs/published-config/*.config" 2>/dev/null || true
+    find "$V5_ARCHETYPE" -path "*/jspanalysis/config.txt" 2>/dev/null || true
 } | sort > "$WORK_DIR/files-v5-all.txt"
 
 v5_count=$(wc -l < "$WORK_DIR/files-v5-all.txt")
@@ -74,6 +80,8 @@ EOF
 echo "  - .rst: $(grep '\.rst$' "$WORK_DIR/files-v6-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
 echo "  - .md: $(grep '\.md$' "$WORK_DIR/files-v6-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
 echo "  - .xml: $(grep '\.xml$' "$WORK_DIR/files-v6-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
+echo "  - .config: $(grep '\.config$' "$WORK_DIR/files-v6-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
+echo "  - .txt: $(grep '\.txt$' "$WORK_DIR/files-v6-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
 
 cat >> "$WORK_DIR/stats.md" <<EOF
 
@@ -97,6 +105,8 @@ EOF
 echo "  - .rst: $(grep '\.rst$' "$WORK_DIR/files-v5-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
 echo "  - .md: $(grep '\.md$' "$WORK_DIR/files-v5-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
 echo "  - .xml: $(grep '\.xml$' "$WORK_DIR/files-v5-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
+echo "  - .config: $(grep '\.config$' "$WORK_DIR/files-v5-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
+echo "  - .txt: $(grep '\.txt$' "$WORK_DIR/files-v5-all.txt" | wc -l)" >> "$WORK_DIR/stats.md"
 
 cat >> "$WORK_DIR/stats.md" <<EOF
 
