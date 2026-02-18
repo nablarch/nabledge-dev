@@ -18,12 +18,21 @@ Prepared category-driven mapping creation procedure for Nablarch v6 knowledge fi
 - Step 5: Map category IDs to target directory structure
 - Support multiple categories per file
 
-### Revision 2: Source File Selection
+### Revision 2: Source File Selection (Japanese Only)
 - **Excluded**: All archetype files (`nablarch-*-archetype`)
 - **Development Guide**: Japanese version only
   - Nablarch patterns: `Nablarchシステム開発ガイド/docs/nablarch-patterns/` (except README.md)
   - Security matrix: `Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
 - Security matrix categorized as `dev-guide-other` → `guides/patterns/`
+
+### Revision 3: Remove Hardcoded Category IDs
+- **Problem**: Prompt contained hardcoded category ID lists, causing implementers to skip reading category definitions file
+- **Solution**: Removed all specific category ID examples from prompt
+  - Step 3: General path pattern matching logic without specific IDs
+  - Step 4: Process description without ID-to-indicator mappings
+  - Step 5.3: General directory mapping logic based on category types
+  - Output Schema: Generic placeholder values instead of specific IDs
+- **Result**: Category definitions file (`categories-v{version}.json`) is now the single source of truth
 
 ## Next Steps
 

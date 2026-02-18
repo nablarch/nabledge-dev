@@ -17,8 +17,8 @@ The official documentation consists of 3 directories:
 3. `nablarch-system-development-guide` (development guide, v6 only)
 
 **Categorization Strategy**:
-- Load category definitions from `categories-v{version}.json` (e.g., `handler`, `library`, `batch`, `rest`, `security-check`)
-- **Multiple categories allowed**: A file can belong to multiple categories (e.g., `["handler", "batch"]`)
+- Load category definitions from `categories-v{version}.json` to get valid category IDs
+- **Multiple categories allowed**: A file can belong to multiple categories
 - **Rule-based first**: Apply path pattern rules to auto-categorize most files
 - **AI judgment for unclear cases**: Read content and manually assign categories for files without clear path patterns
 - **Target paths based on categories**: Use assigned categories to determine target directory structure
@@ -110,34 +110,20 @@ final_paths = list(paths_by_name.values())
 **Process**:
 
 1. **Load category definitions**: Read `categories-v{version}.json` to get all valid category IDs
-   - Example: `handler`, `library`, `adaptor`, `tool`, `batch`, `rest`, `web`, `security-check`, `setup`, `configuration`, `about`, `migration`
    - These IDs are the **target vocabulary** - the only valid values for categorization
+   - Extract the `id` field from each category in the JSON
 
 2. **Implement path pattern matching rules**: Create rules that analyze file paths and assign appropriate category IDs
 
-   **Component categories** (from path structure):
-   - `handler`: `/handlers/` in path
-   - `library`: `/libraries/` in path
-   - `adaptor`: `/adaptors/` in path
-   - `tool`: `/development_tools/` or `/tools/` in path
-   - `security-check`: `/authorization/` or `permission` or `security` in path
-
-   **Processing pattern categories** (from path structure):
-   - `batch`: `/batch/` in path
-   - `rest`: `/rest/` or `/jaxrs/` in path
-   - `web`: `/web/` in path (but not if `/messaging/` also present)
-   - `messaging`: `/messaging/` in path
-
-   **Document type categories** (from path structure):
-   - `setup`: `/blank_project/` or `/getting_started/` or `setup` in path
-   - `configuration`: `/configuration/` or `config` in path
-   - `about`: `/about_nablarch/` or `/nablarch/` (architecture, policy docs)
-   - `migration`: `/migration/` in path
+   For each category ID from the definitions file, implement path pattern matching logic:
+   - Analyze directory structure in file paths (e.g., `/handlers/`, `/libraries/`, `/batch/`)
+   - Map path patterns to corresponding category IDs
+   - Consider category types from definitions: component types, processing patterns, document types
+   - Rules should be based on observable path characteristics
 
 3. **Apply all rules to each file**: For every file, check ALL category rules
-   - A file can match multiple categories (e.g., both `handler` and `batch`)
+   - A file can match multiple categories
    - Collect all matching category IDs for each file
-   - Example: `handlers/batch/loop_handler.rst` → `["handler", "batch"]`
 
 4. **Store results**:
    - Files with 1+ matched categories: Store with category list
@@ -147,7 +133,7 @@ final_paths = list(paths_by_name.values())
 - Files can have MULTIPLE categories (not just one)
 - All category rules must be checked for every file
 - Rules are based on path patterns, using category definitions as the target vocabulary
-- Component + Processing pattern combinations are common (e.g., `handler` + `rest`)
+- Component + Processing pattern combinations are common
 - When path matches multiple rules, include ALL matched categories
 
 ---
@@ -170,28 +156,17 @@ final_paths = list(paths_by_name.values())
 
 2. **Determine categories from content**: Read file content and match to defined categories
 
-   **Use category definitions** (`categories-v{version}.json`) as the vocabulary:
-   - Available category IDs: `handler`, `library`, `adaptor`, `tool`, `security-check`, `batch`, `rest`, `web`, `messaging`, `setup`, `configuration`, `about`, `migration`, `dev-guide-pattern`, `dev-guide-anti`, `dev-guide-other`
-
-   **Content indicators** → Category mapping:
-   - Handler class/interface definitions → `handler`
-   - Library/utility functions → `library`
-   - Third-party integration → `adaptor`
-   - Testing tools, analysis tools → `tool`
-   - Authentication, authorization, permission → `security-check`
-   - Batch processing concepts → `batch`
-   - REST API concepts → `rest`
-   - Web UI concepts → `web`
-   - Messaging concepts → `messaging`
-   - Project setup, installation → `setup`
-   - Configuration settings → `configuration`
-   - Framework overview, architecture → `about`
-   - Version migration → `migration`
+   **Process**:
+   - Load category definitions from `categories-v{version}.json`
+   - Read file content to understand its purpose
+   - Match content to appropriate category IDs based on:
+     - Technical indicators in the content
+     - Category names and descriptions from definitions
+     - Category types (component, processing-pattern, setup, guide, about)
 
 3. **Assign categories** (multiple allowed):
    - A file can have multiple categories if it covers multiple aspects
-   - Example: A file about REST handlers → `["handler", "rest"]`
-   - Example: Security library documentation → `["library", "security-check"]`
+   - Refer to category descriptions in definitions file to make decisions
    - Prefer fewer categories when uncertain (avoid over-categorization)
 
 4. **Store results**:
@@ -227,31 +202,22 @@ if name in generic_names:
 
 Map categories to target directory structure. Use the **first category** as primary, additional categories for context:
 
-**Category → Directory mapping**:
-- `handler` + processing pattern → `features/handlers/{pattern}/` (e.g., `batch`, `rest`, `web`)
-- `handler` (alone) → `features/handlers/common/`
-- `library` → `features/libraries/`
-- `adaptor` → `features/adaptors/`
-- `tool` → `features/tools/`
-- `security-check` → `features/security/`
-- `batch` (no component) → `features/batch/`
-- `rest` (no component) → `features/rest/`
-- `web` (no component) → `features/web/`
-- `messaging` (no component) → `features/messaging/`
-- `setup` → `guides/setup/`
-- `configuration` → `guides/configuration/`
-- `about` → `guides/about/`
-- `migration` → `guides/migration/`
-- `dev-guide-pattern`, `dev-guide-anti`, `dev-guide-other` → `guides/patterns/`
+**General mapping logic**:
 
-**Logic**:
-1. If first category is component type (`handler`, `library`, `adaptor`, `tool`, `security-check`):
-   - Use component-based directory
-   - For `handler`: check second category for processing pattern subdirectory
-2. If first category is processing pattern (`batch`, `rest`, `web`, `messaging`):
-   - Use pattern-based directory under `features/`
-3. If first category is document type (`setup`, `configuration`, `about`, `migration`, `dev-guide-*`):
-   - Use guide-based directory
+1. **Load category definitions** to understand category types
+   - Check the `type` field: "component", "processing-pattern", "setup", "guide", "about"
+
+2. **Determine directory based on category type and ID**:
+   - Component types: `features/{category-id}/` (may have subdirectories for specific components)
+   - Processing patterns: `features/{category-id}/` or as subdirectory under component
+   - Setup/configuration types: `guides/{category-id}/` or `guides/setup/`, `guides/configuration/`
+   - Guide types: `guides/patterns/` or appropriate guide subdirectory
+   - About/migration types: `guides/{category-id}/` or `guides/about/`, `guides/migration/`
+
+3. **Handle category combinations**:
+   - When first category is a component type, check if second category is a processing pattern
+   - If so, may organize as component subdirectory (e.g., handlers with pattern subdirectory)
+   - Otherwise, use primary category for directory
 
 Create target path: `{directory}/{name}.json`
 
@@ -397,10 +363,7 @@ Navigation-only: {count}
 
 By Category
 -----------
-handler: {count}
-library: {count}
-adaptor: {count}
-(... all categories ...)
+{for each category from definitions: category_id: count}
 ```
 
 ---
@@ -415,16 +378,16 @@ adaptor: {count}
   "mappings": [
     {
       "id": "v6-0001",
-      "source_file": "nablarch-document/en/handlers/common/database_connection_management_handler.rst",
-      "title": "Database Connection Management Handler",
-      "categories": ["handler"],
-      "target_files": ["features/handlers/common/database-connection-management-handler.json"]
+      "source_file": "nablarch-document/en/path/to/some-doc.rst",
+      "title": "Some Documentation Title",
+      "categories": ["category-id-1", "category-id-2"],
+      "target_files": ["features/some-directory/some-doc.json"]
     },
     {
       "id": "v6-0002",
-      "source_file": "nablarch-document/en/handlers/index.rst",
-      "title": "Handlers",
-      "categories": ["handler"],
+      "source_file": "nablarch-document/en/path/to/navigation-doc.rst",
+      "title": "Navigation Document",
+      "categories": ["category-id-1"],
       "_no_content": true,
       "_no_content_reason": "Navigation only (toctree without technical content)"
     }
