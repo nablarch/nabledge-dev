@@ -26,23 +26,21 @@
 
 ### Scope Definition
 
-**Included in Mapping**:
-1. ✅ **nablarch-document** - Complete framework reference (all files)
-2. ✅ **nablarch-system-development-guide** - Patterns and anti-patterns only:
-   - Nablarch patterns (nablarch-patterns/)
-   - Anti-patterns
-   - Asynchronous processing patterns
-   - Project setup guides (Initial_build, Package_configuration, etc.)
-3. ❌ **nablarch-single-module-archetype** - Excluded (static analysis available)
+**Included in Mapping (Whitelist Approach)**:
+1. ✅ **nablarch-document** - Complete framework reference (all .rst, .md, config.txt files)
+2. ✅ **nablarch-system-development-guide** - Framework patterns only:
+   - `nablarch-patterns/*.md` - Nablarch design patterns and anti-patterns
+   - `Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx` - Framework security mapping
+3. ❌ **nablarch-single-module-archetype** - Excluded entirely (static analysis available)
 
-**Excluded Categories and Content** (filtered in Phase 5.5):
-- ❌ batch-jsr352, http-messaging, web, messaging-mom (out-of-scope processing patterns)
-- ❌ archetype, check-published-api (archetype-related content)
-- ❌ Sample_Project (project-specific implementation guides for proman/climan)
-- ❌ .textlint/test/ files (documentation tooling tests)
-- ❌ license.rst files (legal information only)
+**Explicitly Excluded** (via whitelist):
+- ❌ **archetype** - pom.xml, .config, README.md (static analysis available)
+- ❌ **Sample_Project** - Except security mapping above (project-specific implementation examples)
+- ❌ **docs/** - Project-specific customization and setup guides
+- ❌ **.textlint/test/** - Documentation tooling tests
+- ❌ **license.rst** - Legal information only
 
-**Rationale**: Focus on framework-level knowledge applicable to all projects, excluding project-specific patterns, tooling tests, and non-technical content.
+**Rationale**: Use whitelist approach to include only framework-level knowledge applicable to all projects. Archetype content (dependencies, published API lists, tool configurations) can be obtained via static analysis. Project-specific patterns (Sample_Project, docs/) are excluded.
 
 See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for detailed scope definition.
 
@@ -221,12 +219,11 @@ This section clarifies how to handle ambiguous situations during mapping creatio
 | Phase | Task | Method | Output |
 |-------|------|--------|--------|
 | 1 | Initialize mapping files | Script | Empty JSON structure |
-| 2 | Collect all source files | Script | File list with metadata |
+| 2 | Collect source files (whitelist) | Script | File list with framework knowledge only |
 | 3 | Apply language priority | Script | Filtered file list (en/ja) |
 | 3.5 | Group duplicate files | Script | Grouped file list + alternatives |
 | 4 | Generate initial mappings | Script | Basic mapping entries |
 | 5 | Categorize entries | AI Agent | Mappings with categories |
-| 5.5 | Apply scope filtering | Script | Filtered mappings (scope-compliant) |
 | 6 | Define target files | AI Agent | Complete mappings |
 | 7 | Validate mappings | Script | Validation report |
 | 7.5 | Generate Excel files | Script | Excel files for review |
@@ -263,17 +260,17 @@ doc/mapping-creation-procedure/01-init-mapping.sh
 doc/mapping-creation-procedure/02-collect-files.sh
 ```
 
-**What it does**:
-1. Find all `.rst`, `.md`, `.xml`, `.config`, `.txt` files in official documentation
-2. Extract file metadata (path, type, language)
-3. Generate file list
+**What it does** (Whitelist Approach):
+1. Collect from **nablarch-document**: All `.rst`, `.md`, `config.txt` files
+2. Collect from **nablarch-system-development-guide**: Only `nablarch-patterns/*.md` files
+3. Collect **security mapping**: Only `Nablarch機能のセキュリティ対応表.xlsx`
+4. Generate file list
 
 **File types collected**:
-- `.rst` - reStructuredText documentation files
-- `.md` - Markdown documentation and README files
-- `.xml` - POM files from archetype projects
-- `.config` - Published API definition files (from `spotbugs/published-config/`)
-- `.txt` - JSP static analysis configuration files (`config.txt`)
+- `.rst` - reStructuredText documentation files (from nablarch-document only)
+- `.md` - Markdown files (from nablarch-document and nablarch-patterns only)
+- `.xlsx` - Excel files (security mapping only)
+- `.txt` - config.txt files (from nablarch-document only)
 
 **Output**:
 - `doc/mapping-creation-procedure/tmp/files-v6-all.txt` - All v6 files
@@ -296,12 +293,11 @@ doc/mapping-creation-procedure/02-collect-files.sh
 1. Group files by path (language-agnostic)
 2. Select `/en/` version if exists
 3. Select `/ja/` version if `/en/` does not exist
-4. Filter by file type:
+4. Pass through file types (whitelist already applied in Phase 2):
    - `.rst` - All files
-   - `.md` - From dev guide OR archetype README.md
-   - `.xml` - Only archetype `pom.xml` files (exclude build configs)
-   - `.config` - Only from `spotbugs/published-config/` directories
-   - `.txt` - Only `config.txt` from `jspanalysis/` or `JspStaticAnalysis/` directories
+   - `.md` - All files
+   - `.xlsx` - All files (no language versions)
+   - `.txt` - config.txt files only
 
 **Execution**:
 ```bash
@@ -503,68 +499,6 @@ Progress tracking: cat doc/mapping-creation-procedure/tmp/progress-phase5.txt
 
 ---
 
-## Phase 5.5: Apply Scope Filtering
-
-**Script**: `doc/mapping-creation-procedure/05.5-apply-scope-filter.sh`
-
-**Purpose**: Remove out-of-scope entries based on category and path patterns to focus on framework-level knowledge.
-
-**Execution**:
-```bash
-doc/mapping-creation-procedure/05.5-apply-scope-filter.sh
-```
-
-**What it does**:
-1. Create timestamped backup before filtering
-2. Apply four filters sequentially:
-   - **Filter 1**: Remove archetype-related entries (categories: `archetype`, `check-published-api`)
-   - **Filter 2**: Remove Sample_Project entries (path contains `Sample_Project`)
-   - **Filter 3**: Remove textlint test file (path contains `.textlint/test/`)
-   - **Filter 4**: Remove license file (path ends with `/license.rst`)
-3. Generate filtering report with counts and rationale
-
-**Filters Applied**:
-
-| Filter | Pattern | Rationale |
-|--------|---------|-----------|
-| Archetype | Categories contain `archetype` or `check-published-api` | Static analysis available |
-| Sample_Project | Path contains `Sample_Project` | Project-specific examples (proman/climan) |
-| Textlint test | Path contains `.textlint/test/` | Documentation tooling test, not framework knowledge |
-| License file | Path ends with `/license.rst` | Legal information only, not technical know-how |
-
-**Expected Reduction**: ~180 entries (archetype + Sample_Project + tests + license)
-
-**Output**:
-- `doc/mapping-creation-procedure/mapping-v6.json` - Filtered mappings (scope-compliant)
-- `doc/mapping-creation-procedure/tmp/scope-filtering-report.md` - Detailed filtering report
-- `doc/mapping-creation-procedure/tmp/mapping-v6-backup-before-scope-filter-TIMESTAMP.json` - Backup
-
-**Validation**:
-- Entry count reduced by expected amount
-- No archetype/check-published-api categories remain
-- No Sample_Project paths remain
-- No textlint test files remain
-- No license.rst files remain
-
-**Manual Check**:
-```bash
-# Verify no archetype entries remain
-jq '[.mappings[] | select(.categories | contains(["archetype"]) or contains(["check-published-api"]))] | length' mapping-v6.json
-
-# Verify no Sample_Project entries remain
-jq '[.mappings[] | select(.source_file | contains("Sample_Project"))] | length' mapping-v6.json
-
-# Verify no textlint test entries remain
-jq '[.mappings[] | select(.source_file | contains(".textlint/test/"))] | length' mapping-v6.json
-
-# Verify no license entries remain
-jq '[.mappings[] | select(.source_file | endswith("/license.rst"))] | length' mapping-v6.json
-```
-
-All queries should return `0`.
-
----
-
 ## Phase 6: Define Target Files (AI Agent Work)
 
 **Method**: AI agent determines target knowledge file paths based on categories
@@ -623,6 +557,10 @@ Naming Rules:
 - Be descriptive: "db-connection-management-handler.json" NOT "db-handler.json"
 - Use .json extension always
 - For handlers, include handler type: "data-read-handler.json" NOT "data-read.json"
+- **NEVER use "index.json"**: Even for index.rst files, use content-based names
+  - ❌ Bad: "features/processing/index.json"
+  - ✅ Good: "features/processing/batch-application-overview.json"
+  - Read the file content and name based on what it describes
 
 Multiple Target Files:
 - Use when one source document maps to multiple distinct knowledge files
@@ -955,10 +893,11 @@ git commit -m "Add final mapping files for v6 and v5"
 - [ ] All validations pass
 
 ### Coverage
-- [ ] v6: ~345 entries total after scope filtering
-  - ~319 from nablarch-document (framework reference)
-  - ~26 from nablarch-system-development-guide (patterns only)
-  - Excluded: ~180 entries (archetype + Sample_Project)
+- [ ] v6: ~340 entries total (whitelist approach)
+  - ~335 from nablarch-document (framework reference)
+  - ~4 from nablarch-patterns
+  - ~1 security mapping (.xlsx)
+  - Excluded via whitelist: archetype, Sample_Project (except security mapping), docs/, tooling files
 - [ ] v5: Similar approach for v5 sources
 
 ### Traceability
