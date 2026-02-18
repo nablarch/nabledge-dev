@@ -3,7 +3,7 @@ name: Sync to nabledge repository
 on:
   push:
     branches:
-      - release
+      - main
 
 jobs:
   sync:
@@ -15,14 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate version updates
-        run: .github/scripts/validate-version-updates.sh
-
       - name: Checkout nabledge repository
         uses: actions/checkout@v4
         with:
           repository: nablarch/nabledge
-          ref: main
+          ref: develop
           token: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
           path: nabledge-repo
 
@@ -44,10 +41,4 @@ jobs:
           ../.github/scripts/commit-and-push.sh \
             "Sync nabledge marketplace from nabledge-dev" \
             "Triggered by: ${TRIGGER_COMMIT_URL}" \
-            "main"
-
-      - name: Create and push version tag
-        working-directory: nabledge-repo
-        run: |
-          VERSION=$(jq -r '.metadata.version' .claude-plugin/marketplace.json)
-          ../.github/scripts/create-version-tag.sh "$VERSION"
+            "develop"
