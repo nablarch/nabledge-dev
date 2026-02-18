@@ -3,35 +3,50 @@ set -e
 set -u
 set -o pipefail
 
-# Validate that version files are updated when non-infrastructure files change
+# Validate version consistency and increment before syncing to public repository
 # Usage: ./validate-version-updates.sh
 
-echo "Validating version updates..."
+echo "Validating version consistency..."
 
-# Get list of changed files
-CHANGED_FILES=$(git diff HEAD~1 HEAD --name-only)
+# Get version from marketplace.json
+MARKETPLACE_VERSION=$(jq -r '.metadata.version' .claude/marketplace/.claude-plugin/marketplace.json)
+if [ -z "$MARKETPLACE_VERSION" ] || [ "$MARKETPLACE_VERSION" = "null" ]; then
+  echo "Error: Could not read version from marketplace.json"
+  exit 1
+fi
+echo "Marketplace version: $MARKETPLACE_VERSION"
 
-# Check if only infrastructure files were changed
-INFRA_ONLY=true
-while IFS= read -r file; do
-  if [[ ! "$file" =~ ^\.github/ ]] && \
-     [[ ! "$file" =~ ^\.claude/marketplace ]] && \
-     [[ ! "$file" =~ ^\.claude/rules/ ]] && \
-     [[ "$file" != *"transform-to-plugin.sh"* ]]; then
-    INFRA_ONLY=false
-    break
-  fi
-done <<< "$CHANGED_FILES"
+# Get latest version from CHANGELOG.md
+CHANGELOG_VERSION=$(grep -m 1 '^## \[' .claude/skills/nabledge-6/plugin/CHANGELOG.md | sed 's/^## \[\(.*\)\].*/\1/')
+if [ -z "$CHANGELOG_VERSION" ]; then
+  echo "Error: Could not read latest version from CHANGELOG.md"
+  exit 1
+fi
+echo "CHANGELOG latest version: $CHANGELOG_VERSION"
 
-# If non-infrastructure files changed, require version update
-if [ "$INFRA_ONLY" = false ]; then
-  if ! echo "$CHANGED_FILES" | grep -q "plugin/plugin.json\|plugin/CHANGELOG.md\|marketplace/.claude-plugin/marketplace.json"; then
-    echo "Error: plugin.json, CHANGELOG.md, or marketplace.json must be updated before sync"
+# Check if versions match
+if [ "$MARKETPLACE_VERSION" != "$CHANGELOG_VERSION" ]; then
+  echo "Error: Version mismatch between marketplace.json ($MARKETPLACE_VERSION) and CHANGELOG.md ($CHANGELOG_VERSION)"
+  exit 1
+fi
+echo "✓ Versions are consistent"
+
+# Get latest tag from nablarch/nabledge repository
+LATEST_TAG=$(gh api repos/nablarch/nabledge/tags --jq '.[0].name' 2>/dev/null || echo "")
+if [ -z "$LATEST_TAG" ]; then
+  echo "Warning: Could not fetch latest tag from nablarch/nabledge (repository might be empty)"
+  echo "✓ Skipping version increment check"
+else
+  echo "Latest tag in nablarch/nabledge: $LATEST_TAG"
+
+  # Compare versions (sort -V handles semantic versioning)
+  HIGHER_VERSION=$(printf "%s\n%s" "$LATEST_TAG" "$MARKETPLACE_VERSION" | sort -V | tail -n 1)
+
+  if [ "$HIGHER_VERSION" = "$LATEST_TAG" ]; then
+    echo "Error: New version ($MARKETPLACE_VERSION) must be greater than latest tag ($LATEST_TAG)"
     exit 1
   fi
-  echo "Version files updated - validation passed"
-else
-  echo "Infrastructure-only changes detected, skipping version validation"
+  echo "✓ Version is incremented properly"
 fi
 
 echo "Version validation completed successfully"
