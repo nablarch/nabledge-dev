@@ -143,24 +143,23 @@ Output: Validation checklist with results
 
 ## Validation Rules Reference
 
-### Scope Determination (CLAUDE.md)
+### Scope Determination
 
-**In Scope**:
+See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for the authoritative scope definition.
+
+**Quick reference - In Scope**:
 - Nablarch Batch (On-demand) - `batch-nablarch`
 - RESTful Web Services - `rest`
-- HTTP Messaging - `http-messaging`
 - DB Messaging (Resident Batch) - `messaging-db`
-- Handlers (all types) - `handler`
-- Libraries - `library`
-- Adaptors - `adaptor`
-- Tools - `tool`
+- Handlers, Libraries, Adaptors, Tools - `handler`, `library`, `adaptor`, `tool`
 - Setup, Configuration - `setup`, `configuration`, `archetype`
 - Development Guides - `dev-guide-*`
 - Checks - `check-*`
 - About, Migration - `about`, `migration`
 
-**Out of Scope**:
+**Quick reference - Out of Scope**:
 - Jakarta Batch (JSR 352) - `batch-jsr352`
+- HTTP Messaging - `http-messaging`
 - Web Applications (JSP/UI) - `web`
 - MOM Messaging - `messaging-mom`
 

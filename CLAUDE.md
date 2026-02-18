@@ -69,21 +69,7 @@ When creating knowledge files for **nabledge-5**, use the following sources:
 
 ## Scope
 
-### In Scope
-
-| Item | Description |
-|------|-------------|
-| **Nablarch Batch (On-demand)** | FILE to DB, DB to DB, DB to FILE patterns |
-| **RESTful Web Services** | JAX-RS support, REST API implementation |
-
-### Out of Scope
-
-| Item | Reason |
-|------|--------|
-| Jakarta Batch | Explicitly excluded in specification |
-| Resident Batch (Table Queue) | Explicitly excluded in specification |
-| Web Applications (JSP/UI) | Focus on batch & REST only |
-| Messaging (MOM) | Out of scope |
+For detailed scope definition, see [Nabledge Design Document Section 1.5](doc/nabledge-design.md#15-スコープ).
 
 ---
 
