@@ -35,67 +35,41 @@ The official documentation consists of 3 directories:
 
 ## Procedure
 
-### Step 1: Process Non-Nab-Doc Directories
+### Step 1: Process Development Guide Files
 
-#### 1.1: Archetype Files
+**Source**: `nablarch-system-development-guide` (Japanese version only)
 
-Find archetype directory:
+**Note**:
+- v5 does not have its own dev guide. Use v6 dev guide for v5 mapping.
+- Archetype files (`nablarch-*-archetype`) are **excluded** from mapping.
+
+#### 1.1: Nablarch Patterns
+
+Find pattern files (Japanese):
 ```bash
-ls -d {source_base}/nablarch-*-archetype
+find {source_base}/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns \
+  -type f \( -name "*.md" -o -name "*.adoc" \) \
+  -not -name "README.md"
 ```
 
-List all files (exclude .git, target/, IDE files, OS files):
+Add to mapping with categories based on filename:
+- Filename contains `アンチパターン` or `anti-pattern`: `["dev-guide-anti"]`
+- Otherwise: `["dev-guide-pattern"]`
+- Target: `guides/patterns/{filename-in-kebab-case}.json`
+
+#### 1.2: Security Matrix
+
+Find security matrix file (Japanese):
 ```bash
-find {archetype_dir} -type f \
-  -not -path "*/.git/*" \
-  -not -path "*/target/*" \
-  -not -path "*/.idea/*" \
-  -not -path "*/.vscode/*" \
-  -not -name ".DS_Store" \
-  -not -name "Thumbs.db"
+find {source_base}/nablarch-system-development-guide/Sample_Project/設計書 \
+  -name "*セキュリティ対応表.xlsx"
 ```
 
-Show whitelist to user:
-```
-Archetype whitelist: {archetype_name}
-Total: {count} files
-Examples:
-  - pom.xml
-  - src/main/resources/entity/User.sql
-  - src/main/java/com/example/Sample.java
+Expected file: `Nablarch機能のセキュリティ対応表.xlsx`
 
-Approve this whitelist? (Y/N)
-```
-
-If approved, add to mapping with:
-- Category: `["archetype"]`
-- Target: `archetype/{filename-in-kebab-case}.json`
-
-#### 1.2: Development Guide Files
-
-Find dev guide directory:
-```bash
-# For v6
-ls -d {source_base}/nablarch-system-development-guide
-
-# For v5 (use v6 guide)
-ls -d .lw/nab-official/v6/nablarch-system-development-guide
-```
-
-**Note**: v5 does not have its own dev guide. Use v6 dev guide for v5 mapping.
-
-List documentation files:
-```bash
-find {dev_guide_dir} -type f \( -name "*.md" -o -name "*.adoc" \)
-```
-
-Show whitelist to user (same format as 1.1).
-
-If approved, add to mapping with categories:
-- Path contains `patterns/`: `["dev-guide-pattern"]`
-- Path contains `anti-pattern`: `["dev-guide-anti"]`
-- Otherwise: `["dev-guide-other"]`
-- Target: `guides/{filename-in-kebab-case}.json`
+Add to mapping with:
+- Category: `["dev-guide-other"]`
+- Target: `guides/patterns/nablarch-security-matrix.json`
 
 ---
 
