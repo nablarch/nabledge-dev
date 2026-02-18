@@ -21,15 +21,26 @@ check_completeness() {
 
     local empty_count=$(jq '[.mappings[] | select(.target_files == [])] | length' "$mapping_file")
     local total_count=$(jq '.mappings | length' "$mapping_file")
-    local empty_percent=$((empty_count * 100 / total_count))
 
     if [ "$empty_count" -eq 0 ]; then
         echo "✅ $version: All entries have target_files"
-    elif [ "$empty_percent" -lt 5 ]; then
-        echo "⚠️  $version: $empty_count entries ($empty_percent%) have empty target_files (acceptable if < 5%)"
     else
-        echo "❌ $version: $empty_count entries ($empty_percent%) have empty target_files (exceeds 5% threshold)"
-        ((ERRORS++))
+        local empty_percent=$((empty_count * 100 / total_count))
+
+        # Check if empty entries have _no_content flag
+        local missing_flag=$(jq '[.mappings[] | select(.target_files == [] and (._no_content != true or ._no_content_reason == null))] | length' "$mapping_file")
+
+        if [ "$missing_flag" -gt 0 ]; then
+            echo "❌ $version: $missing_flag entries have empty target_files without _no_content flag"
+            jq -r '.mappings[] | select(.target_files == [] and (._no_content != true or ._no_content_reason == null)) | "\(.id): \(.source_file)"' "$mapping_file" | head -5
+            [ "$missing_flag" -gt 5 ] && echo "  ... and $((missing_flag - 5)) more"
+            ((ERRORS++))
+        elif [ "$empty_percent" -lt 5 ]; then
+            echo "✅ $version: $empty_count entries ($empty_percent%) have empty target_files with _no_content flag (acceptable)"
+        else
+            echo "❌ $version: $empty_count entries ($empty_percent%) have empty target_files (exceeds 5% threshold)"
+            ((ERRORS++))
+        fi
     fi
 }
 

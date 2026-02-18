@@ -76,6 +76,19 @@ See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for detail
 }
 ```
 
+**With no content** (for navigation-only files):
+```json
+{
+  "id": "v6-0150",
+  "source_file": "nab-official/v6/nablarch-document/en/application_framework/index.rst",
+  "title": "Application Framework",
+  "categories": ["about"],
+  "target_files": [],
+  "_no_content": true,
+  "_no_content_reason": "Navigation only (toctree without technical content)"
+}
+```
+
 **Fields**:
 - `id`: Unique identifier (format: `v{version}-{sequential-number}`)
 - `source_file`: Relative path from repository root (no `.lw/` prefix)
@@ -83,6 +96,8 @@ See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for detail
 - `categories`: Array of category IDs (from `categories-v*.json`)
 - `target_files`: Array of target knowledge file paths (relative to `knowledge/` directory)
 - `source_file_alternatives` (optional): Array of duplicate source files with identical content (only for grouped .config files)
+- `_no_content` (optional): Boolean flag indicating file has no technical content to extract
+- `_no_content_reason` (optional): Brief explanation why target_files is empty
 
 ### Edge Cases and Decision Rules
 
@@ -109,16 +124,30 @@ This section clarifies how to handle ambiguous situations during mapping creatio
 #### Empty target_files Array
 
 **When to use** (rare, < 5% of entries):
+- **Navigation-only files**: index.rst files containing only toctree directives without technical content
+  - Must set `_no_content: true` and provide `_no_content_reason`
+  - Example reason: "Navigation only (toctree without technical content)"
 - Build configuration files (pom.xml for parent projects)
 - Test sample data files
 - Non-documentation content (README with no technical content)
 
+**How to identify navigation-only files**:
+1. File is named `index.rst` or `index.md`
+2. Content consists primarily of:
+   - `.. toctree::` directive(s)
+   - Brief section title
+   - No substantial technical explanations, examples, or guidance
+3. Any meaningful content (> 3 sentences of explanation) means it's NOT navigation-only
+
 **When NOT to use**:
+- index.rst files with substantial overview or conceptual content (e.g., "What is Nablarch?", "Batch Application Overview")
 - Documentation files (even if currently out of scope)
 - Any file with technical content
 - Files that might be useful in the future
 
-**Requirement**: Document reason in work log when using empty target_files
+**Requirement**:
+- Set `_no_content: true` and `_no_content_reason` when using empty target_files
+- Document decision in work log when unclear
 
 #### Category Conflicts
 
@@ -601,9 +630,16 @@ Multiple Target Files:
 - Example: Large document covering multiple handlers → multiple target files
 
 Empty Target Files:
-- ONLY use for: build configs, sample data files, non-documentation content
+- Use for: navigation-only files (index.rst with only toctree), build configs, sample data files, non-documentation content
 - Must be rare (< 5% of entries)
-- Document reason in work log
+- **Required fields when empty**:
+  - Set `_no_content: true`
+  - Set `_no_content_reason` with brief explanation
+  - Example: `"_no_content_reason": "Navigation only (toctree without technical content)"`
+- **How to identify navigation-only**:
+  - File named index.rst/index.md
+  - Contains only toctree directive + brief title
+  - No substantial explanations (< 3 sentences of technical content)
 
 Error Handling:
 - If category has no clear directory: Use features/ as default and note in work log
