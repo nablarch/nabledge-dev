@@ -48,6 +48,46 @@ def load_category_definitions() -> Tuple[List[str], Dict[str, str], List[str]]:
     return valid_ids, category_types, processing_patterns
 
 
+def transliterate_japanese_filename(filename: str) -> str:
+    """Transliterate Japanese filename to English.
+
+    Args:
+        filename: Japanese filename (without extension)
+
+    Returns:
+        English filename in kebab-case
+    """
+    # Mapping for dev guide specific terms
+    translations = {
+        "nablarchでの非同期処理": "nablarch-asynchronous-processing",
+        "nablarchバッチ処理パターン": "nablarch-batch-processing-patterns",
+        "nablarchアンチパターン": "nablarch-anti-patterns",
+        "nablarch機能のセキュリティ対応表": "nablarch-security-matrix",
+        # Generic translations
+        "非同期処理": "asynchronous-processing",
+        "バッチ処理": "batch-processing",
+        "パターン": "patterns",
+        "アンチパターン": "anti-patterns",
+        "セキュリティ対応表": "security-matrix",
+        "機能": "features",
+    }
+
+    # Try direct match first
+    filename_lower = filename.lower()
+    if filename_lower in translations:
+        return translations[filename_lower]
+
+    # Try partial replacements
+    result = filename
+    for jp, en in translations.items():
+        result = result.replace(jp, en)
+
+    # Clean up and normalize
+    result = result.lower().replace("_", "-").replace(" ", "-")
+
+    return result
+
+
 def process_dev_guide_files() -> List[Dict]:
     """Process development guide files (Step 1).
 
@@ -85,8 +125,8 @@ def process_dev_guide_files() -> List[Dict]:
             else:
                 category = "dev-guide-pattern"
 
-            # Generate target name (kebab-case)
-            target_name = file.stem.lower().replace("_", "-").replace("アンチパターン", "anti-pattern")
+            # Generate target name (transliterate Japanese to English)
+            target_name = transliterate_japanese_filename(file.stem)
 
             entry = {
                 "source_file": str(file.relative_to(SOURCE_BASE)),

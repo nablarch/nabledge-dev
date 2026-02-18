@@ -362,15 +362,24 @@ def build_mapping_json(verified_files: List[Dict], valid_category_ids: List[str]
             entry["_no_content"] = True
             entry["_no_content_reason"] = file_entry.get("_no_content_reason", "Unknown")
         else:
-            # Generate target file
-            base_name = generate_base_name(source_file)
-            base_name = add_prefix_if_generic(base_name, source_file)
-            directory = get_target_directory(categories)
-            target_name = resolve_conflict(base_name, source_file, categories, existing_targets)
-            target_path = f"{directory}/{target_name}"
+            # Check if target files are already assigned (from Step 1)
+            if file_entry.get("_from_step") == 1 and "target_files" in file_entry:
+                # Use existing target files from dev guide processing
+                entry["target_files"] = file_entry["target_files"]
+                # Add to existing targets to avoid conflicts
+                for target in file_entry["target_files"]:
+                    target_name = target.split("/")[-1]
+                    existing_targets.add(target_name)
+            else:
+                # Generate target file
+                base_name = generate_base_name(source_file)
+                base_name = add_prefix_if_generic(base_name, source_file)
+                directory = get_target_directory(categories)
+                target_name = resolve_conflict(base_name, source_file, categories, existing_targets)
+                target_path = f"{directory}/{target_name}"
 
-            entry["target_files"] = [target_path]
-            existing_targets.add(target_name)
+                entry["target_files"] = [target_path]
+                existing_targets.add(target_name)
 
         mapping["mappings"].append(entry)
         entry_id += 1
