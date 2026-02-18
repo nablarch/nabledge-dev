@@ -116,7 +116,7 @@ final_paths = list(paths_by_name.values())
 2. **Implement path pattern matching rules**: Create rules that analyze file paths and assign appropriate category IDs
 
    For each category ID from the definitions file, implement path pattern matching logic:
-   - Analyze directory structure in file paths (e.g., `/handlers/`, `/libraries/`, `/batch/`)
+   - Analyze directory structure in file paths
    - Map path patterns to corresponding category IDs
    - Consider category types from definitions: component types, processing patterns, document types
    - Rules should be based on observable path characteristics
@@ -216,7 +216,7 @@ Map categories to target directory structure. Use the **first category** as prim
 
 3. **Handle category combinations**:
    - When first category is a component type, check if second category is a processing pattern
-   - If so, may organize as component subdirectory (e.g., handlers with pattern subdirectory)
+   - If so, may organize as component subdirectory with pattern-based organization
    - Otherwise, use primary category for directory
 
 Create target path: `{directory}/{name}.json`
