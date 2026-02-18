@@ -285,9 +285,15 @@ You are categorizing Nablarch official documentation files.
 
 STEP 0: Setup
 1. Read category definitions file: work/20260213/create-mapping-info/categories-v6.json
-2. Read scope definition: doc/nabledge-design.md (lines 58-109)
-3. Check total entry count: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json
-4. Create progress tracker: echo "Phase 5 Progress" > work/YYYYMMDD/mapping/progress-phase5.txt
+   - Extract category IDs, names, descriptions, and **TYPE field** (processing-pattern, component, setup, guide, check, about)
+   - Example: {"id": "batch-nablarch", "type": "processing-pattern", "default_in_scope": true}
+2. Understand category types:
+   - **processing-pattern**: Mutually exclusive (choose only ONE per entry)
+   - **component**: Can combine with processing patterns
+   - **setup, guide, check, about**: Can combine with others
+3. Read scope definition: doc/nabledge-design.md (lines 58-109)
+4. Check total entry count: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json
+5. Create progress tracker: echo "Phase 5 Progress" > work/YYYYMMDD/mapping/progress-phase5.txt
 
 For each mapping entry (process in batches of 50):
 1. Read the source_file content (.lw/ prefix must be added to source_file path)
@@ -330,18 +336,28 @@ Error Handling:
 - If unsure between two categories: Include both (max 3 categories per entry)
 
 Work in batches of 50 entries:
-1. Process entries (e.g., entries 1-50)
-2. Save progress: Update mapping-v6.json with jq
-3. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase5.txt
-4. Run validation: bash doc/scripts/05-validate-categories.sh
-5. If validation fails:
+1. **BACKUP**: Create backup before processing
+   ```bash
+   cp work/YYYYMMDD/mapping/mapping-v6.json work/YYYYMMDD/mapping/mapping-v6-backup-batch-N.json
+   ```
+2. Process entries (e.g., entries 1-50)
+3. **VALIDATE JSON**: Before saving, verify JSON syntax
+   ```bash
+   jq empty work/YYYYMMDD/mapping/mapping-v6.json
+   ```
+   If syntax error, restore from backup and retry
+4. Save progress: Update mapping-v6.json with jq
+5. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase5.txt
+6. Run validation: bash doc/scripts/05-validate-categories.sh
+7. If validation fails:
    a. Read validation error output carefully
    b. Common errors:
       - "Unknown category": Check category ID spelling against categories-v6.json
       - "No categories": Find entries with empty categories array, re-categorize
    c. Fix specific errors mentioned
    d. Re-run validation until it passes
-6. When validation passes, proceed to next batch (51-100, 101-150, etc.)
+   e. **If unable to fix**: Restore from backup and retry batch more carefully
+8. When validation passes, proceed to next batch (51-100, 101-150, etc.)
 
 Total entries: [Check with: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json]
 Progress tracking: cat work/YYYYMMDD/mapping/progress-phase5.txt
@@ -405,11 +421,16 @@ For each mapping entry (process in batches of 50):
 1. Read the entry's categories array
 2. Determine target directory based on category type:
    - Processing pattern (batch-nablarch, rest, etc.) → features/processing/
-   - handler → features/handlers/{batch,common,rest}/ (choose subdirectory based on processing pattern)
+   - **handler** → features/handlers/{subdirectory}/ where subdirectory is determined by:
+     * IF entry has "handler" AND "batch-nablarch" OR "batch-jsr352" OR "messaging-db" → features/handlers/batch/
+     * ELSE IF entry has "handler" AND "rest" → features/handlers/rest/
+     * ELSE IF entry has "handler" but NO processing pattern → features/handlers/common/
+     * ELSE IF entry has "handler" AND "web" → features/handlers/common/ (web handlers not in scope but map to common)
    - library → features/libraries/
    - tool → features/tools/
    - adaptor → features/adapters/
-   - about, migration → about/ or migration/
+   - about → about/
+   - migration → migration/
    - setup, archetype, configuration → setup/
    - dev-guide-* → guides/
    - check-* → checks/
@@ -437,11 +458,20 @@ Error Handling:
 - If validation fails: See error recovery steps below
 
 Work in batches of 50 entries:
-1. Process entries (e.g., entries 1-50)
-2. Save progress: Update mapping-v6.json with jq
-3. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase6.txt
-4. Run validation: bash doc/scripts/06-validate-targets.sh
-5. If validation fails:
+1. **BACKUP**: Create backup before processing
+   ```bash
+   cp work/YYYYMMDD/mapping/mapping-v6.json work/YYYYMMDD/mapping/mapping-v6-backup-phase6-batch-N.json
+   ```
+2. Process entries (e.g., entries 1-50)
+3. **VALIDATE JSON**: Before saving, verify JSON syntax
+   ```bash
+   jq empty work/YYYYMMDD/mapping/mapping-v6.json
+   ```
+   If syntax error, restore from backup and retry
+4. Save progress: Update mapping-v6.json with jq
+5. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase6.txt
+6. Run validation: bash doc/scripts/06-validate-targets.sh
+7. If validation fails:
    a. Read validation error output carefully
    b. Common errors:
       - "Target without .json": Add .json extension
@@ -449,7 +479,8 @@ Work in batches of 50 entries:
       - "Wrong directory": Check category → directory mapping table
    c. Fix specific errors mentioned
    d. Re-run validation until it passes
-6. When validation passes, proceed to next batch (51-100, 101-150, etc.)
+   e. **If unable to fix**: Restore from backup and retry batch more carefully
+8. When validation passes, proceed to next batch (51-100, 101-150, etc.)
 
 Total entries: [Check with: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json]
 Progress tracking: cat work/YYYYMMDD/mapping/progress-phase6.txt
