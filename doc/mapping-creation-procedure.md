@@ -15,12 +15,14 @@
 
 - Mapping = Structured representation of entire official documentation
 - Scope = Priority/target range for knowledge file generation
-- Scope determination is managed by `default_in_scope` in `categories-v*.json`
+- Scope determination is based on category type (out-of-scope categories: batch-jsr352, http-messaging, web, messaging-mom)
 
 ### Benefits
 1. **Zero false negatives** - All files are mapped, nothing is missed
-2. **Flexibility** - Scope changes only require updating category definitions
+2. **Flexibility** - Scope changes only require updating out-of-scope category list
 3. **Traceability** - All files are tracked with categorization
+
+**Out-of-Scope Categories**: batch-jsr352, http-messaging, web, messaging-mom
 
 See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for scope definition.
 
@@ -286,7 +288,7 @@ You are categorizing Nablarch official documentation files.
 STEP 0: Setup
 1. Read category definitions file: work/20260213/create-mapping-info/categories-v6.json
    - Extract category IDs, names, descriptions, and **TYPE field** (processing-pattern, component, setup, guide, check, about)
-   - Example: {"id": "batch-nablarch", "type": "processing-pattern", "default_in_scope": true}
+   - Example: {"id": "batch-nablarch", "type": "processing-pattern", "description": "FILE to DB, DB to DB, DB to FILE patterns"}
 2. Understand category types:
    - **processing-pattern**: Mutually exclusive (choose only ONE per entry)
    - **component**: Can combine with processing patterns

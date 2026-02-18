@@ -66,7 +66,7 @@ Nabledgeが対象とする代行作業を優先度別に整理しました。優
 
 **知識ファイル化の対象**: マッピングのうち、以下の範囲を優先的に知識ファイル化します
 
-**スコープ判定**: categories定義（`categories-v*.json`）の`default_in_scope`フラグで管理します
+**スコープ判定**: 対象外カテゴリ（batch-jsr352, http-messaging, web, messaging-mom）以外を対象とします
 
 #### 知識ファイル化の対象範囲
 
