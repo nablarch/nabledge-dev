@@ -108,6 +108,14 @@ jq '.mappings[] | select(.source_file | contains("messaging/db")) | {source: .so
 
 ## Change History
 
+### 2026-02-18: Switch to English Sources
+- **Phase 1**: Fixed V5 scope - marked 90 ui_dev files as out_of_scope (JSP/UI is explicitly out of scope)
+- **Phase 2**: Switched to English documentation sources with Japanese fallback
+- **Results**: V6: 500/514 English (97.3%), V5: 361/453 English (79.7%)
+- **Impact**: 8.5x faster processing, 88% cost reduction for knowledge file generation
+- V5: in_scope 389→299, out_of_scope 64→154 (ui_dev correction)
+- See `UPDATE-SUMMARY.md` for detailed analysis
+
 ### 2026-02-17: Scope Update
 - Added DB Messaging (Resident Batch) to in-scope
 - Updated 16 files (8 V6 + 8 V5) from out-of-scope to in-scope
