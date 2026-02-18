@@ -193,8 +193,8 @@ doc/mapping-creation-procedure/01-init-mapping.sh
 ```
 
 **Output**:
-- `work/YYYYMMDD/mapping/mapping-v6.json` - Empty structure
-- `work/YYYYMMDD/mapping/mapping-v5.json` - Empty structure
+- `doc/mapping-creation-procedure/output/mapping-v6.json` - Empty structure
+- `doc/mapping-creation-procedure/output/mapping-v5.json` - Empty structure
 
 **Validation**:
 - JSON files are valid
@@ -225,9 +225,9 @@ doc/mapping-creation-procedure/02-collect-files.sh
 - `.txt` - JSP static analysis configuration files (`config.txt`)
 
 **Output**:
-- `work/YYYYMMDD/mapping/files-v6.txt` - All v6 files
-- `work/YYYYMMDD/mapping/files-v5.txt` - All v5 files
-- `work/YYYYMMDD/mapping/stats.md` - File count statistics
+- `doc/mapping-creation-procedure/output/files-v6.txt` - All v6 files
+- `doc/mapping-creation-procedure/output/files-v5.txt` - All v5 files
+- `doc/mapping-creation-procedure/output/stats.md` - File count statistics
 
 **Validation**: Run `doc/mapping-creation-procedure/02-validate-files.sh`
 - File counts match expected ranges
@@ -258,9 +258,9 @@ doc/mapping-creation-procedure/03-filter-language.sh
 ```
 
 **Output**:
-- `work/YYYYMMDD/mapping/files-v6-filtered.txt`
-- `work/YYYYMMDD/mapping/files-v5-filtered.txt`
-- `work/YYYYMMDD/mapping/language-selection.md` - Selection report
+- `doc/mapping-creation-procedure/output/files-v6-filtered.txt`
+- `doc/mapping-creation-procedure/output/files-v5-filtered.txt`
+- `doc/mapping-creation-procedure/output/language-selection.md` - Selection report
 
 **Validation**: Run `doc/mapping-creation-procedure/03-validate-language.sh`
 - No duplicate paths (language-agnostic)
@@ -290,13 +290,13 @@ doc/mapping-creation-procedure/03.5-group-duplicates.sh
 ```
 
 **Output**:
-- `work/YYYYMMDD/mapping/files-v6-grouped.txt` - Files after grouping
-- `work/YYYYMMDD/mapping/files-v5-grouped.txt`
-- `work/YYYYMMDD/mapping/files-v6-alternatives.json` - Alternative mappings
-- `work/YYYYMMDD/mapping/files-v5-alternatives.json`
-- `work/YYYYMMDD/mapping/grouping-report-v6.md` - Detailed grouping report
-- `work/YYYYMMDD/mapping/grouping-report-v5.md`
-- `work/YYYYMMDD/mapping/grouping-summary.md` - Summary
+- `doc/mapping-creation-procedure/output/files-v6-grouped.txt` - Files after grouping
+- `doc/mapping-creation-procedure/output/files-v5-grouped.txt`
+- `doc/mapping-creation-procedure/output/files-v6-alternatives.json` - Alternative mappings
+- `doc/mapping-creation-procedure/output/files-v5-alternatives.json`
+- `doc/mapping-creation-procedure/output/grouping-report-v6.md` - Detailed grouping report
+- `doc/mapping-creation-procedure/output/grouping-report-v5.md`
+- `doc/mapping-creation-procedure/output/grouping-summary.md` - Summary
 
 **Why this is needed**:
 - .config files have 87.8% redundancy (same content across multiple archetype projects)
@@ -326,8 +326,8 @@ doc/mapping-creation-procedure/04-generate-mappings.sh
 ```
 
 **Output**:
-- `work/YYYYMMDD/mapping/mapping-v6.json` - Mappings with id, source_file, title
-- `work/YYYYMMDD/mapping/mapping-v5.json` - Mappings with id, source_file, title
+- `doc/mapping-creation-procedure/output/mapping-v6.json` - Mappings with id, source_file, title
+- `doc/mapping-creation-procedure/output/mapping-v5.json` - Mappings with id, source_file, title
 
 **Validation**: Run `doc/mapping-creation-procedure/04-validate-mappings.sh`
 - JSON schema is valid
@@ -343,7 +343,7 @@ doc/mapping-creation-procedure/04-generate-mappings.sh
 **Method**: AI agent reads each source_file and assigns categories
 
 **Input Files** (read these first before starting work):
-1. **Mapping file**: `work/YYYYMMDD/mapping/mapping-v6.json` (replace YYYYMMDD with today's date)
+1. **Mapping file**: `doc/mapping-creation-procedure/output/mapping-v6.json` (replace YYYYMMDD with today's date)
 2. **Category definitions**: `doc/mapping-creation-procedure/categories-v6.json`
 3. **Scope definition**: `doc/nabledge-design.md` (lines 58-109)
 
@@ -360,8 +360,8 @@ STEP 0: Setup
    - **component**: Can combine with processing patterns
    - **setup, guide, check, about**: Can combine with others
 3. Read scope definition: doc/nabledge-design.md (lines 58-109)
-4. Check total entry count: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json
-5. Create progress tracker: echo "Phase 5 Progress" > work/YYYYMMDD/mapping/progress-phase5.txt
+4. Check total entry count: jq '.mappings | length' doc/mapping-creation-procedure/output/mapping-v6.json
+5. Create progress tracker: echo "Phase 5 Progress" > doc/mapping-creation-procedure/output/progress-phase5.txt
 
 For each mapping entry (process in batches of 50):
 1. Read the source_file content (.lw/ prefix must be added to source_file path)
@@ -406,16 +406,16 @@ Error Handling:
 Work in batches of 50 entries:
 1. **BACKUP**: Create backup before processing
    ```bash
-   cp work/YYYYMMDD/mapping/mapping-v6.json work/YYYYMMDD/mapping/mapping-v6-backup-batch-N.json
+   cp doc/mapping-creation-procedure/output/mapping-v6.json doc/mapping-creation-procedure/output/mapping-v6-backup-batch-N.json
    ```
 2. Process entries (e.g., entries 1-50)
 3. **VALIDATE JSON**: Before saving, verify JSON syntax
    ```bash
-   jq empty work/YYYYMMDD/mapping/mapping-v6.json
+   jq empty doc/mapping-creation-procedure/output/mapping-v6.json
    ```
    If syntax error, restore from backup and retry
 4. Save progress: Update mapping-v6.json with jq
-5. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase5.txt
+5. Log progress: echo "Batch 1-50: COMPLETED" >> doc/mapping-creation-procedure/output/progress-phase5.txt
 6. Run validation: bash doc/mapping-creation-procedure/05-validate-categories.sh
 7. If validation fails:
    a. Read validation error output carefully
@@ -427,8 +427,8 @@ Work in batches of 50 entries:
    e. **If unable to fix**: Restore from backup and retry batch more carefully
 8. When validation passes, proceed to next batch (51-100, 101-150, etc.)
 
-Total entries: [Check with: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json]
-Progress tracking: cat work/YYYYMMDD/mapping/progress-phase5.txt
+Total entries: [Check with: jq '.mappings | length' doc/mapping-creation-procedure/output/mapping-v6.json]
+Progress tracking: cat doc/mapping-creation-procedure/output/progress-phase5.txt
 ```
 
 **Process**:
@@ -446,9 +446,9 @@ Progress tracking: cat work/YYYYMMDD/mapping/progress-phase5.txt
 - Categories are appropriate for content (spot check 10%)
 
 **Output**:
-- `work/YYYYMMDD/mapping/mapping-v6.json` - Mappings with categories filled
-- `work/YYYYMMDD/mapping/mapping-v5.json` - Mappings with categories filled
-- `work/YYYYMMDD/mapping/categorization-log.md` - Work log
+- `doc/mapping-creation-procedure/output/mapping-v6.json` - Mappings with categories filled
+- `doc/mapping-creation-procedure/output/mapping-v5.json` - Mappings with categories filled
+- `doc/mapping-creation-procedure/output/categorization-log.md` - Work log
 
 ---
 
@@ -457,7 +457,7 @@ Progress tracking: cat work/YYYYMMDD/mapping/progress-phase5.txt
 **Method**: AI agent determines target knowledge file paths based on categories
 
 **Input Files** (read these first before starting work):
-1. **Mapping file**: `work/YYYYMMDD/mapping/mapping-v6.json` (with categories filled)
+1. **Mapping file**: `doc/mapping-creation-procedure/output/mapping-v6.json` (with categories filled)
 2. **Design document**: `doc/nabledge-design.md` (lines 276-347 for directory structure and category mapping table)
 
 **Agent Prompt**:
@@ -467,8 +467,8 @@ You are defining target knowledge file paths for Nablarch documentation mappings
 STEP 0: Setup
 1. Read design document: doc/nabledge-design.md (lines 276-347)
 2. Extract category → directory mapping table (lines 333-347)
-3. Check total entry count: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json
-4. Create progress tracker: echo "Phase 6 Progress" > work/YYYYMMDD/mapping/progress-phase6.txt
+3. Check total entry count: jq '.mappings | length' doc/mapping-creation-procedure/output/mapping-v6.json
+4. Create progress tracker: echo "Phase 6 Progress" > doc/mapping-creation-procedure/output/progress-phase6.txt
 
 Category Type → Directory Mapping Reference (from Design Doc Section 2.4):
 
@@ -528,16 +528,16 @@ Error Handling:
 Work in batches of 50 entries:
 1. **BACKUP**: Create backup before processing
    ```bash
-   cp work/YYYYMMDD/mapping/mapping-v6.json work/YYYYMMDD/mapping/mapping-v6-backup-phase6-batch-N.json
+   cp doc/mapping-creation-procedure/output/mapping-v6.json doc/mapping-creation-procedure/output/mapping-v6-backup-phase6-batch-N.json
    ```
 2. Process entries (e.g., entries 1-50)
 3. **VALIDATE JSON**: Before saving, verify JSON syntax
    ```bash
-   jq empty work/YYYYMMDD/mapping/mapping-v6.json
+   jq empty doc/mapping-creation-procedure/output/mapping-v6.json
    ```
    If syntax error, restore from backup and retry
 4. Save progress: Update mapping-v6.json with jq
-5. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase6.txt
+5. Log progress: echo "Batch 1-50: COMPLETED" >> doc/mapping-creation-procedure/output/progress-phase6.txt
 6. Run validation: bash doc/mapping-creation-procedure/06-validate-targets.sh
 7. If validation fails:
    a. Read validation error output carefully
@@ -550,8 +550,8 @@ Work in batches of 50 entries:
    e. **If unable to fix**: Restore from backup and retry batch more carefully
 8. When validation passes, proceed to next batch (51-100, 101-150, etc.)
 
-Total entries: [Check with: jq '.mappings | length' work/YYYYMMDD/mapping/mapping-v6.json]
-Progress tracking: cat work/YYYYMMDD/mapping/progress-phase6.txt
+Total entries: [Check with: jq '.mappings | length' doc/mapping-creation-procedure/output/mapping-v6.json]
+Progress tracking: cat doc/mapping-creation-procedure/output/progress-phase6.txt
 ```
 
 **Process**:
@@ -570,9 +570,9 @@ Progress tracking: cat work/YYYYMMDD/mapping/progress-phase6.txt
 - No duplicate target files across different source files
 
 **Output**:
-- `work/YYYYMMDD/mapping/mapping-v6.json` - Complete mappings
-- `work/YYYYMMDD/mapping/mapping-v5.json` - Complete mappings
-- `work/YYYYMMDD/mapping/target-definition-log.md` - Work log
+- `doc/mapping-creation-procedure/output/mapping-v6.json` - Complete mappings
+- `doc/mapping-creation-procedure/output/mapping-v5.json` - Complete mappings
+- `doc/mapping-creation-procedure/output/target-definition-log.md` - Work log
 
 ---
 
@@ -589,12 +589,12 @@ This section provides specific examples of common errors and their solutions for
 **Fix**:
 1. Search mapping file for the incorrect category:
    ```bash
-   jq '.mappings[] | select(.categories[] == "batch-pattern") | .id' work/YYYYMMDD/mapping/mapping-v6.json
+   jq '.mappings[] | select(.categories[] == "batch-pattern") | .id' doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 2. Check correct category ID in `doc/mapping-creation-procedure/categories-v6.json`
 3. Correct to "batch-nablarch":
    ```bash
-   jq '(.mappings[] | select(.id == "v6-0123").categories) |= map(if . == "batch-pattern" then "batch-nablarch" else . end)' work/YYYYMMDD/mapping/mapping-v6.json > temp.json && mv temp.json work/YYYYMMDD/mapping/mapping-v6.json
+   jq '(.mappings[] | select(.id == "v6-0123").categories) |= map(if . == "batch-pattern" then "batch-nablarch" else . end)' doc/mapping-creation-procedure/output/mapping-v6.json > temp.json && mv temp.json doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 4. Re-run validation: `bash doc/mapping-creation-procedure/05-validate-categories.sh`
 
@@ -605,7 +605,7 @@ This section provides specific examples of common errors and their solutions for
 **Fix**:
 1. List entries without categories:
    ```bash
-   jq '.mappings[] | select(.categories == []) | {id, source_file}' work/YYYYMMDD/mapping/mapping-v6.json
+   jq '.mappings[] | select(.categories == []) | {id, source_file}' doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 2. For each entry:
    - Read source_file content (add `.lw/` prefix to path)
@@ -621,7 +621,7 @@ This section provides specific examples of common errors and their solutions for
 **Fix**:
 1. Find the entry:
    ```bash
-   jq '.mappings[] | select((.categories | contains(["batch-nablarch"])) and (.categories | contains(["rest"])))' work/YYYYMMDD/mapping/mapping-v6.json
+   jq '.mappings[] | select((.categories | contains(["batch-nablarch"])) and (.categories | contains(["rest"])))' doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 2. Read source_file content
 3. Determine correct processing pattern (only one)
@@ -637,7 +637,7 @@ This section provides specific examples of common errors and their solutions for
 **Fix**:
 1. Find entries with incorrect extension:
    ```bash
-   jq '.mappings[] | select(.target_files[] | endswith(".json") | not) | {id, target_files}' work/YYYYMMDD/mapping/mapping-v6.json
+   jq '.mappings[] | select(.target_files[] | endswith(".json") | not) | {id, target_files}' doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 2. Add .json extension to each target_files entry
 3. Re-run validation
@@ -650,7 +650,7 @@ This section provides specific examples of common errors and their solutions for
 1. Convert to kebab-case: `UniversalDAO.json` → `universal-dao.json`
 2. Update mapping:
    ```bash
-   jq '(.mappings[] | select(.id == "v6-0123").target_files) |= map(gsub("UniversalDAO"; "universal-dao"))' work/YYYYMMDD/mapping/mapping-v6.json > temp.json && mv temp.json work/YYYYMMDD/mapping/mapping-v6.json
+   jq '(.mappings[] | select(.id == "v6-0123").target_files) |= map(gsub("UniversalDAO"; "universal-dao"))' doc/mapping-creation-procedure/output/mapping-v6.json > temp.json && mv temp.json doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 3. Re-run validation
 
@@ -679,14 +679,14 @@ If you get stuck and validation keeps failing:
 
 1. **Backup current work**:
    ```bash
-   cp work/YYYYMMDD/mapping/mapping-v6.json work/YYYYMMDD/mapping/mapping-v6-backup.json
+   cp doc/mapping-creation-procedure/output/mapping-v6.json doc/mapping-creation-procedure/output/mapping-v6-backup.json
    ```
 
 2. **Identify the last known good state** - Check progress tracker to see which batch completed successfully
 
 3. **Restore from backup if needed**:
    ```bash
-   cp work/YYYYMMDD/mapping/mapping-v6-backup.json work/YYYYMMDD/mapping/mapping-v6.json
+   cp doc/mapping-creation-procedure/output/mapping-v6-backup.json doc/mapping-creation-procedure/output/mapping-v6.json
    ```
 
 4. **Resume from last good batch** - Re-process the failed batch more carefully
@@ -716,7 +716,7 @@ doc/mapping-creation-procedure/07-final-validation.sh
 ```
 
 **Output**:
-- `work/YYYYMMDD/mapping/validation-report.md` - Detailed validation results
+- `doc/mapping-creation-procedure/output/validation-report.md` - Detailed validation results
 - Exit code 0 if all validations pass, 1 if errors found
 
 **If validation passes**:

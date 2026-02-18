@@ -4,9 +4,9 @@
 
 set -euo pipefail
 
-# Get date for work directory
-DATE=$(date +%Y%m%d)
-WORK_DIR="work/$DATE/mapping"
+# Output directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORK_DIR="$SCRIPT_DIR/output"
 
 echo "=== Phase 1: Initialize Mapping Files ==="
 echo ""
