@@ -406,9 +406,9 @@ By Category
 
 ---
 
-## Step 10: Export to Excel (Optional)
+## Step 10: Export to Excel
 
-Create an Excel file for easy review of the mapping:
+Create an Excel file for review and validation of the mapping:
 
 ```python
 # Using openpyxl to create a spreadsheet with:
@@ -441,7 +441,7 @@ doc/mapping-creation/
     ├── create-mapping-v6.py              # Step 1-4: Initial mapping creation
     ├── categorize-ai-judgment-v6.py      # Step 4: AI judgment categorization
     ├── finalize-mapping-v6.py            # Step 5-9: Final merge and validation
-    ├── export-to-excel-v6.py             # Step 10: Excel export (optional)
+    ├── export-to-excel-v6.py             # Step 10: Excel export
     ├── mapping-v6.json                   # Final mapping output
     ├── mapping-v6.json.stats.txt         # Statistics summary
     ├── mapping-v6.xlsx                   # Excel export for review
