@@ -6,9 +6,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 7: Final Validation ==="
 echo ""
+
+# Create tmp directory if it doesn't exist
+mkdir -p "$TMP_DIR"
 
 ERRORS=0
 
@@ -68,7 +72,7 @@ echo ""
 echo "## 3. Summary"
 echo ""
 
-cat > "$WORK_DIR/validation-report.md" <<EOF
+cat > "$TMP_DIR/validation-report.md" <<EOF
 # Mapping Validation Report
 
 **Date**: $(date -Iseconds)
@@ -95,15 +99,15 @@ cat > "$WORK_DIR/validation-report.md" <<EOF
 EOF
 
 if [ $ERRORS -eq 0 ]; then
-    echo "Status: ✅ PASSED" >> "$WORK_DIR/validation-report.md"
+    echo "Status: ✅ PASSED" >> "$TMP_DIR/validation-report.md"
     echo "✅ All validations passed"
     echo ""
-    echo "Report: $WORK_DIR/validation-report.md"
+    echo "Report: $TMP_DIR/validation-report.md"
     exit 0
 else
-    echo "Status: ❌ FAILED ($ERRORS errors)" >> "$WORK_DIR/validation-report.md"
+    echo "Status: ❌ FAILED ($ERRORS errors)" >> "$TMP_DIR/validation-report.md"
     echo "❌ Validation failed with $ERRORS errors"
     echo ""
-    echo "Report: $WORK_DIR/validation-report.md"
+    echo "Report: $TMP_DIR/validation-report.md"
     exit 1
 fi

@@ -3,8 +3,10 @@
 **Purpose**: Create comprehensive mapping files that link official Nablarch documentation to target knowledge files.
 
 **Target Output**:
-- `mapping-v6.json` - Nablarch 6 mapping (all official files)
-- `mapping-v5.json` - Nablarch 5 mapping (all official files)
+- `doc/mapping-creation-procedure/mapping-v6.json` - Nablarch 6 mapping (all official files)
+- `doc/mapping-creation-procedure/mapping-v5.json` - Nablarch 5 mapping (all official files)
+- `doc/mapping-creation-procedure/mapping-v6.xlsx` - Excel version (for review)
+- `doc/mapping-creation-procedure/mapping-v5.xlsx` - Excel version (for review)
 
 ---
 
@@ -22,9 +24,27 @@
 2. **Flexibility** - Scope changes only require updating out-of-scope category list
 3. **Traceability** - All files are tracked with categorization
 
-**Out-of-Scope Categories**: batch-jsr352, http-messaging, web, messaging-mom
+### Scope Definition
 
-See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for scope definition.
+**Included in Mapping**:
+1. ✅ **nablarch-document** - Complete framework reference (all files)
+2. ✅ **nablarch-system-development-guide** - Patterns and anti-patterns only:
+   - Nablarch patterns (nablarch-patterns/)
+   - Anti-patterns
+   - Asynchronous processing patterns
+   - Project setup guides (Initial_build, Package_configuration, etc.)
+3. ❌ **nablarch-single-module-archetype** - Excluded (static analysis available)
+
+**Excluded Categories and Content** (filtered in Phase 5.5):
+- ❌ batch-jsr352, http-messaging, web, messaging-mom (out-of-scope processing patterns)
+- ❌ archetype, check-published-api (archetype-related content)
+- ❌ Sample_Project (project-specific implementation guides for proman/climan)
+- ❌ .textlint/test/ files (documentation tooling tests)
+- ❌ license.rst files (legal information only)
+
+**Rationale**: Focus on framework-level knowledge applicable to all projects, excluding project-specific patterns, tooling tests, and non-technical content.
+
+See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for detailed scope definition.
 
 ---
 
@@ -178,6 +198,7 @@ This section clarifies how to handle ambiguous situations during mapping creatio
 | 3.5 | Group duplicate files | Script | Grouped file list + alternatives |
 | 4 | Generate initial mappings | Script | Basic mapping entries |
 | 5 | Categorize entries | AI Agent | Mappings with categories |
+| 5.5 | Apply scope filtering | Script | Filtered mappings (scope-compliant) |
 | 6 | Define target files | AI Agent | Complete mappings |
 | 7 | Validate mappings | Script | Validation report |
 | 7.5 | Generate Excel files | Script | Excel files for review |
@@ -227,9 +248,9 @@ doc/mapping-creation-procedure/02-collect-files.sh
 - `.txt` - JSP static analysis configuration files (`config.txt`)
 
 **Output**:
-- `doc/mapping-creation-procedure/files-v6.txt` - All v6 files
-- `doc/mapping-creation-procedure/files-v5.txt` - All v5 files
-- `doc/mapping-creation-procedure/stats.md` - File count statistics
+- `doc/mapping-creation-procedure/tmp/files-v6-all.txt` - All v6 files
+- `doc/mapping-creation-procedure/tmp/files-v5-all.txt` - All v5 files
+- `doc/mapping-creation-procedure/tmp/stats.md` - File count statistics
 
 **Validation**: Run `doc/mapping-creation-procedure/02-validate-files.sh`
 - File counts match expected ranges
@@ -260,9 +281,9 @@ doc/mapping-creation-procedure/03-filter-language.sh
 ```
 
 **Output**:
-- `doc/mapping-creation-procedure/files-v6-filtered.txt`
-- `doc/mapping-creation-procedure/files-v5-filtered.txt`
-- `doc/mapping-creation-procedure/language-selection.md` - Selection report
+- `doc/mapping-creation-procedure/tmp/files-v6-filtered.txt`
+- `doc/mapping-creation-procedure/tmp/files-v5-filtered.txt`
+- `doc/mapping-creation-procedure/tmp/language-selection.md` - Selection report
 
 **Validation**: Run `doc/mapping-creation-procedure/03-validate-language.sh`
 - No duplicate paths (language-agnostic)
@@ -292,13 +313,13 @@ doc/mapping-creation-procedure/03.5-group-duplicates.sh
 ```
 
 **Output**:
-- `doc/mapping-creation-procedure/files-v6-grouped.txt` - Files after grouping
-- `doc/mapping-creation-procedure/files-v5-grouped.txt`
-- `doc/mapping-creation-procedure/files-v6-alternatives.json` - Alternative mappings
-- `doc/mapping-creation-procedure/files-v5-alternatives.json`
-- `doc/mapping-creation-procedure/grouping-report-v6.md` - Detailed grouping report
-- `doc/mapping-creation-procedure/grouping-report-v5.md`
-- `doc/mapping-creation-procedure/grouping-summary.md` - Summary
+- `doc/mapping-creation-procedure/tmp/files-v6-grouped.txt` - Files after grouping
+- `doc/mapping-creation-procedure/tmp/files-v5-grouped.txt`
+- `doc/mapping-creation-procedure/tmp/files-v6-alternatives.json` - Alternative mappings
+- `doc/mapping-creation-procedure/tmp/files-v5-alternatives.json`
+- `doc/mapping-creation-procedure/tmp/grouping-report-v6.md` - Detailed grouping report
+- `doc/mapping-creation-procedure/tmp/grouping-report-v5.md`
+- `doc/mapping-creation-procedure/tmp/grouping-summary.md` - Summary
 
 **Why this is needed**:
 - .config files have 87.8% redundancy (same content across multiple archetype projects)
@@ -345,7 +366,7 @@ doc/mapping-creation-procedure/04-generate-mappings.sh
 **Method**: AI agent reads each source_file and assigns categories
 
 **Input Files** (read these first before starting work):
-1. **Mapping file**: `doc/mapping-creation-procedure/mapping-v6.json` (replace YYYYMMDD with today's date)
+1. **Mapping file**: `doc/mapping-creation-procedure/mapping-v6.json`
 2. **Category definitions**: `doc/mapping-creation-procedure/categories-v6.json`
 3. **Scope definition**: `doc/nabledge-design.md` (lines 58-109)
 
@@ -363,7 +384,7 @@ STEP 0: Setup
    - **setup, guide, check, about**: Can combine with others
 3. Read scope definition: doc/nabledge-design.md (lines 58-109)
 4. Check total entry count: jq '.mappings | length' doc/mapping-creation-procedure/mapping-v6.json
-5. Create progress tracker: echo "Phase 5 Progress" > doc/mapping-creation-procedure/progress-phase5.txt
+5. Create progress tracker: echo "Phase 5 Progress" > doc/mapping-creation-procedure/tmp/progress-phase5.txt
 
 For each mapping entry (process in batches of 50):
 1. Read the source_file content (.lw/ prefix must be added to source_file path)
@@ -408,7 +429,7 @@ Error Handling:
 Work in batches of 50 entries:
 1. **BACKUP**: Create backup before processing
    ```bash
-   cp doc/mapping-creation-procedure/mapping-v6.json doc/mapping-creation-procedure/mapping-v6-backup-batch-N.json
+   cp doc/mapping-creation-procedure/mapping-v6.json doc/mapping-creation-procedure/tmp/mapping-v6-backup-batch-N.json
    ```
 2. Process entries (e.g., entries 1-50)
 3. **VALIDATE JSON**: Before saving, verify JSON syntax
@@ -417,7 +438,7 @@ Work in batches of 50 entries:
    ```
    If syntax error, restore from backup and retry
 4. Save progress: Update mapping-v6.json with jq
-5. Log progress: echo "Batch 1-50: COMPLETED" >> doc/mapping-creation-procedure/progress-phase5.txt
+5. Log progress: echo "Batch 1-50: COMPLETED" >> doc/mapping-creation-procedure/tmp/progress-phase5.txt
 6. Run validation: bash doc/mapping-creation-procedure/05-validate-categories.sh
 7. If validation fails:
    a. Read validation error output carefully
@@ -430,7 +451,7 @@ Work in batches of 50 entries:
 8. When validation passes, proceed to next batch (51-100, 101-150, etc.)
 
 Total entries: [Check with: jq '.mappings | length' doc/mapping-creation-procedure/mapping-v6.json]
-Progress tracking: cat doc/mapping-creation-procedure/progress-phase5.txt
+Progress tracking: cat doc/mapping-creation-procedure/tmp/progress-phase5.txt
 ```
 
 **Process**:
@@ -450,7 +471,69 @@ Progress tracking: cat doc/mapping-creation-procedure/progress-phase5.txt
 **Output**:
 - `doc/mapping-creation-procedure/mapping-v6.json` - Mappings with categories filled
 - `doc/mapping-creation-procedure/mapping-v5.json` - Mappings with categories filled
-- `doc/mapping-creation-procedure/categorization-log.md` - Work log
+- `doc/mapping-creation-procedure/tmp/categorization-log.md` - Work log
+
+---
+
+## Phase 5.5: Apply Scope Filtering
+
+**Script**: `doc/mapping-creation-procedure/05.5-apply-scope-filter.sh`
+
+**Purpose**: Remove out-of-scope entries based on category and path patterns to focus on framework-level knowledge.
+
+**Execution**:
+```bash
+doc/mapping-creation-procedure/05.5-apply-scope-filter.sh
+```
+
+**What it does**:
+1. Create timestamped backup before filtering
+2. Apply four filters sequentially:
+   - **Filter 1**: Remove archetype-related entries (categories: `archetype`, `check-published-api`)
+   - **Filter 2**: Remove Sample_Project entries (path contains `Sample_Project`)
+   - **Filter 3**: Remove textlint test file (path contains `.textlint/test/`)
+   - **Filter 4**: Remove license file (path ends with `/license.rst`)
+3. Generate filtering report with counts and rationale
+
+**Filters Applied**:
+
+| Filter | Pattern | Rationale |
+|--------|---------|-----------|
+| Archetype | Categories contain `archetype` or `check-published-api` | Static analysis available |
+| Sample_Project | Path contains `Sample_Project` | Project-specific examples (proman/climan) |
+| Textlint test | Path contains `.textlint/test/` | Documentation tooling test, not framework knowledge |
+| License file | Path ends with `/license.rst` | Legal information only, not technical know-how |
+
+**Expected Reduction**: ~180 entries (archetype + Sample_Project + tests + license)
+
+**Output**:
+- `doc/mapping-creation-procedure/mapping-v6.json` - Filtered mappings (scope-compliant)
+- `doc/mapping-creation-procedure/tmp/scope-filtering-report.md` - Detailed filtering report
+- `doc/mapping-creation-procedure/tmp/mapping-v6-backup-before-scope-filter-TIMESTAMP.json` - Backup
+
+**Validation**:
+- Entry count reduced by expected amount
+- No archetype/check-published-api categories remain
+- No Sample_Project paths remain
+- No textlint test files remain
+- No license.rst files remain
+
+**Manual Check**:
+```bash
+# Verify no archetype entries remain
+jq '[.mappings[] | select(.categories | contains(["archetype"]) or contains(["check-published-api"]))] | length' mapping-v6.json
+
+# Verify no Sample_Project entries remain
+jq '[.mappings[] | select(.source_file | contains("Sample_Project"))] | length' mapping-v6.json
+
+# Verify no textlint test entries remain
+jq '[.mappings[] | select(.source_file | contains(".textlint/test/"))] | length' mapping-v6.json
+
+# Verify no license entries remain
+jq '[.mappings[] | select(.source_file | endswith("/license.rst"))] | length' mapping-v6.json
+```
+
+All queries should return `0`.
 
 ---
 
@@ -470,7 +553,7 @@ STEP 0: Setup
 1. Read design document: doc/nabledge-design.md (lines 276-347)
 2. Extract category → directory mapping table (lines 333-347)
 3. Check total entry count: jq '.mappings | length' doc/mapping-creation-procedure/mapping-v6.json
-4. Create progress tracker: echo "Phase 6 Progress" > doc/mapping-creation-procedure/progress-phase6.txt
+4. Create progress tracker: echo "Phase 6 Progress" > doc/mapping-creation-procedure/tmp/progress-phase6.txt
 
 Category Type → Directory Mapping Reference (from Design Doc Section 2.4):
 
@@ -530,7 +613,7 @@ Error Handling:
 Work in batches of 50 entries:
 1. **BACKUP**: Create backup before processing
    ```bash
-   cp doc/mapping-creation-procedure/mapping-v6.json doc/mapping-creation-procedure/mapping-v6-backup-phase6-batch-N.json
+   cp doc/mapping-creation-procedure/mapping-v6.json doc/mapping-creation-procedure/tmp/mapping-v6-backup-phase6-batch-N.json
    ```
 2. Process entries (e.g., entries 1-50)
 3. **VALIDATE JSON**: Before saving, verify JSON syntax
@@ -539,7 +622,7 @@ Work in batches of 50 entries:
    ```
    If syntax error, restore from backup and retry
 4. Save progress: Update mapping-v6.json with jq
-5. Log progress: echo "Batch 1-50: COMPLETED" >> doc/mapping-creation-procedure/progress-phase6.txt
+5. Log progress: echo "Batch 1-50: COMPLETED" >> doc/mapping-creation-procedure/tmp/progress-phase6.txt
 6. Run validation: bash doc/mapping-creation-procedure/06-validate-targets.sh
 7. If validation fails:
    a. Read validation error output carefully
@@ -553,7 +636,7 @@ Work in batches of 50 entries:
 8. When validation passes, proceed to next batch (51-100, 101-150, etc.)
 
 Total entries: [Check with: jq '.mappings | length' doc/mapping-creation-procedure/mapping-v6.json]
-Progress tracking: cat doc/mapping-creation-procedure/progress-phase6.txt
+Progress tracking: cat doc/mapping-creation-procedure/tmp/progress-phase6.txt
 ```
 
 **Process**:
@@ -574,7 +657,7 @@ Progress tracking: cat doc/mapping-creation-procedure/progress-phase6.txt
 **Output**:
 - `doc/mapping-creation-procedure/mapping-v6.json` - Complete mappings
 - `doc/mapping-creation-procedure/mapping-v5.json` - Complete mappings
-- `doc/mapping-creation-procedure/target-definition-log.md` - Work log
+- `doc/mapping-creation-procedure/tmp/target-definition-log.md` - Work log
 
 ---
 
@@ -681,14 +764,14 @@ If you get stuck and validation keeps failing:
 
 1. **Backup current work**:
    ```bash
-   cp doc/mapping-creation-procedure/mapping-v6.json doc/mapping-creation-procedure/mapping-v6-backup.json
+   cp doc/mapping-creation-procedure/mapping-v6.json doc/mapping-creation-procedure/tmp/mapping-v6-backup.json
    ```
 
 2. **Identify the last known good state** - Check progress tracker to see which batch completed successfully
 
 3. **Restore from backup if needed**:
    ```bash
-   cp doc/mapping-creation-procedure/mapping-v6-backup.json doc/mapping-creation-procedure/mapping-v6.json
+   cp doc/mapping-creation-procedure/tmp/mapping-v6-backup.json doc/mapping-creation-procedure/mapping-v6.json
    ```
 
 4. **Resume from last good batch** - Re-process the failed batch more carefully
@@ -718,7 +801,7 @@ doc/mapping-creation-procedure/07-final-validation.sh
 ```
 
 **Output**:
-- `doc/mapping-creation-procedure/validation-report.md` - Detailed validation results
+- `doc/mapping-creation-procedure/tmp/validation-report.md` - Detailed validation results
 - Exit code 0 if all validations pass, 1 if errors found
 
 **If validation passes**:
@@ -774,19 +857,19 @@ doc/mapping-creation-procedure/07.5-generate-excel.sh
 **Purpose**: Remove intermediate files and keep only final confirmed mapping files.
 
 **What it does**:
-1. Lists all intermediate files to be deleted:
-   - `files-*.txt` - File collection lists
-   - `*-alternatives.json` - Alternative file mappings
-   - `*-report*.md` - Phase reports
-   - `stats.md` - Statistics
-   - `language-selection.md` - Language selection report
-   - `grouping-summary.md` - Duplicate grouping summary
-   - `validation-report.md` - Validation results
-   - `progress-*.txt` - Progress trackers
-   - `*-log.md` - Work logs
-   - `mapping-*-backup*.json` - Backup files
+1. Lists all intermediate files in `tmp/` directory:
+   - `tmp/files-*.txt` - File collection lists
+   - `tmp/*-alternatives.json` - Alternative file mappings
+   - `tmp/*-report*.md` - Phase reports
+   - `tmp/stats.md` - Statistics
+   - `tmp/language-selection.md` - Language selection report
+   - `tmp/grouping-summary.md` - Duplicate grouping summary
+   - `tmp/validation-report.md` - Validation results
+   - `tmp/progress-*.txt` - Progress trackers
+   - `tmp/*-log.md` - Work logs
+   - `tmp/mapping-*-backup*.json` - Backup files
 2. Prompts for confirmation
-3. Deletes confirmed files
+3. Deletes the entire `tmp/` directory
 
 **Execution**:
 ```bash
@@ -822,10 +905,11 @@ git commit -m "Add final mapping files for v6 and v5"
 - [ ] All validations pass
 
 ### Coverage
-- [ ] v6: ~330-340 .rst files (en only)
-- [ ] v6: ~160-170 .md files (dev guide)
-- [ ] v6: ~10-20 .xml files (archetype pom.xml)
-- [ ] v5: Similar numbers for v5 sources
+- [ ] v6: ~345 entries total after scope filtering
+  - ~319 from nablarch-document (framework reference)
+  - ~26 from nablarch-system-development-guide (patterns only)
+  - Excluded: ~180 entries (archetype + Sample_Project)
+- [ ] v5: Similar approach for v5 sources
 
 ### Traceability
 - [ ] Work logs document the process

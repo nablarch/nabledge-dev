@@ -6,11 +6,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 4: Generate Initial Mappings ==="
 echo ""
 
-if [ ! -f "$WORK_DIR/files-v6-grouped.txt" ]; then
+if [ ! -f "$TMP_DIR/files-v6-grouped.txt" ]; then
     echo "❌ Error: Run 03.5-group-duplicates.sh first"
     exit 1
 fi
@@ -124,14 +125,14 @@ PYTHON_SCRIPT
 }
 
 # Generate v6 mappings
-generate_mappings "$WORK_DIR/files-v6-grouped.txt" \
-                   "$WORK_DIR/files-v6-alternatives.json" \
+generate_mappings "$TMP_DIR/files-v6-grouped.txt" \
+                   "$TMP_DIR/files-v6-alternatives.json" \
                    "$WORK_DIR/mapping-v6.json" \
                    "6"
 
 # Generate v5 mappings
-generate_mappings "$WORK_DIR/files-v5-grouped.txt" \
-                   "$WORK_DIR/files-v5-alternatives.json" \
+generate_mappings "$TMP_DIR/files-v5-grouped.txt" \
+                   "$TMP_DIR/files-v5-alternatives.json" \
                    "$WORK_DIR/mapping-v5.json" \
                    "5"
 

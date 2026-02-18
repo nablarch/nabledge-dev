@@ -5,12 +5,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 3 Validation: Language Selection ==="
 echo ""
 
-if [ ! -f "$WORK_DIR/files-v6-filtered.txt" ]; then
-    echo "❌ Error: $WORK_DIR/files-v6-filtered.txt not found"
+if [ ! -f "$TMP_DIR/files-v6-filtered.txt" ]; then
+    echo "❌ Error: $TMP_DIR/files-v6-filtered.txt not found"
     exit 1
 fi
 
@@ -40,8 +41,8 @@ check_duplicates() {
     rm -f "$temp_file"
 }
 
-check_duplicates "$WORK_DIR/files-v6-filtered.txt" "v6"
-check_duplicates "$WORK_DIR/files-v5-filtered.txt" "v5"
+check_duplicates "$TMP_DIR/files-v6-filtered.txt" "v6"
+check_duplicates "$TMP_DIR/files-v5-filtered.txt" "v5"
 echo ""
 
 # Check English versions selected when available
@@ -69,8 +70,8 @@ check_english_preference() {
     fi
 }
 
-check_english_preference "$WORK_DIR/language-selection-v6.txt" "v6"
-check_english_preference "$WORK_DIR/language-selection-v5.txt" "v5"
+check_english_preference "$TMP_DIR/language-selection-v6.txt" "v6"
+check_english_preference "$TMP_DIR/language-selection-v5.txt" "v5"
 echo ""
 
 # Check file type filtering
@@ -126,16 +127,16 @@ check_file_types() {
     fi
 }
 
-check_file_types "$WORK_DIR/files-v6-filtered.txt" "v6"
+check_file_types "$TMP_DIR/files-v6-filtered.txt" "v6"
 echo ""
-check_file_types "$WORK_DIR/files-v5-filtered.txt" "v5"
+check_file_types "$TMP_DIR/files-v5-filtered.txt" "v5"
 echo ""
 
 # Validate against expected ranges
 echo "Checking file counts against expected ranges..."
 
-v6_count=$(wc -l < "$WORK_DIR/files-v6-filtered.txt")
-v5_count=$(wc -l < "$WORK_DIR/files-v5-filtered.txt")
+v6_count=$(wc -l < "$TMP_DIR/files-v6-filtered.txt")
+v5_count=$(wc -l < "$TMP_DIR/files-v5-filtered.txt")
 
 # Expected ranges (based on known official doc structure)
 # v6: ~330 rst (en) + ~160 md (guide) + ~9 xml (archetypes) = ~500

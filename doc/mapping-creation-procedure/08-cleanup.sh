@@ -1,60 +1,50 @@
 #!/bin/bash
 # Phase 8: Clean Up Intermediate Files
-# Removes intermediate files and keeps only final mapping files
+# Removes tmp/ directory containing all intermediate files
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 8: Clean Up Intermediate Files ==="
 echo ""
 
-# List files to be deleted
-echo "Files to be deleted:"
-echo ""
-
-# Intermediate file patterns
-patterns=(
-    "files-*.txt"
-    "*-alternatives.json"
-    "*-report*.md"
-    "stats.md"
-    "language-selection.md"
-    "grouping-summary.md"
-    "validation-report.md"
-    "progress-*.txt"
-    "*-log.md"
-    "mapping-*-backup*.json"
-)
-
-files_to_delete=()
-for pattern in "${patterns[@]}"; do
-    for file in "$WORK_DIR"/$pattern; do
-        if [ -f "$file" ]; then
-            echo "  - $(basename "$file")"
-            files_to_delete+=("$file")
-        fi
-    done
-done
-
-if [ ${#files_to_delete[@]} -eq 0 ]; then
-    echo "  (No intermediate files found)"
+# Check if tmp directory exists
+if [ ! -d "$TMP_DIR" ]; then
+    echo "  (No tmp/ directory found)"
     echo ""
     echo "=== Phase 8 Complete ==="
     exit 0
 fi
 
+# Count files in tmp directory
+file_count=$(find "$TMP_DIR" -type f | wc -l)
+
+if [ "$file_count" -eq 0 ]; then
+    echo "  (tmp/ directory is empty)"
+    rmdir "$TMP_DIR"
+    echo "✅ Removed empty tmp/ directory"
+    echo ""
+    echo "=== Phase 8 Complete ==="
+    exit 0
+fi
+
+echo "Directory to be deleted:"
+echo "  - tmp/ ($file_count files)"
 echo ""
-read -p "Delete these ${#files_to_delete[@]} files? (y/n) " -n 1 -r
+echo "Contents:"
+find "$TMP_DIR" -type f -exec basename {} \; | sort | sed 's/^/    /'
+
+echo ""
+read -p "Delete tmp/ directory and all its contents? (y/n) " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    for file in "${files_to_delete[@]}"; do
-        rm -f "$file"
-    done
+    rm -rf "$TMP_DIR"
     echo ""
-    echo "✅ Deleted ${#files_to_delete[@]} intermediate files"
+    echo "✅ Deleted tmp/ directory with $file_count files"
 else
     echo ""
     echo "❌ Cleanup cancelled"

@@ -6,17 +6,18 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 2 Validation: File Existence Check ==="
 echo ""
 
-if [ ! -f "$WORK_DIR/files-v6-all.txt" ]; then
-    echo "❌ Error: $WORK_DIR/files-v6-all.txt not found"
+if [ ! -f "$TMP_DIR/files-v6-all.txt" ]; then
+    echo "❌ Error: $TMP_DIR/files-v6-all.txt not found"
     exit 1
 fi
 
-if [ ! -f "$WORK_DIR/files-v5-all.txt" ]; then
-    echo "❌ Error: $WORK_DIR/files-v5-all.txt not found"
+if [ ! -f "$TMP_DIR/files-v5-all.txt" ]; then
+    echo "❌ Error: $TMP_DIR/files-v5-all.txt not found"
     exit 1
 fi
 
@@ -28,7 +29,7 @@ while IFS= read -r file; do
         echo "  ❌ Missing: $file"
         ((missing_v6++))
     fi
-done < "$WORK_DIR/files-v6-all.txt"
+done < "$TMP_DIR/files-v6-all.txt"
 
 if [ $missing_v6 -eq 0 ]; then
     echo "✅ All v6 files exist"
@@ -45,7 +46,7 @@ while IFS= read -r file; do
         echo "  ❌ Missing: $file"
         ((missing_v5++))
     fi
-done < "$WORK_DIR/files-v5-all.txt"
+done < "$TMP_DIR/files-v5-all.txt"
 
 if [ $missing_v5 -eq 0 ]; then
     echo "✅ All v5 files exist"

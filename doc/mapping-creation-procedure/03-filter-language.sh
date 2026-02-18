@@ -6,11 +6,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 3: Language Priority and File Type Filtering ==="
 echo ""
 
-if [ ! -f "$WORK_DIR/files-v6-all.txt" ]; then
+# Create tmp directory if it doesn't exist
+mkdir -p "$TMP_DIR"
+
+if [ ! -f "$TMP_DIR/files-v6-all.txt" ]; then
     echo "❌ Error: Run 02-collect-files.sh first"
     exit 1
 fi
@@ -25,7 +29,7 @@ process_files() {
     echo "Processing $version files..."
 
     # Step 1: Apply file type filter first
-    local temp_typed="$WORK_DIR/temp-${version}-typed.txt"
+    local temp_typed="$TMP_DIR/temp-${version}-typed.txt"
     > "$temp_typed"
 
     while IFS= read -r file; do
@@ -142,19 +146,19 @@ PYTHON_SCRIPT
 }
 
 # Process v6
-process_files "$WORK_DIR/files-v6-all.txt" \
-              "$WORK_DIR/files-v6-filtered.txt" \
-              "$WORK_DIR/language-selection-v6.txt" \
+process_files "$TMP_DIR/files-v6-all.txt" \
+              "$TMP_DIR/files-v6-filtered.txt" \
+              "$TMP_DIR/language-selection-v6.txt" \
               "v6"
 
 # Process v5
-process_files "$WORK_DIR/files-v5-all.txt" \
-              "$WORK_DIR/files-v5-filtered.txt" \
-              "$WORK_DIR/language-selection-v5.txt" \
+process_files "$TMP_DIR/files-v5-all.txt" \
+              "$TMP_DIR/files-v5-filtered.txt" \
+              "$TMP_DIR/language-selection-v5.txt" \
               "v5"
 
 # Generate summary report
-cat > "$WORK_DIR/language-selection.md" <<EOF
+cat > "$TMP_DIR/language-selection.md" <<EOF
 # Language Selection and File Type Filtering Report
 
 **Date**: $(date -Iseconds)
@@ -171,39 +175,39 @@ cat > "$WORK_DIR/language-selection.md" <<EOF
 
 ## Nablarch v6
 
-Before filtering: $(wc -l < "$WORK_DIR/files-v6-all.txt") files
-After filtering: $(wc -l < "$WORK_DIR/files-v6-filtered.txt") files
+Before filtering: $(wc -l < "$TMP_DIR/files-v6-all.txt") files
+After filtering: $(wc -l < "$TMP_DIR/files-v6-filtered.txt") files
 
 By file type (after filtering):
-  - .rst: $(grep '\.rst$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
-  - .md: $(grep '\.md$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
-  - .xml: $(grep '\.xml$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
-  - .config: $(grep '\.config$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
-  - .txt: $(grep '\.txt$' "$WORK_DIR/files-v6-filtered.txt" | wc -l)
+  - .rst: $(grep '\.rst$' "$TMP_DIR/files-v6-filtered.txt" | wc -l)
+  - .md: $(grep '\.md$' "$TMP_DIR/files-v6-filtered.txt" | wc -l)
+  - .xml: $(grep '\.xml$' "$TMP_DIR/files-v6-filtered.txt" | wc -l)
+  - .config: $(grep '\.config$' "$TMP_DIR/files-v6-filtered.txt" | wc -l)
+  - .txt: $(grep '\.txt$' "$TMP_DIR/files-v6-filtered.txt" | wc -l)
 
 By language (after filtering):
-  - /en/: $(grep "/en/" "$WORK_DIR/files-v6-filtered.txt" | wc -l)
-  - /ja/: $(grep "/ja/" "$WORK_DIR/files-v6-filtered.txt" | wc -l)
-  - (no lang dir): $(grep -v "/en/" "$WORK_DIR/files-v6-filtered.txt" | grep -v "/ja/" | wc -l)
+  - /en/: $(grep "/en/" "$TMP_DIR/files-v6-filtered.txt" | wc -l)
+  - /ja/: $(grep "/ja/" "$TMP_DIR/files-v6-filtered.txt" | wc -l)
+  - (no lang dir): $(grep -v "/en/" "$TMP_DIR/files-v6-filtered.txt" | grep -v "/ja/" | wc -l)
 
 Selection details: See language-selection-v6.txt
 
 ## Nablarch v5
 
-Before filtering: $(wc -l < "$WORK_DIR/files-v5-all.txt") files
-After filtering: $(wc -l < "$WORK_DIR/files-v5-filtered.txt") files
+Before filtering: $(wc -l < "$TMP_DIR/files-v5-all.txt") files
+After filtering: $(wc -l < "$TMP_DIR/files-v5-filtered.txt") files
 
 By file type (after filtering):
-  - .rst: $(grep '\.rst$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
-  - .md: $(grep '\.md$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
-  - .xml: $(grep '\.xml$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
-  - .config: $(grep '\.config$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
-  - .txt: $(grep '\.txt$' "$WORK_DIR/files-v5-filtered.txt" | wc -l)
+  - .rst: $(grep '\.rst$' "$TMP_DIR/files-v5-filtered.txt" | wc -l)
+  - .md: $(grep '\.md$' "$TMP_DIR/files-v5-filtered.txt" | wc -l)
+  - .xml: $(grep '\.xml$' "$TMP_DIR/files-v5-filtered.txt" | wc -l)
+  - .config: $(grep '\.config$' "$TMP_DIR/files-v5-filtered.txt" | wc -l)
+  - .txt: $(grep '\.txt$' "$TMP_DIR/files-v5-filtered.txt" | wc -l)
 
 By language (after filtering):
-  - /en/: $(grep "/en/" "$WORK_DIR/files-v5-filtered.txt" | wc -l)
-  - /ja/: $(grep "/ja/" "$WORK_DIR/files-v5-filtered.txt" | wc -l)
-  - (no lang dir): $(grep -v "/en/" "$WORK_DIR/files-v5-filtered.txt" | grep -v "/ja/" | wc -l)
+  - /en/: $(grep "/en/" "$TMP_DIR/files-v5-filtered.txt" | wc -l)
+  - /ja/: $(grep "/ja/" "$TMP_DIR/files-v5-filtered.txt" | wc -l)
+  - (no lang dir): $(grep -v "/en/" "$TMP_DIR/files-v5-filtered.txt" | grep -v "/ja/" | wc -l)
 
 Selection details: See language-selection-v5.txt
 EOF
@@ -211,12 +215,12 @@ EOF
 echo "=== Phase 3 Complete ==="
 echo ""
 echo "Output files:"
-echo "  - $WORK_DIR/files-v6-filtered.txt ($(wc -l < "$WORK_DIR/files-v6-filtered.txt") files)"
-echo "  - $WORK_DIR/files-v5-filtered.txt ($(wc -l < "$WORK_DIR/files-v5-filtered.txt") files)"
-echo "  - $WORK_DIR/language-selection.md"
+echo "  - $TMP_DIR/files-v6-filtered.txt ($(wc -l < "$TMP_DIR/files-v6-filtered.txt") files)"
+echo "  - $TMP_DIR/files-v5-filtered.txt ($(wc -l < "$TMP_DIR/files-v5-filtered.txt") files)"
+echo "  - $TMP_DIR/language-selection.md"
 echo ""
 echo "Summary:"
-cat "$WORK_DIR/language-selection.md"
+cat "$TMP_DIR/language-selection.md"
 echo ""
 echo "Validation: Run doc/scripts/03-validate-language.sh"
 echo "Next step: Run doc/scripts/04-generate-mappings.sh"

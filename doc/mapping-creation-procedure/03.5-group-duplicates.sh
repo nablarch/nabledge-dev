@@ -6,11 +6,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR"
+TMP_DIR="$WORK_DIR/tmp"
 
 echo "=== Phase 3.5: Group Duplicate Files ==="
 echo ""
 
-if [ ! -f "$WORK_DIR/files-v6-filtered.txt" ] || [ ! -f "$WORK_DIR/files-v5-filtered.txt" ]; then
+# Create tmp directory if it doesn't exist
+mkdir -p "$TMP_DIR"
+
+if [ ! -f "$TMP_DIR/files-v6-filtered.txt" ] || [ ! -f "$TMP_DIR/files-v5-filtered.txt" ]; then
     echo "❌ Error: Run 03-filter-language.sh first"
     exit 1
 fi
@@ -25,8 +29,8 @@ group_duplicates() {
     echo "Processing $version files..."
 
     # Separate .config files from others
-    local config_files="$WORK_DIR/temp-${version}-config.txt"
-    local other_files="$WORK_DIR/temp-${version}-other.txt"
+    local config_files="$TMP_DIR/temp-${version}-config.txt"
+    local other_files="$TMP_DIR/temp-${version}-other.txt"
 
     grep '\.config$' "$input_file" > "$config_files" || true
     grep -v '\.config$' "$input_file" > "$other_files" || true
@@ -45,7 +49,7 @@ group_duplicates() {
     fi
 
     # Calculate MD5 for each .config file
-    local hash_file="$WORK_DIR/temp-${version}-hashes.txt"
+    local hash_file="$TMP_DIR/temp-${version}-hashes.txt"
     > "$hash_file"
 
     while IFS= read -r file; do
@@ -135,19 +139,19 @@ PYTHON_SCRIPT
 }
 
 # Process v6
-group_duplicates "$WORK_DIR/files-v6-filtered.txt" \
-                 "$WORK_DIR/files-v6-grouped.txt" \
-                 "$WORK_DIR/grouping-report-v6.md" \
+group_duplicates "$TMP_DIR/files-v6-filtered.txt" \
+                 "$TMP_DIR/files-v6-grouped.txt" \
+                 "$TMP_DIR/grouping-report-v6.md" \
                  "v6"
 
 # Process v5
-group_duplicates "$WORK_DIR/files-v5-filtered.txt" \
-                 "$WORK_DIR/files-v5-grouped.txt" \
-                 "$WORK_DIR/grouping-report-v5.md" \
+group_duplicates "$TMP_DIR/files-v5-filtered.txt" \
+                 "$TMP_DIR/files-v5-grouped.txt" \
+                 "$TMP_DIR/grouping-report-v5.md" \
                  "v5"
 
 # Generate summary
-cat > "$WORK_DIR/grouping-summary.md" <<EOF
+cat > "$TMP_DIR/grouping-summary.md" <<EOF
 # Duplicate Grouping Summary
 
 **Date**: $(date -Iseconds)
@@ -164,17 +168,17 @@ This reduces redundancy while maintaining full traceability.
 
 ### Nablarch v6
 
-Before grouping: $(wc -l < "$WORK_DIR/files-v6-filtered.txt") files
-After grouping: $(wc -l < "$WORK_DIR/files-v6-grouped.txt") files
-Reduction: $(( $(wc -l < "$WORK_DIR/files-v6-filtered.txt") - $(wc -l < "$WORK_DIR/files-v6-grouped.txt") )) files
+Before grouping: $(wc -l < "$TMP_DIR/files-v6-filtered.txt") files
+After grouping: $(wc -l < "$TMP_DIR/files-v6-grouped.txt") files
+Reduction: $(( $(wc -l < "$TMP_DIR/files-v6-filtered.txt") - $(wc -l < "$TMP_DIR/files-v6-grouped.txt") )) files
 
 See: grouping-report-v6.md
 
 ### Nablarch v5
 
-Before grouping: $(wc -l < "$WORK_DIR/files-v5-filtered.txt") files
-After grouping: $(wc -l < "$WORK_DIR/files-v5-grouped.txt") files
-Reduction: $(( $(wc -l < "$WORK_DIR/files-v5-filtered.txt") - $(wc -l < "$WORK_DIR/files-v5-grouped.txt") )) files
+Before grouping: $(wc -l < "$TMP_DIR/files-v5-filtered.txt") files
+After grouping: $(wc -l < "$TMP_DIR/files-v5-grouped.txt") files
+Reduction: $(( $(wc -l < "$TMP_DIR/files-v5-filtered.txt") - $(wc -l < "$TMP_DIR/files-v5-grouped.txt") )) files
 
 See: grouping-report-v5.md
 
@@ -188,11 +192,11 @@ EOF
 echo "=== Phase 3.5 Complete ==="
 echo ""
 echo "Output files:"
-echo "  - $WORK_DIR/files-v6-grouped.txt ($(wc -l < "$WORK_DIR/files-v6-grouped.txt") files)"
-echo "  - $WORK_DIR/files-v5-grouped.txt ($(wc -l < "$WORK_DIR/files-v5-grouped.txt") files)"
-echo "  - $WORK_DIR/grouping-summary.md"
+echo "  - $TMP_DIR/files-v6-grouped.txt ($(wc -l < "$TMP_DIR/files-v6-grouped.txt") files)"
+echo "  - $TMP_DIR/files-v5-grouped.txt ($(wc -l < "$TMP_DIR/files-v5-grouped.txt") files)"
+echo "  - $TMP_DIR/grouping-summary.md"
 echo ""
 echo "Summary:"
-cat "$WORK_DIR/grouping-summary.md"
+cat "$TMP_DIR/grouping-summary.md"
 echo ""
 echo "Next step: Run doc/mapping-creation-procedure/04-generate-mappings.sh"
