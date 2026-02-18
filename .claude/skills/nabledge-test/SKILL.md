@@ -1,6 +1,6 @@
 ---
 name: nabledge-test
-description: Test nabledge-6/5 using skill-creator eval procedures. Executes test scenarios, evaluates expectations, saves results to work/YYYYMMDD/.
+description: Test nabledge-6/5 using skill-creator eval procedures. Executes test scenarios, evaluates expectations, saves results to .issues/xxxxx/.
 ---
 
 # Nabledge-Test
@@ -20,7 +20,7 @@ nabledge-test 6 --category handlers # Category
 1. Load scenario from `scenarios/nabledge-6/scenarios.json`
 2. Convert keywords/sections to expectations
 3. Execute skill-creator eval-mode procedures manually
-4. Save results to `work/YYYYMMDD/test-<id>-<timestamp>.md`
+4. Save results to `.issues/xxxxx/test-<id>-<timestamp>.md`
 
 ## When invoked
 
@@ -75,11 +75,11 @@ Read .claude/skills/skill-creator/agents/grader.md
 
 ### Step 5: Setup workspace
 
-**Workspace location**: `work/YYYYMMDD/nabledge-test/eval-<scenario-id>-HHMMSS/` (timestamp-based to avoid conflicts)
+**Workspace location**: `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/` (temporary workspace, timestamp-based to avoid conflicts)
 
 Create structure:
 ```
-work/YYYYMMDD/nabledge-test/
+.tmp/nabledge-test/
 └── eval-<scenario-id>-HHMMSS/
     ├── with_skill/
     │   ├── outputs/
@@ -90,7 +90,7 @@ work/YYYYMMDD/nabledge-test/
 ```
 
 ```bash
-mkdir -p work/$(date +%Y%m%d)/nabledge-test/eval-<scenario-id>-$(date +%H%M%S)/with_skill/outputs
+mkdir -p .tmp/nabledge-test/eval-<scenario-id>-$(date +%H%M%S)/with_skill/outputs
 ```
 
 ### Step 6: Execute nabledge-6 inline - Follow executor.md
@@ -272,7 +272,7 @@ For each expectation in expectations list:
 
 ### Step 8: Generate summary report
 
-Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md`:
+Write `.issues/xxxxx/test-<scenario-id>-<timestamp>.md`:
 
 ```markdown
 # Test: <scenario-id>
@@ -300,10 +300,10 @@ Write `work/YYYYMMDD/test-<scenario-id>-<timestamp>.md`:
 - **Response Length**: <chars> chars
 
 ## Transcript
-See: work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
+See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
 
 ## Grading
-See: work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
+See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 ```
 
 ### Step 9: Display summary
@@ -324,4 +324,4 @@ See: work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 - nabledge-test follows skill-creator's eval-mode procedures
 - Does NOT invoke skill-creator as a skill
 - Manually executes executor and grader steps
-- Workspace: `work/YYYYMMDD/nabledge-test/eval-<id>-HHMMSS/` (timestamp-based to avoid conflicts)
+- Workspace: `.tmp/nabledge-test/eval-<id>-HHMMSS/` (timestamp-based to avoid conflicts)

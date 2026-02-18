@@ -1,6 +1,6 @@
 # Work Log
 
-- **Directory**: `work/yyyymmdd/` (e.g., `work/20260209/`)
+- **Directory**: `.issues/xxxxx/` where xxxxx is 5-digit issue number (e.g., `.issues/00042/`)
 - **Filename**: Concise English (e.g., `add-validation.md`)
 - **Content**: Changed files, results, next steps (if any)
 - **Timing**: Upon completion

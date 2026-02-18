@@ -90,7 +90,7 @@ Use the `nabledge-test` skill to validate nabledge-6 functionality:
 /nabledge-test 6 --category handlers
 ```
 
-Test scenarios are defined in `.claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json`. Results are saved to `work/YYYYMMDD/test-<id>-<timestamp>.md`.
+Test scenarios are defined in `.claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json`. Results are saved to `.issues/xxxxx/test-<id>-<timestamp>.md`.
 
 The nabledge-test skill uses skill-creator's evaluation procedures to verify:
 - Correct workflow execution (keyword-search, section-judgement)
