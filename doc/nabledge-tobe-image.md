@@ -1,5 +1,19 @@
 # Nabledge ToBe Image: Commands and Activity Mapping
 
+## Overview
+
+このドキュメントは、Nablarch保守開発における**ToBe（AI agent活用後）の活動イメージ**を示します。
+
+- **Nabledge Commands**: AI agentが実行可能な具体的なコマンド体系（search, investigate, design, implement, review）
+- **Activity Mapping**: 従来の工程・アクティビティに対して、どのNabledgeコマンドが適用可能かを示す
+- **成果物・ロール定義**: AsIs/ToBe共通の基礎定義（12種類の成果物分類、5つのロール）
+- **責任分担の原則**:
+  - search: AI agentが回答提供、人間は参照のみ
+  - investigate/design: AI agentが分析・提案、人間が詳細化・判断・決定
+  - implement/review: AI agentが実装・検証、人間は最終確認のみ
+
+---
+
 ## 1. Nabledge Commands
 
 | command | subcommand | description | IN | OUT |
@@ -189,15 +203,3 @@
 | **不具合調査** | アプリケーションエンジニア | テスト失敗時の原因特定 |
 | | 要件定義者／設計者 | 〃 |
 
----
-
-## Notes
-
-- このドキュメントは、Nablarch保守開発における**ToBe（AI agent活用後）の活動イメージ**を示す
-- **Nabledge Commands**: AI agentが実行可能な具体的なコマンド体系（search, investigate, design, implement, review）
-- **Activity Mapping**: 従来の工程・アクティビティに対して、どのNabledgeコマンドが適用可能かを示す
-- **成果物・ロール定義**: AsIs/ToBe共通の基礎定義（12種類の成果物分類、5つのロール）
-- **責任分担の原則**:
-  - search: AI agentが回答提供、人間は参照のみ
-  - investigate/design: AI agentが分析・提案、人間が詳細化・判断・決定
-  - implement/review: AI agentが実装・検証、人間は最終確認のみ
