@@ -22,16 +22,48 @@ Mapping files define the relationship between official documentation and target 
 
 ## Prerequisites
 
-### 1. Design Document Reference
+The following reference documents and files are required for validation:
 
-**Directory Structure**: Defined in [Design Document Section 2.4](nabledge-design.md#24-ファイル構成)
+### 1. Design Document
 
-The design document includes:
-- Complete knowledge directory structure (including `about/`, `setup/`, `guides/`, `migration/`)
-- Category type → directory mapping table
-- Naming conventions for each category
+**File**: [doc/nabledge-design.md](nabledge-design.md)
 
-Refer to the design document for the authoritative directory structure and mapping rules.
+Key sections:
+- **[Section 1.5: Scope](nabledge-design.md#15-スコープ)** - Defines in-scope and out-of-scope items
+- **[Section 2.4: File Structure](nabledge-design.md#24-ファイル構成)** - Knowledge directory structure and category type → directory mapping
+
+### 2. Project Instructions
+
+**File**: [CLAUDE.md](../CLAUDE.md)
+
+Key sections:
+- **Nablarch Official Documentation** - Location of official docs (`.lw/nab-official/v6/`, `.lw/nab-official/v5/`)
+- Repository structure and version information
+
+### 3. Category Definitions
+
+**Files**:
+- `work/20260213/create-mapping-info/categories-v6.json` - Nablarch 6 category definitions
+- `work/20260213/create-mapping-info/categories-v5.json` - Nablarch 5 category definitions
+
+Contains:
+- Category IDs and names
+- Category types (processing-pattern, component, setup, guide, check, about)
+- Default scope settings
+- Descriptions
+
+### 4. Official Documentation Sources
+
+**Directories**:
+- `.lw/nab-official/v6/` - Nablarch 6 official documentation
+  - `nablarch-document/` - Framework documentation
+  - `nablarch-system-development-guide/` - Development guide
+  - `nablarch-single-module-archetype/` - Maven archetype
+- `.lw/nab-official/v5/` - Nablarch 5 official documentation
+  - `nablarch-document/` - Framework documentation (v5-specific)
+  - `nablarch-single-module-archetype/` - Maven archetype (v5-specific)
+
+All `source_file` paths in mapping files reference these directories.
 
 ---
 
@@ -45,7 +77,7 @@ For each mapping entry, validate:
 
 ### 2. Content-Based Validation
 - ✅ **Category Assignment**: `categories` are appropriate based on actual content
-- ✅ **Scope Determination**: `in_scope` matches scope definition in CLAUDE.md
+- ✅ **Scope Determination**: `in_scope` matches scope definition in [Design Document Section 1.5](nabledge-design.md#15-スコープ)
 - ✅ **Exclusion Reason**: If `in_scope: false`, `reason_for_exclusion` is valid
 
 ### 3. Target File Path Validation
