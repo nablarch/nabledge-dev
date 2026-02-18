@@ -30,10 +30,11 @@ CATEGORY_KEYWORDS = {
     "adaptor": ["adaptor", "integration", "third-party", "external system"],
     "tool": ["testing framework", "toolbox", "static analysis", "development tool"],
     "security-check": ["authentication", "authorization", "permission", "csrf", "xss", "security"],
-    "setup": ["blank project", "project setup", "getting started", "first step"],
+    "setup": ["blank project", "project setup", "getting started", "first step", "tutorial", "client create"],
     "configuration": ["configuration", "settings", "environment", "properties", "xml config"],
     "migration": ["migration", "upgrade", "version change", "compatibility"],
-    "about": ["overview", "introduction", "concept", "architecture", "framework structure"]
+    "release": ["release", "version", "リリース", "バージョン", "release note", "releasenote"],
+    "about": ["overview", "introduction", "concept", "framework structure", "external content", "useful content", "biz sample", "implementation example", "use case"]
 }
 
 
@@ -108,6 +109,7 @@ def categorize_by_content(file_path: Path) -> List[str]:
     """Analyze file content and assign categories (Step 4.2).
 
     Uses technical indicator keywords to determine categories.
+    Also uses path patterns as hints.
     Defaults to 'about' if no specific category found.
 
     Args:
@@ -117,6 +119,25 @@ def categorize_by_content(file_path: Path) -> List[str]:
         List of category IDs
     """
     categories = []
+    path_str = str(file_path).lower()
+
+    # Path-based hints (don't assign processing patterns, just component/setup/about)
+    # These help when keywords don't match
+    path_hints = []
+
+    if '/external_contents/' in path_str or '/biz_samples/' in path_str:
+        path_hints.append('about')
+
+    if '/getting_started/' in path_str or '/client_create/' in path_str:
+        path_hints.append('setup')
+
+    if (('/application_design' in path_str or '/feature_details/' in path_str or
+         '/architecture' in path_str) or
+        (('/batch/' in path_str or '/web/' in path_str or '/rest/' in path_str or
+          '/messaging/' in path_str) and '/index.rst' in path_str)):
+        # These are processing-pattern specific, don't add 'about'
+        # They will get processing patterns in Step 5
+        path_hints.append('_pattern_specific')
 
     # Read content
     try:
@@ -138,7 +159,16 @@ def categorize_by_content(file_path: Path) -> List[str]:
         if any(kw in content_lower for kw in keywords):
             categories.append(category)
 
-    # Default to 'about' if no specific category found
+    # Apply path hints if no content-based match
+    if len(categories) == 0:
+        if '_pattern_specific' in path_hints:
+            # Don't add 'about' - will get processing patterns in Step 5
+            # Return empty to avoid warning (processing patterns will be added later)
+            return []
+        elif path_hints:
+            categories.extend([h for h in path_hints if h != '_pattern_specific'])
+
+    # Final fallback to 'about'
     if len(categories) == 0:
         if any(kw in content_lower for kw in CATEGORY_KEYWORDS["about"]):
             categories.append("about")
@@ -194,11 +224,29 @@ def main():
             entry["categories"] = categories
             categorized_ai_files.append(entry)
         else:
-            # Last resort: default to 'about'
-            print(f"Warning: No clear category for {source_file}, defaulting to 'about'")
-            entry["categories"] = ["about"]
-            entry["_low_confidence"] = True
-            categorized_ai_files.append(entry)
+            # Check if this is a processing-pattern specific file
+            path_str = str(file_path).lower()
+            is_pattern_specific = (
+                '/application_design' in path_str or
+                '/feature_details/' in path_str or
+                '/architecture' in path_str or
+                ('/batch/' in path_str and '/index.rst' in path_str) or
+                ('/web/' in path_str and '/index.rst' in path_str) or
+                ('/rest/' in path_str and '/index.rst' in path_str) or
+                ('/messaging/' in path_str and '/index.rst' in path_str)
+            )
+
+            if is_pattern_specific:
+                # No warning - processing patterns will be added in Step 5
+                entry["categories"] = []
+                entry["_pending_pattern"] = True
+                categorized_ai_files.append(entry)
+            else:
+                # Last resort: default to 'about'
+                print(f"Warning: No clear category for {source_file}, defaulting to 'about'")
+                entry["categories"] = ["about"]
+                entry["_low_confidence"] = True
+                categorized_ai_files.append(entry)
 
     print(f"✓ Categorized {len(categorized_ai_files)} files")
     print()

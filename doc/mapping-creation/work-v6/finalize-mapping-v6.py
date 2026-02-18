@@ -44,7 +44,7 @@ PRIORITY_ORDER = [
     # Guide (tier 4)
     'dev-guide-anti', 'dev-guide-other', 'dev-guide-pattern',
     # About (tier 5)
-    'about', 'migration'
+    'about', 'migration', 'release'
 ]
 
 # Directory mapping (Step 6.3)
@@ -72,7 +72,8 @@ DIRECTORY_MAP = {
     'dev-guide-other': 'guides/patterns',
     # About -> guides/{type}/
     'about': 'guides/about',
-    'migration': 'guides/migration'
+    'migration': 'guides/migration',
+    'release': 'guides/releases'
 }
 
 

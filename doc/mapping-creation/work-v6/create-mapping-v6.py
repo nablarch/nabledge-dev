@@ -198,7 +198,7 @@ def categorize_by_path(file_path: Path) -> List[str]:
     Only assigns non-processing-pattern categories:
     - Component types: handler, library, adaptor, tool, security-check
     - Setup types: setup, configuration
-    - About types: about, migration
+    - About types: about, migration, release
 
     Args:
         file_path: Path to file
@@ -253,6 +253,10 @@ def categorize_by_path(file_path: Path) -> List[str]:
     # Migration patterns
     if '/migration/' in norm_path:
         categories.append('migration')
+
+    # Release patterns
+    if '/releases/' in norm_path:
+        categories.append('release')
 
     return categories
 
