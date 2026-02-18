@@ -280,7 +280,6 @@ nabledge-6/
 ├── SKILL.md                    # スキル定義
 ├── knowledge/                  # 知識
 │   ├── index.toon              # 検索インデックス（TOON形式）
-│   ├── overview.json           # Framework overview
 │   ├── about/                  # Framework fundamentals
 │   ├── setup/                  # Project setup and configuration
 │   ├── guides/                 # Development guides
