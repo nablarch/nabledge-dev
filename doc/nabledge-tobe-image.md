@@ -8,8 +8,6 @@ Nablarch保守開発における**ToBe(Nabledge活用後)の活動イメージ**
 
 ## 人間とAIの役割分担
 
-Nabledgeのコマンド体系は、インプットの性質に応じて人間とAIの役割分担が異なります。
-
 - **検索 (search)**: Nabledgeが回答を提供。人間は参照のみ。
 - **調査/設計 (investigate/design)**: インプットが抽象的・不完全なため、Nabledgeが分析・提案し、人間が詳細化・判断・決定を行う。
 - **実装/レビュー (implement/review)**: インプットが具体的・完全なため、Nabledgeが実装・検証を実行可能。人間は最終確認のみ。
