@@ -167,11 +167,11 @@ This section clarifies how to handle ambiguous situations during mapping creatio
 
 ## Phase 1: Initialize Mapping Files
 
-**Script**: `doc/scripts/01-init-mapping.sh`
+**Script**: `doc/mapping-creation-procedure/01-init-mapping.sh`
 
 **Execution**:
 ```bash
-doc/scripts/01-init-mapping.sh
+doc/mapping-creation-procedure/01-init-mapping.sh
 ```
 
 **Output**:
@@ -187,11 +187,11 @@ doc/scripts/01-init-mapping.sh
 
 ## Phase 2: Collect All Source Files
 
-**Script**: `doc/scripts/02-collect-files.sh`
+**Script**: `doc/mapping-creation-procedure/02-collect-files.sh`
 
 **Execution**:
 ```bash
-doc/scripts/02-collect-files.sh
+doc/mapping-creation-procedure/02-collect-files.sh
 ```
 
 **What it does**:
@@ -204,7 +204,7 @@ doc/scripts/02-collect-files.sh
 - `work/YYYYMMDD/mapping/files-v5.txt` - All v5 files
 - `work/YYYYMMDD/mapping/stats.md` - File count statistics
 
-**Validation**: Run `doc/scripts/02-validate-files.sh`
+**Validation**: Run `doc/mapping-creation-procedure/02-validate-files.sh`
 - File counts match expected ranges
 - All files exist
 
@@ -212,7 +212,7 @@ doc/scripts/02-collect-files.sh
 
 ## Phase 3: Apply Language Priority
 
-**Script**: `doc/scripts/03-filter-language.sh`
+**Script**: `doc/mapping-creation-procedure/03-filter-language.sh`
 
 **Language Priority**: English (`/en/`) first, Japanese (`/ja/`) if English not available
 
@@ -227,7 +227,7 @@ doc/scripts/02-collect-files.sh
 
 **Execution**:
 ```bash
-doc/scripts/03-filter-language.sh
+doc/mapping-creation-procedure/03-filter-language.sh
 ```
 
 **Output**:
@@ -235,7 +235,7 @@ doc/scripts/03-filter-language.sh
 - `work/YYYYMMDD/mapping/files-v5-filtered.txt`
 - `work/YYYYMMDD/mapping/language-selection.md` - Selection report
 
-**Validation**: Run `doc/scripts/03-validate-language.sh`
+**Validation**: Run `doc/mapping-creation-procedure/03-validate-language.sh`
 - No duplicate paths (language-agnostic)
 - English preferred over Japanese
 - File type filtering applied correctly
@@ -244,7 +244,7 @@ doc/scripts/03-filter-language.sh
 
 ## Phase 4: Generate Initial Mappings
 
-**Script**: `doc/scripts/04-generate-mappings.sh`
+**Script**: `doc/mapping-creation-procedure/04-generate-mappings.sh`
 
 **What it does**:
 1. Read filtered file list
@@ -257,14 +257,14 @@ doc/scripts/03-filter-language.sh
 
 **Execution**:
 ```bash
-doc/scripts/04-generate-mappings.sh
+doc/mapping-creation-procedure/04-generate-mappings.sh
 ```
 
 **Output**:
 - `work/YYYYMMDD/mapping/mapping-v6.json` - Mappings with id, source_file, title
 - `work/YYYYMMDD/mapping/mapping-v5.json` - Mappings with id, source_file, title
 
-**Validation**: Run `doc/scripts/04-validate-mappings.sh`
+**Validation**: Run `doc/mapping-creation-procedure/04-validate-mappings.sh`
 - JSON schema is valid
 - All source_file paths exist
 - IDs are sequential and unique
@@ -350,7 +350,7 @@ Work in batches of 50 entries:
    If syntax error, restore from backup and retry
 4. Save progress: Update mapping-v6.json with jq
 5. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase5.txt
-6. Run validation: bash doc/scripts/05-validate-categories.sh
+6. Run validation: bash doc/mapping-creation-procedure/05-validate-categories.sh
 7. If validation fails:
    a. Read validation error output carefully
    b. Common errors:
@@ -374,7 +374,7 @@ Progress tracking: cat work/YYYYMMDD/mapping/progress-phase5.txt
 3. Save progress after each batch
 4. Validate after each batch
 
-**Validation**: Run `doc/scripts/05-validate-categories.sh` after each batch
+**Validation**: Run `doc/mapping-creation-procedure/05-validate-categories.sh` after each batch
 - All categories exist in categories-v*.json
 - At least one category assigned per entry
 - Categories are appropriate for content (spot check 10%)
@@ -472,7 +472,7 @@ Work in batches of 50 entries:
    If syntax error, restore from backup and retry
 4. Save progress: Update mapping-v6.json with jq
 5. Log progress: echo "Batch 1-50: COMPLETED" >> work/YYYYMMDD/mapping/progress-phase6.txt
-6. Run validation: bash doc/scripts/06-validate-targets.sh
+6. Run validation: bash doc/mapping-creation-procedure/06-validate-targets.sh
 7. If validation fails:
    a. Read validation error output carefully
    b. Common errors:
@@ -497,7 +497,7 @@ Progress tracking: cat work/YYYYMMDD/mapping/progress-phase6.txt
 3. Save progress after each batch
 4. Validate after each batch
 
-**Validation**: Run `doc/scripts/06-validate-targets.sh` after each batch
+**Validation**: Run `doc/mapping-creation-procedure/06-validate-targets.sh` after each batch
 - All target paths follow directory structure
 - Filenames use kebab-case
 - Paths match category type → directory mapping
@@ -530,7 +530,7 @@ This section provides specific examples of common errors and their solutions for
    ```bash
    jq '(.mappings[] | select(.id == "v6-0123").categories) |= map(if . == "batch-pattern" then "batch-nablarch" else . end)' work/YYYYMMDD/mapping/mapping-v6.json > temp.json && mv temp.json work/YYYYMMDD/mapping/mapping-v6.json
    ```
-4. Re-run validation: `bash doc/scripts/05-validate-categories.sh`
+4. Re-run validation: `bash doc/mapping-creation-procedure/05-validate-categories.sh`
 
 #### Error: "25 v6 entries have no categories"
 
@@ -629,7 +629,7 @@ If you get stuck and validation keeps failing:
 
 ## Phase 7: Final Validation
 
-**Script**: `doc/scripts/07-final-validation.sh`
+**Script**: `doc/mapping-creation-procedure/07-final-validation.sh`
 
 **What it checks**:
 1. **Completeness**:
@@ -646,7 +646,7 @@ If you get stuck and validation keeps failing:
 
 **Execution**:
 ```bash
-doc/scripts/07-final-validation.sh
+doc/mapping-creation-procedure/07-final-validation.sh
 ```
 
 **Output**:
@@ -713,7 +713,7 @@ English documentation is the primary source for knowledge files (nabledge will c
 ### Issue: File count mismatch
 **Symptom**: Script reports different count than expected
 **Solution**:
-1. Run `doc/scripts/02-validate-files.sh` to identify discrepancy
+1. Run `doc/mapping-creation-procedure/02-validate-files.sh` to identify discrepancy
 2. Check for new/deleted files in official docs
 3. Check file type filtering rules
 
