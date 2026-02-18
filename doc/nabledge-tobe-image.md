@@ -194,7 +194,10 @@
 ## Notes
 
 - このドキュメントは、Nablarch保守開発における**ToBe（AI agent活用後）の活動イメージ**を示す
-- Nabledge commandsは、AI agentが実行可能な具体的なコマンド体系
-- Activity mappingは、従来の工程・アクティビティに対して、どのNabledgeコマンドが適用可能かを示す
-- 成果物・ロール定義は、AsIs/ToBe共通の基礎定義
-- AI agentはドラフト生成・支援を行うが、最終判断・承認は人間が実施
+- **Nabledge Commands**: AI agentが実行可能な具体的なコマンド体系（search, investigate, design, implement, review）
+- **Activity Mapping**: 従来の工程・アクティビティに対して、どのNabledgeコマンドが適用可能かを示す
+- **成果物・ロール定義**: AsIs/ToBe共通の基礎定義（12種類の成果物分類、5つのロール）
+- **責任分担の原則**:
+  - search: AI agentが回答提供、人間は参照のみ
+  - investigate/design: AI agentが分析・提案、人間が詳細化・判断・決定
+  - implement/review: AI agentが実装・検証、人間は最終確認のみ
