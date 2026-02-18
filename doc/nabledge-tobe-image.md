@@ -2,8 +2,8 @@
 
 ## 1. Nabledge Commands
 
-| command | subcommand | description | IN | OUT | 人の作業 |
-|---------|------------|---------|-----|------|---------|
+| command | subcommand | description | IN | OUT | OUT後の人間の作業 |
+|---------|------------|---------|-----|------|-----------------|
 | **search** | spec | Nablarchの仕様・API・制約を回答 | フリーフォーマット | 回答 + 根拠 | - |
 | | pattern | Nablarchの推奨実装パターンを提示 | フリーフォーマット | パターン + 実装例 | - |
 | | migration | バージョン間の差分・移行影響を回答 | フリーフォーマット | 変更点 + 影響 + 手順 | - |
