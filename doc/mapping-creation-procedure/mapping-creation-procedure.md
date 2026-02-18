@@ -344,7 +344,7 @@ doc/mapping-creation-procedure/04-generate-mappings.sh
 
 **Input Files** (read these first before starting work):
 1. **Mapping file**: `work/YYYYMMDD/mapping/mapping-v6.json` (replace YYYYMMDD with today's date)
-2. **Category definitions**: `work/20260213/create-mapping-info/categories-v6.json`
+2. **Category definitions**: `doc/mapping-creation-procedure/categories-v6.json`
 3. **Scope definition**: `doc/nabledge-design.md` (lines 58-109)
 
 **Agent Prompt**:
@@ -352,7 +352,7 @@ doc/mapping-creation-procedure/04-generate-mappings.sh
 You are categorizing Nablarch official documentation files.
 
 STEP 0: Setup
-1. Read category definitions file: work/20260213/create-mapping-info/categories-v6.json
+1. Read category definitions file: doc/mapping-creation-procedure/categories-v6.json
    - Extract category IDs, names, descriptions, and **TYPE field** (processing-pattern, component, setup, guide, check, about)
    - Example: {"id": "batch-nablarch", "type": "processing-pattern", "description": "FILE to DB, DB to DB, DB to FILE patterns"}
 2. Understand category types:
@@ -591,7 +591,7 @@ This section provides specific examples of common errors and their solutions for
    ```bash
    jq '.mappings[] | select(.categories[] == "batch-pattern") | .id' work/YYYYMMDD/mapping/mapping-v6.json
    ```
-2. Check correct category ID in `work/20260213/create-mapping-info/categories-v6.json`
+2. Check correct category ID in `doc/mapping-creation-procedure/categories-v6.json`
 3. Correct to "batch-nablarch":
    ```bash
    jq '(.mappings[] | select(.id == "v6-0123").categories) |= map(if . == "batch-pattern" then "batch-nablarch" else . end)' work/YYYYMMDD/mapping/mapping-v6.json > temp.json && mv temp.json work/YYYYMMDD/mapping/mapping-v6.json
@@ -804,4 +804,4 @@ English documentation is the primary source for knowledge files (nabledge will c
 - [Design Document](nabledge-design.md)
   - [Section 1.5: Scope](nabledge-design.md#15-スコープ)
   - [Section 2.4: File Structure](nabledge-design.md#24-ファイル構成)
-- [Category Definitions](../work/20260213/create-mapping-info/categories-v6.json)
+- [Category Definitions](categories-v6.json)

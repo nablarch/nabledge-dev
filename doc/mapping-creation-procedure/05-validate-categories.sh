@@ -12,7 +12,7 @@ echo ""
 # Check all categories are defined
 echo "Checking category definitions..."
 v6_cats=$(jq -r '.mappings[].categories[]?' "$WORK_DIR/mapping-v6.json" 2>/dev/null | sort -u)
-v6_defined=$(jq -r '.categories[].id' work/20260213/create-mapping-info/categories-v6.json | sort -u)
+v6_defined=$(jq -r '.categories[].id' doc/mapping-creation-procedure/categories-v6.json | sort -u)
 
 unknown_v6=0
 while read -r cat; do
