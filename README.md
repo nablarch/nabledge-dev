@@ -6,6 +6,7 @@ Nablarch knowledge development
 
 - [Development Status](doc/development-status.md) - Current progress and roadmap
 - [Design Document](doc/nabledge-design.md) - Architecture and design details
+- [ToBe Image](doc/nabledge-tobe-image.md) - AI agent-driven development process vision
 
 ## Prerequisites
 
