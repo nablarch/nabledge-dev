@@ -1,4 +1,4 @@
-# Nabledge ToBe Image: Commands and Activity Mapping
+# Nabledge ToBe Image
 
 ## Overview
 
