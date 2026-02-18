@@ -132,12 +132,11 @@ This section clarifies how to handle ambiguous situations during mapping creatio
 - Non-documentation content (README with no technical content)
 
 **How to identify navigation-only files**:
-1. File is named `index.rst` or `index.md`
-2. Content consists primarily of:
-   - `.. toctree::` directive(s)
-   - Brief section title
-   - No substantial technical explanations, examples, or guidance
-3. Any meaningful content (> 3 sentences of explanation) means it's NOT navigation-only
+1. **Read the actual file content** (add `.lw/` prefix to source_file path)
+2. Evaluate if the file contains technical knowledge:
+   - **Navigation only**: Only toctree directive + brief section title, no explanations
+   - **Has content**: Contains explanations, guidance, examples, concepts, or recommendations
+3. **When unclear**: Err on the side of creating a target file - if there's ANY useful information, it's not navigation-only
 
 **When NOT to use**:
 - index.rst files with substantial overview or conceptual content (e.g., "What is Nablarch?", "Batch Application Overview")
@@ -637,9 +636,24 @@ Empty Target Files:
   - Set `_no_content_reason` with brief explanation
   - Example: `"_no_content_reason": "Navigation only (toctree without technical content)"`
 - **How to identify navigation-only**:
-  - File named index.rst/index.md
-  - Contains only toctree directive + brief title
-  - No substantial explanations (< 3 sentences of technical content)
+  - **Read the actual file** (add .lw/ prefix to path)
+  - Check if file contains ANY technical explanations, guidance, examples, or concepts
+  - If only toctree + title → navigation-only
+  - If there's useful information → create target file
+  - **When in doubt**: Create target file (err on side of inclusion)
+
+Navigation-Only File Handling:
+- **Always read the source file** before deciding it's navigation-only
+- Look for ANY technical content: explanations, recommendations, warnings, examples, concepts
+- Only mark as navigation-only if file contains NOTHING but toctree + title
+- Examples of files WITH content (create target):
+  - "Nablarch is a Java application development platform..." (explanation)
+  - "We recommend using Nablarch Batch over JSR352 because..." (recommendation)
+  - "This chapter provides information necessary for..." (overview with guidance)
+- Examples of navigation-only (set _no_content):
+  - Only ".. toctree::" with list of subpages and a section title
+  - No technical explanations, no guidance, no recommendations
+- **When uncertain**: Create a target file (better to include than exclude)
 
 Error Handling:
 - If category has no clear directory: Use features/ as default and note in work log
