@@ -108,7 +108,7 @@ Replace all `{{variable}}` placeholders with actual content, EXCEPT {{DURATION_P
 Use Write tool to create the documentation file:
 
 ```
-file_path: .issues/xxxxx/code-analysis-<target>.md
+file_path: work/YYYYMMDD/code-analysis-<target>.md
 content: [Generated documentation with {{DURATION_PLACEHOLDER}} still present]
 ```
 
@@ -125,7 +125,7 @@ date '+%Y-%m-%d %H:%M:%S'
 
 **Step 5.2**: Replace placeholder using sed
 ```bash
-sed -i 's/{{DURATION_PLACEHOLDER}}/約5分18秒/g' .issues/xxxxx/code-analysis-<target>.md
+sed -i 's/{{DURATION_PLACEHOLDER}}/約5分18秒/g' work/YYYYMMDD/code-analysis-<target>.md
 ```
 
 **Error handling**:

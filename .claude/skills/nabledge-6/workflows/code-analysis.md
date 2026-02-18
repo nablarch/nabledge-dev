@@ -30,7 +30,7 @@ This workflow analyzes existing code, traces dependencies, and generates structu
 - Bash with jq: Execute keyword-search workflow
 - Write: Generate documentation file
 
-**Expected output**: 1 documentation file (~3,000-10,000 tokens) in .issues/xxxxx/
+**Expected output**: 1 documentation file (~3,000-10,000 tokens) in work/YYYYMMDD/
 
 ## Process flow
 
@@ -220,7 +220,7 @@ sequenceDiagram
 
 #### 3.3: Apply template and output
 
-1. **Determine output path**: `.issues/xxxxx/code-analysis-<target-name>.md`
+1. **Determine output path**: `work/YYYYMMDD/code-analysis-<target-name>.md`
 
 2. **Get current timestamp** (for generation_date and generation_time):
    ```bash
@@ -273,7 +273,7 @@ sequenceDiagram
 
    **Step 6.2**: Replace placeholder using sed
    ```bash
-   sed -i 's/{{DURATION_PLACEHOLDER}}/約X分Y秒/g' .issues/xxxxx/code-analysis-<target>.md
+   sed -i 's/{{DURATION_PLACEHOLDER}}/約X分Y秒/g' work/YYYYMMDD/code-analysis-<target>.md
    ```
 
    Replace `約X分Y秒` with the actual calculated duration from Step 6.1.
@@ -285,7 +285,7 @@ sequenceDiagram
 
 7. **Inform user**: Show output path and actual duration
 
-**Output**: Documentation file at .issues/xxxxx/code-analysis-<target-name>.md
+**Output**: Documentation file at work/YYYYMMDD/code-analysis-<target-name>.md
 
 ## Output template
 
