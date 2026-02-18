@@ -805,4 +805,3 @@ English documentation is the primary source for knowledge files (nabledge will c
   - [Section 1.5: Scope](nabledge-design.md#15-スコープ)
   - [Section 2.4: File Structure](nabledge-design.md#24-ファイル構成)
 - [Category Definitions](../work/20260213/create-mapping-info/categories-v6.json)
-- [Validation Procedure](mapping-validation-procedure.md) (for content validation after creation)
