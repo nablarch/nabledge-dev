@@ -40,12 +40,29 @@ See [Design Document Section 1.5](nabledge-design.md#15-スコープ) for scope 
 }
 ```
 
+**With alternatives** (for duplicate .config files):
+```json
+{
+  "id": "v6-0002",
+  "source_file": "nab-official/v6/nablarch-single-module-archetype/nablarch-batch/tools/static-analysis/spotbugs/published-config/production/JavaOpenApi.config",
+  "title": "Java Open API",
+  "categories": ["check-published-api"],
+  "target_files": ["checks/published-api-java.json"],
+  "source_file_alternatives": [
+    "nab-official/v6/nablarch-single-module-archetype/nablarch-batch/tools/static-analysis/spotbugs/published-config/test/JavaOpenApi.config",
+    "nab-official/v6/nablarch-single-module-archetype/nablarch-jaxrs/tools/static-analysis/spotbugs/published-config/production/JavaOpenApi.config",
+    ...
+  ]
+}
+```
+
 **Fields**:
 - `id`: Unique identifier (format: `v{version}-{sequential-number}`)
 - `source_file`: Relative path from repository root (no `.lw/` prefix)
 - `title`: Document title (from rst header or filename)
 - `categories`: Array of category IDs (from `categories-v*.json`)
 - `target_files`: Array of target knowledge file paths (relative to `knowledge/` directory)
+- `source_file_alternatives` (optional): Array of duplicate source files with identical content (only for grouped .config files)
 
 ### Edge Cases and Decision Rules
 
@@ -158,6 +175,7 @@ This section clarifies how to handle ambiguous situations during mapping creatio
 | 1 | Initialize mapping files | Script | Empty JSON structure |
 | 2 | Collect all source files | Script | File list with metadata |
 | 3 | Apply language priority | Script | Filtered file list (en/ja) |
+| 3.5 | Group duplicate files | Script | Grouped file list + alternatives |
 | 4 | Generate initial mappings | Script | Basic mapping entries |
 | 5 | Categorize entries | AI Agent | Mappings with categories |
 | 6 | Define target files | AI Agent | Complete mappings |
@@ -251,18 +269,56 @@ doc/mapping-creation-procedure/03-filter-language.sh
 
 ---
 
+## Phase 3.5: Group Duplicate Files
+
+**Script**: `doc/mapping-creation-procedure/03.5-group-duplicates.sh`
+
+**What it does**:
+1. Identify duplicate `.config` files by MD5 hash
+2. Group identical files together
+3. Select alphabetically first file as representative
+4. Track alternatives for full traceability
+
+**Grouping Strategy**:
+- **Representative**: The alphabetically first file in each duplicate group
+- **Alternatives**: All other identical files (tracked in `source_file_alternatives`)
+- **Reduction**: v6 80 files, v5 84 files (total 164 files)
+
+**Execution**:
+```bash
+doc/mapping-creation-procedure/03.5-group-duplicates.sh
+```
+
+**Output**:
+- `work/YYYYMMDD/mapping/files-v6-grouped.txt` - Files after grouping
+- `work/YYYYMMDD/mapping/files-v5-grouped.txt`
+- `work/YYYYMMDD/mapping/files-v6-alternatives.json` - Alternative mappings
+- `work/YYYYMMDD/mapping/files-v5-alternatives.json`
+- `work/YYYYMMDD/mapping/grouping-report-v6.md` - Detailed grouping report
+- `work/YYYYMMDD/mapping/grouping-report-v5.md`
+- `work/YYYYMMDD/mapping/grouping-summary.md` - Summary
+
+**Why this is needed**:
+- .config files have 87.8% redundancy (same content across multiple archetype projects)
+- Reduces mapping entries while maintaining full coverage
+- Simplifies Phase 5-7 work (fewer entries to process)
+
+---
+
 ## Phase 4: Generate Initial Mappings
 
 **Script**: `doc/mapping-creation-procedure/04-generate-mappings.sh`
 
 **What it does**:
-1. Read filtered file list
-2. Generate mapping entry for each file:
+1. Read grouped file list (after duplicate removal)
+2. Read alternatives mapping (from Phase 3.5)
+3. Generate mapping entry for each file:
    - `id`: Auto-generated (v6-0001, v6-0002, ...)
    - `source_file`: Path without `.lw/` prefix
    - `title`: Extracted from file or set as "TBD"
    - `categories`: Empty array `[]`
    - `target_files`: Empty array `[]`
+   - `source_file_alternatives`: Array of duplicate files (if applicable)
 
 **Execution**:
 ```bash
@@ -276,8 +332,9 @@ doc/mapping-creation-procedure/04-generate-mappings.sh
 **Validation**: Run `doc/mapping-creation-procedure/04-validate-mappings.sh`
 - JSON schema is valid
 - All source_file paths exist
+- All source_file_alternatives paths exist
 - IDs are sequential and unique
-- Entry count matches filtered file count
+- Entry count matches grouped file count
 
 ---
 

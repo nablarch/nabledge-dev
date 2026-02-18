@@ -10,16 +10,17 @@ WORK_DIR="work/$DATE/mapping"
 echo "=== Phase 4: Generate Initial Mappings ==="
 echo ""
 
-if [ ! -f "$WORK_DIR/files-v6-filtered.txt" ]; then
-    echo "❌ Error: Run 03-filter-language.sh first"
+if [ ! -f "$WORK_DIR/files-v6-grouped.txt" ]; then
+    echo "❌ Error: Run 03.5-group-duplicates.sh first"
     exit 1
 fi
 
 # Function to generate mappings
 generate_mappings() {
-    local filtered_file=$1
-    local mapping_file=$2
-    local version=$3
+    local grouped_file=$1
+    local alternatives_file=$2
+    local mapping_file=$3
+    local version=$4
 
     echo "Generating $version mappings..."
 
@@ -50,22 +51,29 @@ generate_mappings() {
     }
 
     # Generate entries using Python
-    python3 - "$filtered_file" "$mapping_file" "$version" << 'PYTHON_SCRIPT'
+    python3 - "$grouped_file" "$alternatives_file" "$mapping_file" "$version" << 'PYTHON_SCRIPT'
 import sys
 import json
-import subprocess
+import os
 
-filtered_file = sys.argv[1]
-mapping_file = sys.argv[2]
-version = sys.argv[3]
+grouped_file = sys.argv[1]
+alternatives_file = sys.argv[2]
+mapping_file = sys.argv[3]
+version = sys.argv[4]
 
 # Read existing mapping to get schema
 with open(mapping_file, 'r') as f:
     mapping_data = json.load(f)
 
-# Read filtered files
-with open(filtered_file, 'r') as f:
+# Read grouped files
+with open(grouped_file, 'r') as f:
     files = [line.strip() for line in f if line.strip()]
+
+# Read alternatives mapping
+alternatives_map = {}
+if os.path.exists(alternatives_file):
+    with open(alternatives_file, 'r') as f:
+        alternatives_map = json.load(f)
 
 # Generate entries
 entries = []
@@ -78,6 +86,7 @@ for idx, file_path in enumerate(files, start=1):
     # Extract title (simple: use basename for now, AI will refine later)
     title = file_path.split('/')[-1].rsplit('.', 1)[0].replace('-', ' ').replace('_', ' ').title()
 
+    # Create entry
     entry = {
         "id": f"v{version}-{idx:04d}",
         "source_file": source_file,
@@ -85,6 +94,18 @@ for idx, file_path in enumerate(files, start=1):
         "categories": [],
         "target_files": []
     }
+
+    # Add alternatives if exists
+    if file_path in alternatives_map:
+        # Remove .lw/ prefix from alternatives
+        alts = []
+        for alt in alternatives_map[file_path]:
+            if alt.startswith('.lw/'):
+                alts.append(alt[len('.lw/'):])
+            else:
+                alts.append(alt)
+        entry["source_file_alternatives"] = alts
+
     entries.append(entry)
 
 # Update mapping data
@@ -95,18 +116,22 @@ with open(mapping_file, 'w') as f:
     json.dump(mapping_data, f, indent=2, ensure_ascii=False)
 
 print(f"  Generated {len(entries)} entries")
+with_alts = sum(1 for e in entries if "source_file_alternatives" in e)
+print(f"  Entries with alternatives: {with_alts}")
 PYTHON_SCRIPT
 
     echo ""
 }
 
 # Generate v6 mappings
-generate_mappings "$WORK_DIR/files-v6-filtered.txt" \
+generate_mappings "$WORK_DIR/files-v6-grouped.txt" \
+                   "$WORK_DIR/files-v6-alternatives.json" \
                    "$WORK_DIR/mapping-v6.json" \
                    "6"
 
 # Generate v5 mappings
-generate_mappings "$WORK_DIR/files-v5-filtered.txt" \
+generate_mappings "$WORK_DIR/files-v5-grouped.txt" \
+                   "$WORK_DIR/files-v5-alternatives.json" \
                    "$WORK_DIR/mapping-v5.json" \
                    "5"
 
