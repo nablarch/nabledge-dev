@@ -38,46 +38,39 @@ claude
 
 ## Branch Strategy
 
-This repository uses a two-branch strategy for controlled releases:
+This repository uses a single-branch development workflow:
 
 | Branch | Purpose | Workflow |
 |--------|---------|----------|
-| **main** | Development branch | All development work is merged here via pull requests |
-| **release** | Release branch | Receives merges from main when ready to release. Triggers automatic deployment to [nablarch/nabledge](https://github.com/nablarch/nabledge) |
+| **main** | Development branch | All development work is merged here via pull requests. Changes automatically sync to [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) |
 
-### Deployment Flow
+### Development Flow
 
 ```
-Development → main (via PR) → release (manual merge) → nablarch/nabledge (auto-deploy)
+Feature branch → main (via PR) → nablarch/nabledge:develop (auto-sync)
 ```
 
-When changes are pushed to the `release` branch, GitHub Actions automatically:
+When changes are pushed to the `main` branch, GitHub Actions automatically:
 1. Transforms the skill content to marketplace plugin structure
-2. Deploys to the `main` branch in [nablarch/nabledge](https://github.com/nablarch/nabledge)
-3. Creates version tags
+2. Syncs to the `develop` branch in [nablarch/nabledge](https://github.com/nablarch/nabledge)
 
-This allows maintainers to control release timing by deciding when to merge main → release.
+This allows:
+- Continuous integration of development work to nabledge:develop
+- Users can test unreleased features from the develop branch
+- Clear separation: nabledge-dev for development, nabledge for distribution
 
 ### Release Procedure
 
-To release a new version to [nablarch/nabledge](https://github.com/nablarch/nabledge):
+Releases are managed in the **[nablarch/nabledge](https://github.com/nablarch/nabledge)** repository, not here.
 
-1. **Ask Claude Code to prepare release** - Claude Code will follow `.claude/rules/release.md` to update version files and create a PR
+**In nablarch/nabledge repository:**
 
-2. **Merge the release PR to main**
+1. **Prepare release** - Update version files and CHANGELOG in develop branch
+2. **Create release PR** - From `develop` to `main` branch
+3. **Merge and tag** - After review, merge PR and create version tag
+4. **Publish release** - Create GitHub release with release notes
 
-3. **Merge main to release and push**:
-   ```bash
-   git checkout release
-   git merge --ff-only origin/main
-   git push origin release
-   ```
-
-4. GitHub Actions will automatically:
-   - Validate version consistency (marketplace.json = CHANGELOG.md)
-   - Validate version increment (new version > latest tag in nablarch/nabledge)
-   - Deploy to nablarch/nabledge
-   - Create version tag
+See `.claude/rules/release.md` for detailed release workflow.
 
 ## Development
 
