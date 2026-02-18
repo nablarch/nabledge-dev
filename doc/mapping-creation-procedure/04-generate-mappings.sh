@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORK_DIR="$SCRIPT_DIR/output"
+WORK_DIR="$SCRIPT_DIR"
 
 echo "=== Phase 4: Generate Initial Mappings ==="
 echo ""
