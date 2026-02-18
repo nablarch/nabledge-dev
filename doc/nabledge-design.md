@@ -57,19 +57,48 @@ Nabledgeが対象とする代行作業を優先度別に整理しました。優
 
 ### 1.5 スコープ
 
-**対象**
+#### マッピングと知識ファイル化の関係
 
-- Nablarchバッチ
-  - 都度起動バッチ
-  - 常駐バッチ
-  - テーブルをキューとして使ったメッセージング
-- RESTful Webサービス
+**マッピングの対象**: Nablarch公式ドキュメント**全体**
 
-**対象外**
+- すべての.rst, .md, .xmlファイルをマッピングに含めます
+- 対象外のファイルも含め、公式ドキュメント全体を構造化します
 
-- JSR352バッチ
-- MOM（Message Oriented Middleware）
-- ウェブアプリケーション（JSP/画面）
+**知識ファイル化の対象**: マッピングのうち、以下の範囲を優先的に知識ファイル化します
+
+**スコープ判定**: categories定義（`categories-v*.json`）の`default_in_scope`フラグで管理します
+
+#### 知識ファイル化の対象範囲
+
+##### 処理方式
+
+**対象**:
+- Nablarchバッチ（都度起動バッチ）- `batch-nablarch`
+- Nablarchバッチ（常駐バッチ/テーブルキュー）- `messaging-db`
+- RESTful Webサービス - `rest`
+
+**対象外**:
+- JSR352バッチ（Jakarta Batch）- `batch-jsr352`
+- HTTP Messaging - `http-messaging`
+- MOM（Message Oriented Middleware）- `messaging-mom`
+- ウェブアプリケーション（JSP/画面）- `web`
+
+##### コンポーネント
+
+**対象**:
+- ハンドラ（バッチ、REST、共通）- `handler`
+- ライブラリ（DB、ファイル、バリデーション等）- `library`
+- ツール（NTF、gsp-dba-maven-plugin等）- `tool`
+- アダプタ（ログ、DB、REST等）- `adaptor`
+
+##### ドキュメント・ガイド
+
+**対象**:
+- フレームワーク概要・コンセプト - `about`
+- プロジェクトセットアップ・設定 - `setup`, `archetype`, `configuration`
+- 開発ガイド（パターン、アンチパターン） - `dev-guide-pattern`, `dev-guide-anti`, `dev-guide-project`, `dev-guide-other`
+- チェック項目（セキュリティ、非推奨API等）- `check-published-api`, `check-deprecated`, `check-security`
+- マイグレーションガイド - `migration`
 
 **対象バージョン**
 
