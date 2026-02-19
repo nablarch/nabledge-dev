@@ -183,7 +183,7 @@ String batchDate = BusinessDateUtil.getDate("batch");
 - Use `:StartLine-EndLine` for class/method ranges
 - Use `[:LineNumber]` for single-line annotations
 - Line numbers should be accurate (check with Read tool)
-- Relative paths must be correct (use `../../` to go up from work/YYYYMMDD/)
+- Relative paths must be correct (use `../../` to go up from .nabledge/YYYYMMDD/)
 
 ---
 
