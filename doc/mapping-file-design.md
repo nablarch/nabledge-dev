@@ -48,11 +48,11 @@ Each mapping entry:
   "mappings": [
     {
       "category": "handlers",
-      "target_file": "handlers/overview.md"
+      "target_file": "component/handlers/overview.md"
     },
     {
       "category": "nablarch-batch",
-      "target_file": "batch/handlers.md"
+      "target_file": "processing-pattern/nablarch-batch/handlers.md"
     }
   ]
 }
@@ -80,26 +80,26 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 | Type | Category | Source Path Pattern | Pattern Completeness | Target Path | Target Naming Rule |
 |------|----------|---------------------|----------------------|-------------|--------------------|
-| processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review - processing patterns not determinable from path) | `batch/*.md` | Based on source filename, may split by subtopic |
-| processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `jakarta-batch/*.md` | Based on source filename |
-| processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `rest/*.md` | Based on source filename |
-| processing-pattern | http-messaging | `**/messaging/http/**/*.{rst,md}` | Complete | `http-messaging/*.md` | Based on source filename |
-| processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `web/*.md` | Based on source filename |
-| processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `mom-messaging/*.md` | Based on source filename |
-| processing-pattern | db-messaging | `**/db_messaging/**/*.{rst,md}` | Complete | `db-messaging/*.md` | Based on source filename |
-| component | handlers | `**/handlers/**/*.{rst,md}` | Partial (handler content also in adapters/libraries) | `handlers/*.md` | Based on source filename, may consolidate related handlers |
-| component | libraries | `**/library/**/*.{rst,md}` | Partial (scattered across multiple directories) | `libraries/*.md` | Based on source filename and function |
-| component | adapters | `**/adapters/**/*.{rst,md}` | Partial (scattered across multiple directories) | `adapters/*.md` | Based on source filename and integration target |
-| component | development-tools | `**/tools/**/*.{rst,md}` | Complete | `tools/*.md` | Based on source filename |
-| setup | blank-project | `**/blank_project/**/*.{rst,md}` | Complete | `setup/blank-project.md` | Single consolidated file |
-| setup | maven-archetype | `**/archetype/**/*.{rst,md}` | Complete | `setup/maven-archetype.md` | Single consolidated file |
+| processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review - processing patterns not determinable from path) | `processing-pattern/nablarch-batch/*.md` | Based on source filename, may split by subtopic |
+| processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `processing-pattern/jakarta-batch/*.md` | Based on source filename |
+| processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `processing-pattern/restful-web-service/*.md` | Based on source filename |
+| processing-pattern | http-messaging | `**/messaging/http/**/*.{rst,md}` | Complete | `processing-pattern/http-messaging/*.md` | Based on source filename |
+| processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `processing-pattern/web-application/*.md` | Based on source filename |
+| processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `processing-pattern/mom-messaging/*.md` | Based on source filename |
+| processing-pattern | db-messaging | `**/db_messaging/**/*.{rst,md}` | Complete | `processing-pattern/db-messaging/*.md` | Based on source filename |
+| component | handlers | `**/handlers/**/*.{rst,md}` | Partial (handler content also in adapters/libraries) | `component/handlers/*.md` | Based on source filename, may consolidate related handlers |
+| component | libraries | `**/library/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/libraries/*.md` | Based on source filename and function |
+| component | adapters | `**/adapters/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/adapters/*.md` | Based on source filename and integration target |
+| component | development-tools | `**/tools/**/*.{rst,md}` | Complete | `component/development-tools/*.md` | Based on source filename |
+| setup | blank-project | `**/blank_project/**/*.{rst,md}` | Complete | `setup/blank-project/*.md` | Single consolidated file |
+| setup | maven-archetype | `**/archetype/**/*.{rst,md}` | Complete | `setup/maven-archetype/*.md` | Single consolidated file |
 | setup | configuration | `**/configuration/**/*.{rst,md}` | Complete | `setup/configuration/*.md` | Based on source filename |
-| setup | setting-guide | `**/setting_guide/**/*.{rst,md}` | Complete | `setup/guide/*.md` | Based on source filename |
-| guide | nablarch-patterns | `nablarch-patterns/*.md` (from nablarch-system-development-guide) | Complete | `patterns/*.md` | Keep original filename |
-| check | security-check | `Nablarch機能のセキュリティ対応表.xlsx` (from nablarch-system-development-guide) | Complete | `check/security.xlsx` | Direct copy with rename |
-| about | about-nablarch | `**/about/**/*.{rst,md}` | Complete | `about/*.md` | Based on source filename |
+| setup | setting-guide | `**/setting_guide/**/*.{rst,md}` | Complete | `setup/setting-guide/*.md` | Based on source filename |
+| guide | nablarch-patterns | `nablarch-patterns/*.md` (from nablarch-system-development-guide) | Complete | `guide/nablarch-patterns/*.md` | Keep original filename |
+| check | security-check | `Nablarch機能のセキュリティ対応表.xlsx` (from nablarch-system-development-guide) | Complete | `check/security-check/*.xlsx` | Direct copy with rename |
+| about | about-nablarch | `**/about/**/*.{rst,md}` | Complete | `about/about-nablarch/*.md` | Based on source filename |
 | about | migration | `**/migration/**/*.{rst,md}` | Complete | `about/migration/*.md` | Based on source filename |
-| about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/releases/*.md` | Based on source filename |
+| about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/release-notes/*.md` | Based on source filename |
 
 **Pattern Completeness**:
 - **Complete**: Path pattern covers all relevant files; automatic mapping possible without manual verification
@@ -209,7 +209,7 @@ When creating a skill to generate knowledge files from this mapping:
 
 1. **Asset Collection**: Automatically parse asset reference directives in rst/md files and copy referenced assets (images, Excel files, etc.) to `assets/` subdirectory within the same directory as the target knowledge file
    - Target location: `assets/` subdirectory in the same directory as the knowledge file
-   - Example: If target file is `.claude/skills/nabledge-6/knowledge/batch/handlers.md`, assets go to `.claude/skills/nabledge-6/knowledge/batch/assets/image.png`
+   - Example: If target file is `.claude/skills/nabledge-6/knowledge/processing-pattern/nablarch-batch/handlers.md`, assets go to `.claude/skills/nabledge-6/knowledge/processing-pattern/nablarch-batch/assets/image.png`
    - Assets are stored alongside knowledge files within the skill's knowledge directory structure for easy reference
 
 2. **Category Filtering**: Allow filtering by specific category IDs to process only targeted documentation
