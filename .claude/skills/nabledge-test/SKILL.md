@@ -1,6 +1,6 @@
 ---
 name: nabledge-test
-description: Test nabledge-6/5 using skill-creator eval procedures. Executes test scenarios, evaluates expectations, saves results to .issues/xxxxx/.
+description: Test nabledge-6/5 using skill-creator eval procedures. Executes test scenarios, evaluates expectations, saves results to .pr/xxxxx/.
 ---
 
 # Nabledge-Test
@@ -20,7 +20,7 @@ nabledge-test 6 --category handlers # Category
 1. Load scenario from `scenarios/nabledge-6/scenarios.json`
 2. Convert keywords/sections to expectations
 3. Execute skill-creator eval-mode procedures manually
-4. Save results to `.issues/xxxxx/test-<id>-<timestamp>.md`
+4. Save results to `.pr/xxxxx/test-<id>-<timestamp>.md`
 
 ## When invoked
 
@@ -272,7 +272,7 @@ For each expectation in expectations list:
 
 ### Step 8: Generate summary report
 
-Write `.issues/xxxxx/test-<scenario-id>-<timestamp>.md`:
+Write `.pr/xxxxx/test-<scenario-id>-<timestamp>.md`:
 
 ```markdown
 # Test: <scenario-id>

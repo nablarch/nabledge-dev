@@ -1,6 +1,6 @@
 # Work Log
 
-- **Directory**: `.issues/xxxxx/` where xxxxx is 5-digit issue number (e.g., `.issues/00042/`)
+- **Directory**: `.pr/xxxxx/` where xxxxx is 5-digit PR number (e.g., `.pr/00042/`)
 - **Filename**: Concise English (e.g., `add-validation.md`)
 - **Content**: Changed files, results, next steps (if any)
 - **Timing**: Upon completion

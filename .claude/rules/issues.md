@@ -33,7 +33,7 @@ For bugs (Critical/High: required, Medium: recommended, Low: optional), add:
 - [ ] Workaround documented (if applicable)
 - [ ] Horizontal check completed with method, results, and status
 - [ ] Recurrence prevention measures implemented
-- [ ] Post-mortem created in .issues/xxxxx/
+- [ ] Post-mortem created in .pr/xxxxx/
 ```
 
 ## Example
