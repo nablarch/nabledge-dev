@@ -76,43 +76,51 @@ Each mapping entry:
 
 Category IDs and names follow official Nablarch English documentation terminology.
 
-**Note**: The table below provides structure and rules. Actual source file paths are determined during mapping creation by scanning official documentation directories.
+| Type | Category ID |
+|------|-------------|
+| processing-pattern | nablarch-batch |
+| processing-pattern | jakarta-batch |
+| processing-pattern | restful-web-service |
+| processing-pattern | http-messaging |
+| processing-pattern | web-application |
+| processing-pattern | mom-messaging |
+| processing-pattern | db-messaging |
+| component | handlers |
+| component | libraries |
+| component | adapters |
+| development-tools | testing-framework |
+| development-tools | toolbox |
+| development-tools | java-static-analysis |
+| setup | blank-project |
+| setup | configuration |
+| setup | setting-guide |
+| setup | cloud-native |
+| guide | nablarch-patterns |
+| guide | business-samples |
+| check | security-check |
+| about | about-nablarch |
+| about | migration |
+| about | release-notes |
 
-| Type | Category | Source Path Pattern | Pattern Completeness | Target Path | Target Naming Rule |
-|------|----------|---------------------|----------------------|-------------|--------------------|
-| processing-pattern | nablarch-batch | `**/batch/nablarch_batch/**/*.{rst,md}` | Complete | `processing-pattern/nablarch-batch/*.md` | Based on source filename, may split by subtopic |
-| processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `processing-pattern/jakarta-batch/*.md` | Based on source filename |
-| processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `processing-pattern/restful-web-service/*.md` | Based on source filename |
-| processing-pattern | http-messaging | `**/web_service/http_messaging/**/*.{rst,md}` | Complete | `processing-pattern/http-messaging/*.md` | Based on source filename |
-| processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `processing-pattern/web-application/*.md` | Based on source filename |
-| processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `processing-pattern/mom-messaging/*.md` | Based on source filename |
-| processing-pattern | db-messaging | `**/messaging/db/**/*.{rst,md}` | Complete | `processing-pattern/db-messaging/*.md` | Based on source filename |
-| component | handlers | `**/handlers/**/*.{rst,md}` | Partial (handler content also in adapters/libraries) | `component/handlers/*.md` | Based on source filename, may consolidate related handlers |
-| component | libraries | `**/libraries/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/libraries/*.md` | Based on source filename and function |
-| component | adapters | `**/adaptors/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/adapters/*.md` | Based on source filename and integration target |
-| component | development-tools | `**/development_tools/**/*.{rst,md}` | Complete | `component/development-tools/*.md` | Based on source filename |
-| setup | blank-project | `**/blank_project/**/*.{rst,md}` | Complete | `setup/blank-project/*.md` | Single consolidated file |
-| setup | configuration | `**/configuration/**/*.{rst,md}` | Complete | `setup/configuration/*.md` | Based on source filename |
-| setup | setting-guide | `**/setting_guide/**/*.{rst,md}` | Complete | `setup/setting-guide/*.md` | Based on source filename |
-| setup | cloud-native | `**/cloud_native/**/*.{rst,md}` | Complete | `setup/cloud-native/*.md` | Based on source filename |
-| guide | nablarch-patterns | `nablarch-patterns/*.md` (from nablarch-system-development-guide) | Complete | `guide/nablarch-patterns/*.md` | Keep original filename |
-| guide | business-samples | `**/biz_samples/**/*.{rst,md}` | Complete | `guide/business-samples/*.md` | Based on source filename |
-| check | security-check | `Nablarch機能のセキュリティ対応表.xlsx` (from nablarch-system-development-guide) | Complete | `check/security-check/*.xlsx` | Direct copy with rename |
-| about | about-nablarch | `**/about_nablarch/**/*.{rst,md}`, `**/nablarch/**/*.{rst,md}`, `**/examples/**/*.{rst,md}`, `**/external_contents/**/*.{rst,md}`, `**/nablarch_api/**/*.{rst,md}` | Complete | `about/about-nablarch/*.md` | Based on source filename |
-| about | migration | `**/migration/**/*.{rst,md}` | Complete | `about/migration/*.md` | Based on source filename |
-| about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/release-notes/*.md` | Based on source filename |
+### Target Path Rules
 
-**Pattern Completeness**:
-- **Complete**: Path pattern covers all relevant files; automatic mapping possible without manual verification
-- **Partial**: Path pattern is incomplete or requires content inspection; manual review mandatory
-  - Processing patterns like nablarch-batch may be included in adapter/library content, requiring manual inspection
-  - Handlers, libraries, and adapters have content distributed across multiple directories
+Target paths follow the pattern: `{type}/{category-id}/{filename}.md`
 
-**Path Pattern Notes**:
-- `**` matches any directory depth
-- `{rst,md}` matches either .rst or .md extensions
-- Actual paths determined by scanning official documentation during mapping creation
-- Manual verification required for all "Partial" categories
+**Naming conventions**:
+- **Type directories**: Use Type value from taxonomy (e.g., `processing-pattern/`, `component/`, `development-tools/`, `setup/`, `guide/`, `check/`, `about/`)
+- **Category ID directories**: Use Category ID value from taxonomy (e.g., `nablarch-batch/`, `testing-framework/`, `handlers/`)
+- **Filenames**: Based on source filename with `.md` extension
+  - Convert underscores to hyphens (e.g., `nablarch_batch` → `nablarch-batch`)
+  - Use descriptive names based on content when source filename is generic (e.g., `index.rst` → `overview.md`)
+  - May split large source files into multiple target files by subtopic
+  - May consolidate related source files into single target file
+
+**Examples**:
+- `processing-pattern/nablarch-batch/architecture.md`
+- `development-tools/testing-framework/request-unit-test.md`
+- `component/handlers/web-handler.md`
+- `setup/configuration/db-connection.md`
+- `guide/nablarch-patterns/api-design.md`
 
 ## Source File Scope
 
