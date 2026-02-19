@@ -196,16 +196,13 @@ def generate_official_url(source_path: str) -> str:
     """Generate official URL with Markdown link format"""
     if source_path.startswith('en/Nablarch-system-development-guide/'):
         # nablarch-system-development-guide
-        ja_path = source_path.replace(
-            'en/Nablarch-system-development-guide/',
-            'Nablarchシステム開発ガイド/'
-        )
-        url = f"https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{ja_path}"
+        # Use English directory structure (source path as-is)
+        url = f"https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{source_path}"
     else:
         # nablarch-document
         # Change .rst to .html, keep path
         html_path = source_path.replace('.rst', '.html').replace('.md', '.html')
-        url = f"https://nablarch.github.io/docs/LATEST/doc/ja/{html_path}"
+        url = f"https://nablarch.github.io/docs/6u3/doc/{html_path}"
 
     return f"[🔗]({url})"
 

@@ -222,18 +222,28 @@ Official URLs point to **Japanese documentation** for user reference and traceab
 ### nablarch-document
 
 - Source Path: `{path}.rst` (from table, relative to `en/` directory)
-- Official URL: `https://nablarch.github.io/docs/LATEST/doc/ja/{path}.html`
-- Conversion: Change `.rst` → `.html`, prepend base URL
+- Official URL: `https://nablarch.github.io/docs/{version}/doc/{path}.html`
+  - **v6**: `{version}` = `6u3` (current minor version for nabledge-6)
+  - **v5**: `{version}` = `5u26` (current minor version for nabledge-5)
+- Conversion: Change `.rst` → `.html`, prepend base URL with version
 
-Example:
+Example (v6):
 - Source Path: `application_framework/application_framework/handlers/common/global_error_handler.rst`
-- Official URL: `https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html`
+- Official URL: `https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/common/global_error_handler.html`
+
+Example (v5):
+- Source Path: `application_framework/application_framework/handlers/common/global_error_handler.rst`
+- Official URL: `https://nablarch.github.io/docs/5u26/doc/application_framework/application_framework/handlers/common/global_error_handler.html`
 
 ### nablarch-system-development-guide
 
 - Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md` (from table)
-- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/docs/nablarch-patterns/{file}.md`
-- Conversion: Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/`, keep `.md`, prepend base URL
+- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md`
+- Conversion: Keep source path as-is (English directory structure), prepend base URL
+
+Example:
+- Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/Asynchronous_operation_in_Nablarch.md`
+- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/en/Nablarch-system-development-guide/docs/nablarch-patterns/Asynchronous_operation_in_Nablarch.md`
 
 **URL Format**: Use Markdown link format `[🔗](full-url)` to keep table readable while maintaining programmatic access to URLs.
 
