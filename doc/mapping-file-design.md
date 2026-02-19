@@ -43,6 +43,7 @@ Each mapping entry:
 {
   "source_file": "ja/application_framework/application_framework/handlers/index.rst",
   "title": "Handlers",
+  "title_ja": "ハンドラ",
   "official_url": "https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/index.html",
   "mappings": [
     {
@@ -59,7 +60,8 @@ Each mapping entry:
 
 **Fields**:
 - `source_file`: Path to official doc file (relative to repository root)
-- `title`: File title (from rst/md header or filename)
+- `title`: File title in English (from rst/md header or filename)
+- `title_ja`: File title in Japanese (extracted from actual page content for validation)
 - `official_url`: Official Japanese documentation URL (for traceability)
 - `mappings`: Array of category-to-target-file pairs
   - `category`: Category ID (must exist in categories file)
@@ -73,6 +75,8 @@ Each mapping entry:
 ## Classification Taxonomy
 
 Category IDs and names follow official Nablarch English documentation terminology.
+
+**Note**: The table below provides an overview. For detailed mapping information including source file path patterns, completeness status, and target file naming rules, see the mapping JSON files and Excel export.
 
 ### Processing Patterns (type: processing-pattern)
 - `nablarch-batch` - Nablarch Batch Application
@@ -110,7 +114,7 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 ### nablarch-document (v6 and v5)
 
-**Include**: All `.rst` and `.md` files in `ja/` directory
+**Include**: All `.rst` and `.md` files in `en/` directory if available, otherwise `ja/` directory
 
 **Exclude**:
 - `README.md` (root level) - Build and setup instructions
@@ -118,19 +122,12 @@ Category IDs and names follow official Nablarch English documentation terminolog
 - `.textlint/test/test.rst` - Textlint test file
 - All non-documentation files (`.py`, `.css`, `.js`, `.html`, `.png`, `.jpg`, `.gif`, `.svg`, `.patch`, `.json`, `Makefile`, etc.)
 
-**File Counts**:
-- v6: 334 Japanese documentation files
-- v5: 431 Japanese documentation files
-
-### nablarch-system-development-guide (v6 only)
+### nablarch-system-development-guide (v6 and v5)
 
 **Include**:
-- `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
-- `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
-
-**File Counts**:
-- 3 md files (nablarch-patterns)
-- 1 xlsx file (security matrix)
+- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
+- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
+- v5: Same paths as v6 (content will be reviewed during knowledge file creation for v5-specific updates)
 
 ### nablarch-single-module-archetype
 
@@ -171,7 +168,8 @@ For user review, mapping JSON files are converted to Excel with the following st
 ### Columns
 
 - `source_file`: Path to official doc file
-- `title`: File title
+- `title`: File title (English)
+- `title_ja`: File title (Japanese)
 - `official_url`: Official documentation URL (hyperlink)
 - `category`: Category ID
 - `target_file`: Target knowledge file path
@@ -192,7 +190,7 @@ Create `json-to-excel.py` (or shell script with appropriate tools) to:
 2. Read categories JSON files to look up category type
 3. Flatten mappings array (one row per category mapping)
 4. Generate Excel file with:
-   - Column headers: source_file, title, official_url, category, target_file, type
+   - Column headers: source_file, title, title_ja, official_url, category, target_file, type
    - Hyperlinks in official_url column
    - Filters on all columns
    - Rows sorted by source_file, then by category
@@ -202,7 +200,8 @@ Create `json-to-excel.py` (or shell script with appropriate tools) to:
 
 When creating a skill to generate knowledge files from this mapping:
 
-1. **Asset Collection**: Automatically parse asset reference directives in rst/md files and copy referenced assets (images, Excel files, etc.) to the target location
+1. **Asset Collection**: Automatically parse asset reference directives in rst/md files and copy referenced assets (images, Excel files, etc.) to `assets/` subdirectory within the same directory as the target knowledge file
+   - Example: If target file is `batch/handlers.md`, assets go to `batch/assets/`
 
 2. **Category Filtering**: Allow filtering by specific category IDs to process only targeted documentation
    - Example: "process only nablarch-batch and restful-web-service files"
@@ -219,6 +218,10 @@ When creating a skill to generate knowledge files from this mapping:
    - Asset collection should be automated (not manual)
    - Agents parse directives to find referenced assets
 
+6. **v5 Content Review**: When creating v5 knowledge files from v6 official documentation paths, review content during knowledge file creation to ensure v5-specific terminology and features are accurately reflected
+   - v6 official documentation paths are used as the starting point (copied from v6 mapping)
+   - During content conversion, verify and update references to v5-specific APIs, features, and terminology
+
 ## Validation
 
 ### Validation Script
@@ -228,8 +231,9 @@ Create `validate-mapping.sh` to verify:
 1. **File Count Verification**: Compare mapped file count with actual files in source directories
 2. **Category Verification**: Check that all category IDs in mappings exist in categories file
 3. **Path Verification**: Verify that all source_file paths exist
-4. **URL Verification**: Verify that official URLs follow conversion rules
-5. **Statistics Generation**: Generate category statistics (files per category, mappings per category)
+4. **URL Verification**: Verify that official URLs follow conversion rules and are accessible
+5. **Title Verification**: Access official URLs and verify that Japanese titles in mapping match actual page titles
+6. **Statistics Generation**: Generate category statistics (files per category, mappings per category)
 
 ### Output
 
@@ -237,6 +241,7 @@ Create `validate-mapping.sh` to verify:
 - List of undefined category IDs (if any)
 - List of missing source files (if any)
 - List of invalid URLs (if any)
+- List of title mismatches between mapping and actual pages (if any)
 - Category statistics table
 
 ## Implementation Notes
