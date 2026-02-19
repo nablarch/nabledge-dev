@@ -80,12 +80,13 @@ See `.claude/rules/release.md` for detailed release workflow.
 This repository provides custom slash commands to streamline development workflow:
 
 #### /hi - Full Development Workflow
-Execute complete workflow from issue to PR:
+Execute complete workflow from issue/PR to review request:
 ```
-/hi 123        # Work on issue #123
-/hi            # Interactive: select from recent issues
+/hi 123        # Start work on issue #123
+/hi 456        # Resume work on issue/PR #456
+/hi            # Interactive selection
 ```
-Creates branch, implements changes, runs tests, creates PR.
+Creates branch, implements changes, runs tests, creates PR. Use with issue# to start new work, or PR# to resume existing work.
 
 #### /fb - Review Feedback Response
 Respond to PR review feedback:
