@@ -238,7 +238,7 @@ mapper.close();
 Use relative paths from the output file location:
 
 ```
-Output: work/20260210/code-analysis-login-action.md
+Output: .nabledge/20260210/code-analysis-login-action.md
 Source: proman-web/src/main/java/com/nablarch/example/proman/web/action/LoginAction.java
 Link: ../../proman-web/src/main/java/com/nablarch/example/proman/web/action/LoginAction.java
 ```
