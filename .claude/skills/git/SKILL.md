@@ -8,7 +8,7 @@ allowed-tools: Bash, Task, AskUserQuestion, Read
 # Git Orchestrator Skill
 
 This skill orchestrates five Git operations:
-- **branch-create**: Create working branch from main
+- **branch-create**: Create working branch from default branch
 - **commit**: Commit and push changes with conventional commit format
 - **branch-delete**: Delete merged branches
 - **worktree-create**: Create new worktree
@@ -36,7 +36,7 @@ Extract mode from `$ARGUMENTS`:
 - Question: "Which Git operation do you want to perform?"
 - Options (by frequency):
   1. "Commit & Push (commit)" - Commit changes and push to remote
-  2. "Create Branch (branch-create)" - Create working branch from main
+  2. "Create Branch (branch-create)" - Create working branch from default branch
   3. "Delete Branch (branch-delete)" - Delete merged branch
   4. "Worktree Operations (worktree)" - Create or delete worktree
 

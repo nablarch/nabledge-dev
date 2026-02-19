@@ -1,6 +1,6 @@
 # Branch Creation Workflow
 
-This workflow creates a working branch from the development branch (typically `develop`).
+This workflow creates a working branch from the repository's default branch.
 
 ## Required Tools
 
@@ -11,32 +11,25 @@ This workflow creates a working branch from the development branch (typically `d
 
 ### 1. Pre-flight Checks
 
-**1.1 Get Development Branch and Verify Current Branch**
+**1.1 Get Default Branch and Verify Current Branch**
 
 ```bash
-# Get repository default branch (should be develop per branch strategy)
+# Get repository default branch
 default_branch=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
 echo "Repository default branch: ${default_branch}"
 
-# Verify develop branch exists
-if ! git rev-parse --verify develop &>/dev/null; then
-  echo "Error: Branch 'develop' does not exist in this repository."
+# Verify default branch exists locally
+if ! git rev-parse --verify "${default_branch}" &>/dev/null; then
+  echo "Error: Default branch '${default_branch}' does not exist locally."
   echo ""
-  echo "Please create 'develop' branch first:"
-  echo "  git checkout -b develop main"
-  echo "  git push -u origin develop"
-  echo ""
-  echo "Or update the workflow if using different branch names."
+  echo "Please fetch from remote first:"
+  echo "  git fetch origin"
+  echo "  git checkout ${default_branch}"
   exit 1
 fi
 
-# For branch creation, always use develop as base
-if [[ "$default_branch" == "develop" ]]; then
-  base_branch="develop"
-else
-  echo "WARNING: Repository default is ${default_branch}, but using 'develop' per branch strategy"
-  base_branch="develop"
-fi
+# Use default branch as base
+base_branch="${default_branch}"
 
 # Get current branch
 current_branch=$(git branch --show-current)
@@ -45,10 +38,10 @@ echo "Current branch: ${current_branch}"
 
 If not on the base branch, exit with error:
 
-Error: Working branches must be created from the development branch.
+Error: Working branches must be created from the default branch.
 
 Current branch: ${current_branch}
-Base branch: ${base_branch}
+Default branch: ${base_branch}
 
 To switch to ${base_branch}:
 git checkout ${base_branch}
@@ -81,7 +74,7 @@ echo "Base branch updated successfully"
 
 If pull fails (conflicts):
 
-Error: Failed to update ${base_branch} branch.
+Error: Failed to update ${base_branch} (default branch).
 Please resolve conflicts before proceeding.
 
 ### 2. Get Issue Number and Create Branch Name
@@ -210,9 +203,9 @@ Use `/git commit` to commit changes.
 
 | Error | Response |
 |-------|----------|
-| Not on develop branch | Guide to switch to develop |
+| Not on default branch | Guide to switch to default branch |
 | Uncommitted changes | Guide to commit or stash |
-| Failed to update develop | Guide to resolve conflicts |
+| Failed to update default branch | Guide to resolve conflicts |
 | Branch name exists | Guide to use existing or delete |
 | Issue not found | Guide to create issue first |
 | Invalid issue number | Reject non-numeric input |
@@ -222,7 +215,7 @@ Use `/git commit` to commit changes.
 1. **No emojis**: Never use emojis unless explicitly requested by user
 2. **Issue-driven development**: All branches must be linked to a GitHub issue
 3. **Branch naming**: Always use `<number>-<descriptive-name>` format (e.g., `27-plugin-first-startup-recognition`) for clarity
-4. **Safety**: Protect main/develop branches, check duplicates, verify clean working tree
+4. **Safety**: Protect main/default branches, check duplicates, verify clean working tree
 5. **Issue validation**: Always verify issue exists before creating branch
-6. **Branch strategy**: Branches are created from `develop`, not `main`
+6. **Branch strategy**: Branches are created from repository's default branch (main, develop, etc.)
 7. **Variable syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
