@@ -41,16 +41,16 @@ Markdown table format with one row per source-to-target mapping:
 
 | Source Path | Title | Title (ja) | Official URL | Type | Category ID | Processing Pattern | Target Path |
 |-------------|-------|------------|--------------|------|-------------|-------------------|-------------|
-| application_framework/application_framework/handlers/common/global_error_handler.rst | Global Error Handler | グローバルエラーハンドラ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html | component | handlers | | component/handlers/common/global-error-handler.md |
-| application_framework/application_framework/handlers/batch/loop_handler.rst | Loop Handler | ループハンドラ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/batch/loop_handler.html | component | handlers | nablarch-batch | component/handlers/batch/loop-handler.md |
-| application_framework/application_framework/batch/nablarch_batch/architecture.rst | Architecture | アーキテクチャ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/batch/nablarch_batch/architecture.html | processing-pattern | nablarch-batch | nablarch-batch | processing-pattern/nablarch-batch/architecture.md |
-| development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | Request Unit Test (REST) | リクエスト単体テスト (REST) | https://nablarch.github.io/docs/LATEST/doc/ja/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html | development-tools | testing-framework | restful-web-service | development-tools/testing-framework/RequestUnitTest-rest.md |
+| application_framework/application_framework/handlers/common/global_error_handler.rst | Global Error Handler | グローバルエラーハンドラ | [🔗](https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html) | component | handlers | | component/handlers/common/global-error-handler.md |
+| application_framework/application_framework/handlers/batch/loop_handler.rst | Loop Handler | ループハンドラ | [🔗](https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/batch/loop_handler.html) | component | handlers | nablarch-batch | component/handlers/batch/loop-handler.md |
+| application_framework/application_framework/batch/nablarch_batch/architecture.rst | Architecture | アーキテクチャ | [🔗](https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/batch/nablarch_batch/architecture.html) | processing-pattern | nablarch-batch | nablarch-batch | processing-pattern/nablarch-batch/architecture.md |
+| development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | Request Unit Test (REST) | リクエスト単体テスト (REST) | [🔗](https://nablarch.github.io/docs/LATEST/doc/ja/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html) | development-tools | testing-framework | restful-web-service | development-tools/testing-framework/RequestUnitTest-rest.md |
 
 **Columns**:
 - `Source Path`: Path to official doc file (relative to repository root, without `.lw/nab-official/v6/nablarch-document/en/` prefix)
-- `Title`: File title in English (from rst/md header or filename)
-- `Title (ja)`: File title in Japanese (extracted by accessing Official URL and parsing page title for validation)
-- `Official URL`: Official Japanese documentation URL (for traceability and title extraction)
+- `Title`: File title in English (extracted from `.lw/nab-official/v6/nablarch-document/en/{path}.rst` header)
+- `Title (ja)`: File title in Japanese (extracted from `.lw/nab-official/v6/nablarch-document/ja/{path}.rst` header)
+- `Official URL`: Official Japanese documentation URL (for user reference and traceability). Format: `[🔗](full-url)` as Markdown link
 - `Type`: Category type from taxonomy (processing-pattern, component, development-tools, setup, guide, check, about)
 - `Category ID`: Category identifier (must exist in categories file)
 - `Processing Pattern`: Processing pattern identifier for pattern-specific files (one of: nablarch-batch, jakarta-batch, restful-web-service, http-messaging, web-application, mom-messaging, db-messaging). Empty for generic/shared files.
@@ -192,9 +192,24 @@ Target paths follow the pattern: `{type}/{category-id}/{subdirectories}/{filenam
 
 **Exclude**: All files (removed from scope)
 
-## Official URL Conversion Rules
+## Title Extraction
 
-Official URLs point to **Japanese documentation** for Title (ja) extraction and user reference, even when source files are in English.
+Titles are extracted from local rst/md file headers in both English and Japanese versions.
+
+### nablarch-document
+
+- **Title (English)**: Extract from `.lw/nab-official/v6/nablarch-document/en/{path}.rst` header
+- **Title (ja) (Japanese)**: Extract from `.lw/nab-official/v6/nablarch-document/ja/{path}.rst` header
+- Headers are typically in the first few lines of rst files (using `===` or `---` underline format)
+
+### nablarch-system-development-guide
+
+- **Title (English)**: Extract from `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md` header (first `#` heading)
+- **Title (ja) (Japanese)**: Extract from `Nablarchシステム開発ガイド/docs/nablarch-patterns/{file}.md` header (first `#` heading)
+
+## Official URL Generation Rules
+
+Official URLs point to **Japanese documentation** for user reference and traceability.
 
 ### nablarch-document
 
@@ -212,7 +227,7 @@ Example:
 - Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/docs/nablarch-patterns/{file}.md`
 - Conversion: Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/`, keep `.md`
 
-**Rationale**: Japanese URLs enable Title (ja) extraction and provide user-facing documentation links for Japanese Nablarch users.
+**URL Format**: Use Markdown link format `[🔗](full-url)` to keep table readable while maintaining programmatic access to URLs.
 
 ## Asset Files
 
@@ -269,6 +284,7 @@ When creating a skill to generate knowledge files from this mapping:
    - Agents filter table rows where `Category ID` column matches desired IDs
 
 4. **Official URL**: Include the Official URL in generated knowledge files for traceability
+   - Extract URL from Markdown link format `[🔗](url)` using regex: `\[.*?\]\((https://.*?)\)`
    - Users can navigate from knowledge files back to official documentation
 
 5. **Multiple Mappings**: One source file may appear in multiple table rows when mapped to different categories
@@ -291,22 +307,25 @@ When creating a skill to generate knowledge files from this mapping:
 Create `validate-mapping.sh` to verify:
 
 1. **Category Verification**: Check that all Category IDs in table exist in categories file
-2. **Path Verification**: Verify that all Source Path entries exist
-3. **URL Verification**: Verify that official URLs follow conversion rules and are accessible (HTTP 200 response)
-4. **Title Verification**: Access each Official URL, extract the Japanese page title from HTML `<title>` tag or heading, and verify it matches the `Title (ja)` column in mapping table
-   - For nablarch-document: Parse `https://nablarch.github.io/docs/LATEST/doc/ja/{path}.html` and extract title
-   - For nablarch-system-development-guide: Parse GitHub page and extract markdown heading
-   - Report any mismatches for manual review
-   - Japanese titles are required for automated validation and user-facing documentation
-5. **Statistics Generation**: Generate category statistics (files per category, mappings per category)
+2. **Path Verification**: Verify that all Source Path entries exist in both `en/` and `ja/` directories
+3. **Title Extraction Verification**:
+   - Extract titles from both English and Japanese rst/md file headers
+   - Verify both files exist and have valid headers
+   - Report files with missing or unparseable headers
+4. **URL Verification**: Verify that Official URLs follow conversion rules (optional: check accessibility with HTTP 200 response)
+5. **Processing Pattern Verification**: Check that Processing Pattern values are valid (must be one of the processing pattern category IDs or empty)
+6. **Target Path Verification**: Verify Target Paths follow naming conventions (subdirectory rules for components, flat structure for others)
+7. **Statistics Generation**: Generate category statistics (files per category, mappings per pattern)
 
 ### Output
 
 - List of undefined category IDs (if any)
 - List of missing source files (if any)
+- List of files with missing or unparseable headers (if any)
 - List of invalid URLs (if any)
-- List of title mismatches between mapping and actual pages (if any)
-- Category statistics table
+- List of invalid Processing Pattern values (if any)
+- List of Target Path naming violations (if any)
+- Category and processing pattern statistics table
 
 ## Implementation Notes
 
