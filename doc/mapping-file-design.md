@@ -92,12 +92,13 @@ Category IDs and names follow official Nablarch English documentation terminolog
 | component | adapters | `**/adaptors/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/adapters/*.md` | Based on source filename and integration target |
 | component | development-tools | `**/development_tools/**/*.{rst,md}` | Complete | `component/development-tools/*.md` | Based on source filename |
 | setup | blank-project | `**/blank_project/**/*.{rst,md}` | Complete | `setup/blank-project/*.md` | Single consolidated file |
-| setup | maven-archetype | `**/archetype/**/*.{rst,md}` | Complete | `setup/maven-archetype/*.md` | Single consolidated file |
 | setup | configuration | `**/configuration/**/*.{rst,md}` | Complete | `setup/configuration/*.md` | Based on source filename |
 | setup | setting-guide | `**/setting_guide/**/*.{rst,md}` | Complete | `setup/setting-guide/*.md` | Based on source filename |
+| setup | cloud-native | `**/cloud_native/**/*.{rst,md}` | Complete | `setup/cloud-native/*.md` | Based on source filename |
 | guide | nablarch-patterns | `nablarch-patterns/*.md` (from nablarch-system-development-guide) | Complete | `guide/nablarch-patterns/*.md` | Keep original filename |
+| guide | business-samples | `**/biz_samples/**/*.{rst,md}` | Complete | `guide/business-samples/*.md` | Based on source filename |
 | check | security-check | `Nablarch機能のセキュリティ対応表.xlsx` (from nablarch-system-development-guide) | Complete | `check/security-check/*.xlsx` | Direct copy with rename |
-| about | about-nablarch | `**/about_nablarch/**/*.{rst,md}` | Complete | `about/about-nablarch/*.md` | Based on source filename |
+| about | about-nablarch | `**/about_nablarch/**/*.{rst,md}`, `**/nablarch/**/*.{rst,md}`, `**/examples/**/*.{rst,md}`, `**/external_contents/**/*.{rst,md}`, `**/nablarch_api/**/*.{rst,md}` | Complete | `about/about-nablarch/*.md` | Based on source filename |
 | about | migration | `**/migration/**/*.{rst,md}` | Complete | `about/migration/*.md` | Based on source filename |
 | about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/release-notes/*.md` | Based on source filename |
 

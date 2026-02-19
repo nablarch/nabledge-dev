@@ -1,10 +1,22 @@
-# Nablarch v6 English Documentation File Mapping
+# Nablarch v6 Complete Documentation File Mapping
 
 **Generated**: 2026-02-19
-**Source**: `.lw/nab-official/v6/nablarch-document/en/`
-**Total Files**: 333
+**Total Files**: 337
+**Sources**:
+- `.lw/nab-official/v6/nablarch-document/en/` - **All files** (333 files)
+- `.lw/nab-official/v6/nablarch-system-development-guide/` - **Selected files only** (4 files, see below)
 
-This table maps all English documentation files to their target categories and paths in the nabledge-6 knowledge base.
+This table maps all Nablarch v6 documentation files to their target categories and paths in the nabledge-6 knowledge base.
+
+## Source File Scope
+
+### nablarch-document
+**All files included** - Complete English documentation (332 .rst/.md files)
+
+### nablarch-system-development-guide
+**Selected files only**:
+- `Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (excluding README.md) → nablarch-patterns category
+- `Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx` → security-check category
 
 | Source Path | Category | Source Path Pattern | Target Path | Target File Name |
 |-------------|----------|---------------------|-------------|------------------|
@@ -340,3 +352,7 @@ This table maps all English documentation files to their target categories and p
 | [migration/index.rst](../.lw/nab-official/v6/nablarch-document/en/migration/index.rst) | migration | **/migration/**/*.{rst,md} | about/migration/ | index.md |
 | [nablarch_api/index.rst](../.lw/nab-official/v6/nablarch-document/en/nablarch_api/index.rst) | about-nablarch | **/nablarch_api/**/*.{rst,md} | reference/api/ | index.md |
 | [terms_of_use/index.rst](../.lw/nab-official/v6/nablarch-document/en/terms_of_use/index.rst) | about-nablarch | **/terms_of_use/**/*.{rst,md} | about/terms/ | index.md |
+| [Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchでの非同期処理.md](../.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchでの非同期処理.md) | nablarch-patterns | **/nablarch-patterns/**/*.{md} | guide/nablarch-patterns/ | Nablarchでの非同期処理.md |
+| [Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchアンチパターン.md](../.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchアンチパターン.md) | nablarch-patterns | **/nablarch-patterns/**/*.{md} | guide/nablarch-patterns/ | Nablarchアンチパターン.md |
+| [Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchバッチ処理パターン.md](../.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchバッチ処理パターン.md) | nablarch-patterns | **/nablarch-patterns/**/*.{md} | guide/nablarch-patterns/ | Nablarchバッチ処理パターン.md |
+| [Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx](../.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx) | security-check | **/設計書/**/*.{xlsx} | check/security-check/ | Nablarch機能のセキュリティ対応表.xlsx |
