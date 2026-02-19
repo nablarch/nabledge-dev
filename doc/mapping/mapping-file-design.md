@@ -39,10 +39,12 @@ Each category entry:
 
 Markdown table format with one row per source-to-target mapping:
 
-| Source Path | Title | Title (ja) | Official URL | Type | Category ID | Target Path |
-|-------------|-------|------------|--------------|------|-------------|-------------|
-| application_framework/application_framework/handlers/common/global_error_handler.rst | Global Error Handler | グローバルエラーハンドラ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html | component | handlers | component/handlers/common/global-error-handler.md |
-| application_framework/application_framework/batch/nablarch_batch/architecture.rst | Architecture | アーキテクチャ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/batch/nablarch_batch/architecture.html | processing-pattern | nablarch-batch | processing-pattern/nablarch-batch/architecture.md |
+| Source Path | Title | Title (ja) | Official URL | Type | Category ID | Processing Pattern | Target Path |
+|-------------|-------|------------|--------------|------|-------------|-------------------|-------------|
+| application_framework/application_framework/handlers/common/global_error_handler.rst | Global Error Handler | グローバルエラーハンドラ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html | component | handlers | | component/handlers/common/global-error-handler.md |
+| application_framework/application_framework/handlers/batch/loop_handler.rst | Loop Handler | ループハンドラ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/batch/loop_handler.html | component | handlers | nablarch-batch | component/handlers/batch/loop-handler.md |
+| application_framework/application_framework/batch/nablarch_batch/architecture.rst | Architecture | アーキテクチャ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/batch/nablarch_batch/architecture.html | processing-pattern | nablarch-batch | nablarch-batch | processing-pattern/nablarch-batch/architecture.md |
+| development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | Request Unit Test (REST) | リクエスト単体テスト (REST) | https://nablarch.github.io/docs/LATEST/doc/ja/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html | development-tools | testing-framework | restful-web-service | development-tools/testing-framework/RequestUnitTest-rest.md |
 
 **Columns**:
 - `Source Path`: Path to official doc file (relative to repository root, without `.lw/nab-official/v6/nablarch-document/en/` prefix)
@@ -51,12 +53,14 @@ Markdown table format with one row per source-to-target mapping:
 - `Official URL`: Official Japanese documentation URL (for traceability and title extraction)
 - `Type`: Category type from taxonomy (processing-pattern, component, development-tools, setup, guide, check, about)
 - `Category ID`: Category identifier (must exist in categories file)
+- `Processing Pattern`: Processing pattern identifier for pattern-specific files (one of: nablarch-batch, jakarta-batch, restful-web-service, http-messaging, web-application, mom-messaging, db-messaging). Empty for generic/shared files.
 - `Target Path`: Target knowledge file path following naming conventions
 
 **Key Design Decisions**:
 - One row per source-to-target mapping (source files mapping to multiple categories have multiple rows)
 - Flat table structure enables easy filtering, sorting, and review
 - Human-readable format suitable for both manual editing and programmatic processing
+- **Processing Pattern column** enables incremental knowledge file creation by processing pattern, as users typically need documentation for specific patterns (e.g., only nablarch-batch)
 
 ## Classification Taxonomy
 
@@ -87,6 +91,50 @@ Category IDs and names follow official Nablarch English documentation terminolog
 | about | about-nablarch |
 | about | migration |
 | about | release-notes |
+
+### Processing Pattern Assignment Rules
+
+The `Processing Pattern` column identifies which processing pattern(s) a file is specific to. This enables incremental knowledge file creation by pattern.
+
+**Rules**:
+
+1. **Processing Pattern categories** (Type = `processing-pattern`):
+   - Always set `Processing Pattern` = `Category ID`
+   - Example: Category ID = `nablarch-batch` → Processing Pattern = `nablarch-batch`
+
+2. **Component categories** (handlers, libraries, adapters):
+   - Check source path for pattern-specific subdirectories:
+     - `handlers/batch/*` → `nablarch-batch`
+     - `handlers/web/*` → `web-application`
+     - `handlers/rest/*` or `handlers/jaxrs/*` → `restful-web-service`
+     - `handlers/messaging/*` → `mom-messaging` or `db-messaging`
+     - `handlers/common/*` → Empty (generic/shared)
+   - Check file content/title for pattern-specific features
+   - Leave empty if the component is generic/shared across patterns
+
+3. **Development Tools categories** (testing-framework, toolbox):
+   - Check filename/path for pattern indicators:
+     - `*_batch*`, `*Batch*` → `nablarch-batch` or `jakarta-batch`
+     - `*_rest*`, `*_jaxrs*`, `*REST*` → `restful-web-service`
+     - `*_web*`, `*Web*` → `web-application`
+   - Leave empty if the tool is generic/shared
+
+4. **Setup categories** (blank-project, configuration, setting-guide):
+   - Check filename/path for pattern setup guides:
+     - `setup_NablarchBatch*`, `*batch*` → `nablarch-batch`
+     - `setup_Jbatch*` → `jakarta-batch`
+     - `setup_WebService*`, `*rest*` → `restful-web-service`
+     - `setup_Web*` (not WebService) → `web-application`
+   - Leave empty for generic configuration files
+
+5. **Guide categories** (nablarch-patterns, business-samples):
+   - Usually empty unless the guide is pattern-specific
+   - Check content to determine if specific to a pattern
+
+6. **Other categories** (check, about):
+   - Typically empty (generic documentation)
+
+**Empty value**: Indicates generic/shared files used across multiple patterns or general documentation not tied to a specific pattern.
 
 ### Target Path Rules
 
@@ -206,22 +254,32 @@ When creating a skill to generate knowledge files from this mapping:
    - Example: If target file is `.claude/skills/nabledge-6/knowledge/processing-pattern/nablarch-batch/handlers.md`, assets go to `.claude/skills/nabledge-6/knowledge/processing-pattern/nablarch-batch/assets/image.png`
    - Assets are stored alongside knowledge files within the skill's knowledge directory structure for easy reference
 
-2. **Category Filtering**: Allow filtering by specific category IDs to process only targeted documentation
-   - Example: "process only nablarch-batch and restful-web-service files"
+2. **Processing Pattern Filtering**: Enable incremental knowledge file creation by processing pattern
+   - **Primary use case**: Filter by `Processing Pattern` column to create documentation for specific patterns
+   - Example: "Create knowledge files for nablarch-batch" → Filter rows where `Processing Pattern` = "nablarch-batch"
+   - This includes:
+     - All files in `processing-pattern/nablarch-batch/` (Type = processing-pattern)
+     - Pattern-specific handlers (e.g., batch handlers)
+     - Pattern-specific testing documentation
+     - Pattern-specific setup guides
+   - Rows with empty `Processing Pattern` are generic/shared files that may be processed separately or included in all patterns
+
+3. **Category Filtering**: Allow filtering by specific category IDs for alternative workflows
+   - Example: "Process all handlers documentation" → Filter rows where `Category ID` = "handlers"
    - Agents filter table rows where `Category ID` column matches desired IDs
 
-3. **Official URL**: Include the Official URL in generated knowledge files for traceability
+4. **Official URL**: Include the Official URL in generated knowledge files for traceability
    - Users can navigate from knowledge files back to official documentation
 
-4. **Multiple Mappings**: One source file may appear in multiple table rows when mapped to different categories
+5. **Multiple Mappings**: One source file may appear in multiple table rows when mapped to different categories
    - Process each table row independently
    - Each row produces one target knowledge file
 
-5. **Focus on Conversion**: The skill should focus on content conversion and search hint extraction
+6. **Focus on Conversion**: The skill should focus on content conversion and search hint extraction
    - Asset collection should be automated (not manual)
    - Agents parse directives to find referenced assets
 
-6. **v5 Content Review**: When creating v5 knowledge files from v6 official documentation paths, review content during knowledge file creation to ensure v5-specific terminology and features are accurately reflected
+7. **v5 Content Review**: When creating v5 knowledge files from v6 official documentation paths, review content during knowledge file creation to ensure v5-specific terminology and features are accurately reflected
    - v6 official documentation paths are used as the starting point (v5 mapping is created by copying from v6)
    - During content conversion, verify and update references to v5-specific APIs, features, and terminology
    - Example differences: Java EE vs Jakarta EE, javax.* vs jakarta.* packages, Java 8 vs Java 17 features
