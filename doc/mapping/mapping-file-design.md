@@ -47,7 +47,7 @@ Markdown table format with one row per source-to-target mapping:
 | development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | Request Unit Test (REST) | リクエスト単体テスト (REST) | [🔗](https://nablarch.github.io/docs/LATEST/doc/ja/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html) | development-tools | testing-framework | restful-web-service | development-tools/testing-framework/RequestUnitTest-rest.md |
 
 **Columns**:
-- `Source Path`: Path to official doc file (relative to repository root, without `.lw/nab-official/v6/nablarch-document/en/` prefix)
+- `Source Path`: Path to official doc file (relative to `.lw/nab-official/v6/nablarch-document/en/` or `.lw/nab-official/v6/nablarch-system-development-guide/`). Plain text format for easy processing.
 - `Title`: File title in English (extracted from `.lw/nab-official/v6/nablarch-document/en/{path}.rst` header)
 - `Title (ja)`: File title in Japanese (extracted from `.lw/nab-official/v6/nablarch-document/ja/{path}.rst` header)
 - `Official URL`: Official Japanese documentation URL (for user reference and traceability). Format: `[🔗](full-url)` as Markdown link
@@ -169,7 +169,10 @@ Target paths follow the pattern: `{type}/{category-id}/{subdirectories}/{filenam
 
 ### nablarch-document (v6 and v5)
 
+**Base directory**: `.lw/nab-official/v6/nablarch-document/en/`
+
 **Include**: All `.rst` and `.md` files
+- Source Path in table: Relative to base directory (e.g., `about_nablarch/concept.rst`)
 - Prioritize `en/` directory files when available
 - Fallback to `ja/` directory if English version does not exist
 
@@ -181,10 +184,13 @@ Target paths follow the pattern: `{type}/{category-id}/{subdirectories}/{filenam
 
 ### nablarch-system-development-guide (v6 and v5)
 
+**Base directory**: `.lw/nab-official/v6/nablarch-system-development-guide/`
+
 **Include**:
-- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
-- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
+- v6: `en/Nablarch-system-development-guide/docs/nablarch-patterns/*.md` (exclude README.md)
+- v6: `Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
 - v5: Copy v6 paths as starting point (no v5-specific version exists)
+- Source Path in table: Relative to base directory (e.g., `en/Nablarch-system-development-guide/docs/nablarch-patterns/Nablarch_batch_processing_pattern.md`)
 
 **Note**: v5 mapping uses v6 official documentation paths as source. Content verification and updates for v5-specific features happen during knowledge file creation (see "Considerations for Knowledge File Creation Skill" section).
 
@@ -198,14 +204,16 @@ Titles are extracted from local rst/md file headers in both English and Japanese
 
 ### nablarch-document
 
-- **Title (English)**: Extract from `.lw/nab-official/v6/nablarch-document/en/{path}.rst` header
-- **Title (ja) (Japanese)**: Extract from `.lw/nab-official/v6/nablarch-document/ja/{path}.rst` header
+- **Title (English)**: Extract from `.lw/nab-official/v6/nablarch-document/en/{source_path}` header
+- **Title (ja) (Japanese)**: Extract from `.lw/nab-official/v6/nablarch-document/ja/{source_path}` header
+  - Replace `en/` with `ja/` in source path
 - Headers are typically in the first few lines of rst files (using `===` or `---` underline format)
 
 ### nablarch-system-development-guide
 
-- **Title (English)**: Extract from `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md` header (first `#` heading)
-- **Title (ja) (Japanese)**: Extract from `Nablarchシステム開発ガイド/docs/nablarch-patterns/{file}.md` header (first `#` heading)
+- **Title (English)**: Extract from `.lw/nab-official/v6/nablarch-system-development-guide/{source_path}` header (first `#` heading)
+- **Title (ja) (Japanese)**: Extract from `.lw/nab-official/v6/nablarch-system-development-guide/{source_path_ja}` header (first `#` heading)
+  - Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/` in source path
 
 ## Official URL Generation Rules
 
@@ -213,19 +221,19 @@ Official URLs point to **Japanese documentation** for user reference and traceab
 
 ### nablarch-document
 
-- Source Path: `{path}.rst` (under `en/` directory)
+- Source Path: `{path}.rst` (from table, relative to `en/` directory)
 - Official URL: `https://nablarch.github.io/docs/LATEST/doc/ja/{path}.html`
-- Conversion: Replace `en/` with `ja/` in path, change `.rst` → `.html`
+- Conversion: Change `.rst` → `.html`, prepend base URL
 
 Example:
-- Source: `application_framework/application_framework/handlers/common/global_error_handler.rst`
-- URL: `https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html`
+- Source Path: `application_framework/application_framework/handlers/common/global_error_handler.rst`
+- Official URL: `https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html`
 
 ### nablarch-system-development-guide
 
-- Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md`
+- Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md` (from table)
 - Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/docs/nablarch-patterns/{file}.md`
-- Conversion: Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/`, keep `.md`
+- Conversion: Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/`, keep `.md`, prepend base URL
 
 **URL Format**: Use Markdown link format `[🔗](full-url)` to keep table readable while maintaining programmatic access to URLs.
 
