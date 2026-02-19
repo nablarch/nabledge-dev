@@ -5,10 +5,10 @@ Create post-mortems for significant bugs, production incidents, or systemic fail
 ## Location
 
 ```
-work/YYYYMMDD/postmortem-<topic>.md
+.pr/xxxxx/postmortem-<topic>.md
 ```
 
-Examples: `postmortem-issue-27-plugin-recognition.md`, `postmortem-ci-deployment-failure.md`
+Where xxxxx is 5-digit PR number (e.g., `.pr/00027/postmortem-plugin-recognition.md`)
 
 ## Required Sections
 
@@ -70,7 +70,7 @@ Examples: `postmortem-issue-27-plugin-recognition.md`, `postmortem-ci-deployment
 **Key Findings**:
 - [Finding]: ✅/❌ [Status]
 
-**Details**: See `work/YYYYMMDD/horizontal-check-[topic].md`
+**Details**: See `.pr/xxxxx/horizontal-check-[topic].md`
 
 ## Prevention Measures
 
