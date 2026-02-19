@@ -80,13 +80,13 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 | Type | Category | Source Path Pattern | Pattern Completeness | Target Path | Target Naming Rule |
 |------|----------|---------------------|----------------------|-------------|--------------------|
-| processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review - processing patterns not determinable from path) | `processing-pattern/nablarch-batch/*.md` | Based on source filename, may split by subtopic |
+| processing-pattern | nablarch-batch | `**/batch/nablarch_batch/**/*.{rst,md}` | Complete | `processing-pattern/nablarch-batch/*.md` | Based on source filename, may split by subtopic |
 | processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `processing-pattern/jakarta-batch/*.md` | Based on source filename |
 | processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `processing-pattern/restful-web-service/*.md` | Based on source filename |
 | processing-pattern | http-messaging | `**/web_service/http_messaging/**/*.{rst,md}` | Complete | `processing-pattern/http-messaging/*.md` | Based on source filename |
 | processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `processing-pattern/web-application/*.md` | Based on source filename |
 | processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `processing-pattern/mom-messaging/*.md` | Based on source filename |
-| processing-pattern | db-messaging | `**/db_messaging/**/*.{rst,md}` | Complete | `processing-pattern/db-messaging/*.md` | Based on source filename |
+| processing-pattern | db-messaging | `**/messaging/db/**/*.{rst,md}` | Complete | `processing-pattern/db-messaging/*.md` | Based on source filename |
 | component | handlers | `**/handlers/**/*.{rst,md}` | Partial (handler content also in adapters/libraries) | `component/handlers/*.md` | Based on source filename, may consolidate related handlers |
 | component | libraries | `**/libraries/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/libraries/*.md` | Based on source filename and function |
 | component | adapters | `**/adaptors/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/adapters/*.md` | Based on source filename and integration target |
@@ -97,7 +97,7 @@ Category IDs and names follow official Nablarch English documentation terminolog
 | setup | setting-guide | `**/setting_guide/**/*.{rst,md}` | Complete | `setup/setting-guide/*.md` | Based on source filename |
 | guide | nablarch-patterns | `nablarch-patterns/*.md` (from nablarch-system-development-guide) | Complete | `guide/nablarch-patterns/*.md` | Keep original filename |
 | check | security-check | `Nablarch機能のセキュリティ対応表.xlsx` (from nablarch-system-development-guide) | Complete | `check/security-check/*.xlsx` | Direct copy with rename |
-| about | about-nablarch | `**/about/**/*.{rst,md}` | Complete | `about/about-nablarch/*.md` | Based on source filename |
+| about | about-nablarch | `**/about_nablarch/**/*.{rst,md}` | Complete | `about/about-nablarch/*.md` | Based on source filename |
 | about | migration | `**/migration/**/*.{rst,md}` | Complete | `about/migration/*.md` | Based on source filename |
 | about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/release-notes/*.md` | Based on source filename |
 
