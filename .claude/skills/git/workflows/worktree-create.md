@@ -1,6 +1,6 @@
 # Worktree Creation Workflow
 
-This workflow creates a new worktree for parallel work from the development branch (typically `develop`).
+This workflow creates a new worktree for parallel work from the repository's default branch.
 
 ## Required Tools
 
@@ -23,32 +23,25 @@ echo "Repository name: ${repo_name}"
 echo "Parent directory: ${parent_dir}"
 ```
 
-**1.2 Get Development Branch**
+**1.2 Get Default Branch**
 
 ```bash
-# Get repository default branch (should be develop per branch strategy)
+# Get repository default branch
 default_branch=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
 echo "Repository default branch: ${default_branch}"
 
-# Verify develop branch exists
-if ! git rev-parse --verify develop &>/dev/null; then
-  echo "Error: Branch 'develop' does not exist in this repository."
+# Verify default branch exists locally
+if ! git rev-parse --verify "${default_branch}" &>/dev/null; then
+  echo "Error: Default branch '${default_branch}' does not exist locally."
   echo ""
-  echo "Please create 'develop' branch first:"
-  echo "  git checkout -b develop main"
-  echo "  git push -u origin develop"
-  echo ""
-  echo "Or update the workflow if using different branch names."
+  echo "Please fetch from remote first:"
+  echo "  git fetch origin"
+  echo "  git checkout ${default_branch}"
   exit 1
 fi
 
-# For worktree creation, always use develop as base
-if [[ "$default_branch" == "develop" ]]; then
-  base_branch="develop"
-else
-  echo "WARNING: Repository default is ${default_branch}, but using 'develop' per branch strategy"
-  base_branch="develop"
-fi
+# Use default branch as base
+base_branch="${default_branch}"
 
 echo "Worktree will be created from: ${base_branch}"
 ```
@@ -219,13 +212,13 @@ If user selects "No, cancel", exit gracefully.
 
 ### 4. Create Worktree
 
-**4.1 Update Development Branch**
+**4.1 Update Default Branch**
 
 ```bash
 echo "Updating ${base_branch} from remote..."
 git fetch origin "${base_branch}"
 git pull origin "${base_branch}"
-echo "Base branch updated successfully"
+echo "Default branch updated successfully"
 ```
 
 **4.2 Create Worktree**
@@ -271,7 +264,7 @@ code ${worktree_path}
 |-------|----------|
 | Branch name exists | Guide to use different issue or delete existing |
 | Path exists | Guide to remove existing or use different issue |
-| Failed to update develop | Guide to resolve conflicts |
+| Failed to update default branch | Guide to resolve conflicts |
 | Insufficient permissions | Guide to check write permissions |
 | Insufficient disk space | Guide to check disk space |
 | Issue not found | Guide to create issue first |
@@ -285,7 +278,7 @@ code ${worktree_path}
 3. **Branch naming convention**: `issue-${issue_number}`
 4. **Issue-driven development**: All worktrees must be linked to a GitHub issue
 5. **Issue validation**: Always verify issue exists before creating worktree
-6. **Base branch**: Always branch from `develop`, not `main`
+6. **Base branch**: Always branch from repository's default branch (main, develop, etc.)
 7. **Variable syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 8. **Path safety**: Validate parent directory permissions and path availability
 9. **Worktree cleanup**: Use `git worktree remove` instead of `rm -rf` for proper cleanup
