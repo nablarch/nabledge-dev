@@ -75,6 +75,34 @@ See `.claude/rules/release.md` for detailed release workflow.
 
 ## Development
 
+### Custom Slash Commands
+
+This repository provides custom slash commands to streamline development workflow:
+
+#### /hi - Full Development Workflow
+Execute complete workflow from issue to PR:
+```
+/hi 123        # Work on issue #123
+/hi            # Interactive: select from recent issues
+```
+Creates branch, implements changes, runs tests, creates PR.
+
+#### /fb - Review Feedback Response
+Respond to PR review feedback:
+```
+/fb 456        # Respond to reviews on PR #456
+/fb            # Auto-detect from current branch
+```
+Fetches comments, implements fixes, commits, replies to reviewers.
+
+#### /bb - Merge and Cleanup
+Approve and merge PR, cleanup branch:
+```
+/bb 456        # Merge PR #456 and delete branch
+/bb            # Auto-detect from current branch
+```
+Approves PR, merges, detaches HEAD to main, deletes branch.
+
 ### Testing nabledge Skills
 
 Use the `nabledge-test` skill to validate nabledge-6 functionality:
