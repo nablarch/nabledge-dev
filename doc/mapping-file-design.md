@@ -83,14 +83,14 @@ Category IDs and names follow official Nablarch English documentation terminolog
 | processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review - processing patterns not determinable from path) | `processing-pattern/nablarch-batch/*.md` | Based on source filename, may split by subtopic |
 | processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `processing-pattern/jakarta-batch/*.md` | Based on source filename |
 | processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `processing-pattern/restful-web-service/*.md` | Based on source filename |
-| processing-pattern | http-messaging | `**/messaging/http/**/*.{rst,md}` | Complete | `processing-pattern/http-messaging/*.md` | Based on source filename |
+| processing-pattern | http-messaging | `**/web_service/http_messaging/**/*.{rst,md}` | Complete | `processing-pattern/http-messaging/*.md` | Based on source filename |
 | processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `processing-pattern/web-application/*.md` | Based on source filename |
 | processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `processing-pattern/mom-messaging/*.md` | Based on source filename |
 | processing-pattern | db-messaging | `**/db_messaging/**/*.{rst,md}` | Complete | `processing-pattern/db-messaging/*.md` | Based on source filename |
 | component | handlers | `**/handlers/**/*.{rst,md}` | Partial (handler content also in adapters/libraries) | `component/handlers/*.md` | Based on source filename, may consolidate related handlers |
-| component | libraries | `**/library/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/libraries/*.md` | Based on source filename and function |
-| component | adapters | `**/adapters/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/adapters/*.md` | Based on source filename and integration target |
-| component | development-tools | `**/tools/**/*.{rst,md}` | Complete | `component/development-tools/*.md` | Based on source filename |
+| component | libraries | `**/libraries/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/libraries/*.md` | Based on source filename and function |
+| component | adapters | `**/adaptors/**/*.{rst,md}` | Partial (scattered across multiple directories) | `component/adapters/*.md` | Based on source filename and integration target |
+| component | development-tools | `**/development_tools/**/*.{rst,md}` | Complete | `component/development-tools/*.md` | Based on source filename |
 | setup | blank-project | `**/blank_project/**/*.{rst,md}` | Complete | `setup/blank-project/*.md` | Single consolidated file |
 | setup | maven-archetype | `**/archetype/**/*.{rst,md}` | Complete | `setup/maven-archetype/*.md` | Single consolidated file |
 | setup | configuration | `**/configuration/**/*.{rst,md}` | Complete | `setup/configuration/*.md` | Based on source filename |
