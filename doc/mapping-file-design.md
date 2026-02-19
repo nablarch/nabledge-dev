@@ -61,8 +61,8 @@ Each mapping entry:
 **Fields**:
 - `source_file`: Path to official doc file (relative to repository root)
 - `title`: File title in English (from rst/md header or filename)
-- `title_ja`: File title in Japanese (extracted from actual page content for validation)
-- `official_url`: Official Japanese documentation URL (for traceability)
+- `title_ja`: File title in Japanese (extracted by accessing official_url and parsing page title for validation)
+- `official_url`: Official Japanese documentation URL (for traceability and title extraction)
 - `mappings`: Array of category-to-target-file pairs
   - `category`: Category ID (must exist in categories file)
   - `target_file`: Target knowledge file path
@@ -76,45 +76,46 @@ Each mapping entry:
 
 Category IDs and names follow official Nablarch English documentation terminology.
 
-**Note**: The table below provides an overview. For detailed mapping information including source file path patterns, completeness status, and target file naming rules, see the mapping JSON files and Excel export.
+**Note**: The table below provides structure and rules. Actual source file paths are determined during mapping creation by scanning official documentation directories.
 
-### Processing Patterns (type: processing-pattern)
-- `nablarch-batch` - Nablarch Batch Application
-- `jakarta-batch` - Jakarta Batch
-- `restful-web-service` - RESTful Web Service
-- `http-messaging` - HTTP Messaging
-- `web-application` - Web Application
-- `mom-messaging` - Messaging with MOM
-- `db-messaging` - Messaging Using Tables as Queues
+| Type | Category | Source File Path Pattern | Completeness | Target File Path | Target File Naming Rule |
+|------|----------|-------------------------|--------------|------------------|------------------------|
+| processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review) | `batch/*.md` | Based on source filename, may split by subtopic |
+| processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `jakarta-batch/*.md` | Based on source filename |
+| processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `rest/*.md` | Based on source filename |
+| processing-pattern | http-messaging | `**/messaging/http/**/*.{rst,md}` | Complete | `http-messaging/*.md` | Based on source filename |
+| processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `web/*.md` | Based on source filename |
+| processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `mom-messaging/*.md` | Based on source filename |
+| processing-pattern | db-messaging | `**/db_messaging/**/*.{rst,md}` | Complete | `db-messaging/*.md` | Based on source filename |
+| component | handlers | `**/handlers/**/*.{rst,md}` | Partial (check adapters/libraries for handler-related content) | `handlers/*.md` | Based on source filename, may consolidate related handlers |
+| component | libraries | `**/library/**/*.{rst,md}` | Partial (scattered across multiple directories) | `libraries/*.md` | Based on source filename and function |
+| component | adapters | `**/adapters/**/*.{rst,md}` | Partial (scattered across multiple directories) | `adapters/*.md` | Based on source filename and integration target |
+| component | development-tools | `**/tools/**/*.{rst,md}` | Complete | `tools/*.md` | Based on source filename |
+| setup | blank-project | `**/blank_project/**/*.{rst,md}` | Complete | `setup/blank-project.md` | Single consolidated file |
+| setup | maven-archetype | `**/archetype/**/*.{rst,md}` | Complete | `setup/maven-archetype.md` | Single consolidated file |
+| setup | configuration | `**/configuration/**/*.{rst,md}` | Complete | `setup/configuration/*.md` | Based on source filename |
+| setup | setting-guide | `**/setting_guide/**/*.{rst,md}` | Complete | `setup/guide/*.md` | Based on source filename |
+| guide | nablarch-patterns | `nablarch-patterns/*.md` (from nablarch-system-development-guide) | Complete | `patterns/*.md` | Keep original filename |
+| check | security-check | `Nablarch機能のセキュリティ対応表.xlsx` (from nablarch-system-development-guide) | Complete | `check/security.xlsx` | Direct copy with rename |
+| about | about-nablarch | `**/about/**/*.{rst,md}` | Complete | `about/*.md` | Based on source filename |
+| about | migration | `**/migration/**/*.{rst,md}` | Complete | `about/migration/*.md` | Based on source filename |
+| about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/releases/*.md` | Based on source filename |
 
-### Components (type: component)
-- `handlers` - Handlers
-- `libraries` - Libraries
-- `adapters` - Adapters
-- `development-tools` - Development Tools
+**Completeness Legend**:
+- **Complete**: Path pattern covers all relevant files; automatic mapping possible
+- **Partial**: Path pattern is incomplete or files scattered; requires manual review and confirmation
 
-### Setup (type: setup)
-- `blank-project` - Blank Project
-- `maven-archetype` - Maven Archetype
-- `configuration` - Configuration
-- `setting-guide` - Setting Guide
-
-### Development Guides (type: guide)
-- `nablarch-patterns` - Nablarch Patterns
-
-### Check Items (type: check)
-- `security-check` - Security Check
-
-### About (type: about)
-- `about-nablarch` - About Nablarch
-- `migration` - Migration
-- `release-notes` - Release Notes
+**Path Pattern Notes**:
+- `**` matches any directory depth
+- `{rst,md}` matches either .rst or .md extensions
+- Patterns for handlers, libraries, and adapters are partial because relevant content may be distributed across processing pattern directories
+- Actual paths must be determined by scanning official documentation and manual verification
 
 ## Source File Scope
 
 ### nablarch-document (v6 and v5)
 
-**Include**: All `.rst` and `.md` files in `en/` directory if available, otherwise `ja/` directory
+**Include**: All `.rst` and `.md` files - prioritize `en/` directory, fallback to `ja/` if English version unavailable
 
 **Exclude**:
 - `README.md` (root level) - Build and setup instructions
@@ -124,10 +125,9 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 ### nablarch-system-development-guide (v6 and v5)
 
-**Include**:
-- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
-- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
-- v5: Same paths as v6 (content will be reviewed during knowledge file creation for v5-specific updates)
+**Include** (use v6 official documentation paths for both versions):
+- `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
+- `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
 
 ### nablarch-single-module-archetype
 
@@ -201,7 +201,8 @@ Create `json-to-excel.py` (or shell script with appropriate tools) to:
 When creating a skill to generate knowledge files from this mapping:
 
 1. **Asset Collection**: Automatically parse asset reference directives in rst/md files and copy referenced assets (images, Excel files, etc.) to `assets/` subdirectory within the same directory as the target knowledge file
-   - Example: If target file is `batch/handlers.md`, assets go to `batch/assets/`
+   - Example: If target file is `.claude/skills/nabledge-6/knowledge/batch/handlers.md`, assets go to `.claude/skills/nabledge-6/knowledge/batch/assets/`
+   - Assets are stored alongside knowledge files within the skill's knowledge directory structure
 
 2. **Category Filtering**: Allow filtering by specific category IDs to process only targeted documentation
    - Example: "process only nablarch-batch and restful-web-service files"
@@ -219,8 +220,9 @@ When creating a skill to generate knowledge files from this mapping:
    - Agents parse directives to find referenced assets
 
 6. **v5 Content Review**: When creating v5 knowledge files from v6 official documentation paths, review content during knowledge file creation to ensure v5-specific terminology and features are accurately reflected
-   - v6 official documentation paths are used as the starting point (copied from v6 mapping)
+   - v6 official documentation paths are used as the starting point (v5 mapping is created by copying from v6)
    - During content conversion, verify and update references to v5-specific APIs, features, and terminology
+   - Example differences: Java EE vs Jakarta EE, javax.* vs jakarta.* packages, Java 8 vs Java 17 features
 
 ## Validation
 
@@ -228,16 +230,14 @@ When creating a skill to generate knowledge files from this mapping:
 
 Create `validate-mapping.sh` to verify:
 
-1. **File Count Verification**: Compare mapped file count with actual files in source directories
-2. **Category Verification**: Check that all category IDs in mappings exist in categories file
-3. **Path Verification**: Verify that all source_file paths exist
-4. **URL Verification**: Verify that official URLs follow conversion rules and are accessible
-5. **Title Verification**: Access official URLs and verify that Japanese titles in mapping match actual page titles
-6. **Statistics Generation**: Generate category statistics (files per category, mappings per category)
+1. **Category Verification**: Check that all category IDs in mappings exist in categories file
+2. **Path Verification**: Verify that all source_file paths exist
+3. **URL Verification**: Verify that official URLs follow conversion rules and are accessible
+4. **Title Verification**: Access official URLs and verify that Japanese titles in mapping match actual page titles
+5. **Statistics Generation**: Generate category statistics (files per category, mappings per category)
 
 ### Output
 
-- File count comparison (expected vs actual)
 - List of undefined category IDs (if any)
 - List of missing source files (if any)
 - List of invalid URLs (if any)
