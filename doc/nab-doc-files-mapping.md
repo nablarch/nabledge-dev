@@ -9,7 +9,7 @@ This table maps all English documentation files to their target categories and p
 | Source Path | Category | Source Path Pattern | Target Path | Target File Name |
 |-------------|----------|---------------------|-------------|------------------|
 | about_nablarch/concept.rst | about-nablarch | **/about_nablarch/**/*.{rst,md} | about/about-nablarch/ | concept.md |
-| about_nablarch/index.rst | about-nablarch | **/about_nablarch/**/*.{rst,md} | about/about-nablarch/ | index.md |
+| about_nablarch/index.rst | 対象外 |  |  |  |
 | about_nablarch/license.rst | about-nablarch | **/about_nablarch/**/*.{rst,md} | about/about-nablarch/ | license.md |
 | about_nablarch/mvn_module.rst | about-nablarch | **/about_nablarch/**/*.{rst,md} | about/about-nablarch/ | mvn_module.md |
 | about_nablarch/versionup_policy.rst | about-nablarch | **/about_nablarch/**/*.{rst,md} | about/about-nablarch/ | versionup_policy.md |
@@ -79,17 +79,17 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/cloud_native/distributed_tracing/aws_distributed_tracing.rst | deployment | **/cloud_native/**/*.{rst,md} | setup/deployment/ | aws_distributed_tracing.md |
 | application_framework/application_framework/cloud_native/distributed_tracing/azure_distributed_tracing.rst | deployment | **/cloud_native/**/*.{rst,md} | setup/deployment/ | azure_distributed_tracing.md |
 | application_framework/application_framework/cloud_native/distributed_tracing/index.rst | deployment | **/cloud_native/**/*.{rst,md} | setup/deployment/ | index.md |
-| application_framework/application_framework/cloud_native/index.rst | deployment | **/cloud_native/**/*.{rst,md} | setup/deployment/ | index.md |
+| application_framework/application_framework/cloud_native/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/configuration/index.rst | configuration | **/configuration/**/*.{rst,md} | setup/configuration/ | index.md |
 | application_framework/application_framework/handlers/batch/dbless_loop_handler.rst | nablarch-batch | **/batch/**/*.{rst,md} | processing-pattern/nablarch-batch/ | dbless_loop_handler.md |
-| application_framework/application_framework/handlers/batch/index.rst | nablarch-batch | **/batch/**/*.{rst,md} | processing-pattern/nablarch-batch/ | index.md |
+| application_framework/application_framework/handlers/batch/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/handlers/batch/loop_handler.rst | nablarch-batch | **/batch/**/*.{rst,md} | processing-pattern/nablarch-batch/ | loop_handler.md |
 | application_framework/application_framework/handlers/batch/process_resident_handler.rst | nablarch-batch | **/batch/**/*.{rst,md} | processing-pattern/nablarch-batch/ | process_resident_handler.md |
 | application_framework/application_framework/handlers/common/ServiceAvailabilityCheckHandler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | ServiceAvailabilityCheckHandler.md |
 | application_framework/application_framework/handlers/common/database_connection_management_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | database_connection_management_handler.md |
 | application_framework/application_framework/handlers/common/file_record_writer_dispose_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | file_record_writer_dispose_handler.md |
 | application_framework/application_framework/handlers/common/global_error_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | global_error_handler.md |
-| application_framework/application_framework/handlers/common/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
+| application_framework/application_framework/handlers/common/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/handlers/common/permission_check_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | permission_check_handler.md |
 | application_framework/application_framework/handlers/common/request_handler_entry.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | request_handler_entry.md |
 | application_framework/application_framework/handlers/common/request_path_java_package_mapping.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | request_path_java_package_mapping.md |
@@ -99,15 +99,15 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/handlers/http_messaging/http_messaging_error_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | http_messaging_error_handler.md |
 | application_framework/application_framework/handlers/http_messaging/http_messaging_request_parsing_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | http_messaging_request_parsing_handler.md |
 | application_framework/application_framework/handlers/http_messaging/http_messaging_response_building_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | http_messaging_response_building_handler.md |
-| application_framework/application_framework/handlers/http_messaging/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
-| application_framework/application_framework/handlers/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
-| application_framework/application_framework/handlers/mom_messaging/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
+| application_framework/application_framework/handlers/http_messaging/index.rst | 対象外 |  |  |  |
+| application_framework/application_framework/handlers/index.rst | 対象外 |  |  |  |
+| application_framework/application_framework/handlers/mom_messaging/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/handlers/mom_messaging/message_reply_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | message_reply_handler.md |
 | application_framework/application_framework/handlers/mom_messaging/message_resend_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | message_resend_handler.md |
 | application_framework/application_framework/handlers/mom_messaging/messaging_context_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | messaging_context_handler.md |
 | application_framework/application_framework/handlers/rest/body_convert_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | body_convert_handler.md |
 | application_framework/application_framework/handlers/rest/cors_preflight_request_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | cors_preflight_request_handler.md |
-| application_framework/application_framework/handlers/rest/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
+| application_framework/application_framework/handlers/rest/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/handlers/rest/jaxrs_access_log_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | jaxrs_access_log_handler.md |
 | application_framework/application_framework/handlers/rest/jaxrs_bean_validation_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | jaxrs_bean_validation_handler.md |
 | application_framework/application_framework/handlers/rest/jaxrs_response_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | jaxrs_response_handler.md |
@@ -131,7 +131,7 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/handlers/web/http_request_java_package_mapping.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | http_request_java_package_mapping.md |
 | application_framework/application_framework/handlers/web/http_response_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | http_response_handler.md |
 | application_framework/application_framework/handlers/web/http_rewrite_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | http_rewrite_handler.md |
-| application_framework/application_framework/handlers/web/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
+| application_framework/application_framework/handlers/web/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/handlers/web/keitai_access_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | keitai_access_handler.md |
 | application_framework/application_framework/handlers/web/multipart_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | multipart_handler.md |
 | application_framework/application_framework/handlers/web/nablarch_tag_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | nablarch_tag_handler.md |
@@ -141,12 +141,12 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/handlers/web/secure_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | secure_handler.md |
 | application_framework/application_framework/handlers/web/session_concurrent_access_handler.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | session_concurrent_access_handler.md |
 | application_framework/application_framework/handlers/web_interceptor/InjectForm.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | InjectForm.md |
-| application_framework/application_framework/handlers/web_interceptor/index.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | index.md |
+| application_framework/application_framework/handlers/web_interceptor/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/handlers/web_interceptor/on_double_submission.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | on_double_submission.md |
 | application_framework/application_framework/handlers/web_interceptor/on_error.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | on_error.md |
 | application_framework/application_framework/handlers/web_interceptor/on_errors.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | on_errors.md |
 | application_framework/application_framework/handlers/web_interceptor/use_token.rst | handlers | **/handlers/**/*.{rst,md} | component/handlers/ | use_token.md |
-| application_framework/application_framework/index.rst | uncategorized | N/A | uncategorized/ | index.md |
+| application_framework/application_framework/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/libraries/authorization/permission_check.rst | libraries | **/libraries/**/*.{rst,md} | component/libraries/ | permission_check.md |
 | application_framework/application_framework/libraries/authorization/role_check.rst | libraries | **/libraries/**/*.{rst,md} | component/libraries/ | role_check.md |
 | application_framework/application_framework/libraries/bean_util.rst | libraries | **/libraries/**/*.{rst,md} | component/libraries/ | bean_util.md |
@@ -203,16 +203,16 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/messaging/db/feature_details/multiple_process.rst | db-messaging | **/messaging/db/**/*.{rst,md} | processing-pattern/db-messaging/ | multiple_process.md |
 | application_framework/application_framework/messaging/db/getting_started.rst | db-messaging | **/messaging/db/**/*.{rst,md} | processing-pattern/db-messaging/ | getting_started.md |
 | application_framework/application_framework/messaging/db/getting_started/table_queue.rst | db-messaging | **/messaging/db/**/*.{rst,md} | processing-pattern/db-messaging/ | table_queue.md |
-| application_framework/application_framework/messaging/db/index.rst | db-messaging | **/messaging/db/**/*.{rst,md} | processing-pattern/db-messaging/ | index.md |
-| application_framework/application_framework/messaging/index.rst | uncategorized | N/A | uncategorized/ | index.md |
+| application_framework/application_framework/messaging/db/index.rst | 対象外 |  |  |  |
+| application_framework/application_framework/messaging/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/messaging/mom/application_design.rst | mom-messaging | **/messaging/mom/**/*.{rst,md} | processing-pattern/mom-messaging/ | application_design.md |
 | application_framework/application_framework/messaging/mom/architecture.rst | mom-messaging | **/messaging/mom/**/*.{rst,md} | processing-pattern/mom-messaging/ | architecture.md |
 | application_framework/application_framework/messaging/mom/feature_details.rst | mom-messaging | **/messaging/mom/**/*.{rst,md} | processing-pattern/mom-messaging/ | feature_details.md |
 | application_framework/application_framework/messaging/mom/getting_started.rst | mom-messaging | **/messaging/mom/**/*.{rst,md} | processing-pattern/mom-messaging/ | getting_started.md |
-| application_framework/application_framework/messaging/mom/index.rst | mom-messaging | **/messaging/mom/**/*.{rst,md} | processing-pattern/mom-messaging/ | index.md |
+| application_framework/application_framework/messaging/mom/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/nablarch/architecture.rst | architecture | **/nablarch/**/*.{rst,md} | about/architecture/ | architecture.md |
 | application_framework/application_framework/nablarch/big_picture.rst | architecture | **/nablarch/**/*.{rst,md} | about/architecture/ | big_picture.md |
-| application_framework/application_framework/nablarch/index.rst | architecture | **/nablarch/**/*.{rst,md} | about/architecture/ | index.md |
+| application_framework/application_framework/nablarch/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/nablarch/platform.rst | architecture | **/nablarch/**/*.{rst,md} | about/architecture/ | platform.md |
 | application_framework/application_framework/nablarch/policy.rst | architecture | **/nablarch/**/*.{rst,md} | about/architecture/ | policy.md |
 | application_framework/application_framework/setting_guide/CustomizingConfigurations/CustomizeAvailableCharacters.rst | setting-guide | **/setting_guide/**/*.{rst,md} | setup/setting-guide/ | CustomizeAvailableCharacters.md |
@@ -244,14 +244,14 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/web/getting_started/project_search/index.rst | web-application | **/web/**/*.{rst,md} | processing-pattern/web-application/ | index.md |
 | application_framework/application_framework/web/getting_started/project_update/index.rst | web-application | **/web/**/*.{rst,md} | processing-pattern/web-application/ | index.md |
 | application_framework/application_framework/web/getting_started/project_upload/index.rst | web-application | **/web/**/*.{rst,md} | processing-pattern/web-application/ | index.md |
-| application_framework/application_framework/web/index.rst | web-application | **/web/**/*.{rst,md} | processing-pattern/web-application/ | index.md |
+| application_framework/application_framework/web/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/web_service/functional_comparison.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | functional_comparison.md |
 | application_framework/application_framework/web_service/http_messaging/application_design.rst | http-messaging | **/web_service/http_messaging/**/*.{rst,md} | processing-pattern/http-messaging/ | application_design.md |
 | application_framework/application_framework/web_service/http_messaging/architecture.rst | http-messaging | **/web_service/http_messaging/**/*.{rst,md} | processing-pattern/http-messaging/ | architecture.md |
 | application_framework/application_framework/web_service/http_messaging/feature_details.rst | http-messaging | **/web_service/http_messaging/**/*.{rst,md} | processing-pattern/http-messaging/ | feature_details.md |
 | application_framework/application_framework/web_service/http_messaging/getting_started/getting_started.rst | http-messaging | **/web_service/http_messaging/**/*.{rst,md} | processing-pattern/http-messaging/ | getting_started.md |
 | application_framework/application_framework/web_service/http_messaging/getting_started/save/index.rst | http-messaging | **/web_service/http_messaging/**/*.{rst,md} | processing-pattern/http-messaging/ | index.md |
-| application_framework/application_framework/web_service/http_messaging/index.rst | http-messaging | **/web_service/http_messaging/**/*.{rst,md} | processing-pattern/http-messaging/ | index.md |
+| application_framework/application_framework/web_service/http_messaging/index.rst | 対象外 |  |  |  |
 | application_framework/application_framework/web_service/index.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | index.md |
 | application_framework/application_framework/web_service/rest/application_design.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | application_design.md |
 | application_framework/application_framework/web_service/rest/architecture.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | architecture.md |
@@ -261,8 +261,8 @@ This table maps all English documentation files to their target categories and p
 | application_framework/application_framework/web_service/rest/getting_started/index.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | index.md |
 | application_framework/application_framework/web_service/rest/getting_started/search/index.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | index.md |
 | application_framework/application_framework/web_service/rest/getting_started/update/index.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | index.md |
-| application_framework/application_framework/web_service/rest/index.rst | restful-web-service | **/web_service/**/*.{rst,md} | processing-pattern/restful-web-service/ | index.md |
-| application_framework/index.rst | uncategorized | N/A | uncategorized/ | index.md |
+| application_framework/application_framework/web_service/rest/index.rst | 対象外 |  |  |  |
+| application_framework/index.rst | 対象外 |  |  |  |
 | biz_samples/01/0101_PBKDF2PasswordEncryptor.rst | extension | **/biz_samples/**/*.{rst,md} | extension/business-samples/ | 0101_PBKDF2PasswordEncryptor.md |
 | biz_samples/01/index.rst | extension | **/biz_samples/**/*.{rst,md} | extension/business-samples/ | index.md |
 | biz_samples/03/index.rst | extension | **/biz_samples/**/*.{rst,md} | extension/business-samples/ | index.md |
@@ -320,7 +320,7 @@ This table maps all English documentation files to their target categories and p
 | development_tools/testing_framework/guide/development_guide/06_TestFWGuide/index.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | index.md |
 | development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/01_HttpDumpTool.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | 01_HttpDumpTool.md |
 | development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/02_SetUpHttpDumpTool.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | 02_SetUpHttpDumpTool.md |
-| development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/index.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | index.md |
+| development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/index.rst | 対象外 |  |  |  |
 | development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | 01_MasterDataSetupTool.md |
 | development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | 02_ConfigMasterDataSetupTool.md |
 | development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/index.rst | tools | **/development_tools/**/*.{rst,md} | tools/ | index.md |
