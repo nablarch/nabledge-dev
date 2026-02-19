@@ -115,7 +115,9 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 ### nablarch-document (v6 and v5)
 
-**Include**: All `.rst` and `.md` files - prioritize `en/` directory, fallback to `ja/` if English version unavailable
+**Include**: All `.rst` and `.md` files
+- Prioritize `en/` directory files when available
+- Fallback to `ja/` directory if English version does not exist
 
 **Exclude**:
 - `README.md` (root level) - Build and setup instructions
@@ -125,9 +127,12 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 ### nablarch-system-development-guide (v6 and v5)
 
-**Include** (use v6 official documentation paths for both versions):
-- `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
-- `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
+**Include**:
+- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/docs/nablarch-patterns/*.md` (exclude README.md)
+- v6: `.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx`
+- v5: Copy v6 paths as starting point (no v5-specific version exists)
+
+**Note**: v5 mapping uses v6 official documentation paths as source. Content verification and updates for v5-specific features happen during knowledge file creation (see "Considerations for Knowledge File Creation Skill" section).
 
 ### nablarch-single-module-archetype
 
@@ -201,8 +206,9 @@ Create `json-to-excel.py` (or shell script with appropriate tools) to:
 When creating a skill to generate knowledge files from this mapping:
 
 1. **Asset Collection**: Automatically parse asset reference directives in rst/md files and copy referenced assets (images, Excel files, etc.) to `assets/` subdirectory within the same directory as the target knowledge file
-   - Example: If target file is `.claude/skills/nabledge-6/knowledge/batch/handlers.md`, assets go to `.claude/skills/nabledge-6/knowledge/batch/assets/`
-   - Assets are stored alongside knowledge files within the skill's knowledge directory structure
+   - Target location: `assets/` subdirectory in the same directory as the knowledge file
+   - Example: If target file is `.claude/skills/nabledge-6/knowledge/batch/handlers.md`, assets go to `.claude/skills/nabledge-6/knowledge/batch/assets/image.png`
+   - Assets are stored alongside knowledge files within the skill's knowledge directory structure for easy reference
 
 2. **Category Filtering**: Allow filtering by specific category IDs to process only targeted documentation
    - Example: "process only nablarch-batch and restful-web-service files"
@@ -232,8 +238,12 @@ Create `validate-mapping.sh` to verify:
 
 1. **Category Verification**: Check that all category IDs in mappings exist in categories file
 2. **Path Verification**: Verify that all source_file paths exist
-3. **URL Verification**: Verify that official URLs follow conversion rules and are accessible
-4. **Title Verification**: Access official URLs and verify that Japanese titles in mapping match actual page titles
+3. **URL Verification**: Verify that official URLs follow conversion rules and are accessible (HTTP 200 response)
+4. **Title Verification**: Access each official URL, extract the Japanese page title from HTML `<title>` tag or heading, and verify it matches the `title_ja` field in mapping
+   - For nablarch-document: Parse `https://nablarch.github.io/docs/LATEST/doc/ja/{path}.html` and extract title
+   - For nablarch-system-development-guide: Parse GitHub page and extract markdown heading
+   - Report any mismatches for manual review
+   - Japanese titles are required for automated validation and user-facing documentation
 5. **Statistics Generation**: Generate category statistics (files per category, mappings per category)
 
 ### Output
