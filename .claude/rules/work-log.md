@@ -1,9 +1,18 @@
 # Work Log
 
-- **Directory**: `.pr/xxxxx/` where xxxxx is 5-digit PR number (e.g., `.pr/00042/`)
-- **Filename**: Concise English (e.g., `add-validation.md`)
-- **Content**: Changed files, results, next steps (if any)
-- **Timing**: Upon completion
+**Location**: `.pr/xxxxx/notes.md` where xxxxx is 5-digit PR number
+
+**Content**: Document decisions, learnings, and context that cannot be found in commit history.
+
+See `.claude/rules/work-notes.md` for detailed format and guidelines.
+
+## Quick Summary
+
+- Focus on **why** and **how**, not **what** (git log shows what changed)
+- Record decisions, alternatives considered, problems solved, learnings
+- Do not duplicate information from commit messages or git diff
+- Use free-form markdown with timestamps for multiple sessions
+- Not every PR needs extensive notes
 
 ## Temporary Files
 
