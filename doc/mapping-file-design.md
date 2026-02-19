@@ -78,16 +78,16 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 **Note**: The table below provides structure and rules. Actual source file paths are determined during mapping creation by scanning official documentation directories.
 
-| Type | Category | Source File Path Pattern | Completeness | Target File Path | Target File Naming Rule |
-|------|----------|-------------------------|--------------|------------------|------------------------|
-| processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review) | `batch/*.md` | Based on source filename, may split by subtopic |
+| Type | Category | Source Path Pattern | Pattern Completeness | Target Path | Target Naming Rule |
+|------|----------|---------------------|----------------------|-------------|--------------------|
+| processing-pattern | nablarch-batch | `**/batch/**/*.{rst,md}` | Partial (requires manual review - processing patterns not determinable from path) | `batch/*.md` | Based on source filename, may split by subtopic |
 | processing-pattern | jakarta-batch | `**/batch/jsr352/**/*.{rst,md}` | Complete | `jakarta-batch/*.md` | Based on source filename |
 | processing-pattern | restful-web-service | `**/web_service/**/*.{rst,md}` | Complete | `rest/*.md` | Based on source filename |
 | processing-pattern | http-messaging | `**/messaging/http/**/*.{rst,md}` | Complete | `http-messaging/*.md` | Based on source filename |
 | processing-pattern | web-application | `**/web/**/*.{rst,md}` (exclude `web_service/`) | Partial (requires manual review) | `web/*.md` | Based on source filename |
 | processing-pattern | mom-messaging | `**/messaging/mom/**/*.{rst,md}` | Complete | `mom-messaging/*.md` | Based on source filename |
 | processing-pattern | db-messaging | `**/db_messaging/**/*.{rst,md}` | Complete | `db-messaging/*.md` | Based on source filename |
-| component | handlers | `**/handlers/**/*.{rst,md}` | Partial (check adapters/libraries for handler-related content) | `handlers/*.md` | Based on source filename, may consolidate related handlers |
+| component | handlers | `**/handlers/**/*.{rst,md}` | Partial (handler content also in adapters/libraries) | `handlers/*.md` | Based on source filename, may consolidate related handlers |
 | component | libraries | `**/library/**/*.{rst,md}` | Partial (scattered across multiple directories) | `libraries/*.md` | Based on source filename and function |
 | component | adapters | `**/adapters/**/*.{rst,md}` | Partial (scattered across multiple directories) | `adapters/*.md` | Based on source filename and integration target |
 | component | development-tools | `**/tools/**/*.{rst,md}` | Complete | `tools/*.md` | Based on source filename |
@@ -101,15 +101,17 @@ Category IDs and names follow official Nablarch English documentation terminolog
 | about | migration | `**/migration/**/*.{rst,md}` | Complete | `about/migration/*.md` | Based on source filename |
 | about | release-notes | `**/releases/**/*.{rst,md}` | Complete | `about/releases/*.md` | Based on source filename |
 
-**Completeness Legend**:
-- **Complete**: Path pattern covers all relevant files; automatic mapping possible
-- **Partial**: Path pattern is incomplete or files scattered; requires manual review and confirmation
+**Pattern Completeness**:
+- **Complete**: Path pattern covers all relevant files; automatic mapping possible without manual verification
+- **Partial**: Path pattern is incomplete or requires content inspection; manual review mandatory
+  - Processing patterns like nablarch-batch may be included in adapter/library content, requiring manual inspection
+  - Handlers, libraries, and adapters have content distributed across multiple directories
 
 **Path Pattern Notes**:
 - `**` matches any directory depth
 - `{rst,md}` matches either .rst or .md extensions
-- Patterns for handlers, libraries, and adapters are partial because relevant content may be distributed across processing pattern directories
-- Actual paths must be determined by scanning official documentation and manual verification
+- Actual paths determined by scanning official documentation during mapping creation
+- Manual verification required for all "Partial" categories
 
 ## Source File Scope
 
