@@ -308,6 +308,11 @@ clone_or_update_repo() {
             exit 1
         fi
     fi
+
+    # Disable push to prevent accidental commits to official repositories
+    if git -C "$repo_path" remote set-url --push origin no_push 2>/dev/null; then
+        print_status ok "$repo_name: push protection enabled"
+    fi
 }
 
 # Clone Nablarch 6 repositories (main branch)
