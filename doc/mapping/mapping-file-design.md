@@ -35,42 +35,28 @@ Each category entry:
 
 ### Mapping File
 
-**Files**: `mapping-v6.json`, `mapping-v5.json`
+**Files**: `mapping-v6.md`, `mapping-v5.md`
 
-Each mapping entry:
+Markdown table format with one row per source-to-target mapping:
 
-```json
-{
-  "source_file": "ja/application_framework/application_framework/handlers/index.rst",
-  "title": "Handlers",
-  "title_ja": "ハンドラ",
-  "official_url": "https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/index.html",
-  "mappings": [
-    {
-      "category": "handlers",
-      "target_file": "component/handlers/overview.md"
-    },
-    {
-      "category": "nablarch-batch",
-      "target_file": "processing-pattern/nablarch-batch/handlers.md"
-    }
-  ]
-}
-```
+| Source Path | Title | Title (ja) | Official URL | Type | Category ID | Target Path |
+|-------------|-------|------------|--------------|------|-------------|-------------|
+| application_framework/application_framework/handlers/common/global_error_handler.rst | Global Error Handler | グローバルエラーハンドラ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html | component | handlers | component/handlers/common/global-error-handler.md |
+| application_framework/application_framework/batch/nablarch_batch/architecture.rst | Architecture | アーキテクチャ | https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/batch/nablarch_batch/architecture.html | processing-pattern | nablarch-batch | processing-pattern/nablarch-batch/architecture.md |
 
-**Fields**:
-- `source_file`: Path to official doc file (relative to repository root)
-- `title`: File title in English (from rst/md header or filename)
-- `title_ja`: File title in Japanese (extracted by accessing official_url and parsing page title for validation)
-- `official_url`: Official Japanese documentation URL (for traceability and title extraction)
-- `mappings`: Array of category-to-target-file pairs
-  - `category`: Category ID (must exist in categories file)
-  - `target_file`: Target knowledge file path
+**Columns**:
+- `Source Path`: Path to official doc file (relative to repository root, without `.lw/nab-official/v6/nablarch-document/en/` prefix)
+- `Title`: File title in English (from rst/md header or filename)
+- `Title (ja)`: File title in Japanese (extracted by accessing Official URL and parsing page title for validation)
+- `Official URL`: Official Japanese documentation URL (for traceability and title extraction)
+- `Type`: Category type from taxonomy (processing-pattern, component, development-tools, setup, guide, check, about)
+- `Category ID`: Category identifier (must exist in categories file)
+- `Target Path`: Target knowledge file path following naming conventions
 
 **Key Design Decisions**:
-- One source file can map to multiple categories (via mappings array)
-- Each category mapping produces a separate target knowledge file
-- Mappings array enables flexible filtering by category ID
+- One row per source-to-target mapping (source files mapping to multiple categories have multiple rows)
+- Flat table structure enables easy filtering, sorting, and review
+- Human-readable format suitable for both manual editing and programmatic processing
 
 ## Classification Taxonomy
 
@@ -104,11 +90,17 @@ Category IDs and names follow official Nablarch English documentation terminolog
 
 ### Target Path Rules
 
-Target paths follow the pattern: `{type}/{category-id}/{filename}.md`
+Target paths follow the pattern: `{type}/{category-id}/{subdirectories}/{filename}.md`
 
 **Naming conventions**:
 - **Type directories**: Use Type value from taxonomy (e.g., `processing-pattern/`, `component/`, `development-tools/`, `setup/`, `guide/`, `check/`, `about/`)
 - **Category ID directories**: Use Category ID value from taxonomy (e.g., `nablarch-batch/`, `testing-framework/`, `handlers/`)
+- **Subdirectories**: Preserve source directory structure between category directory and filename
+  - **component categories** (handlers, libraries, adapters): Preserve subdirectory structure from source
+    - Example: `handlers/common/file.rst` → `component/handlers/common/file.md`
+    - Example: `libraries/data_io/data_format/file.rst` → `component/libraries/data_io/data_format/file.md`
+  - **Other types**: Flat structure (no subdirectories unless needed for organization)
+  - Exclude `images/` directories (asset files, not documentation)
 - **Filenames**: Based on source filename with `.md` extension
   - Convert underscores to hyphens (e.g., `nablarch_batch` → `nablarch-batch`)
   - Use descriptive names based on content when source filename is generic (e.g., `index.rst` → `overview.md`)
@@ -116,11 +108,14 @@ Target paths follow the pattern: `{type}/{category-id}/{filename}.md`
   - May consolidate related source files into single target file
 
 **Examples**:
-- `processing-pattern/nablarch-batch/architecture.md`
-- `development-tools/testing-framework/request-unit-test.md`
-- `component/handlers/web-handler.md`
-- `setup/configuration/db-connection.md`
-- `guide/nablarch-patterns/api-design.md`
+- `processing-pattern/nablarch-batch/architecture.md` (flat structure)
+- `development-tools/testing-framework/request-unit-test.md` (flat structure)
+- `component/handlers/common/global-error-handler.md` (preserves `common/` subdirectory)
+- `component/handlers/web/session-store-handler.md` (preserves `web/` subdirectory)
+- `component/libraries/authorization/permission-check.md` (preserves `authorization/` subdirectory)
+- `component/libraries/data_io/data_format/format-definition.md` (preserves `data_io/data_format/` nested subdirectories)
+- `setup/configuration/db-connection.md` (flat structure)
+- `guide/nablarch-patterns/api-design.md` (flat structure)
 
 ## Source File Scope
 
@@ -151,17 +146,25 @@ Target paths follow the pattern: `{type}/{category-id}/{filename}.md`
 
 ## Official URL Conversion Rules
 
+Official URLs point to **Japanese documentation** for Title (ja) extraction and user reference, even when source files are in English.
+
 ### nablarch-document
 
-- Local path: `.lw/nab-official/v6/nablarch-document/ja/{path}.rst`
+- Source Path: `{path}.rst` (under `en/` directory)
 - Official URL: `https://nablarch.github.io/docs/LATEST/doc/ja/{path}.html`
-- Extension: `.rst` → `.html`
+- Conversion: Replace `en/` with `ja/` in path, change `.rst` → `.html`
+
+Example:
+- Source: `application_framework/application_framework/handlers/common/global_error_handler.rst`
+- URL: `https://nablarch.github.io/docs/LATEST/doc/ja/application_framework/application_framework/handlers/common/global_error_handler.html`
 
 ### nablarch-system-development-guide
 
-- Local path: `.lw/nab-official/v6/nablarch-system-development-guide/Nablarchシステム開発ガイド/{path}.md`
-- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/{path}.md`
-- Extension: Keep `.md`
+- Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md`
+- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/docs/nablarch-patterns/{file}.md`
+- Conversion: Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/`, keep `.md`
+
+**Rationale**: Japanese URLs enable Title (ja) extraction and provide user-facing documentation links for Japanese Nablarch users.
 
 ## Asset Files
 
@@ -177,40 +180,22 @@ Asset files (images, Excel templates, etc.) are **not included in mapping files*
 **Markdown (.md)**:
 - `![alt](path/to/image.png)` - Image reference
 
-## Excel Export Format
+## Alternative Formats
 
-For user review, mapping JSON files are converted to Excel with the following structure:
+### Excel Export (Optional)
 
-### Columns
+For stakeholder review or offline editing, Markdown tables can be converted to Excel format:
 
-- `source_file`: Path to official doc file
-- `title`: File title (English)
-- `title_ja`: File title (Japanese)
-- `official_url`: Official documentation URL (hyperlink)
-- `category`: Category ID
-- `target_file`: Target knowledge file path
-- `type`: Category type (processing-pattern, component, etc.)
-
-### Format Rules
-
-- One row per category mapping (source files with multiple mappings have multiple rows)
-- Sort by source_file, then by category
-- Use Excel hyperlinks for official_url column
+**Conversion**:
+- Use pandoc, Python (pandas), or manual import
+- Preserve column structure and order
+- Convert Official URL column to Excel hyperlinks
 - Apply filters to all columns for easy navigation
+- Sort by Source Path, then by Category ID
 
-### Conversion Script
+**Output**: `mapping-v6.xlsx`, `mapping-v5.xlsx`
 
-Create `json-to-excel.py` (or shell script with appropriate tools) to:
-
-1. Read mapping JSON files (mapping-v6.json, mapping-v5.json)
-2. Read categories JSON files to look up category type
-3. Flatten mappings array (one row per category mapping)
-4. Generate Excel file with:
-   - Column headers: source_file, title, title_ja, official_url, category, target_file, type
-   - Hyperlinks in official_url column
-   - Filters on all columns
-   - Rows sorted by source_file, then by category
-5. Output to mapping-v6.xlsx and mapping-v5.xlsx
+This is optional - the Markdown table is the primary format for both human review and programmatic processing.
 
 ## Considerations for Knowledge File Creation Skill
 
@@ -223,14 +208,14 @@ When creating a skill to generate knowledge files from this mapping:
 
 2. **Category Filtering**: Allow filtering by specific category IDs to process only targeted documentation
    - Example: "process only nablarch-batch and restful-web-service files"
-   - Agents filter mapping entries where `mappings[].category` matches desired IDs
+   - Agents filter table rows where `Category ID` column matches desired IDs
 
-3. **Official URL**: Include the official_url in generated knowledge files for traceability
+3. **Official URL**: Include the Official URL in generated knowledge files for traceability
    - Users can navigate from knowledge files back to official documentation
 
-4. **Multiple Mappings**: One source file may generate multiple target files
-   - Process each entry in the `mappings` array separately
-   - Each category mapping produces its own target knowledge file
+4. **Multiple Mappings**: One source file may appear in multiple table rows when mapped to different categories
+   - Process each table row independently
+   - Each row produces one target knowledge file
 
 5. **Focus on Conversion**: The skill should focus on content conversion and search hint extraction
    - Asset collection should be automated (not manual)
@@ -247,10 +232,10 @@ When creating a skill to generate knowledge files from this mapping:
 
 Create `validate-mapping.sh` to verify:
 
-1. **Category Verification**: Check that all category IDs in mappings exist in categories file
-2. **Path Verification**: Verify that all source_file paths exist
+1. **Category Verification**: Check that all Category IDs in table exist in categories file
+2. **Path Verification**: Verify that all Source Path entries exist
 3. **URL Verification**: Verify that official URLs follow conversion rules and are accessible (HTTP 200 response)
-4. **Title Verification**: Access each official URL, extract the Japanese page title from HTML `<title>` tag or heading, and verify it matches the `title_ja` field in mapping
+4. **Title Verification**: Access each Official URL, extract the Japanese page title from HTML `<title>` tag or heading, and verify it matches the `Title (ja)` column in mapping table
    - For nablarch-document: Parse `https://nablarch.github.io/docs/LATEST/doc/ja/{path}.html` and extract title
    - For nablarch-system-development-guide: Parse GitHub page and extract markdown heading
    - Report any mismatches for manual review
@@ -269,6 +254,6 @@ Create `validate-mapping.sh` to verify:
 
 - Focus on v6 first since nabledge-6 is the primary target
 - Use Japanese documentation URLs (Nablarch users are Japanese)
-- Store mapping files in work directory temporarily
-- When knowledge file creation skill is ready, it will reference these mappings
-- Excel export enables efficient review by non-technical stakeholders
+- Markdown table format enables both human review and programmatic processing by AI agents
+- When knowledge file creation skill is ready, it will read these mapping tables directly
+- Optional Excel export available for stakeholder review if needed
