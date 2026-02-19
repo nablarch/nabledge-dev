@@ -107,12 +107,14 @@ Working tree: Clean
 
 2. Identify relevant files:
    - Extract keywords from title and body (nouns, technical terms)
-   - For each keyword, run: `Grep pattern="$keyword" output_mode="files_with_matches" -i=true head_limit=10`
+   - **IMPORTANT**: Use the Grep tool to search for files (DO NOT use bash grep or find)
+   - For each keyword, use: `Grep(pattern="$keyword", output_mode="files_with_matches", -i=true, head_limit=10)`
    - Deduplicate and rank files by frequency
    - Select top 5-10 most relevant files
 
 3. Read project coding standards:
-   - Run: `Glob pattern=".claude/rules/*.md"`
+   - **IMPORTANT**: Use the Glob tool to find standards files (DO NOT use bash find or ls)
+   - Use: `Glob(pattern=".claude/rules/*.md")`
    - Store paths for later reference to Task agent
 
 **Output to user** (use actual extracted data):
@@ -140,7 +142,12 @@ $EACH_STANDARDS_FILE
    - Compile all information: issue body, success criteria, relevant files, coding standards
    - Read identified files to provide to agent
 
-2. Call Task tool with this EXACT prompt structure:
+2. **IMPORTANT**: You MUST use the Task tool to delegate implementation
+   - DO NOT implement changes yourself directly
+   - DO NOT manually edit files for implementation
+   - Let the Task agent handle all implementation work
+
+3. Call Task tool with this EXACT prompt structure:
 
 ```
 Task(
@@ -166,11 +173,12 @@ Follow these standards (read files if needed):
 $STANDARDS_FILE_LIST
 
 ## Your Task
-1. **Understand**: Read all relevant files to understand current implementation
+1. **Understand**: Read all relevant files to understand current implementation using Read tool
 2. **Clarify**: If ANY requirement is unclear, use AskUserQuestion immediately - do NOT guess
-3. **Implement**: Make changes to satisfy success criteria
+3. **Implement**: Make changes to satisfy success criteria using Edit and Write tools
 4. **Follow standards**: Apply coding standards from .claude/rules/
 5. **DO NOT**: Run tests, commit changes, or create PRs - these will be done separately
+6. **DO NOT**: Use bash commands for file operations - use Read, Edit, Write tools instead
 
 ## Constraints
 - Change ONLY what is necessary to satisfy requirements
@@ -178,6 +186,7 @@ $STANDARDS_FILE_LIST
 - Do NOT add comments or documentation unless explicitly required
 - Use existing patterns and conventions from the codebase
 - Ask questions when in doubt - clarity is more important than speed
+- Use Read/Edit/Write tools for file operations (NOT bash cat/sed/echo)
 
 Begin implementation now."
 )
@@ -268,11 +277,15 @@ Failed test output:
 1. Ensure all changes are committed:
    - Check: `git status --porcelain`
    - If uncommitted changes exist:
-     - Use /git commit skill to commit changes
+     - **IMPORTANT**: You MUST use the Skill tool to call the git skill
+     - Use: `Skill(skill: "git", args: "commit")`
+     - DO NOT manually run git commit commands
      - Pass issue number for automatic linking
 
-2. Create PR using pr skill:
-   - Call: `Skill(skill: "pr", args: "create")`
+2. **IMPORTANT**: You MUST use the Skill tool to call the pr skill
+   - DO NOT manually create PR using gh pr create
+   - DO NOT manually run git push commands
+   - Use: `Skill(skill: "pr", args: "create")`
    - If draft_mode=true from test failure, skill will create draft PR
    - Wait for skill completion
 
@@ -335,13 +348,19 @@ Next steps:
 
 # General Guidelines
 
-1. **Progress Updates**: Output status emoji and brief message at start of each step
-2. **Error Messages**: Always include actionable next steps in error messages
-3. **User Questions**: Use AskUserQuestion tool, never assume user intent
-4. **Idempotency**: Each step should be safely re-runnable
-5. **Context Preservation**: Pass full context to Task agents, include all relevant info
-6. **Standards Compliance**: Always reference .claude/rules/ in prompts to agents
-7. **Defensive Coding**: Check for tool availability before using (gh, git, test runners)
+1. **Use Skills and Tools**: Always use the appropriate skills/tools:
+   - **File search**: Use Glob and Grep tools (never bash find/grep)
+   - **Implementation**: Use Task tool with general-purpose agent (never edit directly)
+   - **Commit**: Use Skill(skill: "git", args: "commit") (never manual git commit)
+   - **PR creation**: Use Skill(skill: "pr", args: "create") (never manual gh pr create)
+   - **Questions**: Use AskUserQuestion tool (never assume)
+2. **Progress Updates**: Output status emoji and brief message at start of each step
+3. **Error Messages**: Always include actionable next steps in error messages
+4. **User Questions**: Use AskUserQuestion tool, never assume user intent
+5. **Idempotency**: Each step should be safely re-runnable
+6. **Context Preservation**: Pass full context to Task agents, include all relevant info
+7. **Standards Compliance**: Always reference .claude/rules/ in prompts to agents
+8. **Defensive Coding**: Check for tool availability before using (gh, git, test runners)
 
 # Example Session Flow
 
