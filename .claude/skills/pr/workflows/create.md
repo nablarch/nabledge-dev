@@ -22,7 +22,7 @@ echo "Current branch: ${current_branch}"
 If current branch is `main` or `master`, exit with error:
 
 Error: Cannot create PR from the main/master branch.
-Please create a feature/issue branch first.
+Please create an issue-based branch first.
 
 **1.2 Get Target Branch**
 
@@ -71,27 +71,22 @@ git push
 
 **2.1 Get Issue Number**
 
-Check branch naming pattern to determine if issue number is required:
+Extract issue number from branch name (required):
 
 ```bash
-if [[ "$current_branch" =~ ^issue-([0-9]+)$ ]]; then
-  # Issue-driven branch: extract issue number
+if [[ "$current_branch" =~ ^([0-9]+)- ]]; then
+  # Extract issue number (format: 60-sync-branches)
   issue_number="${BASH_REMATCH[1]}"
   echo "Detected issue number from branch: #${issue_number}"
-elif [[ "$current_branch" =~ ^qf/ ]]; then
-  # Quick fix branch: no issue required
-  issue_number=""
-  echo "Quick fix branch detected: Issue number not required"
 else
-  # Unknown pattern: ask user
-  issue_number=""
+  # Branch name doesn't match expected pattern
+  echo "Error: Branch name must follow format: {number}-{description}"
+  echo "Example: 60-sync-branches"
+  echo ""
+  echo "Please use /hi command to create properly formatted branch"
+  exit 1
 fi
 ```
-
-If no issue number detected and not a qf/ branch, use the AskUserQuestion tool to prompt the user:
-- Question: "What is the issue number this PR addresses?"
-- User must provide the issue number via text input
-- Issue number is required for non-qf branches (issue-driven development standard)
 
 If user provides an issue number, validate it is numeric:
 
@@ -180,18 +175,11 @@ Replace each placeholder in the loaded template:
 
 **Step 1: Replace [ISSUE_NUMBER]**
 
-If issue_number exists:
+Replace with the issue number:
 ```
 Closes #[ISSUE_NUMBER]
 ↓
 Closes #42
-```
-
-If issue_number is empty (qf/ branch):
-```
-Closes #[ISSUE_NUMBER]
-↓
-(Remove this line entirely)
 ```
 
 **Step 2: Replace [Describe the solution...]**
@@ -216,14 +204,24 @@ Closes #[ISSUE_NUMBER]
   - [x] Write integration tests
   ```
 
-**Step 4: Keep Expert Review Table as-is**
-- Do not modify the Expert Review table
-- Leave all status fields as "⚪ Not Reviewed"
+**Step 4: Replace Expert Review Section**
+
+Replace with links to expert review files from `/hi` step 8:
+- Expert reviews are saved in `.pr/{issue_number}/review-by-{expert-role}.md`
+- List each expert with their rating
+- Example output:
+  ```
+  ## Expert Review
+
+  AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
+
+  - [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+  - [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+  ```
 
 **Step 5: Replace Success Criteria Section**
 
-If issue_body exists (issue-driven development):
-- Parse issue_body to extract success criteria
+Parse issue_body to extract success criteria:
 - Look for lines starting with `- [ ]` or `- [x]` under "Success Criteria" heading
 - For each criterion, create a table row:
   - Criterion: The criterion text
@@ -236,9 +234,6 @@ If issue_body exists (issue-driven development):
   | Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
   | Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
   ```
-
-If issue_body is empty (qf/ branch):
-- Omit the Success Criteria Check section entirely
 
 **Step 6: Add Attribution**
 - Keep the attribution line at the end:
@@ -262,14 +257,10 @@ for stateless authentication and better scalability compared to server-side sess
 
 ## Expert Review
 
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -305,14 +296,10 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 ## Expert Review
 
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -326,7 +313,7 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 EOF
 )" \
   --base main \
-  --head issue-42
+  --head 42-add-user-auth
 ```
 
 **Execute PR Creation**:
@@ -366,13 +353,12 @@ Display the PR URL and guide user to review on GitHub:
 
 | Error | Response |
 |-------|----------|
-| Execute from main/master branch | Guide to execute from feature/issue branch |
+| Execute from main/master branch | Guide to execute from issue-based branch |
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |
-| Issue not found (issue-XXX branch) | Create issue first (required for issue-driven development) |
-| No issue number provided (non-qf branch) | Prompt user for issue number (required) |
-| qf/ branch without description | Use commit messages to generate PR description |
+| Invalid branch name format | Guide to use /hi command for proper branch creation |
+| Issue not found | Create issue first (required for issue-driven development) |
 
 ## Notes
 
@@ -385,6 +371,6 @@ Display the PR URL and guide user to review on GitHub:
 7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
 9. **Issue Policy**:
-   - `issue-XXX` branches: GitHub issue required (issue-driven development)
-   - `qf/` branches: Issue optional (quick fixes)
-   - Other branches: Prompt user for issue number
+   - All branches must follow format: `{number}-{description}` (e.g., `60-sync-branches`)
+   - GitHub issue is always required (issue-driven development)
+   - Use `/hi` command to ensure proper branch creation

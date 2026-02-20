@@ -8,7 +8,7 @@ This is the standard template for all pull requests. All PRs must reference a Gi
 Closes #[ISSUE_NUMBER]
 
 ## Approach
-[Describe the solution strategy and key design decisions. Explain WHY this approach was chosen, any alternatives considered, and trade-offs made.]
+[Describe the solution strategy addressing the Situation and Pain from the issue. Explain WHY this approach was chosen, any alternatives considered, and trade-offs made.]
 
 ## Tasks
 [List implementation tasks completed as checkboxes]
@@ -18,14 +18,10 @@ Closes #[ISSUE_NUMBER]
 
 ## Expert Review
 
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+- [Software Engineer](../.pr/[ISSUE_NUMBER]/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/[ISSUE_NUMBER]/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -43,14 +39,14 @@ Closes #[ISSUE_NUMBER]
 
 This template is used for all PRs following issue-driven development:
 - All PRs must close a GitHub issue
-- Branch name follows `issue-<number>` convention
-- Success criteria are verified against the issue
+- Branch name follows `{number}-{description}` convention (e.g., `42-add-login`)
+- Success criteria from issue are verified against implementation
 
 ## Placeholder Replacement
 
 When generating PR body from this template:
 - `[ISSUE_NUMBER]` → Actual issue number
-- `[Describe the solution...]` → Generated approach description
+- `[Describe the solution...]` → Generated approach description addressing Situation/Pain from issue
 - `[List implementation...]` → Generated task list
 - `[Criterion X from issue]` → Extracted from issue body
 - `[How this was verified]` → Evidence from implementation
@@ -71,14 +67,10 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 ## Expert Review
 
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 

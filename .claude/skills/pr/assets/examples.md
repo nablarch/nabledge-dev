@@ -6,11 +6,11 @@ This document introduces practical usage examples of the pr skill.
 
 ### 1. Create PR
 
-#### Scenario: Implement login functionality on feature/add-login branch and create PR
+#### Scenario: Implement login functionality on 42-add-login branch and create PR
 
 ```bash
 # Switch to working branch
-git checkout feature/add-login
+git checkout 42-add-login
 
 # Commit changes (assuming already completed)
 git add .
@@ -21,7 +21,7 @@ git commit -m "feat: Add login functionality"
 ```
 
 **Execution Details**:
-1. Check current branch (feature/add-login)
+1. Check current branch (42-add-login)
 2. Analyze commit history and auto-generate title and description
 3. Push to remote (if necessary)
 4. Create PR on GitHub
@@ -31,7 +31,7 @@ git commit -m "feat: Add login functionality"
 ## PR Created
 
 **PR**: https://github.com/owner/repo/pull/123
-**Branch**: feature/add-login → main
+**Branch**: 42-add-login → main
 **Title**: Add login functionality
 
 Please request a review from reviewers.
@@ -129,12 +129,12 @@ Or
 ## Merge Complete
 
 **PR**: https://github.com/owner/repo/pull/123
-**Branch**: feature/add-login → main
+**Branch**: 42-add-login → main
 
 ### Actions Performed
 - Merged PR
-- Deleted remote branch 'feature/add-login' (automatically deleted by GitHub)
-- Deleted local branch 'feature/add-login'
+- Deleted remote branch '42-add-login' (automatically deleted by GitHub)
+- Deleted local branch '42-add-login'
 - Switched to branch 'main'
 - Fetched latest code
 
@@ -185,17 +185,17 @@ git branch --show-current
 ```
 
 **Execution Details**:
-1. Detect that PR #123's source branch is `feature/fix-bug`
+1. Detect that PR #123's source branch is `43-fix-bug`
 2. Detect difference from current branch (main)
 3. Confirm with AskUserQuestion:
    ```
-   Current branch 'main' differs from PR source branch 'feature/fix-bug'.
-   Checkout 'feature/fix-bug'?
+   Current branch 'main' differs from PR source branch '43-fix-bug'.
+   Checkout '43-fix-bug'?
 
    - Yes, checkout
    - No, continue as-is
    ```
-4. Select "Yes" → Execute `git checkout feature/fix-bug`
+4. Select "Yes" → Execute `git checkout 43-fix-bug`
 5. Continue review comment response
 
 ### 8. Error Response Examples
@@ -210,13 +210,13 @@ git checkout main
 **Output**:
 ```
 Error: Cannot create PR from main branch.
-Please create a feature/issue branch before executing.
+Please create an issue-based branch before executing.
 ```
 
 #### Case 2: Attempting to create PR without commits
 
 ```bash
-git checkout feature/empty-branch
+git checkout 45-empty-branch
 /pr create
 ```
 
@@ -248,8 +248,8 @@ Please check the following:
 ### Full Cycle: Feature Development to Merge
 
 ```bash
-# 1. Create new feature branch
-git checkout -b feature/user-profile
+# 1. Create new issue-based branch
+git checkout -b 44-user-profile
 
 # 2. Implement feature
 # (write code)
@@ -432,7 +432,7 @@ gh auth status -t
 gh pr list --state all
 
 # Search for PR of specific branch
-gh pr list --head feature/my-branch
+gh pr list --head 46-my-branch
 ```
 
 ### Merge Conflict

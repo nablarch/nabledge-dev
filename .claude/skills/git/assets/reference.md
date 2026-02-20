@@ -96,8 +96,8 @@ Worktrees allow working with different branches of the same repository in separa
 ```
 /home/user/work/
 ├── nab-agents/              # Main worktree (main branch)
-├── nab-agents-add-feature/  # Worktree 1 (add-feature branch)
-└── nab-agents-fix-bug/      # Worktree 2 (fix-bug branch)
+├── nab-agents-42-add-feature/  # Worktree 1 (42-add-feature branch)
+└── nab-agents-43-fix-bug/      # Worktree 2 (43-fix-bug branch)
 ```
 
 ### Path Naming Convention

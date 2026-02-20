@@ -130,6 +130,6 @@ Task
 | gh CLI unavailable | Guide user to run `gh auth login` |
 | Cannot get git remote | Verify repository is on GitHub |
 | Invalid PR number / PR not found | Verify correct PR number |
-| Execute create from main branch | Guide to execute from feature/issue branch |
+| Execute create from main branch | Guide to execute from issue-based branch |
 
 For detailed usage examples, see `assets/examples.md`. For reference, see `assets/reference.md`.

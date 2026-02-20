@@ -9,16 +9,102 @@ Execute full development workflow from issue/PR to review request.
 
 # Instructions
 
-1. Get issue/PR number from $ARGUMENTS or ask user interactively
-2. Fetch issue/PR details: `gh issue view $NUMBER` or `gh pr view $NUMBER`
-3. Create branch if needed: `git checkout -b feature/issue-$NUMBER`
-4. Analyze requirements: Use Glob/Grep to find relevant files
-5. Implement changes: Use Task tool with general-purpose agent
+1. Get or create issue:
+   - If $ARGUMENTS provided: Use as issue number
+   - If no arguments: Use AskUserQuestion to ask user
+     - Question: "Do you have an existing issue number?"
+     - Options: "Yes, I have issue number" / "No, create new issue"
+   - If user selects "No, create new issue":
+     ```bash
+     # Ask user for issue details using AskUserQuestion
+     # Follow format from .claude/rules/issues.md:
+     # - Title: "As a [role], I want [goal] so that [benefit]"
+     # - Situation (current state and observable facts)
+     # - Pain (who is affected and what problem)
+     # - Benefit (who benefits and how, use "[who] can [what]" format)
+     # - Success criteria (verifiable outcomes as checkboxes)
+
+     # Create issue using gh CLI
+     gh issue create \
+       --title "$title" \
+       --body "$(cat <<EOF
+### Situation
+$situation
+
+### Pain
+$pain
+
+### Benefit
+$benefit
+
+### Success Criteria
+$success_criteria
+EOF
+)"
+
+     # Get created issue number
+     issue_number=$(gh issue list --limit 1 --json number --jq '.[0].number')
+     echo "Created issue #$issue_number"
+     ```
+2. Sync current branch with main if needed:
+   ```bash
+   current_branch=$(git branch --show-current)
+   # If current branch is workX, sync with main first
+   if [[ "$current_branch" =~ ^work[0-9]+$ ]]; then
+     echo "Syncing $current_branch with main..."
+     git fetch origin main
+     git merge --ff-only origin/main
+   fi
+   ```
+3. Fetch issue details: `gh issue view $NUMBER --json title,body`
+4. Create branch if needed:
+   ```bash
+   # Extract first 2-3 meaningful words from issue title
+   # Convert to lowercase, replace spaces/special chars with hyphens
+   # Format: {issue_number}-{description}
+   # Example: "Add user authentication" -> "60-add-user-auth"
+
+   # Generate description from issue title
+   description=$(echo "$issue_title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 ]//g' | awk '{print $1"-"$2"-"$3}' | sed 's/-$//')
+   branch_name="${issue_number}-${description}"
+
+   # Check if branch exists
+   if git rev-parse --verify "$branch_name" &>/dev/null; then
+     echo "Branch $branch_name already exists, checking out..."
+     git checkout "$branch_name"
+   else
+     echo "Creating branch $branch_name..."
+     git checkout -b "$branch_name"
+   fi
+   ```
+5. Analyze requirements: Use Glob/Grep to find relevant files
+6. Implement changes: Use Task tool with general-purpose agent
    - Pass full issue body, success criteria, relevant files to agent
    - Agent will read files, implement changes, ask questions if unclear
-6. Run tests: Auto-detect framework (pytest, npm test, mvn test, gradle test)
-7. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
-8. Request reviews if configured
+7. Run tests based on change type:
+
+   **For source code changes:**
+   - Auto-detect framework (pytest, npm test, mvn test, gradle test)
+   - Run existing unit tests
+   - If no tests exist: Propose test rules and create tests
+
+   **For prompts/workflows/documentation:**
+   - Execute with agent to verify functionality (simulation/actual run)
+   - Verify workflow steps work as documented
+   - Test example scenarios if applicable
+
+8. Execute expert review (see `.claude/rules/expert-review.md`):
+   - Analyze changed files and select appropriate experts
+   - Launch expert review agents for each selected expert
+   - Launch developer agent to evaluate improvement suggestions
+   - Implement approved improvements
+   - Save review results to `.pr/{issue_number}/review-by-{expert_role}.md`
+   - Prepare Expert Review links for PR body
+
+9. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
+   - PR body includes Expert Review section with links to detailed reviews
+
+10. Request review from user
 
 # Important
 
