@@ -91,7 +91,7 @@ git fetch origin main:refs/remotes/origin/main
 git pull origin main
 ```
 
-**Note**: The explicit refspec `main:refs/remotes/origin/main` ensures that the tracking branch `origin/main` is updated in worktree environments. Without the refspec, `git fetch origin main` may not update the tracking reference, leaving `origin/main` at an old commit position.
+**Note**: The explicit refspec `main:refs/remotes/origin/main` ensures that the tracking branch `origin/main` is updated in worktree environments (bare repositories). In bare repository configurations, `remote.origin.fetch` refspec is typically not configured, so `git fetch origin main` will not update the tracking reference without the explicit destination, leaving `origin/main` at an old commit position.
 
 ### 4. Delete Branch
 
