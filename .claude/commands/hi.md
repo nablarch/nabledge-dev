@@ -80,7 +80,17 @@ EOF
 6. Implement changes: Use Task tool with general-purpose agent
    - Pass full issue body, success criteria, relevant files to agent
    - Agent will read files, implement changes, ask questions if unclear
-7. Run tests: Auto-detect framework (pytest, npm test, mvn test, gradle test)
+7. Run tests based on change type:
+
+   **For source code changes:**
+   - Auto-detect framework (pytest, npm test, mvn test, gradle test)
+   - Run existing unit tests
+   - If no tests exist: Propose test rules and create tests
+
+   **For prompts/workflows/documentation:**
+   - Execute with agent to verify functionality (simulation/actual run)
+   - Verify workflow steps work as documented
+   - Test example scenarios if applicable
 8. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
 9. Request review from user
 
