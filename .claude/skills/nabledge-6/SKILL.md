@@ -84,6 +84,43 @@ nabledge-6 code-analysis
 
 **CRITICAL**: When this skill is invoked, Claude Code MUST execute workflows manually. The skill does NOT automatically process - Claude must follow the workflow steps using tools.
 
+### Context Isolation and Delegation
+
+**Automatic delegation to n6 agent** (Claude Code only):
+
+When this skill is invoked, first check the execution context:
+
+1. **If running in main context** (not in agent):
+   - Detect platform: Check if Task tool is available (Claude Code)
+   - If Claude Code: Automatically delegate to `n6` agent using Task tool
+   - Pass original user request to agent
+   - Agent will execute skill in separate context
+   - DO NOT execute workflows in main context
+
+2. **If already in agent context** (running inside n6 agent):
+   - Execute normally following the workflow steps below
+   - DO NOT attempt to spawn another agent (avoid nesting)
+
+3. **If GitHub Copilot** (Task tool not available):
+   - Execute normally following the workflow steps below
+   - User must manually invoke via `/agent n6` for context isolation
+
+**Detection logic**:
+```
+IF Task tool available AND not already in agent context:
+  USE Task tool to delegate to n6 agent
+  PASS user request to agent
+  RETURN agent results
+ELSE:
+  PROCEED with normal execution (steps below)
+```
+
+**Benefits of automatic delegation**:
+- Clean main context (no pollution from file searches)
+- Faster responses (reduced context bloat)
+- Lower token consumption
+- Automatic summarization of results
+
 ### Execution Process
 
 When you (Claude Code) receive this skill prompt, follow these steps:
