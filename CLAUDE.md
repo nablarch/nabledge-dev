@@ -56,8 +56,10 @@ nabledge-dev/
 │   └── development-status.md      # Development progress tracking
 │
 ├── scripts/                       # Utility scripts
-│   ├── generate-mapping-v6.py     # Generate mapping file
-│   ├── validate-mapping.py        # Validate mapping file
+│   ├── mapping/                   # Mapping file generation scripts
+│   │   ├── generate-mapping-v6.py # Generate mapping file
+│   │   ├── validate-mapping.py    # Validate mapping file
+│   │   └── export-mapping-excel.py # Export to Excel
 │   └── setup-6-*.sh               # Setup scripts
 │
 ├── work/                          # Work logs (date-based)
@@ -144,13 +146,13 @@ grep "| handlers |" doc/mapping/mapping-v6.md
 **Validation**:
 ```bash
 # Validate mapping file integrity
-python3 scripts/validate-mapping.py doc/mapping/mapping-v6.md
+python3 scripts/mapping/validate-mapping.py doc/mapping/mapping-v6.md
 ```
 
 **Excel Export** (required for human review):
 ```bash
 # Generate Excel file for stakeholder review
-python3 scripts/export-mapping-excel.py
+python3 scripts/mapping/export-mapping-excel.py
 # Output: doc/mapping/mapping-v6.xlsx
 ```
 

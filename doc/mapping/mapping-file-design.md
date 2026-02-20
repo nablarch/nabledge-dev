@@ -269,7 +269,7 @@ Excel format is **required** for non-technical stakeholders to review and verify
 
 **Generation**:
 - Use Python (pandas + openpyxl) to convert Markdown table to Excel
-- Script: `scripts/export-mapping-excel.py`
+- Script: `scripts/mapping/export-mapping-excel.py`
 - Automatically run after mapping file updates
 
 **Features**:

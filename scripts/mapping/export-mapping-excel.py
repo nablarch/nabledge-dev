@@ -25,7 +25,7 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
 # File paths
-REPO_ROOT = Path(__file__).parent.parent
+REPO_ROOT = Path(__file__).parent.parent.parent
 MAPPING_MD = REPO_ROOT / "doc/mapping/mapping-v6.md"
 OUTPUT_XLSX = REPO_ROOT / "doc/mapping/mapping-v6.xlsx"
 

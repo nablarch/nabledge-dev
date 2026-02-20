@@ -23,7 +23,7 @@ from typing import Optional, Tuple
 import argparse
 
 # Base directories
-REPO_ROOT = Path(__file__).parent.parent
+REPO_ROOT = Path(__file__).parent.parent.parent
 NABLARCH_DOC_EN = REPO_ROOT / ".lw/nab-official/v6/nablarch-document/en"
 NABLARCH_DOC_JA = REPO_ROOT / ".lw/nab-official/v6/nablarch-document/ja"
 NABLARCH_GUIDE_BASE = REPO_ROOT / ".lw/nab-official/v6/nablarch-system-development-guide"
