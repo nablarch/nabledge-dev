@@ -28,7 +28,7 @@ Execute full development workflow from issue/PR to review request.
    - Agent will read files, implement changes, ask questions if unclear
 7. Run tests: Auto-detect framework (pytest, npm test, mvn test, gradle test)
 8. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
-9. Request reviews if configured
+9. Request review from user
 
 # Important
 
