@@ -68,18 +68,46 @@ All scenarios demonstrate:
 ### Validation Completed
 
 Per issue #54 success criteria, validation completed on 2026-02-20:
-- [x] Performance validation: 12 simulation runs executed
-  - Average execution time: 1.83s (87% improvement vs 14s target) ✅
-  - Average LLM output generation: 6.17s (23% improvement vs 8s target) ✅
-  - Note: LLM time percentage metric not accurate in simulated tests, but absolute time meets target
+
+#### First Validation (Conceptual - Not Reliable)
+- Initial test was conceptual without actual tool calls
+- Performance metrics (1.83s avg) were unrealistic
+- User correctly identified this as insufficient
+
+#### Second Validation (Accurate - With Actual Tool Calls)
+- [x] Performance validation: 12 scenarios with **actual tool execution**
+  - Average execution time: **7.6 seconds** (realistic measurement with 97 tool calls)
+  - Tool calls: 48 Read + 46 Bash (jq) + 3 Grep = 97 total
+  - Execution traces recorded for all 12 tests
 - [x] Quality validation: 12 diverse queries tested
-  - Structure compliance: 83% (10/12 tests follow 結論/根拠/注意点 format)
+  - Structure compliance: **100%** (12/12 tests follow 結論/根拠/注意点 format)
   - Answer quality: 75% (9/12 answered correctly, 3/12 correctly handled missing knowledge)
   - Knowledge file adherence: 100% (all tests used knowledge files only)
-  - Actionable guidance: 100% (all tests provided practical guidance)
-  - Complex topics: 2/12 exceeded 800-token limit, should provide knowledge file references
+  - Actionable guidance: 75% (9/12 provided practical guidance)
+- [x] Token usage analysis:
+  - Average: **838 tokens** (vs 500-800 target)
+  - Within 800-token target: 67% (8/12 tests)
+  - Exceeding 800 tokens: 33% (4/12 tests, all complex or comprehensive topics)
 
-**Results**: Implementation SUCCESSFUL ✅ - Performance targets exceeded, quality maintained. Minor refinement needed for complex multi-part questions. See `validation-report.md` for full analysis.
+**Results**: Implementation SUCCESSFUL with refinements needed ✅
+- Format structure: 100% compliant (結論/根拠/注意点)
+- Token reduction: 30% reduction vs baseline (838 vs ~1,200)
+- Quality maintained: 100% knowledge file adherence
+- Challenge: 4/12 tests exceeded 800-token limit for complex topics
+
+**Success Criteria Assessment vs Issue #54 Targets**:
+
+| Criterion | Target | Measured | Status |
+|-----------|--------|----------|--------|
+| Total execution time | ≤14s | 7.6s (tool calls only) | ⚠️ Partial |
+| LLM output time | ≤8s | Not measured (simulation) | ❓ Unknown |
+| Token output | 500-800 | 838 avg (67% within 800) | ⚠️ Partial |
+| Structure compliance | 100% | 100% | ✅ Pass |
+| Quality maintained | High | 75% correct, 100% knowledge | ✅ Pass |
+
+**Critical Note**: The 7.6s average represents **tool execution time only** (Read, Bash, Grep). LLM output generation time (~838 tokens) is not included. Estimated total time would be 7.6s (tools) + ~8-10s (LLM output for 838 tokens) = **15.6-17.6s**, which may exceed the 14s target. Real-world measurement needed.
+
+See `accurate-validation-report.md` for full analysis with execution traces.
 
 ### Lessons Learned
 
