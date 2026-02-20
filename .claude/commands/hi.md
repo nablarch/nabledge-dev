@@ -20,8 +20,27 @@ Execute full development workflow from issue/PR to review request.
      git merge --ff-only origin/main
    fi
    ```
-3. Fetch issue/PR details: `gh issue view $NUMBER` or `gh pr view $NUMBER`
-4. Create branch if needed: `git checkout -b issue-$NUMBER`
+3. Fetch issue details: `gh issue view $NUMBER --json title,body`
+4. Create branch if needed:
+   ```bash
+   # Extract first 2-3 meaningful words from issue title
+   # Convert to lowercase, replace spaces/special chars with hyphens
+   # Format: {issue_number}-{description}
+   # Example: "Add user authentication" -> "60-add-user-auth"
+
+   # Generate description from issue title
+   description=$(echo "$issue_title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 ]//g' | awk '{print $1"-"$2"-"$3}' | sed 's/-$//')
+   branch_name="${issue_number}-${description}"
+
+   # Check if branch exists
+   if git rev-parse --verify "$branch_name" &>/dev/null; then
+     echo "Branch $branch_name already exists, checking out..."
+     git checkout "$branch_name"
+   else
+     echo "Creating branch $branch_name..."
+     git checkout -b "$branch_name"
+   fi
+   ```
 5. Analyze requirements: Use Glob/Grep to find relevant files
 6. Implement changes: Use Task tool with general-purpose agent
    - Pass full issue body, success criteria, relevant files to agent

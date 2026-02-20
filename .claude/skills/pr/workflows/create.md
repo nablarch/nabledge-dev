@@ -74,8 +74,8 @@ git push
 Check branch naming pattern to determine if issue number is required:
 
 ```bash
-if [[ "$current_branch" =~ ^issue-([0-9]+)$ ]]; then
-  # Issue-driven branch: extract issue number
+if [[ "$current_branch" =~ ^([0-9]+)- ]]; then
+  # Issue-driven branch: extract issue number (format: 60-sync-branches)
   issue_number="${BASH_REMATCH[1]}"
   echo "Detected issue number from branch: #${issue_number}"
 elif [[ "$current_branch" =~ ^qf/ ]]; then
