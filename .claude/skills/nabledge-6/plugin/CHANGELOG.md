@@ -25,6 +25,9 @@ nabledge-6プラグインの主な変更内容を記録しています。
   - S3最適化: テンプレートファイル読み込みを3回のReadツール呼び出しから1回のbash catコマンドに統合（2呼び出し削減）
   - S4最適化: 時間計算に関する4回のbash呼び出しを2回に統合（2呼び出し削減）
 
+### 修正
+- コード分析の最適化スクリプト（`prefill-template.sh`, `generate-mermaid-skeleton.sh`）を `.claude/skills/nabledge-6/scripts/` ディレクトリに移動し、ユーザー環境で利用可能になりました。以前はスクリプトが開発リポジトリ内にのみ存在し、デプロイされた環境では「No such file or directory」エラーが発生していました (Issue #80)
+
 ## [0.2] - 2026-02-17
 
 ### 修正

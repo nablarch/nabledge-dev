@@ -2,6 +2,21 @@
 
 This directory contains utility scripts for nabledge development and code analysis optimization.
 
+## Script Locations
+
+Scripts are organized by deployment scope:
+
+**Skill-included scripts** (`.claude/skills/nabledge-6/scripts/`):
+- `prefill-template.sh`: Pre-fills code analysis template placeholders
+- `generate-mermaid-skeleton.sh`: Generates Mermaid diagram skeletons
+- These scripts are deployed with the nabledge-6 skill to user environments
+
+**Development-only scripts** (`scripts/`):
+- `setup-6-cc.sh`, `setup-6-ghc.sh`: Installation scripts
+- `test-*.sh`: Test scripts
+- `mapping/*.py`: Documentation mapping tools
+- These scripts remain in the development repository only
+
 ## Code Analysis Optimization Scripts
 
 These scripts support the code analysis workflow by pre-filling deterministic placeholders and generating diagram skeletons, reducing LLM generation time from ~100 seconds to ~45-55 seconds.
@@ -24,7 +39,7 @@ Pre-fills 8 deterministic placeholders in the code analysis template.
 
 **Usage**:
 ```bash
-scripts/prefill-template.sh \
+.claude/skills/nabledge-6/scripts/prefill-template.sh \
   --target-name "<name>" \
   --target-desc "<description>" \
   --modules "<modules>" \
@@ -60,14 +75,14 @@ Generates Mermaid diagram skeletons from Java source files.
 
 **Usage for class diagram**:
 ```bash
-scripts/generate-mermaid-skeleton.sh \
+.claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
   --source-files "<file1.java,file2.java>" \
   --diagram-type class
 ```
 
 **Usage for sequence diagram**:
 ```bash
-scripts/generate-mermaid-skeleton.sh \
+.claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
   --source-files "<main-file.java>" \
   --diagram-type sequence \
   --main-class "<MainClass>"
@@ -88,8 +103,8 @@ scripts/generate-mermaid-skeleton.sh \
 
 These scripts are integrated into `.claude/skills/nabledge-6/workflows/code-analysis.md`:
 
-1. **Step 3.2**: Use `prefill-template.sh` to create template with 8 placeholders filled
-2. **Step 3.3**: Use `generate-mermaid-skeleton.sh` to generate diagram skeletons
+1. **Step 3.2**: Use `.claude/skills/nabledge-6/scripts/prefill-template.sh` to create template with 8 placeholders filled
+2. **Step 3.3**: Use `.claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh` to generate diagram skeletons
 3. **Step 3.4**: LLM refines skeletons and fills remaining 8 placeholders
 4. **Step 3.5**: Write file with all content
 5. **Step 5**: Calculate duration and update file with sed
