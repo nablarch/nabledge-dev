@@ -326,8 +326,9 @@ def generate_official_url(source_path: str, repo: str) -> str:
 
 def convert_target_path(source_path: str, type_val: str, category: str) -> str:
     """Convert source path to target path."""
-    # Extract filename
+    # Extract filename and path parts
     filename = Path(source_path).name
+    parts = Path(source_path).parts
 
     # Convert filename: _ to -, extension to .md (unless .xlsx)
     if filename.endswith('.rst'):
@@ -339,23 +340,11 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
     else:
         target_filename = filename
 
-    # Special handling for index.rst
-    if filename == 'index.rst':
-        # Use parent directory name or specific name
-        parts = Path(source_path).parts
-        if 'jsr352' in parts:
-            target_filename = 'jsr352.md'
-        elif 'nablarch_batch' in parts:
-            target_filename = 'nablarch_batch.md'
-        elif 'batch' in parts and len(parts) > 3:
-            target_filename = 'batch.md'
-
-    # Determine subdirectories
+    # Determine subdirectories and handle special cases based on category
     subdirs = ''
+
     if category == 'handlers' or category == 'adapters':
-        # Preserve subdirectories
-        parts = Path(source_path).parts
-        # Find handlers or adaptors in path
+        # Preserve subdirectories after handlers/adaptors
         if 'handlers' in parts:
             idx = parts.index('handlers')
             if idx + 1 < len(parts) - 1:  # Has subdirectories
@@ -364,6 +353,105 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
             idx = parts.index('adaptors')
             if idx + 1 < len(parts) - 1:
                 subdirs = '/'.join(parts[idx+1:-1])
+
+    elif category in ['jakarta-batch', 'nablarch-batch']:
+        # Batch processing patterns: preserve context to avoid collisions
+        # Check if this is under getting_started or feature_details
+        if 'getting_started' in parts or 'feature_details' in parts:
+            # Find the context dir
+            context = 'getting_started' if 'getting_started' in parts else 'feature_details'
+            ctx_idx = parts.index(context)
+            # Get segments after context dir up to filename
+            if ctx_idx + 1 < len(parts) - 1:
+                # There are subdirs after getting_started/feature_details
+                subdirs_after = parts[ctx_idx + 1:-1]
+                # Use the last subdir for unique naming
+                if subdirs_after and (filename == 'index.rst' or filename == 'index.md'):
+                    # Use getting-started-xxx format
+                    prefix = 'getting-started' if context == 'getting_started' else 'feature-details'
+                    target_filename = f"{prefix}-{subdirs_after[-1].replace('_', '-')}.md"
+
+        # Special case: handlers/batch vs batch/ - disambiguate by adding context
+        if 'handlers' in parts and 'batch' in parts:
+            # This is handlers/batch - use 'handlers-' prefix
+            if filename == 'index.rst' or filename == 'index.md':
+                target_filename = 'handlers-batch.md'
+
+    elif category in ['web-application', 'restful-web-service']:
+        # Web patterns: preserve subdirectory context for disambiguation
+        # Check if there's a subdirectory that provides context (http_messaging, rest, etc.)
+        if 'web_service' in parts:
+            idx = parts.index('web_service')
+            if idx + 1 < len(parts) - 1:
+                context_dir = parts[idx + 1]
+                # Preserve this context in the filename or subdirs
+                subdirs = context_dir
+        elif 'web_application' in parts:
+            idx = parts.index('web_application')
+            if idx + 1 < len(parts) - 1:
+                context_dir = parts[idx + 1]
+                if context_dir not in ['architecture.rst', 'index.rst']:  # Not a direct file
+                    subdirs = context_dir
+
+    elif category in ['http-messaging', 'mom-messaging', 'db-messaging']:
+        # Messaging patterns: flatten subdirectories
+        pass
+
+    elif category == 'libraries':
+        # Libraries: preserve subdirectory for disambiguation
+        if 'libraries' in parts:
+            idx = parts.index('libraries')
+            if idx + 1 < len(parts) - 1:
+                # Preserve all subdirectories after libraries
+                subdirs = '/'.join(parts[idx+1:-1])
+
+    elif category == 'testing-framework':
+        # Development tools: preserve meaningful path structure
+        if 'testing_framework' in parts:
+            idx = parts.index('testing_framework')
+            path_segments = parts[idx+1:-1]  # Segments between testing_framework and filename
+            if path_segments:
+                # Extract meaningful segments: skip 'guide', 'development_guide'
+                meaningful = [s for s in path_segments if not s in ['guide', 'development_guide']]
+                if meaningful:
+                    # Use last 2 segments for context if available
+                    if len(meaningful) >= 2:
+                        subdirs = '/'.join(meaningful[-2:])
+                        # For index.rst, use the immediate parent
+                        if filename == 'index.rst' or filename == 'index.md':
+                            target_filename = meaningful[-1].replace('_', '-') + '.md'
+                    else:
+                        subdirs = meaningful[-1]
+                        if filename == 'index.rst' or filename == 'index.md':
+                            target_filename = meaningful[-1].replace('_', '-') + '.md'
+
+                # Check for collision: if filename (not index) has same name as parent dir
+                # e.g., 01_HttpDumpTool/01_HttpDumpTool.rst vs 01_HttpDumpTool/index.rst
+                if not (filename == 'index.rst' or filename == 'index.md'):
+                    base_name = Path(filename).stem
+                    parent = meaningful[-1] if meaningful else ''
+                    if base_name == parent and subdirs:
+                        # This is a collision - use 'overview' suffix for the non-index file
+                        target_filename = base_name.replace('_', '-') + '-overview.md'
+
+    elif category in ['blank-project', 'cloud-native', 'setting-guide']:
+        # Setup categories: flatten subdirectories
+        pass
+
+    elif category == 'toolbox':
+        # Toolbox: preserve subdirectories for disambiguation
+        if 'toolbox' in parts:
+            idx = parts.index('toolbox')
+            if idx + 1 < len(parts) - 1:
+                subdirs = '/'.join(parts[idx+1:-1])
+
+    # Special handling for index.rst - use parent directory name if not already handled
+    if (filename == 'index.rst' or filename == 'index.md') and target_filename == 'index.md':
+        # Get parent directory name (second-to-last part)
+        if len(parts) >= 2:
+            parent_dir = parts[-2]
+            # Convert parent directory name with same rules
+            target_filename = parent_dir.replace('_', '-') + '.md'
 
     # Build target path
     if subdirs:
