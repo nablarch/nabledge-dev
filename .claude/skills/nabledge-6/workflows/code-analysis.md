@@ -38,17 +38,18 @@ This workflow analyzes existing code, traces dependencies, and generates structu
 
 **Tool**: Bash
 
-**Action**:
+**Action** - Store start time in temp file for later calculation:
 ```bash
-date '+%Y-%m-%d %H:%M:%S'
+date '+%s' > /tmp/nabledge-code-analysis-start-$$ && echo "Start time recorded: $(date '+%Y-%m-%d %H:%M:%S')"
 ```
 
-**Output example**: `2026-02-10 14:54:00`
+**Output example**: `Start time recorded: 2026-02-10 14:54:00`
 
 **IMPORTANT**:
-- **Write down this timestamp** in your working memory
-- You will need it in Step 3.3 to calculate analysis duration
-- Format: `Start: YYYY-MM-DD HH:MM:SS`
+- **Start time stored in**: `/tmp/nabledge-code-analysis-start-$$` (using process PID)
+- **Remember the PID** ($$) or temp file path - you'll need it in Step 3.3 for duration calculation
+- Epoch time (seconds since 1970) stored for accurate duration calculation
+- **Note**: The `$$` variable expands to the current shell's PID, ensuring each agent instance has a unique temp file and parallel executions won't collide
 
 **Why this matters**: The `{{analysis_duration}}` placeholder must contain the actual elapsed time, not an estimate. Users will compare it against the "Cooked for X" time shown in their IDE.
 
@@ -197,11 +198,11 @@ date '+%Y-%m-%d %H:%M:%S'
 
 #### 3.1: Read template and guide
 
-**MUST READ FIRST**:
-```
-Read: .claude/skills/nabledge-6/assets/code-analysis-template.md
-Read: .claude/skills/nabledge-6/assets/code-analysis-template-guide.md
-Read: .claude/skills/nabledge-6/assets/code-analysis-template-examples.md
+**MUST READ FIRST** (use single cat command for efficiency):
+```bash
+cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
+    .claude/skills/nabledge-6/assets/code-analysis-template-guide.md \
+    .claude/skills/nabledge-6/assets/code-analysis-template-examples.md
 ```
 
 **Extract from templates**:
@@ -277,16 +278,10 @@ sequenceDiagram
 
 1. **Determine output path**: `.nabledge/YYYYMMDD/code-analysis-<target-name>.md`
 
-2. **Get current timestamp** (for generation_date and generation_time):
-   ```bash
-   date '+%Y-%m-%d %H:%M:%S'
-   ```
-   Extract date and time parts for {{generation_date}} and {{generation_time}}.
-
-3. **Fill template placeholders** (except {{analysis_duration}}):
+2. **Fill template placeholders** (time-related placeholders will be filled in Step 6):
    - `{{target_name}}`: Target code name
-   - `{{generation_date}}`: Current date (YYYY-MM-DD)
-   - `{{generation_time}}`: Current time (HH:MM:SS)
+   - `{{generation_date}}`: "{{DATE_PLACEHOLDER}}"  ← 置き換え用マーカー（そのまま）
+   - `{{generation_time}}`: "{{TIME_PLACEHOLDER}}"  ← 置き換え用マーカー（そのまま）
    - `{{analysis_duration}}`: "{{DURATION_PLACEHOLDER}}"  ← 置き換え用マーカー（そのまま）
    - `{{target_description}}`: One-line description
    - `{{modules}}`: Affected modules
@@ -312,31 +307,55 @@ sequenceDiagram
 
 5. **Write file** using Write tool
 
-6. **Calculate duration and update file** (IMMEDIATE execution after Write):
+6. **Update time-related placeholders** (IMMEDIATE execution after Write):
 
-   **Step 6.1**: Get end time and calculate duration
+   Execute single bash script to fill all time-related placeholders:
    ```bash
-   date '+%Y-%m-%d %H:%M:%S'
+   # Get current time
+   end_time=$(date '+%s')
+   current_datetime=$(date '+%Y-%m-%d %H:%M:%S')
+   generation_date=$(echo "$current_datetime" | cut -d' ' -f1)
+   generation_time=$(echo "$current_datetime" | cut -d' ' -f2)
+
+   # Read start time from temp file (created in Step 0)
+   start_time=$(cat /tmp/nabledge-code-analysis-start-$$)
+
+   # Calculate duration in seconds
+   duration_seconds=$((end_time - start_time))
+
+   # Format as Japanese text
+   if [ $duration_seconds -lt 60 ]; then
+     duration_text="約${duration_seconds}秒"
+   else
+     minutes=$((duration_seconds / 60))
+     seconds=$((duration_seconds % 60))
+     duration_text="約${minutes}分${seconds}秒"
+   fi
+
+   # Replace all placeholders in the output file (three -e expressions execute sequentially)
+   sed -i \
+     -e "s/{{DATE_PLACEHOLDER}}/$generation_date/g" \
+     -e "s/{{TIME_PLACEHOLDER}}/$generation_time/g" \
+     -e "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" \
+     .nabledge/YYYYMMDD/code-analysis-<target>.md
+
+   # Clean up temp file
+   rm -f /tmp/nabledge-code-analysis-start-$$
+
+   # Output for user
+   echo "Generated: $generation_date $generation_time"
+   echo "Duration: $duration_text"
    ```
 
-   - Retrieve start time from Step 0 (stored in working memory)
-   - Calculate elapsed time: end time - start time
-   - Format as Japanese text:
-     - If < 60 seconds: "約{seconds}秒" (e.g., "約30秒", "約45秒")
-     - If >= 60 seconds: "約{minutes}分{seconds}秒" (e.g., "約5分18秒", "約2分30秒")
-     - Round down to nearest second (don't estimate)
-
-   **Step 6.2**: Replace placeholder using sed
-   ```bash
-   sed -i 's/{{DURATION_PLACEHOLDER}}/約X分Y秒/g' .nabledge/YYYYMMDD/code-analysis-<target>.md
-   ```
-
-   Replace `約X分Y秒` with the actual calculated duration from Step 6.1.
+   **Replace in command**:
+   - `$$`: Actual PID from Step 0
+   - `YYYYMMDD`: Actual date directory
+   - `<target>`: Actual target name
 
    **IMPORTANT**:
-   - Execute Steps 6.1 and 6.2 immediately after Step 5 with no other operations between them
-   - If sed fails (permission error, file locked, etc.), inform user of the calculated duration so they can manually edit the file
-   - The placeholder will remain in the file if sed fails, but user can update it later
+   - Execute immediately after Step 5 with no other operations between them
+   - This single script handles: generation date/time, duration calculation, and file updates
+   - If script fails or temp file is missing, inform user and use "不明" (unknown) for missing values so they can manually edit the placeholders
 
 7. **Inform user**: Show output path and actual duration
 
