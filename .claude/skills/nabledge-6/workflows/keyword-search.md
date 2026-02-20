@@ -87,15 +87,38 @@ for file in knowledge/features/libraries/universal-dao.json \
   # Extract .index field
   jq -r --arg file "$file" '.index | to_entries[] | "\($file)|\(.key)|\(.value.hints | join(","))"' "$file" 2>/dev/null
 done | while IFS='|' read -r filepath section hints; do
-  # Parse hints and match against L2/L3 keywords
-  # Calculate score for each section
-  # Output: filepath|section|score|matched_hints
-  # (Implement scoring logic inline - see scoring strategy below)
-  echo "$filepath|$section|$score|$matched_hints"
+  # Score each section by matching L2/L3 keywords against hints
+  score=0
+  matched=""
+
+  # L2 keywords matching (+2 points each)
+  for kw in "${l2_keywords[@]}"; do
+    if echo "$hints" | grep -iq "$kw"; then
+      score=$((score + 2))
+      matched="$matched,$kw(L2)"
+    fi
+  done
+
+  # L3 keywords matching (+2 points each)
+  for kw in "${l3_keywords[@]}"; do
+    if echo "$hints" | grep -iq "$kw"; then
+      score=$((score + 2))
+      matched="$matched,$kw(L3)"
+    fi
+  done
+
+  # Output sections with score ≥2
+  if [ $score -ge 2 ]; then
+    echo "$filepath|$section|$score|${matched:1}"  # ${matched:1} removes leading comma
+  fi
 done | sort -t'|' -k3 -rn | head -30
 ```
 
-**Note**: The scoring logic is simplified in the example for brevity. Actual implementation should match the scoring strategy described below (L2 keywords: +2 points, L3 keywords: +2 points).
+**Note**: The script assumes `l2_keywords` and `l3_keywords` arrays are defined from Step 1 keyword extraction. Example:
+```bash
+l2_keywords=("DAO" "UniversalDao" "O/Rマッパー")
+l3_keywords=("ページング" "paging" "per" "page" "limit" "offset")
+```
 
 **Scoring strategy** (implemented in the batch script):
 - L2 (Technical component) keyword match: **+2 points** per hint

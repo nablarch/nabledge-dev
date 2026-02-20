@@ -121,10 +121,37 @@ date '+%Y-%m-%d %H:%M:%S'
 2. **Combine keywords for batch search**:
    - Merge component names + technical terms from all components
    - Extract L1/L2/L3 keywords for all components at once
-   - Example combined keywords:
-     - L1: ["データベース", "database", "バリデーション", "validation"]
-     - L2: ["DAO", "UniversalDao", "ExecutionContext", "ValidationUtil"]
-     - L3: ["CRUD", "検索", "登録", "更新", "バリデーション", "例外処理"]
+
+   **Bash script example for keyword combination**:
+   ```bash
+   # Declare arrays for combined keywords
+   declare -a l1_all l2_all l3_all
+
+   # UniversalDao component keywords
+   l1_all+=("データベース" "database")
+   l2_all+=("DAO" "UniversalDao" "O/Rマッパー")
+   l3_all+=("CRUD" "検索" "登録" "更新" "ページング")
+
+   # ExecutionContext component keywords
+   l1_all+=("リクエスト" "request")
+   l2_all+=("ExecutionContext" "コンテキスト")
+   l3_all+=("リクエスト処理" "データ取得")
+
+   # ValidationUtil component keywords
+   l1_all+=("バリデーション" "validation")
+   l2_all+=("ValidationUtil" "Bean Validation")
+   l3_all+=("検証" "エラー" "例外処理")
+
+   # Remove duplicates and prepare for keyword-search workflow
+   l1_keywords=($(printf '%s\n' "${l1_all[@]}" | sort -u))
+   l2_keywords=($(printf '%s\n' "${l2_all[@]}" | sort -u))
+   l3_keywords=($(printf '%s\n' "${l3_all[@]}" | sort -u))
+   ```
+
+   **Result** - Combined keywords ready for keyword-search:
+     - L1: ["データベース", "database", "バリデーション", "validation", "リクエスト", "request"]
+     - L2: ["DAO", "UniversalDao", "O/Rマッパー", "ExecutionContext", "コンテキスト", "ValidationUtil", "Bean Validation"]
+     - L3: ["CRUD", "検索", "登録", "更新", "ページング", "リクエスト処理", "データ取得", "検証", "エラー", "例外処理"]
 
 3. **Execute keyword-search workflow once** (see workflows/keyword-search.md):
    - Use combined keywords for all components
