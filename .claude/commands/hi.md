@@ -92,8 +92,19 @@ EOF
    - Execute with agent to verify functionality (simulation/actual run)
    - Verify workflow steps work as documented
    - Test example scenarios if applicable
-8. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
-9. Request review from user
+
+8. Execute expert review (see `.claude/rules/expert-review.md`):
+   - Analyze changed files and select appropriate experts
+   - Launch expert review agents for each selected expert
+   - Launch developer agent to evaluate improvement suggestions
+   - Implement approved improvements
+   - Save review results to `.pr/{issue_number}/review-by-{expert_role}.md`
+   - Prepare Expert Review links for PR body
+
+9. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
+   - PR body includes Expert Review section with links to detailed reviews
+
+10. Request review from user
 
 # Important
 

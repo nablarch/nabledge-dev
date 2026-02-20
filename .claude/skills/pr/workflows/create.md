@@ -204,9 +204,20 @@ Closes #42
   - [x] Write integration tests
   ```
 
-**Step 4: Keep Expert Review Table as-is**
-- Do not modify the Expert Review table
-- Leave all status fields as "⚪ Not Reviewed"
+**Step 4: Replace Expert Review Section**
+
+Replace with links to expert review files from `/hi` step 8:
+- Expert reviews are saved in `.pr/{issue_number}/review-by-{expert-role}.md`
+- List each expert with their rating
+- Example output:
+  ```
+  ## Expert Review
+
+  AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
+
+  - [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+  - [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+  ```
 
 **Step 5: Replace Success Criteria Section**
 
@@ -246,14 +257,10 @@ for stateless authentication and better scalability compared to server-side sess
 
 ## Expert Review
 
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -289,14 +296,10 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 ## Expert Review
 
-> **Instructions for Expert**: Please review the approach and implementation, then fill in this table with your feedback.
+AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-| Aspect | Status | Comments |
-|--------|--------|----------|
-| Architecture | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Code Quality | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Testing | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
-| Documentation | ⚪ Not Reviewed / ✅ Approved / ⚠️ Needs Changes | |
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
