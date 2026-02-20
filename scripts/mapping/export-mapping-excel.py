@@ -96,6 +96,9 @@ def create_excel(df: pd.DataFrame, output_path: Path):
     - Filters on all columns
     - Frozen header row
     """
+    # Replace empty strings with empty string (not NaN) for consistent comparison
+    df = df.fillna('')
+
     # Write DataFrame to Excel
     df.to_excel(output_path, index=False, sheet_name='Mapping v6')
 
