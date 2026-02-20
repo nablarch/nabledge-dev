@@ -6,6 +6,9 @@ nabledge-6プラグインの主な変更内容を記録しています。
 
 ## [Unreleased]
 
+### 改善
+- 知識ファイルの検索ヒントにクラス名、例外名、エラー状況を追加しました。クラス名（SqlRow、VariableCondition、BasicBatchActionBaseなど）や例外名（DuplicateStatementException、SqlStatementExceptionなど）で検索できるようになり、コードやスタックトレースに表示される名前から関連知識を見つけやすくなりました (Issue #52)
+
 ### 変更
 - コード分析の出力先ディレクトリを `.nabledge/` に変更しました。Nabledgeが生成したファイルがプロジェクトのファイルから明確に分離されます（従来は `work/YYYYMMDD/` に出力）
 
