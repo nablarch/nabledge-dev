@@ -215,6 +215,9 @@ def generate_official_url(source_path: str) -> str:
                 break
 
         url = f"https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{ja_path}"
+    elif source_path.startswith('Sample_Project/'):
+        # Sample_Project is in nablarch-system-development-guide
+        url = f"https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{source_path}"
     else:
         # nablarch-document
         # Change .rst to .html, keep path
