@@ -20,7 +20,7 @@ git branch --show-current
 If on `main` or `master`, display warning (not an error):
 ```
 Warning: You are about to commit directly to the main branch.
-It is recommended to work on a feature branch.
+It is recommended to work on an issue-based branch.
 
 Do you want to continue?
 ```

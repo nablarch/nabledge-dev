@@ -22,7 +22,7 @@ echo "Current branch: ${current_branch}"
 If current branch is `main` or `master`, exit with error:
 
 Error: Cannot create PR from the main/master branch.
-Please create a feature/issue branch first.
+Please create an issue-based branch first.
 
 **1.2 Get Target Branch**
 
@@ -310,7 +310,7 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 EOF
 )" \
   --base main \
-  --head 42-add-validation
+  --head 42-add-user-auth
 ```
 
 **Execute PR Creation**:
@@ -350,7 +350,7 @@ Display the PR URL and guide user to review on GitHub:
 
 | Error | Response |
 |-------|----------|
-| Execute from main/master branch | Guide to execute from feature/issue branch |
+| Execute from main/master branch | Guide to execute from issue-based branch |
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |

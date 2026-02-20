@@ -54,7 +54,7 @@ gh pr view 123 --json number,title,state,headRefName,baseRefName,url,mergeable,r
   "number": 123,
   "title": "Add new feature",
   "state": "OPEN",
-  "headRefName": "feature/new-feature",
+  "headRefName": "42-add-new-feature",
   "baseRefName": "main",
   "url": "https://github.com/octocat/Hello-World/pull/123",
   "mergeable": "MERGEABLE",
@@ -224,15 +224,15 @@ gh auth login --with-token < token.txt
 
 ```bash
 # When local branch deletion fails
-git branch -d feature/my-branch
+git branch -d 42-my-feature
 # error: The branch is not fully merged.
 
 # Verify: Check if merge is complete
-git log main..feature/my-branch
+git log main..42-my-feature
 # If no output, it's merged
 
 # Force delete
-git branch -D feature/my-branch
+git branch -D 42-my-feature
 ```
 
 ## Permission Requirements
