@@ -1,54 +1,54 @@
 ---
 name: op
-description: 朝会用メッセージを自動生成。今日クローズしたIssueを取得し、発見・その他をヒアリングして、振り返りを生成します。
+description: Generate standup report messages. Fetches today's closed issues, collects discoveries and notes via interview, and generates reflection.
 argument-hint: (no arguments needed)
 allowed-tools: Bash, Task, AskUserQuestion
 ---
 
-# 朝会用メッセージ生成スキル (op)
+# Standup Report Generator (op)
 
-このスキルは1日の終わりに翌朝の朝会用メッセージを自動生成します。
+This skill automatically generates standup meeting messages at the end of the day for the next morning's standup.
 
-## 機能
+## Features
 
-- 今日クローズしたGitHub Issueを自動取得
-- ユーザーから「発見」と「その他」をヒアリング
-- 今日の成果から振り返りを自動生成 (200文字程度)
-- Teamsにコピペできる形式で出力
+- Automatically fetch today's closed GitHub issues
+- Collect "discoveries" and "other notes" from user via interview
+- Auto-generate reflection based on today's achievements (~200 Japanese characters)
+- Output in Teams-ready format (Japanese)
 
-## 実行フロー
+## Execution Flow
 
-### 1. ワークフロー実行
+### 1. Execute Workflow
 
-Task toolを使って `workflows/generate.md` を実行します。
+Use Task tool to execute `workflows/generate.md`:
 
 ```
 Task
   subagent_type: "general-purpose"
-  description: "朝会用メッセージ生成ワークフローを実行"
-  prompt: "朝会用メッセージを生成してください。以下のワークフローに従ってください。
+  description: "Execute standup report generation workflow"
+  prompt: "Generate a standup report message. Follow the workflow below.
 
-{workflows/generate.mdの内容をReadツールで読み込んで展開}
+{Read and expand workflows/generate.md content here}
 
-## 実行コンテキスト
-- 実行日: {today's date}
-- リポジトリ: {current repository}
+## Execution Context
+- Execution date: {today's date}
+- Repository: {current repository}
 "
 ```
 
-## 実装ノート
+## Implementation Notes
 
-1. **引数不要**: `/op` だけで実行可能
-2. **日本語出力**: すべてのメッセージは日本語
-3. **エラーハンドリング**: Issueが0件の場合も適切に処理
-4. **Task tool使用**: ワークフローは別コンテキストで実行
+1. **No arguments needed**: Simply run `/op`
+2. **Japanese output**: All messages are in Japanese for Japanese users
+3. **Zero-issue handling**: Gracefully handles cases with no closed issues
+4. **Task tool usage**: Workflow executes in separate context
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|-------|------|
-| gh CLIが利用できない | `gh auth login` の実行を案内 |
-| GitHubリポジトリではない | 現在のディレクトリがGitHubリポジトリか確認を案内 |
-| 今日のIssueが0件 | 「今日クローズしたIssueはありません」と表示して続行 |
+| Error | Response |
+|-------|----------|
+| gh CLI not available | Guide user to run `gh auth login` |
+| Not a GitHub repository | Guide user to check current directory |
+| Zero issues today | Display "今日クローズしたIssueはありません" and continue |
 
-詳細な使用例は `assets/examples.md` を参照してください。
+For detailed usage examples, see `assets/examples.md`.

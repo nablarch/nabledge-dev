@@ -1,30 +1,30 @@
-# 朝会用メッセージ生成ワークフロー
+# Standup Report Generation Workflow
 
-このワークフローは朝会用のメッセージを自動生成します。
+This workflow automatically generates standup meeting messages.
 
-## 必要なツール
+## Required Tools
 
 - Bash
 - AskUserQuestion
 
-## 実行ステップ
+## Execution Steps
 
-### 1. 今日クローズしたIssueを取得
+### 1. Fetch Today's Closed Issues
 
-**1.1 今日の日付を取得**
+**1.1 Get Today's Date**
 
 ```bash
 today=$(date -I)
 echo "今日の日付: $today"
 ```
 
-**1.2 GitHubリポジトリの確認**
+**1.2 Verify GitHub Repository**
 
 ```bash
 gh repo view --json nameWithOwner -q .nameWithOwner
 ```
 
-リポジトリ情報が取得できない場合:
+If repository information cannot be retrieved:
 ```
 エラー: GitHubリポジトリが見つかりません。
 
@@ -33,7 +33,7 @@ gh repo view --json nameWithOwner -q .nameWithOwner
 2. gh CLIが認証されているか確認してください (gh auth login)
 ```
 
-**1.3 今日クローズしたIssueを取得**
+**1.3 Fetch Today's Closed Issues**
 
 ```bash
 gh issue list \
@@ -43,114 +43,114 @@ gh issue list \
   --limit 100
 ```
 
-**1.4 結果の解析**
+**1.4 Parse Results**
 
-- 結果が空配列 `[]` の場合: Issueリストを「今日クローズしたIssueはありません」として処理
-- 結果がある場合: Issue情報を保存して次のステップへ
+- If result is empty array `[]`: Treat issue list as "今日クローズしたIssueはありません"
+- If result has issues: Save issue information and proceed to next step
 
-### 2. ユーザーからのヒアリング
+### 2. Interview User for Discoveries and Notes
 
-**2.1 発見のヒアリング**
+**2.1 Collect Discoveries**
 
-AskUserQuestion toolを使用:
+Use AskUserQuestion tool:
 
 ```
 Question: "今日の発見は何ですか？(技術的な気づき、学び、改善点など)"
 Options:
-  - "Other: {自由記述}"
+  - "Other: {free text input}"
 multiSelect: false
 ```
 
-ユーザーの回答を `discoveries` として保存。
+Save user's answer as `discoveries`.
 
-**2.2 その他のヒアリング**
+**2.2 Collect Other Notes**
 
-AskUserQuestion toolを使用:
+Use AskUserQuestion tool:
 
 ```
 Question: "その他共有したいことはありますか？(予定、相談事項など。なければ「なし」と入力してください)"
 Options:
-  - "Other: {自由記述}"
+  - "Other: {free text input}"
 multiSelect: false
 ```
 
-ユーザーの回答を `other_notes` として保存。
-回答が空または「なし」の場合は `other_notes = "なし"` とする。
+Save user's answer as `other_notes`.
+If answer is empty or "なし", set `other_notes = "なし"`.
 
-### 3. 振り返りの生成
+### 3. Generate Reflection
 
-**3.1 成果の分析**
+**3.1 Analyze Achievements**
 
-今日クローズしたIssueのタイトルと内容から以下を分析:
-- 主要な成果は何か
-- どのような問題を解決したか
-- どのような機能を追加したか
-- 今後への影響は何か
+Analyze from today's closed issue titles and content:
+- What are the main achievements?
+- What problems were solved?
+- What features were added?
+- What is the impact going forward?
 
-**3.2 振り返り文の生成**
+**3.2 Generate Reflection Text**
 
-以下の基準で振り返りを生成:
-- **長さ**: 200文字程度 (180-220文字が目安)
-- **構成**: 3つのパートで構成
-  1. 今日の成果 (何を達成したか)
-  2. その意義 (なぜ重要か、誰に役立つか)
-  3. 今後への影響 (次に何ができるか)
-- **トーン**: 前向きで建設的、具体的な表現
-- **言語**: 日本語
+Generate reflection with following criteria:
+- **Length**: ~200 Japanese characters (180-220 characters as guideline)
+- **Structure**: Composed of 3 parts
+  1. Today's achievements (what was accomplished)
+  2. Its significance (why important, who benefits)
+  3. Future impact (what becomes possible next)
+- **Tone**: Positive, constructive, specific expressions
+- **Language**: Japanese
 
-**生成アプローチ**:
-1. Issueタイトルから主要なテーマを抽出
-2. 複数Issueがあれば共通テーマや関連性を見つける
-3. 第1文: 今日の具体的な成果を述べる
-4. 第2-3文: その成果の意義と誰に・どう役立つかを説明
-5. 第4文: 今後の展開や影響を述べる
+**Generation Approach**:
+1. Extract main themes from issue titles
+2. Find common themes or relationships if multiple issues
+3. Sentence 1: State today's specific achievements
+4. Sentences 2-3: Explain significance and who/how it helps
+5. Sentence 4: Describe future developments or impact
 
-**生成例**:
+**Example Output**:
 ```
 今日はユーザー認証機能の実装を完了し、セキュリティレビューも通過しました。
 これによりユーザーが安全にログインできる基盤が整い、次フェーズの権限管理機能の
 開発に着手できます。また、認証フローのテスト自動化により品質保証も強化されました。
 ```
 
-### 4. Teamsメッセージの出力
+### 4. Output Teams Message
 
-**4.1 メッセージフォーマット**
+**4.1 Message Format**
 
-以下の形式で出力:
+Output in the following format (Japanese):
 
 ```
 ## アウトプット
 
-{Issueリスト}
+{Issue list}
 
 ## 発見
 
-{ユーザーからの入力}
+{User input}
 
 ## 振り返り
 
-{自動生成された振り返り (200文字程度)}
+{Auto-generated reflection (~200 characters)}
 
 ## その他
 
-{ユーザーからの入力、なければ「なし」}
+{User input, or "なし" if none}
 ```
 
-**4.2 Issueリストのフォーマット**
+**4.2 Issue List Format**
 
-Issueが存在する場合:
+When issues exist:
 ```
 - #{number}: {title} ({url})
 - #{number}: {title} ({url})
 ...
 ```
 
-Issueが0件の場合:
+When zero issues:
 ```
 今日クローズしたIssueはありません
 ```
 
-**4.3 完全な出力例**
+**4.3 Complete Output Example**
 
 ```
 ## アウトプット
@@ -175,41 +175,40 @@ Task toolの使い方について理解が深まりました。特にサブエ�
 明日は新しいスキルのテストを実施する予定です。
 ```
 
-## エラーハンドリング
+## Error Handling
 
-| エラー | 対応 |
-|-------|------|
-| gh CLIが利用できない | `gh auth login` の実行を案内 |
-| GitHubリポジトリではない | 現在のディレクトリの確認を案内 |
-| Issueの取得に失敗 | エラーメッセージを表示して処理を中断 |
-| ユーザー入力が空 | 「なし」として処理を続行 |
+| Error | Response |
+|-------|----------|
+| gh CLI not available | Guide user to run `gh auth login` |
+| Not a GitHub repository | Guide user to check current directory |
+| Issue fetch failed | Display error message and abort |
+| User input empty | Treat as "なし" and continue |
 
-## 重要な注意事項
+## Important Notes
 
-1. **日本語出力**: すべてのメッセージとフォーマットは日本語で出力
-2. **Issue数**: 100件を上限として取得 (通常は十分)
-3. **日付形式**: ISO 8601形式 (YYYY-MM-DD) を使用
-4. **振り返りの品質**: 単なる事実の羅列ではなく、意義や影響を含める
-5. **コピー可能**: 出力はそのままTeamsに貼り付けできる形式
+1. **Japanese output**: All messages and formats output in Japanese
+2. **Issue limit**: Fetch up to 100 issues (usually sufficient)
+3. **Date format**: Use ISO 8601 format (YYYY-MM-DD)
+4. **Reflection quality**: Include significance and impact, not just facts
+5. **Copy-ready**: Output format is ready to paste directly into Teams
 
-## 実装のポイント
+## Implementation Points
 
-### Issue取得のフィルタリング
+### Issue Fetch Filtering
 
-`gh issue list` コマンドの `--search` オプションで `closed:>=` を使用することで、
-今日以降にクローズされたIssueを効率的に取得できます。
+Using `--search` option with `closed:>=` in `gh issue list` command efficiently fetches issues closed today or later.
 
-### 振り返り生成のロジック
+### Reflection Generation Logic
 
-1. Issueのタイトルから主要なテーマを抽出
-2. 複数のIssueがある場合は共通のテーマや関連性を見つける
-3. 成果の意義を考察 (なぜ重要か、誰に役立つか)
-4. 今後への影響を考察 (次に何ができるか、何が変わるか)
-5. 200文字程度にまとめる
+1. Extract main themes from issue titles
+2. Find common themes or relationships if multiple issues
+3. Consider significance of achievements (why important, who benefits)
+4. Consider future impact (what becomes possible, what changes)
+5. Summarize in ~200 Japanese characters
 
-### ユーザー体験の最適化
+### User Experience Optimization
 
-- 質問は明確かつ簡潔に
-- デフォルト値を提供 (「なし」など)
-- エラーメッセージは具体的な対処方法を含める
-- 出力はコピーしやすい形式にする
+- Questions are clear and concise
+- Provide default values ("なし" etc.)
+- Error messages include specific remediation steps
+- Output format is easy to copy

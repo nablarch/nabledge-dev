@@ -8,7 +8,9 @@ Development repository for nabledge skills - AI assistants for Nablarch framewor
 
 **Console conversations**: Japanese (AI ↔ User)
 
-**Exception**: nabledge-x skills' user-facing messages are in Japanese for Nablarch users in Japan.
+**Skills**: English structure with Japanese user-facing messages (questions, output, errors)
+
+See `.claude/rules/language.md` for detailed guidelines and examples.
 
 ## Overview
 
