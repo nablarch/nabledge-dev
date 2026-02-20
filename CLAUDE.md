@@ -1,94 +1,28 @@
 # nabledge-dev
 
-## Language Rules
+Development repository for nabledge skills - AI assistants for Nablarch framework development.
 
-**All content in this repository must be in English**, including:
-- Code comments
-- Documentation (README, design docs, work logs)
-- Commit messages
-- Test scenarios and results
-- Skill definitions and workflows
+## Language
 
-**Exception**: nabledge-x skills' user-facing messages should be in Japanese, as they are designed for Nablarch users in Japan.
+**Repository content**: English (code, docs, commits, tests)
 
----
+**Console conversations**: Japanese (AI ↔ User)
+
+**Exception**: nabledge-x skills' user-facing messages are in Japanese for Nablarch users in Japan.
 
 ## Overview
 
-This repository contains **nabledge skills** for AI agents to assist with Nablarch development.
+This repository develops **nabledge skills** for AI agents:
+- **nabledge-6**: Nablarch 6 (Jakarta EE 10, Java 17+)
+- **nabledge-5**: Nablarch 5 (Java EE 7/8, Java 8+) - planned
 
-- **nabledge-6**: Skill for Nablarch 6 (Jakarta EE 10, Java 17+)
-- **nabledge-5**: Skill for Nablarch 5 (Java EE 7/8, Java 8+)
+## Key Resources
 
-These skills enable AI (Claude Code / GitHub Copilot) to autonomously perform Nablarch development tasks.
+- **Design**: `doc/nabledge-design.md` - Architecture, scope, and skill design
+- **Mapping**: `doc/mapping/` - Documentation to knowledge file mappings (302 files for v6)
+- **Official Docs**: `.lw/nab-official/` - Cloned Nablarch repositories (v6 and v5)
+- **Project Rules**: `.claude/rules/` - Workflow conventions (auto-loaded)
 
----
+## Important Notes
 
-## Directory Structure
-
-```
-nabledge-dev/
-├── .claude/
-│   └── skills/
-│       ├── nabledge-6/            # Nablarch 6 skill (in development)
-│       └── nabledge-5/            # Nablarch 5 skill (planned)
-│
-├── .lw/
-│   ├── research/                  # Research & design documents
-│   └── nab-official/              # Nablarch official documentation (cloned)
-│       ├── v6/                    # Version 6 documentation (main branch)
-│       └── v5/                    # Version 5 documentation (v5-main branch)
-│
-├── work/                          # Work logs (daily)
-│
-└── CLAUDE.md                      # This file
-```
-
----
-
-## Nablarch Official Documentation
-
-The `.lw/nab-official/` directory contains cloned Nablarch official repositories for reference when creating knowledge files.
-
-### Repository Versions
-
-| Repository | v6 | v5 | Notes |
-|------------|----|----|-------|
-| **nablarch-document** | ✓ (main) | ✓ (v5-main) | Official framework documentation |
-| **nablarch-single-module-archetype** | ✓ (main) | ✓ (v5-main) | Maven archetype for single-module projects |
-| **nablarch-system-development-guide** | ✓ (main) | - | System development guide (latest/v6 only) |
-
-### Note for nabledge-5 Development
-
-When creating knowledge files for **nabledge-5**, use the following sources:
-- **Framework docs**: Use `.lw/nab-official/v5/nablarch-document/` (v5-specific)
-- **Archetype**: Use `.lw/nab-official/v5/nablarch-single-module-archetype/` (v5-specific)
-- **Development guide**: Reference `.lw/nab-official/v6/nablarch-system-development-guide/` (no v5 version exists; v6 guide applies)
-
----
-
-## Scope
-
-### In Scope
-
-| Item | Description |
-|------|-------------|
-| **Nablarch Batch (On-demand)** | FILE to DB, DB to DB, DB to FILE patterns |
-| **RESTful Web Services** | JAX-RS support, REST API implementation |
-
-### Out of Scope
-
-| Item | Reason |
-|------|--------|
-| Jakarta Batch | Explicitly excluded in specification |
-| Resident Batch (Table Queue) | Explicitly excluded in specification |
-| Web Applications (JSP/UI) | Focus on batch & REST only |
-| Messaging (MOM) | Out of scope |
-
----
-
-## Design Documentation
-
-Refer to the detailed architecture design:
-
-- [Nabledge Design Document](doc/nabledge-design.md)
+**Mapping Files** enable category-based filtering for incremental knowledge file creation. See `doc/mapping/mapping-file-design.md` for details.

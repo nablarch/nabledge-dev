@@ -7,6 +7,8 @@ Nablarch knowledge development
 - [Development Status](doc/development-status.md) - Current progress and roadmap
 - [Design Document](doc/nabledge-design.md) - Architecture and design details
 - [ToBe Image](doc/nabledge-tobe-image.md) - Activity mapping and role division with Nabledge
+- [Mapping File Design](doc/mapping/mapping-file-design.md) - Documentation mapping specification
+- [Mapping Files v6](doc/mapping/mapping-v6.md) - Documentation to knowledge file mapping ([Excel](doc/mapping/mapping-v6.xlsx))
 
 ## Prerequisites
 
