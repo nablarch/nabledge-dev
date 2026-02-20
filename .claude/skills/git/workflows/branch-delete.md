@@ -87,9 +87,11 @@ git checkout main
 ### 3. Update Main Branch
 
 ```bash
-git fetch origin main
+git fetch origin main:refs/remotes/origin/main
 git pull origin main
 ```
+
+**Note**: The explicit refspec `main:refs/remotes/origin/main` ensures that the tracking branch `origin/main` is updated in worktree environments. Without the refspec, `git fetch origin main` may not update the tracking reference, leaving `origin/main` at an old commit position.
 
 ### 4. Delete Branch
 
