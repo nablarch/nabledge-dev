@@ -261,22 +261,33 @@ Asset files (images, Excel templates, etc.) are **not included in mapping files*
 **Markdown (.md)**:
 - `![alt](path/to/image.png)` - Image reference
 
-## Alternative Formats
+## Excel Export
 
-### Excel Export (Optional)
+### Required for Human Review
 
-For stakeholder review or offline editing, Markdown tables can be converted to Excel format:
+Excel format is **required** for non-technical stakeholders to review and verify mappings efficiently. The Markdown table is the primary format for AI agents and programmatic processing, while Excel provides a better interface for human reviewers.
 
-**Conversion**:
-- Use pandoc, Python (pandas), or manual import
+**Generation**:
+- Use Python (pandas + openpyxl) to convert Markdown table to Excel
+- Script: `scripts/export-mapping-excel.py`
+- Automatically run after mapping file updates
+
+**Features**:
 - Preserve column structure and order
-- Convert Official URL column to Excel hyperlinks
+- Convert Official URL column to Excel hyperlinks (clickable 🔗)
 - Apply filters to all columns for easy navigation
-- Sort by Source Path, then by Category ID
+- Auto-adjust column widths for readability
+- Freeze header row
+- Sort by Source Path
 
-**Output**: `mapping-v6.xlsx`, `mapping-v5.xlsx`
+**Output**: `doc/mapping/mapping-v6.xlsx`
 
-This is optional - the Markdown table is the primary format for both human review and programmatic processing.
+**Benefits for stakeholders**:
+- Easy filtering and sorting without command-line tools
+- Clickable links to official documentation
+- Familiar spreadsheet interface
+- Offline review capability
+- Export to other formats (CSV, PDF) if needed
 
 ## Considerations for Knowledge File Creation Skill
 
@@ -313,10 +324,12 @@ When creating a skill to generate knowledge files from this mapping:
    - Asset collection should be automated (not manual)
    - Agents parse directives to find referenced assets
 
-7. **v5 Content Review**: When creating v5 knowledge files from v6 official documentation paths, review content during knowledge file creation to ensure v5-specific terminology and features are accurately reflected
-   - v6 official documentation paths are used as the starting point (v5 mapping is created by copying from v6)
+7. **v5 Support**: v5 mapping and knowledge files will be addressed separately
+   - v5 mapping file (mapping-v5.md) will be created in a future iteration
+   - Initial approach: Copy v6 mapping as starting point, then adjust for v5-specific differences
    - During content conversion, verify and update references to v5-specific APIs, features, and terminology
    - Example differences: Java EE vs Jakarta EE, javax.* vs jakarta.* packages, Java 8 vs Java 17 features
+   - See Issue #10 for v6 scope; v5 will be tracked in a separate issue
 
 ## Validation
 
@@ -347,8 +360,8 @@ Create `validate-mapping.sh` to verify:
 
 ## Implementation Notes
 
-- Focus on v6 first since nabledge-6 is the primary target
+- Focus on v6 first since nabledge-6 is the primary target (v5 will be addressed separately)
 - Use Japanese documentation URLs (Nablarch users are Japanese)
 - Markdown table format enables both human review and programmatic processing by AI agents
+- Excel export is required for non-technical stakeholder review
 - When knowledge file creation skill is ready, it will read these mapping tables directly
-- Optional Excel export available for stakeholder review if needed
