@@ -8,6 +8,24 @@ This workflow creates a PR from the current branch to the main branch.
 - Read
 - AskUserQuestion
 
+## Variable State Reference
+
+This section tracks all key variables used throughout the workflow and their possible states.
+
+| Variable | Set By | Possible Values | Used In |
+|----------|--------|-----------------|---------|
+| current_branch | Step 1.1 | Any string (e.g., "74-as-a-developer", "feature-auth") | Push, PR creation, display |
+| target_branch | Step 1.2 | "main" or default branch name | PR target, git log, git diff |
+| issue_number | Step 2.1 | "42" (valid) or "" (fallback when extraction fails) | Title generation, PR body placeholders, expert review paths, display |
+| issue_body | Step 2.2 | Issue description text or "" (empty when no issue) | Success criteria extraction |
+| commits | Step 2.2 | Git commit messages | Title generation, task list |
+| diff_stat | Step 2.2 | Git diff statistics | Approach description |
+| generated_title | Step 2.4 | PR title string (max 70 chars, with or without issue number) | PR creation, display |
+| generated_description | Step 2.5 | PR body markdown (with conditional sections based on issue_number) | PR creation |
+| pr_url | Step 3 | GitHub PR URL | Display |
+
+**Note**: The `issue_number` variable is critical for conditional logic. When empty (""), the workflow gracefully degrades by omitting issue-specific sections.
+
 ## Execution Steps
 
 ### 1. Pre-flight Checks
@@ -71,7 +89,7 @@ git push
 
 **2.1 Get Issue Number**
 
-Extract issue number from branch name (required):
+Extract issue number from branch name (recommended format: `{number}-{description}`):
 
 ```bash
 if [[ "$current_branch" =~ ^([0-9]+)- ]]; then
@@ -80,11 +98,11 @@ if [[ "$current_branch" =~ ^([0-9]+)- ]]; then
   echo "Detected issue number from branch: #${issue_number}"
 else
   # Branch name doesn't match expected pattern
-  echo "Error: Branch name must follow format: {number}-{description}"
+  echo "Warning: Branch name doesn't follow format: {number}-{description}"
   echo "Example: 60-sync-branches"
+  echo "PR title will be created without issue number."
   echo ""
-  echo "Please use /hi command to create properly formatted branch"
-  exit 1
+  issue_number=""  # Fallback: continue without issue number
 fi
 ```
 
@@ -134,40 +152,49 @@ fi
 
 Use the Read tool to load `.claude/skills/pr/templates/pr-template.md`.
 
-The template contains the following structure with placeholders:
-```markdown
-Closes #[ISSUE_NUMBER]
-
-## Approach
-[Describe the solution...]
-
-## Tasks
-[List implementation...]
-
-## Expert Review
-[Review table]
-
-## Success Criteria Check
-[Criterion X from issue] | Status | Evidence
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-```
-
 **2.4 Generate Title**
 
 Analyze commits to generate appropriate PR title:
 
 **Title Generation Rules**:
-1. If only 1 commit: Use the commit message subject line
+1. If only 1 commit: Use the commit message subject line as base
 2. If multiple commits: Identify common theme across commit messages
 3. If commit messages unclear (e.g., "fix", "update"): Analyze diff to determine primary change type
-4. Format: `<type>: <description>` where type is one of: feat, fix, refactor, docs, test, chore
-5. MUST be under 70 characters
+4. Format: `<type>: <description> (#{issue_number})` where type is one of: feat, fix, refactor, docs, test, chore
+5. Issue number is appended automatically if extracted in step 2.1; if extraction failed, title has no issue number suffix
+6. Total length MUST be under 70 characters; truncate description with "..." if needed
+
+**Title Generation Process**:
+1. Generate base title from commits: `<type>: <description>`
+2. Check if `issue_number` variable is set and non-empty (`[[ -n "$issue_number" ]]`):
+   - If true: Append ` (#{issue_number})` to base title → `<type>: <description> (#{issue_number})`
+   - If false: Use base title as-is → `<type>: <description>`
+3. Check if total length > 70 characters:
+   - If true: Truncate description part and add "..." before issue number (if present)
+   - If false: Use title as-is
+4. Example truncation: "feat: Add comprehensive JWT authentication middleware with refresh tokens" + " (#123)" (76 chars)
+   → "feat: Add comprehensive JWT authentication with... (#123)" (62 chars)
+
+**When to Use Commit Message as Base**:
+- Single commit with clear, descriptive message
+- Example: "feat: Add JWT authentication" → "feat: Add JWT authentication (#42)"
+
+**When to Analyze Diffs**:
+- Multiple commits with varied or unclear messages
+- Generic messages like "fix", "update", "wip"
+- Example: Commits "update", "fix typo", "add test" → Analyze diff → "feat: Add user profile page (#42)"
+
+**Issue Number Handling**:
+- **Extraction**: Issue number is extracted from branch name (format: `{number}-{description}`) in step 2.1
+- **Fallback**: If extraction fails (malformed branch name), PR title is created without issue number
+- **Appending**: If extracted successfully, issue number is appended automatically as `(#{number})`
+- **No manual input**: Process is fully automated based on branch name
 
 **Examples**:
-- "feat: Add JWT authentication middleware"
-- "fix: Resolve session timeout on login"
-- "refactor: Extract validation logic to separate module"
+- "feat: Add JWT authentication middleware (#42)"
+- "fix: Resolve session timeout on login (#58)"
+- "refactor: Extract validation logic to separate module (#91)"
+- "docs: Update API documentation for v2 endpoints (#120)"
 
 **2.5 Generate Description with Placeholder Replacement**
 
@@ -175,12 +202,8 @@ Replace each placeholder in the loaded template:
 
 **Step 1: Replace [ISSUE_NUMBER]**
 
-Replace with the issue number:
-```
-Closes #[ISSUE_NUMBER]
-↓
-Closes #42
-```
+- If `issue_number` is set: `Closes #42`
+- If empty: Remove entire "Closes #" line
 
 **Step 2: Replace [Describe the solution...]**
 - Summarize the approach from commit message bodies
@@ -206,18 +229,19 @@ Closes #42
 
 **Step 4: Replace Expert Review Section**
 
-Replace with links to expert review files from `/hi` step 8:
-- Expert reviews are saved in `.pr/{issue_number}/review-by-{expert-role}.md`
-- List each expert with their rating
-- Example output:
-  ```
-  ## Expert Review
+Path format:
+- If `issue_number` is set: `.pr/{issue_number}/review-by-{expert-role}.md`
+- If empty: `.pr/{current_branch}/review-by-{expert-role}.md`
 
-  AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
+Example:
+```markdown
+## Expert Review
 
-  - [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-  - [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
-  ```
+AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
+
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+```
 
 **Step 5: Replace Success Criteria Section**
 
@@ -281,7 +305,7 @@ AI-driven expert reviews conducted before PR creation (see \`.claude/rules/exper
 
 ```bash
 gh pr create \
-  --title "feat: Add user authentication" \
+  --title "feat: Add user authentication (#42)" \
   --body "$(cat <<'EOF'
 Closes #42
 
@@ -338,18 +362,26 @@ echo "PR created: ${pr_url}"
 
 Display the PR URL and guide user to review on GitHub:
 
-```
-## PR Creation Complete
+```bash
+echo "## PR Creation Complete"
+echo ""
+echo "**PR**: ${pr_url}"
+echo "**Branch**: ${current_branch} → ${target_branch}"
+echo "**Title**: ${generated_title}"
 
-**PR**: ${pr_url}
-**Branch**: ${current_branch} → ${target_branch}
-**Title**: ${generated_title}
+# Only show issue link if branch followed {number}-{description} format
+if [[ -n "$issue_number" ]]; then
+  echo "**Issue**: #${issue_number}"
+fi
 
-📝 Please review the PR description on GitHub.
-   If any changes are needed, let me know and I will update it.
+echo ""
+echo "📝 Please review the PR description on GitHub."
+echo "   If any changes are needed, let me know and I will update it."
 ```
 
 ## Error Handling
+
+**Behavior**: Exit workflow with error message and guide user to fix the issue before retrying.
 
 | Error | Response |
 |-------|----------|
@@ -357,8 +389,15 @@ Display the PR URL and guide user to review on GitHub:
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |
-| Invalid branch name format | Guide to use /hi command for proper branch creation |
 | Issue not found | Create issue first (required for issue-driven development) |
+
+## Warnings
+
+**Behavior**: Display warning message and continue workflow with graceful degradation.
+
+| Warning | Behavior |
+|---------|----------|
+| Invalid branch name format (no issue number) | Continue with warning; PR title created without issue number |
 
 ## Notes
 
@@ -371,6 +410,7 @@ Display the PR URL and guide user to review on GitHub:
 7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
 9. **Issue Policy**:
-   - All branches must follow format: `{number}-{description}` (e.g., `60-sync-branches`)
-   - GitHub issue is always required (issue-driven development)
+   - Recommended branch format: `{number}-{description}` (e.g., `60-sync-branches`)
+   - GitHub issue is recommended for issue-driven development
    - Use `/hi` command to ensure proper branch creation
+   - Workflow handles edge cases where branch names don't include issue numbers (PR title created without issue reference)

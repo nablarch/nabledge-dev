@@ -456,7 +456,7 @@ git push
 ## Best Practices
 
 1. **Small PRs**: Keep changes small and easy to review
-2. **Clear Titles**: PR titles should clearly express the changes
+2. **Clear Titles**: PR titles should clearly express the changes in format `<type>: <description> (#{issue_number})`
 3. **Detailed Description**: Explain why the change is necessary
 4. **Add Tests**: Always add tests corresponding to changes
 5. **Continuous Communication**: Value dialogue with reviewers
