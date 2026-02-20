@@ -27,3 +27,5 @@ Execute full development workflow from issue/PR to review request.
 - Use Skill tool for git commit and PR creation
 - Never manually run git commit or gh pr create commands
 - Ask questions when requirements are unclear
+- Works in both main repo and worktrees (work1, work2, etc.)
+- In worktrees: Creates feature branch from current workX branch

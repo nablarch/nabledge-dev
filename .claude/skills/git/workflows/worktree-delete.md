@@ -68,7 +68,27 @@ If target is the main worktree (current repository), exit with error:
 Error: Cannot delete main worktree.
 ```
 
-**3.2 Verify Path Exists**
+**3.2 Protect Persistent Worktrees**
+
+Check if the target worktree is a persistent work branch (work1, work2, work3, etc.):
+
+```bash
+worktree_basename=$(basename "$worktree_path")
+if [[ "$worktree_basename" =~ ^work[0-9]+$ ]]; then
+  echo "Error: Cannot delete persistent worktree '${worktree_basename}'."
+  echo ""
+  echo "Persistent worktrees (work1, work2, etc.) are for long-term parallel development."
+  echo "They should not be deleted after completing issues."
+  echo ""
+  echo "If you really need to remove it:"
+  echo "  git worktree remove '${worktree_path}'"
+  echo "  git branch -D '${worktree_basename}'"
+  exit 1
+fi
+echo "Worktree is not a persistent work branch"
+```
+
+**3.3 Verify Path Exists**
 
 ```bash
 test -d {worktree_path}
@@ -207,6 +227,7 @@ Do nothing.
 |-------|----------|
 | No deletable worktrees | Display worktree list |
 | Attempted to delete main worktree | Display error and exit |
+| Attempted to delete persistent worktree (work1, work2, etc.) | Display error and exit with manual override instructions |
 | Path doesn't exist | Verify correct path |
 | Uncommitted changes | Display warning and ask user to confirm |
 | Deletion failed | Attempt force delete, guide to manual deletion if failed |
@@ -216,4 +237,6 @@ Do nothing.
 1. **No emojis**: Never use emojis unless explicitly requested by user
 2. **Safety first**: Warn if uncommitted changes exist
 3. **Main worktree protection**: Refuse deletion of main worktree
-4. **Branch deletion**: Automatically suggest deletion for merged branches
+4. **Persistent worktree protection**: Refuse deletion of work1/work2/work3/etc. worktrees (require manual override)
+5. **Branch deletion**: Automatically suggest deletion for merged branches
+6. **Use case**: This command is for deleting temporary/feature worktrees, not persistent development worktrees
