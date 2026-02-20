@@ -57,23 +57,23 @@ nabledge-6 code-analysis
 - Never fail silently
 
 **Knowledge not found** (Knowledge Search):
-- Message: "この情報は知識ファイルに含まれていません"
+- Message: "この情報は知識ファイルに含まれていません" (Translation: "This information is not included in the knowledge files")
 - List related available knowledge from index.toon
 - Show "not yet created" entries if applicable
 - DO NOT use LLM training data or general knowledge
 
 **Target code not found** (Code Analysis):
-- Message: "指定されたコードが見つかりませんでした"
+- Message: "指定されたコードが見つかりませんでした" (Translation: "The specified code was not found")
 - Show search patterns used (e.g., `**/*LoginAction.java`)
 - Ask for clarification (more specific file name, module, or full path)
 
 **Workflow execution failure**:
-- Inform user which step failed (e.g., "Step 2: 依存関係分析中にエラーが発生しました")
+- Inform user which step failed (e.g., "Step 2: 依存関係分析中にエラーが発生しました" / "Error occurred during dependency analysis")
 - Show error details if available
 - Suggest retry or alternative approach
 
 **Output file already exists** (Code Analysis):
-- Ask user: "上書きする" / "別名で保存" / "キャンセル"
+- Ask user: "上書きする" / "別名で保存" / "キャンセル" (Translation: "Overwrite" / "Save with different name" / "Cancel")
 
 **Dependency analysis too complex** (Code Analysis):
 - Ask user to narrow scope
@@ -82,11 +82,69 @@ nabledge-6 code-analysis
 
 ## How Claude Code should execute this skill
 
-**CRITICAL**: When this skill is invoked, Claude Code MUST execute workflows manually. The skill does NOT automatically process - Claude must follow the workflow steps using tools.
+### Separate Context Execution (Recommended)
+
+**NEW**: nabledge-6 workflows can now run in a separate context to avoid context pollution in the main conversation.
+
+**Benefits**:
+- **Cleaner conversation**: Main context doesn't show intermediate search results, file reads, or jq outputs
+- **Faster responses**: Reduced context consumption (80%+ reduction for typical searches)
+- **Better focus**: User sees only final answers, not workflow execution details
+
+**When to use separate context**:
+- Knowledge search workflows (keyword-search → section-judgement → answer)
+- Code analysis workflows (large-scale dependency analysis)
+- Any nabledge-6 operation that involves extensive file searching and reading
+
+**How to delegate to separate context execution**:
+
+Use the Task tool with `subagent_type: "nabledge-6"` (this parameter maps to the agent file at `.claude/agents/nabledge-6.md`, which contains the workflow execution instructions for the separate context):
+
+```
+Task
+  subagent_type: "nabledge-6"
+  description: "Search Nablarch knowledge: <user question>"
+  prompt: "<user's question about Nablarch>"
+```
+
+The nabledge-6 agent will:
+1. Execute keyword-search workflow in its own context
+2. Execute section-judgement workflow in its own context
+3. Generate formatted answer using knowledge files only
+4. Return summary result to main conversation (no intermediate outputs)
+
+**Example**:
+```
+User: "Nablarchでページングを実装したい"
+
+Main Agent:
+  Task
+    subagent_type: "nabledge-6"
+    description: "Search Nablarch knowledge: ページング実装方法"
+    prompt: "Nablarchでページングを実装したい"
+
+Nabledge-6 Agent (separate context):
+  - Executes keyword-search workflow (10-15 tool calls)
+  - Executes section-judgement workflow (5-10 tool calls)
+  - Generates formatted answer
+  - Returns: "UniversalDaoのper()とpage()メソッドを使用します。[詳細な説明とコード例]"
+
+Main Agent: Displays answer to user
+```
+
+**Important notes**:
+- Agent executes in `.claude/agents/nabledge-6.md` context
+- All workflow execution happens in separate context
+- Main conversation receives only formatted answer
+- Knowledge constraint (knowledge files only) still applies
+
+### Manual Execution (Fallback)
+
+**CRITICAL**: When separate context execution is not available or fails, Claude Code MUST execute workflows manually. The skill does NOT automatically process - Claude must follow the workflow steps using tools.
 
 ### Execution Process
 
-When you (Claude Code) receive this skill prompt, follow these steps:
+When you (Claude Code) receive this skill prompt and cannot use separate context, follow these steps:
 
 #### Step 0: Check arguments and determine workflow
 
