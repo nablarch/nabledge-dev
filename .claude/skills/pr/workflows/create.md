@@ -71,27 +71,22 @@ git push
 
 **2.1 Get Issue Number**
 
-Check branch naming pattern to determine if issue number is required:
+Extract issue number from branch name (required):
 
 ```bash
 if [[ "$current_branch" =~ ^([0-9]+)- ]]; then
-  # Issue-driven branch: extract issue number (format: 60-sync-branches)
+  # Extract issue number (format: 60-sync-branches)
   issue_number="${BASH_REMATCH[1]}"
   echo "Detected issue number from branch: #${issue_number}"
-elif [[ "$current_branch" =~ ^qf/ ]]; then
-  # Quick fix branch: no issue required
-  issue_number=""
-  echo "Quick fix branch detected: Issue number not required"
 else
-  # Unknown pattern: ask user
-  issue_number=""
+  # Branch name doesn't match expected pattern
+  echo "Error: Branch name must follow format: {number}-{description}"
+  echo "Example: 60-sync-branches"
+  echo ""
+  echo "Please use /hi command to create properly formatted branch"
+  exit 1
 fi
 ```
-
-If no issue number detected and not a qf/ branch, use the AskUserQuestion tool to prompt the user:
-- Question: "What is the issue number this PR addresses?"
-- User must provide the issue number via text input
-- Issue number is required for non-qf branches (issue-driven development standard)
 
 If user provides an issue number, validate it is numeric:
 
@@ -180,18 +175,11 @@ Replace each placeholder in the loaded template:
 
 **Step 1: Replace [ISSUE_NUMBER]**
 
-If issue_number exists:
+Replace with the issue number:
 ```
 Closes #[ISSUE_NUMBER]
 ↓
 Closes #42
-```
-
-If issue_number is empty (qf/ branch):
-```
-Closes #[ISSUE_NUMBER]
-↓
-(Remove this line entirely)
 ```
 
 **Step 2: Replace [Describe the solution...]**
@@ -222,8 +210,7 @@ Closes #[ISSUE_NUMBER]
 
 **Step 5: Replace Success Criteria Section**
 
-If issue_body exists (issue-driven development):
-- Parse issue_body to extract success criteria
+Parse issue_body to extract success criteria:
 - Look for lines starting with `- [ ]` or `- [x]` under "Success Criteria" heading
 - For each criterion, create a table row:
   - Criterion: The criterion text
@@ -236,9 +223,6 @@ If issue_body exists (issue-driven development):
   | Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
   | Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
   ```
-
-If issue_body is empty (qf/ branch):
-- Omit the Success Criteria Check section entirely
 
 **Step 6: Add Attribution**
 - Keep the attribution line at the end:
@@ -370,9 +354,8 @@ Display the PR URL and guide user to review on GitHub:
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |
-| Issue not found (issue-XXX branch) | Create issue first (required for issue-driven development) |
-| No issue number provided (non-qf branch) | Prompt user for issue number (required) |
-| qf/ branch without description | Use commit messages to generate PR description |
+| Invalid branch name format | Guide to use /hi command for proper branch creation |
+| Issue not found | Create issue first (required for issue-driven development) |
 
 ## Notes
 
@@ -385,6 +368,6 @@ Display the PR URL and guide user to review on GitHub:
 7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
 9. **Issue Policy**:
-   - `issue-XXX` branches: GitHub issue required (issue-driven development)
-   - `qf/` branches: Issue optional (quick fixes)
-   - Other branches: Prompt user for issue number
+   - All branches must follow format: `{number}-{description}` (e.g., `60-sync-branches`)
+   - GitHub issue is always required (issue-driven development)
+   - Use `/hi` command to ensure proper branch creation

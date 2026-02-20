@@ -9,7 +9,42 @@ Execute full development workflow from issue/PR to review request.
 
 # Instructions
 
-1. Get issue/PR number from $ARGUMENTS or ask user interactively
+1. Get or create issue:
+   - If $ARGUMENTS provided: Use as issue number
+   - If no arguments: Use AskUserQuestion to ask user
+     - Question: "Do you have an existing issue number?"
+     - Options: "Yes, I have issue number" / "No, create new issue"
+   - If user selects "No, create new issue":
+     ```bash
+     # Ask user for issue details using AskUserQuestion
+     # - Title (required)
+     # - Situation (current state)
+     # - Pain (problem description)
+     # - Benefit (who benefits and how)
+     # - Success criteria (list of checkboxes)
+
+     # Create issue using gh CLI
+     gh issue create \
+       --title "$title" \
+       --body "$(cat <<EOF
+### Situation
+$situation
+
+### Pain
+$pain
+
+### Benefit
+$benefit
+
+### Success Criteria
+$success_criteria
+EOF
+)"
+
+     # Get created issue number
+     issue_number=$(gh issue list --limit 1 --json number --jq '.[0].number')
+     echo "Created issue #$issue_number"
+     ```
 2. Sync current branch with main if needed:
    ```bash
    current_branch=$(git branch --show-current)
