@@ -1,6 +1,6 @@
 # Worktree Creation Workflow
 
-This workflow creates a new worktree for parallel work from the repository's default branch.
+This workflow creates a persistent worktree (work1, work2, work3, etc.) for parallel development. Each worktree has its own tracking branch that stays in sync with main via fetch/pull.
 
 ## Required Tools
 
@@ -46,82 +46,59 @@ base_branch="${default_branch}"
 echo "Worktree will be created from: ${base_branch}"
 ```
 
-### 2. Get Issue Number and Create Branch Name
+### 2. Auto-Generate Worktree Name
 
-**2.1 Ask for Issue Number**
+**2.1 Find Available Worktree Number**
 
-Use the AskUserQuestion tool to prompt the user:
-- Question: "What is the issue number for this work?"
-- Provide two options: "I have an issue number" and "No issue yet"
-- If user selects "I have an issue number", they will provide the number via text input
-- If user selects "No issue yet", exit with guidance
-
-If user selects "No issue yet", exit with guidance:
-
-Please create an issue first using GitHub issues.
-This ensures work is tracked and follows issue-driven development.
-
-I can help create the issue. Please provide:
-- Role: Who is affected?
-- Goal: What do you want?
-- Benefit: Why is this important?
-
-Or you can create it manually on GitHub following .claude/rules/issues.md format.
-Once created, return here with the issue number.
-
-If user provides an issue number, validate it is numeric:
+Scan existing worktrees to find the next available number:
 
 ```bash
-if ! [[ "$issue_number" =~ ^[0-9]+$ ]]; then
-  echo "Error: Issue number must be a positive integer"
-  exit 1
-fi
-echo "Issue number validated: ${issue_number}"
+# Get list of existing worktree paths
+existing_worktrees=$(git worktree list --porcelain | grep "^worktree" | awk '{print $2}')
+
+# Find highest work number in use
+max_num=0
+while IFS= read -r wt_path; do
+  wt_basename=$(basename "$wt_path")
+  if [[ "$wt_basename" =~ ^work([0-9]+)$ ]]; then
+    num="${BASH_REMATCH[1]}"
+    if (( num > max_num )); then
+      max_num=$num
+    fi
+  fi
+done <<< "$existing_worktrees"
+
+# Next available number
+worktree_num=$((max_num + 1))
+worktree_name="work${worktree_num}"
+branch_name="work${worktree_num}"
+
+echo "Next available worktree: ${worktree_name}"
+echo "Branch name: ${branch_name}"
 ```
 
-**2.2 Validate Issue Exists**
-
-Verify the issue exists using gh CLI:
+**2.2 Check for Branch/Worktree Conflicts**
 
 ```bash
-echo "Validating issue #${issue_number}..."
-if ! gh issue view "$issue_number" &>/dev/null; then
-  echo "Error: Issue #${issue_number} not found."
-  echo ""
-  echo "Please verify the issue number or create the issue first:"
-  echo "gh issue create"
-  exit 1
-fi
-echo "Issue #${issue_number} confirmed"
-```
-
-**2.3 Generate Branch Name**
-
-Branch name is always: `issue-${issue_number}`
-
-Example:
-- Issue #42 → Branch: `issue-42`
-- Issue #123 → Branch: `issue-123`
-
-```bash
-branch_name="issue-${issue_number}"
-echo "Branch name will be: ${branch_name}"
-```
-
-**2.4 Check for Branch Duplicates**
-
-```bash
+# Check if branch already exists
 if git branch --list "${branch_name}" | grep -q .; then
   echo "Error: Branch '${branch_name}' already exists."
   echo ""
-  echo "To work on existing branch in a new worktree:"
+  echo "To use existing branch:"
   echo "git worktree add <path> ${branch_name}"
-  echo ""
-  echo "To delete and recreate:"
-  echo "git branch -D ${branch_name}"
   exit 1
 fi
-echo "Branch name is available"
+
+# Check if worktree already exists
+existing_wt=$(git worktree list --porcelain | grep -A 2 "branch refs/heads/${branch_name}" | grep "worktree" | awk '{print $2}')
+if [[ -n "$existing_wt" ]]; then
+  echo "Error: Worktree already exists for ${branch_name} at: ${existing_wt}"
+  echo ""
+  echo "Use existing worktree: cd '${existing_wt}'"
+  exit 1
+fi
+
+echo "Branch and worktree names are available"
 ```
 
 ### 3. Determine Worktree Path
@@ -131,14 +108,14 @@ echo "Branch name is available"
 Generate path using consistent naming:
 
 ```bash
-worktree_path="${parent_dir}/issue-${issue_number}"
+worktree_path="${parent_dir}/${worktree_name}"
 echo "Generated worktree path: ${worktree_path}"
 ```
 
 Example:
 - Current: `/home/user/work/nabledge-dev`
-- Issue #42 → Worktree: `/home/user/work/issue-42`
-- Issue #123 → Worktree: `/home/user/work/issue-123`
+- First worktree → Path: `/home/user/work/work1`
+- Second worktree → Path: `/home/user/work/work2`
 
 Validate parent directory is writable:
 
@@ -175,36 +152,17 @@ fi
 echo "Path is available"
 ```
 
-**3.3 Check for Existing Worktree**
-
-Check if a worktree already exists for this branch:
-
-```bash
-existing_worktree=$(git worktree list --porcelain | grep -A 2 "branch refs/heads/${branch_name}" | grep "worktree" | awk '{print $2}')
-if [[ -n "$existing_worktree" ]]; then
-  echo "Error: Worktree already exists for ${branch_name} at: ${existing_worktree}"
-  echo ""
-  echo "Options:"
-  echo "1. Use existing worktree: cd '${existing_worktree}'"
-  echo "2. Remove existing: git worktree remove '${existing_worktree}'"
-  echo "3. Cancel operation"
-  exit 1
-fi
-echo "No existing worktree for this branch"
-```
-
-**3.4 Confirm Path**
+**3.3 Confirm Path**
 
 Use the AskUserQuestion tool to confirm:
-- Question: "Create worktree at the following path. OK?"
+- Question: "Create persistent worktree at the following path. OK?"
 - Display the full path in the question
 - Provide options: "Yes, create it" and "No, cancel"
 
 Display information:
 ```
 Path: ${worktree_path}
-Branch: ${branch_name}
-Issue: #${issue_number}
+Branch: ${branch_name} (will track ${base_branch})
 Base: ${base_branch}
 ```
 
@@ -244,15 +202,23 @@ Please verify:
 ## Worktree Creation Complete
 
 **Path**: ${worktree_path}
-**Branch**: ${branch_name}
-**Issue**: #${issue_number}
+**Branch**: ${branch_name} (tracks ${base_branch})
 **Base Branch**: ${base_branch}
 
 ### Move to Worktree
 cd ${worktree_path}
 
-You can now start working on this issue.
-Use `/git commit` to commit changes.
+### Working with This Worktree
+
+This is a persistent worktree for parallel development. To work on issues:
+
+1. Create feature branch: `/hi <issue-number>`
+2. Work on your changes
+3. Commit: `/git commit`
+4. Create PR: `/pr create`
+5. Merge: `/bb <pr-number>` (returns to ${branch_name} after cleanup)
+
+The ${branch_name} branch stays in sync with ${base_branch}. Use `git pull origin ${base_branch}` to update.
 
 ### Open in Editor (optional)
 code ${worktree_path}
@@ -262,23 +228,22 @@ code ${worktree_path}
 
 | Error | Response |
 |-------|----------|
-| Branch name exists | Guide to use different issue or delete existing |
-| Path exists | Guide to remove existing or use different issue |
+| Branch name exists | Guide to use existing or delete |
+| Path exists | Guide to remove existing path |
 | Failed to update default branch | Guide to resolve conflicts |
 | Insufficient permissions | Guide to check write permissions |
 | Insufficient disk space | Guide to check disk space |
-| Issue not found | Guide to create issue first |
-| Invalid issue number | Reject non-numeric input |
-| Existing worktree | Guide to use existing or remove |
+| Existing worktree | Guide to use existing worktree |
 
 ## Important Notes
 
 1. **No emojis**: Never use emojis unless explicitly requested by user
-2. **Path naming convention**: `${parent_dir}/issue-${issue_number}`
-3. **Branch naming convention**: `issue-${issue_number}`
-4. **Issue-driven development**: All worktrees must be linked to a GitHub issue
-5. **Issue validation**: Always verify issue exists before creating worktree
+2. **Path naming convention**: `${parent_dir}/work${N}` where N is auto-incremented
+3. **Branch naming convention**: `work${N}` matching worktree name
+4. **Persistent worktrees**: work1/work2/work3 are permanent development spaces, not deleted after PR merge
+5. **Auto-numbering**: Automatically detects existing worktrees and assigns next available number
 6. **Base branch**: Always branch from repository's default branch (main, develop, etc.)
 7. **Variable syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 8. **Path safety**: Validate parent directory permissions and path availability
-9. **Worktree cleanup**: Use `git worktree remove` instead of `rm -rf` for proper cleanup
+9. **Branch tracking**: workX branches track main and can be updated via `git pull origin main`
+10. **Feature branches**: Use `/hi` within worktree to create feature branches for actual work
