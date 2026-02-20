@@ -229,7 +229,9 @@ Replace each placeholder in the loaded template:
 
 **Step 4: Replace Expert Review Section**
 
-Path format: `.pr/{issue_number OR current_branch}/review-by-{expert-role}.md`
+Path format:
+- If `issue_number` is set: `.pr/{issue_number}/review-by-{expert-role}.md`
+- If empty: `.pr/{current_branch}/review-by-{expert-role}.md`
 
 Example:
 ```markdown
