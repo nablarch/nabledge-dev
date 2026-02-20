@@ -17,32 +17,10 @@ Approve PR, merge it using /pr skill, delete feature branch, and return to workt
    - If in worktree (work1, work2, etc.), detect worktree base branch
    - If in main repo, use main branch
 6. Switch to base branch: `git checkout $BASE_BRANCH`
-7. Update base branch: `git pull origin main` (to sync with latest main)
+7. Update base branch:
+   - If base_branch is main: `git pull origin main`
+   - If base_branch is workX: `git merge --ff-only main` (sync workX with main)
 8. Delete feature branch: Use Skill tool - `Skill(skill: "git", args: "branch-delete $FEATURE_BRANCH")`
-9. Update all work branches (main repo only):
-   ```bash
-   # Only in main repo, not in worktrees
-   if [[ "$base_branch" == "main" ]]; then
-     work_branches=$(git branch --list 'work*' | sed 's/^[* ] //')
-
-     if [[ -n "$work_branches" ]]; then
-       echo "Updating work branches to match main..."
-       while IFS= read -r branch; do
-         if [[ -n "$branch" ]]; then
-           echo "Updating $branch..."
-           git checkout "$branch"
-           if git merge --ff-only main; then
-             echo "✓ $branch updated"
-           else
-             echo "⚠ Warning: $branch has diverged from main, skipping"
-           fi
-         fi
-       done <<< "$work_branches"
-       git checkout main
-       echo "All work branches updated"
-     fi
-   fi
-   ```
 
 # Worktree Detection
 
@@ -66,8 +44,6 @@ fi
 
 - Always use Skill tool for pr merge and git branch-delete operations
 - Never run `gh pr merge` or `git branch -d` manually
-- In worktrees: return to workX branch (not main)
-- In main repo: return to main branch, then auto-update all work* branches
-- Work branches are updated using `git merge --ff-only` to ensure clean sync
-- Diverged work branches are skipped with warning (not error)
+- In worktrees: return to workX branch and sync with main using `git merge --ff-only`
+- In main repo: return to main branch and pull latest from remote
 - Ask user if anything is unclear
