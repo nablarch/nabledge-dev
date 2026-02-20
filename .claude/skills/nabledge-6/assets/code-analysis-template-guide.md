@@ -1,19 +1,26 @@
 # Code Analysis Template Guide
 
-This guide explains how to use the code analysis documentation template.
+This guide explains how to use the code analysis documentation template (progressive 3-part format).
 
-## Template File
+## Template Files (Progressive Output)
 
-**Location**: `.claude/skills/nabledge-6/assets/code-analysis-template.md`
+**Location**: `.claude/skills/nabledge-6/assets/`
 
-The template provides a structured format for the generated documentation. See the template file for the complete structure with placeholders.
+The templates provide a 3-part progressive format for faster initial results:
+
+1. **code-analysis-template-basic.md** - Initial fast output (~2000 tokens, ~20 seconds LLM output)
+2. **code-analysis-template-extended.md** - Detailed analysis (~2000 tokens, optional, ~20 seconds LLM output)
+3. **code-analysis-template-references.md** - Links section (~500 tokens, optional, ~5 seconds LLM output)
 
 ## Template Sections
 
+**Basic template** (generated first):
 1. **Header**: Target name, generation date/time, analysis duration, modules
 2. **Overview**: Purpose and high-level architecture
 3. **Architecture**: Mermaid class diagram + component summary table
 4. **Flow**: Processing flow description + Mermaid sequence diagram
+
+**Extended template** (generated if user requests):
 5. **Components**: Detailed analysis for each component
    - File location with relative link
    - Role description
@@ -22,6 +29,8 @@ The template provides a structured format for the generated documentation. See t
    - Nablarch knowledge excerpts
    - Key implementation points
 6. **Nablarch Framework Usage**: Framework-specific usage patterns
+
+**References template** (generated if user requests):
 7. **References**: Links to source files, knowledge files, official docs
 
 ## Key Features
@@ -41,9 +50,11 @@ Replace the following placeholders with actual content (using `{{variable}}` for
 - `{{target_name}}`: Name of analyzed code/feature (e.g., "LoginAction", "ログイン機能")
 - `{{generation_date}}`: Current date in YYYY-MM-DD format (e.g., "2026-02-10")
 - `{{generation_time}}`: Current time in HH:MM:SS format (e.g., "14:30:15")
-- `{{DURATION_PLACEHOLDER}}`: Placeholder for analysis duration (replaced by sed after Write completes)
-  - Initial value: "{{DURATION_PLACEHOLDER}}" (literal string in template)
-  - Final value: "約2分30秒", "約45秒", etc. (replaced by workflow Step 3.3-7)
+- `{{DURATION_PLACEHOLDER}}`: Temporary marker for analysis duration (two-step replacement process)
+  - **Step 1 (during Write)**: Keep as "{{DURATION_PLACEHOLDER}}" (literal placeholder string)
+  - **Step 2 (after Write via sed)**: Replace with actual duration "約2分30秒", "約45秒", etc.
+  - **Why two steps**: Ensures duration includes the Write operation itself, matching the "Baked for" time shown in IDE
+  - **Note**: The metadata field name is `{{analysis_duration}}`, but we use `{{DURATION_PLACEHOLDER}}` as the temporary marker during generation
 - `{{target_description}}`: One-line description of the target
 - `{{modules}}`: Affected modules (e.g., "proman-web, proman-common")
 
@@ -75,55 +86,58 @@ Replace the following placeholders with actual content (using `{{variable}}` for
 - `{{knowledge_base_links}}`: List of knowledge base links (`.claude/skills/nabledge-6/docs`)
 - `{{official_docs_links}}`: List of official Nablarch documentation links
 
-## Usage Instructions
+## Usage Instructions (Progressive Output)
 
-### Step 1: Read the Template
+### Step 1: Read All Template Files
 
-Read the template file to understand the structure:
+Read all three template files to understand the structure:
 
 ```bash
-Read: .claude/skills/nabledge-6/assets/code-analysis-template.md
+Read: .claude/skills/nabledge-6/assets/code-analysis-template-basic.md
+Read: .claude/skills/nabledge-6/assets/code-analysis-template-extended.md
+Read: .claude/skills/nabledge-6/assets/code-analysis-template-references.md
 ```
 
-### Step 2: Build Content for Each Placeholder
+### Step 2: Build Content for BASIC Placeholders
 
-Based on analysis results from workflow Steps 0-5, build content for each placeholder:
+Based on analysis results from workflow Steps 0-2, build content for basic placeholders:
 
 1. **Header placeholders**: Use current timestamp ({{DURATION_PLACEHOLDER}} stays as-is)
 2. **Overview**: Summarize purpose and architecture
 3. **Architecture diagrams**: Generate Mermaid classDiagram (class names only)
-4. **Flow diagrams**: Generate Mermaid sequenceDiagram (with phases)
-5. **Components**: Write detailed analysis with line references
-6. **Nablarch usage**: Extract framework usage patterns
-7. **References**: Build relative file path links
+4. **Architecture table**: Create component summary table
+5. **Flow description**: Describe processing flow
+6. **Flow diagram**: Generate Mermaid sequenceDiagram (with phases)
 
-### Step 3: Replace Placeholders (except duration)
+### Step 3: Generate BASIC Output
+
+**Step 3.1**: Replace placeholders in basic template (except duration)
 
 Replace all `{{variable}}` placeholders with actual content, EXCEPT {{DURATION_PLACEHOLDER}}.
 
 **IMPORTANT**: Leave {{DURATION_PLACEHOLDER}} as-is. It will be replaced after Write completes.
 
-### Step 4: Write Output File
+**Step 3.2**: Write basic output file
 
 Use Write tool to create the documentation file:
 
 ```
 file_path: .nabledge/YYYYMMDD/code-analysis-<target>.md
-content: [Generated documentation with {{DURATION_PLACEHOLDER}} still present]
+content: [Generated basic documentation with {{DURATION_PLACEHOLDER}} still present]
 ```
 
-### Step 5: Calculate and Replace Duration
+**Step 3.3**: Calculate and replace duration
 
 **IMMEDIATELY after Write completes**:
 
-**Step 5.1**: Get end time and calculate duration
+**Step 3.3.1**: Get end time and calculate duration
 ```bash
 date '+%Y-%m-%d %H:%M:%S'
 ```
 - Calculate elapsed time from Step 0 start time
 - Format as Japanese text (e.g., "約5分18秒")
 
-**Step 5.2**: Replace placeholder using sed
+**Step 3.3.2**: Replace placeholder using sed
 ```bash
 sed -i 's/{{DURATION_PLACEHOLDER}}/約5分18秒/g' .nabledge/YYYYMMDD/code-analysis-<target>.md
 ```
@@ -135,6 +149,79 @@ sed -i 's/{{DURATION_PLACEHOLDER}}/約5分18秒/g' .nabledge/YYYYMMDD/code-analy
 
 **Why this matters**: This ensures the analysis duration includes all work including the Write operation itself, providing accurate timing that matches the "Baked for" time shown in the IDE.
 
+### Step 4: Ask User for Extended Analysis
+
+Use AskUserQuestion tool:
+
+```
+基本的なコード解析が完了しました。
+
+詳細な分析（コンポーネント詳細とNablarchフレームワーク使用パターン）を追加しますか？
+
+- はい: 各コンポーネントの実装詳細とNablarch使用例を追加
+- いいえ: 基本解析のみで完了
+```
+
+**If NO**: Skip to Step 6 (ask for references)
+
+**If YES**: Proceed to Step 5
+
+### Step 5: Generate EXTENDED Output
+
+**Step 5.1**: Build content for extended placeholders
+
+1. **Components details**: Write detailed analysis with line references
+2. **Nablarch usage**: Extract framework usage patterns with important points (✅ ⚠️ 💡 🎯 ⚡)
+
+**Step 5.2**: Replace placeholders in extended template
+
+Replace all `{{variable}}` placeholders with actual content.
+
+**Step 5.3**: Read current file and append extended content
+
+```bash
+Read: .nabledge/YYYYMMDD/code-analysis-<target>.md
+```
+
+Use Edit tool to remove the note line and replace with extended content:
+- Remove: "**Note**: This is the basic code analysis output. For detailed component analysis and Nablarch usage patterns, request extended analysis."
+- Replace with: Complete extended template content
+
+### Step 6: Ask User for References
+
+Use AskUserQuestion tool:
+
+```
+参照情報（ソースファイル、知識ベース、公式ドキュメントへのリンク）を追加しますか？
+
+- はい: リンクセクションを追加
+- いいえ: 現在の状態で完了
+```
+
+**If NO**: Workflow complete, exit
+
+**If YES**: Proceed to Step 7
+
+### Step 7: Generate REFERENCES Output
+
+**Step 7.1**: Build content for references placeholders
+
+1. **Source files links**: Build relative file path links
+2. **Knowledge base links**: Link to relevant knowledge files
+3. **Official docs links**: Link to official Nablarch documentation
+
+**Step 7.2**: Replace placeholders in references template
+
+Replace all `{{variable}}` placeholders with actual content.
+
+**Step 7.3**: Read current file and append references content
+
+```bash
+Read: .nabledge/YYYYMMDD/code-analysis-<target>.md
+```
+
+Use Edit tool to append references content to the end of the file.
+
 ## Example Placeholder Values
 
 ### Example: ExportProjectsInPeriodAction
@@ -143,7 +230,7 @@ sed -i 's/{{DURATION_PLACEHOLDER}}/約5分18秒/g' .nabledge/YYYYMMDD/code-analy
 {{target_name}} = "ExportProjectsInPeriodAction"
 {{generation_date}} = "2026-02-10"
 {{generation_time}} = "14:30:15"
-{{analysis_duration}} = "約2分"
+{{DURATION_PLACEHOLDER}} = "約2分" (replaced after Write completes)
 {{target_description}} = "期間内プロジェクト一覧出力バッチアクション"
 {{modules}} = "proman-batch"
 ```
@@ -168,7 +255,7 @@ For each Nablarch component, include:
 5. **このコードでの使い方**: How it's used in analyzed code
 6. **詳細**: Link to knowledge base
 
-**Example**:
+**Example** (one component - repeat for each Nablarch component used):
 
 ```markdown
 ### ObjectMapper
@@ -245,6 +332,9 @@ Link: ../../proman-web/src/main/java/com/nablarch/example/proman/web/action/Logi
 
 ## See Also
 
-- **Template File**: `assets/code-analysis-template.md`
+- **Template Files**:
+  - `assets/code-analysis-template-basic.md` - Basic output
+  - `assets/code-analysis-template-extended.md` - Extended output
+  - `assets/code-analysis-template-references.md` - References output
 - **Workflow**: `workflows/code-analysis.md`
 - **Skill Definition**: `SKILL.md`

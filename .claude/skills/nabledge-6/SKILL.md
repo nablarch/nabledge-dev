@@ -194,15 +194,18 @@ Follow `workflows/code-analysis.md`:
    - For each Nablarch component, execute keyword-search workflow
    - Collect relevant knowledge sections
 
-3. **Generate and output documentation**:
-   - Read template files (MUST READ FIRST)
+3. **Generate and output documentation (progressive)**:
+   - Read template files (basic, extended, references) (MUST READ FIRST)
    - Build Mermaid classDiagram and sequenceDiagram
    - Create component summary table
-   - Write component details with line references
-   - Write Nablarch usage with important points (✅ ⚠️ 💡)
-   - Apply template with all placeholders
+   - **Generate BASIC output first** (Overview + Architecture + Flow)
+   - Apply basic template with placeholders
    - Calculate analysis duration
-   - Write file to `.nabledge/YYYYMMDD/code-analysis-<target>.md`
+   - Write basic file to `.nabledge/YYYYMMDD/code-analysis-<target>.md`
+   - **Ask user**: "詳細な分析（コンポーネント詳細とNablarchフレームワーク使用パターン）を追加しますか？"
+   - **If YES**: Generate and append EXTENDED output (Components + Nablarch Usage)
+   - **Ask user**: "参照情報（ソースファイル、知識ベース、公式ドキュメントへのリンク）を追加しますか？"
+   - **If YES**: Generate and append REFERENCES output (all links)
    - Inform user of completion
 
 **Tools**: Read, Glob, Grep, Bash with jq, Write
@@ -216,8 +219,10 @@ Follow `workflows/code-analysis.md`:
 
 ### Template Files
 
-- `assets/code-analysis-template.md`: Documentation template for code analysis output
-- `assets/code-analysis-template-guide.md`: Template usage guide (sections, placeholders, evaluation criteria)
+- `assets/code-analysis-template-basic.md`: Basic documentation template (Overview, Architecture, Flow)
+- `assets/code-analysis-template-extended.md`: Extended documentation template (Components, Nablarch Usage)
+- `assets/code-analysis-template-references.md`: References template (source files, knowledge base, official docs)
+- `assets/code-analysis-template-guide.md`: Template usage guide (sections, placeholders, progressive output flow)
 - `assets/code-analysis-template-examples.md`: Template examples (component table, Nablarch usage, links)
 
 ## Quick reference

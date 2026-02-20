@@ -61,7 +61,7 @@ UniversalDaoの使い方を教えて
 | コマンド | 説明 | 入力形式 | 出力場所・内容 |
 |---------|------|---------|--------------|
 | `/nabledge-6` | 対話モードで起動。知識検索またはコード分析を選択可能 | なし | なし（対話形式で結果を表示） |
-| `/nabledge-6 code-analysis` | 既存コードの構造を分析し、ドキュメントを生成 | ターゲットコード指定（対話で入力）<br>例: "LoginAction", "proman-batchモジュール" | `.nabledge/YYYYMMDD/code-analysis-<target>.md`<br>依存関係図、コンポーネント一覧、Nablarch利用状況を含む構造化ドキュメント<br>[テンプレート](../assets/code-analysis-template.md) \| [ガイド](../assets/code-analysis-template-guide.md) \| [例](../assets/code-analysis-template-examples.md) |
+| `/nabledge-6 code-analysis` | 既存コードの構造を分析し、ドキュメントを生成 | ターゲットコード指定（対話で入力）<br>例: "LoginAction", "proman-batchモジュール" | `.nabledge/YYYYMMDD/code-analysis-<target>.md`<br>段階的出力：基本（概要・アーキテクチャ・フロー）を最初に出力、詳細分析と参照情報は必要に応じてリクエスト可能<br>[テンプレート（基本）](../assets/code-analysis-template-basic.md) \| [テンプレート（拡張）](../assets/code-analysis-template-extended.md) \| [テンプレート（参照）](../assets/code-analysis-template-references.md) \| [ガイド](../assets/code-analysis-template-guide.md) \| [例](../assets/code-analysis-template-examples.md) |
 
 ## バージョンアップ
 
