@@ -70,7 +70,44 @@ def extract_md_title(file_path: Path) -> Optional[str]:
     except Exception:
         return None
 
-def get_ja_file_path(source_path: str) -> Optional[Path]:
+def extract_url_from_markdown(md_link: str) -> Optional[str]:
+    """Extract URL from Markdown link format [🔗](url)."""
+    import re
+    match = re.search(r'\[.*?\]\((https://.*?)\)', md_link)
+    if match:
+        return match.group(1)
+    return None
+
+def get_file_path_from_url(official_url: str, source_path: str) -> Optional[Path]:
+    """Get file path from Official URL (for verification)."""
+    # Extract URL from markdown link
+    url = extract_url_from_markdown(official_url)
+    if url is None:
+        return None
+
+    if 'nablarch-system-development-guide' in url:
+        # Extract path from GitHub URL
+        # Format: https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{path}
+        if '/blob/main/' in url:
+            path_part = url.split('/blob/main/', 1)[1]
+            return NABLARCH_GUIDE_BASE / path_part
+    elif 'nablarch.github.io' in url:
+        # Extract path from docs URL
+        # Format: https://nablarch.github.io/docs/6u3/doc/{path}.html
+        if '/doc/' in url:
+            html_path = url.split('/doc/', 1)[1]
+            # Convert .html back to .rst (or .md)
+            if source_path.endswith('.md'):
+                rst_path = html_path.replace('.html', '.md')
+            else:
+                rst_path = html_path.replace('.html', '.rst')
+
+            # Map to Japanese path
+            return get_ja_file_path_from_source(rst_path)
+
+    return None
+
+def get_ja_file_path_from_source(source_path: str) -> Optional[Path]:
     """Get Japanese file path from source path."""
     if source_path.startswith('en/Nablarch-system-development-guide/'):
         # nablarch-system-development-guide
@@ -111,9 +148,9 @@ def get_ja_file_path(source_path: str) -> Optional[Path]:
 
         return NABLARCH_DOC_JA / ja_source_path
 
-def extract_title_from_source(source_path: str) -> Optional[str]:
-    """Extract Japanese title from source file."""
-    file_path = get_ja_file_path(source_path)
+def extract_title_from_url(official_url: str, source_path: str) -> Optional[str]:
+    """Extract Japanese title from file pointed by Official URL."""
+    file_path = get_file_path_from_url(official_url, source_path)
 
     if file_path is None or not file_path.exists():
         return None
@@ -181,12 +218,13 @@ def main():
     for i, row in enumerate(rows, 1):
         source_path = row['source_path']
         title_ja_in_table = row['title_ja']
+        official_url = row['official_url']
 
-        # Extract title from actual file
-        actual_title = extract_title_from_source(source_path)
+        # Extract title from actual file pointed by Official URL
+        actual_title = extract_title_from_url(official_url, source_path)
 
         if actual_title is None:
-            file_path = get_ja_file_path(source_path)
+            file_path = get_file_path_from_url(official_url, source_path)
             if file_path and not file_path.exists():
                 missing_files.append({
                     'row': i,
