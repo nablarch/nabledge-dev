@@ -4,63 +4,60 @@
 
 **Target users**: Japanese developers working on Nablarch projects
 
-**Rationale**: nabledge-x skills serve Japanese Nablarch users, requiring Japanese user-facing messages while maintaining English for technical documentation.
+**Rationale**: Nabledge skills serve Japanese Nablarch users, requiring Japanese for end-user interfaces while maintaining English for developer content.
+
+## Basic Policy
+
+| Audience | Language | Rationale |
+|----------|----------|-----------|
+| End users (Nabledge users) | Japanese | Primary users are Japanese Nablarch developers |
+| Developers (repository contributors) | English | Standard for technical collaboration |
+| AI conversations | Request Japanese individually | Not default; specify when needed |
 
 ## Quick Reference
 
 | Content Type | Language | Examples |
 |--------------|----------|----------|
-| Repository content | English | Code, commits, README, design docs, issues |
-| Console conversations | Japanese | AI responses to user questions |
-| Skills: structure | English | SKILL.md, workflows/*.md headings and logic |
-| Skills: user messages | Japanese | Questions, output headers, error messages |
-| End-user guides | Japanese | plugin/GUIDE-*.md, assets/examples.md |
+| Code | English | Source code, comments, variables, functions |
+| Issues & PRs | English | Titles, descriptions, comments |
+| Commits | English | Commit messages |
+| Developer docs | English | README, design docs, architecture |
+| Skills: structure | English | SKILL.md, workflows/*.md (headings, logic) |
+| Skills: user interface | Japanese | Questions, output, error messages |
+| End-user docs | Japanese | plugin/GUIDE-*.md, assets/examples.md |
 
-## Repository Content (English)
+## Developer Content (English)
 
 Write in English:
-- Source code (comments, variables, functions)
-- Documentation (README, design docs)
-- Git commits and PR descriptions
-- Tests and issues
+- **Source code**: Comments, variables, functions, classes
+- **Issues**: Titles and descriptions
+- **Pull Requests**: Titles and descriptions
+- **Commits**: Commit messages
+- **Documentation**: README.md, design docs, architecture docs
+- **Tests**: Test code and descriptions
+- **Skills structure**: SKILL.md, workflows/*.md (structure and logic)
 
-## Console Conversations (Japanese)
+## End-User Content (Japanese)
 
-AI communicates with users in Japanese:
-- Responses to questions
-- Explanations and guidance
-- Status updates and errors
+Write in Japanese for Nabledge users:
+- **User guides**: plugin/GUIDE-*.md, assets/examples.md
+- **User interface elements**:
+  - AskUserQuestion prompts: `"今日の発見は何ですか？"`
+  - Output headers: `## アウトプット`, `## 発見`
+  - Error messages: `エラー: GitHubリポジトリが見つかりません。`
+  - Status messages shown to users
 
-## Skills Documentation
+## AI Conversations
 
-### AI Agent-Facing: English
+**Default**: Follow context (usually English for development tasks)
 
-Structure and logic in English:
-- `SKILL.md` - Skill definition, execution flow
-- `workflows/*.md` - Workflow steps, logic
-- `docs/*.md` - Technical documentation
+**When Japanese needed**: Explicitly request in Japanese
+- Example: "日本語で説明してください"
+- AI will respond in Japanese when directly requested
 
-**Example**:
-```markdown
-# Standup Report Generator (op)
+## Skills Documentation Pattern
 
-## Execution Flow
-
-### 1. Execute Workflow
-...
-```
-
-### User-Facing: Japanese
-
-Messages users see in Japanese:
-- AskUserQuestion prompts: `"今日の発見は何ですか？"`
-- Output headers: `## アウトプット`, `## 発見`
-- Error messages: `エラー: GitHubリポジトリが見つかりません。`
-- End-user guides: `plugin/GUIDE-CC.md`, `assets/examples.md`
-
-## Common Pattern
-
-Workflows mix English structure with Japanese messages:
+Skills mix English structure with Japanese user interface:
 
 ```markdown
 ### 2. Interview User
@@ -71,3 +68,13 @@ Question: "今日の発見は何ですか？(技術的な気づき、学び、�
 
 Save user's answer as `discoveries`.
 ```
+
+**Structure (English)**:
+- Section headings
+- Logic descriptions
+- Tool instructions
+
+**User interface (Japanese)**:
+- Question text users see
+- Output format users copy
+- Error messages users read
