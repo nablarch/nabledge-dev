@@ -4,11 +4,11 @@ Development repository for nabledge skills - AI assistants for Nablarch framewor
 
 ## Language
 
-**Repository content**: English (code, docs, commits, tests)
+**Developer content**: English (code, issues, PRs, commits, docs)
 
-**Console conversations**: Japanese (AI ↔ User)
+**End-user interface**: Japanese (user guides, questions, output, errors)
 
-**Skills**: English structure with Japanese user-facing messages (questions, output, errors)
+**AI conversations**: English by default; request Japanese when needed
 
 See `.claude/rules/language.md` for detailed guidelines and examples.
 
