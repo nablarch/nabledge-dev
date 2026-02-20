@@ -193,11 +193,28 @@ def extract_title(source_path: str, lang: str = 'en') -> Tuple[Optional[str], st
     return title, 'ok'
 
 def generate_official_url(source_path: str) -> str:
-    """Generate official URL with Markdown link format"""
+    """Generate official URL with Markdown link format (Japanese version)"""
     if source_path.startswith('en/Nablarch-system-development-guide/'):
         # nablarch-system-development-guide
-        # Use English directory structure (source path as-is)
-        url = f"https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{source_path}"
+        # Convert to Japanese directory and filename
+        ja_path = source_path.replace(
+            'en/Nablarch-system-development-guide/',
+            'Nablarchシステム開発ガイド/'
+        )
+
+        # Map English filenames to Japanese
+        filename_map = {
+            'Asynchronous_operation_in_Nablarch.md': 'Nablarchでの非同期処理.md',
+            'Nablarch_anti-pattern.md': 'Nablarchアンチパターン.md',
+            'Nablarch_batch_processing_pattern.md': 'Nablarchバッチ処理パターン.md'
+        }
+
+        for en_name, ja_name in filename_map.items():
+            if en_name in ja_path:
+                ja_path = ja_path.replace(en_name, ja_name)
+                break
+
+        url = f"https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/{ja_path}"
     else:
         # nablarch-document
         # Change .rst to .html, keep path

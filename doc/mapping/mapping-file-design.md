@@ -237,13 +237,18 @@ Example (v5):
 
 ### nablarch-system-development-guide
 
-- Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md` (from table)
-- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md`
-- Conversion: Keep source path as-is (English directory structure), prepend base URL
+- Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/{file}.md` (from table, English version)
+- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/docs/nablarch-patterns/{ja_file}.md`
+- Conversion: Replace `en/Nablarch-system-development-guide/` with `Nablarchシステム開発ガイド/`, translate filename to Japanese
+
+**Filename mapping**:
+- `Asynchronous_operation_in_Nablarch.md` → `Nablarchでの非同期処理.md`
+- `Nablarch_anti-pattern.md` → `Nablarchアンチパターン.md`
+- `Nablarch_batch_processing_pattern.md` → `Nablarchバッチ処理パターン.md`
 
 Example:
 - Source Path: `en/Nablarch-system-development-guide/docs/nablarch-patterns/Asynchronous_operation_in_Nablarch.md`
-- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/en/Nablarch-system-development-guide/docs/nablarch-patterns/Asynchronous_operation_in_Nablarch.md`
+- Official URL: `https://github.com/Fintan-contents/nablarch-system-development-guide/blob/main/Nablarchシステム開発ガイド/docs/nablarch-patterns/Nablarchでの非同期処理.md`
 
 **URL Format**: Use Markdown link format `[🔗](full-url)` to keep table readable while maintaining programmatic access to URLs.
 
