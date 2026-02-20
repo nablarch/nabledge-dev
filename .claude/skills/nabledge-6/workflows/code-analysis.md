@@ -38,18 +38,27 @@ This workflow analyzes existing code, traces dependencies, and generates structu
 
 **Tool**: Bash
 
-**Action** - Store start time in temp file for later calculation:
+**Action** - Store start time with unique session ID:
 ```bash
-date '+%s' > /tmp/nabledge-code-analysis-start-$$ && echo "Start time recorded: $(date '+%Y-%m-%d %H:%M:%S')"
+UNIQUE_ID="$(date '+%s%3N')-$$"
+echo "$UNIQUE_ID" > /tmp/nabledge-code-analysis-id
+date '+%s' > "/tmp/nabledge-code-analysis-start-$UNIQUE_ID"
+echo "Start time recorded: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Session ID: $UNIQUE_ID"
 ```
 
-**Output example**: `Start time recorded: 2026-02-10 14:54:00`
+**Output example**:
+```
+Start time recorded: 2026-02-10 14:54:00
+Session ID: 1707559440123-12345
+```
 
 **IMPORTANT**:
-- **Start time stored in**: `/tmp/nabledge-code-analysis-start-$$` (using process PID)
-- **Remember the PID** ($$) or temp file path - you'll need it in Step 3.3 for duration calculation
+- **Session ID stored in**: `/tmp/nabledge-code-analysis-id` (fixed path for retrieval in Step 3.3)
+- **Start time stored in**: `/tmp/nabledge-code-analysis-start-$UNIQUE_ID` (unique file per session)
+- **UNIQUE_ID format**: `{millisecond_timestamp}-{process_PID}` ensures uniqueness across parallel executions
 - Epoch time (seconds since 1970) stored for accurate duration calculation
-- **Note**: The `$$` variable expands to the current shell's PID, ensuring each agent instance has a unique temp file and parallel executions won't collide
+- No need to remember values - Step 3.3 will read session ID from fixed file path
 
 **Why this matters**: The `{{analysis_duration}}` placeholder must contain the actual elapsed time, not an estimate. Users will compare it against the "Cooked for X" time shown in their IDE.
 
@@ -311,25 +320,32 @@ sequenceDiagram
 
    Execute single bash script to fill all time-related placeholders:
    ```bash
+   # Retrieve session ID from Step 0
+   UNIQUE_ID=$(cat /tmp/nabledge-code-analysis-id 2>/dev/null || echo "")
+
    # Get current time
    end_time=$(date '+%s')
    current_datetime=$(date '+%Y-%m-%d %H:%M:%S')
    generation_date=$(echo "$current_datetime" | cut -d' ' -f1)
    generation_time=$(echo "$current_datetime" | cut -d' ' -f2)
 
-   # Read start time from temp file (created in Step 0)
-   start_time=$(cat /tmp/nabledge-code-analysis-start-$$)
-
-   # Calculate duration in seconds
-   duration_seconds=$((end_time - start_time))
-
-   # Format as Japanese text
-   if [ $duration_seconds -lt 60 ]; then
-     duration_text="約${duration_seconds}秒"
+   # Calculate duration with error handling
+   START_TIME_FILE="/tmp/nabledge-code-analysis-start-$UNIQUE_ID"
+   if [ -z "$UNIQUE_ID" ] || [ ! -f "$START_TIME_FILE" ]; then
+     echo "WARNING: Start time file not found. Duration will be set to '不明'."
+     duration_text="不明"
    else
-     minutes=$((duration_seconds / 60))
-     seconds=$((duration_seconds % 60))
-     duration_text="約${minutes}分${seconds}秒"
+     start_time=$(cat "$START_TIME_FILE")
+     duration_seconds=$((end_time - start_time))
+
+     # Format as Japanese text
+     if [ $duration_seconds -lt 60 ]; then
+       duration_text="約${duration_seconds}秒"
+     else
+       minutes=$((duration_seconds / 60))
+       seconds=$((duration_seconds % 60))
+       duration_text="約${minutes}分${seconds}秒"
+     fi
    fi
 
    # Replace all placeholders in the output file (three -e expressions execute sequentially)
@@ -339,8 +355,9 @@ sequenceDiagram
      -e "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" \
      .nabledge/YYYYMMDD/code-analysis-<target>.md
 
-   # Clean up temp file
-   rm -f /tmp/nabledge-code-analysis-start-$$
+   # Clean up temp files
+   rm -f "$START_TIME_FILE"
+   rm -f /tmp/nabledge-code-analysis-id
 
    # Output for user
    echo "Generated: $generation_date $generation_time"
@@ -348,14 +365,14 @@ sequenceDiagram
    ```
 
    **Replace in command**:
-   - `$$`: Actual PID from Step 0
    - `YYYYMMDD`: Actual date directory
    - `<target>`: Actual target name
 
    **IMPORTANT**:
    - Execute immediately after Step 5 with no other operations between them
-   - This single script handles: generation date/time, duration calculation, and file updates
-   - If script fails or temp file is missing, inform user and use "不明" (unknown) for missing values so they can manually edit the placeholders
+   - This script handles: session ID retrieval, generation date/time, duration calculation, and file updates
+   - **Error handling**: If start time file is missing, duration is set to "不明" (unknown) with warning message
+   - Script continues execution even if duration calculation fails, ensuring placeholders are always replaced
 
 7. **Inform user**: Show output path and actual duration
 

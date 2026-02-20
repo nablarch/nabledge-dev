@@ -100,3 +100,50 @@ During PR review, reviewer can:
 - User feedback on actual time savings
 - Any issues with temp file cleanup or PID collisions
 - Whether bash script works across different environments (Linux, macOS, WSL)
+
+## 2026-02-20 (Follow-up)
+
+### Prompt Engineering Review and Improvements
+
+After initial implementation, conducted prompt engineering expert review which identified a critical design issue:
+
+**Issue**: PID-based session management was fragile - relied on LLM remembering `$$` value across multiple steps, which is unreliable over long context.
+
+**Root cause**: Original design assumed agent would always correctly replace `$$` placeholder before execution, but:
+- LLM memory is not guaranteed across many steps
+- Step 0 to Step 6 has significant distance
+- No mechanism to recover if agent forgets the value
+
+**Solution implemented (UNIQUE_ID mechanism)**:
+
+1. **Step 0 changes**:
+   - Generate unique session ID: `{millisecond_timestamp}-{process_PID}`
+   - Store session ID in fixed file: `/tmp/nabledge-code-analysis-id`
+   - Store start time in: `/tmp/nabledge-code-analysis-start-$UNIQUE_ID`
+   - No longer requires agent to "remember" values
+
+2. **Step 6 changes**:
+   - Read session ID from fixed file (not from agent memory)
+   - Added explicit error handling with `if [ -z "$UNIQUE_ID" ] || [ ! -f "$START_TIME_FILE" ]`
+   - Graceful fallback to "不明" with warning message
+   - Script continues even if duration calculation fails
+
+**Benefits**:
+- Agent memory independent - reads from file system
+- Explicit error handling in script (not just documentation)
+- Maintains all S3+S4 optimizations (still 4 tool calls saved)
+- More robust for production use
+
+**Testing**:
+- ✓ Bash syntax validation passed
+- ✓ End-to-end test: Session ID → duration calculation works
+- ✓ Error handling test: Missing temp file → graceful fallback to "不明"
+
+**Trade-offs**:
+- Added 1 line to write session ID file (negligible overhead)
+- Added ~8 lines for error handling (improved robustness)
+- Slightly more complex UNIQUE_ID generation (still very fast)
+
+**Time invested**: 15 minutes (vs. estimated 30-60 minutes)
+
+**Lesson learned**: Prompt engineering perspective valuable even after implementation - revealed assumption about LLM reliability that seemed obvious in hindsight but was missed during initial design.
