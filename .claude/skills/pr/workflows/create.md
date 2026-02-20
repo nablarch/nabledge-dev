@@ -152,25 +152,6 @@ fi
 
 Use the Read tool to load `.claude/skills/pr/templates/pr-template.md`.
 
-The template contains the following structure with placeholders:
-```markdown
-Closes #[ISSUE_NUMBER]
-
-## Approach
-[Describe the solution...]
-
-## Tasks
-[List implementation...]
-
-## Expert Review
-[Review table]
-
-## Success Criteria Check
-[Criterion X from issue] | Status | Evidence
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-```
-
 **2.4 Generate Title**
 
 Analyze commits to generate appropriate PR title:
@@ -221,18 +202,8 @@ Replace each placeholder in the loaded template:
 
 **Step 1: Replace [ISSUE_NUMBER]**
 
-Check if `issue_number` is set and non-empty:
-
-If issue_number is not empty:
-  Replace with the issue number:
-  ```
-  Closes #[ISSUE_NUMBER]
-  ↓
-  Closes #42
-  ```
-
-If issue_number is empty:
-  Remove the "Closes #[ISSUE_NUMBER]" line entirely from PR body
+- If `issue_number` is set: `Closes #42`
+- If empty: Remove entire "Closes #" line
 
 **Step 2: Replace [Describe the solution...]**
 - Summarize the approach from commit message bodies
@@ -258,31 +229,17 @@ If issue_number is empty:
 
 **Step 4: Replace Expert Review Section**
 
-Replace with links to expert review files from `/hi` step 8:
+Path format: `.pr/{issue_number OR current_branch}/review-by-{expert-role}.md`
 
-If issue_number is not empty:
-  Expert reviews are saved in `.pr/{issue_number}/review-by-{expert-role}.md`
-  Example output:
-  ```
-  ## Expert Review
+Example:
+```markdown
+## Expert Review
 
-  AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
+AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-  - [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-  - [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
-  ```
-
-If issue_number is empty:
-  Expert reviews are saved in `.pr/{current_branch}/review-by-{expert-role}.md`
-  Example output:
-  ```
-  ## Expert Review
-
-  AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
-
-  - [Software Engineer](../.pr/feature-auth-refactor/review-by-software-engineer.md) - Rating: 4/5
-  - [Prompt Engineer](../.pr/feature-auth-refactor/review-by-prompt-engineer.md) - Rating: 5/5
-  ```
+- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+```
 
 **Step 5: Replace Success Criteria Section**
 
@@ -334,33 +291,6 @@ AI-driven expert reviews conducted before PR creation (see \`.claude/rules/exper
 | Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
 | Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
 | Invalid credentials show error message | ✅ Met | Error handling tested in auth.test.js:92 |
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-```
-
-**Example Without Issue Number** (when branch name doesn't include issue number):
-```markdown
-## Approach
-Refactored authentication logic to improve code maintainability and testability.
-
-## Tasks
-- [x] Extract authentication logic to separate module
-- [x] Add unit tests for authentication module
-- [x] Update documentation
-
-## Expert Review
-
-AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
-
-- [Software Engineer](../.pr/feature-auth-refactor/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/feature-auth-refactor/review-by-qa-engineer.md) - Rating: 4/5
-
-## Success Criteria Check
-
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| Authentication logic is modular | ✅ Met | Extracted to auth.module.ts:15 |
-| Unit test coverage > 80% | ✅ Met | Coverage report shows 85% in auth.test.ts |
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
