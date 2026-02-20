@@ -267,8 +267,11 @@ scripts/prefill-template.sh \
 
 **Validation**: After script completes, verify:
 - Output file was created at specified path
+  - **If missing**: Check stderr for errors, report to user, HALT workflow
 - Script reported "8/16" placeholders filled
+  - **If different**: Read output file to inspect which placeholders failed, report to user, HALT workflow
 - No error messages on stderr
+  - **If errors present**: Report full stderr output to user, HALT workflow
 
 #### 3.3: Generate Mermaid diagram skeletons
 
@@ -309,38 +312,79 @@ scripts/generate-mermaid-skeleton.sh \
 
 **Validation**: After script completes, verify:
 - Mermaid syntax is valid (starts with "classDiagram" or "sequenceDiagram")
+  - **If invalid**: Report syntax error to user, HALT workflow
 - All source files' classes are represented
+  - **If missing classes**: Report which classes are missing, HALT workflow
 - Basic structure is present (classes/participants + relationships/flow)
+  - **If incomplete**: Report what's missing (e.g., "no relationships", "no participants"), HALT workflow
+
+**Storage**: Save outputs for use in Steps 3.4 and 3.5:
+- Store class diagram output as `CLASS_DIAGRAM_SKELETON` in working memory
+- Store sequence diagram output as `SEQUENCE_DIAGRAM_SKELETON` in working memory
+- You will retrieve these skeletons in the following steps
 
 #### 3.4: Build documentation content
 
-**Refinement expectations**: Using skeletons from Step 3.3 as starting point:
+**CRITICAL INSTRUCTION**: All diagram work in this step REFINES skeletons from Step 3.3. Your task is to REFINE, not REGENERATE.
+
+**What is refinement?**
+- Start with skeleton structure (classes, participants, relationships already present)
+- Add semantic information (annotations, labels, control flow)
+- Preserve all skeleton-generated base structure
+
+**Refinement scope** (permitted actions):
+- Add annotations/stereotypes (e.g., `<<Nablarch>>`)
+- Add or improve relationship labels (e.g., "validates", "uses", "creates")
+- Add control flow elements (`alt`/`else`, `loop`, `Note over`)
+- Add missing relationships discovered during analysis
+- Fix incorrect relationship types (`--` vs `..`)
+
+**Regeneration** (prohibited actions):
+- Deleting skeleton and creating new diagram from scratch
+- Reordering existing participants/classes
+- Removing skeleton-generated relationships
+- Changing diagram type (class to sequence)
+
+**Exception**: If skeleton is malformed (syntax error, missing critical classes), report error to user and request manual intervention instead of attempting to fix.
+
+**Refinement workflow**:
 
 **For class diagrams**:
-1. Start with generated skeleton (class names and basic relationships already present)
+1. Retrieve `CLASS_DIAGRAM_SKELETON` from working memory (saved in Step 3.3)
 2. Add `<<Nablarch>>` stereotype to framework classes (UniversalDao, ExecutionContext, etc.)
-3. Add meaningful relationship labels (e.g., "validates", "uses", "creates" instead of generic "uses")
-4. Verify all key dependencies are shown
-5. Do NOT regenerate entire diagram from scratch
+3. Replace generic labels with specific relationship types (see criteria below)
+4. Verify all key dependencies are present (see key dependency criteria below)
+5. Preserve all skeleton structure (classes, basic relationships)
 
 **For sequence diagrams**:
-1. Start with generated skeleton (participants and basic flow already present)
-2. Add detailed method names to arrows (e.g., "execute()" instead of generic "request")
-3. Add error handling branches with `alt`/`else` blocks
-4. Add loops for repetitive operations with `loop` blocks
-5. Add notes to explain complex logic with `Note over` syntax
-6. Do NOT regenerate entire diagram from scratch
+1. Retrieve `SEQUENCE_DIAGRAM_SKELETON` from working memory (saved in Step 3.3)
+2. Replace generic arrows with specific method names ("execute()", "validate()")
+3. Add error handling branches using `alt`/`else` blocks where applicable
+4. Add loops for repetitive operations using `loop` blocks
+5. Add explanatory notes using `Note over` syntax for complex logic
+6. Preserve all skeleton structure (participants, basic flow)
 
-**Time savings**: Skeletons save 15-20 seconds by providing structure; focus refinement on semantics, not syntax.
+**Time savings**: Skeletons save ~20 seconds (baseline: ~35s for manual diagram creation, with skeleton: ~15s for refinement, ~57% reduction) by providing structure; focus refinement on semantics, not syntax.
 
 **Dependency diagram** (Mermaid classDiagram):
 
-**Step 1**: Use skeleton from Step 3.3 as starting point
+**Step 1**: Retrieve skeleton from working memory
+- Retrieve `CLASS_DIAGRAM_SKELETON` saved in Step 3.3
+- This skeleton already contains class names and basic relationships
 
-**Step 2**: Refine skeleton with:
+**Step 2**: Refine skeleton with semantic information:
 - Add `<<Nablarch>>` stereotype to framework classes (UniversalDao, ExecutionContext, etc.)
-- Add relationship labels (e.g., "validates", "uses", "creates")
-- Verify all key dependencies are shown
+- Add specific relationship labels that describe the interaction:
+  - **Data operations**: "validates", "serializes", "queries", "persists"
+  - **Lifecycle operations**: "creates", "initializes", "configures"
+  - **Control flow**: "invokes", "delegates to", "calls back"
+  - **Avoid generic labels**: "uses", "calls", "has" (replace with specific action)
+- Verify all key dependencies are shown:
+  - **Key dependencies** (include if ANY apply):
+    - Direct field injection or constructor parameter
+    - Method called in primary business logic path
+    - Required for transaction or validation
+    - Framework class that enables core functionality
 
 **Example**:
 ```mermaid
@@ -371,13 +415,15 @@ classDiagram
 
 **Flow description with sequence diagram** (Mermaid sequenceDiagram):
 
-**Step 1**: Use skeleton from Step 3.3 as starting point
+**Step 1**: Retrieve skeleton from working memory
+- Retrieve `SEQUENCE_DIAGRAM_SKELETON` saved in Step 3.3
+- This skeleton already contains participants and basic flow structure
 
-**Step 2**: Refine skeleton with:
-- Add detailed method calls
-- Add error handling with `alt`/`else`
-- Add loops for repetitive operations
-- Add notes to explain complex logic
+**Step 2**: Refine skeleton with semantic information:
+- Add detailed method calls with specific method names (e.g., "execute()", "validate()" instead of generic "request")
+- Add error handling branches using `alt`/`else` blocks where applicable
+- Add loops for repetitive operations using `loop` blocks
+- Add explanatory notes using `Note over` syntax for complex logic
 
 **Example**:
 ```mermaid
@@ -416,11 +462,16 @@ sequenceDiagram
 
 #### 3.5: Fill remaining placeholders and output
 
-1. **Read pre-filled template**: Read the template file created in Step 3.2 (already has 8/16 placeholders filled)
+1. **Read pre-filled template**: Use Read tool on the file created in Step 3.2
+   - File path: `.nabledge/YYYYMMDD/code-analysis-<target>.md`
+   - This file already contains 8/16 placeholders filled (deterministic content)
 
-2. **Fill remaining 8 placeholders** (LLM-generated content):
+2. **Construct complete content**: Build the full document content in memory by:
+   - Keeping all pre-filled content from Step 3.2 (8 deterministic placeholders)
+   - Replacing 8 remaining placeholders with generated content (see list below)
+   - Using refined skeletons from Step 3.3 for diagram placeholders
 
-   **Placeholders to fill** (use skeletons from Step 3.3 where applicable):
+   **Placeholders to fill** (LLM-generated content):
    - `{{DURATION_PLACEHOLDER}}`: Leave as-is (filled after Write completes in Step 5)
    - `{{overview_content}}`: Overview section (generate)
    - `{{dependency_graph}}`: Mermaid classDiagram (refine skeleton from Step 3.3)
@@ -430,7 +481,7 @@ sequenceDiagram
    - `{{components_details}}`: Detailed analysis (generate)
    - `{{nablarch_usage}}`: Framework usage with important points (generate)
 
-   **Already pre-filled (from Step 3.2, do NOT regenerate)**:
+   **Already pre-filled (from Step 3.2, keep as-is)**:
    - `{{target_name}}`: Target code name
    - `{{generation_date}}`: Current date
    - `{{generation_time}}`: Current time
@@ -440,9 +491,9 @@ sequenceDiagram
    - `{{knowledge_base_links}}`: Knowledge base links
    - `{{official_docs_links}}`: Official docs links
 
-   **Important**: For diagram placeholders, use refined skeletons from Step 3.3, NOT newly generated diagrams. This ensures consistency and maintains time savings.
+   **Important**: For diagram placeholders (`{{dependency_graph}}` and `{{flow_sequence_diagram}}`), retrieve refined skeletons from working memory (`CLASS_DIAGRAM_SKELETON` and `SEQUENCE_DIAGRAM_SKELETON` from Step 3.3). Do not generate new diagrams from scratch.
 
-3. **Verify template compliance**:
+3. **Verify template compliance** before writing:
    - All template sections present
    - Section order matches template
    - NO section numbers (1., 2., etc.)
@@ -452,16 +503,24 @@ sequenceDiagram
    - Knowledge base links included
    - Mermaid diagrams refined from skeletons (not regenerated)
 
-4. **Write file** using Write tool
-
-   **IMPORTANT**: Use Write tool to update the pre-filled template file (created in Step 3.2) with the 8 remaining placeholders filled.
+4. **Write complete file**: Use Write tool with full document content
+   - File path: Same as Step 3.2 (`.nabledge/YYYYMMDD/code-analysis-<target>.md`)
+   - Content: Complete document with all 16 placeholders filled (8 pre-filled + 8 generated)
+   - This will overwrite the pre-filled template from Step 3.2 with the complete version
+   - Write tool requires prior Read (already done in step 1)
 
    **Validation checkpoint**: Before proceeding to Step 5, verify:
    - Write operation succeeded (no error message)
+     - **If failed**: Report error to user, HALT workflow
    - Output file path matches expected location
+     - **If wrong path**: Report actual path to user, HALT workflow
    - File size is reasonable (typically 10-50 KB for code analysis docs)
+     - **If too small (<5 KB)**: Likely missing content, report to user, HALT workflow
+     - **If too large (>100 KB)**: Possible duplicate content, report to user, HALT workflow
 
 5. **Calculate duration and update file** (IMMEDIATE execution after Write):
+
+   **CRITICAL SEQUENCING**: Execute time calculation and file update in a single Bash tool call using `&&` to ensure no operations occur between them.
 
    Execute single bash script to fill duration placeholder:
    ```bash
@@ -513,12 +572,21 @@ sequenceDiagram
    - If sed fails (permission error, file locked, etc.), inform user of the calculated duration so they can manually edit the file
 
 6. **Inform user**: Show output path and actual duration
+6. **Inform user**: Show output path and actual duration
 
-**Expected time savings**:
+**Expected time savings** (with baseline context):
 - Pre-filled deterministic placeholders: ~25-30 seconds saved
+  - Baseline: ~40 seconds for manual placeholder filling
+  - With prefill: ~10 seconds (LLM only generates 8 remaining placeholders)
+  - Reduction: ~67% faster
 - Mermaid diagram skeletons: ~15-20 seconds saved
-- Total expected reduction: ~40-50 seconds
-- Target LLM generation time: ~45-55 seconds (down from ~100 seconds)
+  - Baseline: ~35 seconds for manual diagram creation from scratch
+  - With skeleton: ~15 seconds for refinement
+  - Reduction: ~57% faster
+- **Total expected reduction**: ~40-50 seconds
+  - **Baseline Step 3 execution**: ~100 seconds (LLM generation time)
+  - **Target LLM generation time**: ~45-55 seconds
+  - **Overall improvement**: ~55% reduction in LLM generation time
 
 **Output**: Documentation file at .nabledge/YYYYMMDD/code-analysis-<target-name>.md
 
