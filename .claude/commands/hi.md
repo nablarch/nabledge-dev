@@ -17,11 +17,12 @@ Execute full development workflow from issue/PR to review request.
    - If user selects "No, create new issue":
      ```bash
      # Ask user for issue details using AskUserQuestion
-     # - Title (required)
-     # - Situation (current state)
-     # - Pain (problem description)
-     # - Benefit (who benefits and how)
-     # - Success criteria (list of checkboxes)
+     # Follow format from .claude/rules/issues.md:
+     # - Title: "As a [role], I want [goal] so that [benefit]"
+     # - Situation (current state and observable facts)
+     # - Pain (who is affected and what problem)
+     # - Benefit (who benefits and how, use "[who] can [what]" format)
+     # - Success criteria (verifiable outcomes as checkboxes)
 
      # Create issue using gh CLI
      gh issue create \

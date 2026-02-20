@@ -310,7 +310,7 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 EOF
 )" \
   --base main \
-  --head issue-42
+  --head 42-add-validation
 ```
 
 **Execute PR Creation**:
