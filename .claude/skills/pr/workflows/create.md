@@ -71,40 +71,45 @@ git push
 
 **2.1 Get Issue Number**
 
-Check if branch follows `issue-<number>` naming convention:
+Check branch naming pattern to determine if issue number is required:
 
 ```bash
 if [[ "$current_branch" =~ ^issue-([0-9]+)$ ]]; then
+  # Issue-driven branch: extract issue number
   issue_number="${BASH_REMATCH[1]}"
   echo "Detected issue number from branch: #${issue_number}"
+elif [[ "$current_branch" =~ ^qf/ ]]; then
+  # Quick fix branch: no issue required
+  issue_number=""
+  echo "Quick fix branch detected: Issue number not required"
 else
+  # Unknown pattern: ask user
   issue_number=""
 fi
 ```
 
-If no issue number detected from branch name, use the AskUserQuestion tool to prompt the user:
+If no issue number detected and not a qf/ branch, use the AskUserQuestion tool to prompt the user:
 - Question: "What is the issue number this PR addresses?"
 - User must provide the issue number via text input
-- Issue number is required (issue-driven development standard)
+- Issue number is required for non-qf branches (issue-driven development standard)
 
 If user provides an issue number, validate it is numeric:
 
 ```bash
-if ! [[ "$issue_number" =~ ^[0-9]+$ ]]; then
-  echo "Error: Issue number must be a positive integer"
-  exit 1
-fi
-```
+if [[ -n "$issue_number" ]]; then
+  if ! [[ "$issue_number" =~ ^[0-9]+$ ]]; then
+    echo "Error: Issue number must be a positive integer"
+    exit 1
+  fi
 
-Then validate the issue exists:
-
-```bash
-if ! gh issue view "$issue_number" &>/dev/null; then
-  echo "Error: Issue #${issue_number} not found."
-  echo "Please create an issue first or verify the issue number."
-  exit 1
+  # Validate the issue exists
+  if ! gh issue view "$issue_number" &>/dev/null; then
+    echo "Error: Issue #${issue_number} not found."
+    echo "Please create an issue first or verify the issue number."
+    exit 1
+  fi
+  echo "Validated issue #${issue_number} exists"
 fi
-echo "Validated issue #${issue_number} exists"
 ```
 
 **2.2 Gather Information**
@@ -120,9 +125,14 @@ commits=$(git log "${target_branch}"..HEAD --format="%s%n%b")
 echo "Analyzing changes..."
 diff_stat=$(git diff "${target_branch}"...HEAD --stat)
 
-# Get issue body
-echo "Fetching issue details..."
-issue_body=$(gh issue view "$issue_number" --json body -q .body)
+# Get issue body if issue number exists
+if [[ -n "$issue_number" ]]; then
+  echo "Fetching issue details..."
+  issue_body=$(gh issue view "$issue_number" --json body -q .body)
+else
+  echo "No issue number: Skipping issue body fetch"
+  issue_body=""
+fi
 ```
 
 **2.3 Load PR Template**
@@ -169,10 +179,19 @@ Analyze commits to generate appropriate PR title:
 Replace each placeholder in the loaded template:
 
 **Step 1: Replace [ISSUE_NUMBER]**
+
+If issue_number exists:
 ```
 Closes #[ISSUE_NUMBER]
 ↓
 Closes #42
+```
+
+If issue_number is empty (qf/ branch):
+```
+Closes #[ISSUE_NUMBER]
+↓
+(Remove this line entirely)
 ```
 
 **Step 2: Replace [Describe the solution...]**
@@ -202,6 +221,8 @@ Closes #42
 - Leave all status fields as "⚪ Not Reviewed"
 
 **Step 5: Replace Success Criteria Section**
+
+If issue_body exists (issue-driven development):
 - Parse issue_body to extract success criteria
 - Look for lines starting with `- [ ]` or `- [x]` under "Success Criteria" heading
 - For each criterion, create a table row:
@@ -215,6 +236,9 @@ Closes #42
   | Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
   | Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
   ```
+
+If issue_body is empty (qf/ branch):
+- Omit the Success Criteria Check section entirely
 
 **Step 6: Add Attribution**
 - Keep the attribution line at the end:
@@ -346,8 +370,9 @@ Display the PR URL and guide user to review on GitHub:
 | No commits | Guide to commit changes first |
 | Push failure | `git pull --rebase` and retry push |
 | Authentication error | Authenticate with `gh auth login` |
-| Issue not found | Create issue first (required for issue-driven development) |
-| No issue number provided | Prompt user for issue number (required) |
+| Issue not found (issue-XXX branch) | Create issue first (required for issue-driven development) |
+| No issue number provided (non-qf branch) | Prompt user for issue number (required) |
+| qf/ branch without description | Use commit messages to generate PR description |
 
 ## Notes
 
@@ -359,4 +384,7 @@ Display the PR URL and guide user to review on GitHub:
 6. **Variable Syntax**: Always use `${variable}` or `"$variable"` in bash commands for safety
 7. **PR Template**: Use `.claude/skills/pr/templates/pr-template.md` for consistent formatting
 8. **Review Flow**: After PR creation, user reviews on GitHub and can request changes from the AI agent
-9. **Issue Required**: All PRs must reference a GitHub issue (issue-driven development standard)
+9. **Issue Policy**:
+   - `issue-XXX` branches: GitHub issue required (issue-driven development)
+   - `qf/` branches: Issue optional (quick fixes)
+   - Other branches: Prompt user for issue number
