@@ -1,5 +1,11 @@
 # Language Guidelines
 
+## Context
+
+**Target users**: Japanese developers working on Nablarch projects
+
+**Rationale**: nabledge-x skills serve Japanese Nablarch users, requiring Japanese user-facing messages while maintaining English for technical documentation.
+
 ## Quick Reference
 
 | Content Type | Language | Examples |
