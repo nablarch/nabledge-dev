@@ -8,6 +8,24 @@ This workflow creates a PR from the current branch to the main branch.
 - Read
 - AskUserQuestion
 
+## Variable State Reference
+
+This section tracks all key variables used throughout the workflow and their possible states.
+
+| Variable | Set By | Possible Values | Used In |
+|----------|--------|-----------------|---------|
+| current_branch | Step 1.1 | Any string (e.g., "74-as-a-developer", "feature-auth") | Push, PR creation, display |
+| target_branch | Step 1.2 | "main" or default branch name | PR target, git log, git diff |
+| issue_number | Step 2.1 | "42" (valid) or "" (fallback when extraction fails) | Title generation, PR body placeholders, expert review paths, display |
+| issue_body | Step 2.2 | Issue description text or "" (empty when no issue) | Success criteria extraction |
+| commits | Step 2.2 | Git commit messages | Title generation, task list |
+| diff_stat | Step 2.2 | Git diff statistics | Approach description |
+| generated_title | Step 2.4 | PR title string (max 70 chars, with or without issue number) | PR creation, display |
+| generated_description | Step 2.5 | PR body markdown (with conditional sections based on issue_number) | PR creation |
+| pr_url | Step 3 | GitHub PR URL | Display |
+
+**Note**: The `issue_number` variable is critical for conditional logic. When empty (""), the workflow gracefully degrades by omitting issue-specific sections.
+
 ## Execution Steps
 
 ### 1. Pre-flight Checks
@@ -71,7 +89,7 @@ git push
 
 **2.1 Get Issue Number**
 
-Extract issue number from branch name (required):
+Extract issue number from branch name (recommended format: `{number}-{description}`):
 
 ```bash
 if [[ "$current_branch" =~ ^([0-9]+)- ]]; then
@@ -162,15 +180,18 @@ Analyze commits to generate appropriate PR title:
 2. If multiple commits: Identify common theme across commit messages
 3. If commit messages unclear (e.g., "fix", "update"): Analyze diff to determine primary change type
 4. Format: `<type>: <description> (#{issue_number})` where type is one of: feat, fix, refactor, docs, test, chore
-5. Issue number appending and length handling: See "Issue Number Handling" and "Title Generation Process" sections below
-6. Total length MUST be under 70 characters
+5. Issue number is appended automatically if extracted in step 2.1; if extraction failed, title has no issue number suffix
+6. Total length MUST be under 70 characters; truncate description with "..." if needed
 
 **Title Generation Process**:
 1. Generate base title from commits: `<type>: <description>`
-2. If issue_number is not empty: Append issue number: `<type>: <description> (#{issue_number})`
-3. If issue_number is empty: Keep base title: `<type>: <description>`
-4. If total length > 70 characters, truncate description part and add "..." before issue number (if present)
-5. Example truncation: "feat: Add comprehensive JWT authentication middleware with refresh tokens" + " (#123)" (76 chars)
+2. Check if `issue_number` variable is set and non-empty (`[[ -n "$issue_number" ]]`):
+   - If true: Append ` (#{issue_number})` to base title → `<type>: <description> (#{issue_number})`
+   - If false: Use base title as-is → `<type>: <description>`
+3. Check if total length > 70 characters:
+   - If true: Truncate description part and add "..." before issue number (if present)
+   - If false: Use title as-is
+4. Example truncation: "feat: Add comprehensive JWT authentication middleware with refresh tokens" + " (#123)" (76 chars)
    → "feat: Add comprehensive JWT authentication with... (#123)" (62 chars)
 
 **When to Use Commit Message as Base**:
@@ -200,12 +221,18 @@ Replace each placeholder in the loaded template:
 
 **Step 1: Replace [ISSUE_NUMBER]**
 
-Replace with the issue number:
-```
-Closes #[ISSUE_NUMBER]
-↓
-Closes #42
-```
+Check if `issue_number` is set and non-empty:
+
+If issue_number is not empty:
+  Replace with the issue number:
+  ```
+  Closes #[ISSUE_NUMBER]
+  ↓
+  Closes #42
+  ```
+
+If issue_number is empty:
+  Remove the "Closes #[ISSUE_NUMBER]" line entirely from PR body
 
 **Step 2: Replace [Describe the solution...]**
 - Summarize the approach from commit message bodies
@@ -232,9 +259,10 @@ Closes #42
 **Step 4: Replace Expert Review Section**
 
 Replace with links to expert review files from `/hi` step 8:
-- Expert reviews are saved in `.pr/{issue_number}/review-by-{expert-role}.md`
-- List each expert with their rating
-- Example output:
+
+If issue_number is not empty:
+  Expert reviews are saved in `.pr/{issue_number}/review-by-{expert-role}.md`
+  Example output:
   ```
   ## Expert Review
 
@@ -242,6 +270,18 @@ Replace with links to expert review files from `/hi` step 8:
 
   - [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
   - [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+  ```
+
+If issue_number is empty:
+  Expert reviews are saved in `.pr/{current_branch}/review-by-{expert-role}.md`
+  Example output:
+  ```
+  ## Expert Review
+
+  AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
+
+  - [Software Engineer](../.pr/feature-auth-refactor/review-by-software-engineer.md) - Rating: 4/5
+  - [Prompt Engineer](../.pr/feature-auth-refactor/review-by-prompt-engineer.md) - Rating: 5/5
   ```
 
 **Step 5: Replace Success Criteria Section**
@@ -294,6 +334,33 @@ AI-driven expert reviews conducted before PR creation (see \`.claude/rules/exper
 | Users can log in with username and password | ✅ Met | Login form implemented in auth.component.tsx:45 |
 | Session persists across page reloads | ✅ Met | JWT stored in localStorage, verified in session.test.js:78 |
 | Invalid credentials show error message | ✅ Met | Error handling tested in auth.test.js:92 |
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+**Example Without Issue Number** (when branch name doesn't include issue number):
+```markdown
+## Approach
+Refactored authentication logic to improve code maintainability and testability.
+
+## Tasks
+- [x] Extract authentication logic to separate module
+- [x] Add unit tests for authentication module
+- [x] Update documentation
+
+## Expert Review
+
+AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
+
+- [Software Engineer](../.pr/feature-auth-refactor/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](../.pr/feature-auth-refactor/review-by-qa-engineer.md) - Rating: 4/5
+
+## Success Criteria Check
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| Authentication logic is modular | ✅ Met | Extracted to auth.module.ts:15 |
+| Unit test coverage > 80% | ✅ Met | Coverage report shows 85% in auth.test.ts |
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
@@ -370,7 +437,7 @@ echo "**PR**: ${pr_url}"
 echo "**Branch**: ${current_branch} → ${target_branch}"
 echo "**Title**: ${generated_title}"
 
-# Display issue number if present
+# Only show issue link if branch followed {number}-{description} format
 if [[ -n "$issue_number" ]]; then
   echo "**Issue**: #${issue_number}"
 fi
@@ -382,6 +449,8 @@ echo "   If any changes are needed, let me know and I will update it."
 
 ## Error Handling
 
+**Behavior**: Exit workflow with error message and guide user to fix the issue before retrying.
+
 | Error | Response |
 |-------|----------|
 | Execute from main/master branch | Guide to execute from issue-based branch |
@@ -391,6 +460,8 @@ echo "   If any changes are needed, let me know and I will update it."
 | Issue not found | Create issue first (required for issue-driven development) |
 
 ## Warnings
+
+**Behavior**: Display warning message and continue workflow with graceful degradation.
 
 | Warning | Behavior |
 |---------|----------|
