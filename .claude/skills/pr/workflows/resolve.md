@@ -44,24 +44,64 @@ Options:
 
 ### 2. Get Unresolved Review Comments
 
-**2.1 Get Review Comments**
+**2.1 Get Repository Information**
 
-```bash
-gh api "repos/{owner}/{repo}/pulls/$pr_number/comments" --jq '.[] | select(.in_reply_to_id == null)'
-```
-
-Get repository owner and name:
 ```bash
 owner=$(gh repo view --json owner -q .owner.login)
 repo=$(gh repo view --json name -q .name)
 ```
 
-**2.2 Filtering**
+**2.2 Get All Review Comments with Pagination**
+
+**CRITICAL**: Must use pagination to get ALL comments. GitHub API returns 30 items by default.
+
+```bash
+# Get all comments with pagination
+page=1
+all_comments=""
+while true; do
+  page_comments=$(gh api "repos/$owner/$repo/pulls/$pr_number/comments?per_page=100&page=$page")
+  count=$(echo "$page_comments" | jq 'length')
+
+  if [ "$count" -eq 0 ]; then
+    break
+  fi
+
+  if [ -z "$all_comments" ]; then
+    all_comments="$page_comments"
+  else
+    all_comments=$(jq -s '.[0] + .[1]' <(echo "$all_comments") <(echo "$page_comments"))
+  fi
+
+  page=$((page + 1))
+done
+
+echo "Total comments retrieved: $(echo "$all_comments" | jq 'length')"
+```
+
+**2.3 Filtering Unresolved Comments**
 
 Extract only comments meeting these conditions:
 - Not a reply (no `in_reply_to_id`)
 - Has not been replied to yet (check if comment has replies)
 - Not outdated (`original_position` should exist or match `position`)
+
+```bash
+# Get parent comments (top-level)
+parent_comments=$(echo "$all_comments" | jq '[.[] | select(.in_reply_to_id == null)]')
+
+# Filter out comments that already have replies
+unresolved_comments=()
+for parent_id in $(echo "$parent_comments" | jq -r '.[].id'); do
+  has_reply=$(echo "$all_comments" | jq --arg pid "$parent_id" '[.[] | select(.in_reply_to_id == ($pid | tonumber))] | length > 0')
+
+  if [ "$has_reply" = "false" ]; then
+    unresolved_comments+=("$parent_id")
+  fi
+done
+
+echo "Unresolved comments: ${#unresolved_comments[@]}"
+```
 
 If 0 unresolved comments:
 ```
@@ -194,9 +234,57 @@ After fixing, mark review thread as resolved:
 echo "Please request reviewer to resolve threads"
 ```
 
-### 5. Summary
+### 5. Verification
 
-After processing all comments, display summary:
+**CRITICAL**: After posting all replies, verify that all parent comments have replies:
+
+```bash
+# Get all comments with pagination
+page=1
+all_comments=""
+while true; do
+  page_comments=$(gh api "repos/$owner/$repo/pulls/$pr_number/comments?per_page=100&page=$page")
+  count=$(echo "$page_comments" | jq 'length')
+
+  if [ "$count" -eq 0 ]; then
+    break
+  fi
+
+  if [ -z "$all_comments" ]; then
+    all_comments="$page_comments"
+  else
+    all_comments=$(jq -s '.[0] + .[1]' <(echo "$all_comments") <(echo "$page_comments"))
+  fi
+
+  page=$((page + 1))
+done
+
+# Check each parent comment has replies
+parent_comments=$(echo "$all_comments" | jq '[.[] | select(.in_reply_to_id == null)]')
+unresolved=()
+
+for parent_id in $(echo "$parent_comments" | jq -r '.[].id'); do
+  has_reply=$(echo "$all_comments" | jq --arg pid "$parent_id" '[.[] | select(.in_reply_to_id == ($pid | tonumber))] | length > 0')
+
+  if [ "$has_reply" = "false" ]; then
+    unresolved+=("$parent_id")
+  fi
+done
+
+if [ ${#unresolved[@]} -gt 0 ]; then
+  echo "WARNING: ${#unresolved[@]} parent comments still have no replies:"
+  for id in "${unresolved[@]}"; do
+    comment_info=$(echo "$parent_comments" | jq --arg id "$id" '.[] | select(.id == ($id | tonumber)) | {id: .id, path: .path, body: .body[0:100]}')
+    echo "$comment_info"
+  done
+  echo ""
+  echo "Please investigate why replies were not posted."
+fi
+```
+
+### 6. Summary
+
+After verification, display summary:
 
 ```
 ## PR Review Response Complete
@@ -207,6 +295,7 @@ After processing all comments, display summary:
 - Fixed and replied: {n} items
 - Asked questions and replied: {n} items
 - Skipped: {n} items
+- Verified: All parent comments have replies
 
 Please request reviewer to resolve threads
 ```
