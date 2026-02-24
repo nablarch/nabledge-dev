@@ -62,6 +62,28 @@ This allows:
 - Users can test unreleased features from the develop branch
 - Clear separation: nabledge-dev for development, nabledge for distribution
 
+### Testing Development Version
+
+To test the latest development version from `nablarch/nabledge:develop`:
+
+1. **Set environment variables:**
+   ```bash
+   export CLAUDE_CC_PLUGINS_BASE_DIR=~/.local/share/claude-code/plugins
+   export CLAUDE_CC_PLUGINS_DEV_DIR=~/.local/share/claude-code/plugins/dev
+   ```
+
+2. **Install from develop branch:**
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-cc.sh | bash
+   ```
+
+3. **Verify installation:**
+   ```bash
+   claude-code
+   # In Claude Code session:
+   /nabledge-6
+   ```
+
 ### Release Procedure
 
 Releases are managed in the **[nablarch/nabledge](https://github.com/nablarch/nabledge)** repository, not here.
