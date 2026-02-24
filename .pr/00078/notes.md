@@ -96,3 +96,93 @@ Content verification (`verify-mapping-6`) should run in a **separate session** t
 2. **Importance of uniqueness**: Target path generation must consider full context, not just immediate parent
 3. **Deterministic algorithms work**: Reproducibility achieved by avoiding timestamps, random values, or unstable sorting
 4. **Validation catches errors**: Multi-layered validation (structure → taxonomy → duplicates → format) caught all issues before manual review
+
+## 2026-02-24: Knowledge File Validation Fixes
+
+### Problem: Initial Validation Errors
+
+17 knowledge files generated with 10 errors across 9 files (53% error rate):
+- 7 "section IDs not in index" errors (70% of all errors)
+- 1 invalid URL format error
+- 1 ID mismatch with filename error
+- 1 missing overview section error
+
+### Solution: Iterative Fix Approach
+
+User suggested type-by-type iterative approach instead of generating all 154 files at once. This proved effective:
+
+1. Analyze patterns across all errors first
+2. Fix by error type, not by file
+3. Document patterns for future prevention
+4. Validate immediately after fixes
+
+### Fixes Applied
+
+**Released/6u3.json → release-6u3.json** (5 min):
+- Renamed file to match ID field
+- Simple filename convention issue
+
+**overview.json** (15 min):
+- Added missing required `overview` section
+- Every file needs overview regardless of file type
+
+**7 files with missing index entries** (2 hours):
+- Added 83 hints across 14 missing sections
+- Libraries most affected (9 missing sections across 3 files)
+- Root cause: Agent creates sections but forgets index entries
+
+**security.json URL** (20 min):
+- Replaced relative path with GitHub raw URL
+- Found published URL via Fintan documentation site
+
+### Results
+
+**Before**: 10 errors, 52 warnings
+**After**: 0 errors, 56 warnings ✅
+
+All critical errors eliminated. Remaining warnings are quality suggestions (section sizes, optional fields).
+
+### Documentation Created
+
+- `.pr/00078/validation-error-analysis.md` - Root cause analysis of 4 error patterns
+- `.pr/00078/validation-success-summary.md` - Fix summary and verification
+- `.pr/00078/knowledge-generation-patterns.md` - Patterns for scaling to 154 files (see [knowledge-generation-patterns.md](./knowledge-generation-patterns.md) for complete pattern documentation)
+
+### Decision: Iterative Approach Validated
+
+Initial concern was whether to:
+1. Complete all 154 files before PR
+2. Fix existing files and create PR with foundation
+
+User's suggestion to fix iteratively by type first proved correct:
+- Identified systematic issues (index-section sync)
+- Documented clear patterns for each category
+- Created reusable fix strategies
+- Achieved 0 errors baseline
+
+### Next Steps
+
+Foundation is solid (17 files, 0 errors, reproducible process). Ready for PR with:
+- Phase 1: Mapping workflow (270 files mapped, validated, reproducible)
+- Phase 2: Knowledge workflow (17 files generated, 0 errors, patterns documented)
+- Clear scaling strategy for remaining 137 files
+
+### Learning: Index-Section Synchronization
+
+**Critical pattern** (70% of errors): Sections exist without index entries
+
+**Root cause**: Sequential workflow
+```
+1. Create sections object
+2. Add content to sections
+3. (Sometimes forget) Create index entries
+```
+
+**Prevention**: Synchronous workflow
+```
+1. Create section content
+2. Immediately create index entry
+3. Validate before moving to next section
+```
+
+This pattern applies universally across all knowledge file types.
