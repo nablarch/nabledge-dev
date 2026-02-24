@@ -242,40 +242,13 @@ Processing Pattern (PP) is assigned ONLY when:
 
 ### PP Assignment Logic
 
-If Type is `processing-pattern`:
-- PP = Category ID (same value)
+**Processing Pattern is NOT assigned by path-based classification.**
 
-If Type is `component` and Category is `handlers`:
-- If path contains `/batch/` → PP = `nablarch-batch`
-- If path contains `/http_messaging/` → PP = `http-messaging`
-- If path contains `/mom_messaging/` → PP = `mom-messaging`
-- If path contains `/rest/` → PP = `restful-web-service`
-- If path contains `/web/` → PP = `web-application`
-- If path contains `/web_service/` → PP = `http-messaging`
-- If path contains `/messaging/` → PP = `db-messaging`
-- If path contains `/standalone/` → PP = `nablarch-batch` (needs content verification)
-- If path contains `/common/` → PP = empty (common handlers)
+**All PP fields are empty in initial generation.**
 
-If Type is `component` and Category is `libraries`:
-- If path contains `jaxrs_access_log` → PP = `restful-web-service`
-- Otherwise → PP = empty (general-purpose libraries)
+PP assignment is done in a separate step by reading file content. See `content-judgement.md` for PP assignment rules based on content indicators.
 
-If Type is `development-tools` and Category is `testing-framework`:
-- If path contains `/batch.rst` → PP = `nablarch-batch`
-- If path contains `/rest.rst` → PP = `restful-web-service`
-- If path contains `/real.rst` or `/send_sync.rst` or `/delayed_receive.rst` or `/delayed_send.rst` (messaging tests):
-  - If path contains `/http_` → PP = `http-messaging`
-  - Otherwise → PP = `mom-messaging`
-- Otherwise → PP = empty (general testing tools)
-
-If Type is `setup` and Category is `blank-project`:
-- If filename contains `Jbatch` → PP = `jakarta-batch`
-- If filename contains `NablarchBatch` → PP = `nablarch-batch`
-- If filename contains `Web.rst` (not WebService) → PP = `web-application`
-- If filename contains `WebService` → PP = `restful-web-service`
-- Otherwise → PP = empty
-
-All other cases → PP = empty
+**Exception**: If Type is `processing-pattern`, PP = Category ID (same value) because the file itself defines a processing pattern.
 
 ## Confidence Levels
 

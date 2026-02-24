@@ -4,7 +4,7 @@ Generate documentation mapping from Nablarch official documentation to nabledge 
 
 ## Workflow Steps
 
-### Step 1: Generate Mapping
+### Step 1: Generate Base Mapping (Path-based Classification Only)
 
 Execute the following command:
 
@@ -14,14 +14,58 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping.py v6
 
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v6.md`
 
+**What this step does**:
+- Classifies Type and Category based on path patterns only
+- Does NOT assign Processing Pattern (all PP fields are empty initially)
+- Reports review items for files where path-based classification is uncertain
+
 **Exit codes**:
 - 0: Completed successfully (no review items)
-- 1: Completed with review items (proceed to Step 4)
+- 1: Completed with review items (proceed to Step 5)
 - 2: Script error (fix and re-run)
 
-If exit code is 1, review items will be printed to stdout in JSON format. Proceed to Step 4 to resolve them.
+If exit code is 1, review items will be printed to stdout in JSON format. Proceed to Step 5 to resolve them.
 
-### Step 2: Validate Mapping
+### Step 2: Assign Processing Patterns (Content-based)
+
+**Critical**: This step reads file content to determine Processing Pattern for ALL files.
+
+**Processing Pattern MUST be determined by reading content, NOT by path patterns.**
+
+**Approach**:
+
+1. **Identify files requiring PP assignment**:
+   - Read current mapping file
+   - List all files by Type and Category
+   - Focus on: development-tools/*, component/libraries, component/handlers
+
+2. **For each file, read content and assign PP**:
+   - Read source RST file (first 50-100 lines)
+   - Apply rules from `references/content-judgement.md`
+   - Look for indicators in title, first paragraph, examples
+   - Assign PP based on content, NOT path
+
+3. **Document assignments**:
+   - Create assignment list with reasoning
+   - File path → PP → Reason (indicators found)
+
+4. **Update generate-mapping.py**:
+   - Add content-reading logic
+   - Implement PP assignment based on content indicators
+   - Ensure reproducibility (deterministic rules)
+
+**Key categories requiring content reading**:
+- `development-tools/testing-framework` (48 files) - Read title to identify pattern
+- `development-tools/toolbox` (6 files) - Read what the tool targets
+- `component/libraries` (49 files) - Read if pattern-specific
+- `component/handlers` (specific cases) - Read if pattern-specific
+
+**Expected outcome**:
+- All files have PP assigned based on content
+- Assignment rules documented in classification.md
+- generate-mapping.py implements content-based logic
+
+### Step 3: Validate Mapping
 
 Execute the following command:
 
@@ -37,7 +81,7 @@ If any check fails:
 3. Fix the rule
 4. Return to Step 1
 
-### Step 3: Export to Excel
+### Step 4: Export to Excel
 
 Execute the following command:
 
@@ -49,7 +93,7 @@ python .claude/skills/nabledge-creator/scripts/export-excel.py .claude/skills/na
 
 This Excel file is for human review and is not used in automated workflows.
 
-### Step 4: Resolve Review Items
+### Step 5: Resolve Review Items
 
 Execute this step ONLY if Step 1 reported review items (exit code 1).
 
@@ -71,7 +115,7 @@ Review items are files where path-based classification was insufficient. For eac
 
 Do NOT guess. If the classification is genuinely ambiguous, human judgment is required.
 
-### Step 5: Generate Verification Checklist
+### Step 6: Generate Verification Checklist
 
 Execute the following command:
 
@@ -81,7 +125,7 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py .cl
 
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v6.checklist.md`
 
-This checklist is used in the verification session (`verify-mapping-6` workflow) to confirm classification accuracy by reading RST content.
+This checklist is used in the verification session (`verify-mapping-6` workflow) to confirm classification accuracy (including Processing Pattern) by reading RST content.
 
 ## Generation Session Complete
 

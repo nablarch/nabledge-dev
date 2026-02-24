@@ -29,20 +29,36 @@ The checklist contains sampled rows from the mapping that require content verifi
 For each row in the checklist's "Classification Check" section:
 
 1. **Read RST source**:
-   - Read the first 50 lines of the RST file specified in Source Path
+   - Read the first 50-100 lines of the RST file specified in Source Path
    - If the file contains `toctree` directives, read those referenced files as well
    - Read any files that reference this file (check `:ref:` and `toctree` in parent directories)
 
-2. **Verify classification**:
-   - Check if the content matches the assigned Type, Category ID, and Processing Pattern
+2. **Verify Type and Category**:
+   - Check if the content matches the assigned Type and Category ID
    - Determine which rule in `.claude/skills/nabledge-creator/references/classification.md` produced this classification
    - Confirm the rule matches the actual content
 
-3. **Record result**:
+3. **Verify Processing Pattern** (Critical):
+   - **Processing Pattern MUST be verified by reading content**
+   - Apply rules from `.claude/skills/nabledge-creator/references/content-judgement.md`
+   - Look for indicators in:
+     - Title (does it mention a specific processing pattern?)
+     - First paragraph (what does this file describe?)
+     - Code examples (what APIs are used?)
+     - Section headers (what scenarios are covered?)
+   - Confirm PP assignment matches content indicators
+   - **Common patterns to check**:
+     - development-tools/testing-framework: Title mentions "バッチ", "RESTful", "Messaging", etc.
+     - development-tools/toolbox: Tool targets specific pattern (e.g., JSP → web-application)
+     - component/libraries: Title includes "用" suffix indicating pattern-specific (e.g., "RESTful Web Service用")
+     - component/handlers: Path suggests pattern (e.g., `/rest/` → restful-web-service)
+
+4. **Record result**:
    - If classification is correct: Mark ✓
    - If classification is incorrect: Mark ✗ and record the correct classification
+   - For PP errors, note what indicators were found vs what was assigned
 
-**Do NOT skip this step**. Reading the actual content is the only way to catch path-based classification errors.
+**Do NOT skip this step**. Reading the actual content is the only way to catch classification errors, especially for Processing Pattern which cannot be determined by path alone.
 
 ### Step VM3: Verify Target Paths (Sampled Rows)
 

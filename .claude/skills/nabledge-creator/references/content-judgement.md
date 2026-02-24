@@ -154,6 +154,172 @@ Overrides should have `confirmed` confidence ONLY when:
 
 ## Processing Pattern Assignment
 
+**General Principle**:
+
+**Processing Pattern MUST be determined by reading file content, NOT by path patterns.**
+
+Path can suggest category, but actual processing pattern depends on what the file describes.
+
+### For development-tools/testing-framework Files
+
+Path: `development_tools/testing_framework/**`
+
+**Read strategy**:
+1. Read first 50-100 lines
+2. Look for processing pattern indicators in:
+   - Title (what type of test is this?)
+   - First paragraph (what does this test?)
+   - Code examples (what classes/handlers are used?)
+   - Section headers (what scenarios are covered?)
+
+**Indicators**:
+
+**nablarch-batch**:
+- Title mentions "バッチ" or "Batch"
+- Content describes batch action classes
+- Examples use `BatchAction`, `DataReader`
+- Test data setup for batch processing
+
+**web-application**:
+- Title mentions "ウェブアプリケーション" or "Web Application"
+- Content describes web form handlers
+- Examples use Jakarta Server Pages, form validation
+- Test scenarios involve HTTP requests/responses for web applications
+
+**restful-web-service**:
+- Title mentions "RESTful" or "REST"
+- Content describes JAX-RS resources
+- Examples use `@Path`, `@GET`, `@POST` annotations
+- Test scenarios involve REST API calls
+
+**mom-messaging**:
+- Title mentions "メッセージング" or "Messaging" WITHOUT "HTTP"
+- Content describes MOM (Message-Oriented Middleware)
+- Examples use `RequestMessage`, messaging actions
+- Test data involves queue/topic operations
+
+**http-messaging**:
+- Title mentions "HTTP" AND "メッセージング"/"Messaging"
+- Content describes HTTP-based messaging
+- Examples use HTTP messaging handlers
+- Test scenarios involve HTTP synchronous/asynchronous messaging
+
+**Empty (no PP assignment)**:
+- Title mentions general testing concepts
+- Content applies to multiple processing patterns
+- No specific pattern indicators
+- Generic test framework functionality
+
+**Examples**:
+
+```rst
+リクエスト単体テストの実施方法(バッチ)
+========================================
+This explains how to test batch applications...
+```
+→ PP = `nablarch-batch`
+
+```rst
+How to execute a request unit test
+===================================
+This explains how to test RESTful web services...
+```
+→ PP = `restful-web-service`
+
+```rst
+Testing Framework Overview
+===========================
+This explains the general testing architecture...
+```
+→ PP = empty (general-purpose)
+
+### For development-tools/toolbox Files
+
+Path: `development_tools/toolbox/**`
+
+**Read strategy**:
+1. Read first 50-100 lines
+2. Look for target application type:
+   - What does this tool analyze/generate?
+   - What type of application uses this tool?
+   - What processing pattern-specific files does it handle?
+
+**Indicators**:
+
+**web-application**:
+- Tool name includes "JSP", "Jakarta Server Pages"
+- Content describes web application artifacts
+- Examples show web application usage
+- → PP = `web-application`
+
+**restful-web-service**:
+- Tool name includes "REST", "OpenAPI"
+- Content describes REST API artifacts
+- Examples show REST endpoint usage
+- → PP = `restful-web-service`
+
+**Empty (no PP assignment)**:
+- Tool applies to multiple patterns
+- General-purpose development tool
+- No specific pattern mentioned
+
+**Examples**:
+
+```rst
+Jakarta Server Pages静的解析ツール
+==================================
+This tool checks JSP syntax...
+```
+→ PP = `web-application` (JSP is web-application only)
+
+```rst
+コード生成ツール
+================
+This tool generates Java classes from database schema...
+```
+→ PP = empty (general-purpose tool)
+
+### For component/libraries Files
+
+Path: `application_framework/application_framework/libraries/**`
+
+**Read strategy**:
+1. Read first 50-100 lines
+2. Check if library is pattern-specific:
+   - Title mentions specific processing pattern?
+   - Content describes pattern-specific usage?
+   - Examples show pattern-specific scenarios?
+
+**Indicators**:
+
+**Processing pattern-specific**:
+- Title includes pattern name (e.g., "RESTful Web Service用", "for RESTful Web Service")
+- Content explicitly states pattern requirement
+- Examples only work in specific pattern
+- → PP = corresponding pattern
+
+**General-purpose**:
+- No pattern mentioned in title
+- Content describes general-purpose functionality
+- Examples apply to multiple patterns
+- → PP = empty
+
+**Examples**:
+
+```rst
+HTTPアクセスログ（RESTfulウェブサービス用）の出力
+==============================================
+This library outputs access logs for RESTful web services...
+```
+→ PP = `restful-web-service` (explicitly stated in title)
+
+```rst
+文字列ユーティリティ
+====================
+This library provides string manipulation utilities...
+```
+→ PP = empty (general-purpose)
+
 ### For setup/blank-project Files
 
 Read filename and first section:

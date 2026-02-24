@@ -234,27 +234,13 @@ def classify_by_path(file_info: Dict) -> Dict:
 
     # Libraries
     if path_for_matching.startswith('application_framework/application_framework/libraries/'):
-        pp = ''
-        if 'jaxrs_access_log' in path_for_matching:
-            pp = 'restful-web-service'
-        return {'type': 'component', 'category': 'libraries', 'pp': pp, 'confidence': 'confirmed'}
+        # Processing Pattern is NOT assigned by path - will be assigned in separate step by reading content
+        return {'type': 'component', 'category': 'libraries', 'pp': '', 'confidence': 'confirmed'}
 
     # Development tools
     if path_for_matching.startswith('development_tools/testing_framework/'):
-        pp = ''
-        # Pattern-specific testing files
-        if '/batch.rst' in path_for_matching:
-            pp = 'nablarch-batch'
-        elif '/rest.rst' in path_for_matching:
-            pp = 'restful-web-service'
-        elif path_for_matching.endswith(('real.rst', 'send_sync.rst', 'delayed_receive.rst', 'delayed_send.rst')):
-            # HTTP messaging tests (http_real.rst, http_send_sync.rst, etc.)
-            if '/http_' in path_for_matching or 'http_real' in path_for_matching or 'http_send' in path_for_matching:
-                pp = 'http-messaging'
-            # MOM messaging tests (real.rst, send_sync.rst, etc.)
-            else:
-                pp = 'mom-messaging'
-        return {'type': 'development-tools', 'category': 'testing-framework', 'pp': pp, 'confidence': 'confirmed'}
+        # Processing Pattern is NOT assigned by path - will be assigned in separate step by reading content
+        return {'type': 'development-tools', 'category': 'testing-framework', 'pp': '', 'confidence': 'confirmed'}
     elif path_for_matching.startswith('development_tools/toolbox/'):
         return {'type': 'development-tools', 'category': 'toolbox', 'pp': '', 'confidence': 'confirmed'}
     elif path_for_matching.startswith('development_tools/java_static_analysis/'):
@@ -277,6 +263,9 @@ def verify_classification(classification: Dict, file_info: Dict) -> Dict:
     """
     Verify classification by reading content.
     All files are read to catch the ~14% misclassified by path patterns.
+
+    NOTE: Processing Pattern is NOT assigned in this function.
+    PP assignment is done in a separate step by reading file content.
     """
     if classification['confidence'] == 'confirmed':
         # Even confirmed classifications need spot checking
@@ -284,14 +273,11 @@ def verify_classification(classification: Dict, file_info: Dict) -> Dict:
         return classification
 
     if classification['confidence'] == 'needs_content':
-        # Read content and try to confirm
+        # Read content and try to confirm Type/Category (NOT Processing Pattern)
         content = read_rst_content(file_info['abs_path'])
-        # Simple heuristics for standalone handlers
-        if 'batch' in content.lower() or 'DataReader' in content:
-            classification['pp'] = 'nablarch-batch'
-            classification['confidence'] = 'confirmed'
-        else:
-            classification['confidence'] = 'review'
+        # Content verification logic here (if needed for Type/Category)
+        # Do NOT assign PP here
+        classification['confidence'] = 'review'
         return classification
 
     if classification['confidence'] == 'unknown':
