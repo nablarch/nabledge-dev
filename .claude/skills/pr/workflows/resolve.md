@@ -56,51 +56,59 @@ repo=$(gh repo view --json name -q .name)
 **CRITICAL**: Must use pagination to get ALL comments. GitHub API returns 30 items by default.
 
 ```bash
-# Get all comments with pagination
-page=1
-all_comments=""
-while true; do
-  page_comments=$(gh api "repos/$owner/$repo/pulls/$pr_number/comments?per_page=100&page=$page")
-  count=$(echo "$page_comments" | jq 'length')
-
-  if [ "$count" -eq 0 ]; then
-    break
-  fi
-
-  if [ -z "$all_comments" ]; then
-    all_comments="$page_comments"
-  else
-    all_comments=$(jq -s '.[0] + .[1]' <(echo "$all_comments") <(echo "$page_comments"))
-  fi
-
-  page=$((page + 1))
-done
+# Get all comments with automatic pagination
+all_comments=$(gh api --paginate "repos/$owner/$repo/pulls/$pr_number/comments")
 
 echo "Total comments retrieved: $(echo "$all_comments" | jq 'length')"
 ```
 
 **2.3 Filtering Unresolved Comments**
 
-Extract only comments meeting these conditions:
-- Not a reply (no `in_reply_to_id`)
-- Has not been replied to yet (check if comment has replies)
-- Not outdated (`original_position` should exist or match `position`)
+**IMPORTANT**: Extract ALL comments from reviewers that don't have replies yet.
+
+This includes:
+- Parent comments (top-level review comments)
+- Child comments (replies within threads from reviewers)
+- Both initial comments and follow-up comments
+
+Exclude only:
+- AI agent's own comments (bot replies)
 
 ```bash
-# Get parent comments (top-level)
-parent_comments=$(echo "$all_comments" | jq '[.[] | select(.in_reply_to_id == null)]')
+# Create jq filter for finding ALL unresolved comments
+# Identify agent replies by checking for "Co-Authored-By: Claude" signature
+cat > /tmp/unresolved-filter.jq << 'JQEOF'
+. as $all |
+# Get all comments that are NOT agent replies (don't contain Claude signature)
+map(select(.body | contains("Co-Authored-By: Claude") | not)) |
+# For each reviewer comment, check if it has a reply
+map(
+  . as $comment |
+  {
+    id: $comment.id,
+    path: $comment.path,
+    line: $comment.line,
+    body: $comment.body,
+    user: $comment.user.login,
+    in_reply_to_id: $comment.in_reply_to_id,
+    has_reply: ($all | any(.in_reply_to_id == $comment.id))
+  }
+) |
+# Filter to only comments without replies
+map(select(.has_reply == false))
+JQEOF
 
-# Filter out comments that already have replies
-unresolved_comments=()
-for parent_id in $(echo "$parent_comments" | jq -r '.[].id'); do
-  has_reply=$(echo "$all_comments" | jq --arg pid "$parent_id" '[.[] | select(.in_reply_to_id == ($pid | tonumber))] | length > 0')
+# Get unresolved comments
+unresolved_json=$(echo "$all_comments" | jq -f /tmp/unresolved-filter.jq)
+unresolved_count=$(echo "$unresolved_json" | jq 'length')
 
-  if [ "$has_reply" = "false" ]; then
-    unresolved_comments+=("$parent_id")
-  fi
-done
+echo "Unresolved comments: $unresolved_count"
 
-echo "Unresolved comments: ${#unresolved_comments[@]}"
+# Debug: Show summary of all comments
+echo "Debug - Comment summary:"
+echo "$all_comments" | jq -r '
+  group_by(.body | contains("Co-Authored-By: Claude")) |
+  "Total: \(map(length) | add // 0) (Reviewer comments: \((.[0] // []) | length), Agent replies: \((.[1] // []) | length))"'
 ```
 
 If 0 unresolved comments:
@@ -116,16 +124,33 @@ Exit.
 
 ### 3. Process Each Comment
 
-For each unresolved comment, execute the following:
+For each unresolved comment in `$unresolved_json`, execute the following:
 
 **3.1 Analysis**
 
-Get comment information:
-- `comment.id`: Comment ID (required for replying)
-- `comment.body`: Comment body
-- `comment.path`: File to fix
-- `comment.line`: Line number (if exists)
-- `comment.user.login`: Reviewer name
+Get comment information from JSON:
+
+```bash
+# Process each unresolved comment
+for i in $(seq 0 $((unresolved_count - 1))); do
+  comment_id=$(echo "$unresolved_json" | jq -r ".[$i].id")
+  comment_body=$(echo "$unresolved_json" | jq -r ".[$i].body")
+  comment_path=$(echo "$unresolved_json" | jq -r ".[$i].path")
+  comment_line=$(echo "$unresolved_json" | jq -r ".[$i].line")
+  comment_user=$(echo "$unresolved_json" | jq -r ".[$i].user")
+
+  echo "Processing comment #$comment_id from @$comment_user"
+  echo "File: $comment_path:$comment_line"
+  echo "Comment: ${comment_body:0:100}..."
+done
+```
+
+Extract:
+- `comment_id`: Comment ID (required for replying)
+- `comment_body`: Comment body
+- `comment_path`: File to fix
+- `comment_line`: Line number (if exists)
+- `comment_user`: Reviewer name
 
 Store the comment ID for later use in replies.
 
@@ -236,49 +261,28 @@ echo "Please request reviewer to resolve threads"
 
 ### 5. Verification
 
-**CRITICAL**: After posting all replies, verify that all parent comments have replies:
+**CRITICAL**: After posting all replies, verify that all reviewer comments have replies:
 
 ```bash
-# Get all comments with pagination
-page=1
-all_comments=""
-while true; do
-  page_comments=$(gh api "repos/$owner/$repo/pulls/$pr_number/comments?per_page=100&page=$page")
-  count=$(echo "$page_comments" | jq 'length')
+# Re-fetch all comments to get latest state
+all_comments=$(gh api --paginate "repos/$owner/$repo/pulls/$pr_number/comments")
 
-  if [ "$count" -eq 0 ]; then
-    break
-  fi
+# Use same jq filter to find remaining unresolved comments
+remaining_unresolved=$(echo "$all_comments" | jq -f /tmp/unresolved-filter.jq)
+remaining_count=$(echo "$remaining_unresolved" | jq 'length')
 
-  if [ -z "$all_comments" ]; then
-    all_comments="$page_comments"
-  else
-    all_comments=$(jq -s '.[0] + .[1]' <(echo "$all_comments") <(echo "$page_comments"))
-  fi
-
-  page=$((page + 1))
-done
-
-# Check each parent comment has replies
-parent_comments=$(echo "$all_comments" | jq '[.[] | select(.in_reply_to_id == null)]')
-unresolved=()
-
-for parent_id in $(echo "$parent_comments" | jq -r '.[].id'); do
-  has_reply=$(echo "$all_comments" | jq --arg pid "$parent_id" '[.[] | select(.in_reply_to_id == ($pid | tonumber))] | length > 0')
-
-  if [ "$has_reply" = "false" ]; then
-    unresolved+=("$parent_id")
-  fi
-done
-
-if [ ${#unresolved[@]} -gt 0 ]; then
-  echo "WARNING: ${#unresolved[@]} parent comments still have no replies:"
-  for id in "${unresolved[@]}"; do
-    comment_info=$(echo "$parent_comments" | jq --arg id "$id" '.[] | select(.id == ($id | tonumber)) | {id: .id, path: .path, body: .body[0:100]}')
-    echo "$comment_info"
-  done
+if [ "$remaining_count" -gt 0 ]; then
+  echo ""
+  echo "WARNING: $remaining_count reviewer comment(s) still have no replies:"
+  echo "$remaining_unresolved" | jq -r '.[] | "  - ID \(.id): \(.body[0:80])... (@\(.user) on \(.path):\(.line // "N/A"))"'
   echo ""
   echo "Please investigate why replies were not posted."
+  echo "This may indicate:"
+  echo "  1. Reply posting failed silently"
+  echo "  2. New comments were added during processing"
+  echo "  3. GitHub API sync delay"
+else
+  echo "✓ Verification passed: All reviewer comments have replies"
 fi
 ```
 
@@ -295,7 +299,7 @@ After verification, display summary:
 - Fixed and replied: {n} items
 - Asked questions and replied: {n} items
 - Skipped: {n} items
-- Verified: All parent comments have replies
+- Verified: All reviewer comments have replies
 
 Please request reviewer to resolve threads
 ```
