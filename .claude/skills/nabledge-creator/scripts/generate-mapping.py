@@ -330,11 +330,11 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
     filename = Path(source_path).name
     parts = Path(source_path).parts
 
-    # Convert filename: _ to -, extension to .md (unless .xlsx)
+    # Convert filename: _ to -, extension to .json (unless .xlsx)
     if filename.endswith('.rst'):
-        target_filename = filename.replace('.rst', '.md').replace('_', '-')
+        target_filename = filename.replace('.rst', '.json').replace('_', '-')
     elif filename.endswith('.md'):
-        target_filename = filename.replace('_', '-')
+        target_filename = filename.replace('.md', '.json').replace('_', '-')
     elif filename.endswith('.xlsx'):
         target_filename = filename
     else:
@@ -369,13 +369,13 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
                 if subdirs_after and (filename == 'index.rst' or filename == 'index.md'):
                     # Use getting-started-xxx format
                     prefix = 'getting-started' if context == 'getting_started' else 'feature-details'
-                    target_filename = f"{prefix}-{subdirs_after[-1].replace('_', '-')}.md"
+                    target_filename = f"{prefix}-{subdirs_after[-1].replace('_', '-')}.json"
 
         # Special case: handlers/batch vs batch/ - disambiguate by adding context
         if 'handlers' in parts and 'batch' in parts:
             # This is handlers/batch - use 'handlers-' prefix
             if filename == 'index.rst' or filename == 'index.md':
-                target_filename = 'handlers-batch.md'
+                target_filename = 'handlers-batch.json'
 
     elif category in ['web-application', 'restful-web-service']:
         # Web patterns: preserve subdirectory context for disambiguation
@@ -419,11 +419,11 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
                         subdirs = '/'.join(meaningful[-2:])
                         # For index.rst, use the immediate parent
                         if filename == 'index.rst' or filename == 'index.md':
-                            target_filename = meaningful[-1].replace('_', '-') + '.md'
+                            target_filename = meaningful[-1].replace('_', '-') + '.json'
                     else:
                         subdirs = meaningful[-1]
                         if filename == 'index.rst' or filename == 'index.md':
-                            target_filename = meaningful[-1].replace('_', '-') + '.md'
+                            target_filename = meaningful[-1].replace('_', '-') + '.json'
 
                 # Check for collision: if filename (not index) has same name as parent dir
                 # e.g., 01_HttpDumpTool/01_HttpDumpTool.rst vs 01_HttpDumpTool/index.rst
@@ -432,7 +432,7 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
                     parent = meaningful[-1] if meaningful else ''
                     if base_name == parent and subdirs:
                         # This is a collision - use 'overview' suffix for the non-index file
-                        target_filename = base_name.replace('_', '-') + '-overview.md'
+                        target_filename = base_name.replace('_', '-') + '-overview.json'
 
     elif category in ['blank-project', 'cloud-native', 'setting-guide']:
         # Setup categories: flatten subdirectories
@@ -446,12 +446,12 @@ def convert_target_path(source_path: str, type_val: str, category: str) -> str:
                 subdirs = '/'.join(parts[idx+1:-1])
 
     # Special handling for index.rst - use parent directory name if not already handled
-    if (filename == 'index.rst' or filename == 'index.md') and target_filename == 'index.md':
+    if (filename == 'index.rst' or filename == 'index.md') and target_filename == 'index.json':
         # Get parent directory name (second-to-last part)
         if len(parts) >= 2:
             parent_dir = parts[-2]
             # Convert parent directory name with same rules
-            target_filename = parent_dir.replace('_', '-') + '.md'
+            target_filename = parent_dir.replace('_', '-') + '.json'
 
     # Build target path
     if subdirs:
