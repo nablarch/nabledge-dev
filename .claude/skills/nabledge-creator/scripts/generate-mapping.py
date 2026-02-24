@@ -234,11 +234,27 @@ def classify_by_path(file_info: Dict) -> Dict:
 
     # Libraries
     if path_for_matching.startswith('application_framework/application_framework/libraries/'):
-        return {'type': 'component', 'category': 'libraries', 'pp': '', 'confidence': 'confirmed'}
+        pp = ''
+        if 'jaxrs_access_log' in path_for_matching:
+            pp = 'restful-web-service'
+        return {'type': 'component', 'category': 'libraries', 'pp': pp, 'confidence': 'confirmed'}
 
     # Development tools
     if path_for_matching.startswith('development_tools/testing_framework/'):
-        return {'type': 'development-tools', 'category': 'testing-framework', 'pp': '', 'confidence': 'confirmed'}
+        pp = ''
+        # Pattern-specific testing files
+        if '/batch.rst' in path_for_matching:
+            pp = 'nablarch-batch'
+        elif '/rest.rst' in path_for_matching:
+            pp = 'restful-web-service'
+        elif path_for_matching.endswith(('real.rst', 'send_sync.rst', 'delayed_receive.rst', 'delayed_send.rst')):
+            # HTTP messaging tests (http_real.rst, http_send_sync.rst, etc.)
+            if '/http_' in path_for_matching or 'http_real' in path_for_matching or 'http_send' in path_for_matching:
+                pp = 'http-messaging'
+            # MOM messaging tests (real.rst, send_sync.rst, etc.)
+            else:
+                pp = 'mom-messaging'
+        return {'type': 'development-tools', 'category': 'testing-framework', 'pp': pp, 'confidence': 'confirmed'}
     elif path_for_matching.startswith('development_tools/toolbox/'):
         return {'type': 'development-tools', 'category': 'toolbox', 'pp': '', 'confidence': 'confirmed'}
     elif path_for_matching.startswith('development_tools/java_static_analysis/'):

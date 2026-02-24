@@ -256,6 +256,18 @@ If Type is `component` and Category is `handlers`:
 - If path contains `/standalone/` → PP = `nablarch-batch` (needs content verification)
 - If path contains `/common/` → PP = empty (common handlers)
 
+If Type is `component` and Category is `libraries`:
+- If path contains `jaxrs_access_log` → PP = `restful-web-service`
+- Otherwise → PP = empty (general-purpose libraries)
+
+If Type is `development-tools` and Category is `testing-framework`:
+- If path contains `/batch.rst` → PP = `nablarch-batch`
+- If path contains `/rest.rst` → PP = `restful-web-service`
+- If path contains `/real.rst` or `/send_sync.rst` or `/delayed_receive.rst` or `/delayed_send.rst` (messaging tests):
+  - If path contains `/http_` → PP = `http-messaging`
+  - Otherwise → PP = `mom-messaging`
+- Otherwise → PP = empty (general testing tools)
+
 If Type is `setup` and Category is `blank-project`:
 - If filename contains `Jbatch` → PP = `jakarta-batch`
 - If filename contains `NablarchBatch` → PP = `nablarch-batch`

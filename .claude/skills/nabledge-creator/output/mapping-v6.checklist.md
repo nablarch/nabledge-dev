@@ -1,10 +1,10 @@
 # Verification Checklist: mapping-v6.md
 
 **Generated**: 2026-02-24
-**Total Mapping Rows**: 272
+**Total Mapping Rows**: 295
 **Excluded Files**: 768
-**Classification Checks**: 272
-**Target Path Checks**: 272
+**Classification Checks**: 295
+**Target Path Checks**: 295
 
 ---
 
@@ -877,10 +877,10 @@ For each row, read the RST source file and verify:
 | 75 | en/application_framework/application_framework/cloud_native/distributed_tracing/index.rst | setup | cloud-native |  | complete verification | |
 | 76 | en/application_framework/application_framework/cloud_native/index.rst | setup | cloud-native |  | complete verification | |
 | 77 | en/application_framework/application_framework/configuration/index.rst | setup | configuration |  | complete verification | |
-| 78 | en/application_framework/application_framework/handlers/batch/dbless_loop_handler.rst | processing-pattern | nablarch-batch | nablarch-batch | complete verification | ✗ Should be: component/handlers/nablarch-batch |
-| 79 | en/application_framework/application_framework/handlers/batch/index.rst | processing-pattern | nablarch-batch | nablarch-batch | complete verification | ✗ Should be: component/handlers/nablarch-batch |
-| 80 | en/application_framework/application_framework/handlers/batch/loop_handler.rst | processing-pattern | nablarch-batch | nablarch-batch | complete verification | ✗ Should be: component/handlers/nablarch-batch |
-| 81 | en/application_framework/application_framework/handlers/batch/process_resident_handler.rst | processing-pattern | nablarch-batch | nablarch-batch | complete verification | ✗ Should be: component/handlers/nablarch-batch |
+| 78 | en/application_framework/application_framework/handlers/batch/dbless_loop_handler.rst | component | handlers | nablarch-batch | complete verification | |
+| 79 | en/application_framework/application_framework/handlers/batch/index.rst | component | handlers | nablarch-batch | complete verification | |
+| 80 | en/application_framework/application_framework/handlers/batch/loop_handler.rst | component | handlers | nablarch-batch | complete verification | |
+| 81 | en/application_framework/application_framework/handlers/batch/process_resident_handler.rst | component | handlers | nablarch-batch | complete verification | |
 | 82 | en/application_framework/application_framework/handlers/common/ServiceAvailabilityCheckHandler.rst | component | handlers |  | complete verification | |
 | 83 | en/application_framework/application_framework/handlers/common/database_connection_management_handler.rst | component | handlers |  | complete verification | |
 | 84 | en/application_framework/application_framework/handlers/common/file_record_writer_dispose_handler.rst | component | handlers |  | complete verification | |
@@ -954,7 +954,7 @@ For each row, read the RST source file and verify:
 | 152 | en/application_framework/application_framework/libraries/log.rst | component | libraries |  | complete verification | |
 | 153 | en/application_framework/application_framework/libraries/log/failure_log.rst | component | libraries |  | complete verification | |
 | 154 | en/application_framework/application_framework/libraries/log/http_access_log.rst | component | libraries |  | complete verification | |
-| 155 | en/application_framework/application_framework/libraries/log/jaxrs_access_log.rst | component | libraries |  | complete verification | |
+| 155 | en/application_framework/application_framework/libraries/log/jaxrs_access_log.rst | component | libraries | restful-web-service | complete verification | |
 | 156 | en/application_framework/application_framework/libraries/log/messaging_log.rst | component | libraries |  | complete verification | |
 | 157 | en/application_framework/application_framework/libraries/log/performance_log.rst | component | libraries |  | complete verification | |
 | 158 | en/application_framework/application_framework/libraries/log/sql_log.rst | component | libraries |  | complete verification | |
@@ -999,79 +999,102 @@ For each row, read the RST source file and verify:
 | 197 | en/application_framework/application_framework/setting_guide/CustomizingConfigurations/index.rst | setup | setting-guide |  | complete verification | |
 | 198 | en/application_framework/application_framework/setting_guide/ManagingEnvironmentalConfiguration/index.rst | setup | setting-guide |  | complete verification | |
 | 199 | en/application_framework/application_framework/setting_guide/index.rst | setup | setting-guide |  | complete verification | |
-| 200 | en/application_framework/application_framework/web_service/functional_comparison.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 201 | en/application_framework/application_framework/web_service/http_messaging/application_design.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | ✗ Should be: processing-pattern/http-messaging/http-messaging |
-| 202 | en/application_framework/application_framework/web_service/http_messaging/architecture.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | ✗ Should be: processing-pattern/http-messaging/http-messaging |
-| 203 | en/application_framework/application_framework/web_service/http_messaging/feature_details.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | ✗ Should be: processing-pattern/http-messaging/http-messaging |
-| 204 | en/application_framework/application_framework/web_service/http_messaging/getting_started/getting_started.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | ✗ Should be: processing-pattern/http-messaging/http-messaging |
-| 205 | en/application_framework/application_framework/web_service/http_messaging/getting_started/save/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | ✗ Should be: processing-pattern/http-messaging/http-messaging |
-| 206 | en/application_framework/application_framework/web_service/http_messaging/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | ✗ Should be: processing-pattern/http-messaging/http-messaging |
-| 207 | en/application_framework/application_framework/web_service/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 208 | en/application_framework/application_framework/web_service/rest/application_design.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 209 | en/application_framework/application_framework/web_service/rest/architecture.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 210 | en/application_framework/application_framework/web_service/rest/feature_details.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 211 | en/application_framework/application_framework/web_service/rest/feature_details/resource_signature.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 212 | en/application_framework/application_framework/web_service/rest/getting_started/create/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 213 | en/application_framework/application_framework/web_service/rest/getting_started/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 214 | en/application_framework/application_framework/web_service/rest/getting_started/search/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 215 | en/application_framework/application_framework/web_service/rest/getting_started/update/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 216 | en/application_framework/application_framework/web_service/rest/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
-| 217 | en/development_tools/java_static_analysis/index.rst | development-tools | java-static-analysis |  | complete verification | |
-| 218 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.rst | development-tools | testing-framework |  | complete verification | |
-| 219 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/02_entityUnitTestWithNablarchValidation.rst | development-tools | testing-framework |  | complete verification | |
-| 220 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
-| 221 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/02_componentUnitTest.rst | development-tools | testing-framework |  | complete verification | |
-| 222 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
-| 223 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/batch.rst | development-tools | testing-framework |  | complete verification | |
-| 224 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.rst | development-tools | testing-framework |  | complete verification | |
-| 225 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.rst | development-tools | testing-framework |  | complete verification | |
-| 226 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/duplicate_form_submission.rst | development-tools | testing-framework |  | complete verification | |
-| 227 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/fileupload.rst | development-tools | testing-framework |  | complete verification | |
-| 228 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_real.rst | development-tools | testing-framework |  | complete verification | |
-| 229 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_send_sync.rst | development-tools | testing-framework |  | complete verification | |
-| 230 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
-| 231 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/mail.rst | development-tools | testing-framework |  | complete verification | |
-| 232 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/real.rst | development-tools | testing-framework |  | complete verification | |
-| 233 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/rest.rst | development-tools | testing-framework |  | complete verification | |
-| 234 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.rst | development-tools | testing-framework |  | complete verification | |
-| 235 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/batch.rst | development-tools | testing-framework |  | complete verification | |
-| 236 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_receive.rst | development-tools | testing-framework |  | complete verification | |
-| 237 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_send.rst | development-tools | testing-framework |  | complete verification | |
-| 238 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/http_send_sync.rst | development-tools | testing-framework |  | complete verification | |
-| 239 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
-| 240 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/real.rst | development-tools | testing-framework |  | complete verification | |
-| 241 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/rest.rst | development-tools | testing-framework |  | complete verification | |
-| 242 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/send_sync.rst | development-tools | testing-framework |  | complete verification | |
-| 243 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/index.rst | development-tools | testing-framework |  | complete verification | |
-| 244 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.rst | development-tools | testing-framework |  | complete verification | |
-| 245 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_DbAccessTest.rst | development-tools | testing-framework |  | complete verification | |
-| 246 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_RequestUnitTest.rst | development-tools | testing-framework |  | complete verification | |
-| 247 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.rst | development-tools | testing-framework |  | complete verification | |
-| 248 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/04_MasterDataRestore.rst | development-tools | testing-framework |  | complete verification | |
-| 249 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.rst | development-tools | testing-framework |  | complete verification | |
-| 250 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_batch.rst | development-tools | testing-framework |  | complete verification | |
-| 251 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_http_send_sync.rst | development-tools | testing-framework |  | complete verification | |
-| 252 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_real.rst | development-tools | testing-framework |  | complete verification | |
-| 253 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | development-tools | testing-framework |  | complete verification | |
-| 254 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_send_sync.rst | development-tools | testing-framework |  | complete verification | |
-| 255 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/index.rst | development-tools | testing-framework |  | complete verification | |
-| 256 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/01_HttpDumpTool.rst | development-tools | testing-framework |  | complete verification | |
-| 257 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/02_SetUpHttpDumpTool.rst | development-tools | testing-framework |  | complete verification | |
-| 258 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/index.rst | development-tools | testing-framework |  | complete verification | |
-| 259 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.rst | development-tools | testing-framework |  | complete verification | |
-| 260 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.rst | development-tools | testing-framework |  | complete verification | |
-| 261 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/index.rst | development-tools | testing-framework |  | complete verification | |
-| 262 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/03_HtmlCheckTool/index.rst | development-tools | testing-framework |  | complete verification | |
-| 263 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/index.rst | development-tools | testing-framework |  | complete verification | |
-| 264 | en/development_tools/testing_framework/index.rst | development-tools | testing-framework |  | complete verification | |
-| 265 | en/development_tools/toolbox/JspStaticAnalysis/01_JspStaticAnalysis.rst | development-tools | toolbox |  | complete verification | |
-| 266 | en/development_tools/toolbox/JspStaticAnalysis/02_JspStaticAnalysisInstall.rst | development-tools | toolbox |  | complete verification | |
-| 267 | en/development_tools/toolbox/JspStaticAnalysis/index.rst | development-tools | toolbox |  | complete verification | |
-| 268 | en/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.rst | development-tools | toolbox |  | complete verification | |
-| 269 | en/development_tools/toolbox/SqlExecutor/SqlExecutor.rst | development-tools | toolbox |  | complete verification | |
-| 270 | en/development_tools/toolbox/index.rst | development-tools | toolbox |  | complete verification | |
-| 271 | ja/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/double_transmission.rst | development-tools | testing-framework |  | complete verification | |
-| 272 | ja/releases/index.rst | about | release-notes |  | complete verification | |
+| 200 | en/application_framework/application_framework/web/application_design.rst | processing-pattern | web-application | web-application | complete verification | |
+| 201 | en/application_framework/application_framework/web/architecture.rst | processing-pattern | web-application | web-application | complete verification | |
+| 202 | en/application_framework/application_framework/web/feature_details.rst | processing-pattern | web-application | web-application | complete verification | |
+| 203 | en/application_framework/application_framework/web/feature_details/error_message.rst | processing-pattern | web-application | web-application | complete verification | |
+| 204 | en/application_framework/application_framework/web/feature_details/forward_error_page.rst | processing-pattern | web-application | web-application | complete verification | |
+| 205 | en/application_framework/application_framework/web/feature_details/jsp_session.rst | processing-pattern | web-application | web-application | complete verification | |
+| 206 | en/application_framework/application_framework/web/feature_details/nablarch_servlet_context_listener.rst | processing-pattern | web-application | web-application | complete verification | |
+| 207 | en/application_framework/application_framework/web/feature_details/view/other.rst | processing-pattern | web-application | web-application | complete verification | |
+| 208 | en/application_framework/application_framework/web/feature_details/web_front_controller.rst | processing-pattern | web-application | web-application | complete verification | |
+| 209 | en/application_framework/application_framework/web/getting_started/client_create/client_create1.rst | processing-pattern | web-application | web-application | complete verification | |
+| 210 | en/application_framework/application_framework/web/getting_started/client_create/client_create2.rst | processing-pattern | web-application | web-application | complete verification | |
+| 211 | en/application_framework/application_framework/web/getting_started/client_create/client_create3.rst | processing-pattern | web-application | web-application | complete verification | |
+| 212 | en/application_framework/application_framework/web/getting_started/client_create/client_create4.rst | processing-pattern | web-application | web-application | complete verification | |
+| 213 | en/application_framework/application_framework/web/getting_started/client_create/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 214 | en/application_framework/application_framework/web/getting_started/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 215 | en/application_framework/application_framework/web/getting_started/popup/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 216 | en/application_framework/application_framework/web/getting_started/project_bulk_update/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 217 | en/application_framework/application_framework/web/getting_started/project_delete/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 218 | en/application_framework/application_framework/web/getting_started/project_download/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 219 | en/application_framework/application_framework/web/getting_started/project_search/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 220 | en/application_framework/application_framework/web/getting_started/project_update/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 221 | en/application_framework/application_framework/web/getting_started/project_upload/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 222 | en/application_framework/application_framework/web/index.rst | processing-pattern | web-application | web-application | complete verification | |
+| 223 | en/application_framework/application_framework/web_service/functional_comparison.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 224 | en/application_framework/application_framework/web_service/http_messaging/application_design.rst | processing-pattern | http-messaging | http-messaging | complete verification | |
+| 225 | en/application_framework/application_framework/web_service/http_messaging/architecture.rst | processing-pattern | http-messaging | http-messaging | complete verification | |
+| 226 | en/application_framework/application_framework/web_service/http_messaging/feature_details.rst | processing-pattern | http-messaging | http-messaging | complete verification | |
+| 227 | en/application_framework/application_framework/web_service/http_messaging/getting_started/getting_started.rst | processing-pattern | http-messaging | http-messaging | complete verification | |
+| 228 | en/application_framework/application_framework/web_service/http_messaging/getting_started/save/index.rst | processing-pattern | http-messaging | http-messaging | complete verification | |
+| 229 | en/application_framework/application_framework/web_service/http_messaging/index.rst | processing-pattern | http-messaging | http-messaging | complete verification | |
+| 230 | en/application_framework/application_framework/web_service/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 231 | en/application_framework/application_framework/web_service/rest/application_design.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 232 | en/application_framework/application_framework/web_service/rest/architecture.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 233 | en/application_framework/application_framework/web_service/rest/feature_details.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 234 | en/application_framework/application_framework/web_service/rest/feature_details/resource_signature.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 235 | en/application_framework/application_framework/web_service/rest/getting_started/create/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 236 | en/application_framework/application_framework/web_service/rest/getting_started/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 237 | en/application_framework/application_framework/web_service/rest/getting_started/search/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 238 | en/application_framework/application_framework/web_service/rest/getting_started/update/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 239 | en/application_framework/application_framework/web_service/rest/index.rst | processing-pattern | restful-web-service | restful-web-service | complete verification | |
+| 240 | en/development_tools/java_static_analysis/index.rst | development-tools | java-static-analysis |  | complete verification | |
+| 241 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.rst | development-tools | testing-framework |  | complete verification | |
+| 242 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/02_entityUnitTestWithNablarchValidation.rst | development-tools | testing-framework |  | complete verification | |
+| 243 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
+| 244 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/02_componentUnitTest.rst | development-tools | testing-framework |  | complete verification | |
+| 245 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
+| 246 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/batch.rst | development-tools | testing-framework | nablarch-batch | complete verification | |
+| 247 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 248 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 249 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/duplicate_form_submission.rst | development-tools | testing-framework |  | complete verification | |
+| 250 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/fileupload.rst | development-tools | testing-framework |  | complete verification | |
+| 251 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_real.rst | development-tools | testing-framework | http-messaging | complete verification | |
+| 252 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_send_sync.rst | development-tools | testing-framework | http-messaging | complete verification | |
+| 253 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
+| 254 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/mail.rst | development-tools | testing-framework |  | complete verification | |
+| 255 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/real.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 256 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/rest.rst | development-tools | testing-framework | restful-web-service | complete verification | |
+| 257 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 258 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/batch.rst | development-tools | testing-framework | nablarch-batch | complete verification | |
+| 259 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_receive.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 260 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_send.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 261 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/http_send_sync.rst | development-tools | testing-framework | http-messaging | complete verification | |
+| 262 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/index.rst | development-tools | testing-framework |  | complete verification | |
+| 263 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/real.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 264 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/rest.rst | development-tools | testing-framework | restful-web-service | complete verification | |
+| 265 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/send_sync.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 266 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/index.rst | development-tools | testing-framework |  | complete verification | |
+| 267 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.rst | development-tools | testing-framework |  | complete verification | |
+| 268 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_DbAccessTest.rst | development-tools | testing-framework |  | complete verification | |
+| 269 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_RequestUnitTest.rst | development-tools | testing-framework |  | complete verification | |
+| 270 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.rst | development-tools | testing-framework |  | complete verification | |
+| 271 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/04_MasterDataRestore.rst | development-tools | testing-framework |  | complete verification | |
+| 272 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.rst | development-tools | testing-framework |  | complete verification | |
+| 273 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_batch.rst | development-tools | testing-framework |  | complete verification | |
+| 274 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_http_send_sync.rst | development-tools | testing-framework | http-messaging | complete verification | |
+| 275 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_real.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 276 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | development-tools | testing-framework |  | complete verification | |
+| 277 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_send_sync.rst | development-tools | testing-framework | mom-messaging | complete verification | |
+| 278 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/index.rst | development-tools | testing-framework |  | complete verification | |
+| 279 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/01_HttpDumpTool.rst | development-tools | testing-framework |  | complete verification | |
+| 280 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/02_SetUpHttpDumpTool.rst | development-tools | testing-framework |  | complete verification | |
+| 281 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/index.rst | development-tools | testing-framework |  | complete verification | |
+| 282 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.rst | development-tools | testing-framework |  | complete verification | |
+| 283 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.rst | development-tools | testing-framework |  | complete verification | |
+| 284 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/index.rst | development-tools | testing-framework |  | complete verification | |
+| 285 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/03_HtmlCheckTool/index.rst | development-tools | testing-framework |  | complete verification | |
+| 286 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/index.rst | development-tools | testing-framework |  | complete verification | |
+| 287 | en/development_tools/testing_framework/index.rst | development-tools | testing-framework |  | complete verification | |
+| 288 | en/development_tools/toolbox/JspStaticAnalysis/01_JspStaticAnalysis.rst | development-tools | toolbox |  | complete verification | |
+| 289 | en/development_tools/toolbox/JspStaticAnalysis/02_JspStaticAnalysisInstall.rst | development-tools | toolbox |  | complete verification | |
+| 290 | en/development_tools/toolbox/JspStaticAnalysis/index.rst | development-tools | toolbox |  | complete verification | |
+| 291 | en/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.rst | development-tools | toolbox |  | complete verification | |
+| 292 | en/development_tools/toolbox/SqlExecutor/SqlExecutor.rst | development-tools | toolbox |  | complete verification | |
+| 293 | en/development_tools/toolbox/index.rst | development-tools | toolbox |  | complete verification | |
+| 294 | ja/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/double_transmission.rst | development-tools | testing-framework |  | complete verification | |
+| 295 | ja/releases/index.rst | about | release-notes |  | complete verification | |
 
 **Instructions**:
 - Read the first 50 lines of the RST file at `{source_dir}/{source_path}`
@@ -1167,10 +1190,10 @@ For each row, verify:
 | 75 | en/application_framework/application_framework/cloud_native/distributed_tracing/index.rst | setup/cloud-native/distributed-tracing.json | complete verification | |
 | 76 | en/application_framework/application_framework/cloud_native/index.rst | setup/cloud-native/cloud-native.json | complete verification | |
 | 77 | en/application_framework/application_framework/configuration/index.rst | setup/configuration/configuration.json | complete verification | |
-| 78 | en/application_framework/application_framework/handlers/batch/dbless_loop_handler.rst | processing-pattern/nablarch-batch/dbless-loop-handler.json | complete verification | |
-| 79 | en/application_framework/application_framework/handlers/batch/index.rst | processing-pattern/nablarch-batch/handlers-batch.json | complete verification | |
-| 80 | en/application_framework/application_framework/handlers/batch/loop_handler.rst | processing-pattern/nablarch-batch/loop-handler.json | complete verification | |
-| 81 | en/application_framework/application_framework/handlers/batch/process_resident_handler.rst | processing-pattern/nablarch-batch/process-resident-handler.json | complete verification | |
+| 78 | en/application_framework/application_framework/handlers/batch/dbless_loop_handler.rst | component/handlers/batch/dbless-loop-handler.json | complete verification | |
+| 79 | en/application_framework/application_framework/handlers/batch/index.rst | component/handlers/batch/batch.json | complete verification | |
+| 80 | en/application_framework/application_framework/handlers/batch/loop_handler.rst | component/handlers/batch/loop-handler.json | complete verification | |
+| 81 | en/application_framework/application_framework/handlers/batch/process_resident_handler.rst | component/handlers/batch/process-resident-handler.json | complete verification | |
 | 82 | en/application_framework/application_framework/handlers/common/ServiceAvailabilityCheckHandler.rst | component/handlers/common/ServiceAvailabilityCheckHandler.json | complete verification | |
 | 83 | en/application_framework/application_framework/handlers/common/database_connection_management_handler.rst | component/handlers/common/database-connection-management-handler.json | complete verification | |
 | 84 | en/application_framework/application_framework/handlers/common/file_record_writer_dispose_handler.rst | component/handlers/common/file-record-writer-dispose-handler.json | complete verification | |
@@ -1289,149 +1312,104 @@ For each row, verify:
 | 197 | en/application_framework/application_framework/setting_guide/CustomizingConfigurations/index.rst | setup/setting-guide/CustomizingConfigurations.json | complete verification | |
 | 198 | en/application_framework/application_framework/setting_guide/ManagingEnvironmentalConfiguration/index.rst | setup/setting-guide/ManagingEnvironmentalConfiguration.json | complete verification | |
 | 199 | en/application_framework/application_framework/setting_guide/index.rst | setup/setting-guide/setting-guide.json | complete verification | |
-| 200 | en/application_framework/application_framework/web_service/functional_comparison.rst | processing-pattern/restful-web-service/functional-comparison.json | complete verification | |
-| 201 | en/application_framework/application_framework/web_service/http_messaging/application_design.rst | processing-pattern/restful-web-service/http_messaging/application-design.json | complete verification | |
-| 202 | en/application_framework/application_framework/web_service/http_messaging/architecture.rst | processing-pattern/restful-web-service/http_messaging/architecture.json | complete verification | |
-| 203 | en/application_framework/application_framework/web_service/http_messaging/feature_details.rst | processing-pattern/restful-web-service/http_messaging/feature-details.json | complete verification | |
-| 204 | en/application_framework/application_framework/web_service/http_messaging/getting_started/getting_started.rst | processing-pattern/restful-web-service/http_messaging/getting-started.json | complete verification | |
-| 205 | en/application_framework/application_framework/web_service/http_messaging/getting_started/save/index.rst | processing-pattern/restful-web-service/http_messaging/save.json | complete verification | |
-| 206 | en/application_framework/application_framework/web_service/http_messaging/index.rst | processing-pattern/restful-web-service/http_messaging/http-messaging.json | complete verification | |
-| 207 | en/application_framework/application_framework/web_service/index.rst | processing-pattern/restful-web-service/web-service.json | complete verification | |
-| 208 | en/application_framework/application_framework/web_service/rest/application_design.rst | processing-pattern/restful-web-service/rest/application-design.json | complete verification | |
-| 209 | en/application_framework/application_framework/web_service/rest/architecture.rst | processing-pattern/restful-web-service/rest/architecture.json | complete verification | |
-| 210 | en/application_framework/application_framework/web_service/rest/feature_details.rst | processing-pattern/restful-web-service/rest/feature-details.json | complete verification | |
-| 211 | en/application_framework/application_framework/web_service/rest/feature_details/resource_signature.rst | processing-pattern/restful-web-service/rest/resource-signature.json | complete verification | |
-| 212 | en/application_framework/application_framework/web_service/rest/getting_started/create/index.rst | processing-pattern/restful-web-service/rest/create.json | complete verification | |
-| 213 | en/application_framework/application_framework/web_service/rest/getting_started/index.rst | processing-pattern/restful-web-service/rest/getting-started.json | complete verification | |
-| 214 | en/application_framework/application_framework/web_service/rest/getting_started/search/index.rst | processing-pattern/restful-web-service/rest/search.json | complete verification | |
-| 215 | en/application_framework/application_framework/web_service/rest/getting_started/update/index.rst | processing-pattern/restful-web-service/rest/update.json | complete verification | |
-| 216 | en/application_framework/application_framework/web_service/rest/index.rst | processing-pattern/restful-web-service/rest/rest.json | complete verification | |
-| 217 | en/development_tools/java_static_analysis/index.rst | development-tools/java-static-analysis/java-static-analysis.json | complete verification | |
-| 218 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.rst | development-tools/testing-framework/01_ClassUnitTest/01_entityUnitTest/01-entityUnitTestWithBeanValidation.json | complete verification | |
-| 219 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/02_entityUnitTestWithNablarchValidation.rst | development-tools/testing-framework/01_ClassUnitTest/01_entityUnitTest/02-entityUnitTestWithNablarchValidation.json | complete verification | |
-| 220 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/index.rst | development-tools/testing-framework/01_ClassUnitTest/01_entityUnitTest/01-entityUnitTest.json | complete verification | |
-| 221 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/02_componentUnitTest.rst | development-tools/testing-framework/05_UnitTestGuide/01_ClassUnitTest/02-componentUnitTest.json | complete verification | |
-| 222 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/index.rst | development-tools/testing-framework/05_UnitTestGuide/01_ClassUnitTest/01-ClassUnitTest.json | complete verification | |
-| 223 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/batch.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/batch.json | complete verification | |
-| 224 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/delayed-receive.json | complete verification | |
-| 225 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/delayed-send.json | complete verification | |
-| 226 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/duplicate_form_submission.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/duplicate-form-submission.json | complete verification | |
-| 227 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/fileupload.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/fileupload.json | complete verification | |
-| 228 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_real.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/http-real.json | complete verification | |
-| 229 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/http-send-sync.json | complete verification | |
-| 230 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/index.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/02-RequestUnitTest.json | complete verification | |
-| 231 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/mail.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/mail.json | complete verification | |
-| 232 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/real.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/real.json | complete verification | |
-| 233 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/rest.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/rest.json | complete verification | |
-| 234 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/send-sync.json | complete verification | |
-| 235 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/batch.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/batch.json | complete verification | |
-| 236 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_receive.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/delayed-receive.json | complete verification | |
-| 237 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_send.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/delayed-send.json | complete verification | |
-| 238 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/http_send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/http-send-sync.json | complete verification | |
-| 239 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/index.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/03-DealUnitTest.json | complete verification | |
-| 240 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/real.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/real.json | complete verification | |
-| 241 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/rest.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/rest.json | complete verification | |
-| 242 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/send-sync.json | complete verification | |
-| 243 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/index.rst | development-tools/testing-framework/05_UnitTestGuide/05-UnitTestGuide.json | complete verification | |
-| 244 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.rst | development-tools/testing-framework/06_TestFWGuide/01-Abstract.json | complete verification | |
-| 245 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_DbAccessTest.rst | development-tools/testing-framework/06_TestFWGuide/02-DbAccessTest.json | complete verification | |
-| 246 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_RequestUnitTest.rst | development-tools/testing-framework/06_TestFWGuide/02-RequestUnitTest.json | complete verification | |
-| 247 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.rst | development-tools/testing-framework/06_TestFWGuide/03-Tips.json | complete verification | |
-| 248 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/04_MasterDataRestore.rst | development-tools/testing-framework/06_TestFWGuide/04-MasterDataRestore.json | complete verification | |
-| 249 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.rst | development-tools/testing-framework/06_TestFWGuide/JUnit5-Extension.json | complete verification | |
-| 250 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_batch.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-batch.json | complete verification | |
-| 251 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_http_send_sync.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-http-send-sync.json | complete verification | |
-| 252 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_real.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-real.json | complete verification | |
-| 253 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-rest.json | complete verification | |
-| 254 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_send_sync.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-send-sync.json | complete verification | |
-| 255 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/index.rst | development-tools/testing-framework/06_TestFWGuide/06-TestFWGuide.json | complete verification | |
-| 256 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/01_HttpDumpTool.rst | development-tools/testing-framework/08_TestTools/01_HttpDumpTool/01-HttpDumpTool-overview.json | complete verification | |
-| 257 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/02_SetUpHttpDumpTool.rst | development-tools/testing-framework/08_TestTools/01_HttpDumpTool/02-SetUpHttpDumpTool.json | complete verification | |
-| 258 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/index.rst | development-tools/testing-framework/08_TestTools/01_HttpDumpTool/01-HttpDumpTool.json | complete verification | |
-| 259 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.rst | development-tools/testing-framework/08_TestTools/02_MasterDataSetup/01-MasterDataSetupTool.json | complete verification | |
-| 260 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.rst | development-tools/testing-framework/08_TestTools/02_MasterDataSetup/02-ConfigMasterDataSetupTool.json | complete verification | |
-| 261 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/index.rst | development-tools/testing-framework/08_TestTools/02_MasterDataSetup/02-MasterDataSetup.json | complete verification | |
-| 262 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/03_HtmlCheckTool/index.rst | development-tools/testing-framework/08_TestTools/03_HtmlCheckTool/03-HtmlCheckTool.json | complete verification | |
-| 263 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/index.rst | development-tools/testing-framework/08_TestTools/08-TestTools.json | complete verification | |
-| 264 | en/development_tools/testing_framework/index.rst | development-tools/testing-framework/testing-framework.json | complete verification | |
-| 265 | en/development_tools/toolbox/JspStaticAnalysis/01_JspStaticAnalysis.rst | development-tools/toolbox/JspStaticAnalysis/01-JspStaticAnalysis.json | complete verification | |
-| 266 | en/development_tools/toolbox/JspStaticAnalysis/02_JspStaticAnalysisInstall.rst | development-tools/toolbox/JspStaticAnalysis/02-JspStaticAnalysisInstall.json | complete verification | |
-| 267 | en/development_tools/toolbox/JspStaticAnalysis/index.rst | development-tools/toolbox/JspStaticAnalysis/JspStaticAnalysis.json | complete verification | |
-| 268 | en/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.rst | development-tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.json | complete verification | |
-| 269 | en/development_tools/toolbox/SqlExecutor/SqlExecutor.rst | development-tools/toolbox/SqlExecutor/SqlExecutor.json | complete verification | |
-| 270 | en/development_tools/toolbox/index.rst | development-tools/toolbox/toolbox.json | complete verification | |
-| 271 | ja/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/double_transmission.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/double-transmission.json | complete verification | |
-| 272 | ja/releases/index.rst | about/release-notes/releases.json | complete verification | |
+| 200 | en/application_framework/application_framework/web/application_design.rst | processing-pattern/web-application/application-design.json | complete verification | |
+| 201 | en/application_framework/application_framework/web/architecture.rst | processing-pattern/web-application/architecture.json | complete verification | |
+| 202 | en/application_framework/application_framework/web/feature_details.rst | processing-pattern/web-application/feature-details.json | complete verification | |
+| 203 | en/application_framework/application_framework/web/feature_details/error_message.rst | processing-pattern/web-application/error-message.json | complete verification | |
+| 204 | en/application_framework/application_framework/web/feature_details/forward_error_page.rst | processing-pattern/web-application/forward-error-page.json | complete verification | |
+| 205 | en/application_framework/application_framework/web/feature_details/jsp_session.rst | processing-pattern/web-application/jsp-session.json | complete verification | |
+| 206 | en/application_framework/application_framework/web/feature_details/nablarch_servlet_context_listener.rst | processing-pattern/web-application/nablarch-servlet-context-listener.json | complete verification | |
+| 207 | en/application_framework/application_framework/web/feature_details/view/other.rst | processing-pattern/web-application/other.json | complete verification | |
+| 208 | en/application_framework/application_framework/web/feature_details/web_front_controller.rst | processing-pattern/web-application/web-front-controller.json | complete verification | |
+| 209 | en/application_framework/application_framework/web/getting_started/client_create/client_create1.rst | processing-pattern/web-application/client-create1.json | complete verification | |
+| 210 | en/application_framework/application_framework/web/getting_started/client_create/client_create2.rst | processing-pattern/web-application/client-create2.json | complete verification | |
+| 211 | en/application_framework/application_framework/web/getting_started/client_create/client_create3.rst | processing-pattern/web-application/client-create3.json | complete verification | |
+| 212 | en/application_framework/application_framework/web/getting_started/client_create/client_create4.rst | processing-pattern/web-application/client-create4.json | complete verification | |
+| 213 | en/application_framework/application_framework/web/getting_started/client_create/index.rst | processing-pattern/web-application/client-create.json | complete verification | |
+| 214 | en/application_framework/application_framework/web/getting_started/index.rst | processing-pattern/web-application/getting-started.json | complete verification | |
+| 215 | en/application_framework/application_framework/web/getting_started/popup/index.rst | processing-pattern/web-application/popup.json | complete verification | |
+| 216 | en/application_framework/application_framework/web/getting_started/project_bulk_update/index.rst | processing-pattern/web-application/project-bulk-update.json | complete verification | |
+| 217 | en/application_framework/application_framework/web/getting_started/project_delete/index.rst | processing-pattern/web-application/project-delete.json | complete verification | |
+| 218 | en/application_framework/application_framework/web/getting_started/project_download/index.rst | processing-pattern/web-application/project-download.json | complete verification | |
+| 219 | en/application_framework/application_framework/web/getting_started/project_search/index.rst | processing-pattern/web-application/project-search.json | complete verification | |
+| 220 | en/application_framework/application_framework/web/getting_started/project_update/index.rst | processing-pattern/web-application/project-update.json | complete verification | |
+| 221 | en/application_framework/application_framework/web/getting_started/project_upload/index.rst | processing-pattern/web-application/project-upload.json | complete verification | |
+| 222 | en/application_framework/application_framework/web/index.rst | processing-pattern/web-application/web.json | complete verification | |
+| 223 | en/application_framework/application_framework/web_service/functional_comparison.rst | processing-pattern/restful-web-service/functional-comparison.json | complete verification | |
+| 224 | en/application_framework/application_framework/web_service/http_messaging/application_design.rst | processing-pattern/http-messaging/application-design.json | complete verification | |
+| 225 | en/application_framework/application_framework/web_service/http_messaging/architecture.rst | processing-pattern/http-messaging/architecture.json | complete verification | |
+| 226 | en/application_framework/application_framework/web_service/http_messaging/feature_details.rst | processing-pattern/http-messaging/feature-details.json | complete verification | |
+| 227 | en/application_framework/application_framework/web_service/http_messaging/getting_started/getting_started.rst | processing-pattern/http-messaging/getting-started.json | complete verification | |
+| 228 | en/application_framework/application_framework/web_service/http_messaging/getting_started/save/index.rst | processing-pattern/http-messaging/save.json | complete verification | |
+| 229 | en/application_framework/application_framework/web_service/http_messaging/index.rst | processing-pattern/http-messaging/http-messaging.json | complete verification | |
+| 230 | en/application_framework/application_framework/web_service/index.rst | processing-pattern/restful-web-service/web-service.json | complete verification | |
+| 231 | en/application_framework/application_framework/web_service/rest/application_design.rst | processing-pattern/restful-web-service/rest/application-design.json | complete verification | |
+| 232 | en/application_framework/application_framework/web_service/rest/architecture.rst | processing-pattern/restful-web-service/rest/architecture.json | complete verification | |
+| 233 | en/application_framework/application_framework/web_service/rest/feature_details.rst | processing-pattern/restful-web-service/rest/feature-details.json | complete verification | |
+| 234 | en/application_framework/application_framework/web_service/rest/feature_details/resource_signature.rst | processing-pattern/restful-web-service/rest/resource-signature.json | complete verification | |
+| 235 | en/application_framework/application_framework/web_service/rest/getting_started/create/index.rst | processing-pattern/restful-web-service/rest/create.json | complete verification | |
+| 236 | en/application_framework/application_framework/web_service/rest/getting_started/index.rst | processing-pattern/restful-web-service/rest/getting-started.json | complete verification | |
+| 237 | en/application_framework/application_framework/web_service/rest/getting_started/search/index.rst | processing-pattern/restful-web-service/rest/search.json | complete verification | |
+| 238 | en/application_framework/application_framework/web_service/rest/getting_started/update/index.rst | processing-pattern/restful-web-service/rest/update.json | complete verification | |
+| 239 | en/application_framework/application_framework/web_service/rest/index.rst | processing-pattern/restful-web-service/rest/rest.json | complete verification | |
+| 240 | en/development_tools/java_static_analysis/index.rst | development-tools/java-static-analysis/java-static-analysis.json | complete verification | |
+| 241 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.rst | development-tools/testing-framework/01_ClassUnitTest/01_entityUnitTest/01-entityUnitTestWithBeanValidation.json | complete verification | |
+| 242 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/02_entityUnitTestWithNablarchValidation.rst | development-tools/testing-framework/01_ClassUnitTest/01_entityUnitTest/02-entityUnitTestWithNablarchValidation.json | complete verification | |
+| 243 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/index.rst | development-tools/testing-framework/01_ClassUnitTest/01_entityUnitTest/01-entityUnitTest.json | complete verification | |
+| 244 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/02_componentUnitTest.rst | development-tools/testing-framework/05_UnitTestGuide/01_ClassUnitTest/02-componentUnitTest.json | complete verification | |
+| 245 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/index.rst | development-tools/testing-framework/05_UnitTestGuide/01_ClassUnitTest/01-ClassUnitTest.json | complete verification | |
+| 246 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/batch.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/batch.json | complete verification | |
+| 247 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/delayed-receive.json | complete verification | |
+| 248 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/delayed-send.json | complete verification | |
+| 249 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/duplicate_form_submission.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/duplicate-form-submission.json | complete verification | |
+| 250 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/fileupload.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/fileupload.json | complete verification | |
+| 251 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_real.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/http-real.json | complete verification | |
+| 252 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/http-send-sync.json | complete verification | |
+| 253 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/index.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/02-RequestUnitTest.json | complete verification | |
+| 254 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/mail.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/mail.json | complete verification | |
+| 255 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/real.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/real.json | complete verification | |
+| 256 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/rest.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/rest.json | complete verification | |
+| 257 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/send-sync.json | complete verification | |
+| 258 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/batch.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/batch.json | complete verification | |
+| 259 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_receive.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/delayed-receive.json | complete verification | |
+| 260 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/delayed_send.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/delayed-send.json | complete verification | |
+| 261 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/http_send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/http-send-sync.json | complete verification | |
+| 262 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/index.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/03-DealUnitTest.json | complete verification | |
+| 263 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/real.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/real.json | complete verification | |
+| 264 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/rest.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/rest.json | complete verification | |
+| 265 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/send_sync.rst | development-tools/testing-framework/05_UnitTestGuide/03_DealUnitTest/send-sync.json | complete verification | |
+| 266 | en/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/index.rst | development-tools/testing-framework/05_UnitTestGuide/05-UnitTestGuide.json | complete verification | |
+| 267 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.rst | development-tools/testing-framework/06_TestFWGuide/01-Abstract.json | complete verification | |
+| 268 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_DbAccessTest.rst | development-tools/testing-framework/06_TestFWGuide/02-DbAccessTest.json | complete verification | |
+| 269 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_RequestUnitTest.rst | development-tools/testing-framework/06_TestFWGuide/02-RequestUnitTest.json | complete verification | |
+| 270 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.rst | development-tools/testing-framework/06_TestFWGuide/03-Tips.json | complete verification | |
+| 271 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/04_MasterDataRestore.rst | development-tools/testing-framework/06_TestFWGuide/04-MasterDataRestore.json | complete verification | |
+| 272 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.rst | development-tools/testing-framework/06_TestFWGuide/JUnit5-Extension.json | complete verification | |
+| 273 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_batch.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-batch.json | complete verification | |
+| 274 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_http_send_sync.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-http-send-sync.json | complete verification | |
+| 275 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_real.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-real.json | complete verification | |
+| 276 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-rest.json | complete verification | |
+| 277 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_send_sync.rst | development-tools/testing-framework/06_TestFWGuide/RequestUnitTest-send-sync.json | complete verification | |
+| 278 | en/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/index.rst | development-tools/testing-framework/06_TestFWGuide/06-TestFWGuide.json | complete verification | |
+| 279 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/01_HttpDumpTool.rst | development-tools/testing-framework/08_TestTools/01_HttpDumpTool/01-HttpDumpTool-overview.json | complete verification | |
+| 280 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/02_SetUpHttpDumpTool.rst | development-tools/testing-framework/08_TestTools/01_HttpDumpTool/02-SetUpHttpDumpTool.json | complete verification | |
+| 281 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/01_HttpDumpTool/index.rst | development-tools/testing-framework/08_TestTools/01_HttpDumpTool/01-HttpDumpTool.json | complete verification | |
+| 282 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.rst | development-tools/testing-framework/08_TestTools/02_MasterDataSetup/01-MasterDataSetupTool.json | complete verification | |
+| 283 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.rst | development-tools/testing-framework/08_TestTools/02_MasterDataSetup/02-ConfigMasterDataSetupTool.json | complete verification | |
+| 284 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/index.rst | development-tools/testing-framework/08_TestTools/02_MasterDataSetup/02-MasterDataSetup.json | complete verification | |
+| 285 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/03_HtmlCheckTool/index.rst | development-tools/testing-framework/08_TestTools/03_HtmlCheckTool/03-HtmlCheckTool.json | complete verification | |
+| 286 | en/development_tools/testing_framework/guide/development_guide/08_TestTools/index.rst | development-tools/testing-framework/08_TestTools/08-TestTools.json | complete verification | |
+| 287 | en/development_tools/testing_framework/index.rst | development-tools/testing-framework/testing-framework.json | complete verification | |
+| 288 | en/development_tools/toolbox/JspStaticAnalysis/01_JspStaticAnalysis.rst | development-tools/toolbox/JspStaticAnalysis/01-JspStaticAnalysis.json | complete verification | |
+| 289 | en/development_tools/toolbox/JspStaticAnalysis/02_JspStaticAnalysisInstall.rst | development-tools/toolbox/JspStaticAnalysis/02-JspStaticAnalysisInstall.json | complete verification | |
+| 290 | en/development_tools/toolbox/JspStaticAnalysis/index.rst | development-tools/toolbox/JspStaticAnalysis/JspStaticAnalysis.json | complete verification | |
+| 291 | en/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.rst | development-tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.json | complete verification | |
+| 292 | en/development_tools/toolbox/SqlExecutor/SqlExecutor.rst | development-tools/toolbox/SqlExecutor/SqlExecutor.json | complete verification | |
+| 293 | en/development_tools/toolbox/index.rst | development-tools/toolbox/toolbox.json | complete verification | |
+| 294 | ja/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/double_transmission.rst | development-tools/testing-framework/05_UnitTestGuide/02_RequestUnitTest/double-transmission.json | complete verification | |
+| 295 | ja/releases/index.rst | about/release-notes/releases.json | complete verification | |
 
 **Instructions**:
 - Verify path conversion rules are followed
 - Mark ✓ if correct, ✗ if incorrect (note correct path)
-
----
-
-## Verification Cycle 2 Results
-
-**Date**: 2026-02-24
-**Status**: FAILED
-
-### Summary
-
-- **Total rows verified**: 272
-- **Incorrect classifications**: 10 (4 handlers/batch + 6 web_service/http_messaging)
-- **Missing files**: 23 (entire application_framework/application_framework/web/** directory)
-
-### Issue Status
-
-#### Issue #1: handlers/batch misclassified ❌ NOT FIXED
-**Problem**: handlers/batch files classified as processing-pattern instead of component
-**Affected rows**: 78-81 (4 files)
-- dbless_loop_handler.rst
-- index.rst
-- loop_handler.rst
-- process_resident_handler.rst
-
-**Current**: Type=processing-pattern, Category=nablarch-batch, PP=nablarch-batch
-**Expected**: Type=component, Category=handlers, PP=nablarch-batch
-
-**Root cause**: Classification rule pattern `application_framework/application_framework/handlers/batch/**` is not matching correctly or is being overridden by another rule.
-
-#### Issue #2: web processing-pattern files missing ❌ NOT FIXED
-**Problem**: All 23 files under application_framework/application_framework/web/** are missing from mapping
-**Examples of missing files**:
-- web/index.rst (Web Application index)
-- web/architecture.rst
-- web/application_design.rst
-- web/feature_details.rst
-- web/getting_started/** (tutorials)
-
-**Expected**: Type=processing-pattern, Category=web-application, PP=web-application
-
-**Root cause**: The pattern `application_framework/application_framework/web/**` is not being matched during file collection or is being excluded.
-
-#### Issue #3: http_messaging misclassified ❌ NOT FIXED
-**Problem**: web_service/http_messaging files classified as restful-web-service instead of http-messaging
-**Affected rows**: 201-206 (6 files)
-- web_service/http_messaging/application_design.rst
-- web_service/http_messaging/architecture.rst
-- web_service/http_messaging/feature_details.rst
-- web_service/http_messaging/getting_started/getting_started.rst
-- web_service/http_messaging/getting_started/save/index.rst
-- web_service/http_messaging/index.rst
-
-**Current**: Type=processing-pattern, Category=restful-web-service, PP=restful-web-service
-**Expected**: Type=processing-pattern, Category=http-messaging, PP=http-messaging
-
-**Root cause**: The general web_service/** rule is matching before the specific web_service/http_messaging/** rule. Rule priority is incorrect.
-
-### Required Corrections
-
-1. **Fix handlers/batch classification rule** - Lines 63-67 in classification.md should take priority
-2. **Fix web/** file collection** - Pattern `application_framework/application_framework/web/**` must be included
-3. **Fix rule priority for http_messaging** - Specific http_messaging rule (lines 143-147) must evaluate before general web_service rule (lines 150-154)
-
-### Verification Status
-
-- Classification Verification: FAILED (10 incorrect out of 272)
-- Target Path Verification: NOT COMPLETED (depends on correct classification)
-- Missing Files: CRITICAL (23 files missing)
 
