@@ -19,12 +19,15 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping.py v6
 - Does NOT assign Processing Pattern (all PP fields are empty initially)
 - Reports review items for files where path-based classification is uncertain
 
-**Exit codes**:
-- 0: Completed successfully (no review items)
-- 1: Completed with review items (proceed to Step 5)
-- 2: Script error (fix and re-run)
+**Exit Code Handling**:
 
-If exit code is 1, review items will be printed to stdout in JSON format. Proceed to Step 5 to resolve them.
+Check the script's exit code to determine next steps:
+
+- **Exit 0**: Success - No review items found. Proceed to Step 2 (Assign Processing Patterns)
+- **Exit 1**: Review items exist - Review items printed to stdout in JSON format. Skip to Step 5 (Resolve Review Items) before proceeding to Step 2
+- **Exit 2**: Script error - Fix script issues (invalid input, file not found, etc.) and re-run Step 1
+
+Do not proceed to Step 2 until all review items from exit code 1 are resolved.
 
 ### Step 2: Assign Processing Patterns (Content-based)
 
@@ -114,6 +117,26 @@ Review items are files where path-based classification was insufficient. For eac
    - Include file path, context examined, and conflicting indicators
 
 Do NOT guess. If the classification is genuinely ambiguous, human judgment is required.
+
+#### How to Add New Rules
+
+When adding new classification rules, update both files to ensure synchronization:
+
+1. **Update generate-mapping.py**:
+   - Add path-based rule to the `classify_by_path()` function in the appropriate section
+   - Use `if path.startswith('...')` pattern for directory-based rules
+   - Use `if 'keyword' in path` for keyword-based rules
+   - Example: `if path_for_matching.startswith('application_framework/libraries/'):`
+
+2. **Update references/classification.md**:
+   - Add corresponding entry using the format specified in that file
+   - Include rationale explaining why this path pattern maps to this classification
+   - Include examples of files matching this rule
+
+3. **Ensure synchronization**:
+   - Both files must stay synchronized to maintain reproducibility
+   - Test by running generate-mapping.py and verifying new classifications appear correctly
+   - Run validation to confirm rules work as expected
 
 ### Step 6: Generate Verification Checklist
 

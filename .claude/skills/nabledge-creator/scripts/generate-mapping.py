@@ -18,6 +18,10 @@ from typing import Dict, List, Tuple, Optional
 from datetime import date
 
 
+# Content reading limits
+CONTENT_PREVIEW_LINES = 50  # Sufficient for classification heuristics
+TITLE_SEARCH_LINES = 20     # Most RST titles appear in first 20 lines
+
 # Base directories for Nablarch v6
 V6_BASES = {
     'nablarch-document-en': '.lw/nab-official/v6/nablarch-document/en',
@@ -249,7 +253,7 @@ def classify_by_path(file_info: Dict) -> Dict:
     return classification
 
 
-def read_rst_content(file_path: str, lines: int = 50) -> str:
+def read_rst_content(file_path: str, lines: int = CONTENT_PREVIEW_LINES) -> str:
     """Read first N lines of RST file."""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -262,7 +266,7 @@ def read_rst_content(file_path: str, lines: int = 50) -> str:
 def extract_title_from_content(content: str) -> str:
     """Extract h1 title from RST content."""
     lines = content.split('\n')
-    for i, line in enumerate(lines[:20]):
+    for i, line in enumerate(lines[:TITLE_SEARCH_LINES]):
         if i > 0 and lines[i-1].strip():
             if re.match(r'^=+\s*$', line) or re.match(r'^-+\s*$', line):
                 return lines[i-1].strip()
@@ -556,14 +560,14 @@ def extract_title(file_path: str, file_type: str) -> str:
 
         if file_type == 'rst':
             # Find title with === or --- underline
-            for i, line in enumerate(lines[:20]):
+            for i, line in enumerate(lines[:TITLE_SEARCH_LINES]):
                 if i > 0 and lines[i-1].strip():
                     if re.match(r'^=+\s*$', line) or re.match(r'^-+\s*$', line):
                         return lines[i-1].strip()
 
         elif file_type == 'md':
             # Find first # heading
-            for line in lines[:20]:
+            for line in lines[:TITLE_SEARCH_LINES]:
                 if line.startswith('# '):
                     return line[2:].strip()
 
@@ -847,6 +851,13 @@ def output_markdown(mapping_list: List[Dict], output_path: str):
             f.write(f"| {source_path} | {title} | {title_ja} | {url} | {type_val} | {category} | {pp} | {target_path} |\n")
 
 
+def validate_inputs(version: str) -> None:
+    """Validate input version before processing."""
+    if version not in ['v6', 'v5']:
+        print(f"Error: Invalid version: {version}. Must be 'v6' or 'v5'", file=sys.stderr)
+        sys.exit(2)
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: generate-mapping.py VERSION [--output PATH]", file=sys.stderr)
@@ -854,6 +865,10 @@ def main():
         sys.exit(2)
 
     version = sys.argv[1]
+
+    # Validate inputs
+    validate_inputs(version)
+
     output_path = '.claude/skills/nabledge-creator/output/mapping-v6.md'
 
     if '--output' in sys.argv:

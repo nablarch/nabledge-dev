@@ -234,12 +234,23 @@ def check_consistency(rows: List[Dict]) -> int:
     return errors
 
 
+def validate_inputs(mapping_file: str) -> None:
+    """Validate input files exist before processing."""
+    if not Path(mapping_file).exists():
+        print(f"Error: Mapping file not found: {mapping_file}", file=sys.stderr)
+        sys.exit(2)
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: validate-mapping.py MAPPING_FILE [--source-dir DIR]", file=sys.stderr)
         sys.exit(2)
 
     mapping_file = sys.argv[1]
+
+    # Validate inputs
+    validate_inputs(mapping_file)
+
     source_dir = '.lw/nab-official/v6'
 
     if '--source-dir' in sys.argv:

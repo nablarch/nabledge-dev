@@ -29,7 +29,8 @@ The checklist contains sampled rows from the mapping that require content verifi
 For each row in the checklist's "Classification Check" section:
 
 1. **Read RST source**:
-   - Read the first 50-100 lines of the RST file specified in Source Path
+   - Read the first 50 lines of the RST file specified in Source Path
+   - If these lines don't contain sufficient information to verify classification (e.g., file is mostly boilerplate or toctree directives), read up to 200 lines or until you find the main content section
    - If the file contains `toctree` directives, read those referenced files as well
    - Read any files that reference this file (check `:ref:` and `toctree` in parent directories)
 
@@ -77,11 +78,13 @@ For each row in the checklist's "Target Path Check" section:
 
 If ANY row is marked ✗:
 
-1. Identify the incorrect rule in `.claude/skills/nabledge-creator/references/classification.md`
-2. Correct the rule
-3. Return to the generation workflow and re-run from Step 1
+1. Document the corrections needed in the checklist file (note the correct classification and reasoning)
+2. **Exit the verification session** (this is critical - don't continue in same session)
+3. **In a new generation session**, apply corrections to `.claude/skills/nabledge-creator/references/classification.md` and `generate-mapping.py`
+4. Re-run the generation workflow from Step 1
+5. **Start a fresh verification session** after regeneration completes
 
-Do NOT proceed with incorrect classifications.
+Do NOT proceed with incorrect classifications. Session separation ensures that verification remains unbiased by generation logic.
 
 ### Step VM5: Update Checklist
 

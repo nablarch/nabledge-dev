@@ -3,8 +3,9 @@
 Export mapping Markdown to Excel format.
 
 Exit codes:
-  0: Success
-  1: Error
+  0: Success (no issues)
+  1: Success with warnings (reserved for future use)
+  2: Error (invalid input, file not found, processing failed)
 """
 
 import sys
@@ -58,7 +59,7 @@ def export_to_excel(rows, output_path: str):
         from openpyxl.utils import get_column_letter
     except ImportError:
         print("Error: openpyxl not installed. Install with: pip install openpyxl", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(2)
 
     wb = Workbook()
     ws = wb.active
@@ -119,12 +120,23 @@ def export_to_excel(rows, output_path: str):
     print(f"Exported {len(rows)} rows to {output_path}", file=sys.stderr)
 
 
+def validate_inputs(mapping_file: str) -> None:
+    """Validate input files exist before processing."""
+    if not Path(mapping_file).exists():
+        print(f"Error: Mapping file not found: {mapping_file}", file=sys.stderr)
+        sys.exit(2)
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: export-excel.py MAPPING_FILE [--output PATH]", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(2)
 
     mapping_file = sys.argv[1]
+
+    # Validate inputs
+    validate_inputs(mapping_file)
+
     output_path = mapping_file.replace('.md', '.xlsx')
 
     if '--output' in sys.argv:

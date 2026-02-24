@@ -3,8 +3,9 @@
 Generate verification checklist from mapping file.
 
 Exit codes:
-  0: Success
-  1: Error
+  0: Success (no issues)
+  1: Success with warnings (reserved for future use)
+  2: Error (invalid input, file not found, processing failed)
 """
 
 import sys
@@ -202,10 +203,20 @@ def generate_checklist(mapping_path: str, source_dir: str, output_path: str):
     print(f"  Target path checks: {len(target_path_checks)}", file=sys.stderr)
 
 
+def validate_inputs(mapping_file: str, source_dir: str = None) -> None:
+    """Validate input files exist before processing."""
+    if not Path(mapping_file).exists():
+        print(f"Error: Mapping file not found: {mapping_file}", file=sys.stderr)
+        sys.exit(2)
+    if source_dir and not Path(source_dir).exists():
+        print(f"Error: Source directory not found: {source_dir}", file=sys.stderr)
+        sys.exit(2)
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: generate-mapping-checklist.py MAPPING_FILE --source-dir DIR [--output PATH]", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(2)
 
     mapping_file = sys.argv[1]
     source_dir = None
@@ -223,7 +234,10 @@ def main():
 
     if not source_dir:
         print("Error: --source-dir is required", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(2)
+
+    # Validate inputs
+    validate_inputs(mapping_file, source_dir)
 
     if not output_path:
         output_path = mapping_file.replace('.md', '.checklist.md')
