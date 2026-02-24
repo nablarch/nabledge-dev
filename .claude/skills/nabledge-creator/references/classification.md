@@ -61,8 +61,8 @@ Rules are evaluated in order. The first matching rule determines the classificat
 
 **Patterns**:
 - `application_framework/application_framework/handlers/batch/**`
-  - Type: `processing-pattern`
-  - Category: `nablarch-batch`
+  - Type: `component`
+  - Category: `handlers`
   - PP: `nablarch-batch`
 
 - `application_framework/application_framework/handlers/http_messaging/**`
@@ -134,10 +134,17 @@ Rules are evaluated in order. The first matching rule determines the classificat
 
 ### processing-patterns (web)
 
-**Pattern**: `application_framework/application_framework/web_application/**`
+**Pattern**: `application_framework/application_framework/web/**`
 - Type: `processing-pattern`
 - Category: `web-application`
 - PP: `web-application`
+
+### processing-patterns (http-messaging in web_service)
+
+**Pattern**: `application_framework/application_framework/web_service/http_messaging/**`
+- Type: `processing-pattern`
+- Category: `http-messaging`
+- PP: `http-messaging`
 
 ### processing-patterns (rest)
 

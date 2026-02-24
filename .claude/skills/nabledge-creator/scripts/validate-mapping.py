@@ -115,7 +115,7 @@ def check_source_files(rows: List[Dict], source_dir: str) -> Tuple[int, int]:
     warnings = 0
 
     base_paths = {
-        'nablarch-document-en': Path(source_dir) / 'nablarch-document' / 'en',
+        'nablarch-document': Path(source_dir) / 'nablarch-document',
         'system-development-guide': Path(source_dir) / 'nablarch-system-development-guide',
     }
 
@@ -135,12 +135,12 @@ def check_source_files(rows: List[Dict], source_dir: str) -> Tuple[int, int]:
             errors += 1
 
         # Check Japanese file (warning only)
-        if 'system-development-guide' not in source_path:
-            ja_path = source_path
+        if 'system-development-guide' not in source_path and source_path.startswith('en/'):
+            ja_path = source_path.replace('en/', 'ja/', 1)
             if 'duplicate_form_submission.rst' in ja_path:
                 ja_path = ja_path.replace('duplicate_form_submission.rst', 'double_transmission.rst')
 
-            ja_base = Path(source_dir) / 'nablarch-document' / 'ja'
+            ja_base = Path(source_dir) / 'nablarch-document'
             ja_full = ja_base / ja_path
             if not ja_full.exists():
                 print(f"WARNING row {i}: Japanese file not found: {ja_path}")

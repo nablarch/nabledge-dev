@@ -185,7 +185,7 @@ def classify_by_path(file_info: Dict) -> Dict:
     # Handlers - complex logic
     if '/handlers/' in path_for_matching:
         if '/handlers/batch/' in path_for_matching:
-            return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
+            return {'type': 'component', 'category': 'handlers', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
         elif '/handlers/http_messaging/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'http-messaging', 'confidence': 'confirmed'}
         elif '/handlers/mom_messaging/' in path_for_matching:
@@ -213,8 +213,12 @@ def classify_by_path(file_info: Dict) -> Dict:
             return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
 
     # Processing patterns - web
-    if path_for_matching.startswith('application_framework/application_framework/web_application/'):
+    if path_for_matching.startswith('application_framework/application_framework/web/'):
         return {'type': 'processing-pattern', 'category': 'web-application', 'pp': 'web-application', 'confidence': 'confirmed'}
+
+    # Processing patterns - HTTP messaging in web_service (check before general web_service)
+    if path_for_matching.startswith('application_framework/application_framework/web_service/http_messaging/'):
+        return {'type': 'processing-pattern', 'category': 'http-messaging', 'pp': 'http-messaging', 'confidence': 'confirmed'}
 
     # Processing patterns - REST
     if path_for_matching.startswith('application_framework/application_framework/web_service/'):
