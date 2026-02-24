@@ -10,7 +10,7 @@
 
 ## Phase 1: Infrastructure (Mapping) ⏳
 
-### Task 1.1: Design and implement mapping workflow
+### Task 1.1: Design and implement mapping workflow ✅
 - [x] Design mapping workflow (doc/creator/improved-design-mapping.md)
 - [x] Implement generate-mapping.py
 - [x] Implement validate-mapping.py
@@ -18,7 +18,7 @@
 
 **Result**: 302 files mapped, 0 errors
 
-### Task 1.2: Verify mapping reproducibility (5 runs required)
+### Task 1.2: Verify mapping reproducibility (5 runs required) ⏳
 - [x] Execute mapping generation - Run 1
 - [x] Execute mapping generation - Run 2
 - [x] Execute mapping generation - Run 3
@@ -26,16 +26,20 @@
 - [ ] Execute mapping generation - Run 5
 - [x] Compare Run 1-3 outputs with MD5 checksums
 - [ ] Compare all 5 runs with MD5 checksums
-- [ ] Document final results
+- [ ] Document final results in reproducibility-test-report.md
 
 **Result (Runs 1-3)**: Byte-for-byte identical (MD5 verified)
 **Status**: 3/5 runs complete, 2 remaining
 
+**Phase 1 Status**: ⏳ Cannot proceed to Phase 2 until 5/5 runs complete
+
 ---
 
-## Phase 2: Index Structure ✅
+## Phase 2: Index Structure ⏳
 
-### Task 2.1: Design and implement index workflow
+**Prerequisites**: Phase 1 must be 100% complete (5/5 reproducibility runs)
+
+### Task 2.1: Design and implement index workflow ✅
 - [x] Design index schema (references/index-schema.md)
 - [x] Design workflow (workflows/index.md)
 - [x] Implement generate-index.py (L1/L2/L3 keyword extraction)
@@ -43,18 +47,48 @@
 
 **Result**: 259 entries, all validations passed
 
-### Task 2.2: Verify index generation
-- [x] Generate index from mapping
-- [x] Validate index structure
-- [x] Check L1/L2/L3 keyword coverage
+### Task 2.2: Verify index reproducibility (5 runs required) ❌
+- [ ] Backup current index.toon
+- [ ] Execute index generation - Run 1
+  - [ ] Delete index.toon
+  - [ ] Run: python scripts/generate-index.py
+  - [ ] Calculate MD5 checksum
+  - [ ] Validate: python scripts/validate-index.py (expect 0 errors, 259 entries)
+- [ ] Execute index generation - Run 2
+  - [ ] Delete index.toon
+  - [ ] Run: python scripts/generate-index.py
+  - [ ] Calculate MD5 checksum
+  - [ ] Validate: python scripts/validate-index.py (expect 0 errors, 259 entries)
+- [ ] Execute index generation - Run 3
+  - [ ] Delete index.toon
+  - [ ] Run: python scripts/generate-index.py
+  - [ ] Calculate MD5 checksum
+  - [ ] Validate: python scripts/validate-index.py (expect 0 errors, 259 entries)
+- [ ] Execute index generation - Run 4
+  - [ ] Delete index.toon
+  - [ ] Run: python scripts/generate-index.py
+  - [ ] Calculate MD5 checksum
+  - [ ] Validate: python scripts/validate-index.py (expect 0 errors, 259 entries)
+- [ ] Execute index generation - Run 5
+  - [ ] Delete index.toon
+  - [ ] Run: python scripts/generate-index.py
+  - [ ] Calculate MD5 checksum
+  - [ ] Validate: python scripts/validate-index.py (expect 0 errors, 259 entries)
+- [ ] Compare all 5 MD5 checksums
+- [ ] Document results: All 5 runs byte-for-byte identical?
+- [ ] If issues found: Fix and repeat all 5 runs
 
-**Result**: 0 errors, all entries have required keywords
+**Status**: 0/5 runs complete
+
+**Phase 2 Status**: ⏳ Cannot proceed to Phase 3 until 5/5 runs complete
 
 ---
 
-## Phase 3: Pilot Knowledge Files (Proof-of-Concept) ✅
+## Phase 3: Pilot Knowledge Files (17 files) ⏳
 
-### Task 3.1: Design and implement knowledge workflow
+**Prerequisites**: Phase 2 must be 100% complete (5/5 reproducibility runs)
+
+### Task 3.1: Design and implement knowledge workflow ✅
 - [x] Design knowledge schema (references/knowledge-schema.md)
 - [x] Design workflow (workflows/knowledge.md)
 - [x] Implement validate-knowledge.py
@@ -62,7 +96,7 @@
 
 **Result**: Schema and validation ready
 
-### Task 3.2: Generate pilot files (17 files)
+### Task 3.2: Generate pilot files (17 files) ✅
 - [x] Select representative files (6 categories)
 - [x] Generate using AI workflow
 - [x] Validate schema compliance
@@ -70,11 +104,48 @@
 
 **Result**: 17 files, 0 errors, 100% schema compliance
 
+### Task 3.3: Verify knowledge reproducibility (5 runs with 17 files) ❌
+- [ ] Backup current 17 knowledge files
+- [ ] Execute knowledge generation - Run 1
+  - [ ] Delete 17 knowledge files
+  - [ ] Run: knowledge generation workflow (17 files)
+  - [ ] Validate: python scripts/validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count
+- [ ] Execute knowledge generation - Run 2
+  - [ ] Delete 17 knowledge files
+  - [ ] Run: knowledge generation workflow (17 files)
+  - [ ] Validate: python scripts/validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count
+- [ ] Execute knowledge generation - Run 3
+  - [ ] Delete 17 knowledge files
+  - [ ] Run: knowledge generation workflow (17 files)
+  - [ ] Validate: python scripts/validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count
+- [ ] Execute knowledge generation - Run 4
+  - [ ] Delete 17 knowledge files
+  - [ ] Run: knowledge generation workflow (17 files)
+  - [ ] Validate: python scripts/validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count
+- [ ] Execute knowledge generation - Run 5
+  - [ ] Delete 17 knowledge files
+  - [ ] Run: knowledge generation workflow (17 files)
+  - [ ] Validate: python scripts/validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count
+- [ ] Analyze results: All 5 runs achieve 0 errors?
+- [ ] Document quality reproducibility (not content, but schema compliance)
+- [ ] If issues found: Fix workflow/patterns and repeat all 5 runs
+
+**Status**: 0/5 runs complete
+
+**Phase 3 Status**: ⏳ Cannot proceed to Phase 4 until 5/5 runs complete and patterns proven
+
 ---
 
 ## Phase 4: Complete Knowledge Files (SC1 Achievement) ⏳
 
-**Goal**: Generate remaining 137 files to complete 154 total files
+**Prerequisites**: Phase 3 must be 100% complete (5/5 reproducibility runs, 0 errors consistently)
+
+**Goal**: Generate remaining 137 files to complete 154 total files using proven patterns from Phase 3
 
 ### Task 4.1: Generate checks category (1 file remaining)
 - [ ] Check existing: security.json (✅ already created)
@@ -170,132 +241,69 @@
 
 ---
 
-## Phase 5: Reproducibility Verification (SC2 Achievement) ⏳
+## Phase 5: Final Verification (SC1 & SC2 Complete) ⏳
 
-**Goal**: Verify all workflows produce consistent results across 5 executions each
+**Prerequisites**: Phase 4 complete (all 154 files generated)
 
-### Task 5.1: Complete mapping reproducibility (2 remaining runs)
-- [ ] Execute mapping generation - Run 4
-  - [ ] Delete output/mapping-v6.md
-  - [ ] Run: generate-mapping.py
-  - [ ] Calculate MD5 checksum
-  - [ ] Validate: validate-mapping.py (expect 0 errors)
-- [ ] Execute mapping generation - Run 5
-  - [ ] Delete output/mapping-v6.md
-  - [ ] Run: generate-mapping.py
-  - [ ] Calculate MD5 checksum
-  - [ ] Validate: validate-mapping.py (expect 0 errors)
-- [ ] Compare all 5 MD5 checksums
-- [ ] Document: All 5 runs byte-for-byte identical?
+**Goal**: Final end-to-end verification with complete 154-file knowledge base
 
-**Status**: 3/5 runs complete, 2 remaining
+### Task 5.1: Final validation of all 154 files
+- [ ] Run validate-knowledge.py on all 154 files
+- [ ] Verify: 0 errors
+- [ ] Verify: 100% schema compliance
+- [ ] Run validate-index.py with all 259 entries
+- [ ] Verify: All files referenced in index exist
 
-### Task 5.2: Index reproducibility test - Prepare
-- [ ] Document test procedure for index generation
-- [ ] Create backup of current index.toon
-- [ ] Prepare clean test directory
+**Target**: 154 files, 0 errors, 100% schema compliance
 
-### Task 5.3: Index reproducibility test - Run 1
-- [ ] Delete index.toon
-- [ ] Run: generate-index.py
-- [ ] Calculate MD5 checksum
-- [ ] Validate: validate-index.py (expect 0 errors, 259 entries)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.4: Index reproducibility test - Run 2
-- [ ] Delete index.toon
-- [ ] Run: generate-index.py
-- [ ] Calculate MD5 checksum
-- [ ] Validate: validate-index.py (expect 0 errors, 259 entries)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.5: Index reproducibility test - Run 3
-- [ ] Delete index.toon
-- [ ] Run: generate-index.py
-- [ ] Calculate MD5 checksum
-- [ ] Validate: validate-index.py (expect 0 errors, 259 entries)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.6: Index reproducibility test - Run 4
-- [ ] Delete index.toon
-- [ ] Run: generate-index.py
-- [ ] Calculate MD5 checksum
-- [ ] Validate: validate-index.py (expect 0 errors, 259 entries)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.7: Index reproducibility test - Run 5
-- [ ] Delete index.toon
-- [ ] Run: generate-index.py
-- [ ] Calculate MD5 checksum
-- [ ] Validate: validate-index.py (expect 0 errors, 259 entries)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.8: Analyze index reproducibility
-- [ ] Compare all 5 MD5 checksums
-- [ ] Document: All 5 runs byte-for-byte identical?
-- [ ] If not identical: Analyze differences (content vs structure)
+### Task 5.2: End-to-end reproducibility test (154 files, 5 runs)
+- [ ] Backup current complete knowledge base
+- [ ] Execute complete workflow - Run 1
+  - [ ] Delete all 154 knowledge files + index.toon
+  - [ ] Run: generate-index.py
+  - [ ] Run: knowledge generation workflow (all 154 files)
+  - [ ] Validate: validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count, execution time
+- [ ] Execute complete workflow - Run 2
+  - [ ] Delete all 154 knowledge files + index.toon
+  - [ ] Run: generate-index.py
+  - [ ] Run: knowledge generation workflow (all 154 files)
+  - [ ] Validate: validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count, execution time
+- [ ] Execute complete workflow - Run 3
+  - [ ] Delete all 154 knowledge files + index.toon
+  - [ ] Run: generate-index.py
+  - [ ] Run: knowledge generation workflow (all 154 files)
+  - [ ] Validate: validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count, execution time
+- [ ] Execute complete workflow - Run 4
+  - [ ] Delete all 154 knowledge files + index.toon
+  - [ ] Run: generate-index.py
+  - [ ] Run: knowledge generation workflow (all 154 files)
+  - [ ] Validate: validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count, execution time
+- [ ] Execute complete workflow - Run 5
+  - [ ] Delete all 154 knowledge files + index.toon
+  - [ ] Run: generate-index.py
+  - [ ] Run: knowledge generation workflow (all 154 files)
+  - [ ] Validate: validate-knowledge.py (expect 0 errors)
+  - [ ] Record: error count, warning count, execution time
+- [ ] Analyze results: All 5 runs achieve 0 errors?
+- [ ] Document variance in error rates, warning rates
+- [ ] Document: 154-file scale reproducibility confirmed
 
 **Status**: 0/5 runs complete
 
-### Task 5.9: Knowledge reproducibility test - Prepare
-- [ ] Document test procedure for knowledge generation
-- [ ] Create backup of current 154 knowledge files
-- [ ] Prepare clean test directory
+### Task 5.3: Final reproducibility report
+- [ ] Compile all reproducibility results:
+  - [ ] Phase 1 (Mapping): 5/5 runs, MD5 verification
+  - [ ] Phase 2 (Index): 5/5 runs, MD5 verification
+  - [ ] Phase 3 (Pilot 17 files): 5/5 runs, quality verification
+  - [ ] Phase 5 (Complete 154 files): 5/5 runs, quality verification
+- [ ] Update .pr/00078/reproducibility-test-report.md with all results
+- [ ] Final conclusion: SC1 and SC2 achieved
 
-### Task 5.10: Knowledge reproducibility test - Run 1
-- [ ] Delete all 154 knowledge files
-- [ ] Run: knowledge generation workflow
-- [ ] Validate: validate-knowledge.py (expect 0 errors)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.11: Knowledge reproducibility test - Run 2
-- [ ] Delete all 154 knowledge files
-- [ ] Run: knowledge generation workflow
-- [ ] Validate: validate-knowledge.py (expect 0 errors)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.12: Knowledge reproducibility test - Run 3
-- [ ] Delete all 154 knowledge files
-- [ ] Run: knowledge generation workflow
-- [ ] Validate: validate-knowledge.py (expect 0 errors)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.13: Knowledge reproducibility test - Run 4
-- [ ] Delete all 154 knowledge files
-- [ ] Run: knowledge generation workflow
-- [ ] Validate: validate-knowledge.py (expect 0 errors)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.14: Knowledge reproducibility test - Run 5
-- [ ] Delete all 154 knowledge files
-- [ ] Run: knowledge generation workflow
-- [ ] Validate: validate-knowledge.py (expect 0 errors)
-- [ ] Record results: errors, warnings, execution time
-
-### Task 5.15: Analyze knowledge reproducibility
-- [ ] Compare 5 runs: All achieve 0 errors?
-- [ ] Compare 5 runs: Schema compliance consistent (100%)?
-- [ ] Calculate variance: Error rates, warning rates
-- [ ] Document: What varies? (content vs structure)
-- [ ] Document: What is consistent? (quality, schema compliance)
-
-**Status**: 0/5 runs complete
-
-### Task 5.16: Final reproducibility report
-- [ ] Compile results from all three phases:
-  - [ ] Mapping: 5/5 runs with MD5 verification
-  - [ ] Index: 5/5 runs with MD5 verification
-  - [ ] Knowledge: 5/5 runs with quality verification
-- [ ] Define "reproducible" for each phase type:
-  - [ ] Script-based (mapping, index): Byte-for-byte identical
-  - [ ] AI-based (knowledge): 0 errors consistently
-- [ ] Update .pr/00078/reproducibility-test-report.md
-- [ ] Conclusion: SC2 achieved or not?
-
-**SC2 Overall Status**: ❌ Not achieved
-- Mapping: 3/5 runs complete (60%) ⏳
-- Index: 0/5 runs complete (0%) ❌
-- Knowledge: 0/5 runs complete (0%) ❌
+**Phase 5 Status**: ❌ Not complete
 
 ---
 
@@ -310,17 +318,19 @@
 **Current**: 17/154 files (11%) - ❌ NOT ACHIEVED
 
 ### SC2: Multiple executions produce consistent, reproducible results
-- [ ] Mapping: 5 independent executions completed (3/5 done)
-- [ ] Index: 5 independent executions completed (0/5 done)
-- [ ] Knowledge: 5 independent executions completed (0/5 done)
-- [ ] All 5 runs achieve 0 errors for each phase
-- [ ] Quality metrics consistent across runs
+- [ ] Phase 1 (Mapping): 5 independent executions completed (3/5 done)
+- [ ] Phase 2 (Index): 5 independent executions completed (0/5 done)
+- [ ] Phase 3 (Pilot - 17 files): 5 independent executions completed (0/5 done)
+- [ ] Phase 5 (Final - 154 files): 5 independent executions completed (0/5 done)
+- [ ] All phases achieve consistent 0 errors across 5 runs
 - [ ] Process documented for future Nablarch versions
 
 **Current**:
 - Phase 1 (Mapping): 3/5 runs complete ⏳
-- Phase 2-5: 0/5 runs complete ❌
-- **Overall**: ❌ NOT ACHIEVED
+- Phase 2 (Index): 0/5 runs complete ❌ BLOCKED
+- Phase 3 (Pilot): 0/5 runs complete ❌ BLOCKED
+- Phase 5 (Final): 0/5 runs complete ❌ BLOCKED
+- **Overall**: ❌ NOT ACHIEVED (20% done - only Phase 1 partial)
 
 ---
 
@@ -328,23 +338,25 @@
 
 | Phase | Status | Files | Next Action |
 |-------|--------|-------|-------------|
-| **Phase 1: Mapping** | ⏳ **60% done** | **302 mapped, 3/5 runs** | **Complete runs 4-5** |
-| **Phase 2: Index** | ⏳ **Implementation done** | **259 entries, 0/5 runs** | **Complete 5 reproducibility runs** |
-| Phase 3: Pilot | ✅ Complete | 17 files | - |
-| **Phase 4: Complete Files** | ⏳ **11% done** | **17/154 files** | **Generate 137 remaining** |
-| **Phase 5: Reproducibility** | ⏳ **20% done** | **Mapping: 3/5, Index: 0/5, Knowledge: 0/5** | **Complete all 5-run tests** |
+| **Phase 1: Mapping** | ⏳ **60% done** | **302 mapped, 3/5 runs** | **START HERE: Complete runs 4-5** |
+| **Phase 2: Index** | ⏳ **Blocked** | **259 entries, 0/5 runs** | **After Phase 1: Complete 5 runs** |
+| **Phase 3: Pilot** | ⏳ **Blocked** | **17 files, 0/5 runs** | **After Phase 2: Complete 5 runs** |
+| **Phase 4: Complete Files** | ⏳ **Blocked** | **17/154 files** | **After Phase 3: Generate 137 remaining** |
+| **Phase 5: Final Verification** | ⏳ **Blocked** | **0/5 runs** | **After Phase 4: Complete 5 runs** |
 
-**Overall**: 1/5 phases complete, 4/5 phases in progress or pending
+**Overall**: 0/5 phases complete, all phases in progress or blocked
 
 **SC Achievement**:
-- SC1: ❌ 11% complete (need 89% more work)
-- SC2: ❌ 40% complete (Phase 1: 3/5 runs done, Phase 2-5: 0/5 runs)
+- SC1: ❌ 11% complete (17/154 files, need 137 more)
+- SC2: ❌ 20% complete (Only Phase 1: 3/5 runs done, rest: 0/5 runs)
 
-**Estimated Remaining Work**:
-- Phase 1: Complete 2 mapping runs (estimated 1 hour)
-- Phase 4: Generate 137 files (estimated 20-30 hours with AI workflow)
-- Phase 5: Reproducibility tests
-  - Mapping: 2 runs remaining (estimated 1 hour)
-  - Index: 5 runs (estimated 2-3 hours)
-  - Knowledge: 5 runs (estimated 10-15 hours)
-- Total: 34-50 hours remaining
+**Estimated Remaining Work** (must be done sequentially):
+1. Phase 1: Complete 2 mapping runs (estimated 1 hour)
+2. Phase 2: Complete 5 index runs (estimated 2-3 hours)
+3. Phase 3: Complete 5 pilot knowledge runs with 17 files (estimated 3-5 hours)
+4. Phase 4: Generate 137 remaining files (estimated 20-30 hours)
+5. Phase 5: Complete 5 final runs with 154 files (estimated 10-15 hours)
+
+**Total**: 36-54 hours remaining
+
+**Critical Path**: Each phase blocks the next. Must complete Phase 1 reproducibility before proceeding.
