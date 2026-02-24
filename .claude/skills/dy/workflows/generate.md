@@ -92,6 +92,21 @@ multiSelect: false
 
 Save user's answer as `discoveries`.
 
+**3.1 Refine Discovery Text**
+
+If user provides rough or fragmented input, refine it into well-structured sentences:
+
+**Refinement Guidelines**:
+- Expand abbreviations and clarify technical terms
+- Add context to make the insight self-contained
+- Structure as: Problem/Observation → Learning/Insight → Future action/consideration
+- Keep professional tone suitable for team sharing
+- Length: 2-4 sentences (100-200 Japanese characters)
+
+**Example refinement**:
+- Input: "性能改善で検索ヒットしない、精度と性能の両立必要"
+- Output: "性能改善を実施した際、検索がヒットしなくなる事象が発生しました。精度向上と性能向上はトレードオフの関係にあるため、段階的に検証しながら両立を目指す改善プロセスが必要だと感じました。今後は疑似的なテストケースを用意し、精度と性能の両面から評価する仕組みを整備したいと考えています。"
+
 ### 4. Categorize Issues
 
 Categorize closed issues into two groups:
@@ -121,7 +136,31 @@ If a PR references a closed issue from today, link them together for the output 
 
 ### 6. Output Teams Message
 
-**6.1 Message Format**
+**6.1 Translate Titles to Japanese**
+
+Before generating output, translate all English issue/PR titles to Japanese that **other team members can understand**:
+
+**Translation Guidelines**:
+- **Audience**: Other team members who may not know the context
+- **Clarity over brevity**: Add explanatory context when needed
+- **Explain internal terms**: If title contains project-specific terms (e.g., "op skill", "dy command"), explain what they are
+- **Keep technical terms**: Use English for common technical terms (e.g., "JWT", "API", "PR")
+- **Length**: 20-60 Japanese characters (prioritize clarity over brevity)
+
+**Examples**:
+- "As a nabledge-6 user, I want skills to run in separate contexts..." → "スキル別コンテキスト実行の実装"
+- "feat: Add user authentication feature" → "ユーザー認証機能の追加"
+- "fix: Resolve session timeout on login" → "ログインセッションタイムアウト問題の修正"
+- "Automated knowledge creation for Nablarch v6" → "Nablarch v6知識ファイル自動生成スキル"
+- "refactor: Rename op skill to dy for clarity" → "日次報告作成スキルの改善（コマンド名変更）"
+- "Improve op skill to dy command with better format" → "日次報告作成スキルの改善（出力形式の向上）"
+
+**Translation Process**:
+1. Identify the **purpose** of the issue/PR (what problem does it solve?)
+2. If internal terms exist (skill names, command names), add **explanatory context**
+3. Write in a way that someone unfamiliar with the project can understand the **value**
+
+**6.2 Message Format**
 
 Output in the following format (Japanese):
 
@@ -142,34 +181,49 @@ Output in the following format (Japanese):
 
 ### 💡 発見
 
-{User input}
+{Refined user input}
 ```
 
-**6.2 Completed Issues Format (Teams Markdown Links)**
+**6.3 Completed Issues Format (Teams Markdown Links)**
 
-For completed issues WITHOUT linked PR:
-```
-- [Title text](issue_url) (#issue_number) ✅
-```
+Use **Japanese title** from step 6.1. The format MUST be:
 
-For completed issues WITH linked PR:
 ```
-- [Title text](issue_url) (#issue_number, [PR #pr_number](pr_url)) ✅
+- [Japanese title](URL) (#number) ✅
 ```
 
-**6.3 Open PRs Format (Teams Markdown Links)**
+**CRITICAL**: The `[Japanese title](URL)` part is a markdown link where:
+- `Japanese title` = The translated Japanese title from step 6.1
+- `URL` = The full GitHub URL
+- Both must be present in the output
 
-For PRs that reference a closed issue:
+Examples:
 ```
-- [Issue title](issue_url) (#issue_number, [PR #pr_number](pr_url)) 🚧
-```
-
-For PRs without a clear issue reference:
-```
-- [PR title](pr_url) (PR #pr_number) 🚧
+- [スキル別コンテキスト実行の実装](https://github.com/nablarch/nabledge-dev/issues/49) (#49) ✅
+- [ユーザー認証機能の追加](https://github.com/owner/repo/issues/68) (#68, [PR #72](https://github.com/owner/repo/pull/72)) ✅
 ```
 
-**6.4 Complete Output Example**
+**6.4 Open PRs Format (Teams Markdown Links)**
+
+Use **Japanese title** from step 6.1. The format MUST be:
+
+For PRs that reference an issue:
+```
+- [Japanese issue title](issue_url) (#issue_number, [PR #pr_number](pr_url)) 🚧
+```
+
+For PRs without issue reference:
+```
+- [Japanese PR title](pr_url) (PR #pr_number) 🚧
+```
+
+Examples:
+```
+- [Nablarch v6知識ファイル自動生成](https://github.com/nablarch/nabledge-dev/issues/78) (#78, [PR #82](https://github.com/nablarch/nabledge-dev/pull/82)) 🚧
+- [opスキルのdy化](https://github.com/nablarch/nabledge-dev/pull/86) (PR #86) 🚧
+```
+
+**6.5 Complete Output Example**
 
 ```
 ## 2026-02-24 開発共有
