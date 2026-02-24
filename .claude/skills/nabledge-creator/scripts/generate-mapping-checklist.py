@@ -50,24 +50,25 @@ def parse_mapping_file(file_path: str) -> List[Dict]:
 def select_classification_checks(rows: List[Dict], sample_rate: int = 3) -> List[Dict]:
     """
     Select rows for classification checking.
-    Includes:
-    - Mandatory: needs_content rows (originally had low confidence)
-    - Mandatory: PP != Category for processing-pattern
-    - Mandatory: handlers/standalone/
-    - Sampling: Every Nth row
+    When sample_rate is 1, checks ALL rows (complete verification).
+    Otherwise uses sampling with mandatory checks.
     """
     checks = []
 
     for i, row in enumerate(rows):
         reason = None
 
-        # Mandatory checks
-        if '/standalone/' in row['source_path']:
-            reason = 'standalone handler (needs content verification)'
-        elif row['type'] == 'processing-pattern' and row['pp'] and row['pp'] != row['category']:
-            reason = 'PP != Category for processing-pattern'
-        elif i % sample_rate == 0:
-            reason = 'sampling'
+        if sample_rate == 1:
+            # Complete verification mode - check all files
+            reason = 'complete verification'
+        else:
+            # Sampling mode with mandatory checks
+            if '/standalone/' in row['source_path']:
+                reason = 'standalone handler (needs content verification)'
+            elif row['type'] == 'processing-pattern' and row['pp'] and row['pp'] != row['category']:
+                reason = 'PP != Category for processing-pattern'
+            elif i % sample_rate == 0:
+                reason = 'sampling'
 
         if reason:
             checks.append({
@@ -85,22 +86,25 @@ def select_classification_checks(rows: List[Dict], sample_rate: int = 3) -> List
 def select_target_path_checks(rows: List[Dict], sample_rate: int = 5) -> List[Dict]:
     """
     Select rows for target path checking.
-    Includes:
-    - Mandatory: component/handlers with subdirectories
-    - Mandatory: index.rst files
-    - Sampling: Every Nth row
+    When sample_rate is 1, checks ALL rows (complete verification).
+    Otherwise uses sampling with mandatory checks.
     """
     checks = []
 
     for i, row in enumerate(rows):
         reason = None
 
-        if 'component/handlers/' in row['target_path'] and row['target_path'].count('/') > 3:
-            reason = 'subdirectory preservation'
-        elif 'index' in row['source_path'].lower():
-            reason = 'index.rst naming'
-        elif i % sample_rate == 0:
-            reason = 'sampling'
+        if sample_rate == 1:
+            # Complete verification mode - check all files
+            reason = 'complete verification'
+        else:
+            # Sampling mode with mandatory checks
+            if 'component/handlers/' in row['target_path'] and row['target_path'].count('/') > 3:
+                reason = 'subdirectory preservation'
+            elif 'index' in row['source_path'].lower():
+                reason = 'index.rst naming'
+            elif i % sample_rate == 0:
+                reason = 'sampling'
 
         if reason:
             checks.append({
@@ -113,6 +117,39 @@ def select_target_path_checks(rows: List[Dict], sample_rate: int = 5) -> List[Di
     return checks
 
 
+def find_excluded_files(source_dir: str, mapped_files: List[str]) -> List[str]:
+    """Find files in source directory that are not in mapping."""
+    excluded = []
+    source_path = Path(source_dir)
+
+    # Get all RST and MD files in source directory
+    all_files = []
+    if source_path.exists():
+        for ext in ['*.rst', '*.md']:
+            all_files.extend(source_path.rglob(ext))
+
+    # Convert to relative paths
+    all_rel_paths = set()
+    for f in all_files:
+        rel_path = f.relative_to(source_path)
+        # Skip README and .textlint
+        if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+            continue
+        all_rel_paths.add(str(rel_path))
+
+    # Find files not in mapping (stripping en/ or ja/ prefix from mapped files)
+    mapped_rel_paths = set()
+    for mf in mapped_files:
+        # Strip en/ or ja/ prefix if present
+        if mf.startswith('en/') or mf.startswith('ja/'):
+            mapped_rel_paths.add(mf[3:])
+        else:
+            mapped_rel_paths.add(mf)
+
+    excluded = sorted(all_rel_paths - mapped_rel_paths)
+    return excluded
+
+
 def generate_checklist(mapping_path: str, source_dir: str, output_path: str, sample_rate: int):
     """Generate verification checklist."""
     rows = parse_mapping_file(mapping_path)
@@ -120,12 +157,37 @@ def generate_checklist(mapping_path: str, source_dir: str, output_path: str, sam
     classification_checks = select_classification_checks(rows, sample_rate)
     target_path_checks = select_target_path_checks(rows, sample_rate)
 
+    # Find excluded files
+    mapped_files = [row['source_path'] for row in rows]
+    excluded_files = find_excluded_files(source_dir, mapped_files)
+
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(f"# Verification Checklist: {Path(mapping_path).name}\n\n")
         f.write(f"**Generated**: {date.today().strftime('%Y-%m-%d')}\n")
         f.write(f"**Total Mapping Rows**: {len(rows)}\n")
+        f.write(f"**Excluded Files**: {len(excluded_files)}\n")
         f.write(f"**Classification Checks**: {len(classification_checks)}\n")
         f.write(f"**Target Path Checks**: {len(target_path_checks)}\n\n")
+        f.write("---\n\n")
+
+        # Excluded files section
+        f.write("## Excluded Files Verification\n\n")
+        f.write("Files in source directory not included in mapping. Verify these should be excluded:\n\n")
+
+        if excluded_files:
+            f.write("| # | Source Path | Reason | Status |\n")
+            f.write("|---|---|---|---|\n")
+            for i, exc_file in enumerate(excluded_files, 1):
+                f.write(f"| {i} | {exc_file} | | |\n")
+
+            f.write("\n**Instructions**:\n")
+            f.write("- Read each excluded file to understand its content\n")
+            f.write("- Determine why it was excluded (out of scope, duplicate, etc.)\n")
+            f.write("- Mark '✓ Correctly excluded' or '✗ Should be included'\n")
+            f.write("- Document reason for exclusion\n\n")
+        else:
+            f.write("*All files in source directory are mapped.*\n\n")
+
         f.write("---\n\n")
 
         # Classification checks
@@ -153,7 +215,7 @@ def generate_checklist(mapping_path: str, source_dir: str, output_path: str, sam
         f.write("For each row, verify:\n")
         f.write("1. Target path starts with Type\n")
         f.write("2. Filename correctly converts `_` to `-`\n")
-        f.write("3. Extension changed from `.rst` to `.md`\n")
+        f.write("3. Extension changed from `.rst`/`.md` to `.json`\n")
         f.write("4. Subdirectories preserved where appropriate\n\n")
 
         f.write("| # | Source Path | Target Path | Check Reason | Judgment |\n")
@@ -167,6 +229,7 @@ def generate_checklist(mapping_path: str, source_dir: str, output_path: str, sam
         f.write("- Mark ✓ if correct, ✗ if incorrect (note correct path)\n\n")
 
     print(f"Generated checklist: {output_path}", file=sys.stderr)
+    print(f"  Excluded files: {len(excluded_files)}", file=sys.stderr)
     print(f"  Classification checks: {len(classification_checks)}", file=sys.stderr)
     print(f"  Target path checks: {len(target_path_checks)}", file=sys.stderr)
 
@@ -179,7 +242,7 @@ def main():
     mapping_file = sys.argv[1]
     source_dir = None
     output_path = None
-    sample_rate = 3
+    sample_rate = 1  # Default to complete verification (1 = all files)
 
     if '--source-dir' in sys.argv:
         idx = sys.argv.index('--source-dir')
