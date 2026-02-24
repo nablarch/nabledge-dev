@@ -62,6 +62,27 @@ This allows:
 - Users can test unreleased features from the develop branch
 - Clear separation: nabledge-dev for development, nabledge for distribution
 
+### Testing Development Version
+
+To test the latest development version from `nablarch/nabledge:develop`:
+
+1. **Download setup script:**
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-cc.sh > /tmp/setup-6-cc.sh
+   ```
+
+2. **Install from develop branch:**
+   ```bash
+   NABLEDGE_BRANCH=develop bash /tmp/setup-6-cc.sh
+   ```
+
+3. **Verify installation:**
+   ```bash
+   claude-code
+   # In Claude Code session:
+   /nabledge-6
+   ```
+
 ### Release Procedure
 
 Releases are managed in the **[nablarch/nabledge](https://github.com/nablarch/nabledge)** repository, not here.
