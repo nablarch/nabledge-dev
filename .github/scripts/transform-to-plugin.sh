@@ -58,6 +58,18 @@ cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/CHANGELOG.md" "$DEST_DIR/plugin
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/GUIDE-CC.md" "$DEST_DIR/plugins/nabledge-6/"
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/GUIDE-GHC.md" "$DEST_DIR/plugins/nabledge-6/"
 
+# Copy CC-specific command
+echo "Copying CC command..."
+mkdir -p "$DEST_DIR/plugins/nabledge-6/commands"
+cp "$SOURCE_DIR/.claude/commands/n6.md" "$DEST_DIR/plugins/nabledge-6/commands/n6.md"
+
+# Copy GHC-specific .github directory
+echo "Copying GHC .github directory..."
+if [ -d "$SOURCE_DIR/.github" ]; then
+    cp -r "$SOURCE_DIR/.github" "$DEST_DIR/plugins/nabledge-6/"
+    echo "  .github directory copied"
+fi
+
 # Copy setup scripts to root
 echo "Copying setup scripts to root..."
 cp "$SOURCE_DIR/scripts/setup-6-cc.sh" "$DEST_DIR/"
