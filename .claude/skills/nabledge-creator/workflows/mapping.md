@@ -12,7 +12,7 @@ Execute the following command:
 python .claude/skills/nabledge-creator/scripts/generate-mapping.py v6
 ```
 
-**Output**: `references/mapping/mapping-v6.md`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v6.md`
 
 **Exit codes**:
 - 0: Completed successfully (no review items)
@@ -26,7 +26,7 @@ If exit code is 1, review items will be printed to stdout in JSON format. Procee
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/validate-mapping.py references/mapping/mapping-v6.md
+python .claude/skills/nabledge-creator/scripts/validate-mapping.py .claude/skills/nabledge-creator/output/mapping-v6.md
 ```
 
 **Expected result**: All checks pass
@@ -42,10 +42,10 @@ If any check fails:
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/export-excel.py references/mapping/mapping-v6.md
+python .claude/skills/nabledge-creator/scripts/export-excel.py .claude/skills/nabledge-creator/output/mapping-v6.md
 ```
 
-**Output**: `references/mapping/mapping-v6.xlsx`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v6.xlsx`
 
 This Excel file is for human review and is not used in automated workflows.
 
@@ -61,7 +61,7 @@ Review items are files where path-based classification was insufficient. For eac
    - Check `:ref:` references and `toctree` directives that point to or from this file
 
 2. **Make decision**:
-   - If you can determine the correct classification, add a rule to `references/classification.md`
+   - If you can determine the correct classification, add a rule to `.claude/skills/nabledge-creator/references/classification.md`
    - Update `generate-mapping.py` to implement the new rule
    - Return to Step 1
 
@@ -76,10 +76,10 @@ Do NOT guess. If the classification is genuinely ambiguous, human judgment is re
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py references/mapping/mapping-v6.md --source-dir .lw/nab-official/v6/ --output references/mapping/mapping-v6.checklist.md
+python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py .claude/skills/nabledge-creator/output/mapping-v6.md --source-dir .lw/nab-official/v6/ --output .claude/skills/nabledge-creator/output/mapping-v6.checklist.md
 ```
 
-**Output**: `references/mapping/mapping-v6.checklist.md`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v6.checklist.md`
 
 This checklist is used in the verification session (`verify-mapping-6` workflow) to confirm classification accuracy by reading RST content.
 
@@ -98,15 +98,15 @@ Hand off the checklist to the verification session. The verification workflow (`
 ## Output Files
 
 ```
-references/mapping/mapping-v6.md          # Markdown table
-references/mapping/mapping-v6.xlsx        # Excel table (human review)
-references/mapping/mapping-v6.checklist.md # Verification checklist
+.claude/skills/nabledge-creator/output/mapping-v6.md          # Markdown table
+.claude/skills/nabledge-creator/output/mapping-v6.xlsx        # Excel table (human review)
+.claude/skills/nabledge-creator/output/mapping-v6.checklist.md # Verification checklist
 ```
 
 ## Reference Files
 
 You may need to read these files during Step 4 (review item resolution):
 
-- `references/classification.md` - Path pattern classification rules
-- `references/target-path.md` - Path conversion rules
-- `references/content-judgement.md` - Content-based judgement rules
+- `.claude/skills/nabledge-creator/references/classification.md` - Path pattern classification rules
+- `.claude/skills/nabledge-creator/references/target-path.md` - Path conversion rules
+- `.claude/skills/nabledge-creator/references/content-judgement.md` - Content-based judgement rules

@@ -17,9 +17,9 @@ nabledge-creator verify-mapping-6
 Read the following files:
 
 ```
-references/mapping/mapping-v6.checklist.md   # Verification checklist
-references/mapping/mapping-v6.md             # Generated mapping
-references/classification.md                 # Classification rules
+.claude/skills/nabledge-creator/output/mapping-v6.checklist.md   # Verification checklist
+.claude/skills/nabledge-creator/output/mapping-v6.md             # Generated mapping
+.claude/skills/nabledge-creator/references/classification.md     # Classification rules
 ```
 
 The checklist contains sampled rows from the mapping that require content verification.
@@ -35,7 +35,7 @@ For each row in the checklist's "Classification Check" section:
 
 2. **Verify classification**:
    - Check if the content matches the assigned Type, Category ID, and Processing Pattern
-   - Determine which rule in `references/classification.md` produced this classification
+   - Determine which rule in `.claude/skills/nabledge-creator/references/classification.md` produced this classification
    - Confirm the rule matches the actual content
 
 3. **Record result**:
@@ -61,7 +61,7 @@ For each row in the checklist's "Target Path Check" section:
 
 If ANY row is marked ✗:
 
-1. Identify the incorrect rule in `references/classification.md`
+1. Identify the incorrect rule in `.claude/skills/nabledge-creator/references/classification.md`
 2. Correct the rule
 3. Return to the generation workflow and re-run from Step 1
 
@@ -75,11 +75,11 @@ Update the checklist with verification results:
 - Add notes explaining any ✗ marks
 - If all rows are ✓, mark the verification as complete
 
-Save the updated checklist to `references/mapping/mapping-v6.checklist.md`.
+Save the updated checklist to `.claude/skills/nabledge-creator/output/mapping-v6.checklist.md`.
 
 ## Verification Complete
 
-When all checklist items are marked ✓, the mapping verification is complete. The mapping file `references/mapping/mapping-v6.md` is ready for use in knowledge file generation.
+When all checklist items are marked ✓, the mapping verification is complete. The mapping file `.claude/skills/nabledge-creator/output/mapping-v6.md` is ready for use in knowledge file generation.
 
 ## Why Separate Session?
 

@@ -586,7 +586,7 @@ def main():
         sys.exit(2)
 
     version = sys.argv[1]
-    output_path = 'references/mapping/mapping-v6.md'
+    output_path = '.claude/skills/nabledge-creator/output/mapping-v6.md'
 
     if '--output' in sys.argv:
         idx = sys.argv.index('--output')
