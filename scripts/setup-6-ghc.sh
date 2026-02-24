@@ -48,14 +48,13 @@ mkdir -p "$PROJECT_ROOT/.claude/skills"
 echo "Copying nabledge-6 skill to project..."
 cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
-# Copy GHC-specific prompt
-echo "Setting up GitHub Copilot prompt..."
-mkdir -p "$PROJECT_ROOT/.github/prompts"
-if [ -f "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/prompts/n6-ghc.prompt.md" ]; then
-    cp "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/prompts/n6-ghc.prompt.md" "$PROJECT_ROOT/.github/prompts/n6.prompt.md"
-    echo "Prompt installed: $PROJECT_ROOT/.github/prompts/n6.prompt.md"
+# Copy GHC-specific .github directory
+echo "Setting up GitHub Copilot prompts..."
+if [ -d "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github" ]; then
+    cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github" "$PROJECT_ROOT/"
+    echo "GitHub Copilot configuration installed: $PROJECT_ROOT/.github/"
 else
-    echo "Warning: n6-ghc.prompt.md not found in plugin"
+    echo "Warning: .github directory not found in plugin"
 fi
 
 # Verify installation

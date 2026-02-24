@@ -48,12 +48,12 @@ mkdir -p "$PROJECT_ROOT/.claude/skills"
 echo "Copying nabledge-6 skill to project..."
 cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
-# Copy CC-specific prompt
-echo "Setting up Claude Code prompt..."
-mkdir -p "$PROJECT_ROOT/.claude/prompts"
+# Copy CC-specific n6 skill (shortcut command)
+echo "Setting up /n6 shortcut command..."
+mkdir -p "$PROJECT_ROOT/.claude/skills/n6"
 if [ -f "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/prompts/n6-cc.md" ]; then
-    cp "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/prompts/n6-cc.md" "$PROJECT_ROOT/.claude/prompts/n6.md"
-    echo "Prompt installed: $PROJECT_ROOT/.claude/prompts/n6.md"
+    cp "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/prompts/n6-cc.md" "$PROJECT_ROOT/.claude/skills/n6/SKILL.md"
+    echo "Shortcut installed: $PROJECT_ROOT/.claude/skills/n6/SKILL.md"
 else
     echo "Warning: n6-cc.md not found in plugin"
 fi
@@ -64,6 +64,10 @@ if [ ! -f "$PROJECT_ROOT/.claude/skills/nabledge-6/SKILL.md" ]; then
     echo "Error: Installation verification failed"
     echo "SKILL.md not found at expected location"
     exit 1
+fi
+
+if [ ! -f "$PROJECT_ROOT/.claude/skills/n6/SKILL.md" ]; then
+    echo "Warning: /n6 shortcut not installed"
 fi
 
 if [ ! -d "$PROJECT_ROOT/.claude/skills/nabledge-6/knowledge" ]; then
