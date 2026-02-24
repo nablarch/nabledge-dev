@@ -210,16 +210,27 @@ def check_quality(entries: List[Dict]) -> int:
     if low_hint_count + high_hint_count == 0:
         print("✓ Hint count within range (3-8)")
 
-    # Check duplicate hints within entries
+    # Check duplicate hints within entries (case-insensitive, matching generate-index.py)
     duplicate_hints_count = 0
 
     for entry in entries:
         if entry['hints']:
             hint_list = entry['hints'].split()
-            unique_hints = set(hint_list)
-            if len(hint_list) != len(unique_hints):
-                duplicates = [h for h in unique_hints if hint_list.count(h) > 1]
-                print(f"⚠ Line {entry['line_num']} - Entry '{entry['title']}' has duplicate hints: {', '.join(duplicates)}")
+            # Use case-insensitive comparison for duplicates
+            hint_list_lower = [h.lower() for h in hint_list]
+            unique_hints_lower = set(hint_list_lower)
+            if len(hint_list_lower) != len(unique_hints_lower):
+                # Find which hints are duplicated (case-insensitive)
+                duplicates = [h for h in hint_list if hint_list_lower.count(h.lower()) > 1]
+                # Deduplicate the duplicates list itself for cleaner output
+                seen_dups = set()
+                unique_duplicates = []
+                for d in duplicates:
+                    d_lower = d.lower()
+                    if d_lower not in seen_dups:
+                        seen_dups.add(d_lower)
+                        unique_duplicates.append(d)
+                print(f"⚠ Line {entry['line_num']} - Entry '{entry['title']}' has duplicate hints (case-insensitive): {', '.join(unique_duplicates)}")
                 duplicate_hints_count += 1
 
     warnings += duplicate_hints_count

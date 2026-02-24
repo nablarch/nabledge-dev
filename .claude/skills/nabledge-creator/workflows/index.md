@@ -4,14 +4,15 @@ Generate search index (index.toon) from knowledge file plan and existing knowled
 
 ## Purpose
 
-nabledge-6's keyword-search requires index.toon to efficiently find knowledge files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across ~154 entries with ~5-7K tokens.
+nabledge-6's keyword-search workflow (`.claude/skills/nabledge-6/workflows/keyword-search.md`) requires index.toon to efficiently find knowledge files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across ~154 entries with ~5-7K tokens.
 
 ## When to Execute
 
 Execute this workflow in these scenarios:
 
 1. **Phase 2 (Initial)**: Generate metadata-based index from mapping
-   - Input: mapping-v6.md (291 files)
+   - Input: mapping-v6.md (302 documentation files)
+   - Filters: Coverage scope (→259 files) + Knowledge scope (→154 entries)
    - Output: index.toon with basic hints, all "not yet created"
 
 2. **Phase 3-4 (Updates)**: Update index after knowledge file batches
@@ -19,6 +20,10 @@ Execute this workflow in these scenarios:
    - Output: Updated index.toon with detailed hints and paths
 
 3. **Verification**: After fixing index issues found in verify-index workflow
+
+**Entry count explanation**: Starting from 302 documented features, we apply two filters:
+- Coverage scope filter: Removes out-of-scope categories → 259 files remain
+- Knowledge scope filter: Further refines based on knowledge file plan → 154 entries in index.toon
 
 ## Prerequisites
 
@@ -164,17 +169,19 @@ git push
 
 ### Phase 2: Initial Generation from Mapping
 
-**Input**: mapping-v6.md (291 documentation files)
+**Input**: mapping-v6.md (302 documentation files → 154 entries after filters)
 
 **Process**:
-1. Extract title (Japanese) and category from each mapping row
-2. Generate basic hints from title keywords + category keywords
-3. Set all paths to "not yet created"
-4. Sort by title
+1. Apply coverage scope filter (removes out-of-scope categories) → 259 files
+2. Apply knowledge scope filter (based on knowledge file plan) → 154 entries
+3. Extract title (Japanese) and category from each filtered entry
+4. Generate basic hints from title keywords + category keywords
+5. Set all paths to "not yet created"
+6. Sort by title
 
-**Output**: index.toon with 291 entries, metadata-only
+**Output**: index.toon with 154 entries, metadata-only
 
-**Purpose**: Establish index structure and validate search design before knowledge file generation
+**Purpose**: Establish index structure and validate search design before knowledge file generation (Phase 2 complete)
 
 **Example entry**:
 ```

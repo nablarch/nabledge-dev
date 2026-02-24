@@ -106,15 +106,17 @@ Estimated hints:
 
 ## Generation Process
 
-### Phase 2 (Current): Metadata-based Index
+### Phase 2 (Complete): Metadata-based Index
 
-Generate from mapping-v6.md metadata:
+Generated from mapping-v6.md metadata with scope filters:
+- Input: 302 documentation files
+- Filters: Coverage scope (→259) + Knowledge scope (→154)
 - Extract: title (Japanese), category, source path
 - Hints: Extract keywords from title + category mapping
 - Status: All entries marked "not yet created"
-- Count: 291 entries (one per mapping row)
+- Output: 154 entries
 
-**Purpose**: Enable search structure validation before knowledge generation
+**Purpose**: Establishes search structure for validation before knowledge generation (Phase 2 complete, ready for Phase 3)
 
 ### Phase 3-4: Knowledge-based Index
 
@@ -153,8 +155,8 @@ Update after each knowledge file batch:
 ## Evolution Strategy
 
 ```
-Phase 2: mapping → index (metadata)
-         ├─ 291 entries
+Phase 2: mapping → index (metadata) [COMPLETE]
+         ├─ 302 docs → 154 entries (after filters)
          ├─ Basic hints from titles
          └─ All "not yet created"
 
@@ -184,7 +186,6 @@ files[154,]{title,hints,path}:
 
 ## Notes
 
-- **TOON over JSON**: Human-readable, compact, LLM-friendly
 - **Incremental updates**: Index grows with knowledge base
 - **Search-first design**: Structure optimized for keyword matching
 - **Bilingual hints**: Japanese primary (user queries), English secondary (technical terms)
