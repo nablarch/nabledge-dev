@@ -64,30 +64,41 @@ echo "Total comments retrieved: $(echo "$all_comments" | jq 'length')"
 
 **2.3 Filtering Unresolved Comments**
 
-Extract only comments meeting these conditions:
-- Not a reply (no `in_reply_to_id`)
-- Has not been replied to yet (check if comment has replies)
-- Not outdated (`original_position` should exist or match `position`)
+**IMPORTANT**: Extract ALL comments from reviewers that don't have replies yet.
+
+This includes:
+- Parent comments (top-level review comments)
+- Child comments (replies within threads from reviewers)
+- Both initial comments and follow-up comments
+
+Exclude only:
+- AI agent's own comments (bot replies)
 
 ```bash
-# Create jq filter for finding unresolved comments
+# Create jq filter for finding ALL unresolved comments
+# Identify agent replies by checking for "Co-Authored-By: Claude" signature
 cat > /tmp/unresolved-filter.jq << 'JQEOF'
 . as $all |
-map(select(.in_reply_to_id == null)) as $parents |
-$parents | map(
-  . as $parent |
+# Get all comments that are NOT agent replies (don't contain Claude signature)
+map(select(.body | contains("Co-Authored-By: Claude") | not)) |
+# For each reviewer comment, check if it has a reply
+map(
+  . as $comment |
   {
-    id: $parent.id,
-    path: $parent.path,
-    line: $parent.line,
-    body: $parent.body,
-    user: $parent.user.login,
-    has_reply: ($all | any(.in_reply_to_id == $parent.id))
+    id: $comment.id,
+    path: $comment.path,
+    line: $comment.line,
+    body: $comment.body,
+    user: $comment.user.login,
+    in_reply_to_id: $comment.in_reply_to_id,
+    has_reply: ($all | any(.in_reply_to_id == $comment.id))
   }
-) | map(select(.has_reply == false))
+) |
+# Filter to only comments without replies
+map(select(.has_reply == false))
 JQEOF
 
-# Get unresolved parent comments
+# Get unresolved comments
 unresolved_json=$(echo "$all_comments" | jq -f /tmp/unresolved-filter.jq)
 unresolved_count=$(echo "$unresolved_json" | jq 'length')
 
@@ -95,8 +106,9 @@ echo "Unresolved comments: $unresolved_count"
 
 # Debug: Show summary of all comments
 echo "Debug - Comment summary:"
-echo "$all_comments" | jq -r 'group_by(.in_reply_to_id == null) |
-  "Total: \(map(length) | add // 0) (Replies: \((.[0] // []) | length), Parents: \((.[1] // []) | length))"'
+echo "$all_comments" | jq -r '
+  group_by(.body | contains("Co-Authored-By: Claude")) |
+  "Total: \(map(length) | add // 0) (Reviewer comments: \((.[0] // []) | length), Agent replies: \((.[1] // []) | length))"'
 ```
 
 If 0 unresolved comments:
@@ -249,7 +261,7 @@ echo "Please request reviewer to resolve threads"
 
 ### 5. Verification
 
-**CRITICAL**: After posting all replies, verify that all parent comments have replies:
+**CRITICAL**: After posting all replies, verify that all reviewer comments have replies:
 
 ```bash
 # Re-fetch all comments to get latest state
@@ -261,8 +273,8 @@ remaining_count=$(echo "$remaining_unresolved" | jq 'length')
 
 if [ "$remaining_count" -gt 0 ]; then
   echo ""
-  echo "WARNING: $remaining_count parent comment(s) still have no replies:"
-  echo "$remaining_unresolved" | jq -r '.[] | "  - ID \(.id): \(.body[0:80])... (@\(.user) on \(.path):\(.line))"'
+  echo "WARNING: $remaining_count reviewer comment(s) still have no replies:"
+  echo "$remaining_unresolved" | jq -r '.[] | "  - ID \(.id): \(.body[0:80])... (@\(.user) on \(.path):\(.line // "N/A"))"'
   echo ""
   echo "Please investigate why replies were not posted."
   echo "This may indicate:"
@@ -270,7 +282,7 @@ if [ "$remaining_count" -gt 0 ]; then
   echo "  2. New comments were added during processing"
   echo "  3. GitHub API sync delay"
 else
-  echo "✓ Verification passed: All parent comments have replies"
+  echo "✓ Verification passed: All reviewer comments have replies"
 fi
 ```
 
@@ -287,7 +299,7 @@ After verification, display summary:
 - Fixed and replied: {n} items
 - Asked questions and replied: {n} items
 - Skipped: {n} items
-- Verified: All parent comments have replies
+- Verified: All reviewer comments have replies
 
 Please request reviewer to resolve threads
 ```
