@@ -27,11 +27,16 @@ V6_BASES = {
 
 
 def enumerate_files(version: str) -> List[Dict]:
-    """Enumerate all documentation files for the specified version."""
+    """Enumerate all documentation files for the specified version.
+
+    Priority: English first, then Japanese for files not in English.
+    Source paths include 'en/' or 'ja/' prefix for agent searchability.
+    """
     files = []
+    en_files_set = set()  # Track English files to avoid duplicates
 
     if version == 'v6':
-        # nablarch-document (English)
+        # nablarch-document (English) - Priority 1
         base_en = Path(V6_BASES['nablarch-document-en'])
         if base_en.exists():
             for rst in base_en.rglob('*.rst'):
@@ -39,8 +44,9 @@ def enumerate_files(version: str) -> List[Dict]:
                 # Exclude root README and .textlint
                 if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
                     continue
+                en_files_set.add(str(rel_path))  # Track this file
                 files.append({
-                    'source_path': str(rel_path),
+                    'source_path': f"en/{rel_path}",  # Include language prefix
                     'abs_path': str(rst),
                     'source_repo': 'nablarch-document',
                     'lang': 'en'
@@ -50,12 +56,43 @@ def enumerate_files(version: str) -> List[Dict]:
                 rel_path = md.relative_to(base_en)
                 if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
                     continue
+                en_files_set.add(str(rel_path))  # Track this file
                 files.append({
-                    'source_path': str(rel_path),
+                    'source_path': f"en/{rel_path}",  # Include language prefix
                     'abs_path': str(md),
                     'source_repo': 'nablarch-document',
                     'lang': 'en'
                 })
+
+        # nablarch-document (Japanese) - Priority 2 (fallback for files not in English)
+        base_ja = Path(V6_BASES['nablarch-document-ja'])
+        if base_ja.exists():
+            for rst in base_ja.rglob('*.rst'):
+                rel_path = rst.relative_to(base_ja)
+                # Exclude root README and .textlint
+                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+                    continue
+                # Only add if not already in English
+                if str(rel_path) not in en_files_set:
+                    files.append({
+                        'source_path': f"ja/{rel_path}",  # Include language prefix
+                        'abs_path': str(rst),
+                        'source_repo': 'nablarch-document',
+                        'lang': 'ja'
+                    })
+
+            for md in base_ja.rglob('*.md'):
+                rel_path = md.relative_to(base_ja)
+                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+                    continue
+                # Only add if not already in English
+                if str(rel_path) not in en_files_set:
+                    files.append({
+                        'source_path': f"ja/{rel_path}",  # Include language prefix
+                        'abs_path': str(md),
+                        'source_repo': 'nablarch-document',
+                        'lang': 'ja'
+                    })
 
         # system-development-guide (specific files only)
         base_guide = Path(V6_BASES['system-development-guide'])
@@ -94,108 +131,113 @@ def classify_by_path(file_info: Dict) -> Dict:
         'confidence': 'unknown'
     }
 
+    # Strip language prefix (en/ or ja/) for pattern matching if present
+    path_for_matching = path
+    if repo == 'nablarch-document' and (path.startswith('en/') or path.startswith('ja/')):
+        path_for_matching = path[3:]  # Remove 'en/' or 'ja/' prefix
+
     if repo == 'system-development-guide':
-        if 'Asynchronous_operation_in_Nablarch.md' in path:
+        if 'Asynchronous_operation_in_Nablarch.md' in path_for_matching:
             return {'type': 'guide', 'category': 'nablarch-patterns', 'pp': '', 'confidence': 'confirmed'}
-        elif 'Nablarch_anti-pattern.md' in path:
+        elif 'Nablarch_anti-pattern.md' in path_for_matching:
             return {'type': 'guide', 'category': 'nablarch-patterns', 'pp': '', 'confidence': 'confirmed'}
-        elif 'Nablarch_batch_processing_pattern.md' in path:
+        elif 'Nablarch_batch_processing_pattern.md' in path_for_matching:
             return {'type': 'guide', 'category': 'nablarch-patterns', 'pp': '', 'confidence': 'confirmed'}
-        elif 'セキュリティ対応表.xlsx' in path:
+        elif 'セキュリティ対応表.xlsx' in path_for_matching:
             return {'type': 'check', 'category': 'security-check', 'pp': '', 'confidence': 'confirmed'}
 
     # nablarch-document patterns
-    if path.startswith('about_nablarch/'):
+    if path_for_matching.startswith('about_nablarch/'):
         return {'type': 'about', 'category': 'about-nablarch', 'pp': '', 'confidence': 'confirmed'}
 
-    if path.startswith('migrationguide/'):
+    if path_for_matching.startswith('migrationguide/'):
         return {'type': 'about', 'category': 'migration', 'pp': '', 'confidence': 'confirmed'}
 
-    if path.startswith('releases/'):
+    if path_for_matching.startswith('releases/'):
         return {'type': 'about', 'category': 'release-notes', 'pp': '', 'confidence': 'confirmed'}
 
-    if path.startswith('application_framework/adaptors/'):
+    if path_for_matching.startswith('application_framework/adaptors/'):
         return {'type': 'component', 'category': 'adapters', 'pp': '', 'confidence': 'confirmed'}
 
-    if path.startswith('application_framework/application_framework/blank_project/'):
+    if path_for_matching.startswith('application_framework/application_framework/blank_project/'):
         classification = {'type': 'setup', 'category': 'blank-project', 'pp': '', 'confidence': 'confirmed'}
         # Check for PP in filename
-        if 'Jbatch' in path:
+        if 'Jbatch' in path_for_matching:
             classification['pp'] = 'jakarta-batch'
-        elif 'NablarchBatch' in path:
+        elif 'NablarchBatch' in path_for_matching:
             classification['pp'] = 'nablarch-batch'
-        elif 'Web.rst' in path or 'Web/' in path:
-            if 'WebService' not in path:
+        elif 'Web.rst' in path_for_matching or 'Web/' in path_for_matching:
+            if 'WebService' not in path_for_matching:
                 classification['pp'] = 'web-application'
-        elif 'WebService' in path:
+        elif 'WebService' in path_for_matching:
             classification['pp'] = 'restful-web-service'
         return classification
 
-    if path.startswith('application_framework/application_framework/configuration/'):
+    if path_for_matching.startswith('application_framework/application_framework/configuration/'):
         return {'type': 'setup', 'category': 'configuration', 'pp': '', 'confidence': 'confirmed'}
 
-    if path.startswith('application_framework/application_framework/cloud_native/'):
+    if path_for_matching.startswith('application_framework/application_framework/cloud_native/'):
         return {'type': 'setup', 'category': 'cloud-native', 'pp': '', 'confidence': 'confirmed'}
 
-    if path.startswith('application_framework/application_framework/setting_guide/'):
+    if path_for_matching.startswith('application_framework/application_framework/setting_guide/'):
         return {'type': 'setup', 'category': 'setting-guide', 'pp': '', 'confidence': 'confirmed'}
 
     # Handlers - complex logic
-    if '/handlers/' in path:
-        if '/handlers/batch/' in path:
+    if '/handlers/' in path_for_matching:
+        if '/handlers/batch/' in path_for_matching:
             return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
-        elif '/handlers/http_messaging/' in path:
+        elif '/handlers/http_messaging/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'http-messaging', 'confidence': 'confirmed'}
-        elif '/handlers/mom_messaging/' in path:
+        elif '/handlers/mom_messaging/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'mom-messaging', 'confidence': 'confirmed'}
-        elif '/handlers/rest/' in path:
+        elif '/handlers/rest/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'restful-web-service', 'confidence': 'confirmed'}
-        elif '/handlers/web/' in path:
+        elif '/handlers/web/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'web-application', 'confidence': 'confirmed'}
-        elif '/handlers/web_service/' in path:
+        elif '/handlers/web_service/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'http-messaging', 'confidence': 'confirmed'}
-        elif '/handlers/standalone/' in path:
+        elif '/handlers/standalone/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'nablarch-batch', 'confidence': 'needs_content'}
-        elif '/handlers/common/' in path:
+        elif '/handlers/common/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': '', 'confidence': 'confirmed'}
-        elif '/handlers/messaging/' in path:
+        elif '/handlers/messaging/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'db-messaging', 'confidence': 'confirmed'}
 
     # Processing patterns - batch
-    if '/batch/jsr352/' in path:
+    if '/batch/jsr352/' in path_for_matching:
         return {'type': 'processing-pattern', 'category': 'jakarta-batch', 'pp': 'jakarta-batch', 'confidence': 'confirmed'}
-    elif '/batch/nablarch_batch/' in path:
+    elif '/batch/nablarch_batch/' in path_for_matching:
         return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
-    elif path.startswith('application_framework/application_framework/batch/'):
-        if 'index.rst' in path or 'functional_comparison' in path:
+    elif path_for_matching.startswith('application_framework/application_framework/batch/'):
+        if 'index.rst' in path_for_matching or 'functional_comparison' in path_for_matching:
             return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
 
     # Processing patterns - web
-    if path.startswith('application_framework/application_framework/web_application/'):
+    if path_for_matching.startswith('application_framework/application_framework/web_application/'):
         return {'type': 'processing-pattern', 'category': 'web-application', 'pp': 'web-application', 'confidence': 'confirmed'}
 
     # Processing patterns - REST
-    if path.startswith('application_framework/application_framework/web_service/'):
+    if path_for_matching.startswith('application_framework/application_framework/web_service/'):
         return {'type': 'processing-pattern', 'category': 'restful-web-service', 'pp': 'restful-web-service', 'confidence': 'confirmed'}
 
     # Processing patterns - messaging
-    if '/messaging/http/' in path:
+    if '/messaging/http/' in path_for_matching:
         return {'type': 'processing-pattern', 'category': 'http-messaging', 'pp': 'http-messaging', 'confidence': 'confirmed'}
-    elif '/messaging/mom/' in path:
+    elif '/messaging/mom/' in path_for_matching:
         return {'type': 'processing-pattern', 'category': 'mom-messaging', 'pp': 'mom-messaging', 'confidence': 'confirmed'}
-    elif '/messaging/db/' in path:
+    elif '/messaging/db/' in path_for_matching:
         return {'type': 'processing-pattern', 'category': 'db-messaging', 'pp': 'db-messaging', 'confidence': 'confirmed'}
 
     # Libraries
-    if path.startswith('application_framework/application_framework/libraries/'):
+    if path_for_matching.startswith('application_framework/application_framework/libraries/'):
         return {'type': 'component', 'category': 'libraries', 'pp': '', 'confidence': 'confirmed'}
 
     # Development tools
-    if path.startswith('development_tools/testing_framework/'):
+    if path_for_matching.startswith('development_tools/testing_framework/'):
         return {'type': 'development-tools', 'category': 'testing-framework', 'pp': '', 'confidence': 'confirmed'}
-    elif path.startswith('development_tools/toolbox/'):
+    elif path_for_matching.startswith('development_tools/toolbox/'):
         return {'type': 'development-tools', 'category': 'toolbox', 'pp': '', 'confidence': 'confirmed'}
-    elif path.startswith('development_tools/java_static_analysis/'):
+    elif path_for_matching.startswith('development_tools/java_static_analysis/'):
         return {'type': 'development-tools', 'category': 'java-static-analysis', 'pp': '', 'confidence': 'confirmed'}
 
     return classification
@@ -303,8 +345,12 @@ def get_japanese_title(en_path: str, repo: str) -> str:
 def generate_official_url(source_path: str, repo: str) -> str:
     """Generate official documentation URL."""
     if repo == 'nablarch-document':
+        # Strip language prefix (en/ or ja/) if present
+        path_for_url = source_path
+        if source_path.startswith('en/') or source_path.startswith('ja/'):
+            path_for_url = source_path[3:]  # Remove 'en/' or 'ja/' prefix
         # Remove .rst extension and replace with .html
-        html_path = source_path.replace('.rst', '.html').replace('.md', '.html')
+        html_path = path_for_url.replace('.rst', '.html').replace('.md', '.html')
         return f"https://nablarch.github.io/docs/6u3/doc/{html_path}"
 
     elif repo == 'system-development-guide':
@@ -326,9 +372,14 @@ def generate_official_url(source_path: str, repo: str) -> str:
 
 def convert_target_path(source_path: str, type_val: str, category: str) -> str:
     """Convert source path to target path."""
+    # Strip language prefix (en/ or ja/) if present for consistent path handling
+    path_for_conversion = source_path
+    if source_path.startswith('en/') or source_path.startswith('ja/'):
+        path_for_conversion = source_path[3:]  # Remove 'en/' or 'ja/' prefix
+
     # Extract filename and path parts
-    filename = Path(source_path).name
-    parts = Path(source_path).parts
+    filename = Path(path_for_conversion).name
+    parts = Path(path_for_conversion).parts
 
     # Convert filename: _ to -, extension to .json (unless .xlsx)
     if filename.endswith('.rst'):
