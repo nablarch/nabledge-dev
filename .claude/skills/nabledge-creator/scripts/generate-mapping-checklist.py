@@ -47,72 +47,40 @@ def parse_mapping_file(file_path: str) -> List[Dict]:
     return rows
 
 
-def select_classification_checks(rows: List[Dict], sample_rate: int = 3) -> List[Dict]:
+def select_classification_checks(rows: List[Dict]) -> List[Dict]:
     """
     Select rows for classification checking.
-    When sample_rate is 1, checks ALL rows (complete verification).
-    Otherwise uses sampling with mandatory checks.
+    Returns all rows for complete verification.
     """
     checks = []
 
     for i, row in enumerate(rows):
-        reason = None
-
-        if sample_rate == 1:
-            # Complete verification mode - check all files
-            reason = 'complete verification'
-        else:
-            # Sampling mode with mandatory checks
-            if '/standalone/' in row['source_path']:
-                reason = 'standalone handler (needs content verification)'
-            elif row['type'] == 'processing-pattern' and row['pp'] and row['pp'] != row['category']:
-                reason = 'PP != Category for processing-pattern'
-            elif i % sample_rate == 0:
-                reason = 'sampling'
-
-        if reason:
-            checks.append({
-                'row_num': i + 1,
-                'source_path': row['source_path'],
-                'type': row['type'],
-                'category': row['category'],
-                'pp': row['pp'],
-                'reason': reason,
-            })
+        checks.append({
+            'row_num': i + 1,
+            'source_path': row['source_path'],
+            'type': row['type'],
+            'category': row['category'],
+            'pp': row['pp'],
+            'reason': 'complete verification',
+        })
 
     return checks
 
 
-def select_target_path_checks(rows: List[Dict], sample_rate: int = 5) -> List[Dict]:
+def select_target_path_checks(rows: List[Dict]) -> List[Dict]:
     """
     Select rows for target path checking.
-    When sample_rate is 1, checks ALL rows (complete verification).
-    Otherwise uses sampling with mandatory checks.
+    Returns all rows for complete verification.
     """
     checks = []
 
     for i, row in enumerate(rows):
-        reason = None
-
-        if sample_rate == 1:
-            # Complete verification mode - check all files
-            reason = 'complete verification'
-        else:
-            # Sampling mode with mandatory checks
-            if 'component/handlers/' in row['target_path'] and row['target_path'].count('/') > 3:
-                reason = 'subdirectory preservation'
-            elif 'index' in row['source_path'].lower():
-                reason = 'index.rst naming'
-            elif i % sample_rate == 0:
-                reason = 'sampling'
-
-        if reason:
-            checks.append({
-                'row_num': i + 1,
-                'source_path': row['source_path'],
-                'target_path': row['target_path'],
-                'reason': reason,
-            })
+        checks.append({
+            'row_num': i + 1,
+            'source_path': row['source_path'],
+            'target_path': row['target_path'],
+            'reason': 'complete verification',
+        })
 
     return checks
 
@@ -150,12 +118,12 @@ def find_excluded_files(source_dir: str, mapped_files: List[str]) -> List[str]:
     return excluded
 
 
-def generate_checklist(mapping_path: str, source_dir: str, output_path: str, sample_rate: int):
+def generate_checklist(mapping_path: str, source_dir: str, output_path: str):
     """Generate verification checklist."""
     rows = parse_mapping_file(mapping_path)
 
-    classification_checks = select_classification_checks(rows, sample_rate)
-    target_path_checks = select_target_path_checks(rows, sample_rate)
+    classification_checks = select_classification_checks(rows)
+    target_path_checks = select_target_path_checks(rows)
 
     # Find excluded files
     mapped_files = [row['source_path'] for row in rows]
@@ -236,13 +204,12 @@ def generate_checklist(mapping_path: str, source_dir: str, output_path: str, sam
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: generate-mapping-checklist.py MAPPING_FILE --source-dir DIR [--output PATH] [--sample-rate N]", file=sys.stderr)
+        print("Usage: generate-mapping-checklist.py MAPPING_FILE --source-dir DIR [--output PATH]", file=sys.stderr)
         sys.exit(1)
 
     mapping_file = sys.argv[1]
     source_dir = None
     output_path = None
-    sample_rate = 1  # Default to complete verification (1 = all files)
 
     if '--source-dir' in sys.argv:
         idx = sys.argv.index('--source-dir')
@@ -254,11 +221,6 @@ def main():
         if idx + 1 < len(sys.argv):
             output_path = sys.argv[idx + 1]
 
-    if '--sample-rate' in sys.argv:
-        idx = sys.argv.index('--sample-rate')
-        if idx + 1 < len(sys.argv):
-            sample_rate = int(sys.argv[idx + 1])
-
     if not source_dir:
         print("Error: --source-dir is required", file=sys.stderr)
         sys.exit(1)
@@ -266,7 +228,7 @@ def main():
     if not output_path:
         output_path = mapping_file.replace('.md', '.checklist.md')
 
-    generate_checklist(mapping_file, source_dir, output_path, sample_rate)
+    generate_checklist(mapping_file, source_dir, output_path)
     sys.exit(0)
 
 
