@@ -39,7 +39,8 @@ Nablarchに関する質問やコード分析を実行するには、`/n6` コマ
 
 | コマンド | 説明 | 入力形式 | 出力場所・内容 |
 |---------|------|---------|--------------|
-| `/n6 <質問>` | 知識検索またはコード分析を実行 | 質問またはコマンド<br>例: `/n6 UniversalDaoのページング`<br>`/n6 code-analysis LoginAction` | サマリー結果のみメインコンテキストに返る<br>コード分析: `.nabledge/YYYYMMDD/code-analysis-<target>.md` |
+| `/n6 <質問>` | 知識検索を実行 | 質問<br>例: `/n6 UniversalDaoのページング` | サマリー結果のみメインコンテキストに返る |
+| `/n6 code-analysis <対象>` | コード分析を実行 | コマンド<br>例: `/n6 code-analysis LoginAction` | サマリー結果のみメインコンテキストに返る<br>詳細: `.nabledge/YYYYMMDD/code-analysis-<target>.md` |
 
 ## バージョンアップ
 
@@ -51,7 +52,7 @@ Nablarchに関する質問やコード分析を実行するには、`/n6` コマ
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-6-cc.sh | bash
 ```
 
-実行後、更新された `.claude/skills/` ディレクトリをGitにコミット・プッシュしてください。
+実行後、更新された `.claude/` ディレクトリをGitにコミット・プッシュしてください。
 
 ### 特定バージョンの指定（オプション）
 
