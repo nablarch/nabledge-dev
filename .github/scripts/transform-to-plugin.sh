@@ -57,6 +57,10 @@ cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/CHANGELOG.md" "$DEST_DIR/plugin
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/GUIDE-CC.md" "$DEST_DIR/plugins/nabledge-6/"
 cp "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/GUIDE-GHC.md" "$DEST_DIR/plugins/nabledge-6/"
 
+# Copy prompts (CC and GHC specific)
+echo "Copying prompts..."
+cp -r "$SOURCE_DIR/.claude/skills/nabledge-6/plugin/prompts" "$DEST_DIR/plugins/nabledge-6/"
+
 # Copy setup scripts to root
 echo "Copying setup scripts to root..."
 cp "$SOURCE_DIR/scripts/setup-6-cc.sh" "$DEST_DIR/"
