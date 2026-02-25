@@ -15,11 +15,6 @@ Structured knowledge base for Nablarch 6 framework, covering batch processing an
 
 **Code Analysis**: Dependency tracing, component decomposition, architecture visualization, documentation generation
 
-**Use cases**:
-- **Knowledge search**: Learn Nablarch APIs, patterns, configurations, troubleshooting
-- **Code analysis**: Understand existing code structure, dependencies, and design
-- **Development support**: Feature implementation, code review, error investigation
-
 ## How to use
 
 ### Basic usage
@@ -42,27 +37,20 @@ nabledge-6 code-analysis
 
 ### Important constraint: Knowledge files only
 
-**CRITICAL**: Always answer using ONLY the information in knowledge files (knowledge/*.json).
+**CRITICAL**: Answer using ONLY information in knowledge files (knowledge/*.json).
 
-- **DO NOT use** LLM training data or general knowledge about Nablarch
-- **DO NOT access** official websites or external resources during answers
-- **DO NOT guess** or infer information not present in knowledge files
-- **If knowledge is missing**: Clearly state "この情報は知識ファイルに含まれていません" and list related available knowledge
-
-**Why this constraint**: Knowledge files contain verified, accurate information extracted from official documentation. LLM training data may be outdated or incomplete.
+- DO NOT use LLM training data or general knowledge about Nablarch
+- DO NOT access official websites or external resources during answers
+- DO NOT guess or infer information not in knowledge files
+- If knowledge is missing: State "この情報は知識ファイルに含まれていません" and list related available knowledge
 
 ## Error Handling Policy
-
-**General principle**:
-- Always inform user clearly when something goes wrong
-- Provide actionable next steps
-- Never fail silently
 
 **Knowledge not found** (Knowledge Search):
 - Message: "この情報は知識ファイルに含まれていません"
 - List related available knowledge from index.toon
 - Show "not yet created" entries if applicable
-- DO NOT use LLM training data or general knowledge
+- DO NOT use LLM training data
 
 **Target code not found** (Code Analysis):
 - Message: "指定されたコードが見つかりませんでした"
@@ -71,15 +59,15 @@ nabledge-6 code-analysis
 
 **Workflow execution failure**:
 - Inform user which step failed (e.g., "Step 2: 依存関係分析中にエラーが発生しました")
-- Show error details if available
-- Suggest retry or alternative approach
+- Show error details
+- Suggest retry or alternative
 
 **Output file already exists** (Code Analysis):
 - Ask user: "上書きする" / "別名で保存" / "キャンセル"
 
 **Dependency analysis too complex** (Code Analysis):
 - Ask user to narrow scope
-- Suggest limiting to direct dependencies only
+- Limit to direct dependencies
 - Provide partial analysis with note
 
 ## How Claude Code should execute this skill
@@ -136,49 +124,46 @@ Execute when user wants to search Nablarch knowledge.
 
 **Execute workflows**:
 
-Follow the workflows in this order:
-
 1. **keyword-search workflow** (see `workflows/keyword-search.md`):
    - Read knowledge/index.toon
-   - Extract keywords (3 levels: domain, component, functional)
+   - Extract keywords (L1: technical components, L2: functional terms)
    - Match against index hints
-   - Select top 10-15 files
+   - Select files with score ≥2
    - Extract section indexes using jq
    - Build candidates list (20-30 sections)
 
 2. **section-judgement workflow** (see `workflows/section-judgement.md`):
-   - Read each candidate section
+   - Read candidate sections
    - Judge relevance: High (2), Partial (1), None (0)
-   - Filter out None relevance
+   - Filter out None
    - Sort by relevance (High first)
-   - Return top 10-15 sections (~5,000 tokens)
+   - Return top 10-15 sections
 
 3. **Answer using knowledge files only**:
    - Extract information from High and Partial sections
-   - Format as clear, structured answer
-   - **ONLY use information from knowledge files**
+   - Format as structured answer
+   - ONLY use knowledge file information
    - Cite sources (e.g., "universal-dao.json:paging section")
    - DO NOT supplement with LLM training data
-   - **Priority order**: Accuracy > Brevity > Completeness (if knowledge files lack information for full structure, provide shorter answer rather than supplementing)
+   - Priority: Accuracy > Brevity > Completeness
 
-   **Output format constraints** (to keep answers concise):
-   - **Target length**: 500 tokens or less (strict limit for simple queries; may extend to 800 tokens for multi-part questions)
-   - **If answer naturally exceeds limit**: Prioritize 結論 section and provide knowledge file references for details
-   - **Required structure**:
-     - **結論** (Conclusion): Direct answer to user's question
-     - **根拠** (Evidence): 1 code example from knowledge files
-     - **注意点** (Considerations): Important points or limitations
-   - **For detailed/complex topics**: Provide summary + reference to knowledge file path
+   **Output format**:
+   - Target length: 500 tokens (simple queries), 800 tokens (multi-part questions)
+   - If exceeds limit: Prioritize 結論 section, reference knowledge files for details
+   - Required structure:
+     - 結論 (Conclusion): Direct answer
+     - 根拠 (Evidence): 1 code example from knowledge files
+     - 注意点 (Considerations): Important points or limitations
+   - For complex topics: Provide summary + knowledge file path reference
      - Example: "詳しくは knowledge/features/libraries/universal-dao.json#paging を参照"
-   - Use Japanese section names (結論、根拠、注意点) since users are Japanese
 
-4. **Handle missing knowledge** (if needed):
-   - State clearly: "この情報は知識ファイルに含まれていません"
+4. **Handle missing knowledge**:
+   - State: "この情報は知識ファイルに含まれていません"
    - List related available knowledge from index.toon
    - DO NOT answer from LLM training data
 
-**Tools**: Read, Grep (optional), Bash with jq
-**Expected**: ~10-15 tool calls, ~5,000 tokens
+**Tools**: Read, Grep, Bash with jq
+**Expected**: ~10-15 tool calls
 
 #### Step 3: Code Analysis Workflow
 
@@ -199,17 +184,17 @@ Follow `workflows/code-analysis.md`:
 1. **Identify target and analyze dependencies**:
    - Parse user request (class/feature/package)
    - Find target files using Glob/Grep
-   - Read target files and extract dependencies
+   - Read target files, extract dependencies
    - Classify dependencies (project/Nablarch/libraries)
    - Build dependency graph
    - Categorize components by role
 
 2. **Search Nablarch knowledge**:
-   - For each Nablarch component, execute keyword-search workflow
+   - Batch process keyword-search for all Nablarch components
    - Collect relevant knowledge sections
 
 3. **Generate and output documentation**:
-   - Read template files (MUST READ FIRST)
+   - Read template files
    - Build Mermaid classDiagram and sequenceDiagram
    - Create component summary table
    - Write component details with line references
@@ -265,7 +250,7 @@ Process: Identify → Analyze → Search knowledge → Generate docs → Output 
 - `knowledge/releases/`: Release notes
 
 **Index** (TOON format):
-- `knowledge/index.toon`: 93 entries with ~650 search hints
+- `knowledge/index.toon`: All entries with search hints
 
 **Human-readable** (auto-generated):
 - `docs/`: Markdown version of knowledge files for human verification
@@ -296,9 +281,9 @@ cat docs/features/libraries/universal-dao.md
 
 ## Token efficiency
 
-**Index**: ~5,000-7,000 tokens (TOON format, 40-50% reduction vs JSON)
-**Search results**: ~5,000 tokens (top 10 sections, 500 tokens each)
-**Total**: ~10,000-12,000 tokens (5-6% of 200k context window)
+**Index**: ~5,000-7,000 tokens (TOON format)
+**Search results**: ~5,000 tokens (top 10 sections)
+**Total**: ~10,000-12,000 tokens
 
 ## Version information
 
@@ -322,16 +307,14 @@ cat docs/features/libraries/universal-dao.md
 
 ### Knowledge coverage
 
-**Not yet created** knowledge files show "not yet created" in index.toon (76 out of 93 entries).
-
 **When knowledge is missing**:
-1. Clearly state: "この情報は知識ファイルに含まれていません"
-2. List related available knowledge that might help
-3. Show the entry from index.toon with "not yet created" status
-4. **DO NOT** attempt to answer from LLM training data or general knowledge
-5. **ONLY IF EXPLICITLY REQUESTED**: Provide official_doc_urls for manual reference
+1. State: "この情報は知識ファイルに含まれていません"
+2. List related available knowledge
+3. Show entry from index.toon with "not yet created" status
+4. DO NOT answer from LLM training data
+5. ONLY IF EXPLICITLY REQUESTED: Provide official_doc_urls for manual reference
 
-**Current coverage** (17 files):
+**Current coverage**:
 - Nablarch batch processing basics
 - Core handlers (DB connection, transaction, data read)
 - Core libraries (UniversalDao, database access, file path, business date, data bind)
@@ -342,9 +325,9 @@ cat docs/features/libraries/universal-dao.md
 
 ### Verification
 
-**Human verification**: Check `docs/` directory for human-readable versions. All knowledge includes `official_doc_urls` showing the source.
+**Human verification**: Check `docs/` directory for human-readable versions. All knowledge includes `official_doc_urls`.
 
-**Accuracy**: Average 97.3/100 points (verified against official RST documentation)
+**Accuracy**: Average 97.3/100 points
 
 ## Feedback
 
@@ -355,9 +338,9 @@ If knowledge is inaccurate or missing, please:
 
 ## References (for manual lookup only)
 
-**IMPORTANT**: These references are for human users to manually look up information NOT in knowledge files. Do not access or fetch these during answers.
+**IMPORTANT**: For human users only. Do not access or fetch during answers.
 
-- [Nablarch Official Documentation](https://nablarch.github.io/docs/LATEST/doc/) - Use when knowledge file says "not yet created"
-- [Fintan System Development Guide](https://fintan.jp/page/252/) - Patterns and anti-patterns
-- [Nablarch Example Batch](https://github.com/nablarch/nablarch-example-batch) - Code examples
-- [Nablarch Example REST](https://github.com/nablarch/nablarch-example-rest) - REST examples
+- [Nablarch Official Documentation](https://nablarch.github.io/docs/LATEST/doc/)
+- [Fintan System Development Guide](https://fintan.jp/page/252/)
+- [Nablarch Example Batch](https://github.com/nablarch/nablarch-example-batch)
+- [Nablarch Example REST](https://github.com/nablarch/nablarch-example-rest)

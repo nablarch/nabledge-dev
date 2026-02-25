@@ -1,0 +1,117 @@
+diff --git a/.claude/skills/nabledge-6/knowledge/index.toon b/.claude/skills/nabledge-6/knowledge/index.toon
+index 61772eb..68b2b9d 100644
+--- a/.claude/skills/nabledge-6/knowledge/index.toon
++++ b/.claude/skills/nabledge-6/knowledge/index.toon
+@@ -1,13 +1,64 @@
+ # Nabledge-6 Knowledge Index
+ 
++# PROTOTYPE: L2+title hint design (Issue #88)
++# This file contains a PROTOTYPE of the new hint design for 8 entries.
++# The new design uses L2 (technical components) + title (Japanese + English) only,
++# removing L1 (generic domain terms) and L3 (functional terms).
++# L3 keywords are moved to .index sections in knowledge files.
++#
++# Format change:
++#   OLD: title, L1 L2 L3, path
++#   NEW: title, L2 title_ja title_en, path
++#
++# Example (ユニバーサルDAO):
++#   OLD: ユニバーサルDAO, データベース DAO O/Rマッパー CRUD JPA 検索 ページング 排他制御, ...
++#   NEW: ユニバーサルDAO, DAO O/Rマッパー CRUD JPA ユニバーサルDAO UniversalDao, ...
++#
++# Changes:
++#   - Removed L1: データベース (too generic, causes noise)
++#   - Removed L3: 検索 ページング 排他制御 (moved to .index in knowledge file)
++#   - Added title: ユニバーサルDAO UniversalDao (improves recall for direct title matches)
++#
++# English Title Conventions:
++# - PascalCase for class/component names: UniversalDao, DatabaseAccess, SessionStore
++# - Clear word boundaries in compounds: JDBCWrapper (not Jdbcwrapper)
++# - Match official Nablarch naming where possible
++# - Use common English terms for concepts: Transaction, Validation, Handler
++
+ files[93,]{title,hints,path}:
+-  Nablarchバッチ（都度起動型・常駐型）, バッチ 都度起動 常駐 大量データ処理 アーキテクチャ ハンドラ DataReader, features/processing/nablarch-batch.json
+-  JSR352準拠バッチ（Jakarta Batch）, バッチ JSR352 Jakarta Batch Batchlet Chunk 標準仕様, not yet created
+-  ユニバーサルDAO, データベース DAO O/Rマッパー CRUD JPA 検索 ページング 排他制御, features/libraries/universal-dao.json
+-  データベースアクセス（JDBCラッパー）, データベース JDBC SQL 接続 PreparedStatement Dialect, features/libraries/database-access.json
+-  データベースコードジェネレータ, データベース コード生成 自動生成 Entity DAO スキーマ, not yet created
+-  データバインド, ファイル データ変換 CSV TSV 固定長 JavaBeans Map, features/libraries/data-bind.json
+-  汎用データフォーマット, ファイル データ形式 CSV 固定長 JSON XML マルチレイアウト, not yet created
++  # --- PROTOTYPE: 8 entries with new L2+title design ---
++  Nablarchバッチ（都度起動型・常駐型）, 都度起動 常駐 DataReader Nablarchバッチ NablarchBatch, features/processing/nablarch-batch.json
++  # OLD: バッチ 都度起動 常駐 大量データ処理 アーキテクチャ ハンドラ DataReader
++  # Removed L1: バッチ, アーキテクチャ, ハンドラ | Removed L3: 大量データ処理 | Added title: Nablarchバッチ NablarchBatch
++
++  JSR352準拠バッチ（Jakarta Batch）, JSR352 Jakarta Batch Batchlet Chunk JSR352準拠バッチ JakartaBatch, not yet created
++  # OLD: バッチ JSR352 Jakarta Batch Batchlet Chunk 標準仕様
++  # Removed L1: バッチ | Removed L3: 標準仕様 | Added title: JSR352準拠バッチ JakartaBatch
++
++  ユニバーサルDAO, DAO O/Rマッパー CRUD JPA ユニバーサルDAO UniversalDao, features/libraries/universal-dao.json
++  # OLD: データベース DAO O/Rマッパー CRUD JPA 検索 ページング 排他制御
++  # Removed L1: データベース | Removed L3: 検索 ページング 排他制御 | Added title: ユニバーサルDAO UniversalDao
++
++  データベースアクセス（JDBCラッパー）, JDBC SQL PreparedStatement Dialect データベースアクセス DatabaseAccess JDBCラッパー JDBCWrapper, features/libraries/database-access.json
++  # OLD: データベース JDBC SQL 接続 PreparedStatement Dialect
++  # Removed L1: データベース | Removed L3: 接続 | Added title: データベースアクセス DatabaseAccess JDBCラッパー JDBCWrapper
++
++  データベースコードジェネレータ, コード生成 自動生成 Entity DAO スキーマ データベースコードジェネレータ DatabaseCodeGenerator, not yet created
++  # OLD: データベース コード生成 自動生成 Entity DAO スキーマ
++  # Removed L1: データベース | Kept L2: コード生成 自動生成 Entity DAO スキーマ | Added title: データベースコードジェネレータ DatabaseCodeGenerator
++
++  データバインド, CSV TSV 固定長 JavaBeans Map データバインド DataBind, features/libraries/data-bind.json
++  # OLD: ファイル データ変換 CSV TSV 固定長 JavaBeans Map
++  # Removed L1: ファイル | Removed L3: データ変換 | Added title: データバインド DataBind
++
++  汎用データフォーマット, CSV 固定長 JSON XML マルチレイアウト 汎用データフォーマット DataFormat, not yet created
++  # OLD: ファイル データ形式 CSV 固定長 JSON XML マルチレイアウト
++  # Removed L1: ファイル | Removed L3: データ形式 | Added title: 汎用データフォーマット DataFormat
++
++  業務日付, 業務日付 システム日付 日時管理 BusinessDate SystemDate DateUtil, features/libraries/business-date.json
++  # OLD: 日付 業務日付 システム日付 日時管理
++  # Removed L1: 日付 | Kept L2: 業務日付 システム日付 日時管理 | Added title (English): BusinessDate SystemDate DateUtil
++
+   ログ出力, ログ ロギング Logger LogWriter ファイル出力 ローテーション, not yet created
+   SLF4Jアダプタ, ログ SLF4J アダプタ log4j logback ロギングフレームワーク, features/adapters/slf4j-adapter.json
+   入力値のチェック, バリデーション 入力チェック Bean Validation Nablarch Validation 妥当性検証, not yet created
+@@ -15,7 +66,6 @@ files[93,]{title,hints,path}:
+   コード管理, コード マスタ 区分値 名称 国際化 静的データ, not yet created
+   メッセージ管理, メッセージ 国際化 エラーメッセージ プロパティ フォーマット, not yet created
+   排他制御, 排他制御 楽観的ロック 悲観的ロック バージョン番号 同時更新, not yet created
+-  業務日付, 日付 業務日付 システム日付 日時管理, features/libraries/business-date.json
+   ファイルパス管理, ファイル パス管理 ファイルパス 論理名 物理パス, features/libraries/file-path-management.json
+   リポジトリ, リポジトリ DI 依存性注入 コンポーネント定義 設定管理, not yet created
+   データベース管理, データベース スキーマ管理 マイグレーション DDL 初期データ, not yet created
+@@ -33,8 +83,15 @@ files[93,]{title,hints,path}:
+   フォーマット, フォーマット 数値 日付 文字列 変換 表示形式, not yet created
+   認可チェック（Permission Check）, 認可 権限チェック Permission アクセス制御 セキュリティ, not yet created
+   ロールベース認可, 認可 ロール 権限 アクセス制御 セキュリティ, not yet created
+-  データベース接続管理ハンドラ, ハンドラ データベース 接続管理 接続取得 接続解放 コネクション, features/handlers/common/db-connection-management-handler.json
+-  トランザクション管理ハンドラ, ハンドラ トランザクション コミット ロールバック データベース, features/handlers/common/transaction-management-handler.json
++
++  # --- PROTOTYPE: 2 handler entries with new L2+title design ---
++  データベース接続管理ハンドラ, 接続管理 接続取得 接続解放 コネクション データベース接続管理ハンドラ DbConnectionManagementHandler, features/handlers/common/db-connection-management-handler.json
++  # OLD: ハンドラ データベース 接続管理 接続取得 接続解放 コネクション
++  # Removed L1: ハンドラ, データベース | Kept L2: 接続管理 接続取得 接続解放 コネクション | Added title: データベース接続管理ハンドラ DbConnectionManagementHandler
++
++  トランザクション管理ハンドラ, トランザクション コミット ロールバック トランザクション管理ハンドラ TransactionManagementHandler, features/handlers/common/transaction-management-handler.json
++  # OLD: ハンドラ トランザクション コミット ロールバック データベース
++  # Removed L1: ハンドラ, データベース | Kept L2: トランザクション コミット ロールバック | Added title: トランザクション管理ハンドラ TransactionManagementHandler
+   グローバルエラーハンドラ, ハンドラ エラーハンドリング 例外処理 共通エラー処理, not yet created
+   ファイルレコードライタ破棄ハンドラ, ハンドラ ファイル 出力 リソース解放 クローズ処理, not yet created
+   リクエストパスJavaパッケージマッピング, ハンドラ ルーティング パス マッピング ディスパッチ, not yet created
+@@ -46,7 +103,13 @@ files[93,]{title,hints,path}:
+   プロセス常駐化ハンドラ, ハンドラ バッチ 常駐プロセス 定期実行 監視, not yet created
+   ループ制御ハンドラ, ハンドラ バッチ ループ データベース レコード処理, not yet created
+   データベースレスループ制御ハンドラ, ハンドラ バッチ ループ データベースなし 繰り返し処理, not yet created
+-  データリードハンドラ, ハンドラ バッチ データ読み込み ファイル データベース, features/handlers/batch/data-read-handler.json
++
++  # --- PROTOTYPE: 1 batch handler entry with new L2+title design ---
++  データリードハンドラ, DataReader ファイル読み込み データベース読み込み データリードハンドラ DataReadHandler, features/handlers/batch/data-read-handler.json
++  # OLD: ハンドラ バッチ データ読み込み ファイル データベース
++  # Removed L1: ハンドラ, バッチ | Kept L2: DataReader ファイル読み込み データベース読み込み | Added title: データリードハンドラ DataReadHandler
++  # Note: "データ読み込み" split into "ファイル読み込み" and "データベース読み込み" for precision
++  # --- End of PROTOTYPE entries (total: 11 entries) ---
+   メインクラス, ハンドラ スタンドアロン Main エントリポイント 起動, not yet created
+   リトライハンドラ, ハンドラ リトライ 再試行 エラーハンドリング 例外処理, not yet created
+   ステータスコード変換ハンドラ, ハンドラ ステータスコード 終了コード リターンコード 変換, not yet created

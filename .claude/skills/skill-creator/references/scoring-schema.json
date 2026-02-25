@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Section Scoring Schema",
+  "description": "Schema for agent-scored section relevance in keyword search workflow",
+  "type": "object",
+  "properties": {
+    "sections": {
+      "type": "array",
+      "description": "List of sections with agent-assigned relevance scores",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to knowledge file (e.g., features/libraries/universal-dao.json)"
+          },
+          "section_id": {
+            "type": "string",
+            "description": "Section identifier from .index (e.g., overview, usage, paging)"
+          },
+          "hints": {
+            "type": "array",
+            "description": "Search hints from section's .index",
+            "items": {
+              "type": "string"
+            }
+          },
+          "relevance_score": {
+            "type": "integer",
+            "description": "Agent-assigned score: 3 (high), 2 (medium), 1 (low), 0 (not relevant)",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Brief explanation why this score was assigned (1-2 sentences)"
+          }
+        },
+        "required": ["file_path", "section_id", "hints", "relevance_score", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    "query_context": {
+      "type": "object",
+      "description": "Context about the user's query for scoring reference",
+      "properties": {
+        "user_query": {
+          "type": "string",
+          "description": "Original user question"
+        },
+        "extracted_keywords": {
+          "type": "object",
+          "properties": {
+            "l1": {
+              "type": "array",
+              "description": "L1 keywords (technical components)",
+              "items": {"type": "string"}
+            },
+            "l2": {
+              "type": "array",
+              "description": "L2 keywords (functional terms)",
+              "items": {"type": "string"}
+            }
+          },
+          "required": ["l1", "l2"]
+        }
+      },
+      "required": ["user_query", "extracted_keywords"]
+    }
+  },
+  "required": ["sections", "query_context"],
+  "additionalProperties": false
+}

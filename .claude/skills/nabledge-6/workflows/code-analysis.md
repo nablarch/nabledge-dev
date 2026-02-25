@@ -1,36 +1,19 @@
 # Code Analysis Workflow
 
-This workflow analyzes existing code, traces dependencies, and generates structured documentation to help understand the codebase.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Process flow](#process-flow)
-  - [Step 1: Identify target and analyze dependencies](#step-1-identify-target-and-analyze-dependencies)
-  - [Step 2: Search Nablarch knowledge](#step-2-search-nablarch-knowledge)
-  - [Step 3: Generate and output documentation](#step-3-generate-and-output-documentation)
-- [Output template](#output-template)
-- [Error handling](#error-handling)
-- [Best practices](#best-practices)
-- [Example execution](#example-execution)
+Analyze existing code, trace dependencies, generate structured documentation.
 
 ## Overview
 
-**Purpose**: Help users understand existing code by:
-1. Identifying target code and tracing dependencies
-2. Searching relevant Nablarch knowledge
-3. Generating comprehensive documentation
+**Purpose**:
+1. Identify target code and trace dependencies
+2. Search relevant Nablarch knowledge
+3. Generate documentation
 
 **Input**: User's request (target code specification)
 
-**Output**: Structured documentation file (Markdown + Mermaid diagrams)
+**Output**: Documentation file (Markdown + Mermaid diagrams) in .nabledge/YYYYMMDD/
 
-**Tools**:
-- Read, Glob, Grep: Read and search source files
-- Bash with jq: Execute keyword-search workflow
-- Write: Generate documentation file
-
-**Expected output**: 1 documentation file (~3,000-10,000 tokens) in .nabledge/YYYYMMDD/
+**Tools**: Read, Glob, Grep, Bash with jq, Write
 
 ## Process flow
 
@@ -54,13 +37,13 @@ Session ID: 1707559440123-12345
 ```
 
 **IMPORTANT**:
-- **Session ID stored in**: `/tmp/nabledge-code-analysis-id` (fixed path for retrieval in Step 3.3)
-- **Start time stored in**: `/tmp/nabledge-code-analysis-start-$UNIQUE_ID` (unique file per session)
-- **UNIQUE_ID format**: `{millisecond_timestamp}-{process_PID}` ensures uniqueness across parallel executions
-- Epoch time (seconds since 1970) stored for accurate duration calculation
-- No need to remember values - Step 3.3 will read session ID from fixed file path
+- Session ID stored in: `/tmp/nabledge-code-analysis-id`
+- Start time stored in: `/tmp/nabledge-code-analysis-start-$UNIQUE_ID`
+- UNIQUE_ID format: `{millisecond_timestamp}-{process_PID}`
+- Epoch time (seconds since 1970) for accurate duration calculation
+- Step 3.3 reads session ID from fixed file path
 
-**Why this matters**: The `{{analysis_duration}}` placeholder must contain the actual elapsed time, not an estimate. Users will compare it against the "Cooked for X" time shown in their IDE.
+**Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
 
 ---
 
@@ -121,9 +104,9 @@ Session ID: 1707559440123-12345
 
 **Tools**: Read (index.toon), Bash with jq (keyword-search workflow)
 
-**Action**: Batch process knowledge searches for all Nablarch components to reduce tool calls.
+**Action**: Batch process knowledge searches for all Nablarch components.
 
-**Batch processing approach**:
+**Batch processing**:
 
 1. **Identify all Nablarch components** from Step 1 analysis:
    - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "DbAccessException"]
@@ -195,7 +178,7 @@ Session ID: 1707559440123-12345
   - Additional overhead for multi-component coordination: ~5-10 calls (dependency grouping and knowledge mapping)
   - Total: ~15 calls
 
-**Efficiency**: Collect High-relevance sections only (5-10 sections per component). Skip components with no relevant knowledge.
+**Efficiency**: Collect High-relevance sections only (5-10 per component). Skip components with no knowledge.
 
 **Output**: Relevant knowledge sections with API usage, patterns, and best practices
 
@@ -325,27 +308,27 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 
 #### 3.4: Build documentation content
 
-**CRITICAL INSTRUCTION**: All diagram work in this step REFINES skeletons from Step 3.3. Your task is to REFINE, not REGENERATE.
+**CRITICAL**: All diagram work REFINES skeletons from Step 3.3. REFINE, not REGENERATE.
 
-**What is refinement?**
-- Start with skeleton structure (classes, participants, relationships already present)
+**Refinement**:
+- Start with skeleton structure (classes, participants, relationships present)
 - Add semantic information (annotations, labels, control flow)
-- Preserve all skeleton-generated base structure
+- Preserve skeleton-generated base structure
 
-**Refinement scope** (permitted actions):
+**Permitted actions**:
 - Add annotations/stereotypes (e.g., `<<Nablarch>>`)
 - Add or improve relationship labels (e.g., "validates", "uses", "creates")
 - Add control flow elements (`alt`/`else`, `loop`, `Note over`)
 - Add missing relationships discovered during analysis
 - Fix incorrect relationship types (`--` vs `..`)
 
-**Regeneration** (prohibited actions):
-- Deleting skeleton and creating new diagram from scratch
-- Reordering existing participants/classes
-- Removing skeleton-generated relationships
-- Changing diagram type (class to sequence)
+**Prohibited actions**:
+- Delete skeleton and create new diagram from scratch
+- Reorder existing participants/classes
+- Remove skeleton-generated relationships
+- Change diagram type (class to sequence)
 
-**Exception**: If skeleton is malformed (syntax error, missing critical classes), report error to user and request manual intervention instead of attempting to fix.
+**Exception**: If skeleton is malformed, report error and request manual intervention.
 
 **Refinement workflow**:
 
@@ -364,7 +347,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 5. Add explanatory notes using `Note over` syntax for complex logic
 6. Preserve all skeleton structure (participants, basic flow)
 
-**Time savings**: Skeletons save ~20 seconds (baseline: ~35s for manual diagram creation, with skeleton: ~15s for refinement, ~57% reduction) by providing structure; focus refinement on semantics, not syntax.
+**Time savings**: Skeletons save ~20 seconds by providing structure; focus refinement on semantics, not syntax.
 
 **Dependency diagram** (Mermaid classDiagram):
 
@@ -372,19 +355,18 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 - Retrieve `CLASS_DIAGRAM_SKELETON` saved in Step 3.3
 - This skeleton already contains class names and basic relationships
 
-**Step 2**: Refine skeleton with semantic information:
-- Add `<<Nablarch>>` stereotype to framework classes (UniversalDao, ExecutionContext, etc.)
-- Add specific relationship labels that describe the interaction:
-  - **Data operations**: "validates", "serializes", "queries", "persists"
-  - **Lifecycle operations**: "creates", "initializes", "configures"
-  - **Control flow**: "invokes", "delegates to", "calls back"
-  - **Avoid generic labels**: "uses", "calls", "has" (replace with specific action)
-- Verify all key dependencies are shown:
-  - **Key dependencies** (include if ANY apply):
-    - Direct field injection or constructor parameter
-    - Method called in primary business logic path
-    - Required for transaction or validation
-    - Framework class that enables core functionality
+**Step 2**: Refine skeleton:
+- Add `<<Nablarch>>` stereotype to framework classes
+- Add specific relationship labels:
+  - Data operations: "validates", "serializes", "queries", "persists"
+  - Lifecycle operations: "creates", "initializes", "configures"
+  - Control flow: "invokes", "delegates to", "calls back"
+  - Avoid generic labels: "uses", "calls", "has"
+- Verify key dependencies shown:
+  - Direct field injection or constructor parameter
+  - Method called in primary business logic path
+  - Required for transaction or validation
+  - Framework class enabling core functionality
 
 **Example**:
 ```mermaid
@@ -491,7 +473,7 @@ sequenceDiagram
    - `{{knowledge_base_links}}`: Knowledge base links
    - `{{official_docs_links}}`: Official docs links
 
-   **Important**: For diagram placeholders (`{{dependency_graph}}` and `{{flow_sequence_diagram}}`), retrieve refined skeletons from working memory (`CLASS_DIAGRAM_SKELETON` and `SEQUENCE_DIAGRAM_SKELETON` from Step 3.3). Do not generate new diagrams from scratch.
+   **Important**: For diagram placeholders, retrieve refined skeletons from working memory (`CLASS_DIAGRAM_SKELETON` and `SEQUENCE_DIAGRAM_SKELETON` from Step 3.3).
 
 3. **Verify template compliance** before writing:
    - All template sections present
@@ -574,19 +556,10 @@ sequenceDiagram
 6. **Inform user**: Show output path and actual duration
 6. **Inform user**: Show output path and actual duration
 
-**Expected time savings** (with baseline context):
+**Expected time savings**:
 - Pre-filled deterministic placeholders: ~25-30 seconds saved
-  - Baseline: ~40 seconds for manual placeholder filling
-  - With prefill: ~10 seconds (LLM only generates 8 remaining placeholders)
-  - Reduction: ~67% faster
 - Mermaid diagram skeletons: ~15-20 seconds saved
-  - Baseline: ~35 seconds for manual diagram creation from scratch
-  - With skeleton: ~15 seconds for refinement
-  - Reduction: ~57% faster
-- **Total expected reduction**: ~40-50 seconds
-  - **Baseline Step 3 execution**: ~100 seconds (LLM generation time)
-  - **Target LLM generation time**: ~45-55 seconds
-  - **Overall improvement**: ~55% reduction in LLM generation time
+- Total reduction: ~40-50 seconds
 
 **Output**: Documentation file at .nabledge/YYYYMMDD/code-analysis-<target-name>.md
 
@@ -617,17 +590,17 @@ Key scenarios:
 
 ## Best practices
 
-**Template compliance (CRITICAL)**:
-- Always read template file before generating content
-- Never add section numbers to template sections
+**Template compliance**:
+- Read template file before generating content
+- Never add section numbers
 - Never add sections outside template structure
-- If additional info is valuable, integrate into existing sections as subsections
-- Verify compliance before outputting file
+- Integrate additional info into existing sections as subsections
+- Verify compliance before output
 
 **Scope management**:
-- Start with narrow scope, expand if needed
-- Ask user before expanding beyond initial request
-- Clearly document scope boundaries
+- Start narrow, expand if needed
+- Ask user before expanding
+- Document scope boundaries
 
 **Dependency tracing**:
 - Stop at framework boundaries
@@ -636,14 +609,14 @@ Key scenarios:
 
 **Knowledge integration**:
 - Only use knowledge from knowledge files
-- Cite sources clearly (file + section)
+- Cite sources (file + section)
 - Don't supplement with external knowledge
 
 **Documentation quality**:
 - Keep explanations concise
 - Use diagrams for complex relationships
 - Provide actionable information
-- Link to sources for deep dives
+- Link to sources for details
 
 ## Example execution
 
