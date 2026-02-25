@@ -11,6 +11,12 @@
 - **Test**: Skill must work for v6 AND v5 (proves "reproducible for future versions")
 - **Method**: All work executed via `/nabledge-creator` skill commands
 
+**Quality Requirements (Mission-Critical System Level)**:
+- **No sampling**: Full validation of all 162 files (not 10-15 samples)
+- **No script execution**: All verification via `/nabledge-creator` skill commands
+- **No guessing**: Definitive proof that skill works correctly
+- **Rationale**: Knowledge files support systems handling hundreds of billions of yen
+
 ---
 
 ## Phase 0: Skill Understanding & Verification Plan ⏳ START HERE
@@ -37,52 +43,29 @@
 - Arguments: mapping/index (none), knowledge (--filter, --limit, --all)
 - Skill vs Script: Skill = complete workflow with validation and edge case handling; Script = single step execution
 
-### Task 0.2: Create verification plan ✅
+### Task 0.2: Understand execution strategy ✅
 
-**Document**: `.pr/00078/verification-plan.md` ✅
+**Understanding confirmed**:
 
-**Content created**:
-1. **Phase 1-2 Re-verification Strategy** ✅
-   - Backup → clean → execute via skill → compare → verify reproducibility
+1. **Phase 1-2 Strategy** ✅
+   - Execute via `/nabledge-creator mapping` and `/nabledge-creator index`
+   - NOT via `python scripts/*.py` (proves skill works, not just scripts)
+   - 5 runs each for reproducibility verification
    - Expected: 291 files (mapping), 154 entries (index)
-   - 3-5 runs per phase for reproducibility
 
-2. **Phase 3-4 Execution Strategy** ✅
-   - Pilot (3 files) → category → full (162 files)
-   - Incremental validation at each step
+2. **Phase 3-4 Strategy** ✅
+   - Execute via `/nabledge-creator knowledge --all`
+   - NOT via Task tool or script execution
+   - All 162 files generated via skill
    - 3 runs for reproducibility testing
 
 3. **Phase 5 Quality Assurance Strategy** ✅
-   - Content accuracy: Manual sampling of 10-15 files
-   - Reproducibility: 3 full runs, compare consistency
-   - v5 compatibility: Critical for SC2 requirement
+   - Task 5.1: Implement `/nabledge-creator verify-knowledge --all` workflow
+   - **All 162 files verified** (not sampling)
+   - Task 5.2: 3 full runs for reproducibility
+   - Task 5.3: v5 compatibility (critical for SC2)
 
-### Task 0.3: Test skill commands with minimal examples ⏳
-
-**Purpose**: Verify skill commands work before full-scale execution
-
-**Tests**:
-```bash
-# Test 1: Mapping skill (small scope if possible)
-/nabledge-creator mapping
-# Verify: Output created, structure correct
-
-# Test 2: Index skill
-/nabledge-creator index
-# Verify: Output created, structure correct
-
-# Test 3: Knowledge skill (1-3 files)
-/nabledge-creator knowledge --filter "Category=handlers" --limit 3
-# Verify: Files generated, validation passes
-```
-
-**Success Criteria**:
-- [ ] All 3 skill commands execute without errors
-- [ ] Outputs match expected structure
-- [x] Understanding of skill behavior documented in verification-plan.md
-- [ ] Ready to proceed with full Phase 1 execution
-
-**Phase 0 Status**: ⏳ **Task 0.3 IN PROGRESS** (0.1 ✅ 0.2 ✅ 0.3 ⏳)
+**Phase 0 Status**: ✅ **COMPLETE** (0.1 ✅ 0.2 ✅)
 
 ---
 
@@ -333,53 +316,51 @@ rm -f .claude/skills/nabledge-6/knowledge/index.toon
 /nabledge-creator index
 /nabledge-creator knowledge --all
 
-# Validate
-cd .claude/skills/nabledge-creator
-python scripts/validate-knowledge.py ../nabledge-6/knowledge/
+# Verify via skill (not script directly)
+/nabledge-creator verify-knowledge --all
 
 # Record: errors, warnings, time
-# Backup: cp -r knowledge/ .tmp/phase5-run{N}/
+# Backup: cp -r .claude/skills/nabledge-6/knowledge/ .tmp/phase5-run{N}/
 ```
 
 **Success Criteria**:
-- [ ] Run 1: 0 errors via skill
-- [ ] Run 2: 0 errors via skill
-- [ ] Run 3: 0 errors via skill
-- [ ] Consistent quality across runs
+- [ ] Run 1: 0 errors via skill verification
+- [ ] Run 2: 0 errors via skill verification
+- [ ] Run 3: 0 errors via skill verification
+- [ ] Consistent quality across runs (±10% warning count acceptable)
 - [ ] Skill command works without intervention
 
-**Estimated Time**: 6-9 hours (3 runs × 2-3 hours per run)
+**Estimated Time**: 9-12 hours (3 runs × 3-4 hours per run including verification)
 
 ### Task 5.3: v5 Compatibility Test ⏳ CRITICAL
 
 **Purpose**: Prove skill works for future Nablarch versions (SC2 requirement)
 
-**Method**: Apply skill to v5 documentation
+**Method**: Apply skill to v5 documentation with representative coverage
 
 ```bash
-# Generate v5 mapping
+# Generate v5 mapping (full)
 /nabledge-creator mapping --version v5
 
-# Generate sample v5 knowledge files (5-10 files)
-/nabledge-creator knowledge --version v5 --sample 10
+# Generate v5 knowledge files (major categories, ~30-50 files)
+/nabledge-creator knowledge --version v5 --filter "Category IN (handlers,libraries,processing)"
 
-# Validate
-cd .claude/skills/nabledge-creator
-python scripts/validate-knowledge.py ../nabledge-5/knowledge/
-
-# Expect: Skill works with v5 sources
+# Verify via skill (not script)
+/nabledge-creator verify-knowledge --version v5 --all
 ```
 
 **Success Criteria**:
 - [ ] Skill executes for v5 without errors
-- [ ] v5 mapping generated successfully
-- [ ] Sample v5 knowledge files generated
-- [ ] 0 validation errors on v5 files
+- [ ] v5 mapping generated successfully (full coverage)
+- [ ] Major categories knowledge files generated (30-50 files minimum)
+- [ ] 0 validation errors on v5 files via skill verification
 - [ ] **Proves**: "Reproducible for future Nablarch releases"
 
 **Critical**: This proves SC2 ("future Nablarch releases can be handled reproducibly")
 
-**Estimated Time**: 2-3 hours
+**Note**: Not full 162 files for v5, but sufficient coverage across categories to prove reproducibility
+
+**Estimated Time**: 3-4 hours
 
 ### Task 5.4: Skill Documentation ⏳
 
@@ -441,7 +422,10 @@ rm -f .claude/skills/nabledge-creator/output/mapping-v6.md
 
 **Requirements**:
 - [ ] ❌ All 162 files generated via skill (Phase 4 pending)
-- [ ] ❌ Content accuracy verified (Phase 5.1 pending)
+- [ ] ❌ Content accuracy verified via `/nabledge-creator verify-knowledge --all` (Phase 5.1 pending)
+  - **All 162 files verified** (not sampling)
+  - Automated RST↔JSON correspondence check
+  - Schema compliance verification
 - [ ] ❌ 0 validation errors via skill execution
 - [ ] ❌ All categories covered via skill
 
@@ -469,24 +453,24 @@ rm -f .claude/skills/nabledge-creator/output/mapping-v6.md
 
 | Phase | Method | Status | Critical Issue |
 |-------|--------|--------|----------------|
-| **Phase 0: Skill Understanding** | - | ⏳ **START HERE** | Must understand skill before executing |
+| **Phase 0: Skill Understanding** | - | ✅ **COMPLETE** | Understanding confirmed |
 | **Phase 1: Mapping** | ❌ Script direct | ❌ Invalid | **Must use skill** |
 | **Phase 2: Index** | ❌ Script direct | ❌ Invalid | **Must use skill** |
 | **Phase 3: Pilot (17)** | ❌ Task tool | ❌ Invalid | **Must use skill** |
 | **Phase 4: Complete (162)** | ❌ Task tool | ❌ Invalid | **Must use skill** |
-| **Phase 5.1: Verify** | - | ⏳ Pending | Workflow not implemented |
+| **Phase 5.1: Verify** | - | ⏳ Pending | Workflow implementation required |
 | **Phase 5.2: Reproduce** | - | ⏳ Pending | Need skill-based generation |
 | **Phase 5.3: v5 test** | - | ⏳ Pending | Critical for SC2 |
 
 **Critical Path**:
-1. **Phase 0**: Understand skill specifications and create verification plan (1-2h) ← **START HERE**
-2. **Phase 1**: Execute mapping via skill with 5-run reproducibility (1h)
+1. **Phase 0**: ✅ Complete - Skill specifications understood
+2. **Phase 1**: Execute mapping via skill with 5-run reproducibility (1h) ← **NEXT**
 3. **Phase 2**: Execute index via skill with 5-run reproducibility (1h)
 4. **Phase 3**: Execute pilot knowledge files via skill (1h)
-5. **Phase 4**: Execute all 162 knowledge files via skill (2-3h)
-6. **Phase 5**: Quality assurance and v5 compatibility (6-9h)
+5. **Phase 4**: Execute all 162 knowledge files via skill (3-4h)
+6. **Phase 5**: Quality assurance and v5 compatibility (15-20h including verification workflow)
 
-**Total Time to SC Achievement**: 12-17 hours
+**Total Time to SC Achievement**: 21-28 hours (increased due to full verification requirements)
 
 **Key Insight**:
 - Issue #78 is about **skill development**, not **data generation**
@@ -499,13 +483,11 @@ rm -f .claude/skills/nabledge-creator/output/mapping-v6.md
 
 ## Next Immediate Action
 
-**Phase 0: Read skill specifications and create verification plan**
+**Phase 1: Execute mapping workflow via skill**
 
-Required reading:
-1. `.claude/skills/nabledge-creator/SKILL.md`
-2. `.claude/skills/nabledge-creator/workflows/*.md`
-3. `.claude/skills/nabledge-creator/scripts/*.py`
+Execute 5 runs of `/nabledge-creator mapping` to verify:
+1. Skill command works (not script direct execution)
+2. Reproducibility (5 runs produce identical results)
+3. Output: 291 files mapped, 0 review items
 
-Then create: `.pr/00078/verification-plan.md`
-
-**After Phase 0 complete and context cleared, execute Phase 1-5 following verification plan.**
+Then proceed to Phase 2 (index) → Phase 3 (pilot) → Phase 4 (full) → Phase 5 (QA with verification workflow implementation).
