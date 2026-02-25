@@ -1,6 +1,6 @@
 # Verification Checklist: mapping-v6.md
 
-**Generated**: 2026-02-24
+**Generated**: 2026-02-25
 **Total Mapping Rows**: 291
 **Excluded Files**: 768
 **Classification Checks**: 291
