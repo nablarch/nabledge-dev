@@ -22,11 +22,11 @@ Read the following files:
 .claude/skills/nabledge-creator/references/classification.md     # Classification rules
 ```
 
-The checklist contains sampled rows from the mapping that require content verification.
+The checklist contains all rows from the mapping that require content verification.
 
-### Step VM2: Verify Classification (Sampled Rows)
+### Step VM2: Verify Classification (All 291 Files)
 
-For each row in the checklist's "Classification Check" section:
+For each row in the mapping file (all 291 files):
 
 1. **Read RST source**:
    - Read the first 50 lines of the RST file specified in Source Path
@@ -61,9 +61,11 @@ For each row in the checklist's "Classification Check" section:
 
 **Do NOT skip this step**. Reading the actual content is the only way to catch classification errors, especially for Processing Pattern which cannot be determined by path alone.
 
-### Step VM3: Verify Target Paths (Sampled Rows)
+**Verification scope**: All 291 files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
 
-For each row in the checklist's "Target Path Check" section:
+### Step VM3: Verify Target Paths (All 291 Files)
+
+For each row in the mapping file (all 291 files):
 
 1. **Verify path structure**:
    - Target Path starts with Type (e.g., `component/`, `processing-pattern/`)

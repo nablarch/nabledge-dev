@@ -42,16 +42,13 @@ Check that the index file follows the TOON schema:
 
 **Record issues**: If any structural issues found, note them and skip to Step VI6.
 
-### Step VI3: Verify Hint Quality (Sample Check)
+### Step VI3: Verify Hint Quality (All 259 Entries)
 
-Sample 15-20 entries across different categories and verify hint quality:
+Verify hint quality for all entries in the index. Use Task tool with batch processing if needed to handle large volume efficiently.
 
-**Sampling strategy**:
-- Select entries from different tags (adapters, handlers, libraries, processing-patterns, etc.)
-- Include both "not yet created" and created entries (if any)
-- Mix entries from beginning, middle, and end of index (to check across Japanese character ranges)
+**Verification scope**: All 259 entries must be verified. Process in batches if needed (e.g., 50 entries per batch).
 
-**For each sampled entry**:
+**For each entry**:
 
 1. **Read source documentation**:
    - Look up the entry in knowledge-file-plan.md to find source RST files
@@ -203,7 +200,15 @@ Create verification results document at `.pr/00078/index-verification-results.md
 
 ## Hint Quality Verification
 
-**Sampled Entries**: {count} entries
+**Total Entries Verified**: 259 entries (100% coverage)
+
+**Summary**:
+- ✓ Excellent quality: {count} entries
+- ✓ Good quality: {count} entries
+- ⚠ Acceptable quality: {count} entries
+- ✗ Insufficient quality: {count} entries
+
+**Sample Results** (showing problematic entries only):
 
 | Title | Hints Count | Coverage | Quality | Status |
 |-------|-------------|----------|---------|--------|
@@ -307,11 +312,12 @@ The generation session uses hint extraction logic based on titles and categories
 ## Notes
 
 1. **Focus on hint quality**: Structural validation is automated (validate-index.py), this workflow focuses on semantic quality
-2. **Sample-based verification**: 15-20 entries is sufficient to identify systematic issues
+2. **Full verification**: All 259 entries must be verified for mission-critical quality requirements
 3. **Search-first perspective**: Evaluate hints from user search perspective, not generation logic
 4. **Bilingual validation**: Japanese primary (user queries), English secondary (technical terms)
 5. **Phase-specific expectations**: Phase 2 has all "not yet created", Phase 3-4 have mix
 6. **Iterative improvement**: Verification results inform hint extraction improvements
+7. **Batch processing**: Use Task tool to process entries in batches for efficiency
 
 ## References
 
