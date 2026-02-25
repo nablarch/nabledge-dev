@@ -1,0 +1,212 @@
+{
+  "id": "data-bind",
+  "title": "データバインド",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/data_io/data_bind.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "データバインド",
+        "Data Bind",
+        "CSV",
+        "TSV",
+        "固定長",
+        "ライブラリ"
+      ]
+    },
+    {
+      "id": "features",
+      "hints": [
+        "機能概要",
+        "Java Beans",
+        "Map",
+        "アノテーション",
+        "型変換"
+      ]
+    },
+    {
+      "id": "file-to-bean",
+      "hints": [
+        "読み込み",
+        "Java Beans",
+        "ObjectMapper",
+        "ObjectMapperFactory",
+        "read"
+      ]
+    },
+    {
+      "id": "bean-to-file",
+      "hints": [
+        "書き込み",
+        "Java Beans",
+        "ObjectMapper",
+        "write",
+        "出力"
+      ]
+    },
+    {
+      "id": "file-to-map",
+      "hints": [
+        "読み込み",
+        "Map",
+        "DataBindConfig",
+        "String型"
+      ]
+    },
+    {
+      "id": "map-to-file",
+      "hints": [
+        "書き込み",
+        "Map",
+        "DataBindConfig",
+        "出力"
+      ]
+    },
+    {
+      "id": "csv-format",
+      "hints": [
+        "CSV形式",
+        "フォーマット",
+        "Csv",
+        "アノテーション",
+        "CsvDataBindConfig"
+      ]
+    },
+    {
+      "id": "fixed-length-format",
+      "hints": [
+        "固定長形式",
+        "フォーマット",
+        "FixedLength",
+        "アノテーション",
+        "FixedLengthDataBindConfig"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "ObjectMapper",
+        "ObjectMapperFactory",
+        "DataBindConfig",
+        "BeanUtil"
+      ],
+      "annotations": [
+        "@Csv",
+        "@FixedLength"
+      ],
+      "description": "CSV、TSV、固定長などのデータをJava BeansオブジェクトやMapオブジェクトとして扱うための機能を提供する",
+      "purpose": "データファイルとJavaオブジェクト間の相互変換を簡素化し、型安全なデータ処理を実現する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-databind"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch.fw-web-extension",
+          "note": "ファイルダウンロードを使用する場合のみ"
+        }
+      ]
+    },
+    "features": {
+      "description": "データファイルをJava BeansまたはMapとして扱う機能を提供",
+      "java_beans_support": {
+        "description": "データファイルのデータをJava Beansオブジェクトとして扱える",
+        "type_conversion": "BeanUtilを使用してJava Beansクラスに定義されたプロパティの型に自動変換",
+        "conversion_failure": "型変換に失敗した場合は例外が発生し、Java Beansオブジェクトは生成されない",
+        "external_data_handling": "アップロードファイルなどの外部データを読み込む場合、不正な値を業務エラーとして通知する必要があるため、Java BeansクラスのすべてのプロパティをString型で定義する必要がある"
+      },
+      "map_support": {
+        "description": "データファイルのデータをMapオブジェクトとして扱える",
+        "type": "すべての値がString型として格納される"
+      },
+      "annotation_support": {
+        "description": "データファイルのフォーマットをアノテーションまたはDataBindConfigを使用して指定できる",
+        "formats": [
+          "CSV形式",
+          "固定長形式"
+        ]
+      }
+    },
+    "file-to-bean": {
+      "description": "データファイルを先頭から1件ずつ読み込み、Java Beansオブジェクトとして取得する",
+      "factory_method": "ObjectMapperFactory.create(Class, InputStream)",
+      "reader_class": "ObjectMapper",
+      "thread_safety": "スレッドアンセーフ",
+      "java_example": "try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // Java Beansオブジェクトごとの処理を記述\n    }\n} catch (InvalidDataFormatException e) {\n    // 読み込んだデータのフォーマットが不正な場合の処理を記述\n}",
+      "format_definition": "Java Beansクラスに定義されたアノテーションに基づいてデータを読み込む",
+      "notes": [
+        "すべてのデータを読み込んだ後、ObjectMapper#closeを使用してリソースを解放すること",
+        "try-with-resourcesを使用することでclose処理を省略できる"
+      ]
+    },
+    "bean-to-file": {
+      "description": "Java Beansオブジェクトの内容をデータファイルに1件ずつ書き込む",
+      "factory_method": "ObjectMapperFactory.create(Class, OutputStream)",
+      "writer_class": "ObjectMapper",
+      "thread_safety": "スレッドアンセーフ",
+      "java_example": "try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {\n    for (Person person : personList) {\n        mapper.write(person);\n    }\n}",
+      "format_definition": "Java Beansクラスに定義されたアノテーションに基づいてデータを書き込む",
+      "null_handling": "プロパティの値がnullの場合、入力がないことを示す値を出力する（例：CSVファイルへの書き込み時は空文字を出力）"
+    },
+    "file-to-map": {
+      "description": "データファイルを先頭から1件ずつ読み込み、Mapオブジェクトとして取得する",
+      "factory_method": "ObjectMapperFactory.create(Map.class, InputStream, DataBindConfig)",
+      "reader_class": "ObjectMapper",
+      "thread_safety": "スレッドアンセーフ",
+      "java_example": "// DataBindConfigオブジェクトを作成\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"Age\", \"Name\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {\n    Map person;\n    while ((person = mapper.read()) != null) {\n        // Mapオブジェクトごとの処理を記述\n    }\n}",
+      "format_definition": "ObjectMapper生成時に指定したDataBindConfigの設定値に基づいてデータを読み込む",
+      "value_type": "すべての値がString型として格納される"
+    },
+    "map-to-file": {
+      "description": "Mapオブジェクトの内容をデータファイルに1件ずつ書き込む",
+      "factory_method": "ObjectMapperFactory.create(Map.class, OutputStream, DataBindConfig)",
+      "writer_class": "ObjectMapper",
+      "thread_safety": "スレッドアンセーフ",
+      "format_definition": "ObjectMapper生成時に指定したDataBindConfigの設定値に基づいてデータを書き込む"
+    },
+    "csv-format": {
+      "description": "CSV形式のフォーマット指定方法",
+      "beans_annotation": {
+        "name": "@Csv",
+        "target": "Java Beansクラスに付与",
+        "properties": "プロパティ単位でフォーマットを指定"
+      },
+      "map_config": {
+        "class": "CsvDataBindConfig",
+        "methods": [
+          "withHeaderTitles() - ヘッダータイトルの指定",
+          "withProperties() - プロパティ名の指定"
+        ]
+      },
+      "format_options": [
+        "区切り文字",
+        "クォート文字",
+        "エスケープ文字",
+        "文字セット",
+        "改行コード"
+      ]
+    },
+    "fixed-length-format": {
+      "description": "固定長形式のフォーマット指定方法",
+      "beans_annotation": {
+        "name": "@FixedLength",
+        "target": "Java Beansクラスに付与",
+        "properties": "プロパティ単位でフィールド長とパディングを指定"
+      },
+      "map_config": {
+        "class": "FixedLengthDataBindConfig",
+        "configuration": "フィールド長とプロパティ名の対応を指定"
+      },
+      "format_options": [
+        "フィールド長",
+        "パディング文字",
+        "文字セット",
+        "改行コード"
+      ]
+    }
+  }
+}

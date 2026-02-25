@@ -1,0 +1,98 @@
+{
+  "id": "data-read-handler",
+  "title": "データリードハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/standalone/data_read_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "DataReadHandler",
+        "データリード",
+        "Data Read",
+        "入力データ読み込み",
+        "ハンドラ"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "DataReader",
+        "順次読み込み",
+        "1件ずつ",
+        "NoMoreRecord"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "maxCount",
+        "最大処理件数",
+        "プロパティ",
+        "XML"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "前提条件",
+        "DataReader",
+        "ExecutionContext",
+        "事前設定"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.fw.handler.DataReadHandler",
+      "description": "データリーダを使用して入力データの順次読み込みを行うハンドラ",
+      "purpose": "バッチ処理における入力データの順次読み込みを制御し、データ終端の判定を行う",
+      "responsibilities": [
+        "データリーダを使用して入力データの読み込み",
+        "実行IDの採番",
+        "データ終端の判定"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-standalone"
+        }
+      ]
+    },
+    "processing": {
+      "description": "ExecutionContextに設定されたデータリーダを使用して、業務処理に対応する入力データを1件ずつ読み込み、読み込んだデータを引数として後続ハンドラに処理を委譲する。データリーダの終端に到達した場合、後続ハンドラを実行せずにNoMoreRecordを返却する",
+      "data_reader": {
+        "interface": "nablarch.fw.DataReader",
+        "source": "ExecutionContextに設定",
+        "end_marker": "NoMoreRecord"
+      },
+      "flow": "1. ExecutionContextからDataReaderを取得\n2. DataReaderから入力データを1件読み込み\n3. 読み込んだデータを引数として後続ハンドラに委譲\n4. データ終端に到達した場合はNoMoreRecordを返却",
+      "execution_id": {
+        "description": "実行IDの採番を実行",
+        "purpose": "ログ出力で実行を識別するためのID"
+      }
+    },
+    "setup": [
+      {
+        "name": "maxCount",
+        "type": "int",
+        "required": false,
+        "description": "最大の処理件数。指定した件数のデータを処理した後、NoMoreRecordを返却する",
+        "default": "制限なし",
+        "use_case": "大量データを数日間に分けて処理するバッチ処理で、1日あたりの最大処理件数を制限する場合に使用"
+      }
+    ],
+    "constraints": {
+      "prerequisites": [
+        "このハンドラより前のハンドラでExecutionContextにDataReaderを設定しておくこと"
+      ],
+      "notes": [
+        "このハンドラが呼ばれた時点でDataReaderが設定されていない場合、処理対象データがないものとして処理を終了する（NoMoreRecordを返却）"
+      ]
+    }
+  }
+}

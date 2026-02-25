@@ -1,0 +1,131 @@
+{
+  "id": "db-connection-management-handler",
+  "title": "データベース接続管理ハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/common/database_connection_management_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "DbConnectionManagementHandler",
+        "データベース接続管理",
+        "Database Connection Management",
+        "データベース接続",
+        "ハンドラ"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "データベース接続取得",
+        "接続解放",
+        "ConnectionFactory",
+        "スレッド"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "connectionFactory",
+        "接続先",
+        "ファクトリクラス",
+        "XML"
+      ]
+    },
+    {
+      "id": "multiple-connections",
+      "hints": [
+        "複数接続",
+        "connectionName",
+        "デフォルト接続",
+        "データベース接続名",
+        "トランザクション"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "前提条件",
+        "transaction_management_handler",
+        "トランザクション制御"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.common.handler.DbConnectionManagementHandler",
+      "description": "後続のハンドラ及びライブラリで使用するためのデータベース接続を、スレッド上で管理するハンドラ",
+      "purpose": "データベース接続の取得と解放を制御し、スレッド上で後続処理に提供する",
+      "responsibilities": [
+        "データベース接続の取得",
+        "データベース接続の解放"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-jdbc"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-jdbc"
+        }
+      ]
+    },
+    "processing": {
+      "description": "ファクトリクラスを使用してデータベース接続を取得し、スレッド上で管理する。処理完了後にデータベース接続を解放する",
+      "flow": "1. connectionFactoryから接続を取得\n2. スレッドに接続を登録\n3. 後続ハンドラに処理を委譲\n4. 接続を解放",
+      "notes": [
+        "接続はスレッドローカルで管理される",
+        "トランザクション制御ハンドラと併用すること"
+      ]
+    },
+    "configuration": {
+      "description": "connectionFactoryプロパティにConnectionFactory実装クラスを設定する",
+      "properties": [
+        {
+          "name": "connectionFactory",
+          "type": "ConnectionFactory",
+          "required": true,
+          "description": "データベース接続を取得するファクトリクラス"
+        },
+        {
+          "name": "connectionName",
+          "type": "String",
+          "required": false,
+          "description": "データベース接続名。省略時はデフォルト接続となる"
+        }
+      ],
+      "xml_example": "<component class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n  <property name=\"connectionFactory\" ref=\"connectionFactory\" />\n</component>",
+      "reference": "database-connect"
+    },
+    "multiple-connections": {
+      "description": "1つのアプリケーションで複数のデータベース接続を使用する場合、ハンドラキューに複数のこのハンドラを設定する",
+      "connection_naming": {
+        "default_connection": "connectionNameプロパティを省略すると、デフォルトのデータベース接続となり簡単に使用できる",
+        "named_connection": "connectionNameプロパティに任意の名前を設定すると、名前付き接続となる",
+        "uniqueness": "スレッド内のデータベース接続名は一意である必要がある"
+      },
+      "usage": {
+        "default": "DbConnectionContext.getConnection() - 引数なしでデフォルト接続を取得",
+        "named": "DbConnectionContext.getConnection(\"connectionName\") - 接続名を指定して取得"
+      },
+      "xml_example": "<!-- デフォルト接続 -->\n<component class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n  <property name=\"connectionFactory\" ref=\"connectionFactory\" />\n</component>\n\n<!-- 名前付き接続 -->\n<component class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n  <property name=\"connectionFactory\" ref=\"userAccessLogConnectionFactory\" />\n  <property name=\"connectionName\" value=\"userAccessLog\" />\n</component>",
+      "notes": [
+        "最も頻繁に使用するデータベース接続をデフォルトとして設定することを推奨",
+        "その他のデータベース接続には任意の名前を割り当てる"
+      ]
+    },
+    "constraints": {
+      "prerequisites": [
+        "transaction_management_handlerをセットで設定すること"
+      ],
+      "warnings": [
+        "トランザクション制御ハンドラが設定されていない場合、トランザクション制御が実施されないため後続で行ったデータベースへの変更は全て破棄される"
+      ]
+    }
+  }
+}
