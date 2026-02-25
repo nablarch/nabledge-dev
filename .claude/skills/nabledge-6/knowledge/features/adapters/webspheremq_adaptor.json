@@ -1,0 +1,116 @@
+{
+  "id": "webspheremq_adaptor",
+  "title": "IBM MQアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/webspheremq_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "IBM MQ",
+        "WebSphere MQ",
+        "MOM",
+        "メッセージング",
+        "messaging",
+        "アダプタ",
+        "adapter"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "モジュール",
+        "module",
+        "依存関係",
+        "dependencies",
+        "nablarch-wmq-adaptor",
+        "Maven"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "WmqMessagingProvider",
+        "MessagingContextHandler",
+        "初期化",
+        "initialization"
+      ]
+    },
+    {
+      "id": "distributed-transaction",
+      "hints": [
+        "分散トランザクション",
+        "distributed transaction",
+        "XA",
+        "XADataSource",
+        "WmqXADbConnectionFactoryForXADataSource",
+        "WmqXATransactionFactory"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "IBM MQをNablarchのMOMメッセージング機能で使用するアダプタ",
+      "purpose": "IBM MQとNablarchのメッセージング機能を統合",
+      "external_library": {
+        "name": "IBM MQ",
+        "version": "v9.3 (テスト済み)",
+        "url": "https://www.ibm.com/docs/en/ibm-mq/9.3?topic=mq-about"
+      },
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-wmq-adaptor"
+        }
+      ],
+      "reference_note": "IBM MQの仕様や構築手順はIBM社の公式WebサイトやマニュアルWを参照"
+    },
+    "setup": {
+      "description": "IBM MQアダプタのモジュール設定",
+      "maven_dependency": {
+        "groupId": "com.nablarch.integration",
+        "artifactId": "nablarch-wmq-adaptor"
+      },
+      "xml_example": "<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-wmq-adaptor</artifactId>\n</dependency>",
+      "important_notes": [
+        "IBM MQ v9.3に同梱されているライブラリを使用してテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ]
+    },
+    "configuration": {
+      "description": "アダプタを使用するための設定",
+      "provider_class": "nablarch.integration.messaging.wmq.provider.WmqMessagingProvider",
+      "handler_class": "nablarch.fw.messaging.handler.MessagingContextHandler",
+      "steps": [
+        "コンポーネント設定ファイルにWmqMessagingProviderの定義を追加",
+        "messaging_context_handlerにWmqMessagingProviderを設定",
+        "WmqMessagingProviderは初期化が必要なため初期化対象のリストに設定"
+      ],
+      "xml_example": "<!-- Provider implementation for IBM MQ Adapter -->\n<component name=\"wmqMessagingProvider\"\n    class=\"nablarch.integration.messaging.wmq.provider.WmqMessagingProvider\">\n  <!-- See Javadoc for configuration value-->\n</component>\n\n<!-- Message context management handler\n     Configure WmqMessagingProvider defined above in messagingProvider property.\n-->\n<component class=\"nablarch.fw.messaging.handler.MessagingContextHandler\">\n  <property name=\"messagingProvider\" ref=\"wmqMessagingProvider\" />\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- Initialize WmqMessagingProvider -->\n      <component-ref name=\"wmqMessagingProvider\" />\n    </list>\n  </property>\n</component>"
+    },
+    "distributed-transaction": {
+      "description": "分散トランザクションの使用",
+      "purpose": "IBM MQをトランザクションマネージャとして分散トランザクションを実現",
+      "use_case": "外部システムとのメッセージ送受信時の取りこぼしや二重取り込みを防止",
+      "steps": [
+        "分散トランザクションに対応したデータソース（javax.sql.XADataSourceを実装したクラス）を定義",
+        "分散トランザクションに対応したデータベース接続を生成するファクトリクラスを定義（WmqXADbConnectionFactoryForXADataSource）",
+        "database_connection_management_handlerにファクトリクラスを設定",
+        "分散トランザクション用のトランザクションオブジェクトを生成するファクトリクラスを定義（WmqXATransactionFactory）",
+        "transaction_management_handlerにファクトリクラスを設定"
+      ],
+      "xa_datasource_example": "<!-- Configuration of data source for XA\n     Configure the XA data source in the JDBC implementation of the database product to be used.\n     In this example, the configuration is for an Oracle database.\n-->\n<component name=\"xaDataSource\" class=\"oracle.jdbc.xa.client.OracleXADataSource\">\n  <!-- Configuration of property is omitted -->\n</component>",
+      "xa_connection_factory_example": "<!-- Configuration of class to generate XA database connection -->\n<component name=\"xaConnectionFactory\"\n    class=\"nablarch.integration.messaging.wmq.xa.WmqXADbConnectionFactoryForXADataSource\">\n  <!-- Configure XA data source in xaDataSource property.-->\n  <property name=\"xaDataSource\" ref=\"xaDataSource\" />\n  <!-- Properties other than the above are omitted -->\n</component>",
+      "db_connection_handler_example": "<!-- Configure DB connection handler for distributed transaction -->\n<component class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n  <!-- Configure the class that generates the database connection for XA configured above in the DB connection factory. -->\n  <property name=\"connectionFactory\" ref=\"xaConnectionFactory\" />\n  <!-- Properties other than the above are omitted -->\n</component>",
+      "xa_transaction_factory_example": "<!-- Configuration of class that generates XA transaction control object -->\n<component name=\"xaTransactionFactory\"\n    class=\"nablarch.integration.messaging.wmq.xa.WmqXATransactionFactory\" />",
+      "transaction_handler_example": "<!-- Configure transaction handler for distributed transaction -->\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <!-- Configure a class that generates the XA transaction control object\n  configured above in the transaction factory.\n  -->\n  <property name=\"transactionFactory\" ref=\"xaTransactionFactory\" />\n  <!-- Properties other than the above are omitted -->\n</component>",
+      "important_notes": [
+        "分散トランザクションを使用する場合、IBM MQにXAリソースマネージャを設定し、データベースへの権限を付与する必要がある",
+        "詳細な設定方法や必要な権限は使用する製品のマニュアルを参照"
+      ]
+    }
+  }
+}

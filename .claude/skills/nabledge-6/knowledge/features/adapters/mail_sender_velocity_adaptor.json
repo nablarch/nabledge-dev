@@ -1,0 +1,113 @@
+{
+  "id": "mail_sender_velocity_adaptor",
+  "title": "E-mail Velocityアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/mail_sender_velocity_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Velocity",
+        "メール",
+        "E-mail",
+        "mail",
+        "テンプレートエンジン",
+        "template engine",
+        "アダプタ",
+        "adapter"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "モジュール",
+        "module",
+        "依存関係",
+        "dependencies",
+        "nablarch-mail-sender-velocity-adaptor",
+        "Maven"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "VelocityMailProcessor",
+        "MailRequester",
+        "VelocityEngine",
+        "ComponentFactory",
+        "VelocityEngineFactory"
+      ]
+    },
+    {
+      "id": "template",
+      "hints": [
+        "テンプレート",
+        "template",
+        "件名",
+        "subject",
+        "本文",
+        "body",
+        "デリミタ",
+        "delimiter"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Velocityを使用してメールテンプレート送信を行うアダプタ",
+      "purpose": "Velocityテンプレートエンジンでメール本文を生成",
+      "external_library": {
+        "name": "Velocity",
+        "version": "2.0 (テスト済み)",
+        "url": "https://velocity.apache.org/"
+      },
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-mail-sender-velocity-adaptor"
+        }
+      ]
+    },
+    "setup": {
+      "description": "E-mail Velocityアダプタのモジュール設定",
+      "maven_dependency": {
+        "groupId": "com.nablarch.integration",
+        "artifactId": "nablarch-mail-sender-velocity-adaptor"
+      },
+      "xml_example": "<!-- E-mail Velocity adapter -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-mail-sender-velocity-adaptor</artifactId>\n</dependency>",
+      "notes": [
+        "Velocityのバージョン2.0を使用してテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ]
+    },
+    "configuration": {
+      "description": "E-mail Velocityアダプタを使用するための設定",
+      "processor_class": "nablarch.integration.mail.velocity.VelocityMailProcessor",
+      "mail_requester_class": "nablarch.common.mail.MailRequester",
+      "configuration_requirements": [
+        "コンポーネント設定ファイルでMailRequesterにVelocityMailProcessorを設定する",
+        "VelocityMailProcessorにVelocityのVelocityEngineを設定する",
+        "VelocityEngineはComponentFactoryの実装クラスを作成してコンポーネント設定することを推奨"
+      ],
+      "component_factory_reasons": [
+        "VelocityEngineはJavaコードで設定する方がコンポーネント設定ファイルより容易",
+        "VelocityEngine設定後にinitメソッドを呼び出す必要がある"
+      ],
+      "factory_example": "package com.example;\n\nimport org.apache.velocity.app.VelocityEngine;\nimport org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;\nimport nablarch.core.repository.di.ComponentFactory;\n\npublic class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {\n\n    @Override\n    public VelocityEngine createObject() {\n        VelocityEngine velocityEngine = new VelocityEngine();\n        velocityEngine.setProperty(\"resource.loader\", \"classloader\");\n        velocityEngine.setProperty(\"classloader.resource.loader.class\",\n                ClasspathResourceLoader.class.getName());\n        // Other configurations are made to VelocityEngine as needed\n        velocityEngine.init();\n        return velocityEngine;\n    }\n}",
+      "xml_example": "<component name=\"templateEngineMailProcessor\"\n           class=\"nablarch.integration.mail.velocity.VelocityMailProcessor\" autowireType=\"None\">\n  <property name=\"velocityEngine\">\n    <component class=\"com.example.VelocityEngineFactory\"/>\n  </property>\n</component>\n\n<!-- E-mail send request API -->\n<component name=\"mailRequester\" class=\"nablarch.common.mail.MailRequester\">\n  <property name=\"templateEngineMailProcessor\" ref=\"templateEngineMailProcessor\"/>\n  <!-- Other settings are omitted -->\n</component>"
+    },
+    "template": {
+      "description": "メールテンプレートの作成",
+      "structure": "Velocityを使用したメール本文定型送信では、件名と本文を1つのテンプレートに記述",
+      "delimiter": {
+        "description": "件名と本文を区切る行",
+        "default": "--- (3つのシングルバイトハイフン)"
+      },
+      "template_example": "$Option regarding $title$option\n---\n$title has been submitted with application number $requestId.\n$Approver should approve $title promptly. $option",
+      "reference": "件名と本文の分割ルールの詳細はTemplateEngineProcessedResult.valueOfを参照"
+    }
+  }
+}

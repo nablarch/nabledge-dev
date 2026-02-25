@@ -1,0 +1,113 @@
+{
+  "id": "lettuce_adaptor",
+  "title": "Lettuceアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/lettuce_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Lettuce",
+        "Redis",
+        "アダプタ",
+        "adapter",
+        "セッションストア",
+        "session store",
+        "ヘルスチェック",
+        "health check"
+      ]
+    },
+    {
+      "id": "features",
+      "hints": [
+        "機能",
+        "features",
+        "session_store",
+        "health_check_endpoint_handler",
+        "RedisStore",
+        "RedisHealthChecker"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "モジュール",
+        "module",
+        "依存関係",
+        "dependencies",
+        "nablarch-lettuce-adaptor",
+        "Maven",
+        "pom.xml"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "RedisをNablarchの機能で使用するためのアダプタ",
+      "purpose": "Lettuceクライアントライブラリを使用してRedisをセッションストアとヘルスチェック機能で利用",
+      "external_library": {
+        "name": "Lettuce",
+        "description": "Redis client library",
+        "url": "https://redis.github.io/lettuce/"
+      },
+      "redis_info": {
+        "name": "Redis",
+        "url": "https://redis.io/",
+        "tested_version": "5.0.9"
+      },
+      "lettuce_version": "5.0.9.RELEASE (テスト済み)",
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-lettuce-adaptor"
+        },
+        {
+          "groupId": "com.nablarch.configuration",
+          "artifactId": "nablarch-main-default-configuration",
+          "description": "デフォルト設定"
+        }
+      ]
+    },
+    "features": {
+      "description": "Lettuceアダプタが提供する機能",
+      "supported_features": [
+        {
+          "name": "セッションストア",
+          "reference": "session_store",
+          "adapter": "RedisStore Lettuce Adapter",
+          "file": "redisstore_lettuce_adaptor"
+        },
+        {
+          "name": "ヘルスチェックエンドポイント",
+          "reference": "health_check_endpoint_handler",
+          "adapter": "RedisHealthChecker Lettuce Adapter",
+          "file": "redishealthchecker_lettuce_adaptor"
+        }
+      ],
+      "notes": [
+        "各機能をサポートするアダプタの詳細は個別のドキュメントを参照"
+      ]
+    },
+    "setup": {
+      "description": "Lettuceアダプタの依存関係設定",
+      "maven_dependencies": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-lettuce-adaptor",
+          "description": "RedisStore Lettuceアダプタ"
+        },
+        {
+          "groupId": "com.nablarch.configuration",
+          "artifactId": "nablarch-main-default-configuration",
+          "description": "デフォルト設定"
+        }
+      ],
+      "xml_example": "<!-- RedisStore Lettuce Adapter -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-lettuce-adaptor</artifactId>\n</dependency>\n\n<!-- Default configuration -->\n<dependency>\n  <groupId>com.nablarch.configuration</groupId>\n  <artifactId>nablarch-main-default-configuration</artifactId>\n</dependency>",
+      "notes": [
+        "Redis 5.0.9とLettuce 5.3.0.RELEASEでテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ]
+    }
+  }
+}

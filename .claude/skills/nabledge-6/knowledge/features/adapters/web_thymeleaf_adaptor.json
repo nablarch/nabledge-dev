@@ -1,0 +1,140 @@
+{
+  "id": "web_thymeleaf_adaptor",
+  "title": "ウェブアプリケーション Thymeleafアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/web_thymeleaf_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Thymeleaf",
+        "ウェブアプリケーション",
+        "web application",
+        "テンプレートエンジン",
+        "template engine",
+        "アダプタ",
+        "adapter"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "モジュール",
+        "module",
+        "依存関係",
+        "dependencies",
+        "nablarch-web-thymeleaf-adaptor",
+        "Maven"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "ThymeleafResponseWriter",
+        "HttpResponseHandler",
+        "TemplateEngine",
+        "ClassLoaderTemplateResolver"
+      ]
+    },
+    {
+      "id": "processing-target",
+      "hints": [
+        "処理対象",
+        "processing target",
+        "判定",
+        "determination",
+        ".html",
+        "pathPattern",
+        "HttpResponse"
+      ]
+    },
+    {
+      "id": "template-usage",
+      "hints": [
+        "テンプレート使用",
+        "template usage",
+        "テンプレートファイル",
+        "template file",
+        "配置",
+        "placement",
+        "prefix"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "WebアプリケーションのテンプレートエンジンとしてこThymeleafを使用するアダプタ",
+      "purpose": "ThymeleafをNablarchのWebアプリケーションで利用",
+      "external_library": {
+        "name": "Thymeleaf",
+        "version": "3.1.1.RELEASE (テスト済み)",
+        "url": "https://www.thymeleaf.org"
+      },
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-web-thymeleaf-adaptor"
+        }
+      ]
+    },
+    "setup": {
+      "description": "ウェブアプリケーション Thymeleafアダプタのモジュール設定",
+      "maven_dependency": {
+        "groupId": "com.nablarch.integration",
+        "artifactId": "nablarch-web-thymeleaf-adaptor"
+      },
+      "xml_example": "<!-- web application Thymeleaf adapter -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-web-thymeleaf-adaptor</artifactId>\n</dependency>",
+      "notes": [
+        "Thymeleafのバージョン3.1.1.RELEASEを使用してテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ]
+    },
+    "configuration": {
+      "description": "ウェブアプリケーション Thymeleafアダプタを使用するための設定",
+      "response_writer_class": "nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter",
+      "handler_class": "nablarch.fw.web.handler.HttpResponseHandler",
+      "template_engine_class": "org.thymeleaf.TemplateEngine",
+      "configuration_requirements": [
+        "コンポーネント設定ファイルでHttpResponseHandlerにThymeleafResponseWriterを設定する",
+        "ThymeleafResponseWriterにThymeleafのTemplateEngineを設定する"
+      ],
+      "xml_example": "<component name=\"templateEngine\" class=\"org.thymeleaf.TemplateEngine\" autowireType=\"None\">\n  <property name=\"templateResolver\">\n    <component class=\"org.thymeleaf.templateresolver.ClassLoaderTemplateResolver\">\n      <property name=\"prefix\" value=\"template/\"/>\n    </component>\n  </property>\n</component>\n\n<component name=\"thymeleafResponseWriter\"\n           class=\"nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter\"\n           autowireType=\"None\">\n  <property name=\"templateEngine\" ref=\"templateEngine\" />\n</component>\n\n<component name=\"httpResponseHandler\"\n           class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"customResponseWriter\" ref=\"thymeleafResponseWriter\"/>\n  <!-- Other settings are omitted -->\n</component>",
+      "important_notes": [
+        "ITemplateResolverの実装クラスにorg.thymeleaf.templateresolver.ServletContextTemplateResolverがあるが、リポジトリに登録できない（jakarta.servlet.ServletContextがコンストラクタ引数として必要、デフォルトコンストラクタがない、システムリポジトリ構築時にServletContextにアクセスできずファクトリでオブジェクト作成不可）",
+        "このためServletContextTemplateResolverではなくClassLoaderTemplateResolver等の別の実装クラスを使用する"
+      ]
+    },
+    "processing-target": {
+      "description": "処理対象の判定",
+      "determination_class": "nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter",
+      "determination_basis": "HttpResponseのコンテンツパスに基づいてテンプレートエンジンを使用したレスポンス出力を行うか判定",
+      "default_pattern": ".html",
+      "default_behavior": "コンテンツパスが.htmlで終わる場合、テンプレートエンジンの処理対象と判定",
+      "example_target": "return new HttpResponse(\"template/index.html\"); → 処理対象（コンテンツパスが.htmlで終わる）",
+      "example_non_target": "return new HttpResponse(\"/path/to/anotherServlet\"); → servlet forwardを実行（コンテンツパスが.htmlで終わらない）",
+      "customization": "pathPatternプロパティで判定に使用する正規表現を設定可能（デフォルト値は*.html）",
+      "important_notes": [
+        "Thymeleafはテンプレートパス解決時にサフィックスの省略が可能だが、このアダプタ使用時はサフィックスを省略しないこと",
+        "OK: return new HttpResponse(\"index.html\");",
+        "NG: return new HttpResponse(\"index\");",
+        "サフィックスを省略するとセッションストアからリクエストスコープへの転送が行われず、テンプレートがセッションストアの値を参照できなくなる"
+      ]
+    },
+    "template-usage": {
+      "description": "テンプレートエンジンの使用",
+      "requirements": [
+        "テンプレートファイルを作成して配置する"
+      ],
+      "placement_location": "TemplateEngineの設定に依存",
+      "classpath_loading": "ClassLoaderTemplateResolverを使用する場合、クラスパスからテンプレートファイルをロード",
+      "prefix_setting": "ClassLoaderTemplateResolverのprefixプロパティにtemplate/等のprefixを設定",
+      "placement_example": "prefix=template/の場合、クラスパスのtemplateディレクトリ配下にテンプレートファイルを配置（例: src/main/resources/template/index.html → クラスパスのtemplate/index.html）",
+      "action_return_with_prefix": "return new HttpResponse(\"index.html\"); → prefixを除いたパスを指定",
+      "action_return_without_prefix": "return new HttpResponse(\"template/index.html\"); → prefixを省略せずパスを指定",
+      "result": "配置したテンプレートファイルを使用してレスポンスが出力される"
+    }
+  }
+}

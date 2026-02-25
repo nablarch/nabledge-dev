@@ -1,0 +1,250 @@
+{
+  "id": "jaxrs_adaptor",
+  "title": "Jakarta RESTful Web Servicesアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/jaxrs_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Jakarta RESTful Web Services",
+        "JAX-RS",
+        "RESTful",
+        "REST",
+        "アダプタ",
+        "adapter",
+        "JSON",
+        "Jackson",
+        "Jersey",
+        "RESTEasy"
+      ]
+    },
+    {
+      "id": "adapters",
+      "hints": [
+        "Jackson",
+        "Jersey",
+        "RESTEasy",
+        "JSON変換",
+        "nablarch-jackson-adaptor",
+        "nablarch-jersey-adaptor",
+        "nablarch-resteasy-adaptor"
+      ]
+    },
+    {
+      "id": "jersey-setup",
+      "hints": [
+        "Jersey",
+        "設定",
+        "setup",
+        "JerseyJaxRsHandlerListFactory",
+        "JaxRsMethodBinderFactory"
+      ]
+    },
+    {
+      "id": "jersey-converters",
+      "hints": [
+        "BodyConverter",
+        "Jackson2BodyConverter",
+        "JaxbBodyConverter",
+        "FormUrlEncodedConverter",
+        "MultipartFormDataBodyConverter",
+        "JSON",
+        "XML"
+      ]
+    },
+    {
+      "id": "resteasy-setup",
+      "hints": [
+        "RESTEasy",
+        "設定",
+        "setup",
+        "ResteasyJaxRsHandlerListFactory",
+        "JaxRsMethodBinderFactory"
+      ]
+    },
+    {
+      "id": "resteasy-converters",
+      "hints": [
+        "BodyConverter",
+        "Jackson2BodyConverter",
+        "JaxbBodyConverter",
+        "FormUrlEncodedConverter",
+        "MultipartFormDataBodyConverter",
+        "JSON",
+        "XML"
+      ]
+    },
+    {
+      "id": "custom-converter",
+      "hints": [
+        "カスタムコンバータ",
+        "custom converter",
+        "JaxRsHandlerListFactory",
+        "MIME",
+        "拡張"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "RESTful Webサービスで使用するアダプタを提供",
+      "purpose": "JacksonによるJSON変換、JerseyまたはRESTEasy環境でのRESTful Webサービス利用を実現",
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-jackson-adaptor",
+          "description": "Jacksonアダプタ"
+        },
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-jersey-adaptor",
+          "description": "Jerseyアダプタ"
+        },
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-resteasy-adaptor",
+          "description": "RESTEasyアダプタ"
+        }
+      ],
+      "name_change": {
+        "old_name": "JAX-RS Adapter (Nablarch5まで)",
+        "new_name": "Jakarta RESTful Web Services Adapter (Nablarch6以降)",
+        "reason": "Java EEがEclipse Foundationに移管され仕様名が変更されたため",
+        "note": "名称のみ変更で機能差分なし"
+      }
+    },
+    "adapters": {
+      "description": "提供されるアダプタの種類",
+      "list": [
+        {
+          "name": "Jacksonアダプタ",
+          "purpose": "JacksonでJSON変換を行う",
+          "external_library": "Jackson",
+          "version": "2.17.1 (テスト済み)",
+          "url": "https://github.com/FasterXML/jackson"
+        },
+        {
+          "name": "Jerseyアダプタ",
+          "purpose": "Jersey環境でRESTful Webサービスを使用",
+          "external_library": "Jersey",
+          "url": "https://eclipse-ee4j.github.io/jersey/"
+        },
+        {
+          "name": "RESTEasyアダプタ",
+          "purpose": "RESTEasy環境でRESTful Webサービスを使用",
+          "external_library": "RESTEasy",
+          "url": "https://resteasy.dev/"
+        }
+      ],
+      "notes": [
+        "Jacksonのバージョン2.17.1を使用してテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ],
+      "warnings": [
+        "Jackson1ベースのライブラリは脆弱性のためNablarch5u16からサポート終了",
+        "Jackson1ベースのライブラリを使用していた場合はJackson2ベースのライブラリに移行すること"
+      ],
+      "vulnerability_references": [
+        "https://jvndb.jvn.jp/ja/contents/2019/JVNDB-2019-012258.html",
+        "https://github.com/advisories/GHSA-r6j9-8759-g62w"
+      ]
+    },
+    "jersey-setup": {
+      "description": "Jersey環境でRESTful Webサービスを使用する設定",
+      "use_case": "WebアプリケーションサーバにバンドルされているJakarta RESTful Web Servicesの実装がJerseyの場合",
+      "factory_class": "nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory",
+      "xml_example": "<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"methodBinderFactory\">\n    <component class=\"nablarch.fw.jaxrs.JaxRsMethodBinderFactory\">\n      <property name=\"handlerList\">\n        <!-- Factory injection of Jersey handler queue to the handlerList property -->\n        <component class=\"nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory\"/>\n      </property>\n    </component>\n  </property>\n  <!-- Properties other than the above are omitted -->\n</component>",
+      "notes": [
+        "JaxRsMethodBinderFactory.setHandlerListにJerseyハンドラを構築するファクトリクラスをファクトリインジェクションする",
+        "これによりJersey用のハンドラ構成が自動的に設定される"
+      ]
+    },
+    "jersey-converters": {
+      "description": "Jerseyアダプタで自動設定されるBodyConverter",
+      "converters": [
+        {
+          "converter": "nablarch.integration.jaxrs.jackson.Jackson2BodyConverter",
+          "mime_type": "application/json",
+          "description": "JSONコンバータ"
+        },
+        {
+          "converter": "nablarch.fw.jaxrs.JaxbBodyConverter",
+          "mime_type": "application/xml",
+          "description": "XMLコンバータ"
+        },
+        {
+          "converter": "nablarch.fw.jaxrs.FormUrlEncodedConverter",
+          "mime_type": "application/x-www-form-urlencoded",
+          "description": "application/x-www-form-urlencodedコンバータ"
+        },
+        {
+          "converter": "nablarch.fw.jaxrs.MultipartFormDataBodyConverter",
+          "mime_type": "multipart/form-data",
+          "description": "multipart/form-dataコンバータ"
+        }
+      ],
+      "handlers": [
+        "nablarch.fw.jaxrs.BodyConvertHandler",
+        "nablarch.fw.jaxrs.JaxRsBeanValidationHandler"
+      ],
+      "notes": [
+        "Date and Time API使用のため、jackson-modules-java8のJava 8 Date/timeモジュールをJSONコンバータに追加設定",
+        "WebアプリケーションサーバにJacksonがバンドルされていない場合は、Jacksonモジュールをアプリケーションモジュールと一緒にデプロイする"
+      ]
+    },
+    "resteasy-setup": {
+      "description": "RESTEasy環境でRESTful Webサービスを使用する設定",
+      "use_case": "WebアプリケーションサーバにバンドルされているJakarta RESTful Web Servicesの実装がRESTEasyの場合",
+      "factory_class": "nablarch.integration.jaxrs.resteasy.ResteasyJaxRsHandlerListFactory",
+      "xml_example": "<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"methodBinderFactory\">\n    <component class=\"nablarch.fw.jaxrs.JaxRsMethodBinderFactory\">\n      <property name=\"handlerList\">\n        <!-- Factory injection of RESTEasy handler queue to the handlerList property -->\n        <component class=\"nablarch.integration.jaxrs.resteasy.ResteasyJaxRsHandlerListFactory\"/>\n      </property>\n    </component>\n  </property>\n  <!-- Properties other than the above are omitted -->\n</component>",
+      "notes": [
+        "JaxRsMethodBinderFactory.setHandlerListにRESTEasyハンドラを構築するファクトリクラスをファクトリインジェクションする",
+        "これによりRESTEasy用のハンドラ構成が自動的に設定される"
+      ]
+    },
+    "resteasy-converters": {
+      "description": "RESTEasyアダプタで自動設定されるBodyConverter",
+      "converters": [
+        {
+          "converter": "nablarch.integration.jaxrs.jackson.Jackson2BodyConverter",
+          "mime_type": "application/json",
+          "description": "JSONコンバータ"
+        },
+        {
+          "converter": "nablarch.fw.jaxrs.JaxbBodyConverter",
+          "mime_type": "application/xml",
+          "description": "XMLコンバータ"
+        },
+        {
+          "converter": "nablarch.fw.jaxrs.FormUrlEncodedConverter",
+          "mime_type": "application/x-www-form-urlencoded",
+          "description": "application/x-www-form-urlencodedコンバータ"
+        },
+        {
+          "converter": "nablarch.fw.jaxrs.MultipartFormDataBodyConverter",
+          "mime_type": "multipart/form-data",
+          "description": "multipart/form-dataコンバータ"
+        }
+      ],
+      "handlers": [
+        "nablarch.fw.jaxrs.BodyConvertHandler",
+        "nablarch.fw.jaxrs.JaxRsBeanValidationHandler"
+      ],
+      "notes": [
+        "Date and Time API使用のため、jackson-modules-java8のJava 8 Date/timeモジュールをJSONコンバータに追加設定",
+        "WebアプリケーションサーバにJacksonがバンドルされていない場合は、Jacksonモジュールをアプリケーションモジュールと一緒にデプロイする"
+      ]
+    },
+    "custom-converter": {
+      "description": "各環境で使用するBodyConverterを変更（追加）する",
+      "use_case": "プロジェクトでサポートするMIMEが増えた場合",
+      "method": "JaxRsHandlerListFactoryを実装する",
+      "reference_implementations": [
+        "nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory",
+        "nablarch.integration.jaxrs.resteasy.ResteasyJaxRsHandlerListFactory"
+      ]
+    }
+  }
+}

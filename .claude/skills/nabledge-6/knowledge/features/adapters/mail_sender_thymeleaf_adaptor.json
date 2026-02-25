@@ -1,0 +1,110 @@
+{
+  "id": "mail_sender_thymeleaf_adaptor",
+  "title": "E-mail Thymeleafアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/mail_sender_thymeleaf_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Thymeleaf",
+        "メール",
+        "E-mail",
+        "mail",
+        "テンプレートエンジン",
+        "template engine",
+        "アダプタ",
+        "adapter"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "モジュール",
+        "module",
+        "依存関係",
+        "dependencies",
+        "nablarch-mail-sender-thymeleaf-adaptor",
+        "Maven"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "ThymeleafMailProcessor",
+        "MailRequester",
+        "TemplateEngine",
+        "ClassLoaderTemplateResolver"
+      ]
+    },
+    {
+      "id": "template",
+      "hints": [
+        "テンプレート",
+        "template",
+        "件名",
+        "subject",
+        "本文",
+        "body",
+        "デリミタ",
+        "delimiter"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Thymeleafを使用してメールテンプレート送信を行うアダプタ",
+      "purpose": "Thymeleafテンプレートエンジンでメール本文を生成",
+      "external_library": {
+        "name": "Thymeleaf",
+        "version": "3.1.1.RELEASE (テスト済み)",
+        "url": "https://www.thymeleaf.org"
+      },
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-mail-sender-thymeleaf-adaptor"
+        }
+      ]
+    },
+    "setup": {
+      "description": "E-mail Thymeleafアダプタのモジュール設定",
+      "maven_dependency": {
+        "groupId": "com.nablarch.integration",
+        "artifactId": "nablarch-mail-sender-thymeleaf-adaptor"
+      },
+      "xml_example": "<!-- E-mail Thymeleaf adapter -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-mail-sender-thymeleaf-adaptor</artifactId>\n</dependency>",
+      "notes": [
+        "Thymeleafのバージョン3.1.1.RELEASEを使用してテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ]
+    },
+    "configuration": {
+      "description": "E-mail Thymeleafアダプタを使用するための設定",
+      "processor_class": "nablarch.integration.mail.thymeleaf.ThymeleafMailProcessor",
+      "mail_requester_class": "nablarch.common.mail.MailRequester",
+      "template_engine_class": "org.thymeleaf.TemplateEngine",
+      "configuration_requirements": [
+        "コンポーネント設定ファイルでMailRequesterにThymeleafMailProcessorを設定する",
+        "ThymeleafMailProcessorにThymeleafのTemplateEngineを設定する"
+      ],
+      "xml_example": "<component name=\"templateEngine\" class=\"org.thymeleaf.TemplateEngine\" autowireType=\"None\">\n  <property name=\"templateResolver\">\n    <component class=\"org.thymeleaf.templateresolver.ClassLoaderTemplateResolver\" autowireType=\"None\">\n      <property name=\"prefix\" value=\"com/example/template/\" />\n    </component>\n  </property>\n</component>\n\n<component name=\"templateEngineMailProcessor\"\n  class=\"nablarch.integration.mail.thymeleaf.ThymeleafMailProcessor\" autowireType=\"None\">\n  <property name=\"templateEngine\" ref=\"templateEngine\" />\n</component>\n\n<!-- E-mail send request API -->\n<component name=\"mailRequester\" class=\"nablarch.common.mail.MailRequester\">\n  <property name=\"templateEngineMailProcessor\" ref=\"templateEngineMailProcessor\"/>\n  <!-- Other settings are omitted -->\n</component>"
+    },
+    "template": {
+      "description": "メールテンプレートの作成",
+      "structure": "Thymeleafを使用したメール本文定型送信では、件名と本文を1つのテンプレートに記述",
+      "delimiter": {
+        "description": "件名と本文を区切る行",
+        "default": "--- (3つのシングルバイトハイフン)"
+      },
+      "template_example": "[(${Option})] regarding [(${title})]\n---\n[(${title})] has been submitted with application number [(${requestId})].\n[(${Approver})] should approve [(${title})] promptly. [(${option})]",
+      "template_placement": "テンプレートファイルの配置場所はTemplateEngineの設定に依存",
+      "placement_example": "ClassLoaderTemplateResolverのprefixにcom/example/template/を設定した場合、クラスパスのcom/example/template/にテンプレートファイルを配置",
+      "reference": "件名と本文の分割ルールの詳細はTemplateEngineProcessedResult.valueOfを参照",
+      "send_request": "メール送信要求の登録は通常のメール本文定型送信と同じ。mail-requestを参照"
+    }
+  }
+}

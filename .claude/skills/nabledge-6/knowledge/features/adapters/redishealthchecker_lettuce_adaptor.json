@@ -1,0 +1,66 @@
+{
+  "id": "redishealthchecker_lettuce_adaptor",
+  "title": "Redisヘルスチェッカ(Lettuce)アダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/lettuce_adaptor/redishealthchecker_lettuce_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Redis",
+        "RedisHealthChecker",
+        "Lettuce",
+        "ヘルスチェック",
+        "health check",
+        "アダプタ",
+        "adapter"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "setup",
+        "HealthCheckEndpointHandler",
+        "healthCheckers",
+        "LettuceRedisClient"
+      ]
+    },
+    {
+      "id": "health-check-implementation",
+      "hints": [
+        "実装",
+        "implementation",
+        "key",
+        "キー存在確認",
+        "例外",
+        "exception"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Redisのヘルスチェックを実現するアダプタ",
+      "purpose": "RedisのヘルスチェックをNablarchのヘルスチェック機能で利用",
+      "base_class": "nablarch.fw.web.handler.health.HealthChecker",
+      "provided_class": "nablarch.integration.health.RedisHealthChecker",
+      "reference": "health_check_endpoint_handler, health_check_endpoint_handler-add_health_checker"
+    },
+    "setup": {
+      "description": "Redisヘルスチェックの実装",
+      "method": "HealthCheckEndpointHandlerのhealthCheckersプロパティにRedisHealthCheckerを指定",
+      "xml_example": "<!-- Health Check Endpoint Handler -->\n<component class=\"nablarch.fw.web.handler.HealthCheckEndpointHandler\">\n  <!-- The healthCheckers property is specified in a list -->\n  <property name=\"healthCheckers\">\n    <list>\n      <!-- Redis Health Check -->\n      <component class=\"nablarch.integration.health.RedisHealthChecker\">\n        <!-- Specifies the Redis client (LettuceRedisClient) -->\n        <property name=\"client\" ref=\"lettuceRedisClient\" />\n      </component>\n    </list>\n  </property>\n</component>"
+    },
+    "health-check-implementation": {
+      "description": "RedisHealthCheckerの動作",
+      "client_class": "nablarch.integration.redisstore.lettuce.LettuceRedisClient",
+      "check_method": "キーの存在確認を行い、例外がスローされなければヘルスチェックが成功と判定",
+      "key_requirement": "キーは存在していなくてもよい",
+      "default_key": "デフォルトキーが使用される",
+      "key_customization": "キーを変更する場合はRedisHealthCheckerのkeyプロパティで指定",
+      "custom_key_example": "<!-- Redis Health Check -->\n<component class=\"nablarch.integration.health.RedisHealthChecker\">\n  <!-- Specifies the Redis client (LettuceRedisClient) -->\n  <property name=\"client\" ref=\"lettuceRedisClient\" />\n  <!-- Specify Key -->\n  <property name=\"key\" value=\"pingtest\" />\n</component>",
+      "reference": "LettuceRedisClientについてはredisstore_redis_client_config_client_classesを参照"
+    }
+  }
+}

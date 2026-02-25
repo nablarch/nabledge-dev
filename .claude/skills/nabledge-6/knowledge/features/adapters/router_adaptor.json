@@ -1,0 +1,131 @@
+{
+  "id": "router_adaptor",
+  "title": "ルーティングアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/router_adaptor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "ルーティング",
+        "routing",
+        "router",
+        "アダプタ",
+        "adapter",
+        "URL",
+        "マッピング",
+        "mapping",
+        "http-request-router"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "モジュール",
+        "module",
+        "依存関係",
+        "dependencies",
+        "nablarch-router-adaptor",
+        "Maven"
+      ]
+    },
+    {
+      "id": "dispatch-handler-config",
+      "hints": [
+        "ディスパッチハンドラ",
+        "dispatch handler",
+        "RoutesMapping",
+        "packageMapping",
+        "basePackage",
+        "初期化リスト"
+      ]
+    },
+    {
+      "id": "routes-file",
+      "hints": [
+        "routes.xml",
+        "ルート定義",
+        "route definition",
+        "URL",
+        "ビジネスアクション",
+        "マッピング"
+      ]
+    },
+    {
+      "id": "automatic-mapping",
+      "hints": [
+        "自動マッピング",
+        "automatic mapping",
+        ":controller",
+        ":action",
+        "match",
+        "NablarchControllerDetector",
+        "routes.properties"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "http-request-routerを使用してリクエストURLとビジネスアクションのマッピングを行うアダプタ",
+      "purpose": "WebアプリケーションやRESTful WebサービスでURLとビジネスアクションのマッピングを簡単に定義",
+      "external_library": {
+        "name": "http-request-router",
+        "version": "0.1.1 (テスト済み)",
+        "url": "https://github.com/kawasima/http-request-router"
+      },
+      "modules": [
+        {
+          "groupId": "com.nablarch.integration",
+          "artifactId": "nablarch-router-adaptor"
+        }
+      ]
+    },
+    "setup": {
+      "description": "ルーティングアダプタのモジュール設定",
+      "maven_dependency": {
+        "groupId": "com.nablarch.integration",
+        "artifactId": "nablarch-router-adaptor"
+      },
+      "xml_example": "<!-- Routing adapter -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-router-adaptor</artifactId>\n</dependency>",
+      "notes": [
+        "http-request-routerのバージョン0.1.1を使用してテストを行っている",
+        "バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること"
+      ]
+    },
+    "dispatch-handler-config": {
+      "description": "ディスパッチハンドラの設定",
+      "handler_class": "nablarch.integration.router.RoutesMapping",
+      "component_name": "packageMapping",
+      "configuration_points": [
+        "コンポーネント名はpackageMappingとする",
+        "basePackage属性にアクションクラスが格納されているパッケージを設定（複数パッケージの場合は共通の親パッケージ）",
+        "RoutesMappingを初期化リストに設定する",
+        "ハンドラキューの末尾にRoutesMappingを設定する"
+      ],
+      "xml_example": "<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"basePackage\" value=\"sample.web.action\" />\n</component>\n\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- Other handlers are omitted -->\n      <component-ref name=\"packageMapping\" />\n    </list>\n  </property>\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- Other initialization processes are omitted -->\n      <component-ref name=\"packageMapping\"/>\n    </list>\n  </property>\n</component>"
+    },
+    "routes-file": {
+      "description": "ルート定義ファイルの作成",
+      "file_name": "routes.xml",
+      "file_location": "クラスパス直下",
+      "purpose": "指定されたURLとビジネスアクションをマッピングする設定",
+      "reference": "ルート定義ファイルへの設定方法はhttp-request-routerのREADMEドキュメントを参照",
+      "reference_url": "https://github.com/kawasima/http-request-router/blob/master/README.ja.md"
+    },
+    "automatic-mapping": {
+      "description": "ビジネスアクションとURLの自動マッピング",
+      "method": "ルート定義ファイルのmatchタグのpath属性に:controllerや:actionなどのパラメータを使用",
+      "limitations": [
+        "JBossまたはWildFlyをアプリケーションサーバとして使用する場合は本機能は利用不可",
+        "getタグ等を使用してビジネスアクションとURLのマッピングを個別に定義すること",
+        "本機能とgetタグ等による個別定義の併用は非推奨（ルート定義ファイルからマッピング内容の読み取りが困難になる）"
+      ],
+      "setup_file": "routes.properties",
+      "setup_location": "クラスパス直下のnet/unit8/http/routerディレクトリ",
+      "properties_example": "router.controllerDetector=nablarch.integration.router.NablarchControllerDetector",
+      "route_definition_example": "<routes>\n  <match path=\"/action/:controller/:action\" />\n</routes>",
+      "mapping_example": "/action/user/index → sample.web.action.UserAction#index()"
+    }
+  }
+}
