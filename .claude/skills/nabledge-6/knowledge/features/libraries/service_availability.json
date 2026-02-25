@@ -1,0 +1,116 @@
+{
+  "id": "service_availability",
+  "title": "サービス提供可否チェック",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/service_availability.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["サービス提供可否チェック", "service availability check", "ライブラリ", "library", "503エラー", "リクエスト単位", "request basis"]
+    },
+    {
+      "id": "setup",
+      "hints": ["設定", "setup", "BasicServiceAvailability", "serviceAvailability", "データベース", "database", "テーブル"]
+    },
+    {
+      "id": "check",
+      "hints": ["チェック", "check", "ServiceAvailabilityUtil", "提供可否確認"]
+    },
+    {
+      "id": "view-control",
+      "hints": ["画面表示制御", "view control", "カスタムタグ", "custom tag", "ボタン", "リンク", "非表示"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.common.availability.BasicServiceAvailability",
+        "nablarch.common.availability.ServiceAvailabilityUtil"
+      ],
+      "annotations": [],
+      "description": "アプリケーションが提供する機能に対してサービス提供可否をチェックする機能。Webで一部機能へのアクセスを遮断して503エラーを返したり、常駐バッチでアイドル(処理せず待機)したりできる。",
+      "purpose": "アプリケーション要件に応じて特定機能のサービス提供可否を制御する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-auth"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-auth-jdbc"
+        }
+      ],
+      "prerequisites": [
+        "ServiceAvailabilityCheckHandlerをハンドラキューに設定",
+        "サービス提供可否状態を管理するデータベーステーブルが必要"
+      ],
+      "limitations": [
+        "この機能はアプリケーション要件を満たす場合のみ使用すべき。データベースでサービス提供可否状態を管理し、リクエスト単位でサービス提供可否を設定するため、詳細な設定が可能だが、データ設計も詳細に必要となり、開発時の生産性低下やリリース後の運用負荷増加の可能性がある",
+        "例えばWeb登録機能は通常、初期表示/確認/戻る/登録などの複数リクエストで構成されるため、詳細なサービス提供可否設定が可能だが、詳細なデータ設計が必要"
+      ]
+    },
+    "setup": {
+      "description": "サービス提供可否チェックを使用するための設定。データベースでサービス提供可否状態を管理する。コンポーネント設定ファイルにBasicServiceAvailabilityを追加し、初期化が必要なため初期化対象のリストに設定する。",
+      "table_structure": {
+        "description": "サービス提供可否状態管理用テーブルのレイアウト",
+        "columns": [
+          {
+            "name": "リクエストID (PK)",
+            "description": "リクエストを識別するための値。文字列型"
+          },
+          {
+            "name": "サービス提供可否状態",
+            "description": "提供可否の場合「1」。文字列型。値は設定で変更可能"
+          }
+        ]
+      },
+      "xml_example": "<component name=\"serviceAvailability\" class=\"nablarch.common.availability.BasicServiceAvailability\">\n  <!-- テーブル名 -->\n  <property name=\"tableName\" value=\"REQUEST\"/>\n  <!-- リクエストIDの列名 -->\n  <property name=\"requestTableRequestIdColumnName\" value=\"REQUEST_ID\"/>\n  <!-- サービス提供可否の列名 -->\n  <property name=\"requestTableServiceAvailableColumnName\" value=\"SERVICE_AVAILABLE\"/>\n  <!-- サービス提供可否を示す値 -->\n  <property name=\"requestTableServiceAvailableOkStatus\" value=\"1\"/>\n  <!-- データベースアクセスで使用するトランザクションマネージャ -->\n  <property name=\"dbManager\" ref=\"serviceAvailabilityDbManager\"/>\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- Other components are omitted -->\n      <component-ref name=\"serviceAvailability\" />\n    </list>\n  </property>\n</component>",
+      "properties": [
+        {
+          "name": "tableName",
+          "type": "String",
+          "required": true,
+          "description": "テーブル名"
+        },
+        {
+          "name": "requestTableRequestIdColumnName",
+          "type": "String",
+          "required": true,
+          "description": "リクエストIDの列名"
+        },
+        {
+          "name": "requestTableServiceAvailableColumnName",
+          "type": "String",
+          "required": true,
+          "description": "サービス提供可否の列名"
+        },
+        {
+          "name": "requestTableServiceAvailableOkStatus",
+          "type": "String",
+          "required": true,
+          "description": "サービス提供可否を示す値"
+        },
+        {
+          "name": "dbManager",
+          "type": "TransactionManager",
+          "required": true,
+          "description": "データベースアクセスで使用するトランザクションマネージャ"
+        }
+      ],
+      "notes": [
+        "コンポーネント名はserviceAvailabilityとする",
+        "初期化が必要なため初期化対象のリストに設定する",
+        "WebとConstant Batchの両方でリクエスト単位のサービス提供可否チェックが可能。処理方式に依存しない"
+      ]
+    },
+    "check": {
+      "description": "サービス提供可否チェックにはServiceAvailabilityUtilを使用する。",
+      "reference": "詳細はServiceAvailabilityUtilのJavadocを参照"
+    },
+    "view-control": {
+      "description": "サービス提供可否に応じてボタンやリンクを非表示(非活性)にする画面表示制御にはカスタムタグを使用する。",
+      "reference": "詳細はtag-submit_display_controlを参照"
+    }
+  }
+}

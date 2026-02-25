@@ -1,0 +1,184 @@
+{
+  "id": "bean_util",
+  "title": "BeanUtil",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/bean_util.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["BeanUtil", "ライブラリ", "library", "Bean", "JavaBeans", "プロパティ操作", "property"]
+    },
+    {
+      "id": "usage",
+      "hints": ["使い方", "how to use", "getProperty", "setProperty", "createAndCopy", "createMapAndCopy", "値の転送"]
+    },
+    {
+      "id": "type-conversion",
+      "hints": ["型変換", "type conversion", "Converter", "ConversionUtil", "変換ルール", "precision"]
+    },
+    {
+      "id": "add-conversion-rules",
+      "hints": ["変換ルール追加", "add rules", "ConversionManager", "ExtensionConverter", "カスタムコンバータ"]
+    },
+    {
+      "id": "format-specification",
+      "hints": ["フォーマット指定", "format specification", "datePatterns", "numberPatterns", "CopyOption", "CopyOptions"]
+    },
+    {
+      "id": "format-default",
+      "hints": ["デフォルト設定", "default configuration", "BasicConversionManager", "conversionManager", "システム共通"]
+    },
+    {
+      "id": "format-property",
+      "hints": ["プロパティ単位", "property level", "CopyOption", "アノテーション", "annotation", "datePattern", "numberPattern"]
+    },
+    {
+      "id": "format-logical",
+      "hints": ["論理的指定", "logical specification", "CopyOptions", "Builder", "converterByName", "datePatternByName"]
+    },
+    {
+      "id": "records",
+      "hints": ["レコード", "records", "Java16", "immutable", "不変クラス", "type parameters"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": ["nablarch.core.beans.BeanUtil"],
+      "annotations": ["CopyOption"],
+      "description": "JavaBeansおよびJava16以降のrecordに関する操作を提供するユーティリティ。プロパティの設定・取得、他のBeanへの値転送、BeanとMapの相互変換機能を提供する。",
+      "purpose": "JavaBeansやrecordのプロパティ操作を簡潔に記述し、異なる型間でのデータ転送を型変換を含めて自動的に処理する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-beans"
+        }
+      ],
+      "prerequisites": [],
+      "limitations": [
+        "List型の型パラメータをサポートしない。具象クラスでgetterをオーバーライドして対応",
+        "recordは不変クラスのため、setPropertyやcopyの変更先として使用すると実行時例外がスローされる"
+      ]
+    },
+    "usage": {
+      "description": "BeanUtilの主要な操作例。プロパティの取得・設定、Bean間の値転送、BeanとMapの相互変換が可能。値の転送時はgetterとsetterを使用し、プロパティ名が一致するものが転送対象となる。型が異なる場合はConversionUtilによる型変換が自動実行される。",
+      "java_example": "// プロパティ値の取得\nfinal Long id = (Long) BeanUtil.getProperty(user, \"id\");\n\n// プロパティ値の設定\nBeanUtil.setProperty(user, \"name\", \"New name\");\n\n// 別のBeanへ値を転送しながら作成\nfinal UserDto dto = BeanUtil.createAndCopy(UserDto.class, user);\n\n// Beanの値をMapに転送\nfinal Map<String, Object> map = BeanUtil.createMapAndCopy(user);\nfinal String postNo = (String) map.get(\"address.postNo\");\n\n// MapからBeanへ値を転送\nfinal Map<String, Object> userMap = new HashMap<>();\nuserMap.put(\"id\", 1L);\nuserMap.put(\"address.postNo\", 54321);\nfinal User user = BeanUtil.createAndCopy(User.class, userMap);",
+      "notes": [
+        "転送先に存在しないプロパティは無視される",
+        "ネストしたBeanの値はドット区切り(例: address.postNo)でMap転送時にキーとなる",
+        "Map→Beanのネスト転送時もドット区切りのキー名が必要(Map→Mapのネストは不可)"
+      ]
+    },
+    "type-conversion": {
+      "description": "BeanUtilはJavaBeans間、またはMapからJavaBeansへのデータ転送時にプロパティの型変換を自動実行する。変換ルールはnablarch.core.beans.converterパッケージ配下のConverter実装クラスで定義されている。Mapのキーに「.」が含まれる場合、そのプロパティはネストしたオブジェクトとして扱われる。",
+      "warnings": [
+        "精度の低い型への変換(例: LongからIntegerへ)を行う際、変換先の精度を超える値が指定されても処理は正常終了する。そのため、BeanUtilでコピーする前にvalidationで値の妥当性を検証する必要がある。検証しないと不正な値がシステムに取り込まれ障害の原因となる",
+        "型変換ルールは全アプリケーション共通。特定処理だけ異なる変換ルールを適用する場合は、bean_util-format_logicalを参照し、特定プロパティ・型向けのConverter実装を適用する"
+      ],
+      "reference": "変換ルールの詳細はnablarch.core.beans.Converterのサブクラスを参照"
+    },
+    "add-conversion-rules": {
+      "description": "型変換ルールを追加する手順。標準の型変換ルールに加えてルールを設定する場合、ConversionManagerをプロパティとして持つConversionManagerの実装クラスを作成する。",
+      "implementation_steps": [
+        "必要に応じてConverter、ExtensionConverterインターフェースを実装し型変換処理を実装",
+        "ConversionManagerの実装クラスを作成。delegateManagerとして標準のConversionManagerを保持",
+        "getConverters()とgetExtensionConvertor()で標準コンバータと追加コンバータを両方返却",
+        "コンポーネント設定ファイルにconversionManagerという名前で実装クラスを定義"
+      ],
+      "java_example": "public class SampleConversionManager implements ConversionManager {\n    private ConversionManager delegateManager;\n\n    @Override\n    public Map<Class<?>, Converter<?>> getConverters() {\n        Map<Class<?>, Converter<?>> converters = new HashMap<>();\n        converters.putAll(delegateManager.getConverters());\n        converters.put(BigInteger.class, new CustomConverter());\n        return Collections.unmodifiableMap(converters);\n    }\n\n    @Override\n    public List<ExtensionConverter<?>> getExtensionConvertor() {\n        final List<ExtensionConverter<?>> extensionConverters =\n            new ArrayList<>(delegateManager.getExtensionConvertor());\n        extensionConverters.add(new CustomExtensionConverter());\n        return extensionConverters;\n    }\n}",
+      "xml_example": "<component name=\"conversionManager\" class=\"sample.SampleConversionManager\">\n  <property name=\"delegateManager\">\n    <component class=\"nablarch.core.beans.BasicConversionManager\" />\n  </property>\n</component>",
+      "notes": [
+        "コンポーネント名はconversionManagerとする必要がある"
+      ]
+    },
+    "format-specification": {
+      "description": "型変換時に許容するフォーマット(日付や数値)を指定できる。例えばカンマ付き数値文字列(1,000,000)を数値型(1000000)に変換可能。許容フォーマットの指定方法は3つあり、記述順に優先度が高い。",
+      "specification_methods": [
+        {
+          "priority": 1,
+          "method": "BeanUtil呼び出し時に設定(bean_util-format_logical)",
+          "use_case": "OSSで自動生成されたBeanなどアノテーション設定不可時、特定プロパティだけ異なる型変換ルールを適用したい場合"
+        },
+        {
+          "priority": 2,
+          "method": "プロパティ単位でアノテーション設定(bean_util-format_property_setting)",
+          "use_case": "特定機能だけデフォルト設定を適用せず異なるフォーマットを指定したい場合"
+        },
+        {
+          "priority": 3,
+          "method": "デフォルト設定(システム共通設定)(bean_util-format_default_setting)",
+          "use_case": "例えば画面でカンマ付き数値の入力を許可する場合など、個別指定が不要な共通設定"
+        }
+      ]
+    },
+    "format-default": {
+      "description": "システム全体のデフォルトフォーマット設定をコンポーネント設定ファイルで行う。例えば画面でカンマ付き数値入力を許可する場合、デフォルト設定すれば個別指定が不要になる。",
+      "xml_example": "<component name=\"conversionManager\" class=\"nablarch.core.beans.BasicConversionManager\">\n  <!-- 日付および日時の許容フォーマットを指定 -->\n  <property name=\"datePatterns\">\n    <list>\n      <value>yyyy/MM/dd</value>\n      <value>yyyy-MM-dd</value>\n    </list>\n  </property>\n  <!-- 数値の許容フォーマットを指定 -->\n  <property name=\"numberPatterns\">\n    <list>\n      <value>#,###</value>\n    </list>\n  </property>\n</component>",
+      "properties": [
+        {
+          "name": "datePatterns",
+          "type": "List<String>",
+          "required": false,
+          "description": "許容する日付および日時のフォーマット。複数指定可能"
+        },
+        {
+          "name": "numberPatterns",
+          "type": "List<String>",
+          "required": false,
+          "description": "許容する数値のフォーマット。複数指定可能"
+        }
+      ],
+      "notes": [
+        "コンポーネント名はconversionManagerで定義する",
+        "複数フォーマットを許容する場合は複数設定する"
+      ],
+      "warnings": [
+        "日付フォーマット(yyyy/MM/dd)と日時フォーマット(yyyy/MM/dd HH:mm:ss)を同時指定すると、日時の値も日付フォーマットでパースされ時刻情報が失われることがある。デフォルトでは日付フォーマットのみ指定し、日時フォーマット項目はプロパティ単位でアノテーション設定を使用してデフォルト設定を上書きする"
+      ]
+    },
+    "format-property": {
+      "description": "コピー対象Bean(コピー元またはコピー先)の該当プロパティに対応するフィールドにアノテーションを指定し、許容フォーマットを上書きする。アノテーションはコピー元・コピー先どちらに指定しても動作するが、基本的にはフォーマットされた値を保持するプロパティ(文字列型)のフィールドに許容フォーマットを指定することが推奨される。両方に指定した場合はコピー元の設定が使用される。",
+      "java_example": "public class Bean {\n    // 日時の許容フォーマットを指定\n    @CopyOption(datePattern = \"yyyy/MM/dd HH:mm:ss\")\n    private String timestamp;\n\n    // 数値の許容フォーマットを指定\n    @CopyOption(numberPattern = \"#,###\")\n    private String number;\n\n    // Setter and getter are omitted\n}",
+      "annotations": [
+        {
+          "name": "CopyOption",
+          "class": "nablarch.core.beans.CopyOption",
+          "attributes": [
+            {
+              "name": "datePattern",
+              "description": "許容する日付および日時のフォーマット"
+            },
+            {
+              "name": "numberPattern",
+              "description": "許容する数値のフォーマット"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "フォーマット値を保持するのは文字列型プロパティのため、そのプロパティに許容フォーマットを指定するのが自然",
+        "例えば日付フォーマットをデフォルト設定し、特定機能だけ日時フォーマットを許可する場合に使用"
+      ]
+    },
+    "format-logical": {
+      "description": "BeanUtil呼び出し時に許容フォーマットと型変換ルールを設定する。特定機能だけデフォルト設定を適用せず異なるフォーマットを指定したいが、BeanがOSSで自動生成されているなどアノテーション設定が使用できない場合、または特定プロパティだけ異なる型変換ルールを適用したい場合に使用する。",
+      "java_example": "final CopyOptions copyOptions = CopyOptions.options()\n        // timestampプロパティの許容フォーマットを指定\n        .datePatternByName(\"timestamp\", \"yyyy/MM/dd/ HH:mm:ss\")\n        // customプロパティにCustomDateConverterを適用\n        .converterByName(\"custom\", Date.class, new CustomDateConverter())\n        .build();\n\n// CopyOptionsを指定してBeanUtilを呼び出す\nfinal DestBean copy = BeanUtil.createAndCopy(DestBean.class, bean, copyOptions);",
+      "notes": [
+        "CopyOptionsの構築方法はCopyOptions.Builderを参照",
+        "プロパティごとにフォーマットや変換ルールをカスタマイズ可能"
+      ]
+    },
+    "records": {
+      "description": "BeanUtilはJava16から標準化されたrecordをJavaBeansと同様に扱うことができる。ただしrecordは不変クラスのため、BeanUtil.setPropertyやBeanUtil.copyの変更対象オブジェクトとしてrecordを渡すと実行時例外がスローされる。",
+      "usage": "JavaBeansの操作(bean_util-use_java_beans)と同様",
+      "limitations": [
+        "List型の型パラメータを含むrecordはサポートされない",
+        "recordは継承できないため、List型の型パラメータは最初から具象型に設定してrecordを定義する必要がある"
+      ],
+      "java_example": "public class Item implements Serializable {\n    // Property omitted.\n}\n\n// 型パラメータを具象型に設定していない場合\n// BeanUtil.createAndCopy(BadSampleRecord.class, map)を呼び出すと\n// List型の型パラメータをサポートしないため実行時例外がスローされる\npublic class BadSampleRecord<T>(List<T> items) {}\n\n// List型の型パラメータを具象型に設定した場合\n// BeanUtil.createAndCopy(GoodSampleRecord.class, map)は正常に動作する\npublic record GoodSampleRecord(List<Item> items) {}",
+      "warnings": [
+        "recordは不変クラスのため、setPropertyやcopyの変更先として使用不可"
+      ]
+    }
+  }
+}
