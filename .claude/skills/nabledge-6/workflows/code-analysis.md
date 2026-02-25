@@ -24,8 +24,8 @@ Analyze existing code, trace dependencies, generate structured documentation.
 **Action** - Store start time with unique session ID:
 ```bash
 UNIQUE_ID="$(date '+%s%3N')-$$"
-echo "$UNIQUE_ID" > /tmp/nabledge-code-analysis-id
-date '+%s' > "/tmp/nabledge-code-analysis-start-$UNIQUE_ID"
+echo "$UNIQUE_ID" > .tmp/nabledge-code-analysis-id
+date '+%s' > ".tmp/nabledge-code-analysis-start-$UNIQUE_ID"
 echo "Start time recorded: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Session ID: $UNIQUE_ID"
 ```
@@ -37,11 +37,12 @@ Session ID: 1707559440123-12345
 ```
 
 **IMPORTANT**:
-- Session ID stored in: `/tmp/nabledge-code-analysis-id`
-- Start time stored in: `/tmp/nabledge-code-analysis-start-$UNIQUE_ID`
+- Session ID stored in: `.tmp/nabledge-code-analysis-id`
+- Start time stored in: `.tmp/nabledge-code-analysis-start-$UNIQUE_ID`
 - UNIQUE_ID format: `{millisecond_timestamp}-{process_PID}`
 - Epoch time (seconds since 1970) for accurate duration calculation
 - Step 3.3 reads session ID from fixed file path
+- Uses `.tmp/` directory (repository-local) for environment independence
 
 **Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
 
@@ -113,38 +114,33 @@ Session ID: 1707559440123-12345
 
 2. **Combine keywords for batch search**:
    - Merge component names + technical terms from all components
-   - Extract L1/L2/L3 keywords for all components at once
+   - Extract L1/L2 keywords for all components at once
 
    **Bash script example for keyword combination**:
    ```bash
    # Declare arrays for combined keywords
-   declare -a l1_all l2_all l3_all
+   declare -a l1_all l2_all
 
    # UniversalDao component keywords
-   l1_all+=("データベース" "database")
-   l2_all+=("DAO" "UniversalDao" "O/Rマッパー")
-   l3_all+=("CRUD" "検索" "登録" "更新" "ページング")
+   l1_all+=("DAO" "UniversalDao" "O/Rマッパー")
+   l2_all+=("CRUD" "検索" "登録" "更新" "ページング")
 
    # ExecutionContext component keywords
-   l1_all+=("リクエスト" "request")
-   l2_all+=("ExecutionContext" "コンテキスト")
-   l3_all+=("リクエスト処理" "データ取得")
+   l1_all+=("ExecutionContext" "コンテキスト")
+   l2_all+=("リクエスト処理" "データ取得")
 
    # ValidationUtil component keywords
-   l1_all+=("バリデーション" "validation")
-   l2_all+=("ValidationUtil" "Bean Validation")
-   l3_all+=("検証" "エラー" "例外処理")
+   l1_all+=("ValidationUtil" "Bean Validation")
+   l2_all+=("検証" "エラー" "例外処理")
 
    # Remove duplicates and prepare for keyword-search workflow
    l1_keywords=($(printf '%s\n' "${l1_all[@]}" | sort -u))
    l2_keywords=($(printf '%s\n' "${l2_all[@]}" | sort -u))
-   l3_keywords=($(printf '%s\n' "${l3_all[@]}" | sort -u))
    ```
 
    **Result** - Combined keywords ready for keyword-search:
-     - L1: ["データベース", "database", "バリデーション", "validation", "リクエスト", "request"]
-     - L2: ["DAO", "UniversalDao", "O/Rマッパー", "ExecutionContext", "コンテキスト", "ValidationUtil", "Bean Validation"]
-     - L3: ["CRUD", "検索", "登録", "更新", "ページング", "リクエスト処理", "データ取得", "検証", "エラー", "例外処理"]
+     - L1: ["DAO", "UniversalDao", "O/Rマッパー", "ExecutionContext", "コンテキスト", "ValidationUtil", "Bean Validation"]
+     - L2: ["CRUD", "検索", "登録", "更新", "ページング", "リクエスト処理", "データ取得", "検証", "エラー", "例外処理"]
 
 3. **Execute keyword-search workflow once** (see workflows/keyword-search.md):
    - Use combined keywords for all components
@@ -168,17 +164,6 @@ Session ID: 1707559440123-12345
    - Code examples
    - Error handling
    - Best practices
-
-**Tool call reduction**:
-- **Before**: Sequential processing per component = ~36 calls
-  - Per component: keyword-search (12 calls) + section-judgement (5-10 calls) = ~18 calls
-  - For 2-3 components: 36-54 calls total
-- **After**: Batch processing for all components = ~15 calls
-  - keyword-search batch (3 calls) + section-judgement batch (2-3 calls) + grouping (0 calls) = ~6 calls once
-  - Additional overhead for multi-component coordination: ~5-10 calls (dependency grouping and knowledge mapping)
-  - Total: ~15 calls
-
-**Efficiency**: Collect High-relevance sections only (5-10 per component). Skip components with no knowledge.
 
 **Output**: Relevant knowledge sections with API usage, patterns, and best practices
 
@@ -347,8 +332,6 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 5. Add explanatory notes using `Note over` syntax for complex logic
 6. Preserve all skeleton structure (participants, basic flow)
 
-**Time savings**: Skeletons save ~20 seconds by providing structure; focus refinement on semantics, not syntax.
-
 **Dependency diagram** (Mermaid classDiagram):
 
 **Step 1**: Retrieve skeleton from working memory
@@ -507,13 +490,13 @@ sequenceDiagram
    Execute single bash script to fill duration placeholder:
    ```bash
    # Retrieve session ID from Step 0
-   UNIQUE_ID=$(cat /tmp/nabledge-code-analysis-id 2>/dev/null || echo "")
+   UNIQUE_ID=$(cat .tmp/nabledge-code-analysis-id 2>/dev/null || echo "")
 
    # Get current time
    end_time=$(date '+%s')
 
    # Calculate duration with error handling
-   START_TIME_FILE="/tmp/nabledge-code-analysis-start-$UNIQUE_ID"
+   START_TIME_FILE=".tmp/nabledge-code-analysis-start-$UNIQUE_ID"
    if [ -z "$UNIQUE_ID" ] || [ ! -f "$START_TIME_FILE" ]; then
      echo "WARNING: Start time file not found. Duration will be set to '不明'."
      duration_text="不明"
@@ -536,7 +519,7 @@ sequenceDiagram
 
    # Clean up temp files
    rm -f "$START_TIME_FILE"
-   rm -f /tmp/nabledge-code-analysis-id
+   rm -f .tmp/nabledge-code-analysis-id
 
    # Output for user
    echo "Duration: $duration_text"
@@ -555,11 +538,6 @@ sequenceDiagram
 
 6. **Inform user**: Show output path and actual duration
 6. **Inform user**: Show output path and actual duration
-
-**Expected time savings**:
-- Pre-filled deterministic placeholders: ~25-30 seconds saved
-- Mermaid diagram skeletons: ~15-20 seconds saved
-- Total reduction: ~40-50 seconds
 
 **Output**: Documentation file at .nabledge/YYYYMMDD/code-analysis-<target-name>.md
 
