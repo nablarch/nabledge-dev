@@ -19,6 +19,55 @@
 
 ---
 
+## 🔴 CURRENT STATUS (2026-02-25 End of Day)
+
+### What Was Completed Today
+- ✅ Phase 0: Skill understanding
+- ✅ Phase 1 Part A: Mapping generation (5 runs, 100% reproducible)
+- ✅ Phase 2 Part A: Index generation (5 runs, 100% reproducible)
+
+### ⚠️ CRITICAL: What Was NOT Done (Content Verification)
+- ❌ Phase 1 Part B: `/nabledge-creator verify-mapping-6` ← **SKIPPED**
+- ❌ Phase 2 Part B: `/nabledge-creator verify-index-6` ← **SKIPPED**
+
+**Why this matters:**
+- Run 1 is NOT complete without Part B
+- Part A (generation) + Part B (verification) = Run 1 complete
+- Without Part B, we cannot prove accuracy (only reproducibility)
+
+### 📋 TOMORROW'S WORK (Start Here)
+
+**Step 1: Phase 1 Part B (Content Verification)**
+```bash
+# Start new session
+/nabledge-creator verify-mapping-6
+# Verifies all 291 files' Type/Category/PP against RST sources
+# If errors found: fix and regenerate
+# Document: .pr/00078/phase1-verification-results.md
+```
+
+**Step 2: Phase 2 Part B (Content Verification)**
+```bash
+# Start new session
+/nabledge-creator verify-index-6
+# Verifies all 259 entries' hint quality
+# Document: .pr/00078/phase2-verification-results.md
+```
+
+**Step 3: Continue to Phase 3-6 per tasks.md**
+
+### 📊 Progress Tracker
+- [ ] Phase 1 Part B: verify-mapping-6 ← **START HERE TOMORROW**
+- [ ] Phase 2 Part B: verify-index-6
+- [ ] Phase 3: Knowledge pilot (17 files)
+- [ ] Phase 4: Knowledge full (162 files)
+- [ ] Phase 5: Quality assurance + v5 compatibility
+- [ ] Phase 6: Final verification
+
+**DO NOT proceed to Phase 3 until Phase 1-2 Part B are complete.**
+
+---
+
 ## Phase 0: Skill Understanding & Verification Plan ⏳ START HERE
 
 **Purpose**: Accurately understand what the nabledge-creator skill does before executing verification
@@ -85,12 +134,16 @@
 
 **Previous Work (INVALID)**:
 - Used `python scripts/generate-mapping.py v6` directly
-- See `.pr/00078/phase1-reproducibility-test.md:32`
+- See `.pr/00078/phase1-skill-reproducibility.md:32`
 - This proves **script works**, not **skill works**
 
 **Required Work**:
 
-**Run 1 (Generation + Content Verification)**:
+**Terminology**: Each Phase "Run 1" consists of two parts executed in separate sessions:
+- **Part A (Generation + Format Validation)**: Execute skill, validate output format, record checksums - all in one session
+- **Part B (Content Verification)**: Start fresh session, verify actual content accuracy against source files
+
+**Run 1 Part A: Generation (Same Session)**:
 ```bash
 # Step 1: Generate mapping
 /nabledge-creator mapping
@@ -109,9 +162,18 @@ mkdir -p ../../.tmp/phase1-skill-run1
 cp output/mapping-v6.md ../../.tmp/phase1-skill-run1/
 ```
 
-**Run 1: Content Verification (Separate Session)**:
+**Execution Status**:
+- [x] Part A: Generation completed (2026-02-25)
+- [ ] Part B: Content Verification ← **NEXT: DO THIS IMMEDIATELY**
+
+**Run 1 Part B: Content Verification (Start New Session NOW)**:
+
+⚠️ **CRITICAL: "Separate Session" = Start new session IMMEDIATELY, not later**
+⚠️ **DO NOT SKIP: Run 1 is NOT complete until Part B is done**
+
 ```bash
-# IMPORTANT: Start new session to avoid context bias
+# REQUIRED: Start new session to avoid context bias
+# Execute this command NOW (do not defer to "another time")
 /nabledge-creator verify-mapping-6
 
 # What this does:
@@ -123,13 +185,22 @@ cp output/mapping-v6.md ../../.tmp/phase1-skill-run1/
 # If ANY row is marked ✗:
 # 1. Document corrections in checklist
 # 2. Fix classification.md and generate-mapping.py
-# 3. Restart from Run 1 generation
+# 3. Restart from Run 1 Part A (generation)
 # 4. Re-run verification in new session
 
 # Document results:
 # - .pr/00078/phase1-verification-results.md
 # - Updated .claude/skills/nabledge-creator/output/mapping-v6.checklist.md
 ```
+
+**Why separate session?**
+- Generation session has context about "what to include"
+- Verification session checks "what is missing"
+- Same session = context bias = miss errors
+
+**Run 1 Complete ONLY when**:
+- [x] Part A: Generation + format validation + MD5 + backup
+- [ ] Part B: Content verification via /nabledge-creator verify-mapping-6
 
 **Run 2-5 (Reproducibility Check)**:
 ```bash
@@ -178,12 +249,12 @@ cp output/mapping-v6.md ../../.tmp/phase1-skill-run{N}/
 
 **Previous Work (INVALID)**:
 - Used `python scripts/generate-index.py v6` directly
-- See `.pr/00078/phase2-reproducibility-test.md:32`
+- See `.pr/00078/phase2-skill-reproducibility.md:32`
 - This proves **script works**, not **skill works**
 
 **Required Work**:
 
-**Run 1 (Generation + Content Verification)**:
+**Run 1 Part A: Generation (Same Session)**:
 ```bash
 # Step 1: Generate index
 /nabledge-creator index
@@ -205,24 +276,42 @@ mkdir -p .tmp/phase2-skill-run1
 cp .claude/skills/nabledge-6/knowledge/index.toon .tmp/phase2-skill-run1/
 ```
 
-**Run 1: Content Verification (Separate Session)**:
+**Execution Status**:
+- [x] Part A: Generation completed (2026-02-25)
+- [ ] Part B: Content Verification ← **NEXT: DO THIS IMMEDIATELY**
+
+**Run 1 Part B: Content Verification (Start New Session NOW)**:
+
+⚠️ **CRITICAL: "Separate Session" = Start new session IMMEDIATELY, not later**
+⚠️ **DO NOT SKIP: Run 1 is NOT complete until Part B is done**
+
 ```bash
-# IMPORTANT: Start new session
+# REQUIRED: Start new session to avoid context bias
+# Execute this command NOW (do not defer to "another time")
 /nabledge-creator verify-index-6
 
 # What this does:
-# - Read all 154 entries in index.toon
+# - Read all entries in index.toon (actual: 259, expected: 154)
 # - Verify hints quality (sufficient coverage, bilingual)
 # - Test search functionality with sample queries
 # - Document issues found
 
 # If issues found:
 # 1. Fix generate-index.py logic
-# 2. Restart from Run 1 generation
-# 3. Re-run verification
+# 2. Restart from Run 1 Part A (generation)
+# 3. Re-run verification in new session
 
 # Document: .pr/00078/phase2-verification-results.md
 ```
+
+**Why separate session?**
+- Generation session has context about hint extraction logic
+- Verification session checks hint quality objectively
+- Same session = bias toward generated hints
+
+**Run 1 Complete ONLY when**:
+- [x] Part A: Generation + format validation + MD5 + backup
+- [ ] Part B: Content verification via /nabledge-creator verify-index-6
 
 **Run 2-5 (Reproducibility Check)**:
 ```bash
