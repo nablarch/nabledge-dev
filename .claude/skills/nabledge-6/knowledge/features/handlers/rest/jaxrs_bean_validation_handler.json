@@ -1,0 +1,135 @@
+{
+  "id": "jaxrs_bean_validation_handler",
+  "title": "Jakarta RESTful Web Servcies Bean Validationハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/rest/jaxrs_bean_validation_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "JaxRsBeanValidationHandler",
+        "Bean Validation",
+        "バリデーション",
+        "Form検証",
+        "ApplicationException"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "バリデーション実行",
+        "エラー時処理",
+        "Valid"
+      ]
+    },
+    {
+      "id": "validation_execution",
+      "hints": [
+        "バリデーション実行",
+        "Valid",
+        "アノテーション",
+        "Form",
+        "Bean"
+      ]
+    },
+    {
+      "id": "validation_group",
+      "hints": [
+        "グループ指定",
+        "ConvertGroup",
+        "Default",
+        "バリデーショングループ"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "body_convert_handler",
+        "配置順序",
+        "リクエストボディ変換"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.fw.jaxrs.JaxRsBeanValidationHandler",
+      "description": "resource(action)クラスが受け取るForm(Bean)に対してBean Validationを実行するハンドラ。バリデーションエラー発生時はApplicationExceptionを送出し、後続処理を実行せずに処理を終了する。",
+      "purpose": "RESTful APIのリクエストデータに対する入力検証を自動化し、不正なデータによるビジネスロジック実行を防ぐ",
+      "responsibilities": [
+        "resource(action)メソッドが受け取るFormに対するBean Validationの実行",
+        "バリデーションエラー時のApplicationException送出"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-jaxrs"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-validation-ee"
+        }
+      ],
+      "note": "Nablarch 5まで「JAX-RS BeanValidation Handler」と呼ばれていた機能。Java EEのEclipse Foundation移管に伴い名称変更されたが、機能的な差異はない。"
+    },
+    "processing": {
+      "flow": [
+        {
+          "step": "バリデーション判定",
+          "description": "resource(action)メソッドにValidアノテーションが設定されているかを確認する。"
+        },
+        {
+          "step": "Bean Validation実行",
+          "description": "Validアノテーションが設定されている場合、Bean Validationを実行する。ConvertGroupアノテーションがあれば指定されたグループでバリデーションを実行。"
+        },
+        {
+          "step": "エラー処理",
+          "description": "バリデーションエラーが発生した場合、ApplicationExceptionを送出して後続ハンドラに処理を委譲せずに処理を終了する。"
+        },
+        {
+          "step": "正常時の後続処理",
+          "description": "バリデーションが成功した場合、後続ハンドラに処理を委譲し、resource(action)メソッドが実行される。"
+        }
+      ]
+    },
+    "validation_execution": {
+      "description": "resource(action)メソッドで受け取るForm(Bean)のバリデーションを実行するには、そのメソッドにValidアノテーションを設定する。",
+      "code_example": "// Personオブジェクトに対してバリデーションを実行する必要があるため、\n// Validアノテーションを設定する。\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}",
+      "code_explanation": "メソッドにValidアノテーションを設定することで、引数のPersonオブジェクトに対してBean Validationが自動的に実行される。バリデーションエラー時はApplicationExceptionが送出され、後続処理は実行されない。"
+    },
+    "validation_group": {
+      "description": "Bean Validationのグループを指定するには、Validアノテーションを設定したメソッドにConvertGroupアノテーションを設定する。",
+      "annotation_attributes": [
+        {
+          "name": "from",
+          "value": "Default.class",
+          "description": "固定値としてDefault.classを指定する。Validアノテーションをメソッドに設定すると、Defaultグループが設定されたものとしてバリデーションが実行される。"
+        },
+        {
+          "name": "to",
+          "value": "グループクラス",
+          "description": "Bean Validationのグループを指定する。"
+        }
+      ],
+      "code_example": "// Personクラス内に設定されているバリデーションルールのうち、\n// Createグループに属するルールのみを使用してバリデーションを行う。\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\n@ConvertGroup(from = Default.class, to = Create.class)\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}",
+      "code_explanation": "ConvertGroupアノテーションでバリデーショングループを指定することで、同じFormクラスに対して処理内容に応じた異なるバリデーションルールを適用できる。例えば、登録時(Create)と更新時(Update)で必須項目を変えるといった使い方が可能。"
+    },
+    "constraints": {
+      "handler_order": {
+        "before": [],
+        "after": [
+          "body_convert_handler"
+        ],
+        "reason": "このハンドラは、body_convert_handlerでリクエストボディから変換されたForm(Bean)のバリデーションを行うため、body_convert_handlerより後に配置する必要がある。"
+      },
+      "limitations": [],
+      "notes": [
+        "バリデーション対象のメソッドに必ずValidアノテーションを設定すること",
+        "バリデーションエラー時はApplicationExceptionが送出され、後続処理は実行されない",
+        "グループ指定時はfrom属性にDefault.classを指定すること"
+      ]
+    }
+  }
+}
