@@ -1,6 +1,6 @@
-# Keyword Search Workflow
+# Knowledge Search Workflow
 
-Search knowledge base using keyword matching.
+Search knowledge base and answer user's query using relevant knowledge only.
 
 ## Input
 
@@ -8,7 +8,7 @@ User's query (natural language)
 
 ## Output
 
-JSON with candidate sections for section-judgement workflow
+Answer to user's query using relevant knowledge from knowledge files
 
 ## Steps
 
@@ -98,7 +98,7 @@ Assign relevance score:
 
 Write reasoning (1-2 sentences) for each score.
 
-Update JSON with scores and reasoning. Validate against `schemas/section-scoring.json`.
+Update JSON with scores and reasoning.
 
 ### Step 5: Sort and Filter
 
@@ -106,9 +106,74 @@ Update JSON with scores and reasoning. Validate against `schemas/section-scoring
 
 1. **Sort** by relevance score (descending)
 2. **Filter** sections with relevance ≥ 2
-3. **Output** JSON with candidate sections for section-judgement workflow
+3. **Select top candidates**: Keep top 20-30 sections
 
-Pass output to section-judgement workflow.
+**Output**: JSON with candidate sections
+
+### Step 6: Read Section Content
+
+**Tool**: Bash with jq
+
+**Action**: For each candidate section (up to 10 sections or until finding 5 high-relevance sections):
+
+```bash
+jq -r '.sections[<section_id>]' <file_path>
+```
+
+Extract only the specified section content. Do not read entire file.
+
+### Step 7: Judge Final Relevance
+
+For each section read, judge relevance based ONLY on actual section content:
+
+**High (2)**: Section directly addresses goal AND contains actionable information (methods, examples, configuration)
+
+**Partial (1)**: Section provides prerequisite knowledge, related functionality, or context
+
+**None (0)**: Section addresses different topic
+
+When in doubt between High and Partial, choose Partial.
+
+**Stop condition**: After reading 10 sections OR finding 5 High-relevance sections, whichever comes first.
+
+### Step 8: Generate Answer
+
+**Action**: Based on High and Partial relevance sections:
+
+1. **Synthesize answer**:
+   - Use ONLY information from High/Partial sections
+   - Structure answer with clear sections
+   - Include code examples if available
+   - Cite source sections
+
+2. **Output format** (Japanese):
+```markdown
+## 回答
+
+[Main answer content synthesized from knowledge sections]
+
+### コード例
+
+[Code examples if available]
+
+### 参考情報
+
+- [File path:section] - [Brief description]
+- [File path:section] - [Brief description]
+```
+
+3. **If no High sections found**:
+```markdown
+## 回答
+
+この情報は知識ファイルに含まれていません。
+
+### 関連する情報
+
+以下の情報が見つかりました:
+- [Related entry from index.toon]
+- [Related entry from index.toon]
+```
 
 ## Error Handling
 
@@ -119,4 +184,8 @@ Pass output to section-judgement workflow.
 
 **No sections after filtering** (Step 5 returns empty sections array):
 - Output message: "該当するセクションが見つかりませんでした"
-- Continue to section-judgement workflow with empty input
+- List related available knowledge from index.toon
+
+**No High relevance sections** (Step 7 finds no High sections):
+- Output Partial relevance information if available
+- Otherwise output "knowledge not found" message

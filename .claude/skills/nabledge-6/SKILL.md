@@ -35,7 +35,7 @@ nabledge-6 code-analysis
 - Ask user to choose: Knowledge Search or Code Analysis
 
 **Text argument** (`nabledge-6 "<question>"`):
-- **Execute**: `workflows/keyword-search.md` → `workflows/section-judgement.md`
+- **Execute**: `workflows/knowledge-search.md`
 
 **"code-analysis" argument** (`nabledge-6 code-analysis`):
 - **Execute**: `workflows/code-analysis.md`
