@@ -1,0 +1,203 @@
+{
+  "id": "loop_handler",
+  "title": "トランザクションループ制御ハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/batch/loop_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "LoopHandler",
+        "トランザクションループ制御",
+        "繰り返し処理",
+        "コミット間隔",
+        "スループット向上"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "トランザクション開始",
+        "トランザクション終了",
+        "コミット",
+        "ロールバック"
+      ]
+    },
+    {
+      "id": "transaction_control",
+      "hints": [
+        "トランザクション制御",
+        "TransactionFactory",
+        "transactionFactory",
+        "transactionName",
+        "JdbcTransactionFactory"
+      ]
+    },
+    {
+      "id": "commit_interval",
+      "hints": [
+        "コミット間隔",
+        "commitInterval",
+        "スループット",
+        "性能向上"
+      ]
+    },
+    {
+      "id": "callback",
+      "hints": [
+        "コールバック",
+        "TransactionEventCallback",
+        "transactionNormalEnd",
+        "transactionAbnormalEnd",
+        "任意処理"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "XML",
+        "component",
+        "property"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "DbConnectionManagementHandler",
+        "データベース接続管理ハンドラ",
+        "配置順序"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.fw.handler.LoopHandler",
+      "description": "後続ハンドラの処理を繰り返し実行すると共に、トランザクション制御を行い、一定の繰り返し回数でトランザクションのコミットを行うハンドラ。トランザクションのコミット間隔を大きくすることで、バッチ処理のスループットを向上させることができる。",
+      "purpose": "バッチ処理において、トランザクション管理を行いながらデータを繰り返し処理し、コミット間隔の調整によりスループットを最適化する",
+      "responsibilities": [
+        "トランザクションの開始",
+        "トランザクションの終了(コミット or ロールバック)",
+        "トランザクション終了時のコールバック実行"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-standalone"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-transaction"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-jdbc",
+          "note": "データベースに対するトランザクション制御を行う場合のみ"
+        }
+      ]
+    },
+    "processing": {
+      "flow": [
+        {
+          "step": "トランザクション開始",
+          "description": "処理開始時にトランザクションを開始する"
+        },
+        {
+          "step": "後続ハンドラ実行",
+          "description": "データリーダに処理対象データが存在する間、後続ハンドラの処理を繰り返し実行する"
+        },
+        {
+          "step": "コミット間隔制御",
+          "description": "commitIntervalで設定した回数の処理が完了するとトランザクションをコミットし、新しいトランザクションを開始する"
+        },
+        {
+          "step": "トランザクション終了",
+          "description": "全データの処理が完了した時点、またはエラー発生時にトランザクションを終了する(コミット or ロールバック)"
+        },
+        {
+          "step": "コールバック実行",
+          "description": "後続ハンドラの処理後、TransactionEventCallbackを実装したハンドラのコールバック処理を実行する"
+        }
+      ],
+      "transaction_control": "データリーダに処理対象データが存在する間、後続ハンドラの処理を繰り返し実行すると共にトランザクション制御を行う。コミット間隔を大きくすることで、バッチ処理のスループットを向上させることができる。"
+    },
+    "transaction_control": {
+      "description": "このハンドラは、transactionFactoryプロパティに設定されたファクトリクラス(TransactionFactoryの実装クラス)を使用してトランザクションの制御対象を取得し、スレッド上で管理する。",
+      "factory_property": "transactionFactory",
+      "name_property": "transactionName",
+      "default_name": "transaction",
+      "configuration": {
+        "factory_class": "nablarch.core.db.transaction.JdbcTransactionFactory",
+        "description": "データベースに対してトランザクション制御を行う場合は、JdbcTransactionFactoryを設定する"
+      },
+      "xml_example": "<!-- トランザクション制御ハンドラ -->\n<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>\n\n<!-- データベースに対するトランザクション制御を行う場合、JdbcTransactionFactoryを設定 -->\n<component name=\"databaseTransactionFactory\"\n    class=\"nablarch.core.db.transaction.JdbcTransactionFactory\">\n  <!-- プロパティの設定は省略 -->\n</component>",
+      "tip": "DbConnectionManagementHandlerで設定したデータベースに対してトランザクション制御を行う場合、DbConnectionManagementHandler#connectionNameに設定した値と同じ値をtransactionNameプロパティに設定する。DbConnectionManagementHandler#connectionNameに値を設定していない場合は、transactionNameの設定は省略可能。"
+    },
+    "commit_interval": {
+      "property_name": "commitInterval",
+      "description": "バッチ処理のコミット間隔を設定する。コミット間隔を調整することで、バッチ処理のスループットを向上させることができる。",
+      "xml_example": "<component class=\"nablarch.fw.handler.LoopHandler\">\n  <!-- コミット間隔に1000を指定 -->\n  <property name=\"commitInterval\" value=\"1000\" />\n</component>",
+      "purpose": "トランザクションのコミット回数を減らすことで、I/Oオーバーヘッドを削減し、バッチ処理の処理速度を向上させる"
+    },
+    "callback": {
+      "interface": "nablarch.fw.TransactionEventCallback",
+      "description": "このハンドラは、後続ハンドラの処理後にコールバック処理を行う。コールバック対象となる処理は、このハンドラより後に設定されたハンドラのうち、TransactionEventCallbackを実装したハンドラとなる。",
+      "methods": [
+        {
+          "name": "transactionNormalEnd",
+          "timing": "後続ハンドラが正常終了した場合",
+          "transaction": "後続ハンドラと同一トランザクション内で実行される。コールバック処理で行われた処理は、次のコミットタイミングでまとめてコミットされる。"
+        },
+        {
+          "name": "transactionAbnormalEnd",
+          "timing": "後続ハンドラで例外やエラーが発生し、トランザクションがロールバックされた場合",
+          "transaction": "ロールバック後に実行される。そのため、コールバック処理は新しいトランザクションで行われ、コールバックが正常終了した時点でコミットされる。"
+        }
+      ],
+      "implementation_example": "public static class SampleHandler\n    implements Handler<Object, Object>, TransactionEventCallback<Object> {\n\n  @Override\n  public Object handle(Object o, ExecutionContext context) {\n    // ハンドラ処理を実装\n    return context.handleNext(o);\n  }\n\n  @Override\n  public void transactionNormalEnd(Object o, ExecutionContext ctx) {\n    // 後続ハンドラが正常終了した場合のコールバック処理を実装\n  }\n\n  @Override\n  public void transactionAbnormalEnd(Throwable e, Object o, ExecutionContext ctx) {\n    // トランザクションロールバック時のコールバック処理を実装\n  }\n}",
+      "configuration_example": "<list name=\"handlerQueue\">\n  <!-- トランザクション制御ハンドラ -->\n  <component class=\"nablarch.fw.handler.LoopHandler\">\n    <!-- プロパティの設定は省略 -->\n  </component>\n\n  <!-- コールバック処理を実装したハンドラ -->\n  <component class=\"sample.SampleHandler\" />\n</list>",
+      "important_note": "複数のハンドラがコールバック処理を実装している場合、コールバック処理中にエラーや例外が発生すると、残りのハンドラに対するコールバック処理は実行されない点に注意すること"
+    },
+    "setup": {
+      "component_name": "LoopHandler",
+      "properties": [
+        {
+          "name": "transactionFactory",
+          "type": "TransactionFactory",
+          "required": true,
+          "description": "トランザクション制御対象を取得するためのファクトリクラス。データベースに対するトランザクション制御を行う場合は、JdbcTransactionFactoryを設定する。"
+        },
+        {
+          "name": "transactionName",
+          "type": "String",
+          "required": false,
+          "description": "トランザクションを識別するための名前。デフォルトは「transaction」。DbConnectionManagementHandler#connectionNameと同じ値を設定する。",
+          "default": "transaction"
+        },
+        {
+          "name": "commitInterval",
+          "type": "int",
+          "required": true,
+          "description": "コミット間隔。この回数分の処理を行うたびにトランザクションをコミットする。"
+        }
+      ],
+      "xml_example": "<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n  <property name=\"commitInterval\" value=\"1000\" />\n</component>"
+    },
+    "constraints": {
+      "handler_order": {
+        "before": [],
+        "after": [
+          "DbConnectionManagementHandler"
+        ],
+        "reason": "データベースに対するトランザクション制御を行う場合、トランザクション管理用のデータベース接続がスレッド上に存在している必要があるため、データベース接続管理ハンドラより後に設定すること"
+      },
+      "limitations": [],
+      "notes": [
+        "データベースに対するトランザクション制御を行う場合、DbConnectionManagementHandler(データベース接続管理ハンドラ)より後に設定する必要がある"
+      ]
+    }
+  }
+}

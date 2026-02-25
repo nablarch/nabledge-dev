@@ -1,0 +1,44 @@
+{
+  "id": "index",
+  "title": "バッチアプリケーション専用ハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/batch/index.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "バッチアプリケーション",
+        "専用ハンドラ",
+        "Batch Handler",
+        "バッチ処理"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "バッチアプリケーション専用のハンドラ一覧。バッチ処理に特化した機能を提供するハンドラ群の概要を説明する。",
+      "purpose": "バッチアプリケーション開発に必要な専用ハンドラの種類と用途を理解する",
+      "handlers": [
+        {
+          "name": "プロセス常駐化ハンドラ",
+          "class": "nablarch.fw.handler.ProcessResidentHandler",
+          "description": "定期的に後続ハンドラキューの内容を実行するハンドラ。特定のデータソースの入力データを定期監視してバッチ処理を行う、常駐起動型バッチで使用される。",
+          "reference": "process_resident_handler"
+        },
+        {
+          "name": "トランザクションループ制御ハンドラ",
+          "class": "nablarch.fw.handler.LoopHandler",
+          "description": "後続ハンドラの処理を繰り返し実行すると共に、トランザクション制御を行い、一定の繰り返し回数でトランザクションのコミットを行うハンドラ。トランザクションのコミット間隔を大きくすることで、バッチ処理のスループットを向上させることができる。",
+          "reference": "loop_handler"
+        },
+        {
+          "name": "ループ制御ハンドラ",
+          "class": "nablarch.fw.handler.DbLessLoopHandler",
+          "description": "データリーダに処理対象データが存在する間、後続ハンドラの処理を繰り返し実行するハンドラ。DB接続が必要なバッチアプリケーションの場合は、トランザクション管理が必要なため、このハンドラではなくトランザクションループ制御ハンドラを使用すること。",
+          "reference": "dbless_loop_handler"
+        }
+      ]
+    }
+  }
+}
