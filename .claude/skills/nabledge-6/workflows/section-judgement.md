@@ -8,7 +8,7 @@ JSON with candidate sections from keyword-search workflow (conforms to `schemas/
 
 ## Output
 
-Answer to user's query using relevant knowledge only
+JSON with relevant sections (High and Partial only) for knowledge-search workflow
 
 ## Steps
 
