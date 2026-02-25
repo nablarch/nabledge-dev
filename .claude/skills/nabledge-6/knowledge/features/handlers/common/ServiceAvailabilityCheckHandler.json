@@ -1,0 +1,112 @@
+{
+  "id": "ServiceAvailabilityCheckHandler",
+  "title": "サービス提供可否チェックハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/ServiceAvailabilityCheckHandler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "ServiceAvailabilityCheckHandler",
+        "サービス提供可否",
+        "availability",
+        "503",
+        "ServiceUnavailable"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "リクエストID",
+        "ThreadContext",
+        "チェック"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "ServiceAvailability",
+        "serviceAvailability",
+        "usesInternalRequestId"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "ThreadContextHandler",
+        "ForwardingHandler",
+        "InternalRequestIdAttribute"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.common.availability.ServiceAvailabilityCheckHandler",
+      "description": "リクエストに対してサービス提供可否チェックを実行するハンドラ",
+      "purpose": "サービスの提供可否を判定し、提供不可の場合は503エラーを返却する",
+      "responsibilities": [
+        "リクエストIDに基づくサービス提供可否チェック",
+        "提供不可の場合の503エラー送出"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-auth"
+        }
+      ]
+    },
+    "processing": {
+      "flow": [
+        {
+          "step": "リクエストID取得",
+          "description": "ThreadContextからリクエストIDを取得する。usesInternalRequestIdがtrueの場合は、内部フォワード先のリクエストID(内部リクエストID)を取得する。"
+        },
+        {
+          "step": "サービス提供可否チェック",
+          "description": "取得したリクエストIDを使用して、ServiceAvailabilityライブラリによるチェックを実行する。チェックの詳細はservice_availabilityを参照。"
+        },
+        {
+          "step": "チェック結果判定",
+          "description": "OK(サービス提供可能)の場合は後続ハンドラを呼び出す。NG(サービス提供不可)の場合はServiceUnavailable(503)をスローする。"
+        }
+      ]
+    },
+    "setup": {
+      "component_name": "ServiceAvailabilityCheckHandler",
+      "properties": [
+        {
+          "name": "serviceAvailability",
+          "type": "nablarch.common.availability.ServiceAvailability",
+          "required": true,
+          "description": "サービス提供可否を判定するクラス。ServiceAvailability実装クラスを設定する。"
+        },
+        {
+          "name": "usesInternalRequestId",
+          "type": "boolean",
+          "required": false,
+          "description": "内部フォワード先のリクエストID(内部リクエストID)を使用するかどうか。trueの場合、内部リクエストIDでチェックを実行する。デフォルトはfalse。"
+        }
+      ],
+      "xml_example": "<!-- サービス提供可否チェックハンドラ -->\n<component class=\"nablarch.common.availability.ServiceAvailabilityCheckHandler\">\n  <property name=\"serviceAvailability\" ref=\"serviceAvailability\" />\n  <property name=\"usesInternalRequestId\" value=\"false\" />\n</component>\n\n<!-- サービス提供可否判定クラスの設定 -->\n<component name=\"serviceAvailability\"\n    class=\"nablarch.common.availability.BasicServiceAvailability\">\n  <!-- プロパティの設定は省略 -->\n</component>"
+    },
+    "constraints": {
+      "handler_order": {
+        "before": [],
+        "after": [
+          "ThreadContextHandler",
+          "ForwardingHandler"
+        ],
+        "reason": "ThreadContextに設定されたリクエストIDに基づいてチェックを実行するため、ThreadContextHandlerの後ろに配置する必要がある。また、内部フォワード先のリクエストID(内部リクエストID)でチェックを実行する場合は、ForwardingHandlerの後ろに配置する必要がある。"
+      },
+      "limitations": [],
+      "notes": [
+        "内部フォワード先のリクエストIDでチェックを実行する場合、ThreadContextHandlerのattributesにInternalRequestIdAttributeを追加する必要がある。",
+        "サービス提供可否チェックの詳細は、service_availabilityライブラリを参照すること。"
+      ]
+    }
+  }
+}

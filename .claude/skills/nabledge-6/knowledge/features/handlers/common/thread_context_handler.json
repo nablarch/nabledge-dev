@@ -1,0 +1,282 @@
+{
+  "id": "thread_context_handler",
+  "title": "スレッドコンテキスト変数管理ハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/thread_context_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "ThreadContextHandler",
+        "スレッドコンテキスト",
+        "thread local",
+        "共有値",
+        "リクエストID",
+        "ユーザーID"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "初期化",
+        "ThreadContextAttribute",
+        "属性値"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "attributes",
+        "XML",
+        "ThreadContextAttribute"
+      ]
+    },
+    {
+      "id": "attribute_types",
+      "hints": [
+        "属性クラス",
+        "RequestIdAttribute",
+        "UserIdAttribute",
+        "LanguageAttribute",
+        "TimeZoneAttribute",
+        "ExecutionIdAttribute",
+        "InternalRequestIdAttribute"
+      ]
+    },
+    {
+      "id": "user_id_setting",
+      "hints": [
+        "ユーザーID設定",
+        "UserIdAttributeInSessionStore",
+        "sessionKey",
+        "anonymousId",
+        "ログイン処理"
+      ]
+    },
+    {
+      "id": "attribute_access",
+      "hints": [
+        "属性値アクセス",
+        "ThreadContext",
+        "getRequestId",
+        "getUserId",
+        "設定取得"
+      ]
+    },
+    {
+      "id": "language_selection",
+      "hints": [
+        "言語選択",
+        "LanguageAttributeInHttpCookie",
+        "LanguageAttributeInHttpSession",
+        "LanguageAttributeInHttpUtil",
+        "国際化"
+      ]
+    },
+    {
+      "id": "timezone_selection",
+      "hints": [
+        "タイムゾーン選択",
+        "TimeZoneAttributeInHttpCookie",
+        "TimeZoneAttributeInHttpSession",
+        "TimeZoneAttributeInHttpUtil",
+        "国際化"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "ThreadContextClearHandler",
+        "アクセスタイミング"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.common.handler.threadcontext.ThreadContextHandler",
+      "description": "リクエスト単位でスレッドコンテキストの各属性値の初期化処理を実行するハンドラ",
+      "purpose": "リクエストIDやユーザーIDなど、同一処理スレッド内で共有する値をスレッドローカル領域に格納する仕組みを提供する",
+      "responsibilities": [
+        "リクエスト単位でのスレッドコンテキスト初期化",
+        "各属性値のスレッドローカルへの設定"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-web",
+          "note": "国際化で言語やタイムゾーンの選択画面を作成する場合のみ"
+        }
+      ]
+    },
+    "processing": {
+      "flow": [
+        {
+          "step": "スレッドコンテキスト初期化",
+          "description": "ThreadContextAttributeインターフェースを実装したクラスを使用して、スレッドコンテキストを初期化する。リクエストID、ユーザーID、言語、タイムゾーン、実行IDなどの属性値をスレッドローカルに設定する。"
+        },
+        {
+          "step": "後続ハンドラ呼び出し",
+          "description": "次のハンドラに処理を委譲する。後続ハンドラや業務アクションはThreadContextから属性値を取得できる。"
+        }
+      ]
+    },
+    "setup": {
+      "component_name": "ThreadContextHandler",
+      "properties": [
+        {
+          "name": "attributes",
+          "type": "List<ThreadContextAttribute>",
+          "required": true,
+          "description": "スレッドコンテキストで管理する属性のリスト。ThreadContextAttributeインターフェースを実装したクラスを設定する。"
+        }
+      ],
+      "xml_example": "<component class=\"nablarch.common.handler.threadcontext.ThreadContextHandler\">\n  <property name=\"attributes\">\n    <list>\n      <!-- リクエストID -->\n      <component class=\"nablarch.common.handler.threadcontext.RequestIdAttribute\" />\n      \n      <!-- 内部リクエストID -->\n      <component class=\"nablarch.common.handler.threadcontext.InternalRequestIdAttribute\" />\n      \n      <!-- ユーザーID -->\n      <component class=\"nablarch.common.handler.threadcontext.UserIdAttribute\">\n        <property name=\"sessionKey\" value=\"user.id\" />\n        <property name=\"anonymousId\" value=\"guest\" />\n      </component>\n      \n      <!-- 言語 -->\n      <component class=\"nablarch.common.handler.threadcontext.LanguageAttribute\">\n        <property name=\"defaultLanguage\" value=\"ja\" />\n      </component>\n      \n      <!-- タイムゾーン -->\n      <component class=\"nablarch.common.handler.threadcontext.TimeZoneAttribute\">\n        <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" />\n      </component>\n      \n      <!-- 実行ID -->\n      <component class=\"nablarch.common.handler.threadcontext.ExecutionIdAttribute\" />\n    </list>\n  </property>\n</component>"
+    },
+    "attribute_types": {
+      "description": "デフォルトで提供されるThreadContextAttribute実装クラス",
+      "categories": [
+        {
+          "category": "リクエストID、内部リクエストID",
+          "classes": [
+            {
+              "name": "RequestIdAttribute",
+              "description": "リクエストIDを管理する"
+            },
+            {
+              "name": "InternalRequestIdAttribute",
+              "description": "内部リクエストIDを管理する。permission_check_handlerやServiceAvailabilityCheckHandlerなど内部リクエストIDを処理するハンドラを使用する場合に設定する。"
+            }
+          ]
+        },
+        {
+          "category": "ユーザーID",
+          "classes": [
+            {
+              "name": "UserIdAttribute",
+              "description": "ユーザーIDを管理する"
+            },
+            {
+              "name": "UserIdAttributeInSessionStore",
+              "description": "セッションストアからユーザーIDを取得して管理する"
+            }
+          ]
+        },
+        {
+          "category": "言語",
+          "classes": [
+            {
+              "name": "LanguageAttribute",
+              "description": "言語を管理する"
+            },
+            {
+              "name": "HttpLanguageAttribute",
+              "description": "HTTPリクエストヘッダから言語を取得して管理する"
+            },
+            {
+              "name": "LanguageAttributeInHttpCookie",
+              "description": "HTTPクッキーから言語を取得して管理する"
+            },
+            {
+              "name": "LanguageAttributeInHttpSession",
+              "description": "HTTPセッションから言語を取得して管理する"
+            }
+          ]
+        },
+        {
+          "category": "タイムゾーン",
+          "classes": [
+            {
+              "name": "TimeZoneAttribute",
+              "description": "タイムゾーンを管理する"
+            },
+            {
+              "name": "TimeZoneAttributeInHttpCookie",
+              "description": "HTTPクッキーからタイムゾーンを取得して管理する"
+            },
+            {
+              "name": "TimeZoneAttributeInHttpSession",
+              "description": "HTTPセッションからタイムゾーンを取得して管理する"
+            }
+          ]
+        },
+        {
+          "category": "実行ID",
+          "classes": [
+            {
+              "name": "ExecutionIdAttribute",
+              "description": "実行IDを管理する"
+            }
+          ]
+        }
+      ]
+    },
+    "user_id_setting": {
+      "description": "ユーザーIDの設定方法",
+      "default_behavior": "UserIdAttributeInSessionStoreはデフォルトでセッションストアからユーザーIDを取得する。フレームワークはセッションストアにユーザーIDを設定しないため、ログイン処理などでアプリケーションが設定する必要がある。",
+      "default_key": "user.id",
+      "key_customization": "sessionKeyプロパティに値を設定することで、セッションストアのキーを変更できる。",
+      "example_code": "SessionUtil.put(context, \"user.id\", userId);",
+      "custom_retrieval": "getUserIdSessionメソッドをオーバーライドすることで、任意のソースからユーザーIDを取得できる。例えば、セッションストアに設定したオブジェクトからユーザーIDを取得することが可能。",
+      "xml_example": "<component class=\"nablarch.common.handler.threadcontext.ThreadContextHandler\">\n  <property name=\"attributes\">\n    <list>\n      <!-- ユーザーID -->\n      <component class=\"nablarch.common.web.handler.threadcontext.UserIdAttributeInSessionStore\">\n        <property name=\"sessionKey\" value=\"login_id\"/>\n        <property name=\"anonymousId\" value=\"${nablarch.userIdAttribute.anonymousId}\"/>\n      </component>\n    </list>\n  </property>\n</component>"
+    },
+    "attribute_access": {
+      "description": "スレッドコンテキストの属性値の設定・取得方法",
+      "usage": "ThreadContextクラスを使用してスレッドコンテキストにアクセスする。",
+      "example_code": "// リクエストIDを取得\nString requestId = ThreadContext.getRequestId();\n\n// ユーザーIDを取得\nString userId = ThreadContext.getUserId();\n\n// 言語を取得\nLocale language = ThreadContext.getLanguage();\n\n// タイムゾーンを取得\nTimeZone timeZone = ThreadContext.getTimeZone();",
+      "notes": [
+        "スレッドコンテキストの属性値の多くはこのハンドラで設定されるが、このハンドラ以外のハンドラや業務アクションから任意の変数を設定することも可能。"
+      ]
+    },
+    "language_selection": {
+      "description": "ユーザーが言語を選択できる画面の作成方法",
+      "use_case": "国際化などでユーザーに言語を選択させる必要がある場合。",
+      "classes": [
+        "LanguageAttributeInHttpCookie",
+        "LanguageAttributeInHttpSession"
+      ],
+      "utility_class": "LanguageAttributeInHttpUtil",
+      "implementation_steps": [
+        "コンポーネント名を\"languageAttribute\"として、LanguageAttributeInHttpCookieまたはLanguageAttributeInHttpSessionを設定する。",
+        "JSPでn:submitLinkタグを使用して、リンクごとに異なる言語をn:paramタグで送信する。",
+        "ハンドラでLanguageAttributeInHttpUtil.keepLanguage()を呼び出し、選択された言語をクッキーまたはセッションに設定する。"
+      ],
+      "xml_example": "<component name=\"languageAttribute\"\n    class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>"
+    },
+    "timezone_selection": {
+      "description": "ユーザーがタイムゾーンを選択できる画面の作成方法",
+      "use_case": "国際化などでユーザーにタイムゾーンを選択させる必要がある場合。",
+      "classes": [
+        "TimeZoneAttributeInHttpCookie",
+        "TimeZoneAttributeInHttpSession"
+      ],
+      "utility_class": "TimeZoneAttributeInHttpUtil",
+      "implementation_steps": [
+        "コンポーネント名を\"timeZoneAttribute\"として、TimeZoneAttributeInHttpCookieまたはTimeZoneAttributeInHttpSessionを設定する。",
+        "JSPでn:submitLinkタグを使用して、リンクごとに異なるタイムゾーンをn:paramタグで送信する。",
+        "ハンドラでTimeZoneAttributeInHttpUtil.keepTimeZone()を呼び出し、選択されたタイムゾーンをクッキーまたはセッションに設定する。"
+      ],
+      "xml_example": "<component name=\"timeZoneAttribute\"\n    class=\"nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpCookie\">\n  <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" />\n  <property name=\"supportedTimeZones\" value=\"Asia/Tokyo,America/New_York\" />\n</component>"
+    },
+    "constraints": {
+      "handler_order": {
+        "before": [],
+        "after": [],
+        "reason": "制約なし。"
+      },
+      "limitations": [],
+      "notes": [
+        "このハンドラで設定したスレッドローカルの値を削除するには、ThreadContextClearHandlerをレスポンス処理で使用する。",
+        "リクエスト処理でこのハンドラより前のハンドラがスレッドコンテキストにアクセスした場合、値が取得できないため注意が必要。",
+        "このハンドラ以外のハンドラや業務アクションからも、任意の変数をスレッドコンテキストに設定できる。"
+      ]
+    }
+  }
+}

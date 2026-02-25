@@ -1,0 +1,89 @@
+{
+  "id": "index",
+  "title": "共通ハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/index.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "共通ハンドラ",
+        "Common Handler",
+        "全体構成",
+        "ハンドラ一覧"
+      ]
+    },
+    {
+      "id": "handler_list",
+      "hints": [
+        "ハンドラ一覧",
+        "GlobalErrorHandler",
+        "DbConnectionManagementHandler",
+        "TransactionManagementHandler",
+        "ThreadContextHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "処理方式共通で使用されるハンドラの一覧と概要",
+      "purpose": "各処理方式で共通して利用できるハンドラの全体像を把握する"
+    },
+    "handler_list": {
+      "description": "共通ハンドラの一覧。各ハンドラの詳細は個別のドキュメントを参照。",
+      "handlers": [
+        {
+          "name": "GlobalErrorHandler",
+          "title": "グローバルエラーハンドラ",
+          "description": "後続ハンドラで発生した補足されない例外やエラーをキャッチし、ログ出力と結果を返却する"
+        },
+        {
+          "name": "FileRecordWriterDisposeHandler",
+          "title": "出力ファイル開放ハンドラ",
+          "description": "業務アクションやハンドラが開いた出力ファイルをクローズしてリソースを解放する"
+        },
+        {
+          "name": "RequestDispatchHandler",
+          "title": "リクエストディスパッチハンドラ",
+          "description": "リクエストURIに対応する業務アクションクラスにディスパッチする"
+        },
+        {
+          "name": "RequestHandlerEntry",
+          "title": "リクエストハンドラエントリ",
+          "description": "ハンドラキューのエントリポイントとしてリクエストの初期処理を行う"
+        },
+        {
+          "name": "ThreadContextHandler",
+          "title": "スレッドコンテキスト変数管理ハンドラ",
+          "description": "リクエスト単位でスレッドコンテキスト変数を管理する"
+        },
+        {
+          "name": "ThreadContextClearHandler",
+          "title": "スレッドコンテキスト変数削除ハンドラ",
+          "description": "スレッドコンテキスト変数をクリアする"
+        },
+        {
+          "name": "DbConnectionManagementHandler",
+          "title": "データベース接続管理ハンドラ",
+          "description": "後続のハンドラ及びライブラリで使用するためのデータベース接続をスレッド上で管理する"
+        },
+        {
+          "name": "TransactionManagementHandler",
+          "title": "トランザクション制御ハンドラ",
+          "description": "データベーストランザクションの開始、コミット、ロールバックを制御する"
+        },
+        {
+          "name": "PermissionCheckHandler",
+          "title": "認可チェックハンドラ",
+          "description": "リクエストに対する認可チェックを実行する"
+        },
+        {
+          "name": "ServiceAvailabilityCheckHandler",
+          "title": "サービス提供可否チェックハンドラ",
+          "description": "リクエストに対してサービス提供可否チェックを実行する"
+        }
+      ]
+    }
+  }
+}

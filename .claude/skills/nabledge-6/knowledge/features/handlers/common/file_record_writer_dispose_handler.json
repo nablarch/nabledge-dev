@@ -1,0 +1,94 @@
+{
+  "id": "file_record_writer_dispose_handler",
+  "title": "出力ファイル開放ハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/file_record_writer_dispose_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "FileRecordWriterDisposeHandler",
+        "出力ファイル開放",
+        "リソース解放",
+        "FileRecordWriterHolder",
+        "クローズ"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "ファイルクローズ",
+        "自動開放"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "ハンドラキュー",
+        "XML"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "配置位置",
+        "ファイル出力ハンドラ"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.common.io.FileRecordWriterDisposeHandler",
+      "description": "業務アクションやハンドラが開いた出力ファイルをクローズしてリソースを解放するハンドラ",
+      "purpose": "FileRecordWriterHolderを使用して開かれた出力ファイルを自動的に開放する",
+      "responsibilities": [
+        "後続ハンドラや業務アクションで開かれた出力ファイルのクローズ",
+        "ファイルリソースの自動解放"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-dataformat"
+        }
+      ]
+    },
+    "processing": {
+      "flow": [
+        {
+          "step": "後続ハンドラ呼び出し",
+          "description": "次のハンドラに処理を委譲する。後続ハンドラや業務アクションはFileRecordWriterHolderを使用してファイル出力を行う。"
+        },
+        {
+          "step": "ファイルクローズ",
+          "description": "後続処理完了後、FileRecordWriterHolderを使用して開かれたすべての出力ファイルを自動的にクローズする。"
+        }
+      ]
+    },
+    "setup": {
+      "component_name": "FileRecordWriterDisposeHandler",
+      "properties": [],
+      "xml_example": "<!-- 出力ファイル開放ハンドラ -->\n<component class=\"nablarch.common.io.FileRecordWriterDisposeHandler\" />"
+    },
+    "constraints": {
+      "handler_order": {
+        "before": [
+          "ファイル出力を行う全てのハンドラ"
+        ],
+        "after": [],
+        "reason": "後続のハンドラや業務アクションで開かれたファイルをクローズするため、ファイル出力を行う全てのハンドラより前に配置する必要がある。"
+      },
+      "limitations": [
+        "このハンドラが開放対象とするのは、FileRecordWriterHolderを使用して開かれた出力ファイルのみである。",
+        "java.ioパッケージなど他のAPIで開いたリソースは個別にクローズする必要がある。"
+      ],
+      "notes": [
+        "このハンドラをハンドラキューに設定するだけで、後続のハンドラや業務アクションで開かれた出力ファイルが自動的にクローズされる。",
+        "FileRecordWriterHolderの詳細は、汎用データフォーマット機能を参照すること。"
+      ]
+    }
+  }
+}

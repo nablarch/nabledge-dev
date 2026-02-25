@@ -1,0 +1,156 @@
+{
+  "id": "permission_check_handler",
+  "title": "認可チェックハンドラ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/permission_check_handler.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "PermissionCheckHandler",
+        "認可チェック",
+        "permission",
+        "403",
+        "Forbidden"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理フロー",
+        "リクエストID",
+        "ユーザーID",
+        "ThreadContext",
+        "チェック"
+      ]
+    },
+    {
+      "id": "setup",
+      "hints": [
+        "設定",
+        "PermissionFactory",
+        "permissionFactory",
+        "usesInternalRequestId",
+        "ignoreRequestIds"
+      ]
+    },
+    {
+      "id": "error_page",
+      "hints": [
+        "エラーページ",
+        "403",
+        "HttpErrorHandler",
+        "defaultPage"
+      ]
+    },
+    {
+      "id": "exclude_requests",
+      "hints": [
+        "除外リクエスト",
+        "ignoreRequestIds",
+        "ログイン前",
+        "チェック対象外"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "ThreadContextHandler",
+        "ForwardingHandler",
+        "HttpErrorHandler",
+        "InternalRequestIdAttribute"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "class_name": "nablarch.common.permission.PermissionCheckHandler",
+      "description": "リクエストに対する認可チェックを実行するハンドラ",
+      "purpose": "ログインユーザーが現在のリクエスト(リクエストID)に対する権限を持っているかをチェックする",
+      "responsibilities": [
+        "リクエストIDとユーザーIDに基づく認可チェック",
+        "権限がない場合の403エラー送出",
+        "Permissionオブジェクトのスレッドローカル設定"
+      ],
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-auth"
+        }
+      ]
+    },
+    "processing": {
+      "flow": [
+        {
+          "step": "リクエストID・ユーザーID取得",
+          "description": "ThreadContextからリクエストIDとユーザーIDを取得する。usesInternalRequestIdがtrueの場合は、内部フォワード先のリクエストID(内部リクエストID)を取得する。"
+        },
+        {
+          "step": "認可チェック",
+          "description": "取得したリクエストIDとユーザーIDを使用して、permission_checkライブラリによるチェックを実行する。チェックの詳細はpermission_checkを参照。"
+        },
+        {
+          "step": "チェック結果判定",
+          "description": "権限がある場合は、認可チェックに使用したPermissionオブジェクトをスレッドローカルに設定し、後続ハンドラを呼び出す。権限がない場合はForbidden(403)をスローする。"
+        }
+      ]
+    },
+    "setup": {
+      "component_name": "PermissionCheckHandler",
+      "properties": [
+        {
+          "name": "permissionFactory",
+          "type": "nablarch.common.permission.PermissionFactory",
+          "required": true,
+          "description": "認可チェックを行うためのPermissionオブジェクトを生成するファクトリクラス。PermissionFactory実装クラスを設定する。"
+        },
+        {
+          "name": "usesInternalRequestId",
+          "type": "boolean",
+          "required": false,
+          "description": "内部フォワード先のリクエストID(内部リクエストID)を使用するかどうか。trueの場合、内部リクエストIDでチェックを実行する。デフォルトはfalse。"
+        },
+        {
+          "name": "ignoreRequestIds",
+          "type": "String[]",
+          "required": false,
+          "description": "認可チェックの対象外とするリクエストIDのリスト。ログイン前のリクエストなど、認可チェックを除外したいリクエストを指定する。"
+        }
+      ],
+      "xml_example": "<!-- 認可チェックハンドラ -->\n<component name=\"permissionCheckHandler\"\n    class=\"nablarch.common.permission.PermissionCheckHandler\">\n  <property name=\"permissionFactory\" ref=\"permissionFactory\" />\n  <property name=\"usesInternalRequestId\" value=\"false\" />\n  <!-- 認可チェック対象外のリクエストIDをカンマ区切りで指定 -->\n  <property name=\"ignoreRequestIds\" value=\"/action/login,/action/logout\" />\n</component>\n\n<!-- Permissionファクトリクラスの設定 -->\n<component name=\"permissionFactory\"\n    class=\"nablarch.common.permission.BasicPermissionFactory\">\n  <!-- プロパティの設定は省略 -->\n</component>"
+    },
+    "error_page": {
+      "description": "権限がない場合に表示するエラーページの指定",
+      "configuration": "権限がない場合に表示するエラーページは、HTTPエラー制御ハンドラで指定する。詳細はHttpErrorHandler_DefaultPageを参照。",
+      "error_code": "403 (Forbidden)"
+    },
+    "exclude_requests": {
+      "description": "特定のリクエストを認可チェックの対象外とする方法",
+      "usage": "ログイン前のリクエストなど、認可チェックの対象外としたいリクエストは、ignoreRequestIdsプロパティに指定する。",
+      "example": "ignoreRequestIds=\"/action/login,/action/logout\"",
+      "notes": [
+        "リクエストIDをカンマ区切りで複数指定可能",
+        "指定されたリクエストIDは認可チェックをスキップし、常に後続ハンドラに処理を委譲する"
+      ]
+    },
+    "constraints": {
+      "handler_order": {
+        "before": [],
+        "after": [
+          "ThreadContextHandler",
+          "ForwardingHandler",
+          "HttpErrorHandler"
+        ],
+        "reason": "ThreadContextに設定されたリクエストIDとユーザーIDに基づいてチェックを実行するため、ThreadContextHandlerの後ろに配置する必要がある。内部フォワード先のリクエストID(内部リクエストID)でチェックを実行する場合は、ForwardingHandlerの後ろに配置する必要がある。権限がない場合に表示するエラーページを指定する場合は、HttpErrorHandlerの後ろに配置する必要がある。"
+      },
+      "limitations": [],
+      "notes": [
+        "内部フォワード先のリクエストIDでチェックを実行する場合、ThreadContextHandlerのattributesにInternalRequestIdAttributeを追加する必要がある。",
+        "認可チェックの詳細は、permission_checkライブラリを参照すること。",
+        "認可チェックに使用したPermissionオブジェクトは、業務ロジックや画面表示制御で参照できるようにスレッドローカルに設定される。"
+      ]
+    }
+  }
+}
