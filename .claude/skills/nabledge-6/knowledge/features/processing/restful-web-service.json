@@ -1,0 +1,236 @@
+{
+  "id": "restful-web-service",
+  "title": "RESTful Web Service機能比較",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/functional_comparison.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["RESTful Web Service", "REST", "機能比較", "functional comparison", "Jakarta RESTful Web Services", "HTTPメッセージング"]
+    },
+    {
+      "id": "comparison-table",
+      "hints": ["機能比較表", "comparison table", "Jakarta RESTful Web Services", "HTTPメッセージング", "HTTP messaging", "提供状況"]
+    },
+    {
+      "id": "jaxrs-support",
+      "hints": ["Jakarta RESTful Web Servicesサポート", "JAX-RS", "Nablarch", "リソースメソッド", "resource method"]
+    },
+    {
+      "id": "http-messaging",
+      "hints": ["HTTPメッセージング", "HTTP messaging", "メッセージング", "messaging", "REST非対応"]
+    },
+    {
+      "id": "jakarta-jaxrs",
+      "hints": ["Jakarta RESTful Web Services", "JAX-RS", "標準仕様", "Jakarta EE", "specification"]
+    },
+    {
+      "id": "mapping-validation",
+      "hints": ["マッピング", "mapping", "バリデーション", "validation", "パラメータ", "parameter", "エンティティ"]
+    },
+    {
+      "id": "nablarch-extensions",
+      "hints": ["Nablarch拡張", "エラーログ", "証跡ログ", "再送制御", "トランザクション制御", "最大容量チェック"]
+    },
+    {
+      "id": "limitations",
+      "hints": ["制限事項", "limitations", "CDI", "非同期処理", "クライアントAPI", "フィルタ", "インターセプタ"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "RESTful Web Service機能比較は、NablarchのJakarta RESTful Web Servicesサポート、HTTPメッセージング、Jakarta RESTful Web Services標準仕様の3つの機能を比較したもの。各機能の提供状況と選択基準を示す。",
+      "use_cases": [
+        "RESTful APIの実装方式を選択する際の参考",
+        "Nablarch機能と標準仕様の違いを理解",
+        "HTTPメッセージングとRESTサポートの使い分け"
+      ],
+      "features": [
+        "3つのRESTful Web Service実装方式の比較",
+        "機能ごとの提供状況（○：提供あり、△：一部提供、×：提供なし、－：対象外）",
+        "Nablarch独自の拡張機能の明示"
+      ]
+    },
+    "comparison-table": {
+      "description": "Jakarta RESTful Web Servicesサポート、HTTPメッセージング、Jakarta RESTful Web Services標準仕様の3つについて、主要機能の提供状況を比較した表。",
+      "comparison_items": [
+        "リクエストとリソースメソッドのマッピング",
+        "リクエストとパラメータのマッピング",
+        "HTTPメソッドのマッチング",
+        "メディアタイプに応じたリクエスト/レスポンスの変換",
+        "エンティティのバリデーション",
+        "リソースクラスへのインジェクション（CDI）",
+        "リクエスト/レスポンスに対するフィルタ",
+        "ボディの読み書きに対するインターセプタ",
+        "クライアントAPI",
+        "非同期処理",
+        "エラー時ログ出力",
+        "リクエストボディの最大容量チェック",
+        "証跡ログの出力",
+        "再送制御",
+        "サービス提供の可否チェック",
+        "トランザクション制御",
+        "業務処理エラー時のコールバック"
+      ],
+      "rating_legend": {
+        "○": "提供あり",
+        "△": "一部提供あり",
+        "×": "提供なし",
+        "－": "対象外"
+      }
+    },
+    "jaxrs-support": {
+      "name": "Jakarta RESTful Web Servicesサポート",
+      "description": "NablarchのJakarta RESTful Web Servicesサポートは、Jakarta RESTful Web Services（JAX-RS）の主要機能をサポートしつつ、Nablarchの機能を組み合わせて使用できる実装方式。",
+      "provided_features": [
+        "リクエストとリソースメソッドのマッピング（△）",
+        "リクエストとパラメータのマッピング（△）",
+        "HTTPメソッドのマッチング（△）",
+        "メディアタイプに応じた変換（△）",
+        "エンティティのバリデーション（○）",
+        "エラー時ログ出力（○）"
+      ],
+      "not_provided_features": [
+        "CDI（Jakarta Contexts and Dependency Injection）",
+        "クライアントAPI（Jakarta RESTful Web Services実装を使用）",
+        "非同期処理"
+      ],
+      "notes": [
+        "RESTfulウェブサービスの実装に推奨",
+        "Nablarchウェブアプリケーションとして動作"
+      ]
+    },
+    "http-messaging": {
+      "name": "HTTPメッセージング",
+      "description": "HTTPメッセージングは、HTTPプロトコルを使用したメッセージング処理方式。RESTを考慮した作りではないため、RESTful APIには適さない。",
+      "provided_features": [
+        "リクエストとリソースメソッドのマッピング（○）",
+        "エンティティのバリデーション（○）",
+        "クライアントAPI（○）",
+        "エラー時ログ出力（○）",
+        "リクエストボディの最大容量チェック（○）",
+        "証跡ログの出力（○）",
+        "再送制御（○）",
+        "業務処理エラー時のコールバック（○）"
+      ],
+      "not_provided_features": [
+        "リクエストとパラメータのマッピング",
+        "HTTPメソッドのマッチング",
+        "メディアタイプに応じた変換",
+        "CDI",
+        "非同期処理"
+      ],
+      "notes": [
+        "RESTを考慮した作りではない",
+        "RESTful APIにはJakarta RESTful Web Servicesサポートを使用すること",
+        "システム間メッセージ連携に適している"
+      ]
+    },
+    "jakarta-jaxrs": {
+      "name": "Jakarta RESTful Web Services標準仕様",
+      "description": "Jakarta EEの標準仕様であるJakarta RESTful Web Services（JAX-RS）。完全な標準準拠実装（Jersey、RESTEasyなど）で全機能を利用可能。",
+      "provided_features": [
+        "リクエストとリソースメソッドのマッピング（○）",
+        "リクエストとパラメータのマッピング（○）",
+        "HTTPメソッドのマッチング（○）",
+        "メディアタイプに応じた変換（○）",
+        "エンティティのバリデーション（○）",
+        "CDI（○）",
+        "フィルタ（○）",
+        "インターセプタ（○）",
+        "クライアントAPI（○）",
+        "非同期処理（○）"
+      ],
+      "notes": [
+        "Jakarta EE標準仕様",
+        "ポータブルな実装が可能",
+        "Nablarch独自の機能（ログ出力、再送制御など）は含まれない"
+      ]
+    },
+    "mapping-validation": {
+      "name": "マッピングとバリデーション",
+      "description": "リクエストのマッピングとバリデーション機能の比較。3つの実装方式すべてでエンティティのバリデーションは提供されている。",
+      "comparison": {
+        "jaxrs_support": "△ 一部機能制限あり",
+        "http_messaging": "× RESTを考慮していない",
+        "jakarta_jaxrs": "○ 完全サポート"
+      },
+      "notes": [
+        "パラメータマッピング: Jakarta RESTful Web Servicesサポートは一部制限、HTTPメッセージングは非対応",
+        "HTTPメソッドマッチング: HTTPメッセージングは非対応",
+        "バリデーション: 3つすべてで対応"
+      ]
+    },
+    "nablarch-extensions": {
+      "name": "Nablarch独自の拡張機能",
+      "description": "Nablarchが独自に提供する機能で、Jakarta RESTful Web Services標準仕様には含まれないもの。主にログ出力、トランザクション制御、再送制御などのエンタープライズ機能。",
+      "features": [
+        "エラー時ログ出力: Jakarta RESTful Web Servicesサポート・HTTPメッセージングで提供",
+        "リクエストボディの最大容量チェック: HTTPメッセージングで提供（またはWebサーバ機能を使用）",
+        "証跡ログの出力: HTTPメッセージングで提供（要件に応じてアプリケーションで実装も可）",
+        "再送制御: HTTPメッセージングで提供（要件に応じてアプリケーションで実装も可）",
+        "トランザクション制御: Nablarchのトランザクション管理を使用",
+        "業務処理エラー時のコールバック: HTTPメッセージングで提供"
+      ],
+      "notes": [
+        "Jakarta RESTful Web Services標準仕様には含まれない",
+        "アプリケーションごとに要件が異なる機能は、必要に応じて実装"
+      ]
+    },
+    "limitations": {
+      "name": "制限事項",
+      "description": "NablarchのJakarta RESTful Web ServicesサポートとHTTPメッセージングで提供されていない機能の一覧と、その理由または代替手段。",
+      "limitations_list": [
+        {
+          "feature": "CDI（Jakarta Contexts and Dependency Injection）",
+          "reason": "Nablarchウェブアプリケーションとして動作するため使用できない",
+          "alternatives": []
+        },
+        {
+          "feature": "リクエスト/レスポンスに対するフィルタ",
+          "reason": "標準フィルタは非対応",
+          "alternatives": ["ハンドラを作成することで対応可能"]
+        },
+        {
+          "feature": "ボディの読み書きに対するインターセプタ",
+          "reason": "標準インターセプタは非対応",
+          "alternatives": [
+            "Jakarta RESTful Web Servicesサポート: BodyConverterを作成",
+            "HTTPメッセージング: DataRecordFormatterを作成"
+          ]
+        },
+        {
+          "feature": "クライアントAPI",
+          "reason": "Jakarta RESTful Web Servicesサポートでは非対応",
+          "alternatives": ["Jakarta RESTful Web Services実装（Jersey、RESTEasy等）を使用"]
+        },
+        {
+          "feature": "非同期処理",
+          "reason": "サーバサイドで非同期処理が必要になる要件がないと想定",
+          "alternatives": ["要望があれば対応を検討"]
+        },
+        {
+          "feature": "リクエストボディの最大容量チェック",
+          "reason": "Jakarta RESTful Web Servicesサポートでは非対応",
+          "alternatives": ["Webサーバまたはアプリケーションサーバのリクエストサイズチェック機能を使用"]
+        },
+        {
+          "feature": "証跡ログの出力・再送制御",
+          "reason": "アプリケーションごとに要件が異なると想定",
+          "alternatives": ["アプリケーションで設計・実装"]
+        },
+        {
+          "feature": "サービス提供の可否チェック",
+          "reason": "アプリケーションごとに要件が異なる",
+          "alternatives": ["Nablarchのチェック機能を使用するか、アプリケーションで実装"]
+        },
+        {
+          "feature": "業務処理エラー時のコールバック",
+          "reason": "Jakarta RESTful Web Servicesサポートでは共通化を想定",
+          "alternatives": ["JaxRsResponseHandlerをカスタマイズするか、リソースメソッドでtry/catchを使用"]
+        }
+      ]
+    }
+  }
+}

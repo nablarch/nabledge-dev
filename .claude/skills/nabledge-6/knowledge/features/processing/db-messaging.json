@@ -1,0 +1,45 @@
+{
+  "id": "db-messaging",
+  "title": "DBメッセージング（テーブルキュー）",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/db/application_design.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["DBメッセージング", "テーブルキュー", "メッセージング", "messaging", "database", "データベース"]
+    },
+    {
+      "id": "responsibility",
+      "hints": ["責務配置", "アプリケーション設計", "application design", "Nablarchバッチ", "nablarch_batch"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "DBメッセージングは、データベースのテーブルをメッセージキューとして使用するメッセージング処理方式。テーブルに格納されたメッセージレコードを順次読み込んで処理を行う。",
+      "use_cases": [
+        "テーブルに蓄積された処理依頼データの順次処理",
+        "非同期メッセージ処理をDBで実現",
+        "MOMを使用しない簡易的なメッセージング"
+      ],
+      "features": [
+        "テーブルをキューとして使用",
+        "Nablarchバッチと同じ責務配置",
+        "データベーストランザクションでメッセージ処理を保証"
+      ]
+    },
+    "responsibility": {
+      "description": "DBメッセージングの責務配置は、Nablarchバッチアプリケーションと完全に同じである。テーブルから読み込んだレコードを1件ずつ処理する点で、ファイルやDBから読み込むバッチ処理と構造が一致する。",
+      "reference": "nablarch-batch",
+      "notes": [
+        "アクションクラス、フォームクラス、エンティティクラスの責務はNablarchバッチと同じ",
+        "DataReaderでテーブルキューからレコードを読み込む",
+        "処理済みレコードの更新もバッチと同様に実装"
+      ],
+      "architecture_reference": {
+        "pattern": "Nablarchバッチ",
+        "url": "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/application_design.html"
+      }
+    }
+  }
+}

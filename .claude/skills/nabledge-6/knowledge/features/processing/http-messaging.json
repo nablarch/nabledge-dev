@@ -1,0 +1,90 @@
+{
+  "id": "http-messaging",
+  "title": "HTTPメッセージング",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/http_messaging/application_design.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["HTTPメッセージング", "HTTP messaging", "メッセージング", "messaging", "HTTP", "Web Service"]
+    },
+    {
+      "id": "responsibility",
+      "hints": ["責務配置", "application design", "Action", "Form", "Entity", "業務ロジック"]
+    },
+    {
+      "id": "action-class",
+      "hints": ["アクションクラス", "Action class", "RequestMessage", "ResponseMessage", "業務ロジック", "リクエストメッセージ", "レスポンスメッセージ"]
+    },
+    {
+      "id": "form-class",
+      "hints": ["フォームクラス", "Form class", "RequestMessage", "バリデーション", "validation", "String", "相関バリデーション"]
+    },
+    {
+      "id": "entity-class",
+      "hints": ["エンティティクラス", "Entity class", "テーブル", "table", "カラム", "column", "1対1"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "HTTPメッセージングは、HTTPプロトコルを使用してメッセージをやり取りするアプリケーション処理方式。リクエストメッセージを受信して業務ロジックを実行し、レスポンスメッセージを返却する。",
+      "use_cases": [
+        "システム間のメッセージ連携",
+        "HTTPベースのデータ取り込み処理",
+        "外部システムとの同期メッセージング"
+      ],
+      "features": [
+        "HTTPプロトコルでメッセージ送受信",
+        "RequestMessage/ResponseMessageによる構造化されたメッセージ処理",
+        "バリデーションとエラーハンドリング"
+      ]
+    },
+    "responsibility": {
+      "description": "HTTPメッセージングアプリケーションで実装すべきクラスとその責務。アクションクラス、フォームクラス、エンティティクラスの3層構造で業務ロジックを実装する。",
+      "components": [
+        "アクションクラス: リクエストメッセージをもとに業務ロジックを実行し、レスポンスメッセージを返却",
+        "フォームクラス: リクエストメッセージをマッピングし、バリデーションを行う",
+        "エンティティクラス: テーブルと1対1で対応し、データベースアクセスを行う"
+      ],
+      "process_flow": "リクエストメッセージ受信 → フォームクラスへマッピング → バリデーション → エンティティクラス作成 → DB登録 → レスポンスメッセージ作成・返却"
+    },
+    "action-class": {
+      "description": "アクションクラスは、リクエストメッセージ(RequestMessage)を元に業務ロジックを実行し、レスポンスメッセージ(ResponseMessage)を作成して返却する。",
+      "responsibilities": [
+        "リクエストメッセージからフォームクラスを作成",
+        "フォームクラスのバリデーション実行",
+        "フォームクラスからエンティティクラスを作成しDBへデータ追加",
+        "レスポンスメッセージを作成して返却"
+      ],
+      "classes": [
+        "nablarch.fw.messaging.RequestMessage",
+        "nablarch.fw.messaging.ResponseMessage"
+      ],
+      "notes": [
+        "リクエストメッセージ取り込み処理の例: バリデーション → DB登録 → レスポンス返却"
+      ]
+    },
+    "form-class": {
+      "description": "リクエストメッセージ(RequestMessage)をマッピングするクラス。バリデーションのためのアノテーション設定と相関バリデーションのロジックを持つ。",
+      "responsibilities": [
+        "リクエストメッセージの項目をプロパティとして定義",
+        "バリデーションアノテーションの設定",
+        "相関バリデーションロジックの実装"
+      ],
+      "constraints": [
+        "フォームクラスのプロパティは全てStringで定義する（理由: Bean Validationの型変換とバリデーション順序）",
+        "バイナリ項目の場合はバイト配列で定義"
+      ],
+      "reference": "Bean Validation"
+    },
+    "entity-class": {
+      "description": "テーブルと1対1で対応するクラス。カラムに対応するプロパティを持ち、データベースアクセスに使用する。",
+      "responsibilities": [
+        "テーブル構造をJavaクラスとして表現",
+        "カラムに対応するプロパティの定義",
+        "データベースアクセス時のデータ格納"
+      ]
+    }
+  }
+}

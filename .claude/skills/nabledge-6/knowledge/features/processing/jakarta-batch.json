@@ -1,0 +1,157 @@
+{
+  "id": "jakarta-batch",
+  "title": "Jakarta Batch準拠バッチ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/application_design.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Jakarta Batch", "JSR352", "バッチ", "batch", "Jakarta EE", "標準仕様"]
+    },
+    {
+      "id": "responsibility",
+      "hints": ["責務配置", "application design", "Batchlet", "Chunk", "ItemReader", "ItemWriter", "ItemProcessor"]
+    },
+    {
+      "id": "batchlet-step",
+      "hints": ["Batchlet", "バッチレット", "Batchletステップ", "単一処理", "業務ロジック", "処理結果"]
+    },
+    {
+      "id": "chunk-step",
+      "hints": ["Chunk", "チャンク", "Chunkステップ", "ItemReader", "ItemProcessor", "ItemWriter", "chunk processing"]
+    },
+    {
+      "id": "item-reader",
+      "hints": ["ItemReader", "アイテムリーダ", "データ読み込み", "file", "database", "data source"]
+    },
+    {
+      "id": "item-processor",
+      "hints": ["ItemProcessor", "アイテムプロセッサ", "業務ロジック", "データ変換", "validation", "Entity", "Form"]
+    },
+    {
+      "id": "item-writer",
+      "hints": ["ItemWriter", "アイテムライタ", "データ出力", "database", "file", "Entity"]
+    },
+    {
+      "id": "form-class",
+      "hints": ["Form", "フォーム", "フォームクラス", "入力データ", "String", "バリデーション", "Bean Validation"]
+    },
+    {
+      "id": "entity-class",
+      "hints": ["Entity", "エンティティ", "エンティティクラス", "テーブル", "1対1", "カラム"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Jakarta Batch準拠バッチは、Jakarta EEの標準仕様であるJakarta Batch (JSR 352)に準拠したバッチアプリケーション処理方式。Batchletステップ（単一処理）とChunkステップ（チャンク単位処理）の2つの実行モデルを提供する。",
+      "use_cases": [
+        "標準仕様に準拠したポータブルなバッチ処理",
+        "ファイル/データベースからのデータ読み込みと処理",
+        "チャンク単位でのトランザクション制御"
+      ],
+      "features": [
+        "Jakarta Batch標準仕様準拠",
+        "Batchletステップ: 単一処理の実行",
+        "Chunkステップ: 読み込み・処理・書き込みの3段階処理"
+      ]
+    },
+    "responsibility": {
+      "description": "Jakarta Batch準拠バッチアプリケーションで実装すべきクラスとその責務。BatchletステップとChunkステップで必要なクラスが異なる。",
+      "components": [
+        "Batchletステップ: Batchletクラスで業務ロジックを実装",
+        "Chunkステップ: ItemReader、ItemProcessor、ItemWriterの3クラスで処理を分担"
+      ]
+    },
+    "batchlet-step": {
+      "name": "Batchletステップ",
+      "description": "Batchletステップは、単一の業務ロジックを実行する処理方式。Batchletクラスで業務ロジックを実行し、ステップの処理結果を表す文字列を返却する。",
+      "use_cases": [
+        "インターネット上のファイルダウンロード",
+        "SQL1つだけで完結する処理（INSERT～SELECT等）",
+        "単純な一括処理"
+      ],
+      "implementation_points": [
+        "Batchletインターフェースを実装",
+        "process()メソッドで業務ロジックを実行",
+        "処理結果（終了ステータス）を文字列で返却"
+      ],
+      "classes": [
+        "Batchlet"
+      ],
+      "reference": "Jakarta Batch Specification"
+    },
+    "chunk-step": {
+      "name": "Chunkステップ",
+      "description": "Chunkステップは、データを読み込み、処理し、出力する3段階の処理を繰り返し実行する方式。ItemReader、ItemProcessor、ItemWriterの3つのクラスで処理を分担する。",
+      "use_cases": [
+        "ファイルからデータベースへの一括登録",
+        "データベースからファイルへの一括出力",
+        "大量データの読み込みと変換・出力"
+      ],
+      "implementation_points": [
+        "ItemReader: データソースからデータ読み込み、フォームに変換",
+        "ItemProcessor: 業務ロジック実行、エンティティまたはフォームに変換",
+        "ItemWriter: エンティティまたはフォームをデータベース/ファイルに出力"
+      ],
+      "process_flow": "ItemReaderで読み込み → ItemProcessorで処理 → ItemWriterで出力 → チャンク単位でコミット",
+      "classes": [
+        "ItemReader",
+        "ItemProcessor",
+        "ItemWriter"
+      ]
+    },
+    "item-reader": {
+      "description": "データソース（ファイル、データベース等）から処理対象のデータを読み込む処理を実装する。読み込んだデータはフォームに変換して返却する。",
+      "responsibilities": [
+        "データソースからデータ読み込み",
+        "読み込んだデータをフォームに変換",
+        "データ終端の判定"
+      ],
+      "interface": "ItemReader (Jakarta Batch標準インターフェース)",
+      "reference": "Jakarta Batch Specification"
+    },
+    "item-processor": {
+      "description": "ItemReaderが読み込んだデータを元に業務ロジックを実行し、出力対象のデータを生成する。出力対象がデータベースの場合はエンティティに、それ以外の場合は出力用フォームに変換する。",
+      "responsibilities": [
+        "業務ロジックの実行",
+        "入力値のチェック（外部データの場合）",
+        "出力対象データへの変換（Entity or Form）"
+      ],
+      "interface": "ItemProcessor (Jakarta Batch標準インターフェース)",
+      "notes": [
+        "外部取得データの場合、業務ロジック実行前に入力値チェックを行うこと"
+      ],
+      "reference": "Jakarta Batch Specification"
+    },
+    "item-writer": {
+      "description": "ItemProcessorで変換したエンティティまたはフォームをデータベースやファイルなどに出力する処理を実装する。",
+      "responsibilities": [
+        "エンティティまたはフォームの出力",
+        "データベースへの登録・更新",
+        "ファイルへの書き込み"
+      ],
+      "interface": "ItemWriter (Jakarta Batch標準インターフェース)",
+      "reference": "Jakarta Batch Specification"
+    },
+    "form-class": {
+      "description": "ItemReaderが読み込んだデータを保持するクラス。また、出力対象がデータベース以外の場合に出力するデータを保持するクラス。",
+      "responsibilities": [
+        "読み込んだデータの保持",
+        "出力用データの保持（非DB出力の場合）"
+      ],
+      "constraints": [
+        "外部受付データ等の信用できない値を保持する場合、プロパティの型は全てStringとすること",
+        "バイナリ項目の場合はバイト配列で定義"
+      ],
+      "reference": "Bean Validation"
+    },
+    "entity-class": {
+      "description": "テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。",
+      "responsibilities": [
+        "テーブル構造の表現",
+        "カラムに対応するプロパティの定義"
+      ]
+    }
+  }
+}
