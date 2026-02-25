@@ -1,0 +1,114 @@
+{
+  "id": "resource_mapping",
+  "title": "リソースマッピングハンドラ",
+  "tags": ["web-application", "handlers"],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/resource_mapping.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "ビジネスアクションを経由せずにレスポンスを返す機能を提供するハンドラ。Nablarchハンドラを経由して静的リソースをダウンロードする際に使用される。",
+      "purpose": "認可が必要なコンテンツダウンロードなど、他のハンドラを経由する必要がある静的リソースのダウンロードを実現する。通常の静的リソースはWebコンテナやWebサーバの機能を使用することを推奨。"
+    },
+    "processing": {
+      "description": "静的リソースのダウンロードを行うレスポンスを返す処理を実行。このハンドラは後続ハンドラを呼び出さない。\n\n**処理内容**:\n1. リクエストURIがbaseUriと一致するか確認\n2. 一致する場合、basePathを基準としたレスポンスを返す\n3. 一致しない場合、HTTP 404(Not Found)レスポンスを返す\n\n**スキーム対応**:\n- servlet://: HTTPレスポンスハンドラ提供\n- file://: HTTPレスポンスハンドラ提供\n- classpath://: HTTPレスポンスハンドラ提供\n- forward://: 内部フォーワードハンドラ提供\n\n**重要な注意**:\nこのハンドラによる静的リソースダウンロードには以下のデメリットがある:\n- 大量のログが出力される\n- アクセスが多いサーバでアプリケーションサーバに大きな負荷がかかる\n\nハンドラを経由する必要がない静的リソースのダウンロードにこのハンドラを使用することは推奨されない。WebコンテナやWebサーバの機能を使用して静的リソースをダウンロードし、このハンドラはコンテンツダウンロード時に認可を実施する必要があるなど、他のハンドラを経由する必要があるコンテンツにのみ使用すること。",
+      "flow": "1. リクエスト受信\n2. baseUriと一致するか確認\n3. 一致する場合、basePathベースでレスポンス返却\n4. 一致しない場合、404レスポンス返却"
+    },
+    "configuration": {
+      "description": "baseUriとbasePathの2つのプロパティを設定。通常、request_handler_entryと組み合わせて使用。\n\n**基本設定例**:\n```xml\n<!-- 画像ファイル用の静的リソースダウンロードハンドラ -->\n<component name=\"imgMapping\"\n           class=\"nablarch.fw.web.handler.ResourceMapping\">\n  <property name=\"baseUri\" value=\"/\"/>\n  <property name=\"basePath\" value=\"servlet:///\"/>\n</component>\n```\n\n**request_handler_entryとの組み合わせ例**:\n```xml\n<component class=\"nablarch.fw.RequestHandlerEntry\">\n  <property name=\"requestPattern\" value=\"//*.jpg\"/>\n  <property name=\"handler\" ref=\"imgMapping\"/>\n</component>\n```",
+      "properties": "baseUri: 処理対象とするURL。このURLと一致しない場合、HTTP 404(Not Found)レスポンスを返す\nbasePath: baseUriと一致した場合のレスポンスのベースURL。スキーマ指定を省略した場合は servlet:// スキーマが使用される"
+    },
+    "constraints": {
+      "description": "**forwarding_handlerの後に配置**: このハンドラが内部フォーワードハンドラの機能が提供する forward:// スキーマを使用できるようにするため\n\n**http_response_handlerの後に配置**: このハンドラがHTTPレスポンスハンドラの機能が提供する servlet://, file://, classpath:// スキーマを使用でき、エラー発生時に404(Not Found)レスポンスを返せるようにするため"
+    },
+    "usage": {
+      "description": "静的リソースダウンロードの使用方法。このハンドラの主な用途。\n\n**設定項目**:\n- baseUri: 処理対象URL\n- basePath: レスポンスのベースURL\n\n**注意事項**:\n上記設定のハンドラをハンドラキューに追加するだけでは、サーバに送信される全てのURLが静的リソースとして処理される。つまり、ハンドラキュー内でこのハンドラより後のハンドラが全て実行されなくなる。\n\nこのため、このハンドラは request_handler_entry と組み合わせて使用する必要がある(request_handler_entry_usage 参照)。\n\n**組み合わせ設定例**:\nrequest_handler_entryを使用して特定のパターンのリクエストのみをこのハンドラで処理:\n```xml\n<component class=\"nablarch.fw.RequestHandlerEntry\">\n  <property name=\"requestPattern\" value=\"//*.jpg\"/>\n  <property name=\"handler\" ref=\"imgMapping\"/>\n</component>\n```"
+    },
+    "base_properties": {
+      "description": "baseUriとbasePathプロパティの詳細。\n\n**baseUri**:\n処理対象とするURL。このURLと一致しない場合、HTTP 404(Not Found)レスポンスを返す。\n\n**basePath**:\nbaseUriと一致した場合のレスポンスのベースURL。\n\nスキーマ指定を省略した場合、servlet:// スキーマが使用される。\n\n**使用可能なスキーマ**:\n- servlet:// (デフォルト)\n- file://\n- classpath://\n- forward://"
+    },
+    "request_handler_entry": {
+      "description": "request_handler_entryとの組み合わせ使用方法。\n\n**必要性**:\nこのハンドラをハンドラキューに単純に追加すると、全てのリクエストが静的リソースとして処理され、後続ハンドラが実行されなくなる。\n\n**解決方法**:\nrequest_handler_entryを使用して、特定のパターンのリクエストのみをこのハンドラで処理するよう制御。\n\n**設定例**:\n```xml\n<component name=\"imgMapping\"\n           class=\"nablarch.fw.web.handler.ResourceMapping\">\n  <property name=\"baseUri\" value=\"/\"/>\n  <property name=\"basePath\" value=\"servlet:///\"/>\n</component>\n\n<component class=\"nablarch.fw.RequestHandlerEntry\">\n  <property name=\"requestPattern\" value=\"//*.jpg\"/>\n  <property name=\"handler\" ref=\"imgMapping\"/>\n</component>\n```\n\nこの例では、.jpgで終わるURLのみがimgMappingハンドラで処理される。"
+    },
+    "limitations": {
+      "description": "このハンドラの使用に関する制限と推奨事項。\n\n**デメリット**:\n1. 大量のログが出力される\n2. アクセスが多いサーバでアプリケーションサーバに大きな負荷がかかる\n\n**推奨事項**:\n- ハンドラを経由する必要がない静的リソースのダウンロードにこのハンドラを使用しない\n- 通常の静的リソースはWebコンテナやWebサーバの機能を使用してダウンロード\n- このハンドラは認可が必要なコンテンツなど、他のハンドラを経由する必要があるコンテンツにのみ使用"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "リソースマッピングハンドラ",
+        "Resource Mapping Handler",
+        "ResourceMapping",
+        "静的リソース",
+        "ダウンロード"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "レスポンス返却",
+        "baseUri",
+        "basePath",
+        "404エラー",
+        "スキーマ"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "baseUri",
+        "basePath",
+        "request_handler_entry"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約事項",
+        "forwarding_handler",
+        "http_response_handler",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "usage",
+      "hints": [
+        "使用方法",
+        "静的リソースダウンロード",
+        "request_handler_entry",
+        "組み合わせ使用"
+      ]
+    },
+    {
+      "id": "base_properties",
+      "hints": [
+        "baseUri",
+        "basePath",
+        "servlet file classpath forward",
+        "スキーマ"
+      ]
+    },
+    {
+      "id": "request_handler_entry",
+      "hints": [
+        "request_handler_entry",
+        "requestPattern",
+        "パターンマッチング",
+        "ハンドラ制御"
+      ]
+    },
+    {
+      "id": "limitations",
+      "hints": [
+        "制限事項",
+        "デメリット",
+        "負荷",
+        "推奨事項",
+        "Webコンテナ"
+      ]
+    }
+  ]
+}

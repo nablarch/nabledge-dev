@@ -1,0 +1,134 @@
+{
+  "id": "nablarch_tag_handler",
+  "title": "Nablarchカスタムタグ制御ハンドラ",
+  "tags": ["web-application", "handlers"],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/nablarch_tag_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "Nablarchカスタムタグに必要なリクエスト処理を行うハンドラ。カスタムタグのデフォルト値をJSPで参照できるよう設定し、隠し暗号化の改ざんチェックと復号、チェックボックスの未チェック値設定、ボタン・リンクごとのパラメータ追加、HTTPアクセスログのリクエストパラメータ出力、複合キーの復元処理を行う。",
+      "purpose": "Nablarchカスタムタグライブラリが正常に動作するために必要なリクエスト前処理とレスポンス後処理を提供する。"
+    },
+    "processing": {
+      "description": "Nablarchカスタムタグに必要な各種リクエスト処理を実行。\n\n**主な処理**:\n1. CustomTagConfigをリクエストスコープに設定(カスタムタグのデフォルト値をJSPで参照可能にする)\n2. 隠し暗号化に対応した改ざんチェックと復号処理\n3. チェックボックスの未チェック値に対応する値をリクエストに設定\n4. ボタン・リンクごとのパラメータ追加をリクエストに追加\n5. HTTPアクセスログのリクエストパラメータ出力\n6. 複合キーを扱うための復元処理\n\n**GETリクエスト時の動作**:\nGETリクエストの場合、カスタムタグでhiddenパラメータは出力されない(詳細は tag-using_get 参照)。これに合わせて、このハンドラもGETリクエストの場合はhiddenパラメータに関する処理を行わず、複合キーの復元のみを行う。",
+      "flow": "1. リクエスト受信\n2. CustomTagConfig設定\n3. 隠し暗号化の復号・改ざんチェック\n4. チェックボックス未チェック値設定\n5. ボタン・リンクパラメータ追加\n6. 複合キー復元\n7. 後続ハンドラ実行"
+    },
+    "configuration": {
+      "description": "基本的にはデフォルト設定で使用可能。復号失敗時のエラーページやステータスコードをカスタマイズする場合に設定を追加。\n\n**基本設定例**:\n```xml\n<component name=\"nablarchTagHandler\"\n           class=\"nablarch.common.web.handler.NablarchTagHandler\" />\n```\n\n**エラーページ設定例**:\n```xml\n<component name=\"nablarchTagHandler\"\n           class=\"nablarch.common.web.handler.NablarchTagHandler\">\n  <!-- 改ざんエラー発生時の設定 -->\n  <property name=\"path\" value=\"/TAMPERING-DETECTED.jsp\" />\n  <property name=\"statusCode\" value=\"400\" />\n  \n  <!-- セッション無効化エラー発生時の設定(省略時は改ざんエラーの設定を使用) -->\n  <property name=\"sessionExpirePath\" value=\"/SESSION-EXPIRED.jsp\" />\n  <property name=\"sessionExpireStatusCode\" value=\"400\" />\n</component>\n```",
+      "properties": "path: 改ざんエラー発生時のエラーページパス\nstatusCode: 改ざんエラー発生時のステータスコード\nsessionExpirePath: セッション無効化エラー発生時のエラーページパス(省略時はpathを使用)\nsessionExpireStatusCode: セッション無効化エラー発生時のステータスコード(省略時はstatusCodeを使用)"
+    },
+    "constraints": {
+      "description": "**multipart_handlerの後に配置**: タグに必要なリクエスト処理でリクエストパラメータにアクセスするため\n\n**隠し暗号化使用時はthread_context_handlerの後に配置**: 隠し暗号化の対象か判定するためにスレッドコンテキストからリクエストIDを取得する必要があるため"
+    },
+    "hidden_encryption": {
+      "description": "隠し暗号化に対応した改ざんチェックと復号処理を実行。\n\n**処理内容**:\n- 暗号化されたhiddenパラメータの復号\n- 復号データの改ざんチェック\n\n**復号失敗時のエラー**:\n1. 改ざんエラー: 暗号化データが改ざんされている場合\n2. セッション無効化エラー: 復号に使用する鍵がセッションから取得できない場合\n\n改ざん判定基準の詳細は tag-hidden_encryption_decryption を参照。"
+    },
+    "error_page": {
+      "description": "隠し暗号化の復号処理が失敗する2つのケースに対してエラーページとステータスコードを設定可能。\n\n**改ざんエラー**:\n- 発生条件: 暗号化データが改ざんされている場合\n- 設定項目: path, statusCode\n\n**セッション無効化エラー**:\n- 発生条件: 復号に使用する鍵がセッションから取得できない場合\n- 設定項目: sessionExpirePath, sessionExpireStatusCode\n- 省略時: 改ざんエラーの設定を使用\n\n**設定例**:\n```xml\n<component name=\"nablarchTagHandler\"\n           class=\"nablarch.common.web.handler.NablarchTagHandler\">\n  <property name=\"path\" value=\"/TAMPERING-DETECTED.jsp\" />\n  <property name=\"statusCode\" value=\"400\" />\n  <property name=\"sessionExpirePath\" value=\"/SESSION-EXPIRED.jsp\" />\n  <property name=\"sessionExpireStatusCode\" value=\"400\" />\n</component>\n```"
+    },
+    "custom_tag_config": {
+      "description": "CustomTagConfigをリクエストスコープに設定し、カスタムタグのデフォルト値をJSPで参照できるようにする。\n\nこの設定により、JSP内でNablarchカスタムタグを使用する際に、タグのデフォルト値が適切に適用される。"
+    },
+    "checkbox_off_value": {
+      "description": "チェックボックスの未チェック値に対応する値をリクエストに設定する機能。\n\nチェックされていないチェックボックスはリクエストパラメータに含まれないが、この機能により未チェック時の値を明示的に設定可能。詳細は tag-checkbox_off_value を参照。"
+    },
+    "button_parameter": {
+      "description": "ボタン・リンクごとのパラメータ追加機能。\n\nボタンやリンクに対して個別にパラメータを追加できる機能をサポート。詳細は tag-submit_change_parameter を参照。"
+    },
+    "composite_key": {
+      "description": "複合キーを扱うための復元処理。\n\n複合キーの設定を復元し、アクションで複合キーを扱えるようにする。詳細は tag-composite_key を参照。\n\n**GETリクエスト時**: GETリクエストの場合、このハンドラは複合キーの復元のみを行い、他のhiddenパラメータ関連処理は実行しない。"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Nablarchカスタムタグ制御ハンドラ",
+        "Nablarch Custom Tag Control Handler",
+        "NablarchTagHandler",
+        "カスタムタグ",
+        "タグライブラリ"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "リクエスト処理",
+        "隠し暗号化",
+        "チェックボックス",
+        "複合キー",
+        "パラメータ追加"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "エラーページ",
+        "statusCode",
+        "path"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約事項",
+        "multipart_handler",
+        "thread_context_handler",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "hidden_encryption",
+      "hints": [
+        "隠し暗号化",
+        "改ざんチェック",
+        "復号処理",
+        "暗号化パラメータ"
+      ]
+    },
+    {
+      "id": "error_page",
+      "hints": [
+        "エラーページ設定",
+        "改ざんエラー",
+        "セッション無効化エラー",
+        "sessionExpirePath"
+      ]
+    },
+    {
+      "id": "custom_tag_config",
+      "hints": [
+        "CustomTagConfig",
+        "リクエストスコープ",
+        "デフォルト値",
+        "JSP"
+      ]
+    },
+    {
+      "id": "checkbox_off_value",
+      "hints": [
+        "チェックボックス",
+        "未チェック値",
+        "リクエストパラメータ"
+      ]
+    },
+    {
+      "id": "button_parameter",
+      "hints": [
+        "ボタンパラメータ",
+        "リンクパラメータ",
+        "パラメータ追加"
+      ]
+    },
+    {
+      "id": "composite_key",
+      "hints": [
+        "複合キー",
+        "キー復元",
+        "GETリクエスト"
+      ]
+    }
+  ]
+}

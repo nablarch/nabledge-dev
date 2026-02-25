@@ -1,0 +1,104 @@
+{
+  "id": "http_rewrite_handler",
+  "title": "HTTPリライトハンドラ",
+  "tags": ["web-application", "handlers"],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/http_rewrite_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "HTTPリクエストとレスポンスに対して、リクエストパス、コンテンツパス、変数の書き換え機能を提供するハンドラ。未ログイン時のログイン画面への強制遷移など、特殊な遷移が必要な場合に使用される。",
+      "purpose": "条件に基づいたリクエストパスの書き換え、レスポンスのコンテンツパス書き換え、各スコープへの変数設定を実現し、柔軟な画面遷移制御を可能にする。"
+    },
+    "processing": {
+      "description": "設定されたルールに基づいてリクエストパスとコンテンツパスの書き換え、変数の設定を行う。\n\n**主な処理**:\n- リクエストパスの書き換え\n- コンテンツパスの書き換え\n- 各スコープへの変数設定\n\n**ルール適用**:\n1. パターンマッチング(pattern)でパスが一致するか確認\n2. 追加条件(conditions)を評価\n3. 全条件が満たされた場合、rewriteToで指定されたパスに書き換え\n4. exportsで指定された変数を各スコープに設定",
+      "flow": "1. リクエスト受信\n2. リクエストパスリライトルール評価\n3. 条件一致時にパス書き換え\n4. 後続ハンドラ実行\n5. レスポンス取得\n6. コンテンツパスリライトルール評価\n7. 条件一致時にパス書き換え"
+    },
+    "configuration": {
+      "description": "requestPathRewriteRulesまたはcontentPathRewriteRulesプロパティで書き換えルールを設定。\n\n**設定例**:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpRewriteHandler\">\n  <!-- リクエストパスの書き換えルール -->\n  <property name=\"requestPathRewriteRules\">\n    <list>\n      <!-- ログイン済みの場合、サーブレットコンテキストルートへのアクセスでメニュー画面に遷移 -->\n      <component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n        <property name=\"pattern\" value=\"^/$\" />\n        <property name=\"conditions\">\n          <list>\n            <value>%{session:user.id} ^\\S+$</value>\n          </list>\n        </property>\n        <property name=\"rewriteTo\" value=\"/action/MenuAction/show\" />\n      </component>\n      \n      <!-- 未ログインの場合、ログイン画面に遷移 -->\n      <component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n        <property name=\"pattern\" value=\"^/$\" />\n        <property name=\"rewriteTo\" value=\"/action/LoginAction/authenticate\" />\n      </component>\n    </list>\n  </property>\n  \n  <!-- レスポンスコンテンツパスの書き換えルール -->\n  <property name=\"contentPathRewriteRules\">\n    <list>\n      <!-- ステータスコードが401の場合、ログイン画面に遷移 -->\n      <component class=\"nablarch.fw.web.handler.ContentPathRewriteRule\">\n        <property name=\"pattern\" value=\"^.*\" />\n        <property name=\"rewriteTo\" value=\"redirect:///action/LoginAction/authenticate\" />\n        <property name=\"conditions\">\n          <list>\n            <value>%{statusCode} ^401$</value>\n          </list>\n        </property>\n      </component>\n    </list>\n  </property>\n</component>\n```",
+      "properties": "requestPathRewriteRules: リクエストパスの書き換えルールリスト\ncontentPathRewriteRules: コンテンツパスの書き換えルールリスト"
+    },
+    "constraints": {
+      "description": "**http_response_handlerの後に配置**: このハンドラが書き換えたコンテンツパスをレスポンスハンドラが使用するため\n\n**thread_context_handlerの前に配置**: このハンドラがスレッドコンテキストに配置されるリクエストパスを書き換えるため"
+    },
+    "rewrite_rules": {
+      "description": "リクエストパス書き換えにはHttpRequestRewriteRule、コンテンツパス書き換えにはContentPathRewriteRuleを使用。\n\n**共通プロパティ**(RewriteRuleスーパークラスで定義):\n- pattern: 適用するパスパターン(正規表現)\n- rewriteTo: 書き換え後の文字列\n- conditions: パス以外の追加条件\n- exports: 変数の書き換え設定\n\n**ルール評価順序**:\n設定された順序で評価され、最初にマッチしたルールが適用される。"
+    },
+    "variables": {
+      "description": "HttpRequestRewriteRuleとContentPathRewriteRuleの条件設定で使用可能な変数。\n\n**HttpRequestRewriteRule / ContentPathRewriteRuleで使用可能**:\n- セッションスコープ: %{session:(変数名)}\n- リクエストスコープ: %{request:(変数名)}\n- スレッドコンテキスト: %{thread:(変数名)}\n- HTTPヘッダ: %{header:(ヘッダ名)}\n\n**HttpRequestRewriteRuleのみ**:\n- リクエストパラメータ: %{param:(変数名)}\n- HTTPリクエストメソッド: %{httpMethod}\n- HTTPバージョン: %{httpVersion}\n- 全リクエストパラメータ名: %{paramNames}\n\n**ContentPathRewriteRuleのみ**:\n- ステータスコード: %{statusCode}\n\n**使用例**:\n```xml\n<property name=\"conditions\">\n  <list>\n    <value>%{session:user.id} ^\\S+$</value>\n  </list>\n</property>\n```"
+    },
+    "variable_exports": {
+      "description": "パス書き換えに加えて、リクエストスコープ、セッションスコープ、スレッドコンテキスト、ウィンドウスコープに変数を設定できる。\n\n**設定方法**:\nHttpRequestRewriteRuleまたはContentPathRewriteRuleのexportsプロパティで設定。\n\n**設定例**:\n```xml\n<!-- Refererヘッダが送信された場合、その値をリクエストスコープに設定 -->\n<component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n  <property name=\"pattern\" value=\".*\" />\n  <property name=\"conditions\">\n    <list>\n      <value>%{header:Referer} ^\\S+$</value>\n    </list>\n  </property>\n  <property name=\"exports\">\n    <list>\n      <value>%{request:prevUrl} ${header:Referer}</value>\n    </list>\n  </property>\n</component>\n```\n\n**設定可能なスコープ**:\n- セッションスコープ: %{session:(変数名)}\n- リクエストスコープ: %{request:(変数名)}\n- スレッドコンテキスト: %{thread:(変数名)}\n- ウィンドウスコープ: %{param:(変数名)} (HttpRequestRewriteRuleのみ)"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "HTTPリライトハンドラ",
+        "HTTP Rewrite Handler",
+        "HttpRewriteHandler",
+        "パス書き換え",
+        "遷移制御"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "リクエストパス書き換え",
+        "コンテンツパス書き換え",
+        "変数設定",
+        "ルール評価"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "requestPathRewriteRules",
+        "contentPathRewriteRules",
+        "HttpRequestRewriteRule",
+        "ContentPathRewriteRule"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約事項",
+        "http_response_handler",
+        "thread_context_handler",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "rewrite_rules",
+      "hints": [
+        "書き換えルール",
+        "pattern",
+        "rewriteTo",
+        "conditions",
+        "exports"
+      ]
+    },
+    {
+      "id": "variables",
+      "hints": [
+        "変数",
+        "session request thread",
+        "param header",
+        "httpMethod statusCode",
+        "条件設定"
+      ]
+    },
+    {
+      "id": "variable_exports",
+      "hints": [
+        "変数エクスポート",
+        "スコープ設定",
+        "exports",
+        "リクエストスコープ",
+        "セッションスコープ"
+      ]
+    }
+  ]
+}

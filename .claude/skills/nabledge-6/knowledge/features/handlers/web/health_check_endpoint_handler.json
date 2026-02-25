@@ -1,0 +1,129 @@
+{
+  "id": "health_check_endpoint_handler",
+  "title": "ヘルスチェックエンドポイントハンドラ",
+  "tags": ["web-application", "handlers"],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/health_check_endpoint_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "アプリケーションのヘルスチェックを実行する機能を提供するハンドラ。WebアプリケーションとRESTful Webサービスの両方でヘルスチェックを行うエンドポイントを実装できる。DBやRedisのヘルスチェックがデフォルト実装として提供される。",
+      "purpose": "アプリケーションとその依存リソース(DB、Redis等)の正常性を確認するエンドポイントを提供し、運用監視やロードバランサーのヘルスチェックに利用できるようにする。"
+    },
+    "processing": {
+      "description": "ヘルスチェックを実行し、チェック結果をレスポンスとして返す処理を行う。このハンドラはヘルスチェックのエンドポイントであるため後続ハンドラを呼び出さない。\n\n**デフォルト動作**:\nヘルスチェック設定なしの場合、ステータスコード200で以下のJSONレスポンスを返す:\n```json\n{\"status\":\"UP\"}\n```\n\n**リソースチェック機能**:\nHealthCheckerを拡張したクラスをhealthCheckersプロパティに指定することで、DB等の各対象のヘルスチェックを実行。\n\n**レスポンス形式**:\n- 全体のヘルスチェック結果: ルート直下の status\n- 各対象のヘルスチェック結果: targets 配列内\n- 成功時: ステータスコード200、status=\"UP\"\n- 失敗時: ステータスコード503、status=\"DOWN\"",
+      "flow": "1. リクエスト受信\n2. 設定された各HealthCheckerを実行\n3. チェック結果を集約\n4. HealthCheckResponseBuilderでレスポンス生成\n5. JSONレスポンス返却"
+    },
+    "configuration": {
+      "description": "RequestHandlerEntryで特定パスのみで実行するよう設定し、healthCheckersプロパティでチェック対象を指定。\n\n**基本設定例**:\n```xml\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.HttpResponseHandler\"/>\n      \n      <component class=\"nablarch.fw.RequestHandlerEntry\">\n        <property name=\"requestPattern\" value=\"/action/healthcheck\" />\n        <property name=\"handler\">\n          <component class=\"nablarch.fw.web.handler.HealthCheckEndpointHandler\"/>\n        </property>\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n**DBヘルスチェック設定例**:\n```xml\n<component class=\"nablarch.fw.web.handler.HealthCheckEndpointHandler\">\n  <property name=\"healthCheckers\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.health.DbHealthChecker\">\n        <property name=\"dataSource\" ref=\"dataSource\" />\n        <property name=\"dialect\" ref=\"dialect\" />\n      </component>\n    </list>\n  </property>\n</component>\n```",
+      "properties": "healthCheckers: ヘルスチェック対象を実装したHealthCheckerのリスト\nhealthCheckResponseBuilder: ヘルスチェック結果のレスポンスを生成するHealthCheckResponseBuilder"
+    },
+    "constraints": {
+      "description": "**http_response_handlerまたはjaxrs_response_handlerの後に配置**: このハンドラが生成するHttpResponseをhttp_response_handlerまたはjaxrs_response_handlerが処理するため、これらのハンドラの後に配置する必要がある。"
+    },
+    "health_check_endpoint": {
+      "description": "このハンドラをハンドラ構成に追加することで、ヘルスチェックを実行するエンドポイントとなる。通常、RequestHandlerEntryを使用して特定のパスでのみ実行するよう設定。\n\nデフォルトではDB等のヘルスチェックを行わず、ステータスコード200で {\"status\":\"UP\"} のJSONレスポンスを返す。\n\nDB等のリソースのヘルスチェックはHealthCheckerという抽象クラスで実行。HealthCheckerを拡張したクラスをhealthCheckersプロパティに指定することで、このハンドラ実行時に各対象のヘルスチェックとして使用される。"
+    },
+    "add_health_checker": {
+      "description": "HealthCheckerを拡張したクラスを作成し、このハンドラのhealthCheckersプロパティに指定することでヘルスチェックを追加できる。\n\n**実装例**:\n```java\npublic class CustomHealthChecker extends HealthChecker {\n    public CustomHealthChecker() {\n        // 対象を表す名前を指定\n        setName(\"Custom\");\n    }\n    \n    @Override\n    protected boolean tryOut(HttpRequest request, ExecutionContext context) throws Exception {\n        // ヘルスチェックとして試す処理を実装\n        // ヘルスチェック失敗時はfalseを返すか例外を送出\n        CustomClient client = ...;\n        client.execute();\n        return true;\n    }\n}\n```\n\n**設定例**:\n```xml\n<component class=\"nablarch.fw.web.handler.HealthCheckEndpointHandler\">\n  <property name=\"healthCheckers\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.health.DbHealthChecker\">\n        <!-- 省略 -->\n      </component>\n      <component class=\"com.example.CustomHealthChecker\" />\n    </list>\n  </property>\n</component>\n```"
+    },
+    "response_format": {
+      "description": "ヘルスチェック結果のレスポンスはHealthCheckResponseBuilderで生成される。\n\n**デフォルトレスポンス**:\n- ステータスコード: 成功時200、失敗時503\n- Content-Type: application/json\n- フォーマット:\n```json\n{\n  \"status\":\"全体のヘルスチェック結果\",\n  \"targets\":[\n    {\"name\":\"対象1\",\"status\":\"対象1のヘルスチェック結果\"},\n    {\"name\":\"対象2\",\"status\":\"対象2のヘルスチェック結果\"}\n  ]\n}\n```\n- ヘルスチェック結果ラベル: 成功時UP、失敗時DOWN\n- 全体のヘルスチェック結果は、いずれか1つの対象のヘルスチェック結果が失敗であれば失敗\n\n**成功例**:\n```json\n{\"status\":\"UP\",\"targets\":[{\"name\":\"DB\",\"status\":\"UP\"}]}\n```\n\n**失敗例** (ステータスコード503):\n```json\n{\"status\":\"DOWN\",\"targets\":[{\"name\":\"DB\",\"status\":\"DOWN\"}]}\n```"
+    },
+    "change_response": {
+      "description": "ステータスコード、ヘルスチェック結果ラベル、レスポンスボディ出力有無を設定で変更可能。\n\n**設定変更例**:\n```xml\n<component class=\"nablarch.fw.web.handler.HealthCheckEndpointHandler\">\n  <property name=\"healthCheckers\">\n    <!-- 省略 -->\n  </property>\n  <property name=\"healthCheckResponseBuilder\">\n    <component class=\"nablarch.fw.web.handler.health.HealthCheckResponseBuilder\">\n      <property name=\"healthyStatusCode\" value=\"201\" />\n      <property name=\"healthyStatus\" value=\"OK\" />\n      <property name=\"unhealthyStatusCode\" value=\"500\" />\n      <property name=\"unhealthyStatus\" value=\"NG\" />\n      <property name=\"writeBody\" value=\"false\" />\n    </component>\n  </property>\n</component>\n```\n\n**レスポンスボディ内容変更**:\nHealthCheckResponseBuilderを拡張したクラスを作成し、getContentType()とbuildResponseBody()をオーバーライド。"
+    },
+    "db_health_check": {
+      "description": "フレームワークがデフォルト実装として提供するDBヘルスチェック機能。DbHealthCheckerをhealthCheckersプロパティに指定することで利用可能。\n\n**設定項目**:\n- dataSource: データソース\n- dialect: ダイアレクト\n\n**実行内容**:\n指定されたDBへの接続確認を実行し、成功/失敗を返す。"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "ヘルスチェックエンドポイントハンドラ",
+        "Health Check Endpoint Handler",
+        "HealthCheckEndpointHandler",
+        "ヘルスチェック",
+        "死活監視"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "ヘルスチェック実行",
+        "JSONレスポンス",
+        "UP DOWN",
+        "ステータスコード",
+        "200 503"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "RequestHandlerEntry",
+        "healthCheckers",
+        "DbHealthChecker",
+        "エンドポイント"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約事項",
+        "http_response_handler",
+        "jaxrs_response_handler",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "health_check_endpoint",
+      "hints": [
+        "エンドポイント作成",
+        "HealthChecker",
+        "チェック対象",
+        "デフォルト動作"
+      ]
+    },
+    {
+      "id": "add_health_checker",
+      "hints": [
+        "ヘルスチェック追加",
+        "HealthChecker拡張",
+        "tryOut",
+        "カスタムチェック"
+      ]
+    },
+    {
+      "id": "response_format",
+      "hints": [
+        "レスポンス形式",
+        "JSON",
+        "status",
+        "targets",
+        "application/json"
+      ]
+    },
+    {
+      "id": "change_response",
+      "hints": [
+        "レスポンス変更",
+        "HealthCheckResponseBuilder",
+        "healthyStatusCode",
+        "unhealthyStatusCode",
+        "writeBody"
+      ]
+    },
+    {
+      "id": "db_health_check",
+      "hints": [
+        "DBヘルスチェック",
+        "DbHealthChecker",
+        "dataSource",
+        "dialect",
+        "データベース"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "id": "multipart_handler",
+  "title": "マルチパートリクエストハンドラ",
+  "tags": ["web-application", "handlers"],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/multipart_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "HTTPリクエストがマルチパート形式の場合に、ボディ部を解析してアップロードされたファイルを一時ファイルとして保存するハンドラ。マルチパートリクエストの解析、アップロードファイルの一時保存、保存した一時ファイルの削除を行う。",
+      "purpose": "ファイルアップロード機能を実現するため、マルチパート形式のリクエストを解析し、アップロードファイルを安全に処理する。"
+    },
+    "processing": {
+      "description": "マルチパート形式のリクエストに対してボディ部の解析とファイル保存を行う。\n\n**動作条件**:\nリクエストヘッダのContent-Typeが multipart/form-data に一致する場合のみボディを解析。それ以外のリクエストは何もせず後続ハンドラに処理を委譲。\n\n**主な処理**:\n1. マルチパートリクエストの解析\n2. アップロードファイルを一時ファイルとして保存\n3. 保存した一時ファイルの削除(クリーン)\n\n**一時ファイルのクリーン条件**:\n- ボディ解析中に例外が発生した場合\n- ハンドラの復路で自動削除設定が有効の場合(デフォルトで有効)\n\n**重要**: 本番環境で自動削除設定を無効化すると、大量の一時ファイルがディスク上に残り、最悪の場合ディスク容量不足を引き起こす可能性がある。",
+      "flow": "1. リクエスト受信\n2. Content-Typeチェック\n3. マルチパート形式ならボディ解析\n4. アップロードファイルを一時保存\n5. 後続ハンドラ実行\n6. 復路で一時ファイルクリーン"
+    },
+    "configuration": {
+      "description": "一時保存先ディレクトリとアップロードサイズ上限を設定。\n\n**一時保存先設定例**:\n```xml\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\">\n  <property name=\"basePathSettings\">\n    <map>\n      <!-- アップロードファイルの一時保存ディレクトリ -->\n      <entry key=\"uploadFileTmpDir\" value=\"file:/var/nablarch/uploadTmpDir\" />\n    </map>\n  </property>\n</component>\n```\n\n**アップロードサイズ上限設定例**:\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <!-- アップロードサイズ(Content-Length)の上限(約1MB) -->\n      <property name=\"contentLengthLimit\" value=\"1000000\" />\n      <!-- 最大アップロードファイル数 -->\n      <property name=\"maxFileCount\" value=\"100\" />\n    </component>\n  </property>\n</component>\n```",
+      "properties": "uploadSettings: アップロード設定(UploadSettings)\ncontentLengthLimit (UploadSettings): アップロードサイズ上限(バイト)\nmaxFileCount (UploadSettings): 最大アップロードファイル数\nautoCleaning (UploadSettings): 自動削除設定(デフォルト: true)"
+    },
+    "constraints": {
+      "description": "**制約なし**: 特別な配置順序の制約はない。\n\n**注意事項**:\nこのハンドラはsession_store_handlerの前に配置する必要がある(session_store_handler-constraint参照)。このため、http_error_handlerのHttpErrorHandler_DefaultPage機能が使用できない。マルチパート解析エラーやファイルサイズ上限超過時のエラーページはweb.xmlで設定する必要がある。"
+    },
+    "temp_directory": {
+      "description": "アップロードファイルの一時保存先ディレクトリをfile_path_managementで設定。\n\n**論理名**: uploadFileTmpDir\n\n**未設定時のデフォルト**: システムプロパティ java.io.tmpdir の値\n\n**設定例**:\n```xml\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"uploadFileTmpDir\" value=\"file:/var/nablarch/uploadTmpDir\" />\n    </map>\n  </property>\n</component>\n```\n\n**推奨**: 保存先ディレクトリは環境によって変わるため、コンポーネント設定ファイルに直接記述せず環境設定ファイルで設定することを推奨。詳細は repository-environment_configuration を参照。"
+    },
+    "file_limit": {
+      "description": "大容量ファイルのアップロードによるディスク容量不足を防止するため、アップロードサイズの上限を設定可能。上限を超えた場合、クライアントに413(Payload Too Large)を返す。\n\n**設定単位**: バイト\n\n**未設定時**: アップロードサイズに制限なし\n\n**重要**: DoS攻撃を防ぐため、必ずアップロードサイズ上限を設定すること。\n\n**注意**: アップロードサイズ上限は1ファイルではなく1リクエスト単位。複数ファイルをアップロードする場合、ファイルサイズの合計(厳密にはContent-Length)で上限チェックが行われる。各ファイルのサイズをチェックする場合は、アクションでチェックを実装。\n\n**設定例**:\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <property name=\"contentLengthLimit\" value=\"1000000\" />\n    </component>\n  </property>\n</component>\n```"
+    },
+    "max_file_count": {
+      "description": "最大アップロードサイズを設定していても、各ファイルのサイズを小さくすることで大量のファイルを一度にアップロードできてしまう。不要な処理を削減するため、一度にアップロード可能なファイル数の上限を設定可能。上限を超えた場合、クライアントに400(Bad Request)を返す。\n\n**設定値**:\n- 0以上の値: その値が一度にアップロード可能なファイル数の上限\n- 負の数: 無制限\n- 未設定時のデフォルト: -1(無制限)\n\n**設定例**:\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <property name=\"maxFileCount\" value=\"100\" />\n    </component>\n  </property>\n</component>\n```"
+    },
+    "auto_cleaning": {
+      "description": "アップロードファイルのクリーン(削除)を以下の条件で実行:\n- ボディの解析中に例外が発生した場合\n- ハンドラの復路で自動削除設定が有効の場合\n\n**デフォルト**: 自動削除設定は有効\n\n**重要**: 本番環境でこの設定を無効化すると、大量の一時ファイルがディスク上に残り、最悪の場合ディスク容量不足を引き起こす可能性がある。\n\n**無効化方法**: UploadSettings#autoCleaning を false に設定\n\n**設定例**:\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <property name=\"autoCleaning\" value=\"false\" />\n    </component>\n  </property>\n</component>\n```"
+    },
+    "error_page": {
+      "description": "マルチパート解析エラーまたはファイルサイズ上限超過時、このハンドラはクライアントに 400(BadRequest) を返す。\n\n**エラー発生ケース**:\n- マルチパート解析エラー:\n  - アップロード中にクライアントからの切断要求があり、ボディ部が不完全\n  - boundaryが存在しない\n- ファイルサイズ上限超過\n\n**エラーページ設定**: 400(BadRequest)に対応するエラーページを web.xml で設定する必要がある。web.xmlに設定しない場合、Webアプリケーションサーバのデフォルトページがクライアントに返される。\n\n**注意**: このハンドラはsession_store_handlerの前に配置する必要があるため、session_store_handlerの後に設定されるhttp_error_handlerのHttpErrorHandler_DefaultPageが使用できない。"
+    },
+    "read_upload_file": {
+      "description": "アップロードされたファイル(一時保存されたファイル)はHttpRequestから取得。\n\n**実装例**:\n```java\npublic HttpResponse upload(HttpRequest request, ExecutionContext context) throws IOException {\n    // アップロードファイルを取得\n    List<PartInfo> partInfoList = request.getPart(\"uploadFile\");\n    \n    if (partInfoList.isEmpty()) {\n        // アップロードファイルが指定されていない場合は業務エラー\n    }\n    \n    // アップロードファイルを処理\n    InputStream file = partInfoList.get(0).getInputStream();\n    \n    // アップロードファイルの読み込み処理を以下に実装\n}\n```\n\n**ポイント**:\n- アップロードファイルは HttpRequest#getPart を呼び出して取得\n- パラメータ名を HttpRequest#getPart の引数に指定\n\n**詳細な実装方法**:\n- data_bind を使用した処理(推奨): data_bind-upload_file を参照\n- 汎用データフォーマットを使用した処理: data_format-load_upload_file を参照\n\n**バイナリファイル(画像等)の処理**:\n```java\nFile savedFile = partInfo.getSavedFile();\ntry {\n    byte[] bytes = Files.readAllBytes(savedFile.toPath());\n} catch (IOException e) {\n    throw new RuntimeException(e);\n}\n```"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "マルチパートリクエストハンドラ",
+        "Multipart Request Handler",
+        "MultipartHandler",
+        "ファイルアップロード",
+        "一時ファイル"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "マルチパート解析",
+        "ファイル保存",
+        "一時ファイルクリーン",
+        "Content-Type",
+        "multipart/form-data"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "uploadSettings",
+        "contentLengthLimit",
+        "maxFileCount",
+        "一時保存先"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約事項",
+        "session_store_handler",
+        "web.xml",
+        "エラーページ"
+      ]
+    },
+    {
+      "id": "temp_directory",
+      "hints": [
+        "一時保存先",
+        "uploadFileTmpDir",
+        "file_path_management",
+        "java.io.tmpdir"
+      ]
+    },
+    {
+      "id": "file_limit",
+      "hints": [
+        "ファイルサイズ上限",
+        "contentLengthLimit",
+        "413エラー",
+        "DoS攻撃",
+        "Payload Too Large"
+      ]
+    },
+    {
+      "id": "max_file_count",
+      "hints": [
+        "最大ファイル数",
+        "maxFileCount",
+        "400エラー",
+        "Bad Request"
+      ]
+    },
+    {
+      "id": "auto_cleaning",
+      "hints": [
+        "自動削除",
+        "autoCleaning",
+        "一時ファイルクリーン",
+        "ディスク容量"
+      ]
+    },
+    {
+      "id": "error_page",
+      "hints": [
+        "エラーページ",
+        "400エラー",
+        "web.xml",
+        "マルチパート解析エラー"
+      ]
+    },
+    {
+      "id": "read_upload_file",
+      "hints": [
+        "アップロードファイル読み込み",
+        "HttpRequest#getPart",
+        "PartInfo",
+        "getInputStream",
+        "data_bind"
+      ]
+    }
+  ]
+}

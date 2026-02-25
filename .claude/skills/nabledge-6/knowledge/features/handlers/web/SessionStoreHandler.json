@@ -1,0 +1,118 @@
+{
+  "id": "SessionStoreHandler",
+  "title": "セッション変数保存ハンドラ",
+  "tags": ["web-application", "handlers"],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/SessionStoreHandler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "後続ハンドラやライブラリで追加・更新・削除されたセッション変数をセッションストアに保存するハンドラ。セッションストア機能を利用したセッション管理を提供する。",
+      "purpose": "アプリケーション内でのセッション変数の永続化を管理し、複数のストア実装(HIDDEN, DB, Redis等)を統一的に扱えるようにする。"
+    },
+    "processing": {
+      "description": "後続ハンドラで行われたセッション変数の追加・更新・削除操作を、設定されたセッションストアに保存する処理を行う。\n\n**処理フロー**:\n1. リクエスト受信時にセッションストアからセッション変数を読み込む\n2. 後続ハンドラでセッション変数が操作される\n3. レスポンス返却時にセッション変数をセッションストアに保存\n4. 改ざん検知機能により不正なセッション情報を検出\n\n**マルチスレッド処理**: 同一セッションの処理が複数スレッドで実行される場合(ブラウザの複数タブからの同時リクエストなど)、使用するストアによっては最後に到着したリクエストが処理される。ストアの特性を理解した上で要件に合ったストアを選択する必要がある。",
+      "flow": "1. セッションストアから変数読み込み\n2. 改ざんチェック実行\n3. 後続ハンドラ処理\n4. セッション変数をストアに保存"
+    },
+    "configuration": {
+      "description": "sessionManagerプロパティにSessionManagerを設定する。SessionManagerには以下を設定:\n- アプリケーションで使用するセッションストア(複数指定可)\n- デフォルトで使用するセッションストア名\n\n**基本設定例**:\n```xml\n<component class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <property name=\"sessionManager\" ref=\"sessionManager\"/>\n</component>\n\n<component name=\"sessionManager\" class=\"nablarch.common.web.session.SessionManager\">\n  <!-- プロパティ設定は省略 -->\n</component>\n```\n\n**Cookie属性変更例**:\n```xml\n<component class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <property name=\"cookieName\" value=\"NABLARCH_SID\" />\n  <property name=\"cookiePath\" value=\"/\" />\n  <property name=\"cookieDomain\" value=\"\" />\n  <property name=\"cookieSecure\" value=\"false\" />\n  <property name=\"sessionManager\" ref=\"sessionManager\"/>\n</component>\n```",
+      "properties": "sessionManager: セッションストアの管理を行うSessionManager\ncookieName: セッションIDを保持するCookie名(デフォルト: NABLARCH_SID)\ncookiePath: Cookie のPath属性\ncookieDomain: Cookie のDomain属性\ncookieSecure: Cookie のSecure属性(デフォルト: false)\nexpiration: セッション有効期限の保存先(デフォルト: HTTPセッション)"
+    },
+    "constraints": {
+      "description": "**http_response_handlerの後に配置**: サーブレットフォワード時にフォワード先でセッションストアの値にアクセスできるようにするため\n\n**HIDDENストア使用時はmultipart_handlerの後に配置**: HIDDENストア使用時にリクエストパラメータにアクセスできるようにするため\n\n**forwarding_handlerの前に配置**: forwarding_handlerを本ハンドラより前に設定すると、HIDDENストア使用時に内部フォワード時に最新のセッション変数が取得できない問題が発生するため"
+    },
+    "serialization": {
+      "description": "このハンドラでセッション変数をセッションストアに保存する際、シリアライズ機構を選択できる。\n\n選択可能なシリアライズ機構:\n- JavaのシリアライズAPI\n- その他のシリアライズライブラリ\n\nシリアライズ機構の詳細は session_store-serialize を参照。"
+    },
+    "tampering_check": {
+      "description": "セッションストアからセッション変数を読み込む際、セッションストアの改ざんチェックを行う。\n\n**HIDDENストアの改ざん検知時**: ステータスコード400のHttpErrorResponseを送出\n\n**その他のストアの改ざん検知時**: セッションストアの復号処理で発生した例外をそのまま送出\n\n**改ざんエラー時の遷移先設定**: このハンドラはforwarding_handlerより前に配置する必要があるため、http_error_handlerのdefaultPage機能を使用できない。このため改ざん検知時に表示するエラーページはweb.xmlに記述する必要がある。"
+    },
+    "cookie_configuration": {
+      "description": "セッションIDを保持するCookieの名前と属性を任意の値に変更可能。\n\n**デフォルト設定**:\n- Cookie名: NABLARCH_SID\n- Path属性: ホスト配下の全パス\n- Domain属性: 指定なし\n- Secure属性: 使用しない(HTTPS環境では使用に設定)\n- MaxAge属性: 指定なし(セッションCookieとして動作)\n- HttpOnly属性: 使用(設定ファイルから変更不可)\n\n**重要**: デフォルトではセッションストアの有効期限はHTTPセッションに保存される。複数ストア間で異なる有効期限を設定した場合、最も長い有効期限の値が使用される。"
+    },
+    "db_managed_expiration": {
+      "description": "セッション有効期限の保存先を変更できる機能。デフォルトはHttpSessionManagedExpirationによりHTTPセッションに保存されるが、DbManagedExpirationをexpirationプロパティに設定することでデータベースに保存可能。\n\n**使用方法**:\n- DBストア使用時のテーブルを使用\n- SESSION_OBJECT列は必須属性でなくNULL許可が必要(ログアウト時等にnull登録されるため)\n- 有効期限は初期化が必要\n\n**設定例**:\n```xml\n<component name=\"sessionStoreHandler\" class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <property name=\"expiration\" ref=\"expiration\" />\n</component>\n\n<component name=\"expiration\" class=\"nablarch.common.web.session.DbManagedExpiration\">\n  <property name=\"dbManager\">\n    <component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n      <property name=\"dbTransactionName\" value=\"expirationTransaction\"/>\n    </component>\n  </property>\n  <property name=\"userSessionSchema\" ref=\"userSessionSchema\" />\n</component>\n```"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "セッション変数保存ハンドラ",
+        "Session Variable Store Handler",
+        "SessionStoreHandler",
+        "セッションストア",
+        "セッション管理"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "セッション変数",
+        "保存処理",
+        "読み込み",
+        "改ざん検知",
+        "マルチスレッド"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "SessionManager",
+        "sessionManager",
+        "Cookie",
+        "コンポーネント設定"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約事項",
+        "ハンドラ配置順序",
+        "http_response_handler",
+        "multipart_handler",
+        "forwarding_handler"
+      ]
+    },
+    {
+      "id": "serialization",
+      "hints": [
+        "シリアライズ",
+        "直列化",
+        "セッション変数保存",
+        "シリアライズ機構"
+      ]
+    },
+    {
+      "id": "tampering_check",
+      "hints": [
+        "改ざんチェック",
+        "セキュリティ",
+        "HttpErrorResponse",
+        "HIDDENストア",
+        "エラーページ"
+      ]
+    },
+    {
+      "id": "cookie_configuration",
+      "hints": [
+        "Cookie設定",
+        "NABLARCH_SID",
+        "cookieName",
+        "cookieSecure",
+        "HttpOnly"
+      ]
+    },
+    {
+      "id": "db_managed_expiration",
+      "hints": [
+        "有効期限",
+        "データベース保存",
+        "DbManagedExpiration",
+        "HttpSessionManagedExpiration",
+        "expiration"
+      ]
+    }
+  ]
+}
