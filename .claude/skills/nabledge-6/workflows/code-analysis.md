@@ -254,10 +254,28 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 - `{{target_description}}`: From target-desc parameter
 - `{{modules}}`: From modules parameter
 - `{{source_files_links}}`: Generated from source-files parameter
-- `{{knowledge_base_links}}`: Generated from knowledge-files parameter
+- `{{knowledge_base_links}}`: Generated from knowledge-files parameter (see path detection below)
 - `{{official_docs_links}}`: Generated from official-docs parameter
 
-**Output**: Template file with 8 placeholders pre-filled, 8 remaining for LLM
+**Knowledge base link path detection** (automatic):
+
+The script automatically detects the skill installation location and generates appropriate links:
+
+- **Marketplace plugin installation**: Uses absolute `file://` URLs
+  - Detection: Script path contains `/.claude/plugins/cache/nabledge/` pattern
+  - Example: `file:///home/user/.claude/plugins/cache/nabledge/nabledge-6/0.1/skills/nabledge-6/docs/features/web/web-application.md`
+  - Benefit: Links work from any output location since they point to absolute paths
+
+- **Local installation**: Uses relative paths (backward compatible)
+  - Detection: Script path not in plugin cache directory
+  - Example: `../../.claude/skills/nabledge-6/docs/features/web/web-application.md`
+  - Benefit: Works with local development and custom installations
+
+- **Environment variable override**: Set `CLAUDE_SKILL_BASE_PATH` to force absolute paths
+  - Priority: Environment variable takes precedence over automatic detection
+  - Use case: Custom installation locations or testing
+
+**Output**: Template file with 8 placeholders pre-filled, 8 remaining for LLM (Large Language Model)
 
 **Error handling**: If script fails:
 - Check error message on stderr for specific issue

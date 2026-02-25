@@ -136,16 +136,52 @@ for file in "${FILES[@]}"; do
 done
 SOURCE_FILES_LINKS=$(echo "$SOURCE_FILES_LINKS" | sed 's/^$//')
 
+# Detect skill installation path and determine link strategy
+# Priority: CLAUDE_SKILL_BASE_PATH > script location detection > fallback to relative
+if [[ -n "$CLAUDE_SKILL_BASE_PATH" ]]; then
+    # Environment variable provided (marketplace or custom installation)
+    SKILL_BASE="$CLAUDE_SKILL_BASE_PATH"
+    USE_ABSOLUTE_PATHS=true
+elif [[ "$0" =~ /.claude/plugins/cache/nabledge/ ]]; then
+    # Running from marketplace plugin installation
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SKILL_BASE="$(cd "$SCRIPT_DIR/.." && pwd)"
+    USE_ABSOLUTE_PATHS=true
+else
+    # Running from local installation - use relative paths (backward compatible)
+    USE_ABSOLUTE_PATHS=false
+fi
+
 # Build knowledge base links
 KNOWLEDGE_BASE_LINKS=""
 IFS=',' read -ra FILES <<< "$KNOWLEDGE_FILES"
 for file in "${FILES[@]}"; do
     file=$(echo "$file" | xargs) # trim whitespace
     filename=$(basename "$file" .md)
-    relative_path="${RELATIVE_PREFIX}${file}"
+
+    if [[ "$USE_ABSOLUTE_PATHS" == "true" ]]; then
+        # Marketplace plugin installation - use absolute file:// URLs
+        # Extract relative path from skill root (e.g., "docs/features/web/web-application.md")
+        # Handle both ".claude/skills/nabledge-6/docs/..." and "docs/..." formats
+        if [[ "$file" =~ \.claude/skills/nabledge-6/(.*) ]]; then
+            skill_relative_path="${BASH_REMATCH[1]}"
+        elif [[ "$file" =~ ^docs/ ]]; then
+            skill_relative_path="$file"
+        else
+            # Fallback: assume it's already a relative path from skill root
+            skill_relative_path="$file"
+        fi
+        absolute_path="$SKILL_BASE/$skill_relative_path"
+        link_path="file://$absolute_path"
+    else
+        # Local installation - use relative paths (current behavior)
+        relative_path="${RELATIVE_PREFIX}${file}"
+        link_path="$relative_path"
+    fi
+
     # Use filename as description (capitalize first letter)
     desc=$(echo "$filename" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
-    KNOWLEDGE_BASE_LINKS+="- [${desc}](${relative_path})"$'\n'
+    KNOWLEDGE_BASE_LINKS+="- [${desc}](${link_path})"$'\n'
 done
 KNOWLEDGE_BASE_LINKS=$(echo "$KNOWLEDGE_BASE_LINKS" | sed 's/^$//')
 
