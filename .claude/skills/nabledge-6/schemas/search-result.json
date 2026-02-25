@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Search Result Schema",
+  "description": "Schema for final knowledge search results",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "User's original query"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string"
+          },
+          "section_id": {
+            "type": "string"
+          },
+          "relevance": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2,
+            "description": "1=Partial, 2=High"
+          },
+          "judgement": {
+            "type": "string",
+            "description": "Brief explanation of relevance"
+          }
+        },
+        "required": ["file_path", "section_id", "relevance", "judgement"]
+      }
+    }
+  },
+  "required": ["query", "sections"]
+}
