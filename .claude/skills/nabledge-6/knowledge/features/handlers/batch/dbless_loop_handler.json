@@ -2,100 +2,84 @@
   "id": "dbless_loop_handler",
   "title": "ループ制御ハンドラ",
   "official_doc_urls": [
-    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/batch/dbless_loop_handler.html"
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/batch/dbless_loop_handler.html"
   ],
   "index": [
     {
       "id": "overview",
       "hints": [
-        "DbLessLoopHandler",
         "ループ制御",
-        "データリーダ",
-        "繰り返し処理",
-        "DB接続不要"
+        "Loop Control",
+        "DbLessLoopHandler",
+        "データリーダー",
+        "DataReader",
+        "繰り返し",
+        "repeat"
       ]
     },
     {
-      "id": "processing",
+      "id": "class-name",
       "hints": [
-        "処理フロー",
-        "データ存在確認",
-        "後続ハンドラ実行",
-        "繰り返し"
+        "ハンドラクラス名",
+        "Handler class name",
+        "DbLessLoopHandler",
+        "nablarch.fw.handler"
       ]
     },
     {
-      "id": "setup",
+      "id": "module",
       "hints": [
-        "設定",
-        "XML",
-        "component",
-        "モジュール"
+        "モジュール",
+        "Module",
+        "nablarch-fw-standalone",
+        "dependency",
+        "Maven"
       ]
     },
     {
       "id": "constraints",
       "hints": [
         "制約",
-        "トランザクション管理",
-        "LoopHandler",
-        "DB接続"
+        "Constraints",
+        "制限事項"
       ]
     }
   ],
   "sections": {
     "overview": {
       "class_name": "nablarch.fw.handler.DbLessLoopHandler",
-      "description": "データリーダに処理対象データが存在する間、後続ハンドラの処理を繰り返し実行するハンドラ。",
-      "purpose": "DB接続が不要なバッチ処理において、データリーダのデータを順次処理するためのループ制御を提供する",
+      "description": "データリーダーに処理すべきデータがある間、後続ハンドラの処理を繰り返し実行するハンドラ。DBトランザクション管理が不要なバッチ処理に使用する。",
+      "purpose": "データリーダーからのデータ供給がある限り、後続ハンドラの処理をループ実行する",
       "responsibilities": [
-        "データリーダの処理対象データの存在確認",
-        "後続ハンドラの繰り返し実行"
+        "データリーダーの終了判定",
+        "後続ハンドラの繰り返し呼び出し",
+        "ループ制御"
       ],
-      "modules": [
+      "maven_modules": [
         {
-          "groupId": "com.nablarch.framework",
-          "artifactId": "nablarch-fw-standalone"
+          "group_id": "com.nablarch.framework",
+          "artifact_id": "nablarch-fw-standalone"
         }
-      ],
-      "important_notes": [
-        "DB接続が必要なバッチアプリケーションの場合は、トランザクション管理が必要なため、このハンドラではなくLoopHandler(トランザクションループ制御ハンドラ)を使用すること"
       ]
     },
-    "processing": {
-      "flow": [
-        {
-          "step": "データ存在確認",
-          "description": "データリーダに処理対象データが存在するかを確認する"
-        },
-        {
-          "step": "後続ハンドラ実行",
-          "description": "データが存在する場合、後続ハンドラの処理を実行する"
-        },
-        {
-          "step": "繰り返し",
-          "description": "処理対象データが存在する間、ステップ1-2を繰り返す"
-        }
-      ],
-      "description": "データリーダに処理対象データが存在する限り、後続ハンドラの処理を繰り返し実行する。データが存在しなくなった時点で処理を終了する。"
+    "class-name": {
+      "description": "ハンドラの完全修飾クラス名",
+      "class_name": "nablarch.fw.handler.DbLessLoopHandler"
     },
-    "setup": {
-      "component_name": "DbLessLoopHandler",
-      "properties": [],
-      "xml_example": "<component class=\"nablarch.fw.handler.DbLessLoopHandler\" />"
+    "module": {
+      "description": "必要なMavenモジュール",
+      "dependencies": [
+        {
+          "group_id": "com.nablarch.framework",
+          "artifact_id": "nablarch-fw-standalone",
+          "description": "Standalone framework core module"
+        }
+      ]
     },
     "constraints": {
-      "handler_order": {
-        "before": [],
-        "after": [],
-        "reason": "特に順序制約はないが、データリーダが設定されていることが前提となる"
-      },
-      "limitations": [
-        "DB接続が必要なバッチアプリケーションでは使用できない。トランザクション管理が必要な場合はLoopHandlerを使用すること"
-      ],
-      "notes": [
-        "このハンドラはトランザクション管理機能を持たない",
-        "DB接続を必要とするバッチ処理では必ずLoopHandlerを使用すること"
+      "description": "使用上の制約",
+      "constraints": [
+        "DBトランザクション管理が必要なバッチ処理では、このハンドラではなくloop_handlerを使用すること"
       ]
     }
   }

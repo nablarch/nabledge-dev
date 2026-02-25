@@ -2,41 +2,39 @@
   "id": "index",
   "title": "バッチアプリケーション専用ハンドラ",
   "official_doc_urls": [
-    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/batch/index.html"
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/batch/index.html"
   ],
   "index": [
     {
       "id": "overview",
       "hints": [
-        "バッチアプリケーション",
-        "専用ハンドラ",
+        "バッチハンドラ",
         "Batch Handler",
-        "バッチ処理"
+        "バッチアプリケーション",
+        "Batch Application",
+        "専用ハンドラ",
+        "Dedicated Handler",
+        "ハンドラ一覧",
+        "Handler List"
       ]
     }
   ],
   "sections": {
     "overview": {
-      "description": "バッチアプリケーション専用のハンドラ一覧。バッチ処理に特化した機能を提供するハンドラ群の概要を説明する。",
-      "purpose": "バッチアプリケーション開発に必要な専用ハンドラの種類と用途を理解する",
+      "description": "バッチアプリケーション専用のハンドラ一覧。バッチ処理に特化した機能を提供する3つのハンドラ（常駐プロセス管理、トランザクションループ制御、ループ制御）を含む。",
+      "purpose": "バッチアプリケーション開発で使用する専用ハンドラの種類と役割を理解する",
       "handlers": [
         {
-          "name": "プロセス常駐化ハンドラ",
-          "class": "nablarch.fw.handler.ProcessResidentHandler",
-          "description": "定期的に後続ハンドラキューの内容を実行するハンドラ。特定のデータソースの入力データを定期監視してバッチ処理を行う、常駐起動型バッチで使用される。",
-          "reference": "process_resident_handler"
+          "name": "ProcessResidentHandler",
+          "description": "常駐プロセス型バッチアプリケーション用ハンドラ。定期的に後続ハンドラキューを実行する。"
         },
         {
-          "name": "トランザクションループ制御ハンドラ",
-          "class": "nablarch.fw.handler.LoopHandler",
-          "description": "後続ハンドラの処理を繰り返し実行すると共に、トランザクション制御を行い、一定の繰り返し回数でトランザクションのコミットを行うハンドラ。トランザクションのコミット間隔を大きくすることで、バッチ処理のスループットを向上させることができる。",
-          "reference": "loop_handler"
+          "name": "LoopHandler",
+          "description": "トランザクションループ制御ハンドラ。DBトランザクション管理を伴うループ処理を実行する。"
         },
         {
-          "name": "ループ制御ハンドラ",
-          "class": "nablarch.fw.handler.DbLessLoopHandler",
-          "description": "データリーダに処理対象データが存在する間、後続ハンドラの処理を繰り返し実行するハンドラ。DB接続が必要なバッチアプリケーションの場合は、トランザクション管理が必要なため、このハンドラではなくトランザクションループ制御ハンドラを使用すること。",
-          "reference": "dbless_loop_handler"
+          "name": "DbLessLoopHandler",
+          "description": "ループ制御ハンドラ。DBトランザクション管理が不要なループ処理を実行する。"
         }
       ]
     }
