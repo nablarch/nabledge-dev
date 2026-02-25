@@ -1,0 +1,89 @@
+{
+  "id": "messaging_context_handler",
+  "title": "メッセージングコンテキスト管理ハンドラ",
+  "category": "handlers",
+  "tags": [
+    "mom-messaging",
+    "handlers"
+  ],
+  "l1_keywords": [
+    "ハンドラ",
+    "Handler",
+    "MOMメッセージング",
+    "MOM Messaging",
+    "コンテキスト管理"
+  ],
+  "l2_keywords": [
+    "MessagingContextHandler",
+    "MQ接続",
+    "MessagingProvider",
+    "接続管理",
+    "リソース解放"
+  ],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/mom_messaging/messaging_context_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "メッセージングコンテキスト管理ハンドラは、後続ハンドラやライブラリで使用するMQ接続をスレッド上で管理します。MQ接続の取得と解放を自動的に制御します。",
+      "purpose": "利用者はMOMメッセージングにおけるMQ接続管理の仕組みを理解できます。",
+      "class_name": "nablarch.fw.messaging.handler.MessagingContextHandler",
+      "module": "nablarch-fw-messaging"
+    },
+    "processing": {
+      "content": "このハンドラは以下の処理を実行します：\n\n1. **MQ接続の取得**\n   - MessagingProviderを使用してMQ接続を取得\n   - スレッドコンテキストに接続を保存\n   - 後続ハンドラで利用可能にする\n\n2. **MQ接続の解放**\n   - 後続ハンドラの処理完了後\n   - 例外発生時も確実に解放\n   - リソースリークを防止\n\n処理フロー：\n1. MessagingProviderからMQ接続を取得\n2. スレッドコンテキストに接続を設定\n3. 後続ハンドラに処理を委譲\n4. 後続ハンドラの処理完了（正常・異常問わず）\n5. MQ接続を解放"
+    },
+    "configuration": {
+      "content": "MQ接続先の設定：\n\nこのハンドラは、messagingProviderプロパティに設定されたプロバイダクラス（MessagingProvider実装クラス）を使用してMQ接続を取得します。\n\n**設定例:**\n```xml\n<!-- メッセージングコンテキスト管理ハンドラ -->\n<component class=\"nablarch.fw.messaging.handler.MessagingContextHandler\">\n  <property name=\"messagingProvider\" ref=\"messagingProvider\" />\n</component>\n\n<!-- プロバイダクラス -->\n<component name=\"messagingProvider\"\n    class=\"nablarch.fw.messaging.provider.JmsMessagingProvider\">\n  <!-- プロパティ設定は省略 -->\n</component>\n```\n\n**プロバイダクラスの設定内容**\n- プロバイダクラスの設定内容は、MessagingProvider実装クラスのJavadocを参照\n- 主な実装クラス:\n  - JmsMessagingProvider: Jakarta Messaging (JMS)を使用する場合\n\nモジュール依存関係:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n```"
+    },
+    "constraints": {
+      "content": "**配置制約:**\n\nこのハンドラには特別な配置制約はありません。\n\nただし、以下のハンドラがMQ接続を必要とするため、それらより前に配置する必要があります：\n- MessageReplyHandler（電文応答制御ハンドラ）\n- MessageResendHandler（再送電文制御ハンドラ）\n\n推奨配置例:\n```\nmessaging_context_handler ← MQ接続を取得\n  ↓\nmessage_resend_handler ← MQ接続を使用\n  ↓\nmessage_reply_handler ← MQ接続を使用\n  ↓\n（その他のハンドラ）\n```"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "概要",
+        "Overview",
+        "MessagingContextHandler",
+        "MQ接続管理",
+        "コンテキスト管理"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理内容",
+        "Processing",
+        "処理フロー",
+        "MQ接続取得",
+        "MQ接続解放",
+        "リソース管理"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "Configuration",
+        "messagingProvider",
+        "MessagingProvider",
+        "JmsMessagingProvider",
+        "接続先設定",
+        "モジュール"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "Constraints",
+        "配置制約",
+        "MessageReplyHandler",
+        "MessageResendHandler",
+        "ハンドラ構成"
+      ]
+    }
+  ]
+}

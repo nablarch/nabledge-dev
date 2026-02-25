@@ -1,0 +1,106 @@
+{
+  "id": "http_messaging_error_handler",
+  "title": "HTTPメッセージングエラー制御ハンドラ",
+  "category": "handlers",
+  "tags": [
+    "http-messaging",
+    "handlers"
+  ],
+  "l1_keywords": [
+    "ハンドラ",
+    "Handler",
+    "HTTPメッセージング",
+    "HTTP Messaging",
+    "エラー制御"
+  ],
+  "l2_keywords": [
+    "HttpMessagingErrorHandler",
+    "例外処理",
+    "Exception Handling",
+    "レスポンス生成",
+    "ログ出力",
+    "HTTPステータスコード",
+    "デフォルトページ"
+  ],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/http_messaging/http_messaging_error_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "HTTPメッセージングエラー制御ハンドラは、後続ハンドラで発生した例外・エラーを捕捉し、ログ出力と例外に応じたレスポンスを生成します。また、レスポンスボディが未設定の場合にデフォルトボディを設定します。",
+      "purpose": "利用者はHTTPメッセージングにおけるエラー処理の仕組みと例外ごとの応答方法を理解できます。",
+      "class_name": "nablarch.fw.messaging.handler.HttpMessagingErrorHandler",
+      "module": "nablarch-fw-messaging-http"
+    },
+    "processing": {
+      "content": "このハンドラは以下の処理を実行します：\n\n1. **例外・エラーの捕捉とログ出力**\n   - 後続ハンドラで発生した例外をキャッチ\n   - 例外タイプに応じたログレベルで出力\n   - 適切なHTTPレスポンスを生成\n\n2. **デフォルトレスポンスボディの設定**\n   - レスポンスボディが未設定の場合\n   - HTTPステータスコードに対応するデフォルトボディを設定\n\n処理フロー：\n1. 後続ハンドラを実行\n2. 例外が発生した場合、例外タイプを判定\n3. ログ出力（必要に応じて）\n4. HTTPステータスコードを決定\n5. レスポンスを生成して返却\n6. レスポンスボディが空の場合、デフォルトボディを設定"
+    },
+    "exception-handling": {
+      "content": "例外タイプごとの処理内容：\n\n**NoMoreHandlerException**\n- ログレベル: INFO（トレースログとして記録）\n- レスポンス: 404\n- 説明: リクエストを処理するハンドラが存在しないことを示す。アクションクラスが見つからなかった場合。\n\n**HttpErrorResponse**\n- ログレベル: ログ出力なし\n- レスポンス: HttpErrorResponse#getResponse()の値\n- 説明: 業務例外（バリデーション結果など）が後続ハンドラで発生したことを示す。\n\n**Result.Error**\n- ログレベル: 設定による（writeFailureLogPatternプロパティで制御）\n- レスポンス: Error#getStatusCode()の値\n- 説明: writeFailureLogPatternに一致するステータスコードの場合、FATALレベルでログ出力。\n\n**ApplicationException、MessagingException**\n- ログレベル: -\n- レスポンス: 400\n- 説明: クライアントからのリクエストが不正であることを示す例外。\n\n**その他の例外・エラー**\n- ログレベル: FATAL\n- レスポンス: 500\n- 説明: 上記以外の予期しない例外・エラー。障害として記録。"
+    },
+    "configuration": {
+      "content": "このハンドラは以下のプロパティで動作をカスタマイズできます：\n\n**writeFailureLogPattern**\n- Result.Error発生時のログ出力制御\n- 正規表現で指定\n- Error#getStatusCode()の値がパターンに一致する場合、FATALレベルでログ出力\n- 例: 5xxエラーのみログ出力する場合は \"5..\" を指定\n\n**デフォルトページ設定**\n- レスポンスボディが空の場合のデフォルトページ設定\n- 詳細はHTTPエラー制御ハンドラのデフォルトページ設定を参照\n- 参照: HttpErrorHandler_DefaultPage\n\nモジュール依存関係:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging-http</artifactId>\n</dependency>\n```"
+    },
+    "constraints": {
+      "content": "**配置制約:**\n\n**http_response_handlerの後に配置すること**\n- このハンドラが生成するHttpResponseは、http_response_handlerで処理される\n- そのため、http_response_handlerの後に配置する必要がある\n\n配置例:\n```\nhttp_response_handler\n  ↓\nhttp_messaging_error_handler ← ここに配置\n  ↓\n（その他のハンドラ）\n```\n\nこの配置により、エラー発生時に適切なHTTPレスポンスがクライアントに返却されます。"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "概要",
+        "Overview",
+        "HttpMessagingErrorHandler",
+        "エラー制御",
+        "例外処理"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理内容",
+        "Processing",
+        "処理フロー",
+        "ログ出力",
+        "レスポンス生成",
+        "デフォルトボディ"
+      ]
+    },
+    {
+      "id": "exception-handling",
+      "hints": [
+        "例外処理",
+        "Exception Handling",
+        "NoMoreHandlerException",
+        "HttpErrorResponse",
+        "Result.Error",
+        "ApplicationException",
+        "MessagingException",
+        "HTTPステータスコード",
+        "ログレベル"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "Configuration",
+        "writeFailureLogPattern",
+        "デフォルトページ",
+        "モジュール",
+        "nablarch-fw-messaging-http"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "Constraints",
+        "配置制約",
+        "http_response_handler",
+        "ハンドラ構成"
+      ]
+    }
+  ]
+}

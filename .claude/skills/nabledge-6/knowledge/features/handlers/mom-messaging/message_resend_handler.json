@@ -1,0 +1,132 @@
+{
+  "id": "message_resend_handler",
+  "title": "再送電文制御ハンドラ",
+  "category": "handlers",
+  "tags": [
+    "mom-messaging",
+    "handlers"
+  ],
+  "l1_keywords": [
+    "ハンドラ",
+    "Handler",
+    "MOMメッセージング",
+    "MOM Messaging",
+    "再送制御"
+  ],
+  "l2_keywords": [
+    "MessageResendHandler",
+    "再送電文",
+    "Resend",
+    "重複受信",
+    "応答電文保存",
+    "二重登録防止"
+  ],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/mom_messaging/message_resend_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "再送電文制御ハンドラは、同一電文を繰り返し受信した場合の再送制御を行います。電文の処理が完了しているか（応答電文が作成済みか）を判定し、完了済みの場合は作成済みの応答電文を自動的に送信します。",
+      "purpose": "利用者は再送電文の自動制御により、重複処理を防止し、システム負荷を軽減する仕組みを理解できます。",
+      "class_name": "nablarch.fw.messaging.handler.MessageResendHandler",
+      "module": "nablarch-fw-messaging"
+    },
+    "processing": {
+      "content": "このハンドラは以下の処理を実行します：\n\n1. **応答電文の保存処理**\n   - 後続ハンドラで作成された応答電文をデータベーステーブルに保存\n   - リクエストIDとメッセージIDを主キーとして保存\n\n2. **再送電文の場合、保存済み応答電文の送信処理**\n   - 同一電文（リクエストID + メッセージID）が既に処理済みか判定\n   - 処理済みの場合、保存済みの応答電文を送信\n   - 業務処理をスキップ\n\n3. **再送電文以外かつ保存済み再送電文がない場合、後続ハンドラへ処理委譲**\n   - 初回受信または未処理の電文の場合\n   - 通常の業務処理を実行\n\n処理フロー：\n1. 受信電文のリクエストIDとメッセージIDを確認\n2. 再送電文フラグをチェック\n3. データベースに保存済み応答電文が存在するか確認\n4-a. 存在する場合: 保存済み応答電文を送信して終了\n4-b. 存在しない場合: 後続ハンドラで業務処理を実行\n5. 業務処理完了後、応答電文をデータベースに保存"
+    },
+    "benefits": {
+      "content": "このハンドラを適用するメリット：\n\n**システム負荷の軽減**\n- 応答電文が既に作成済みの場合、業務処理を省略\n- 重複処理によるCPU、メモリ、データベース負荷を回避\n\n**二重登録防止ロジックの簡素化**\n- データベースへの登録処理の場合、業務処理が省略されるため二重登録防止ロジックが不要\n- アプリケーションコードの複雑さを軽減\n\nこれらのメリットにより、再送電文への対応が簡素化され、システムの信頼性と性能が向上します。"
+    },
+    "table-schema": {
+      "content": "応答電文の保存先：\n\n後続ハンドラで作成された応答電文は、データベース上のテーブルに保存されます。事前に応答電文格納用のテーブルを用意する必要があります。\n\n**テーブル定義:**\n\n| カラム名 | 制約 | 格納値 |\n|---------|------|--------|\n| リクエストID | 主キー<br>文字列型 | 要求電文のリクエストID |\n| メッセージID | 主キー<br>文字列型 | 要求電文のメッセージID<br>再送電文の場合はコリレーションメッセージIDを使用 |\n| 宛先キューの論理名 | 文字列型 | 応答電文の送信先キューの論理名<br>(InterSystemMessage#getDestination()) |\n| 処理結果コード | 文字列型 | 応答電文の処理結果コード<br>(ResponseMessage#getStatusCode()) |\n| 応答電文 | バイナリ型 | 応答電文の内容<br>(ResponseMessage#getBodyBytes()) |\n\n**デフォルトのテーブル名・カラム名の変更**\n- デフォルトのテーブル名やカラム名は設定で変更可能\n- 詳細はSentMessageTableSchemaとsentMessageTableSchemaプロパティのJavadocを参照\n\n**参照クラス:**\n- nablarch.fw.messaging.tableschema.SentMessageTableSchema\n- nablarch.fw.messaging.handler.MessageResendHandler#setSentMessageTableSchema"
+    },
+    "resend-detection": {
+      "content": "同一電文（再送電文）の判定方法：\n\nこのハンドラが受信した電文が以下の条件を満たす場合、要求電文を既に処理済みと判定し、保存済みの応答電文を処理結果として返します。\n\n**判定条件:**\n1. フレームワーク制御ヘッダの再送要求フラグに値が設定されている\n2. 受信した要求電文のリクエストIDとメッセージIDに対応するデータが、応答電文格納テーブルに存在する\n\n**重要な制約事項:**\n\n連携先システムが要求電文を送信する際、以下の条件を満たす必要があります。この制約を満たせない場合は、このハンドラを使用できません。プロジェクトで新たにハンドラを作成し、再送制御を実装する必要があります。\n\n必須条件:\n1. **初回送信時に使用した要求電文のメッセージIDを、再送電文のコリレーションメッセージIDに設定すること**\n2. **フレームワーク制御ヘッダの再送要求フラグに値を設定すること**\n\nこれらの条件により、システムは再送電文を正確に識別し、適切な応答電文を返信できます。\n\n**参照情報:**\n- フレームワーク制御ヘッダの詳細は、MOMメッセージングのフレームワーク制御ヘッダのドキュメントを参照\n- 参照: mom_system_messaging-fw_header"
+    },
+    "constraints": {
+      "content": "**配置制約:**\n\n**message_reply_handlerの後に配置すること**\n- このハンドラが作成した応答電文を送信する必要がある\n- 電文を送信するmessage_reply_handlerの後に配置する必要がある\n\n**transaction_management_handlerの後に配置すること**\n- このハンドラは応答電文をデータベースに保存する\n- データベースのトランザクション制御を実現するtransaction_management_handlerの後に配置する必要がある\n\n配置例:\n```\nmessaging_context_handler\n  ↓\ntransaction_management_handler\n  ↓\nmessage_reply_handler\n  ↓\nmessage_resend_handler ← ここに配置\n  ↓\n（その他のハンドラ）\n```"
+    },
+    "fw-header-definition": {
+      "content": "フレームワーク制御ヘッダの設定：\n\n応答電文のフレームワーク制御ヘッダの定義を変更する場合、プロジェクトで拡張したフレームワーク制御ヘッダの定義を設定する必要があります。\n\n**未設定の場合**\n- デフォルトのStandardFwHeaderDefinitionが使用される\n\n**設定例:**\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageResendHandler\">\n  <!-- フレームワーク制御ヘッダの設定 -->\n  <property name=\"fwHeaderDefinition\">\n    <component class=\"sample.SampleFwHeaderDefinition\" />\n  </property>\n</component>\n```\n\n**参照情報**\n- フレームワーク制御ヘッダの詳細は、MOMメッセージングのフレームワーク制御ヘッダのドキュメントを参照\n- 参照: mom_system_messaging-fw_header\n\nモジュール依存関係:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n```"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "概要",
+        "Overview",
+        "MessageResendHandler",
+        "再送制御",
+        "重複受信",
+        "応答電文保存"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理内容",
+        "Processing",
+        "処理フロー",
+        "応答電文保存",
+        "再送電文送信",
+        "業務処理スキップ"
+      ]
+    },
+    {
+      "id": "benefits",
+      "hints": [
+        "メリット",
+        "Benefits",
+        "システム負荷軽減",
+        "二重登録防止",
+        "処理省略"
+      ]
+    },
+    {
+      "id": "table-schema",
+      "hints": [
+        "テーブル定義",
+        "Table Schema",
+        "SentMessageTableSchema",
+        "応答電文格納",
+        "データベース",
+        "主キー"
+      ]
+    },
+    {
+      "id": "resend-detection",
+      "hints": [
+        "再送電文判定",
+        "Resend Detection",
+        "同一電文",
+        "再送要求フラグ",
+        "コリレーションメッセージID",
+        "判定条件",
+        "制約事項"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "Constraints",
+        "配置制約",
+        "message_reply_handler",
+        "transaction_management_handler",
+        "ハンドラ構成"
+      ]
+    },
+    {
+      "id": "fw-header-definition",
+      "hints": [
+        "フレームワーク制御ヘッダ",
+        "Framework Header",
+        "StandardFwHeaderDefinition",
+        "fwHeaderDefinition",
+        "設定",
+        "カスタマイズ"
+      ]
+    }
+  ]
+}

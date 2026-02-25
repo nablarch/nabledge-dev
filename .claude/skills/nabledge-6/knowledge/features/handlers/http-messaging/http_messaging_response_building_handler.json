@@ -1,0 +1,104 @@
+{
+  "id": "http_messaging_response_building_handler",
+  "title": "HTTPメッセージングレスポンス変換ハンドラ",
+  "category": "handlers",
+  "tags": [
+    "http-messaging",
+    "handlers"
+  ],
+  "l1_keywords": [
+    "ハンドラ",
+    "Handler",
+    "HTTPメッセージング",
+    "HTTP Messaging",
+    "レスポンス変換"
+  ],
+  "l2_keywords": [
+    "HttpMessagingResponseBuildingHandler",
+    "ResponseMessage",
+    "HttpResponse",
+    "レスポンスヘッダ",
+    "Content-Type",
+    "フレームワーク制御ヘッダ"
+  ],
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/http_messaging/http_messaging_response_building_handler.html"
+  ],
+  "sections": {
+    "overview": {
+      "description": "HTTPメッセージングレスポンス変換ハンドラは、後続ハンドラが作成した応答電文オブジェクトをHTTPレスポンスオブジェクトに変換します。プロトコルヘッダの値を対応するHTTPヘッダに設定し、XML、JSONなどのフォーマットにシリアライズします。",
+      "purpose": "利用者は応答電文オブジェクトをHTTPレスポンスに変換する仕組みとレスポンスヘッダの設定内容を理解できます。",
+      "class_name": "nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler",
+      "module": "nablarch-fw-messaging-http"
+    },
+    "processing": {
+      "content": "このハンドラは以下の処理を実行します：\n\n**応答電文オブジェクトのHTTPレスポンスオブジェクトへの変換**\n\n処理フロー：\n1. 後続ハンドラを実行し、応答電文オブジェクトを取得\n2. プロトコルヘッダから各種情報を抽出\n3. HTTPレスポンスヘッダを設定\n4. 応答電文ボディをシリアライズ（XML、JSONなど）\n5. HTTPレスポンスオブジェクトを返却\n\nこの処理により、メッセージングオブジェクトをHTTPプロトコルに適合した形式で返却できます。"
+    },
+    "response-headers": {
+      "content": "レスポンスヘッダに設定される値：\n\n**Status-Code（ステータスコード）**\n- 応答電文オブジェクトのステータスコードを設定\n\n**Content-Type**\n- 応答電文オブジェクトのフォーマッタから取得・設定\n  - MIME: DataRecordFormatterSupport#getMimeType()\n  - charset: DataRecordFormatterSupport#getDefaultEncoding()\n- 設定例: MIMEが \"application/json\" で charsetが \"utf-8\" の場合\n  - Content-Type: application/json;charset=utf-8\n\n**X-Correlation-Id（コリレーションメッセージID）**\n- 応答電文オブジェクトに設定されたCorrelationIdの値\n- レスポンスヘッダ \"X-Correlation-Id\" に設定\n\n重要な注意事項:\n- このハンドラでは上記以外のレスポンスヘッダを設定できない\n- 上記以外のレスポンスヘッダを使用する場合は、プロジェクトでハンドラを作成すること"
+    },
+    "fw-header-definition": {
+      "content": "フレームワーク制御ヘッダの定義変更：\n\n応答電文のフレームワーク制御ヘッダの定義を変更する場合、プロジェクトで拡張したフレームワーク制御ヘッダの定義を設定する必要があります。\n\n**未設定の場合**\n- デフォルトのStructuredFwHeaderDefinitionが使用される\n\n**設定例:**\n```xml\n<component class=\"nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler\">\n  <!-- フレームワーク制御ヘッダの設定 -->\n  <property name=\"fwHeaderDefinition\">\n    <component class=\"sample.SampleFwHeaderDefinition\" />\n  </property>\n</component>\n```\n\n**参照情報**\n- フレームワーク制御ヘッダの詳細は、HTTPメッセージングのフレームワーク制御ヘッダのドキュメントを参照\n- 参照: http_system_messaging-fw_header\n\nモジュール依存関係:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging-http</artifactId>\n</dependency>\n```"
+    },
+    "constraints": {
+      "content": "**配置制約:**\n\n**http_response_handlerの後に配置すること**\n- このハンドラが生成したHTTPレスポンスオブジェクトは、http_response_handlerによってクライアントに返却される\n- そのため、http_response_handlerの後に配置する必要がある\n\n配置例:\n```\nhttp_response_handler\n  ↓\nhttp_messaging_response_building_handler ← ここに配置\n  ↓\n（その他のハンドラ）\n```\n\nこの配置により、生成されたHTTPレスポンスが正しくクライアントに返却されます。"
+    }
+  },
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "概要",
+        "Overview",
+        "HttpMessagingResponseBuildingHandler",
+        "レスポンス変換",
+        "ResponseMessage",
+        "HttpResponse"
+      ]
+    },
+    {
+      "id": "processing",
+      "hints": [
+        "処理内容",
+        "Processing",
+        "処理フロー",
+        "変換",
+        "シリアライズ",
+        "プロトコルヘッダ"
+      ]
+    },
+    {
+      "id": "response-headers",
+      "hints": [
+        "レスポンスヘッダ",
+        "Response Headers",
+        "Status-Code",
+        "Content-Type",
+        "X-Correlation-Id",
+        "MIME",
+        "charset"
+      ]
+    },
+    {
+      "id": "fw-header-definition",
+      "hints": [
+        "フレームワーク制御ヘッダ",
+        "Framework Header",
+        "StructuredFwHeaderDefinition",
+        "fwHeaderDefinition",
+        "設定",
+        "カスタマイズ"
+      ]
+    },
+    {
+      "id": "constraints",
+      "hints": [
+        "制約",
+        "Constraints",
+        "配置制約",
+        "http_response_handler",
+        "ハンドラ構成"
+      ]
+    }
+  ]
+}
