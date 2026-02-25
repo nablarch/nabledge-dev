@@ -1,0 +1,277 @@
+{
+  "id": "bean_validation",
+  "title": "Bean Validation",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation/bean_validation.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Bean Validation",
+        "Jakarta Bean Validation",
+        "バリデーション",
+        "validation",
+        "NablarchMessageInterpolator",
+        "DomainManager"
+      ]
+    },
+    {
+      "id": "domain-validation",
+      "hints": [
+        "ドメインバリデーション",
+        "domain validation",
+        "Domain",
+        "DomainManager",
+        "SampleDomainBean"
+      ]
+    },
+    {
+      "id": "character-type-validation",
+      "hints": [
+        "文字種バリデーション",
+        "SystemChar",
+        "CharsetDef",
+        "RangedCharsetDef",
+        "LiteralCharsetDef"
+      ]
+    },
+    {
+      "id": "correlation-validation",
+      "hints": [
+        "相関バリデーション",
+        "correlation validation",
+        "AssertTrue",
+        "複数項目"
+      ]
+    },
+    {
+      "id": "nested-bean",
+      "hints": [
+        "ネストしたBean",
+        "nested bean",
+        "Valid",
+        "バッチ登録",
+        "batch registration"
+      ]
+    },
+    {
+      "id": "web-application",
+      "hints": [
+        "Webアプリケーション",
+        "web application",
+        "BeanValidationStrategy",
+        "inject_form_interceptor"
+      ]
+    },
+    {
+      "id": "restful-web-service",
+      "hints": [
+        "RESTful Webサービス",
+        "RESTful web service",
+        "Valid",
+        "resource class"
+      ]
+    },
+    {
+      "id": "explicit-execution",
+      "hints": [
+        "明示的実行",
+        "explicit execution",
+        "ValidatorUtil",
+        "validate"
+      ]
+    },
+    {
+      "id": "groups",
+      "hints": [
+        "グループ",
+        "groups",
+        "validateWithGroup",
+        "Default"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "MessageInterpolator",
+        "messageInterpolator",
+        "validationStrategy"
+      ]
+    },
+    {
+      "id": "errors",
+      "hints": [
+        "エラー",
+        "error",
+        "ApplicationException",
+        "validation error"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.core.validation.ee.NablarchMessageInterpolator",
+        "nablarch.core.validation.ee.DomainManager",
+        "nablarch.core.validation.ee.ValidatorUtil",
+        "nablarch.common.web.validator.BeanValidationStrategy"
+      ],
+      "annotations": [
+        "@Domain",
+        "@Required",
+        "@Length",
+        "@SystemChar",
+        "@AssertTrue",
+        "@Valid"
+      ],
+      "description": "Jakarta Bean Validationに準拠したバリデーション機能を提供します。ドメインバリデーション、文字種バリデーション、相関バリデーションなど、多様なバリデーションをサポートします。",
+      "purpose": "Jakarta Bean Validation仕様に準拠した入力値検証を提供し、ドメイン単位でのバリデーションルール定義により、保守性の高いバリデーションを実現する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-validation-ee"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-message"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-code"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-web"
+        }
+      ],
+      "prerequisites": [
+        "Jakarta Bean Validationエンジンは実装に含まれていないため、別途Jakarta Bean Validation実装（Hibernate Validatorなど）をライブラリに追加する必要がある"
+      ],
+      "limitations": [
+        "Formクラスの全プロパティをString型で定義する必要がある（型変換はバリデーション後に実行）",
+        "アノテーションはフィールドまたはプロパティ（getter）に設定可能だが、setterには設定できない"
+      ]
+    },
+    "domain-validation": {
+      "description": "ドメイン単位でバリデーションルールを定義する機能。ドメインBeanを作成し、DomainManagerで有効化することで、各Beanプロパティに@Domainアノテーションを設定するだけでバリデーションルールを適用できます。",
+      "steps": [
+        "ドメインBeanの作成（フィールド名がドメイン名となる）",
+        "DomainManagerの実装クラスを作成し、getDomainBean()でドメインBeanのClassオブジェクトを返す",
+        "コンポーネント設定ファイルでDomainManager実装クラスを「domainManager」という名前で定義",
+        "バリデーション対象のBeanプロパティに@Domainアノテーションを設定"
+      ],
+      "notes": [
+        "@Requiredアノテーションは個別Bean側に設定する（必須項目かどうかは機能設計に依存するため、ドメイン側で強制できない）",
+        "ドメイン名はドメインBeanのフィールド名と一致させる"
+      ]
+    },
+    "character-type-validation": {
+      "description": "システム許可文字のバリデーション機能を使用した文字種バリデーション。文字種ごとに許可文字集合を定義し、@SystemCharアノテーションで文字種を指定してバリデーションを実行します。",
+      "charset_definition_classes": [
+        "RangedCharsetDef（範囲指定で許可文字集合を登録）",
+        "LiteralCharsetDef（リテラルで全ての許可文字を登録）",
+        "CompositeCharsetDef（複数のRangedCharsetDefとLiteralCharsetDefで構成される許可文字を登録）"
+      ],
+      "configuration_steps": [
+        "コンポーネント定義で許可文字集合を登録（コンポーネント名が文字種を示す任意の名前となる）",
+        "@SystemCharアノテーションのcharsetDef属性に文字種を示す名前を設定"
+      ],
+      "notes": [
+        "許可文字数が多い場合、後方に定義された文字のチェックに時間がかかる。性能問題となる場合はCachingCharsetDefを使用してキャッシュを有効化する",
+        "サロゲートペアはデフォルトで許可されない。許可する場合はSystemCharConfigのallowSurrogatePairプロパティをtrueに設定"
+      ]
+    },
+    "correlation-validation": {
+      "description": "複数項目を使用した相関バリデーションを実行する機能。Jakarta Bean Validationの@AssertTrueアノテーションを使用して実装します。",
+      "implementation_method": "Beanクラスに@AssertTrueアノテーションを設定したbooleanメソッドを定義し、メソッド内で相関バリデーションロジックを実装",
+      "warnings": [
+        "Jakarta Bean Validationではバリデーションの実行順序が保証されないため、個別項目のバリデーション前に相関バリデーションが呼ばれる可能性がある",
+        "相関バリデーション内で個別項目のバリデーションが実行されていなくても、予期しない例外が発生しないように実装する必要がある",
+        "オプション項目の場合、未入力であればバリデーションを実行せずに結果を返す"
+      ]
+    },
+    "nested-bean": {
+      "description": "バッチ登録など、同一情報を複数回入力する機能でのバリデーション。バリデーション用Beanにネストしたbeanを定義し、@Validアノテーションを設定します。",
+      "implementation_points": [
+        "ネストしたBeanのフィールドに@Validアノテーションを設定",
+        "ネストしたBeanのフィールドを親Beanの初期化時に初期化",
+        "1:Nの関係で最低1つの選択または入力が必要な場合は@Sizeアノテーションを設定",
+        "1:1の関係の場合は、フラットなBeanにできないか検討する"
+      ],
+      "notes": [
+        "HTMLが改ざんされた場合やWebサービスで不正なJSONやXMLを受信した場合、ネストしたBeanの情報が送信されず、未初期化（null）となりバリデーション対象外となる可能性がある",
+        "ネストしたBeanが確実にバリデーションされるよう実装が必要"
+      ]
+    },
+    "web-application": {
+      "description": "Webアプリケーションでのユーザ入力値チェック。inject_form_interceptorを使用してBean Validationを実行します。",
+      "configuration": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義に設定",
+      "error_message_sort": [
+        "jakarta.servlet.ServletRequest#getParameterNamesが返す項目名の順序でソート",
+        "エラーが発生した項目がリクエストパラメータに存在しない場合は末尾に移動",
+        "getParameterNamesが返す値は実装依存のため、使用するアプリケーションサーバによってソート順が変わる可能性がある"
+      ],
+      "copy_bean_to_request_scope": "BeanValidationStrategyのcopyBeanToRequestScopeOnErrorプロパティをtrueに設定すると、バリデーションエラー時にもリクエストパラメータをコピーしたBeanをリクエストスコープに格納"
+    },
+    "restful-web-service": {
+      "description": "RESTful WebサービスでのユーザREST入力値チェック。リソースクラスのメソッドに@Validアノテーションを設定して実行します。",
+      "reference": "詳細はjaxrs_bean_validation_handlerのPerform validationセクションを参照"
+    },
+    "explicit-execution": {
+      "description": "バリデーションの明示的実行。ValidatorUtil.validate()を使用して明示的にバリデーションを実行します。",
+      "use_cases": [
+        "バリデーションエラーを独自にハンドリングしたい場合",
+        "inject_form_interceptorやRESTful Webサービスの方法が使用できない場合"
+      ],
+      "validation_error": "バリデーションエラーが発生するとApplicationExceptionがスローされる",
+      "web_application_notes": [
+        "Webアプリケーションで明示的にバリデーションを実行する場合、リクエストパラメータからBeanへの変換が必要",
+        "HttpRequest#getParamMap()でリクエストパラメータを取得する必要があるが、このAPIはアーキテクト向けの公開APIであり、Actionクラスでの使用は禁止",
+        "共通部品としてユーティリティクラスを作成することを推奨"
+      ]
+    },
+    "groups": {
+      "description": "Bean Validationのグループ機能を使用して、バリデーション実行時に使用するルールを特定のグループに限定する機能。",
+      "usage": [
+        "バリデーションアノテーションのgroups属性にグループを指定（指定しない場合はDefaultグループに属する）",
+        "ValidatorUtil.validateWithGroup()でグループを指定してバリデーションを実行"
+      ],
+      "notes": [
+        "グループ機能を使用して1つのFormクラスを複数の画面やAPIで共有することは可能だが、Nablarchでは推奨していない",
+        "application_designのForm class is created for each HTML formおよびrest-application_designのForm class is created for each APIを参照"
+      ]
+    },
+    "configuration": {
+      "description": "Bean Validation使用時の各種設定。MessageInterpolatorの設定、ドメインバリデーションの設定、Webアプリケーションでの設定、RESTful Webサービスでの設定を含みます。",
+      "message_interpolator": "エラー時のメッセージを構築するクラス（jakarta.validation.MessageInterpolatorの実装）を設定。未設定の場合はメッセージ管理を使用するNablarchMessageInterpolatorが使用される",
+      "message_definition": [
+        "デフォルトのNablarchMessageInterpolatorを使用する場合、アノテーションのmessage属性の値が{}で囲まれている場合のみメッセージ管理を使用してメッセージを構築",
+        "メッセージテキスト内でバリデーションアノテーションの属性情報を埋め込むプレースホルダーを使用可能（属性名を{}で囲む）",
+        "メッセージを動的に構築する式（EL式など）は使用不可"
+      ],
+      "item_name_embedding": [
+        "Jakarta Bean Validation仕様ではメッセージに項目名を埋め込めないが、Nablarchは項目名埋め込み機能を提供",
+        "ItemNamedConstraintViolationConverterFactoryをconstraintViolationConverterFactoryという名前でコンポーネント定義に設定",
+        "項目名はメッセージとして定義（メッセージIDは完全修飾クラス名 + \".\" + 項目プロパティ名）",
+        "生成されるメッセージでは項目名がエラーメッセージの先頭に追加され、[]で囲まれる"
+      ]
+    },
+    "errors": {
+      "list": [
+        {
+          "exception": "ApplicationException",
+          "cause": "バリデーションエラーが発生した場合",
+          "resolution": "バリデーションエラーメッセージを確認し、入力値を修正する。Webアプリケーションでは@OnErrorで指定したパスに遷移"
+        },
+        {
+          "exception": "型変換エラー（予期しない例外）",
+          "cause": "Beanのプロパティ型がString以外で、不正な値が送信された場合、Bean変換処理が失敗",
+          "resolution": "Beanの全プロパティをString型で定義する。型変換はバリデーション実行後に実施"
+        }
+      ]
+    }
+  }
+}

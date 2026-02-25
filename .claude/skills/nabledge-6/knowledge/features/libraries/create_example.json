@@ -1,0 +1,114 @@
+{
+  "id": "create_example",
+  "title": "登録機能の実装例（セッションストア）",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/session_store/create_example.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "セッションストア",
+        "session store",
+        "登録機能",
+        "registration",
+        "SessionUtil",
+        "implementation example"
+      ]
+    },
+    {
+      "id": "initial-display",
+      "hints": [
+        "初期表示",
+        "initial display",
+        "SessionUtil.delete",
+        "input screen"
+      ]
+    },
+    {
+      "id": "input-to-confirmation",
+      "hints": [
+        "入力画面から確認画面",
+        "input to confirmation",
+        "SessionUtil.put",
+        "BeanUtil.createAndCopy"
+      ]
+    },
+    {
+      "id": "confirmation-to-input",
+      "hints": [
+        "確認画面から入力画面",
+        "confirmation to input",
+        "SessionUtil.get",
+        "SessionUtil.delete",
+        "戻る"
+      ]
+    },
+    {
+      "id": "execute-registration",
+      "hints": [
+        "登録処理実行",
+        "execute registration",
+        "SessionUtil.get",
+        "SessionUtil.delete"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.common.web.session.SessionUtil"
+      ],
+      "description": "セッションストアを使用した登録機能の実装例。入力画面、確認画面、登録完了の典型的な画面遷移パターンでの実装方法を示します。",
+      "purpose": "セッションストアを使用して、入力データを一時保存しながら画面遷移を実現する登録機能の実装パターンを提供する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-web"
+        }
+      ]
+    },
+    "initial-display": {
+      "description": "入力画面の初期表示時の処理。ブラウザを直接閉じた場合にセッションが残存する可能性があるため、セッションストアから入力情報を削除します。",
+      "java_example": "// Delete because the session may remain when the browser is closed directly\nSessionUtil.delete(ctx, \"project\");",
+      "notes": [
+        "ブラウザを直接閉じた場合にセッションが残る可能性がある",
+        "SessionUtil.delete()で明示的に削除する"
+      ]
+    },
+    "input-to-confirmation": {
+      "description": "入力画面から確認画面への遷移時の処理。リクエストスコープから入力情報を取得し、EntityまたはFormに変換してセッションストアに保存します。",
+      "java_example": "// Acquire input information from the request scope\nProjectForm form = context.getRequestScopedVar(\"form\");\n\n// Convert Form to Entity\nProject project = BeanUtil.createAndCopy(Project.class, form);\n\n// Save input information in session store\nSessionUtil.put(ctx, \"project\", project);",
+      "steps": [
+        "リクエストスコープから入力情報（Form）を取得",
+        "BeanUtil.createAndCopy()でFormをEntityに変換",
+        "SessionUtil.put()で入力情報をセッションストアに保存"
+      ]
+    },
+    "confirmation-to-input": {
+      "description": "確認画面から入力画面への戻り処理。セッションストアから入力情報を取得し、Formに変換してリクエストスコープに設定後、セッションストアから削除します。",
+      "java_example": "// Fetch input information from the session store\nProject project = SessionUtil.get(ctx, \"project\");\n\n// Convert Entity to Form\nProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);\n\n// Configure input information to the request scope\ncontext.setRequestScopedVar(\"form\", form);\n\n// Delete the input information from the session store\nSessionUtil.delete(ctx, \"project\");",
+      "steps": [
+        "SessionUtil.get()でセッションストアから入力情報を取得",
+        "BeanUtil.createAndCopy()でEntityをFormに変換",
+        "リクエストスコープに入力情報を設定",
+        "SessionUtil.delete()でセッションストアから入力情報を削除"
+      ],
+      "notes": [
+        "入力画面に戻る際はセッションストアから削除する"
+      ]
+    },
+    "execute-registration": {
+      "description": "登録処理の実行。セッションストアから入力情報を取得して登録処理を実行し、処理完了後にセッションストアから削除します。",
+      "java_example": "// Fetch input information from the session store\nProject project = SessionUtil.get(ctx, \"project\");\n\n// Registration process is omitted\n\n// Delete the input information from the session store\nSessionUtil.delete(ctx, \"project\");",
+      "steps": [
+        "SessionUtil.get()でセッションストアから入力情報を取得",
+        "登録処理を実行",
+        "SessionUtil.delete()でセッションストアから入力情報を削除"
+      ],
+      "notes": [
+        "登録処理完了後は必ずセッションストアから削除する"
+      ]
+    }
+  }
+}
