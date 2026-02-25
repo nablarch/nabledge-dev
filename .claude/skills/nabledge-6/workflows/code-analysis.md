@@ -11,7 +11,7 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Input**: User's request (target code specification)
 
-**Output**: Documentation file (Markdown + Mermaid diagrams) in .nabledge/YYYYMMDD/
+**Output**: Documentation file (Markdown + Mermaid diagrams) in work/YYYYMMDD/
 
 **Tools**: Read, Glob, Grep, Bash with jq, Write
 
@@ -203,7 +203,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
   --source-files "<file1.java,file2.java>" \
   --knowledge-files "<knowledge1.md,knowledge2.md>" \
   --official-docs "<url1,url2>" \
-  --output-path ".nabledge/YYYYMMDD/code-analysis-<target>.md"
+  --output-path "work/YYYYMMDD/code-analysis-<target>.md"
 ```
 
 **Parameters**:
@@ -428,7 +428,7 @@ sequenceDiagram
 #### 3.5: Fill remaining placeholders and output
 
 1. **Read pre-filled template**: Use Read tool on the file created in Step 3.2
-   - File path: `.nabledge/YYYYMMDD/code-analysis-<target>.md`
+   - File path: `work/YYYYMMDD/code-analysis-<target>.md`
    - This file already contains 8/16 placeholders filled (deterministic content)
 
 2. **Construct complete content**: Build the full document content in memory by:
@@ -469,7 +469,7 @@ sequenceDiagram
    - Mermaid diagrams refined from skeletons (not regenerated)
 
 4. **Write complete file**: Use Write tool with full document content
-   - File path: Same as Step 3.2 (`.nabledge/YYYYMMDD/code-analysis-<target>.md`)
+   - File path: Same as Step 3.2 (`work/YYYYMMDD/code-analysis-<target>.md`)
    - Content: Complete document with all 16 placeholders filled (8 pre-filled + 8 generated)
    - This will overwrite the pre-filled template from Step 3.2 with the complete version
    - Write tool requires prior Read (already done in step 1)
@@ -515,7 +515,7 @@ sequenceDiagram
    fi
 
    # Replace duration placeholder in the output file
-   sed -i "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" .nabledge/YYYYMMDD/code-analysis-<target>.md
+   sed -i "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" work/YYYYMMDD/code-analysis-<target>.md
 
    # Clean up temp files
    rm -f "$START_TIME_FILE"
@@ -539,7 +539,7 @@ sequenceDiagram
 6. **Inform user**: Show output path and actual duration
 6. **Inform user**: Show output path and actual duration
 
-**Output**: Documentation file at .nabledge/YYYYMMDD/code-analysis-<target-name>.md
+**Output**: Documentation file at work/YYYYMMDD/code-analysis-<target-name>.md
 
 ## Output template
 

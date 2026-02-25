@@ -35,28 +35,10 @@ nabledge-6 code-analysis
 - Ask user to choose: Knowledge Search or Code Analysis
 
 **Text argument** (`nabledge-6 "<question>"`):
-- Execute Knowledge Search Workflow
+- **Execute**: `workflows/keyword-search.md` → `workflows/section-judgement.md`
 
 **"code-analysis" argument** (`nabledge-6 code-analysis`):
-- Execute Code Analysis Workflow
-
-### Step 1: Knowledge Search Workflow
-
-**When**: User wants to search Nablarch knowledge
-
-**Execute**: `workflows/keyword-search.md` → `workflows/section-judgement.md`
-
-**Expected tools**: Read, Bash, jq
-**Expected calls**: 10-15
-
-### Step 2: Code Analysis Workflow
-
-**When**: User wants to analyze existing code
-
-**Execute**: `workflows/code-analysis.md`
-
-**Expected tools**: Read, Glob, Grep, Bash, jq, Write
-**Expected calls**: 30-50
+- **Execute**: `workflows/code-analysis.md`
 
 ## Critical Constraints
 
