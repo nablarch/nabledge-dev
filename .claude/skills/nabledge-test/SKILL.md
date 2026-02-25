@@ -140,31 +140,93 @@ None provided
 ## Execution
 
 ### Step 1: Load skill workflows and knowledge index
+**Start**: <timestamp in ISO 8601 format>
 **Action**: Read nabledge-<version> skill procedures
 **Tool**: Read (4 calls)
 - SKILL.md
 - workflows/keyword-search.md
 - workflows/section-judgement.md
 - knowledge/index.toon
-**Result**: Successfully loaded workflows and knowledge index
+
+**INPUT**: None (initial load)
+**IN Tokens**: 0
+
+**OUTPUT**: Successfully loaded workflows and knowledge index
+**OUT Tokens**: <approx character count / 4>
+
+**End**: <timestamp in ISO 8601 format>
+**Duration**: <seconds>s
+
+---
 
 ### Step 2: Execute knowledge search (keyword-search workflow)
+**Start**: <timestamp>
 **Action**: Extract keywords and match against index
+
+**INPUT**:
+```
+Query: <scenario.question>
+```
+**IN Tokens**: <approx character count / 4>
+
 **Tool**: Mental analysis + Read
 **Result**: <summary of keyword extraction and file selection>
 
+**OUTPUT**:
+```
+Keywords extracted:
+- L1: [...]
+- L2: [...]
+
+Files selected:
+- <file1> (score: X)
+- <file2> (score: Y)
+```
+**OUT Tokens**: <approx character count / 4>
+
+**End**: <timestamp>
+**Duration**: <seconds>s
+
+---
+
 ### Step 3: Read candidate sections (section-judgement workflow)
+**Start**: <timestamp>
 **Action**: Read specific sections from knowledge files
+
+**INPUT**:
+```
+Files: [<file1>, <file2>]
+```
+**IN Tokens**: <approx character count / 4>
+
 **Tool**: Bash (jq)
 **Result**: <summary of sections read>
 
-(... continue for each significant action ...)
+**OUTPUT**:
+```
+Sections extracted:
+- <file1>: [section1, section2]
+- <file2>: [section3]
+```
+**OUT Tokens**: <approx character count / 4>
+
+**End**: <timestamp>
+**Duration**: <seconds>s
+
+---
+
+(... continue for each significant action with same format ...)
 
 ## Output Files
 None created (response was inline)
 
 ## Final Result
 <Copy the full response from nabledge-6 here>
+
+## Token Summary
+- **Total IN Tokens**: <sum of all IN tokens>
+- **Total OUT Tokens**: <sum of all OUT tokens>
+- **Total Tokens**: <IN + OUT>
 
 ## Issues
 None
@@ -183,7 +245,28 @@ None
   "files_created": [],
   "errors_encountered": 0,
   "output_chars": <char count of response>,
-  "transcript_chars": <char count of transcript>
+  "transcript_chars": <char count of transcript>,
+  "tokens": {
+    "total_in": <sum of all IN tokens>,
+    "total_out": <sum of all OUT tokens>,
+    "total": <IN + OUT>,
+    "by_step": [
+      {
+        "step": 1,
+        "name": "Load skill workflows",
+        "in_tokens": <count>,
+        "out_tokens": <count>,
+        "duration_seconds": <duration>
+      },
+      {
+        "step": 2,
+        "name": "Execute knowledge search",
+        "in_tokens": <count>,
+        "out_tokens": <count>,
+        "duration_seconds": <duration>
+      }
+    ]
+  }
 }
 ```
 
@@ -298,6 +381,15 @@ Write `.pr/xxxxx/test-<scenario-id>-<timestamp>.md`:
 - **Duration**: <seconds>s
 - **Tool Calls**: <count>
 - **Response Length**: <chars> chars
+- **Tokens**: <total> tokens (IN: <in>, OUT: <out>)
+
+### Token Usage by Step
+| Step | Name | IN Tokens | OUT Tokens | Total | Duration |
+|------|------|-----------|------------|-------|----------|
+| 1 | Load workflows | <in> | <out> | <total> | <sec>s |
+| 2 | Knowledge search | <in> | <out> | <total> | <sec>s |
+| 3 | Read sections | <in> | <out> | <total> | <sec>s |
+| ... | ... | ... | ... | ... | ... |
 
 ## Transcript
 See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
