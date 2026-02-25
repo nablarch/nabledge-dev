@@ -21,28 +21,32 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Tool**: Bash
 
-**Action** - Store start time with unique session ID:
+**Action** - Store start time with unique session ID in output directory:
 ```bash
+OUTPUT_DIR="work/$(date '+%Y%m%d')"
+mkdir -p "$OUTPUT_DIR"
 UNIQUE_ID="$(date '+%s%3N')-$$"
-echo "$UNIQUE_ID" > .tmp/nabledge-code-analysis-id
-date '+%s' > ".tmp/nabledge-code-analysis-start-$UNIQUE_ID"
+echo "$UNIQUE_ID" > "$OUTPUT_DIR/.nabledge-code-analysis-id"
+date '+%s' > "$OUTPUT_DIR/.nabledge-code-analysis-start-$UNIQUE_ID"
 echo "Start time recorded: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Session ID: $UNIQUE_ID"
+echo "Output directory: $OUTPUT_DIR"
 ```
 
 **Output example**:
 ```
 Start time recorded: 2026-02-10 14:54:00
 Session ID: 1707559440123-12345
+Output directory: work/20260210
 ```
 
 **IMPORTANT**:
-- Session ID stored in: `.tmp/nabledge-code-analysis-id`
-- Start time stored in: `.tmp/nabledge-code-analysis-start-$UNIQUE_ID`
+- Session ID stored in: `work/YYYYMMDD/.nabledge-code-analysis-id`
+- Start time stored in: `work/YYYYMMDD/.nabledge-code-analysis-start-$UNIQUE_ID`
 - UNIQUE_ID format: `{millisecond_timestamp}-{process_PID}`
 - Epoch time (seconds since 1970) for accurate duration calculation
-- Step 3.3 reads session ID from fixed file path
-- Uses `.tmp/` directory (repository-local) for environment independence
+- Step 3.5 reads session ID from output directory
+- Files stored in same directory as code analysis output
 
 **Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
 
@@ -489,14 +493,17 @@ sequenceDiagram
 
    Execute single bash script to fill duration placeholder:
    ```bash
+   # Set output directory path
+   OUTPUT_DIR="work/YYYYMMDD"  # Replace with actual date
+
    # Retrieve session ID from Step 0
-   UNIQUE_ID=$(cat .tmp/nabledge-code-analysis-id 2>/dev/null || echo "")
+   UNIQUE_ID=$(cat "$OUTPUT_DIR/.nabledge-code-analysis-id" 2>/dev/null || echo "")
 
    # Get current time
    end_time=$(date '+%s')
 
    # Calculate duration with error handling
-   START_TIME_FILE=".tmp/nabledge-code-analysis-start-$UNIQUE_ID"
+   START_TIME_FILE="$OUTPUT_DIR/.nabledge-code-analysis-start-$UNIQUE_ID"
    if [ -z "$UNIQUE_ID" ] || [ ! -f "$START_TIME_FILE" ]; then
      echo "WARNING: Start time file not found. Duration will be set to '不明'."
      duration_text="不明"
@@ -515,11 +522,11 @@ sequenceDiagram
    fi
 
    # Replace duration placeholder in the output file
-   sed -i "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" work/YYYYMMDD/code-analysis-<target>.md
+   sed -i "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" "$OUTPUT_DIR/code-analysis-<target>.md"
 
    # Clean up temp files
    rm -f "$START_TIME_FILE"
-   rm -f .tmp/nabledge-code-analysis-id
+   rm -f "$OUTPUT_DIR/.nabledge-code-analysis-id"
 
    # Output for user
    echo "Duration: $duration_text"
