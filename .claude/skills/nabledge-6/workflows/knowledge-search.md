@@ -14,26 +14,13 @@ Answer to user's query using relevant knowledge from knowledge files
 
 ### Step 1: Select Candidate Sections
 
-Follow the workflow in `workflows/keyword-search.md`:
-
-1. Extract keywords from user's query (L1: technical components, L2: functional terms)
-2. Match files against knowledge/index.toon using semantic matching
-3. Extract sections from matched files
-4. Score sections based on keyword overlap
-5. Filter and sort to get top candidate sections
+Follow the workflow in `workflows/keyword-search.md`.
 
 **Output**: JSON with candidate sections (conforms to `schemas/section-scoring.json`)
 
 ### Step 2: Judge Section Relevance
 
-Follow the workflow in `workflows/section-judgement.md`:
-
-1. Read section content for each candidate (up to 10 sections or until finding 5 High-relevance)
-2. Judge relevance based ONLY on actual content:
-   - **High (2)**: Directly addresses goal with actionable information
-   - **Partial (1)**: Provides prerequisite knowledge or context
-   - **None (0)**: Different topic
-3. Filter and sort by relevance
+Follow the workflow in `workflows/section-judgement.md`.
 
 **Output**: JSON with relevant sections (High and Partial only)
 
