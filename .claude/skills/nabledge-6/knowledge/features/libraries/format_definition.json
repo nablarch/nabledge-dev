@@ -1,0 +1,284 @@
+{
+  "id": "format_definition",
+  "title": "フォーマット定義ファイルの記述ルール",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format/format_definition.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "フォーマット定義ファイル",
+        "format definition file",
+        "記述ルール",
+        "description rules",
+        "UTF-8",
+        "directive"
+      ]
+    },
+    {
+      "id": "common-notation",
+      "hints": [
+        "共通記法",
+        "common notation",
+        "リテラル",
+        "literal",
+        "コメント",
+        "comment"
+      ]
+    },
+    {
+      "id": "file-structure",
+      "hints": [
+        "ファイル構造",
+        "file structure",
+        "ディレクティブ宣言",
+        "directive declaration",
+        "レコードフォーマット定義",
+        "record format definition"
+      ]
+    },
+    {
+      "id": "common-directives",
+      "hints": [
+        "共通ディレクティブ",
+        "common directives",
+        "file-type",
+        "text-encoding",
+        "record-separator"
+      ]
+    },
+    {
+      "id": "fixed-length-directives",
+      "hints": [
+        "固定長",
+        "fixed-length",
+        "record-length",
+        "positive-zone-sign-nibble",
+        "negative-zone-sign-nibble"
+      ]
+    },
+    {
+      "id": "variable-length-directives",
+      "hints": [
+        "可変長",
+        "variable-length",
+        "field-separator",
+        "quoting-delimiter",
+        "requires-title"
+      ]
+    },
+    {
+      "id": "record-definition",
+      "hints": [
+        "レコード定義",
+        "record definition",
+        "レコードタイプ名",
+        "record type name",
+        "フィールド定義",
+        "field definition"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "フォーマット定義ファイルの記述ルール。フォーマット定義ファイルは汎用データフォーマット機能で使用され、データ構造（固定長、可変長、JSON、XML）を定義します。",
+      "purpose": "データの入出力フォーマットを定義し、固定長、可変長、JSON、XMLなどの様々なデータ形式に対応する",
+      "character_code": "UTF-8",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-dataformat"
+        }
+      ]
+    },
+    "common-notation": {
+      "description": "フォーマット定義ファイルの共通記法。リテラル表記とコメントの記述ルールを定義します。",
+      "literal_types": [
+        {
+          "type": "文字列",
+          "notation": "値を\"で囲む（Javaの文字リテラルと同様）",
+          "example": "\"Nablarch\"、\"\\r\\n\"",
+          "notes": "Unicodeエスケープや8進エスケープは非対応"
+        },
+        {
+          "type": "10進整数",
+          "notation": "Javaの数値リテラルと同様に記述",
+          "example": "123、-123",
+          "notes": "小数は非対応"
+        },
+        {
+          "type": "真偽値",
+          "notation": "trueまたはfalseで設定（大文字可）",
+          "example": "true、false"
+        }
+      ],
+      "comment": "行内の#以降はコメントとして扱われる"
+    },
+    "file-structure": {
+      "description": "フォーマット定義ファイルは主に2つのセクションで構成されます。",
+      "sections": [
+        {
+          "name": "ディレクティブ宣言セクション",
+          "description": "使用するデータフォーマット（固定長やJSONなど）やエンコーディングなど、共通的な設定を定義"
+        },
+        {
+          "name": "レコードフォーマット定義セクション",
+          "description": "レコードの内容を定義。レコード内のフィールド定義、各フィールドのデータ型、データ変換ルールを定義"
+        }
+      ]
+    },
+    "common-directives": {
+      "description": "全てのデータフォーマットで共通に使用するディレクティブ定義。",
+      "directives": [
+        {
+          "name": "file-type",
+          "required": true,
+          "description": "データフォーマットを指定",
+          "values": ["Fixed（固定長）", "Variable（可変長：CSV、TSVなど）", "JSON", "XML"]
+        },
+        {
+          "name": "text-encoding",
+          "required": true,
+          "description": "文字列型フィールドの読み書きに使用するエンコーディングを指定。使用するJVMで利用可能な文字エンコーディングのみ指定可能",
+          "examples": ["UTF-8", "SJIS"],
+          "notes": [
+            "file-typeにJSONを指定した場合、UTF-8、UTF-16(BEまたはLE)、UTF-32(BEまたはLE)のみ指定可能",
+            "file-typeにXMLを指定した場合、XML宣言部で指定したエンコーディングがこの設定値より優先される"
+          ]
+        },
+        {
+          "name": "record-separator",
+          "required": false,
+          "description": "レコード終端文字（改行）を指定",
+          "notes": [
+            "file-typeにVariable（可変長）を指定した場合は必須",
+            "file-typeがJSONまたはXMLの場合、この設定値は使用されない"
+          ]
+        }
+      ]
+    },
+    "fixed-length-directives": {
+      "description": "固定長フォーマットのデータに使用するディレクティブ。",
+      "directives": [
+        {
+          "name": "record-length",
+          "required": true,
+          "description": "1レコードのバイト長を指定"
+        },
+        {
+          "name": "positive-zone-sign-nibble",
+          "required": false,
+          "description": "符号付きゾーン数値のゾーン部に設定するプラス符号を16進表記の文字列で指定",
+          "default": "ASCII互換:0x3、EBCDIC互換:0xC"
+        },
+        {
+          "name": "negative-zone-sign-nibble",
+          "required": false,
+          "description": "符号付きゾーン数値のゾーン部に設定するマイナス符号を16進表記の文字列で指定",
+          "default": "ASCII互換:0x7、EBCDIC互換:0xD"
+        },
+        {
+          "name": "positive-pack-sign-nibble",
+          "required": false,
+          "description": "符号付きパック数値の符号ビットに設定するプラス符号を16進表記の文字列で指定",
+          "default": "ASCII互換:0x3、EBCDIC互換:0xC"
+        },
+        {
+          "name": "negative-pack-sign-nibble",
+          "required": false,
+          "description": "符号付きパック数値の符号ビットに設定するマイナス符号を16進表記の文字列で指定",
+          "default": "ASCII互換:0x7、EBCDIC互換:0xD"
+        },
+        {
+          "name": "required-decimal-point",
+          "required": false,
+          "description": "符号なし数値と符号付き数値で小数点が必要かを指定",
+          "default": "true（小数点を付加）",
+          "notes": "falseを指定すると小数点を付加しない（小数点位置は固定）"
+        },
+        {
+          "name": "fixed-sign-position",
+          "required": false,
+          "description": "符号付き数値の符号位置を固定するかを指定",
+          "default": "true（固定）",
+          "examples": ["符号位置固定: -000123456", "符号位置非固定: 000-123456"]
+        },
+        {
+          "name": "required-plus-sign",
+          "required": false,
+          "description": "符号付き数値でプラス符号が必要かを指定",
+          "default": "false（付加しない）",
+          "notes": "trueを指定すると読み込むデータにプラス符号(+)が必須となり、書き込むデータにプラス符号(+)が付加される"
+        }
+      ]
+    },
+    "variable-length-directives": {
+      "description": "可変長フォーマットのデータに使用するディレクティブ。",
+      "directives": [
+        {
+          "name": "field-separator",
+          "required": true,
+          "description": "フィールド（項目）の区切り文字を指定",
+          "examples": ["CSVの場合: ,", "TSVの場合: \\t"]
+        },
+        {
+          "name": "quoting-delimiter",
+          "required": false,
+          "description": "フィールド（項目）の値を囲うために使用する文字を指定",
+          "examples": ["ダブルクォート: \"", "シングルクォート: '"],
+          "notes": [
+            "値を設定すると出力時に全てのフィールド（項目）が囲われる",
+            "デフォルトでは囲い文字を使用しない",
+            "入力時はフィールド前後の囲い文字が除去される",
+            "フィールド内の改行、囲い文字の扱いはRFC4180を参照"
+          ]
+        },
+        {
+          "name": "ignore-blank-lines",
+          "required": false,
+          "description": "データ読み込み時に空行を無視するかを設定",
+          "default": "true（空行を無視）",
+          "notes": "trueを設定すると空行（改行のみ）のレコードは無視される"
+        },
+        {
+          "name": "requires-title",
+          "required": false,
+          "description": "最初のレコードをタイトルとして読み書きするかを設定",
+          "default": "false（タイトルとして扱わない）",
+          "notes": "trueを設定すると最初のレコードがタイトルとして扱われる"
+        },
+        {
+          "name": "title-record-type-name",
+          "required": false,
+          "description": "タイトルのレコードタイプ名を設定",
+          "default": "Title",
+          "notes": "このディレクティブで指定したレコードタイプ名に紐づくレコードフォーマット定義に従いタイトルレコードが編集される"
+        },
+        {
+          "name": "max-record-length",
+          "required": false,
+          "description": "読み込み可能なレコードの文字数を指定",
+          "default": "1,000,000文字",
+          "notes": "レコード区切り文字を持たないデータ（破損データ）を読み込んだ際、全レコードをヒープに展開するとヒープ不足で処理が異常終了する可能性があるため、この設定で読み込み処理を中断し例外をスローする"
+        }
+      ]
+    },
+    "record-definition": {
+      "description": "レコードフォーマット定義セクション。レコードを構成するフィールド（項目）の定義情報（レコード内の位置やデータ型など）を設定します。",
+      "definition_rules": [
+        "レコードを識別するレコードタイプ名を[、]括弧で囲んで定義",
+        "レコードタイプ名はフォーマット定義ファイル内で一意",
+        "レコードタイプ名は任意の値を定義",
+        "レコード内のフィールド（項目）はレコードタイプの次の行から定義",
+        "フィールド（項目）定義をフィールド数分繰り返す"
+      ],
+      "example": "[data]              # レコードタイプ名:data\n1 name  N(100)      # 氏名\n2 age   X9(3)       # 年齢",
+      "warnings": [
+        "JSONとXMLデータフォーマットでフィールドを定義する場合、同一のフィールド名を持つ複数のフィールドで、フィールドタイプOBのフィールドとその他のフィールドタイプのフィールドを混在させてはならない",
+        "混在させると、OBの定義が優先されるため、その他を指定したフィールドのフィールドタイプが無視される",
+        "実際はOBではないのにOB型として扱われ、データとフォーマット定義項目が一致せず、正しくデータの読み書きができない問題が発生する"
+      ]
+    }
+  }
+}

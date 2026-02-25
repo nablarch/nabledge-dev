@@ -1,0 +1,115 @@
+{
+  "id": "role_check",
+  "title": "ロールによる認可チェック",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/authorization/role_check.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "ロール",
+        "role",
+        "認可チェック",
+        "authorization check",
+        "CheckRole",
+        "BasicRoleEvaluator"
+      ]
+    },
+    {
+      "id": "check-role-annotation",
+      "hints": [
+        "CheckRoleアノテーション",
+        "CheckRole annotation",
+        "ビジネスアクション",
+        "business action",
+        "メソッド"
+      ]
+    },
+    {
+      "id": "role-evaluator",
+      "hints": [
+        "RoleEvaluator",
+        "ロール判定",
+        "role evaluation",
+        "BasicRoleEvaluator"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "serviceAvailabilityCheckHandler",
+        "roleEvaluator"
+      ]
+    },
+    {
+      "id": "errors",
+      "hints": [
+        "エラー",
+        "error",
+        "ServiceUnavailable",
+        "403"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.common.authorization.role.CheckRole",
+        "nablarch.common.authorization.role.RoleEvaluator",
+        "nablarch.common.authorization.role.BasicRoleEvaluator",
+        "nablarch.fw.web.handler.ServiceAvailabilityCheckHandler"
+      ],
+      "annotations": [
+        "@CheckRole"
+      ],
+      "description": "ロールによる認可チェック機能を提供します。ビジネスアクションのメソッドに@CheckRoleアノテーションを設定することで、ユーザがそのメソッドを実行する権限を持つかをチェックします。",
+      "purpose": "ユーザのロール情報に基づき、特定の機能へのアクセス権限を制御する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-auth"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-web"
+        }
+      ]
+    },
+    "check-role-annotation": {
+      "description": "@CheckRoleアノテーションの使用方法。ビジネスアクションのメソッドに設定し、許可するロールを指定します。",
+      "usage": "ビジネスアクションのメソッドに@CheckRoleアノテーションを設定し、valueまたはanyOf属性でロールを指定",
+      "attributes": [
+        "value: 単一のロールを指定。ユーザがこのロールを持つ場合にアクセス許可",
+        "anyOf: 複数のロールを指定。ユーザがいずれかのロールを持つ場合にアクセス許可"
+      ],
+      "java_example": "@CheckRole(\"ADMIN\")\npublic HttpResponse admin(HttpRequest request, ExecutionContext context) {\n    // 管理者のみアクセス可能な処理\n}",
+      "notes": [
+        "valueとanyOfを同時に指定することはできない",
+        "ロール判定はRoleEvaluatorで実施される"
+      ]
+    },
+    "role-evaluator": {
+      "description": "ロール判定を行うRoleEvaluator。BasicRoleEvaluatorがデフォルト実装として提供されます。",
+      "basic_role_evaluator": "セッションストアに格納されたユーザ情報からロール情報を取得し、@CheckRoleアノテーションで指定されたロールとマッチするかを判定",
+      "user_roles_key": "セッションストアからユーザのロール情報を取得するキー。BasicRoleEvaluatorのuserRolesKeyプロパティで設定（デフォルト: user.roles）",
+      "custom_implementation": "独自のロール判定ロジックが必要な場合、RoleEvaluatorインターフェースを実装してカスタムRoleEvaluatorを作成可能"
+    },
+    "configuration": {
+      "description": "ロールチェック機能の設定。ServiceAvailabilityCheckHandlerにRoleEvaluatorを設定します。",
+      "handler_configuration": "ServiceAvailabilityCheckHandlerのroleEvaluatorプロパティにRoleEvaluator実装クラス（BasicRoleEvaluatorなど）を設定",
+      "component_example": "<component class=\"nablarch.fw.web.handler.ServiceAvailabilityCheckHandler\">\n  <property name=\"roleEvaluator\">\n    <component class=\"nablarch.common.authorization.role.BasicRoleEvaluator\">\n      <property name=\"userRolesKey\" value=\"user.roles\" />\n    </component>\n  </property>\n</component>"
+    },
+    "errors": {
+      "list": [
+        {
+          "exception": "ServiceUnavailable",
+          "cause": "ユーザが@CheckRoleアノテーションで指定されたロールを持たない場合",
+          "resolution": "ユーザに適切なロールを付与するか、アクセス権限設定を見直す。ServiceUnavailableはHTTPステータスコード403（Forbidden）に変換される"
+        }
+      ]
+    }
+  }
+}

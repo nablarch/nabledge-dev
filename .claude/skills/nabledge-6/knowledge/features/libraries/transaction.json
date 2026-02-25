@@ -1,0 +1,160 @@
+{
+  "id": "transaction",
+  "title": "トランザクション管理",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/transaction.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "トランザクション管理",
+        "transaction management",
+        "Transaction",
+        "TransactionFactory",
+        "JdbcTransactionFactory"
+      ]
+    },
+    {
+      "id": "database-transaction",
+      "hints": [
+        "データベーストランザクション",
+        "database transaction",
+        "JDBC",
+        "JdbcTransactionFactory",
+        "isolationLevel"
+      ]
+    },
+    {
+      "id": "transaction-timeout",
+      "hints": [
+        "トランザクションタイムアウト",
+        "transaction timeout",
+        "transactionTimeoutSec",
+        "TransactionTimeoutException",
+        "queryTimeout"
+      ]
+    },
+    {
+      "id": "timeout-check-timing",
+      "hints": [
+        "タイムアウトチェック",
+        "timeout check",
+        "SQL実行前",
+        "SQL実行後",
+        "クエリタイムアウト"
+      ]
+    },
+    {
+      "id": "add-resource",
+      "hints": [
+        "リソース追加",
+        "add resource",
+        "Transaction実装",
+        "TransactionFactory実装",
+        "transaction_management_handler"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.core.transaction.Transaction",
+        "nablarch.core.transaction.TransactionFactory",
+        "nablarch.core.db.transaction.JdbcTransactionFactory",
+        "nablarch.core.transaction.TransactionTimeoutException"
+      ],
+      "description": "トランザクション制御が必要なリソース（データベースやメッセージキュー）に対するトランザクション管理機能を提供します。",
+      "purpose": "データベースやメッセージキューなどの各種リソースに対してトランザクション管理を実現する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-transaction"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-jdbc"
+        }
+      ]
+    },
+    "database-transaction": {
+      "description": "データベースに対するトランザクション制御。JDBCを使用したトランザクション制御をコンポーネント定義ファイルに追加することで実現できます。",
+      "prerequisites": "データベースへの接続が設定済みであることが前提。データベースへの接続方法の詳細はdatabase-connectを参照",
+      "small_transaction": "1SQL単位のような小さなトランザクションを使用する場合は、database-new_transactionを参照して設定・実装",
+      "configuration": "JdbcTransactionFactory（JDBCのトランザクションクラスを生成するファクトリクラス）をコンポーネント設定ファイルに定義",
+      "properties": [
+        {
+          "name": "isolationLevel",
+          "description": "分離レベル",
+          "example": "READ_COMMITTED"
+        },
+        {
+          "name": "transactionTimeoutSec",
+          "description": "トランザクションタイムアウト秒数",
+          "example": "15"
+        }
+      ],
+      "notes": [
+        "設定したクラスは基本的に直接使用しない",
+        "トランザクション制御が必要な場合はtransaction_management_handlerを使用"
+      ]
+    },
+    "transaction-timeout": {
+      "description": "データベースに対するトランザクションタイムアウト適用。JdbcTransactionFactoryにトランザクションタイムアウト秒数を設定することで、トランザクションタイムアウト機能が有効になります。",
+      "enable_condition": "トランザクションタイムアウト秒数を設定することで有効化。0以下の場合は無効",
+      "batch_application_note": "大量データを一括処理するバッチアプリケーションなどの機能では、トランザクションタイムアウト機能ではなく、ジョブスケジューラの終了遅延監視で処理遅延をハンドリングする。バッチアプリケーションでは全体の処理時間が想定範囲内であれば十分で、個々のトランザクションで遅延が発生しても問題ない",
+      "start_check_timing": "Transaction#begin()でトランザクション開始時にチェックを開始。複数のトランザクションを使用する場合（あるトランザクション内で別のトランザクションを実行する場合など）、トランザクションごとにタイムアウトをチェック"
+    },
+    "timeout-check-timing": {
+      "description": "トランザクションタイムアウトのチェックタイミング。トランザクションタイムアウト秒数を超過しているかを以下のタイミングでチェックします。",
+      "timings": [
+        {
+          "timing": "SQL実行前",
+          "description": "SQL実行前にトランザクションタイムアウト秒数を超過している場合、TransactionTimeoutExceptionをスロー",
+          "reason": "トランザクションタイムアウト秒数をすでに経過している場合、データベースへアクセスすると無駄にリソースを消費するため、SQL実行前にチェック"
+        },
+        {
+          "timing": "SQL実行後",
+          "description": "SQL実行後にトランザクションタイムアウト秒数を超過している場合、TransactionTimeoutExceptionをスロー",
+          "reason": "SQL実行中や結果セット変換中にトランザクションタイムアウト秒数を超過する可能性があるため、SQL実行が正常終了した場合でもチェックを実施"
+        },
+        {
+          "timing": "クエリタイムアウト例外発生時",
+          "description": "クエリタイムアウトを示す例外が発生し、トランザクションタイムアウト秒数を超過している場合、TransactionTimeoutExceptionをスロー",
+          "mechanism": [
+            "処理時間が長いSQL文（単純にスローなSQLやロック解除待ちのSQL）を実行すると、データベースから制御が戻ってこない可能性がある",
+            "トランザクションタイムアウトの残り秒数をjava.sql.Statement#setQueryTimeoutに設定し、トランザクションタイムアウト秒数を超過した時点で実行を強制的にキャンセル",
+            "SQL実行時にクエリタイムアウト時間が設定されている場合、設定されたクエリタイムアウト時間よりトランザクションタイムアウトの残り秒数が小さい場合、設定されたクエリタイムアウト時間をトランザクションタイムアウトの残り秒数で上書き"
+          ],
+          "dialect_usage": "クエリタイムアウト例外かどうかの判定は、データベース機能のdialectを使用"
+        }
+      ],
+      "notes": [
+        "この機能はデータベースにアクセスする際にトランザクションタイムアウトをチェックするため、データベースにアクセスしないロジックで処理遅延が発生した場合、トランザクションタイムアウトは発生しない",
+        "例: データベースにアクセスしないロジックで無限ループが発生した場合、この機能ではトランザクションタイムアウトを検知できない。そのような場合は、アプリケーションサーバのタイムアウト機能などを使用して遅延したアプリケーションスレッドをハンドリングする"
+      ],
+      "reset_timing": "トランザクション開始時（Transaction#begin呼び出し時）にトランザクションタイムアウト期間がリセットされる。トランザクション終了時（Transaction#commit、Transaction#rollback）は、トランザクションタイムアウトの残り時間はリセットされない"
+    },
+    "add-resource": {
+      "description": "トランザクション対象リソースの追加。IBM MQを分散トランザクションのトランザクションマネージャとしてトランザクション制御を行う場合などに適用します。",
+      "steps": [
+        "トランザクション実装の追加",
+        "トランザクションを生成するファクトリ実装の追加",
+        "transaction_management_handlerを使用してトランザクション制御を実現"
+      ],
+      "transaction_implementation": {
+        "description": "Transactionインターフェースを実装し、トランザクション対象リソースに対するトランザクション開始/終了処理を実装",
+        "methods": [
+          "begin(): トランザクション対象リソースに対するトランザクション開始処理を実装",
+          "commit(): トランザクション対象リソースに対するトランザクション確定処理を実装",
+          "rollback(): トランザクション対象リソースに対するトランザクション破棄処理を実装"
+        ]
+      },
+      "factory_implementation": {
+        "description": "トランザクションを生成するファクトリクラスを作成。TransactionFactoryを実装",
+        "method": "getTransaction(String resourceName): トランザクション対象を識別するリソース名を保持したトランザクションオブジェクトを生成して返す"
+      },
+      "handler_configuration": "追加したファクトリクラスをトランザクション制御ハンドラに設定。transaction_management_handlerのtransactionFactoryプロパティに設定"
+    }
+  }
+}

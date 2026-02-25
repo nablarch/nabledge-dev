@@ -1,0 +1,75 @@
+{
+  "id": "nablarch_validation",
+  "title": "Nablarchバリデーション",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation/nablarch_validation.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "Nablarchバリデーション",
+        "Nablarch validation",
+        "ValidationUtil",
+        "非推奨",
+        "deprecated",
+        "bean_validation"
+      ]
+    },
+    {
+      "id": "why-deprecated",
+      "hints": [
+        "非推奨理由",
+        "deprecated reason",
+        "Jakarta Bean Validation",
+        "標準仕様",
+        "standard specification"
+      ]
+    },
+    {
+      "id": "migration",
+      "hints": [
+        "移行",
+        "migration",
+        "Bean Validation",
+        "アノテーション",
+        "annotation"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.core.validation.ValidationUtil"
+      ],
+      "description": "Nablarch独自のバリデーション機能。現在は非推奨（deprecated）であり、Jakarta Bean Validationの使用が推奨されます。",
+      "purpose": "入力値検証を提供（ただし、現在は非推奨）",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-validation"
+        }
+      ],
+      "deprecated": true,
+      "alternative": "bean_validation（Jakarta Bean Validation）の使用を推奨"
+    },
+    "why-deprecated": {
+      "description": "Nablarchバリデーションが非推奨となった理由。",
+      "reasons": [
+        "Jakarta Bean Validationという標準仕様が存在するため、独自仕様を維持する必要がない",
+        "Jakarta Bean Validationは広く使用されており、エコシステムが充実している",
+        "Jakarta Bean Validationはアノテーションベースで直感的に使用できる",
+        "Nablarchバリデーションの機能はJakarta Bean Validationで代替可能"
+      ]
+    },
+    "migration": {
+      "description": "NablarchバリデーションからJakarta Bean Validationへの移行。",
+      "migration_steps": [
+        "Nablarchバリデーションの設定ファイル（XML）をJakarta Bean Validationのアノテーションに置き換え",
+        "ValidationUtil呼び出しをValidatorUtil（Bean Validation用）に置き換え",
+        "カスタムバリデータをJakarta Bean Validationの制約アノテーションとして実装"
+      ],
+      "reference": "詳細な移行手順はbean_validationのドキュメントを参照"
+    }
+  }
+}

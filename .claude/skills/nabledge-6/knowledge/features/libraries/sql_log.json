@@ -1,0 +1,102 @@
+{
+  "id": "sql_log",
+  "title": "SQLログの出力",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log/sql_log.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "SQLログ",
+        "SQL log",
+        "SqlLogFormatter",
+        "性能チューニング",
+        "performance tuning"
+      ]
+    },
+    {
+      "id": "output-policy",
+      "hints": [
+        "出力方針",
+        "output policy",
+        "SQL",
+        "logger name",
+        "INFO"
+      ]
+    },
+    {
+      "id": "format",
+      "hints": [
+        "フォーマット",
+        "format",
+        "SQL文",
+        "実行時間",
+        "execution time",
+        "取得件数"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "sqlLogFormatter",
+        "app-log.properties"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.core.db.statement.SqlLogFormatter"
+      ],
+      "description": "SQL文実行の性能劣化が疑われる場合の性能チューニングに使用するSQL文実行時間とSQL文を出力します。",
+      "purpose": "SQL実行の性能劣化を検知し、性能チューニングに必要な情報（SQL文、実行時間、取得件数など）を提供する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-core-jdbc"
+        }
+      ]
+    },
+    "output-policy": {
+      "description": "SQLログの出力方針。アプリケーション全体のログを出力するアプリケーションログに出力します。",
+      "log_level": "INFO",
+      "logger_name": "SQL",
+      "output_destination": "アプリケーションログ",
+      "configuration_files": [
+        "log.properties: ログ出力先とフォーマットの設定",
+        "app-log.properties: SqlLogFormatterの設定"
+      ]
+    },
+    "format": {
+      "description": "SQLログのフォーマット。sqlLogFormatter.formatプロパティで設定します。",
+      "placeholders": [
+        "$sql$: 実行したSQL文",
+        "$executionTime$: SQL実行時間（ミリ秒）",
+        "$retrieveTime$: 結果セット取得時間（ミリ秒）",
+        "$count$: 取得件数（検索系のみ）",
+        "$additionalInfo$: 追加情報（バインド変数の値など）"
+      ],
+      "default_format": "SQL : [$sql$] ExecutionTime : [$executionTime$] RetrieveTime : [$retrieveTime$] Count : [$count$]",
+      "notes": [
+        "バインド変数の値を出力する場合は$additionalInfo$を使用",
+        "性能チューニングに必要な情報を含めるようフォーマットをカスタマイズ可能"
+      ]
+    },
+    "configuration": {
+      "description": "SQLログの設定。log-app_log_settingで記載されたプロパティファイルで設定します。",
+      "properties": [
+        {
+          "name": "sqlLogFormatter.className",
+          "description": "SqlLogFormatterの実装クラス。置き換える場合に指定"
+        },
+        {
+          "name": "sqlLogFormatter.format",
+          "description": "SQLログのフォーマット"
+        }
+      ]
+    }
+  }
+}

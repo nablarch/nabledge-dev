@@ -1,0 +1,142 @@
+{
+  "id": "session_store",
+  "title": "セッションストア",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/session_store.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "セッションストア",
+        "session store",
+        "SessionUtil",
+        "SessionStore",
+        "セッション管理"
+      ]
+    },
+    {
+      "id": "usage",
+      "hints": [
+        "使用方法",
+        "usage",
+        "put",
+        "get",
+        "delete",
+        "SessionUtil"
+      ]
+    },
+    {
+      "id": "store-types",
+      "hints": [
+        "保存先",
+        "store types",
+        "HTTPセッション",
+        "HIDDEN",
+        "データベース",
+        "Redis"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "SessionStore",
+        "HiddenStore",
+        "DbStore"
+      ]
+    },
+    {
+      "id": "examples",
+      "hints": [
+        "実装例",
+        "examples",
+        "create_example",
+        "update_example"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.common.web.session.SessionUtil",
+        "nablarch.common.web.session.SessionStore",
+        "nablarch.common.web.session.store.HiddenStore",
+        "nablarch.common.web.session.store.DbStore",
+        "nablarch.common.web.session.store.HttpSessionStore"
+      ],
+      "description": "Webアプリケーションで画面間でデータを引き回す機能を提供します。HTTPセッション、HIDDEN、データベース、Redisなど複数の保存先をサポートします。",
+      "purpose": "Webアプリケーションで画面間のデータ引き回しを実現し、登録・更新などの画面遷移パターンでデータを一時保存する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-web"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-fw-web-extension"
+        }
+      ]
+    },
+    "usage": {
+      "description": "SessionUtilを使用したセッションストアの操作。put、get、deleteの3つの基本操作を提供します。",
+      "operations": [
+        {
+          "method": "put(ExecutionContext, String, Object)",
+          "description": "指定したキーで値をセッションストアに保存"
+        },
+        {
+          "method": "get(ExecutionContext, String)",
+          "description": "指定したキーの値をセッションストアから取得"
+        },
+        {
+          "method": "delete(ExecutionContext, String)",
+          "description": "指定したキーの値をセッションストアから削除"
+        }
+      ],
+      "java_example": "// セッションストアに保存\nSessionUtil.put(context, \"user\", userEntity);\n\n// セッションストアから取得\nUserEntity user = SessionUtil.get(context, \"user\");\n\n// セッションストアから削除\nSessionUtil.delete(context, \"user\");"
+    },
+    "store-types": {
+      "description": "セッションストアの保存先タイプ。用途に応じて保存先を選択できます。",
+      "types": [
+        {
+          "name": "HTTPセッション（HttpSessionStore）",
+          "description": "HTTPセッションにデータを保存",
+          "use_case": "一般的なWebアプリケーションで使用"
+        },
+        {
+          "name": "HIDDEN（HiddenStore）",
+          "description": "暗号化したHIDDENパラメータとしてクライアントに送信",
+          "use_case": "ステートレスWebアプリケーションで使用"
+        },
+        {
+          "name": "データベース（DbStore）",
+          "description": "データベーステーブルにデータを保存",
+          "use_case": "大量のデータを保存する場合や、複数サーバ間でセッションを共有する場合"
+        },
+        {
+          "name": "Redis",
+          "description": "Redisにデータを保存（lettuce_adaptorを使用）",
+          "use_case": "高速なセッション共有が必要な場合"
+        }
+      ]
+    },
+    "configuration": {
+      "description": "セッションストアの設定。SessionStoreManagerとSessionStore実装クラスをコンポーネント定義ファイルに設定します。",
+      "components": [
+        "SessionStoreManager: セッションストア管理クラス",
+        "SessionStore実装クラス: 保存先に応じた実装（HttpSessionStore、HiddenStore、DbStoreなど）"
+      ],
+      "notes": [
+        "複数の保存先を組み合わせて使用可能",
+        "保存先ごとに有効期限やパラメータ名などを設定可能"
+      ]
+    },
+    "examples": {
+      "description": "セッションストアを使用した実装例。登録機能と更新機能の典型的なパターンを示します。",
+      "create_example": "create_exampleを参照。入力画面→確認画面→登録完了の画面遷移パターン",
+      "update_example": "update_exampleを参照。入力画面→確認画面→更新完了の画面遷移パターン"
+    }
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "id": "mail",
+  "title": "メール送信",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/mail.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "メール送信",
+        "mail sending",
+        "遅延オンライン処理",
+        "delayed online process",
+        "resident batch",
+        "Jakarta Mail"
+      ]
+    },
+    {
+      "id": "template",
+      "hints": [
+        "テンプレート",
+        "template",
+        "件名",
+        "本文",
+        "プレースホルダー",
+        "template engine"
+      ]
+    },
+    {
+      "id": "mail-request",
+      "hints": [
+        "メール送信要求",
+        "mail request",
+        "データベース登録",
+        "database registration"
+      ]
+    },
+    {
+      "id": "mail-send",
+      "hints": [
+        "メール送信バッチ",
+        "mail send batch",
+        "非同期送信",
+        "asynchronous sending"
+      ]
+    },
+    {
+      "id": "table-schema",
+      "hints": [
+        "テーブルスキーマ",
+        "table schema",
+        "メール送信要求テーブル",
+        "メール送信先テーブル",
+        "メール添付ファイルテーブル",
+        "メールテンプレートテーブル"
+      ]
+    },
+    {
+      "id": "configuration",
+      "hints": [
+        "設定",
+        "configuration",
+        "MailRequestTable",
+        "MailRecipientTable",
+        "MailAttachedFileTable",
+        "MailTemplateTable"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.common.mail.MailRequester",
+        "nablarch.common.mail.MailRequestConfig",
+        "nablarch.common.mail.MailRequestTable",
+        "nablarch.common.mail.MailRecipientTable",
+        "nablarch.common.mail.MailAttachedFileTable",
+        "nablarch.common.mail.MailTemplateTable"
+      ],
+      "description": "メール送信機能を提供します。この機能は遅延オンライン処理というアーキテクチャを使用し、メールを即座に送信するのではなく、メール送信要求を一旦データベースに格納し、常駐バッチを使用して非同期で送信します。",
+      "purpose": "メール送信をトランザクションに含めることができ、メールサーバやネットワーク障害によるメール送信失敗時でもアプリケーション処理に影響を与えない",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-mail-sender"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-idgenerator"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-idgenerator-jdbc"
+        }
+      ],
+      "architecture": "メール送信要求を発行するアプリケーションとメール送信要求に基づきメールを送信するバッチ機能の2つの機能でアーキテクチャを実現",
+      "limitations": [
+        "この機能はメールを即座に送信するAPIを提供しない。即座に送信する場合はJakarta Mailを直接使用",
+        "キャンペーン通知などの一斉メール送信はサポートしていない。専用製品の使用を推奨"
+      ]
+    },
+    "template": {
+      "description": "テンプレートを使用した定型メール送信機能。テンプレートを用意してプレースホルダーを差し替えることで、件名と本文を作成する機能を提供します。",
+      "standard_email": "登録完了通知メールなど、一部の項目のみが異なる同じ文面のメールを多数送信する場合に使用",
+      "template_engine_recommendation": [
+        "Nablarch 5u13以降、テンプレートエンジンを使用した定型メール送信機能をサポート",
+        "5u12までの定型メール送信機能（TinyTemplateEngineMailProcessor）は機能が限定的（単純な文字列置換のみ、条件分岐や繰り返しなどの制御構文は非対応）",
+        "より高機能なテンプレートエンジンを使用した定型メール送信機能を推奨: mail_sender_freemarker_adaptor、mail_sender_thymeleaf_adaptor、mail_sender_velocity_adaptor"
+      ]
+    },
+    "mail-request": {
+      "description": "メール送信要求をデータベースに登録する機能。アプリケーションがメール送信要求を発行するたびに、1つのメール送信要求が作成され、1要求につき1通のメールが送信されます。"
+    },
+    "mail-send": {
+      "description": "メール送信要求に基づきメールを送信するバッチ機能。常駐バッチとして動作し、データベースに登録されたメール送信要求を非同期で処理してメールを送信します。"
+    },
+    "table-schema": {
+      "description": "メール送信で使用するデータを管理するデータベーステーブルのスキーマ。",
+      "tables": [
+        {
+          "name": "メール送信要求テーブル",
+          "columns": [
+            "メール送信要求ID（PK）",
+            "メール送信パターンID（任意項目）",
+            "メール送信バッチのプロセスID（任意項目）",
+            "件名",
+            "差出人メールアドレス",
+            "返信先メールアドレス",
+            "返信用メールアドレス",
+            "文字セット",
+            "ステータス",
+            "要求日時",
+            "送信日時",
+            "本文"
+          ]
+        },
+        {
+          "name": "メール送信先テーブル",
+          "columns": [
+            "メール送信要求ID（PK）",
+            "連番（PK）",
+            "送信先区分",
+            "メールアドレス"
+          ]
+        },
+        {
+          "name": "メール添付ファイルテーブル",
+          "columns": [
+            "メール送信要求ID（PK）",
+            "連番（PK）",
+            "添付ファイル名",
+            "Content-Type",
+            "添付ファイル"
+          ]
+        },
+        {
+          "name": "メールテンプレートテーブル",
+          "columns": [
+            "メールテンプレートID（PK）",
+            "言語（PK）",
+            "件名",
+            "本文",
+            "文字セット"
+          ]
+        }
+      ]
+    },
+    "configuration": {
+      "description": "メール送信機能を使用するための設定。",
+      "common_configuration": [
+        "テーブルスキーマの設定",
+        "コード値とメッセージの設定"
+      ],
+      "table_schema_components": [
+        "MailRequestTable: メール送信要求テーブルのスキーマ",
+        "MailRecipientTable: メール送信先テーブルのスキーマ",
+        "MailAttachedFileTable: 添付ファイルテーブルのスキーマ",
+        "MailTemplateTable: メールテンプレートテーブルのスキーマ"
+      ],
+      "initialization": "各テーブルスキーマコンポーネントをBasicApplicationInitializerの初期化リストに追加"
+    }
+  }
+}

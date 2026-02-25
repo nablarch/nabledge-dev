@@ -1,0 +1,126 @@
+{
+  "id": "generator",
+  "title": "サロゲートキー採番",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/database/generator.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": [
+        "サロゲートキー",
+        "surrogate key",
+        "採番",
+        "numbering",
+        "IdGenerator",
+        "SequenceIdGenerator",
+        "TableIdGenerator"
+      ]
+    },
+    {
+      "id": "sequence-numbering",
+      "hints": [
+        "シーケンス",
+        "sequence",
+        "シーケンスオブジェクト",
+        "SequenceIdGenerator",
+        "Dialect"
+      ]
+    },
+    {
+      "id": "table-numbering",
+      "hints": [
+        "テーブル",
+        "table",
+        "TableIdGenerator",
+        "現在値",
+        "current value",
+        "ボトルネック"
+      ]
+    },
+    {
+      "id": "universal-dao-configuration",
+      "hints": [
+        "Universal DAO",
+        "設定",
+        "configuration",
+        "BasicDaoContextFactory",
+        "sequenceIdGenerator",
+        "tableIdGenerator"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "classes": [
+        "nablarch.common.idgenerator.IdGenerator",
+        "nablarch.common.idgenerator.SequenceIdGenerator",
+        "nablarch.common.idgenerator.TableIdGenerator",
+        "nablarch.common.dao.BasicDaoContextFactory"
+      ],
+      "description": "データベースのサロゲートキーの値を採番する機能を提供します。この機能はUniversal DAOでサロゲートキーを採番する際に使用されます（単純な連番を採番）。",
+      "purpose": "データベースのサロゲートキー（代理キー）に一意な値を自動採番する",
+      "modules": [
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-idgenerator"
+        },
+        {
+          "groupId": "com.nablarch.framework",
+          "artifactId": "nablarch-common-idgenerator-jdbc"
+        }
+      ],
+      "use_cases": [
+        "Universal DAOでサロゲートキーを採番する場合（推奨）",
+        "単純な連番を採番する必要がある場合"
+      ],
+      "limitations": [
+        "Universal DAO以外の実装で使用する場合、アプリケーション側でのサポートが推奨される",
+        "採番ルールが複雑な場合や採番値を編集する必要がある場合、この機能は使用できずアプリケーション側で設計・実装が必要"
+      ]
+    },
+    "sequence-numbering": {
+      "description": "データベースに作成されたシーケンスオブジェクトを使用して一意な値を採番する機能。",
+      "mechanism": "シーケンスを使用した次の値取得のSQL文は、データベースアクセス機能のDialectを使用して構築される",
+      "dialect_reference": "Dialect機能についてはdatabase-dialectを参照",
+      "notes": [
+        "データベース製品がシーケンスオブジェクトをサポートしている必要がある"
+      ]
+    },
+    "table-numbering": {
+      "description": "テーブルのレコードごとに現在値を管理して一意な値を採番する機能。",
+      "table_layout": [
+        "採番識別名（PK）: 採番対象を識別する値",
+        "現在値: 現在値（採番後に現在値に1を加えた値を取得）"
+      ],
+      "prerequisites": [
+        "必要なレコードを事前に設定しておく必要がある",
+        "採番実行時に指定した採番識別名（PK）に対応するレコードが存在しない場合、新しいレコードを追加するのではなく異常終了（例外をスロー）する"
+      ],
+      "warnings": [
+        "テーブルを使った採番は大量データを処理するバッチ処理でボトルネックとなることが多い",
+        "テーブルを使った採番の代わりに、データベースの採番カラムやシーケンスの使用を強く推奨",
+        "採番テーブルは、データベース機能として採番カラムやシーケンスオブジェクトが使用できない場合のみ使用すること"
+      ]
+    },
+    "universal-dao-configuration": {
+      "description": "Universal DAOでこの機能を使用するための設定。BasicDaoContextFactoryに採番機能を設定します。",
+      "configuration_example": "シーケンス採番とテーブル採番の両方を設定する例。使用しない採番機能は設定不要",
+      "sequence_configuration": [
+        "BasicDaoContextFactoryのsequenceIdGeneratorプロパティにSequenceIdGeneratorを設定"
+      ],
+      "table_configuration": [
+        "TableIdGeneratorをtableIdGeneratorという名前でコンポーネント定義",
+        "TableIdGeneratorのtableNameプロパティにテーブル名を設定",
+        "TableIdGeneratorのidColumnNameプロパティに採番識別名カラム名を設定",
+        "TableIdGeneratorのnoColumnNameプロパティに現在値カラム名を設定",
+        "BasicDaoContextFactoryのtableIdGeneratorプロパティにtableIdGeneratorを設定",
+        "BasicApplicationInitializerの初期化リストにTableIdGeneratorを追加（初期化が必要）"
+      ],
+      "automatic_numbering": "データベースの採番機能（自動採番カラム）を使用する場合、シーケンス採番を使わずに済むため採番の設定は不要",
+      "notes": [
+        "テーブル採番は推奨されないため、シーケンス採番を使用するサロゲートキー採番ではsequenceIdGeneratorのみを設定すればよい"
+      ]
+    }
+  }
+}
