@@ -58,48 +58,42 @@ Nabledgeは3つの段階で価値を提供する：
 
 ```mermaid
 graph LR
-  %% ===== 主要な3者 =====
-  DEV["開発者<br/>（人間チーム）"]
-  NAB["Nabledge<br/>AIチームメンバー"]
-  FW["Nablarch<br/>フレームワーク"]
-
-  %% ===== Nabledgeの内部構造（簡略） =====
-  subgraph NAB_CORE["Nabledgeのコア"]
+  %% ===== Phase 1: Unlock =====
+  subgraph P1["Phase 1: Unlock Your Assets<br/>資産をAI-Readyに解き放つ"]
     direction TB
-    KNOW["知識<br/>Nablarch固有の判断力"]
-    WORK["ワークフロー<br/>現場経験に基づく"]
-    EXP["実績<br/>PJを重ねて強化"]
-    KNOW --> WORK
-    WORK --> EXP
+    U1["暗黙知の可視化"]
+    U2["技術的負債の明確化"]
+    U3["構造化された知識"]
   end
 
-  %% ===== 開発者 → Nabledge =====
-  DEV -->|"1. 要件を伝える"| NAB
-  NAB -->|"2. Issue提案"| DEV
-  DEV -->|"3. 承認"| NAB
-  NAB -->|"4. 計画・実装<br/>5. テスト・レビュー"| DEV
-  DEV -->|"6. 承認・マージ"| NAB
+  %% ===== Phase 2: Build =====
+  subgraph P2["Phase 2: Build Like Experts<br/>エキスパートレベルの開発をチームで実現"]
+    direction TB
+    B1["品質の標準化"]
+    B2["保守コスト削減"]
+    B3["開発速度向上"]
+  end
 
-  %% ===== Nablarch → Nabledge =====
-  FW -->|"規約・品質基準<br/>テスト規約"| KNOW
+  %% ===== Phase 3: Win =====
+  subgraph P3["Phase 3: Win Together<br/>経験を組織資産に変え、競争力を高め続ける"]
+    direction TB
+    W1["判断パターンの蓄積"]
+    W2["見積精度の向上"]
+    W3["組織全体の競争力強化"]
+  end
 
-  %% ===== GitHubでのやりとり =====
-  GH["GitHub<br/>Issue/PR"]
-  NAB -.->|"既存プロセス"| GH
-  DEV -.->|"そのまま"| GH
+  %% ===== フェーズ間の関係 =====
+  P1 ==>|"土台"| P2
+  P2 ==>|"実績"| P3
 
   %% ===== スタイル =====
-  classDef human fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-  classDef ai fill:#1a73e8,stroke:#0d47a1,color:#fff
-  classDef fw fill:#4285f4,stroke:#1a73e8,color:#fff
-  classDef process fill:#f5f5f5,stroke:#9e9e9e,color:#616161
-  classDef core fill:#e8eaf6,stroke:#283593,color:#1a237e
+  classDef phase1 fill:#c8e6c9,stroke:#1b5e20,color:#1b5e20
+  classDef phase2 fill:#bbdefb,stroke:#0d47a1,color:#0d47a1
+  classDef phase3 fill:#fff9c4,stroke:#f57f17,color:#f57f17
 
-  class DEV human
-  class NAB ai
-  class FW fw
-  class GH process
-  class KNOW,WORK,EXP core
+  class P1 phase1
+  class P2 phase2
+  class P3 phase3
 ```
 
 Nabledgeはツールではなく、PJに参加するAIチームメンバー。既存のAI開発ツールがモダンアーキテクチャ前提なのに対し、NabledgeはSoR領域の基幹系システム向けに設計されている。Nablarch固有の判断力を持ち、開発者と協働しながら実装・テスト・レビューを実行する。
