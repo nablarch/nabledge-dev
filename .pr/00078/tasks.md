@@ -89,28 +89,74 @@
 - This proves **script works**, not **skill works**
 
 **Required Work**:
-Execute via skill command 5 times:
 
+**Run 1 (Generation + Content Verification)**:
 ```bash
-# Run 1-5
+# Step 1: Generate mapping
 /nabledge-creator mapping
 
-# Validate
+# Step 2: Format validation
 cd .claude/skills/nabledge-creator
 python scripts/validate-mapping.py output/mapping-v6.md
+# Expected: PASSED (0-1 warnings acceptable)
 
-# Compare
+# Step 3: Record MD5
 md5sum output/mapping-v6.md
+# Save this MD5 for Run 2-5 comparison
 
-# Backup
-cp output/mapping-v6.md .tmp/phase1-skill-run{N}/
+# Step 4: Backup
+mkdir -p ../../.tmp/phase1-skill-run1
+cp output/mapping-v6.md ../../.tmp/phase1-skill-run1/
+```
+
+**Run 1: Content Verification (Separate Session)**:
+```bash
+# IMPORTANT: Start new session to avoid context bias
+/nabledge-creator verify-mapping-6
+
+# What this does:
+# - Read all 291 RST files from .lw/nab-official/v6/
+# - Verify Type/Category/Processing Pattern for each
+# - Check against rules in references/classification.md
+# - Mark each row ✓ (correct) or ✗ (incorrect)
+
+# If ANY row is marked ✗:
+# 1. Document corrections in checklist
+# 2. Fix classification.md and generate-mapping.py
+# 3. Restart from Run 1 generation
+# 4. Re-run verification in new session
+
+# Document results:
+# - .pr/00078/phase1-verification-results.md
+# - Updated .claude/skills/nabledge-creator/output/mapping-v6.checklist.md
+```
+
+**Run 2-5 (Reproducibility Check)**:
+```bash
+# For each run (2, 3, 4, 5):
+
+# Step 1: Clean and regenerate
+rm output/mapping-v6.md output/mapping-v6.xlsx output/mapping-v6.checklist.md
+/nabledge-creator mapping
+
+# Step 2: Format validation
+python scripts/validate-mapping.py output/mapping-v6.md
+# Expected: PASSED
+
+# Step 3: Compare MD5
+md5sum output/mapping-v6.md
+# Expected: IDENTICAL to Run 1
+
+# Step 4: Backup
+cp output/mapping-v6.md ../../.tmp/phase1-skill-run{N}/
 ```
 
 **Success Criteria**:
-- [ ] 5 runs executed via `/nabledge-creator mapping` skill command
-- [ ] All runs produce identical output (MD5 match)
-- [ ] 0 validation errors
-- [ ] Document results in phase1-skill-reproducibility.md
+- [ ] Run 1: 0 format errors (validate-mapping.py PASSED)
+- [ ] Run 1: All 291 files content verified (verify-mapping-6 complete, all ✓)
+- [ ] Run 2-5: All MD5 checksums match Run 1 (proves reproducibility)
+- [ ] No manual intervention required across all runs
+- [ ] Results documented in phase1-skill-reproducibility.md
 
 **Phase 1 Status**: ❌ **INVALID** - Used script directly, not skill
 
@@ -136,27 +182,73 @@ cp output/mapping-v6.md .tmp/phase1-skill-run{N}/
 - This proves **script works**, not **skill works**
 
 **Required Work**:
-Execute via skill command 5 times:
 
+**Run 1 (Generation + Content Verification)**:
 ```bash
-# Run 1-5
+# Step 1: Generate index
 /nabledge-creator index
 
-# Validate
-ls -la .claude/skills/nabledge-6/knowledge/index.toon
+# Step 2: Check output
+ls -lh .claude/skills/nabledge-6/knowledge/index.toon
+# Expected: 154 entries (not 259 - that was old plan)
 
-# Compare
+# Step 3: Format validation
+python .claude/skills/nabledge-creator/scripts/validate-index.py .claude/skills/nabledge-6/knowledge/index.toon
+# Expected: Exit 0 or 1 (warnings acceptable)
+
+# Step 4: Record MD5
 md5sum .claude/skills/nabledge-6/knowledge/index.toon
+# Save for Run 2-5 comparison
 
-# Backup
+# Step 5: Backup
+mkdir -p .tmp/phase2-skill-run1
+cp .claude/skills/nabledge-6/knowledge/index.toon .tmp/phase2-skill-run1/
+```
+
+**Run 1: Content Verification (Separate Session)**:
+```bash
+# IMPORTANT: Start new session
+/nabledge-creator verify-index-6
+
+# What this does:
+# - Read all 154 entries in index.toon
+# - Verify hints quality (sufficient coverage, bilingual)
+# - Test search functionality with sample queries
+# - Document issues found
+
+# If issues found:
+# 1. Fix generate-index.py logic
+# 2. Restart from Run 1 generation
+# 3. Re-run verification
+
+# Document: .pr/00078/phase2-verification-results.md
+```
+
+**Run 2-5 (Reproducibility Check)**:
+```bash
+# For each run (2, 3, 4, 5):
+
+# Step 1: Clean and regenerate
+rm .claude/skills/nabledge-6/knowledge/index.toon
+/nabledge-creator index
+
+# Step 2: Validate format
+python .claude/skills/nabledge-creator/scripts/validate-index.py .claude/skills/nabledge-6/knowledge/index.toon
+
+# Step 3: Compare MD5
+md5sum .claude/skills/nabledge-6/knowledge/index.toon
+# Expected: IDENTICAL to Run 1
+
+# Step 4: Backup
 cp .claude/skills/nabledge-6/knowledge/index.toon .tmp/phase2-skill-run{N}/
 ```
 
 **Success Criteria**:
-- [ ] 5 runs executed via `/nabledge-creator index` skill command
-- [ ] All runs produce identical output (MD5 match)
-- [ ] 259 entries in index.toon
-- [ ] Document results in phase2-skill-reproducibility.md
+- [ ] Run 1: 0 format errors (validate-index.py passed)
+- [ ] Run 1: All 154 entries content verified (verify-index-6 complete)
+- [ ] Run 2-5: All MD5 checksums match Run 1
+- [ ] No manual intervention required
+- [ ] Results documented in phase2-skill-reproducibility.md
 
 **Phase 2 Status**: ❌ **INVALID** - Used script directly, not skill
 
@@ -187,30 +279,73 @@ cp .claude/skills/nabledge-6/knowledge/index.toon .tmp/phase2-skill-run{N}/
 
 **Method**: Use nabledge-creator skill (not Task tool)
 
-For each run (1-3):
+**Run 1 (Generation + Format Validation)**:
 ```bash
-# Delete pilot files
+# Step 1: Clean and generate
 rm -rf .claude/skills/nabledge-6/knowledge/*.json
-
-# Execute skill
 /nabledge-creator knowledge --filter "pilot=true" --files 17
 
-# Validate
+# Step 2: Format validation
 cd .claude/skills/nabledge-creator
 python scripts/validate-knowledge.py ../nabledge-6/knowledge/
+# Expected: 0 errors, 17 files
 
-# Expect: 0 errors, 17 files
+# Step 3: Record checksums (for reproducibility)
+cd ../nabledge-6/knowledge
+find . -name "*.json" -type f | sort | xargs md5sum > ../../../.tmp/phase3-run1-checksums.txt
 
-# Backup
-mkdir -p .tmp/phase3-skill-run{N}
-cp -r .claude/skills/nabledge-6/knowledge/ .tmp/phase3-skill-run{N}/
+# Step 4: Backup
+mkdir -p ../../../.tmp/phase3-skill-run1
+cp -r . ../../../.tmp/phase3-skill-run1/
+```
+
+**Run 1: Content Verification (After Phase 5.1)**:
+```bash
+# NOTE: verify-knowledge workflow not yet implemented
+# Execute this after Phase 5.1 completes
+
+# IMPORTANT: Start new session
+/nabledge-creator verify-knowledge --all
+
+# What this does:
+# - Read all 17 RST sources from .lw/nab-official/v6/
+# - Verify JSON structure matches RST (±30% section division rule)
+# - Check mandatory fields populated
+# - Verify L1/L2 keywords present
+# - Verify category template compliance
+
+# If issues found: Fix and regenerate
+
+# Document: .pr/00078/phase3-verification-results.md
+```
+
+**Run 2-3 (Reproducibility Check)**:
+```bash
+# For each run (2, 3):
+
+# Step 1: Clean and regenerate
+rm -rf .claude/skills/nabledge-6/knowledge/*.json
+/nabledge-creator knowledge --filter "pilot=true" --files 17
+
+# Step 2: Format validation
+python scripts/validate-knowledge.py ../nabledge-6/knowledge/
+# Expected: 0 errors, 17 files
+
+# Step 3: Compare checksums
+find ../nabledge-6/knowledge -name "*.json" | sort | xargs md5sum > .tmp/phase3-run{N}-checksums.txt
+diff .tmp/phase3-run1-checksums.txt .tmp/phase3-run{N}-checksums.txt
+# Note: AI-generated content may vary - compare validation results instead
+
+# Step 4: Backup
+cp -r ../nabledge-6/knowledge/ .tmp/phase3-skill-run{N}/
 ```
 
 **Success Criteria**:
-- [ ] Run 1: 0 errors, 17 files (via skill)
-- [ ] Run 2: 0 errors, 17 files (via skill)
-- [ ] Run 3: 0 errors, 17 files (via skill)
+- [ ] Run 1: 0 format errors (validate-knowledge.py passed)
+- [ ] Run 1: Content verified after Phase 5.1 implementation
+- [ ] Run 2-3: Consistent quality (0 errors each)
 - [ ] Skill command executes without manual intervention
+- [ ] Results documented in phase3-skill-reproducibility.md
 
 **Phase 3 Status**: ⚠️ **INCOMPLETE** - Must execute via skill
 
@@ -236,28 +371,57 @@ cp -r .claude/skills/nabledge-6/knowledge/ .tmp/phase3-skill-run{N}/
 
 **Method**: Use nabledge-creator skill to generate all files
 
+**Run 1 (Generation + Format Validation)**:
 ```bash
-# Backup current files
-cp -r .claude/skills/nabledge-6/knowledge/ .tmp/phase4-taskgen-backup/
+# Step 1: Backup existing files (if any)
+cp -r .claude/skills/nabledge-6/knowledge/ .tmp/phase4-pre-backup/
 
-# Delete and regenerate via skill
+# Step 2: Clean and generate all
 rm -rf .claude/skills/nabledge-6/knowledge/*.json
-
-# Execute skill for all categories
 /nabledge-creator knowledge --all
 
-# Validate
+# Step 3: Format validation
 cd .claude/skills/nabledge-creator
 python scripts/validate-knowledge.py ../nabledge-6/knowledge/
+# Expected: 0 errors, 162 files
 
-# Expect: 0 errors, 162 files
+# Step 4: Record execution time and stats
+echo "Completed at: $(date)" >> ../../.pr/00078/phase4-execution-log.txt
+find ../nabledge-6/knowledge -name "*.json" | wc -l >> ../../.pr/00078/phase4-execution-log.txt
+
+# Step 5: Backup
+mkdir -p ../../.tmp/phase4-skill-run1
+cp -r ../nabledge-6/knowledge/ ../../.tmp/phase4-skill-run1/
+```
+
+**Run 1: Content Verification (After Phase 5.1)**:
+```bash
+# NOTE: verify-knowledge workflow not yet implemented
+# Execute this after Phase 5.1 completes
+
+# IMPORTANT: Start new session
+/nabledge-creator verify-knowledge --all
+
+# What this does:
+# - Read all 162 RST sources from .lw/nab-official/v6/
+# - Verify JSON structure matches RST (±30% section division rule)
+# - Check mandatory fields populated (class_name, purpose, etc.)
+# - Verify L1/L2 keywords (minimum: L1≥1, L2≥2)
+# - Verify category template compliance
+# - Check content correspondence
+
+# Expected: 0 critical issues, detailed report generated
+
+# Document: .pr/00078/phase4-verification-results.md
 ```
 
 **Success Criteria**:
 - [ ] Skill generates all 162 files
-- [ ] 0 validation errors
+- [ ] 0 format errors (validate-knowledge.py passed)
+- [ ] Content verified after Phase 5.1 (all 162 files, no critical issues)
 - [ ] Execution time recorded
 - [ ] No manual intervention required
+- [ ] Results documented in phase4-execution-log.txt
 
 **Phase 4 Status**: ⚠️ **INCOMPLETE** - Must execute via skill
 
