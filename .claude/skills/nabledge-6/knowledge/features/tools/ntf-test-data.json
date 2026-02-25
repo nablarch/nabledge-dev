@@ -8,83 +8,35 @@
   "index": [
     {
       "id": "overview",
-      "hints": [
-        "テストデータ",
-        "Excel",
-        "Excelファイル",
-        "スプレッドシート",
-        "外部化"
-      ]
+      "hints": ["テストデータ", "Excel", "Excelファイル", "スプレッドシート", "外部化"]
     },
     {
       "id": "naming_conventions",
-      "hints": [
-        "命名規約",
-        "ファイル名",
-        "シート名",
-        "配置",
-        "ディレクトリ"
-      ]
+      "hints": ["命名規約", "ファイル名", "シート名", "配置", "ディレクトリ"]
     },
     {
       "id": "data_types",
-      "hints": [
-        "データタイプ",
-        "SETUP_TABLE",
-        "EXPECTED_TABLE",
-        "LIST_MAP",
-        "SETUP_FIXED",
-        "EXPECTED_VARIABLE"
-      ]
+      "hints": ["データタイプ", "SETUP_TABLE", "EXPECTED_TABLE", "LIST_MAP", "SETUP_FIXED", "EXPECTED_VARIABLE"]
     },
     {
       "id": "special_notation",
-      "hints": [
-        "特殊記法",
-        "null",
-        "systemTime",
-        "setUpTime",
-        "文字種",
-        "binaryFile",
-        "改行"
-      ]
+      "hints": ["特殊記法", "null", "systemTime", "setUpTime", "文字種", "binaryFile", "改行"]
     },
     {
       "id": "cell_format",
-      "hints": [
-        "セル",
-        "書式",
-        "文字列",
-        "日付",
-        "コメント",
-        "マーカーカラム"
-      ]
+      "hints": ["セル", "書式", "文字列", "日付", "コメント", "マーカーカラム"]
     },
     {
       "id": "column_omission",
-      "hints": [
-        "カラム省略",
-        "EXPECTED_COMPLETE_TABLE",
-        "デフォルト値",
-        "省略記述",
-        "可読性"
-      ]
+      "hints": ["カラム省略", "EXPECTED_COMPLETE_TABLE", "デフォルト値", "省略記述", "可読性"]
     }
   ],
   "sections": {
     "overview": {
       "description": "データベースの準備データやデータベース検索結果などのデータを表すには、Javaソースコードよりスプレッドシートのほうが可読性や編集のしやすさという点で有利である。Excelファイルを使用することにより、このようなデータをスプレッドシート形式で扱うことができる。",
-      "supported_formats": [
-        "Excel2003形式（.xls）",
-        "Excel2007以降形式（.xlsx）"
-      ],
+      "supported_formats": ["Excel2003形式（.xls）", "Excel2007以降形式（.xlsx）"],
       "location": "src/test/java配下（デフォルト）。テストソースコードと同じディレクトリに配置することを推奨。",
-      "benefits": [
-        "可読性の向上",
-        "編集の容易さ",
-        "テストケースの把握が容易",
-        "テストデータとテストロジックの役割分担が明確"
-      ]
+      "benefits": ["可読性の向上", "編集の容易さ", "テストケースの把握が容易", "テストデータとテストロジックの役割分担が明確"]
     },
     "naming_conventions": {
       "description": "Excelファイル名、ファイルパスには推奨される規約が存在する。この規約に従うことにより、テストクラスで明示的にディレクトリ名やファイル名を指定してファイルを読み込む必要がなくなり、簡潔にテストソースコードを記述できる。",
@@ -100,10 +52,7 @@
           "rule": "Excelファイルを、テストソースコードと同じディレクトリに配置する",
           "example": {
             "directory": "<PROJECT_ROOT>/test/jp/co/tis/example/db/",
-            "files": [
-              "ExampleDbAccessTest.java",
-              "ExampleDbAccessTest.xlsx"
-            ]
+            "files": ["ExampleDbAccessTest.java", "ExampleDbAccessTest.xlsx"]
           }
         }
       ],
@@ -209,22 +158,13 @@
           "notation": "null（大文字小文字の区別なし）",
           "value": "null",
           "description": "セル内に「null」と記述されている場合は、null値として扱う。データベースにnull値を登録したい場合や、期待値でnull値を設定したい場合に使用する。",
-          "examples": [
-            "null",
-            "Null",
-            "NULL"
-          ]
+          "examples": ["null", "Null", "NULL"]
         },
         {
           "notation": "\"null\"（ダブルクォートで囲む）",
           "value": "文字列のnull",
           "description": "文字列の前後がダブルクォート（半角、全角問わず）で囲われている場合は、前後のダブルクォートを取り除いた文字列を扱う。「null」や「NULL」を文字列として扱う必要がある場合に使用。",
-          "examples": [
-            "\"null\"",
-            "\"NULL\"",
-            "\"1 \"",
-            "\" \""
-          ],
+          "examples": ["\"null\"", "\"NULL\"", "\"1 \"", "\" \""],
           "notes": "本記述方法を利用した場合であっても、文字列中のダブルクォートをエスケープする必要はない。"
         },
         {

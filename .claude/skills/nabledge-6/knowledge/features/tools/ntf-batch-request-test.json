@@ -7,65 +7,27 @@
   "index": [
     {
       "id": "overview",
-      "hints": [
-        "バッチリクエスト単体テスト",
-        "バッチ処理",
-        "リクエスト単体テスト",
-        "コマンドライン起動",
-        "BatchRequestTestSupport"
-      ]
+      "hints": ["バッチリクエスト単体テスト", "バッチ処理", "リクエスト単体テスト", "コマンドライン起動", "BatchRequestTestSupport"]
     },
     {
       "id": "test_class",
-      "hints": [
-        "テストクラス",
-        "継承",
-        "@ExtendWith",
-        "JUnit 5",
-        "Extension",
-        "BatchRequestTestSupport"
-      ]
+      "hints": ["テストクラス", "継承", "@ExtendWith", "JUnit 5", "Extension", "BatchRequestTestSupport"]
     },
     {
       "id": "test_support_classes",
-      "hints": [
-        "StandaloneTestSupportTemplate",
-        "TestShot",
-        "MainForRequestTesting",
-        "FileSupport",
-        "DbAccessTestSupport"
-      ]
+      "hints": ["StandaloneTestSupportTemplate", "TestShot", "MainForRequestTesting", "FileSupport", "DbAccessTestSupport"]
     },
     {
       "id": "test_execution",
-      "hints": [
-        "execute",
-        "テスト実行",
-        "テストショット",
-        "入力データ準備",
-        "結果確認"
-      ]
+      "hints": ["execute", "テスト実行", "テストショット", "入力データ準備", "結果確認"]
     },
     {
       "id": "resident_batch_config",
-      "hints": [
-        "常駐バッチ",
-        "RequestThreadLoopHandler",
-        "OneShotLoopHandler",
-        "ハンドラ構成",
-        "テスト用設定"
-      ]
+      "hints": ["常駐バッチ", "RequestThreadLoopHandler", "OneShotLoopHandler", "ハンドラ構成", "テスト用設定"]
     },
     {
       "id": "directive_defaults",
-      "hints": [
-        "ディレクティブ",
-        "デフォルト値",
-        "固定長ファイル",
-        "可変長ファイル",
-        "text-encoding",
-        "record-separator"
-      ]
+      "hints": ["ディレクティブ", "デフォルト値", "固定長ファイル", "可変長ファイル", "text-encoding", "record-separator"]
     },
     {
       "id": "file_data",
@@ -84,19 +46,13 @@
       "description": "実際にバッチをコマンドラインから起動したときの動作を擬似的に再現し、テストを行う。",
       "purpose": "バッチアクションのリクエスト単体テストをサポートし、入力ファイル作成から出力ファイル検証まで自動化する。",
       "test_target": "バッチ処理（Actionクラス）",
-      "related_files": [
-        "ntf-overview.json",
-        "ntf-test-data.json",
-        "ntf-assertion.json"
-      ]
+      "related_files": ["ntf-overview.json", "ntf-test-data.json", "ntf-assertion.json"]
     },
     "test_class": {
       "description": "バッチリクエスト単体テストのテストクラスの作成方法",
       "junit5_approach": {
         "inheritance": "継承不要（JUnit 5 Extension使用）",
-        "annotations": [
-          "@ExtendWith(BatchRequestTestExtension.class)"
-        ],
+        "annotations": ["@ExtendWith(BatchRequestTestExtension.class)"],
         "required_field": "BatchRequestTestSupport support",
         "example": "@ExtendWith(PromanBatchRequestExtension.class)\nclass ExportProjectsInPeriodActionRequestTest {\n    PromanBatchRequestTestSupport support;\n\n    @Test\n    void testNormalEnd() {\n        support.execute(support.testName.getMethodName());\n    }\n}",
         "notes": "JUnit 5のExtension機構を使用することで、継承なしでテスト機能を利用できる。supportフィールドはExtensionによって自動的に初期化される。"
@@ -239,11 +195,7 @@
         {
           "key": "record-separator",
           "description": "レコード区切り文字",
-          "example_values": [
-            "NONE",
-            "CRLF",
-            "LF"
-          ]
+          "example_values": ["NONE", "CRLF", "LF"]
         },
         {
           "key": "quoting-delimiter",
