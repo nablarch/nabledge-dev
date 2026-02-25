@@ -1,0 +1,279 @@
+{
+  "id": "NablarchOpenApiGenerator",
+  "title": "Nablarch OpenAPI Generator",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["OpenAPI Generator", "コード生成", "RESTful Web Services", "OpenAPI 3.0.3"]
+    },
+    {
+      "id": "prerequisites",
+      "hints": ["前提条件", "OpenAPIドキュメント", "OpenAPI 3.0.3"]
+    },
+    {
+      "id": "generated_code",
+      "hints": ["生成されるコード", "Resource interface", "Action interface", "Model", "リクエスト", "レスポンス"]
+    },
+    {
+      "id": "tool_operation",
+      "hints": ["ツール動作", "Maven Plugin", "openapi-generator-maven-plugin"]
+    },
+    {
+      "id": "configuration",
+      "hints": ["設定", "pom.xml", "plugin設定", "generatorName", "nablarch"]
+    },
+    {
+      "id": "config_options",
+      "hints": ["configOptions", "basePackage", "modelPackage", "apiPackage", "useBeanValidation", "useJakartaEe"]
+    },
+    {
+      "id": "execution",
+      "hints": ["実行方法", "mvn generate-sources", "compile"]
+    },
+    {
+      "id": "generated_interface",
+      "hints": ["生成されるインターフェース", "Resource", "Action", "path", "operation"]
+    },
+    {
+      "id": "generated_model",
+      "hints": ["生成されるモデル", "Bean Validation", "schema", "property"]
+    },
+    {
+      "id": "limitations",
+      "hints": ["制限事項", "非対応機能", "allOf", "oneOf", "anyOf"]
+    },
+    {
+      "id": "tips",
+      "hints": ["使用上のヒント", "ベストプラクティス", "注意事項"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "OpenAPIドキュメントを入力としてソースコードを生成するOpenAPI Generatorのジェネレータ実装。Nablarch RESTful Webサービス用のジェネレータを提供し、OpenAPI Generator Maven Pluginとして実行する。",
+      "purpose": "生成されたソースコードを使用することで、OpenAPIドキュメントに定義されたREST APIインターフェースに準拠したActionクラスを簡単に実装できる。",
+      "base_technology": "OpenAPI Generator",
+      "execution_method": "OpenAPI Generator Maven Plugin",
+      "target_framework": "Nablarch RESTful Web Services"
+    },
+    "prerequisites": {
+      "description": "ツール使用の前提条件",
+      "required": [
+        "Nablarch RESTful Webサービスのソースコードを生成するOpenAPIドキュメントが作成されていること",
+        "OpenAPIドキュメントはOpenAPI 3.0.3仕様で記述されていること"
+      ],
+      "openapi_version": "OpenAPI 3.0.3",
+      "spec_url": "https://spec.openapis.org/oas/v3.0.3.html"
+    },
+    "generated_code": {
+      "description": "OpenAPIドキュメントを入力として生成されるソースコード",
+      "generated_items": [
+        {
+          "type": "Resource (Action) インターフェース",
+          "based_on": "pathとoperationの定義",
+          "description": "OpenAPIのpathとoperationに基づいてResource（Action）インターフェースを生成"
+        },
+        {
+          "type": "Model",
+          "based_on": "schemaの定義",
+          "description": "リクエストとレスポンスに対応するModelを生成"
+        }
+      ],
+      "generated_files_note": "OpenAPI Generatorの仕様により、output設定で指定したディレクトリ配下に.openapi-generator-ignore、.openapi-generator/FILES、.openapi-generator/VERSIONが生成されるが、これらは使用されない。"
+    },
+    "tool_operation": {
+      "description": "ツールの動作概要",
+      "workflow": [
+        "OpenAPIドキュメントからResource（Action）インターフェースとModelを生成",
+        "生成されたインターフェースを実装したActionクラスを作成",
+        "実装したActionクラスをルーティング設定に追加"
+      ],
+      "plugin": "openapi-generator-maven-plugin",
+      "generator_name": "nablarch"
+    },
+    "configuration": {
+      "description": "pom.xmlでのプラグイン設定",
+      "plugin_config": {
+        "groupId": "org.openapitools",
+        "artifactId": "openapi-generator-maven-plugin",
+        "version": "7.1.0以降",
+        "executions": [
+          {
+            "phase": "generate-sources",
+            "goals": ["generate"]
+          }
+        ],
+        "required_configuration": [
+          {
+            "parameter": "generatorName",
+            "value": "nablarch",
+            "description": "Nablarch用のジェネレータを指定"
+          },
+          {
+            "parameter": "inputSpec",
+            "description": "OpenAPIドキュメントのパスを指定",
+            "example": "${project.basedir}/src/main/resources/openapi.yaml"
+          },
+          {
+            "parameter": "output",
+            "description": "ソースコードの出力先ディレクトリを指定",
+            "example": "${project.build.directory}/generated-sources/openapi"
+          },
+          {
+            "parameter": "configOptions",
+            "description": "ジェネレータ固有の設定オプション"
+          }
+        ]
+      },
+      "example_config": "<plugin>\n  <groupId>org.openapitools</groupId>\n  <artifactId>openapi-generator-maven-plugin</artifactId>\n  <version>7.1.0</version>\n  <executions>\n    <execution>\n      <phase>generate-sources</phase>\n      <goals>\n        <goal>generate</goal>\n      </goals>\n      <configuration>\n        <generatorName>nablarch</generatorName>\n        <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>\n        <output>${project.build.directory}/generated-sources/openapi</output>\n        <configOptions>\n          <basePackage>com.example.api</basePackage>\n          <modelPackage>com.example.api.model</modelPackage>\n          <apiPackage>com.example.api.action</apiPackage>\n          <useBeanValidation>true</useBeanValidation>\n          <useJakartaEe>true</useJakartaEe>\n        </configOptions>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>"
+    },
+    "config_options": {
+      "description": "configOptionsで指定可能な設定オプション",
+      "options": [
+        {
+          "name": "basePackage",
+          "required": true,
+          "description": "生成されるコードのベースパッケージ名",
+          "example": "com.example.api"
+        },
+        {
+          "name": "modelPackage",
+          "required": false,
+          "description": "Modelクラスのパッケージ名。指定しない場合は{basePackage}.model",
+          "default": "{basePackage}.model",
+          "example": "com.example.api.model"
+        },
+        {
+          "name": "apiPackage",
+          "required": false,
+          "description": "Actionインターフェースのパッケージ名。指定しない場合は{basePackage}.action",
+          "default": "{basePackage}.action",
+          "example": "com.example.api.action"
+        },
+        {
+          "name": "useBeanValidation",
+          "required": false,
+          "type": "boolean",
+          "description": "Bean Validationアノテーションを生成するかどうか",
+          "default": "false",
+          "values": ["true", "false"]
+        },
+        {
+          "name": "useJakartaEe",
+          "required": false,
+          "type": "boolean",
+          "description": "Jakarta EE名前空間を使用するかどうか（trueの場合jakarta.*、falseの場合javax.*）",
+          "default": "false",
+          "values": ["true", "false"],
+          "note": "Nablarch 6ではJakarta EEを使用するためtrueを指定"
+        }
+      ]
+    },
+    "execution": {
+      "description": "ツールの実行方法",
+      "commands": [
+        {
+          "command": "mvn generate-sources",
+          "description": "ソースコード生成のみを実行"
+        },
+        {
+          "command": "mvn compile",
+          "description": "compileフェーズでソースコード生成も実行される"
+        }
+      ],
+      "execution_phase": "generate-sources",
+      "automatic_execution": "compileフェーズ以降を実行すると自動的にソースコード生成も実行される"
+    },
+    "generated_interface": {
+      "description": "生成されるResource（Action）インターフェース",
+      "characteristics": [
+        "OpenAPIドキュメントのpathごとにインターフェースが生成される",
+        "operationごとにメソッドが生成される",
+        "メソッド名はoperationIdから生成される",
+        "メソッドの引数と戻り値はschemaから生成される"
+      ],
+      "annotations": [
+        "@Produces - レスポンスのContent-Typeを指定",
+        "@Consumes - リクエストのContent-Typeを指定",
+        "@Valid - Bean Validationを有効化（useBeanValidation=trueの場合）"
+      ],
+      "implementation_note": "生成されたインターフェースを実装したActionクラスを作成し、ルーティング設定に追加する必要がある。"
+    },
+    "generated_model": {
+      "description": "生成されるModelクラス",
+      "characteristics": [
+        "OpenAPIドキュメントのschema定義から生成される",
+        "リクエストボディとレスポンスボディに対応",
+        "プロパティごとにgetter/setterが生成される",
+        "Bean Validationアノテーションが付与される（useBeanValidation=trueの場合）"
+      ],
+      "validation_annotations": [
+        "@NotNull - required: trueの場合",
+        "@Size - minLength, maxLengthの指定がある場合",
+        "@Min, @Max - minimum, maximumの指定がある場合",
+        "@Pattern - patternの指定がある場合",
+        "@Email - format: emailの場合"
+      ],
+      "jakarta_ee_note": "useJakartaEe=trueの場合、jakarta.validation.*パッケージのアノテーションが使用される"
+    },
+    "limitations": {
+      "description": "現在の実装での制限事項と非対応機能",
+      "unsupported_features": [
+        {
+          "feature": "allOf, oneOf, anyOf",
+          "description": "スキーマ合成機能は非対応",
+          "workaround": "代わりに$refを使用して別のschemaを参照"
+        },
+        {
+          "feature": "discriminator",
+          "description": "ポリモーフィズムのサポートは非対応"
+        },
+        {
+          "feature": "additionalProperties",
+          "description": "動的なプロパティ追加は非対応"
+        },
+        {
+          "feature": "コールバック",
+          "description": "非同期コールバックの定義は非対応"
+        },
+        {
+          "feature": "リンク",
+          "description": "レスポンス間のリンク定義は非対応"
+        }
+      ],
+      "notes": "これらの機能が必要な場合は、OpenAPIドキュメントの設計を見直すか、生成後のコードを手動で修正する必要がある。"
+    },
+    "tips": {
+      "description": "使用上のヒントとベストプラクティス",
+      "best_practices": [
+        {
+          "topic": "operationIdの命名",
+          "recommendation": "わかりやすいメソッド名になるようoperationIdを設計する",
+          "reason": "operationIdがそのままメソッド名として使用される"
+        },
+        {
+          "topic": "schema定義の再利用",
+          "recommendation": "$refを使用して共通のschema定義を再利用する",
+          "benefit": "コードの重複を避け、一貫性のあるモデルクラスを生成できる"
+        },
+        {
+          "topic": "Bean Validationの活用",
+          "recommendation": "useBeanValidation=trueを設定し、OpenAPIドキュメントにバリデーション制約を定義する",
+          "benefit": "Nablarchのバリデーション機能と連携し、入力チェックを自動化できる"
+        },
+        {
+          "topic": "生成コードのバージョン管理",
+          "recommendation": "生成されたコードはバージョン管理対象外とし、ビルド時に自動生成する",
+          "reason": "OpenAPIドキュメントが真実の情報源（Single Source of Truth）となる"
+        }
+      ],
+      "related_docs": [
+        "Nablarch RESTful Webサービス",
+        "Bean Validation",
+        "Jakarta REST（JAX-RS）"
+      ]
+    }
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "id": "SqlExecutor",
+  "title": "Nablarch SQL Executor",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["SQL Executor", "SQLファイル実行", "Nablarch特殊構文", "インタラクティブ実行"]
+    },
+    {
+      "id": "expected_usage",
+      "hints": ["想定用途", "設計者", "SQL設計", "配布", "ビルド"]
+    },
+    {
+      "id": "db_connection_method",
+      "hints": ["DB接続方法", "共通DB", "ローカルDB", "接続設定"]
+    },
+    {
+      "id": "limitations",
+      "hints": ["制限事項", "WITH句", "IN句カンマ", "DATETIMEリテラル"]
+    },
+    {
+      "id": "distribution_prerequisites",
+      "hints": ["配布前提条件", "Firefox", "Chrome", "開発環境", "JDBCドライバ"]
+    },
+    {
+      "id": "source_code",
+      "hints": ["ソースコード取得", "GitHub", "sql-executor", "clone"]
+    },
+    {
+      "id": "db_configuration",
+      "hints": ["DB設定変更", "db.config", "接続URL", "ユーザー", "パスワード"]
+    },
+    {
+      "id": "jdbc_driver_config",
+      "hints": ["JDBCドライバ設定", "pom.xml", "dependency", "db.xml", "driverClassName", "Dialect"]
+    },
+    {
+      "id": "build_and_distribution",
+      "hints": ["ビルド", "配布", "mvn package", "sql-executor-distribution.zip"]
+    },
+    {
+      "id": "usage",
+      "hints": ["使用方法", "起動", "sql-executor.bat", "SQLファイル一覧", "SQL実行"]
+    },
+    {
+      "id": "syntax",
+      "hints": ["構文", "文字列", "IN句", "日付型", "SYSDATE", "埋め込み変数"]
+    },
+    {
+      "id": "faq",
+      "hints": ["FAQ", "ログ確認", "異常終了", "パラメータ指定", "トラブルシューティング"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Nablarch特殊構文を含むSQLファイルを対話的に実行するためのツール。プロジェクトで使用するDBの設定とMavenによるビルドが必要。",
+      "purpose": "設計者がプロジェクトでSQLを設計する際に使用する。",
+      "target_users": "設計者（デザイナー）",
+      "requirements": [
+        "プロジェクトで使用するDBを設定しMavenでビルド",
+        "ビルド済みのツールは配布可能"
+      ]
+    },
+    "expected_usage": {
+      "description": "ツールの想定される使用方法",
+      "workflow": [
+        "プロジェクトの環境構築担当者がSQL Executorをビルドして配布",
+        "配布されたファイルを設計者が使用"
+      ],
+      "prerequisites_for_users": [
+        "Java",
+        "DB接続環境"
+      ],
+      "note": "ビルド済みのツールはJavaとDB接続環境があれば使用可能"
+    },
+    "db_connection_method": {
+      "description": "DB接続方法の選択肢",
+      "connection_methods": [
+        {
+          "method": "全ユーザーがプロジェクト共通DBに接続",
+          "description": "全員が同じDBインスタンスを共有",
+          "use_case": "チーム全体で共通のテストデータを使用する場合"
+        },
+        {
+          "method": "各ユーザーがローカルDBに接続",
+          "description": "各ユーザーが個別のDBインスタンスを使用",
+          "use_case": "個別にテストデータを管理したい場合"
+        }
+      ]
+    },
+    "limitations": {
+      "description": "ツールの制限事項",
+      "unsupported_features": [
+        {
+          "feature": "WITH句で始まるSQL",
+          "description": "WITH句で始まるSQLは実行できない",
+          "workaround": "データベースのSQL実行環境を使用"
+        },
+        {
+          "feature": "IN句内のカンマ",
+          "description": "IN句にカンマを含めることができない",
+          "workaround": "データベースのSQL実行環境を使用"
+        },
+        {
+          "feature": "DATETIMEリテラルの検索",
+          "description": "DATETIMEリテラルを使った検索ができない",
+          "workaround": "データベースのSQL実行環境を使用"
+        }
+      ],
+      "alternative": "これらのSQLを実行したい場合は、データベースのSQL実行環境を使用すること。",
+      "doma_recommendation": "NablarchはDomaの2way SQLをサポートするアダプタを提供している。Domaを使用すると、本番環境用に定義したSQLを複雑なツール設定なしに簡単にテスト実行できる（動的条件を構築する場合でもSQLを書き換えずに実行可能）。このため、Domaの使用を検討することを推奨。"
+    },
+    "distribution_prerequisites": {
+      "description": "ツールのビルドと配布の前提条件",
+      "required": [
+        "FirefoxまたはChromeがインストールされていること",
+        "Nablarch開発環境がセットアップされていること",
+        "Maven Central RepositoryにないRDBMSのJDBCドライバを使用する場合、JDBCドライバがProject Local RepositoryまたはLocal Repositoryに登録されていること"
+      ],
+      "jdbc_driver_registration": "customizeDBAddFileMavenRepoを参照"
+    },
+    "source_code": {
+      "description": "ソースコードの取得方法",
+      "repository": "https://github.com/nablarch/sql-executor",
+      "method": "GitHubで公開されているリポジトリをcloneする"
+    },
+    "db_configuration": {
+      "description": "使用するRDBMSに合わせた設定変更",
+      "config_file": "src/main/resources/db.config",
+      "configurable_items": [
+        "接続URL",
+        "ユーザー",
+        "パスワード"
+      ],
+      "database_examples": [
+        {
+          "database": "H2",
+          "config": "db.url=jdbc:h2:./h2/db/SAMPLE\ndb.user=SAMPLE\ndb.password=SAMPLE",
+          "note": "デフォルト設定"
+        },
+        {
+          "database": "Oracle",
+          "config": "# jdbc:oracle:thin:@ホスト名:ポート番号:データベースSID\ndb.url=jdbc:oracle:thin:@localhost:1521/xe\ndb.user=sample\ndb.password=sample"
+        },
+        {
+          "database": "PostgreSQL",
+          "config": "# jdbc:postgresql://ホスト名:ポート番号/データベース名\ndb.url=jdbc:postgresql://localhost:5432/postgres\ndb.user=sample\ndb.password=sample"
+        },
+        {
+          "database": "DB2",
+          "config": "# jdbc:db2://ホスト名:ポート番号/データベース名\ndb.url=jdbc:db2://localhost:50000/SAMPLE\ndb.user=sample\ndb.password=sample"
+        },
+        {
+          "database": "SQL Server",
+          "config": "# jdbc:sqlserver://ホスト名:ポート番号;instanceName=インスタンス名\ndb.url=jdbc:sqlserver://localhost:1433;instanceName=SQLEXPRESS\ndb.user=SAMPLE\ndb.password=SAMPLE"
+        }
+      ]
+    },
+    "jdbc_driver_config": {
+      "description": "JDBCドライバの変更方法",
+      "files_to_modify": [
+        "pom.xml",
+        "src/main/resources/db.xml"
+      ],
+      "pom_xml_config": {
+        "description": "使用するRDBMSに合わせてJDBCドライバのdependencyを更新",
+        "examples": [
+          {
+            "database": "H2",
+            "dependency": "<dependency>\n  <groupId>com.h2database</groupId>\n  <artifactId>h2</artifactId>\n  <version>2.2.220</version>\n  <scope>runtime</scope>\n</dependency>",
+            "note": "デフォルト"
+          },
+          {
+            "database": "Oracle",
+            "dependency": "<dependency>\n  <groupId>com.oracle.database.jdbc</groupId>\n  <artifactId>ojdbc11</artifactId>\n  <version>23.2.0.0</version>\n  <scope>runtime</scope>\n</dependency>"
+          },
+          {
+            "database": "PostgreSQL",
+            "dependency": "<dependency>\n  <groupId>org.postgresql</groupId>\n  <artifactId>postgresql</artifactId>\n  <version>42.7.2</version>\n  <scope>runtime</scope>\n</dependency>"
+          },
+          {
+            "database": "DB2",
+            "dependency": "<dependency>\n  <groupId>com.ibm.db2</groupId>\n  <artifactId>jcc</artifactId>\n  <version>11.5.9.0</version>\n  <scope>runtime</scope>\n</dependency>"
+          }
+        ]
+      },
+      "db_xml_config": {
+        "description": "JDBCドライバのクラス名とDialectのクラス名を修正",
+        "dataSource_driverClassName": "dataSourceコンポーネントのdriverClassNameプロパティにドライバクラス名を設定",
+        "connectionFactory_dialect": "connectionFactoryコンポーネントのdialectプロパティにDialectクラスを設定",
+        "examples": [
+          {
+            "database": "H2",
+            "driver_class": "org.h2.Driver",
+            "dialect_class": "nablarch.core.db.dialect.H2Dialect"
+          },
+          {
+            "database": "Oracle",
+            "driver_class": "oracle.jdbc.driver.OracleDriver",
+            "dialect_class": "nablarch.core.db.dialect.OracleDialect"
+          },
+          {
+            "database": "PostgreSQL",
+            "driver_class": "org.postgresql.Driver",
+            "dialect_class": "nablarch.core.db.dialect.PostgreSQLDialect"
+          },
+          {
+            "database": "DB2",
+            "driver_class": "com.ibm.db2.jcc.DB2Driver",
+            "dialect_class": "nablarch.core.db.dialect.DB2Dialect"
+          },
+          {
+            "database": "SQL Server",
+            "driver_class": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            "dialect_class": "nablarch.core.db.dialect.SqlServerDialect"
+          }
+        ]
+      }
+    },
+    "build_and_distribution": {
+      "description": "ツールのビルドと配布ファイルの作成",
+      "launch_confirmation": {
+        "command": "mvn compile exec:java",
+        "browser_url": "http://localhost:7979/index.html",
+        "notes": [
+          "初回起動時など、起動に時間がかかる場合はブラウザがタイムアウトすることがある。その場合は起動完了後にブラウザをリロード。",
+          "Internet Explorerでは正しく動作しない。Internet Explorerが起動した場合は、URLをコピーしてFirefoxまたはChromeのアドレス欄に貼り付ける。"
+        ]
+      },
+      "create_distribution": {
+        "command": "mvn package",
+        "output_file": "target/sql-executor-distribution.zip",
+        "description": "作成されたsql-executor-distribution.zipを配布することで、GitやMavenなしでツールを使用できる"
+      }
+    },
+    "usage": {
+      "description": "配布されたツールの使用方法",
+      "user_prerequisites": [
+        "プロジェクトで使用されているバージョンのJavaがインストールされていること",
+        "DB設定で指定されたデータベースに接続できること",
+        "FirefoxまたはChromeがインストールされていること"
+      ],
+      "launch_steps": [
+        {
+          "step": "sql-executor-distribution.zipを解凍",
+          "location": "sql-executor-distribution/sql-executor"
+        },
+        {
+          "step": "sql-executor.batを実行",
+          "method": "ダブルクリックまたはコマンドプロンプトから起動"
+        }
+      ],
+      "custom_db_connection": {
+        "description": "配布時とは異なるDBに接続したい場合",
+        "file": "sql-executor.bat",
+        "config_items": [
+          "db.url - データベースURL",
+          "db.user - 接続ユーザー",
+          "db.password - パスワード"
+        ],
+        "example": "start java -Ddb.url=jdbc:h2:./h2/db/SAMPLE -Ddb.user=SAMPLE -Ddb.password=SAMPLE -jar sql-executor.jar"
+      },
+      "operations": [
+        {
+          "operation": "検索パス設定",
+          "description": "右下の入力欄にローカルフォルダのパスを指定し「再検索」をクリックすると、そのパス配下のSQLファイル一覧と各ファイルに記述されたステートメントが表示される"
+        },
+        {
+          "operation": "SQL実行",
+          "description": "各ステートメント名をクリックすると内容と操作ボタンが表示される。ステートメント内の埋め込み変数は入力フィールドとなり、内容を編集して「Run」をクリックすることでステートメントを実行できる"
+        },
+        {
+          "operation": "前回実行内容の復元",
+          "description": "「Fill」をクリックすると、入力フィールドの内容を前回実行時の内容から復元できる"
+        }
+      ]
+    },
+    "syntax": {
+      "description": "SQL Executorの構文",
+      "string_format": {
+        "description": "文字列の記述方法",
+        "rule": "条件として文字列を入力する場合は、文字列を ' で囲む必要がある"
+      },
+      "non_string_format": {
+        "description": "文字列以外の記述方法",
+        "rule": "文字列以外は ' で囲んではいけない"
+      },
+      "in_clause": {
+        "description": "IN句の記述方法",
+        "rule": "IN句を実行するには条件を [] で囲む必要がある。複数項目を入力する場合はカンマ（,）で区切る",
+        "special_syntax_note": "$if特殊構文とIN句で同じ変数名を指定した場合は、同じ値を入力する必要がある",
+        "example": "[value1, value2, value3]",
+        "error": "IN句に [] を指定しない場合、java.lang.IllegalArgumentException: object type in field is invalid. valid object type is Collection or Array. というエラーが出力される",
+        "limitation": "ただし、IN句の検索条件にカンマ（,）を使用することはできない"
+      },
+      "date_type": {
+        "description": "日付型の設定方法",
+        "rule": "日付型（DATE）フィールドにはSQL92 DATEリテラルと同じ形式で値を設定する",
+        "format": "1970-12-11",
+        "sysdate": "SYSDATEキーワードを指定することで現在時刻を設定できる",
+        "limitation": "DATETIMEリテラルを条件として検索することはできない"
+      }
+    },
+    "faq": {
+      "description": "よくある質問とトラブルシューティング",
+      "questions": [
+        {
+          "q": "実行時のログを見たい場合、どこでログを確認できるか？",
+          "a": "実行時に以下のログファイルが出力される：\n- sql.log → SQL文の実行時ログ\n- app.log → 全実行ログ"
+        },
+        {
+          "q": "実行しても何も出力されずに異常終了する場合の対処法は？",
+          "a": "起動時のDB接続エラーなど、一部のエラーは標準エラー出力ではなく実行ログファイルに出力される。カレントディレクトリ直下にapp.logとして出力される実行ログの内容を確認し、適切な対処を行う"
+        },
+        {
+          "q": "「パラメータの指定方法が正しくありません。」というメッセージが表示されるが、どうすればよいか？",
+          "a": "文字列を入力する場合は ' で囲まれているか確認。真偽値や日付型を入力する場合は、綴りや形式に誤りがないか確認"
+        }
+      ]
+    }
+  }
+}
