@@ -1,0 +1,88 @@
+{
+  "id": "ntf-mail",
+  "title": "メール送信のテスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/mail.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Mail Test", "メール送信", "SMTP", "メール送信要求"]
+    },
+    {
+      "id": "test_data",
+      "hints": ["テストデータ", "EXPECTED_MAIL", "宛先", "件名", "本文"]
+    },
+    {
+      "id": "test_scenarios",
+      "hints": ["テストシナリオ", "メール送信要求", "テンプレート", "添付ファイル"]
+    },
+    {
+      "id": "verification",
+      "hints": ["検証項目", "送信要求テーブル", "宛先", "件名", "本文", "添付ファイル"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "メール送信機能のテスト。メール送信要求がデータベースに正しく登録されることを検証する。実際のメール送信は行わず、送信要求テーブルへの登録内容を確認する。",
+      "purpose": "メール送信処理が正しく動作し、適切な内容のメール送信要求が作成されることを保証する。"
+    },
+    "test_data": {
+      "description": "テストデータの準備",
+      "data_types": [
+        {
+          "type": "EXPECTED_MAIL",
+          "description": "期待するメール送信要求の内容を記述する",
+          "items": ["宛先（To、Cc、Bcc）", "送信元", "件名", "本文", "添付ファイル情報"]
+        },
+        {
+          "type": "SETUP",
+          "description": "メールテンプレートやマスタデータなど、事前準備が必要なデータを記述する"
+        }
+      ]
+    },
+    "test_scenarios": {
+      "description": "テストすべきシナリオ",
+      "scenarios": [
+        {
+          "scenario": "シンプルなメール送信",
+          "description": "宛先、件名、本文のみの基本的なメールが送信されること"
+        },
+        {
+          "scenario": "テンプレートを使用したメール送信",
+          "description": "メールテンプレートにデータを埋め込んだメールが送信されること"
+        },
+        {
+          "scenario": "添付ファイル付きメール送信",
+          "description": "添付ファイルが正しく設定されたメールが送信されること"
+        },
+        {
+          "scenario": "複数宛先へのメール送信",
+          "description": "To、Cc、Bccに複数の宛先を指定したメールが送信されること"
+        }
+      ]
+    },
+    "verification": {
+      "description": "検証すべき項目",
+      "verification_points": [
+        {
+          "point": "送信要求テーブルへの登録",
+          "description": "メール送信要求がデータベースの送信要求テーブルに登録されていること"
+        },
+        {
+          "point": "宛先の正確性",
+          "description": "To、Cc、Bccの宛先が正しく設定されていること"
+        },
+        {
+          "point": "件名と本文",
+          "description": "件名と本文が期待通りの内容であること（テンプレート変数の置換も含む）"
+        },
+        {
+          "point": "添付ファイル",
+          "description": "添付ファイルの情報が正しく登録されていること"
+        }
+      ],
+      "notes": "実際のSMTPサーバーへの送信はテスト対象外。送信要求の登録のみを検証する。"
+    }
+  }
+}

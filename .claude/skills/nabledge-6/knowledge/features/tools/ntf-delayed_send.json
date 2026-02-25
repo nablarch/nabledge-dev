@@ -1,0 +1,58 @@
+{
+  "id": "ntf-delayed_send",
+  "title": "応答不要メッセージ送信のテスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Delayed Send", "応答不要", "メッセージ送信", "非同期"]
+    },
+    {
+      "id": "test_class",
+      "hints": ["テストクラス", "MessagingRequestTestSupport", "継承"]
+    },
+    {
+      "id": "test_data",
+      "hints": ["テストデータ", "EXPECTED_REQUEST_HEADER", "EXPECTED_REQUEST_BODY"]
+    },
+    {
+      "id": "verification",
+      "hints": ["検証項目", "送信メッセージ", "ヘッダー", "ボディ"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "応答を待たずにメッセージを送信する処理のテスト。メッセージを送信キューに投入し、送信内容が正しいことを検証する。",
+      "purpose": "非同期メッセージ送信処理が正しく動作し、適切な形式のメッセージが送信されることを保証する。"
+    },
+    "test_class": {
+      "description": "テストクラスの作成",
+      "base_class": "MessagingRequestTestSupport",
+      "naming": "テスト対象Action名 + RequestTest"
+    },
+    "test_data": {
+      "description": "テストデータ",
+      "data_types": [
+        {
+          "type": "EXPECTED_REQUEST_HEADER",
+          "description": "送信されるべきメッセージヘッダーの期待値を記述する"
+        },
+        {
+          "type": "EXPECTED_REQUEST_BODY",
+          "description": "送信されるべきメッセージボディの期待値を記述する"
+        }
+      ],
+      "notes": "応答メッセージは受信しないため、RESPONSEデータは不要"
+    },
+    "verification": {
+      "description": "検証すべき項目",
+      "items": [
+        "送信メッセージのヘッダーが正しいこと",
+        "送信メッセージのボディが正しいこと",
+        "メッセージが適切なキューに送信されること"
+      ]
+    }
+  }
+}

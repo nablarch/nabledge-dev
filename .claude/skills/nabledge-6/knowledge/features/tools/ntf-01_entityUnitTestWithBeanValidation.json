@@ -1,0 +1,86 @@
+{
+  "id": "ntf-01_entityUnitTestWithBeanValidation",
+  "title": "Bean Validationに対応したForm/Entityのクラス単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Bean Validation", "クラス単体テスト", "Form", "Entity", "バリデーション"]
+    },
+    {
+      "id": "test_class",
+      "hints": ["テストクラス", "EntityTestSupport", "継承"]
+    },
+    {
+      "id": "test_data",
+      "hints": ["テストデータ", "Excel", "SETUP", "EXPECTED"]
+    },
+    {
+      "id": "test_method",
+      "hints": ["テストメソッド", "testValidateCharset", "testValidateAndConvert", "単項目バリデーション", "項目間バリデーション"]
+    },
+    {
+      "id": "validation_types",
+      "hints": ["バリデーション種別", "単項目", "項目間", "相関チェック"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Bean Validationアノテーションを使用したForm/Entityクラスのバリデーションをテストする方法を説明する。単項目バリデーションと項目間バリデーションの両方をテストできる。",
+      "purpose": "Bean Validationによる入力チェックが正しく動作することを確認し、バリデーションロジックの品質を保証する。"
+    },
+    "test_class": {
+      "description": "テストクラスの作成方法",
+      "base_class": "EntityTestSupport",
+      "structure": "EntityTestSupportを継承してテストクラスを作成する。テスト対象のForm/EntityクラスごとにテストクラスをXつ作成する。",
+      "naming_convention": "テスト対象クラス名 + Test (例: UserFormTest)"
+    },
+    "test_data": {
+      "description": "テストデータの記述方法",
+      "file_format": "Excel形式",
+      "data_types": [
+        {
+          "type": "SETUP",
+          "description": "テスト対象のForm/Entityに設定する値を記述する"
+        },
+        {
+          "type": "EXPECTED",
+          "description": "期待する結果（バリデーションエラーの有無や内容）を記述する"
+        }
+      ],
+      "location": "テストクラスと同じパッケージに配置"
+    },
+    "test_method": {
+      "description": "テストメソッドの実装",
+      "methods": [
+        {
+          "name": "testValidateCharset",
+          "description": "単項目バリデーションをテストするメソッド。各項目に対するBean Validationアノテーションの動作を検証する。",
+          "target": "単項目バリデーション"
+        },
+        {
+          "name": "testValidateAndConvert",
+          "description": "項目間バリデーションをテストするメソッド。複数項目にまたがる相関チェックを検証する。",
+          "target": "項目間バリデーション"
+        }
+      ]
+    },
+    "validation_types": {
+      "description": "テスト可能なバリデーション種別",
+      "types": [
+        {
+          "type": "単項目バリデーション",
+          "description": "個々の項目に対するバリデーション。@NotNull、@Size、@Pattern等のBean Validationアノテーションによるチェック。",
+          "examples": ["必須チェック", "文字列長チェック", "形式チェック", "範囲チェック"]
+        },
+        {
+          "type": "項目間バリデーション",
+          "description": "複数の項目にまたがるバリデーション。カスタムバリデータによる相関チェック。",
+          "examples": ["開始日と終了日の妥当性チェック", "パスワードと確認用パスワードの一致チェック"]
+        }
+      ]
+    }
+  }
+}

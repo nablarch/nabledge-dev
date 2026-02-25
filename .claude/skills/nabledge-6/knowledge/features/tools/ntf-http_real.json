@@ -1,0 +1,53 @@
+{
+  "id": "ntf-http_real",
+  "title": "HTTP実データベーステスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/http_real.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["HTTP Real Test", "実データベース", "Webアプリケーション", "トランザクション"]
+    },
+    {
+      "id": "use_case",
+      "hints": ["使用ケース", "フレームワーク検証", "トランザクション制御", "ハンドラ動作"]
+    },
+    {
+      "id": "test_focus",
+      "hints": ["テスト観点", "コミット", "ロールバック", "セッション", "例外ハンドリング"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Webアプリケーションで実際のデータベースに接続してフレームワークの動作を検証するテスト。トランザクション制御、セッション管理、エラーハンドリングを実データベースで確認する。",
+      "purpose": "Webアプリケーションのフレームワーク機能が実際のデータベースで正しく動作することを保証する。"
+    },
+    "use_case": {
+      "description": "このテストを実施すべきケース",
+      "use_cases": [
+        "Webアプリケーションのトランザクション制御が正しく動作することを確認したい",
+        "セッション管理機能が正しく動作することを確認したい",
+        "フレームワーク制御ハンドラの動作を確認したい",
+        "実行時例外発生時のロールバックとエラー画面遷移を確認したい"
+      ]
+    },
+    "test_focus": {
+      "description": "テストで重点的に検証すべき項目",
+      "items": [
+        {
+          "item": "画面遷移時のトランザクション制御",
+          "description": "画面遷移ごとにトランザクションが適切に開始・終了されること"
+        },
+        {
+          "item": "セッションスコープの動作",
+          "description": "セッションに保存したデータが画面遷移後も保持されること"
+        },
+        {
+          "item": "エラー時のロールバックと画面遷移",
+          "description": "例外発生時にトランザクションがロールバックされ、エラー画面に遷移すること"
+        }
+      ]
+    }
+  }
+}

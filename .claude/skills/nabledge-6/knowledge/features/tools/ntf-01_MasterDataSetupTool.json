@@ -1,0 +1,94 @@
+{
+  "id": "ntf-01_MasterDataSetupTool",
+  "title": "マスタデータ投入ツール",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Master Data Input Tool", "マスタデータ投入", "データベース投入", "テストデータ"]
+    },
+    {
+      "id": "features",
+      "hints": ["特徴", "自動テストデータ形式", "コンポーネント設定", "バックアップスキーマ"]
+    },
+    {
+      "id": "limitations",
+      "hints": ["制限事項", "マルチスレッド非対応"]
+    },
+    {
+      "id": "usage",
+      "hints": ["使用方法", "データ作成", "実行方法", "Antターゲット"]
+    },
+    {
+      "id": "targets",
+      "hints": ["ターゲット", "データ投入(main)", "データ投入(test)", "マスタデータ投入"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "マスタデータをデータベースに投入する機能を提供するツール。自動テストのテストデータと同じ形式でデータを記述でき、Nablarch Application Frameworkのコンポーネント設定ファイルを使用するため、別途設定ファイルを用意する必要がない。",
+      "purpose": "開発環境やテスト環境にマスタデータを効率的に投入し、テストの準備作業を自動化する。"
+    },
+    "features": {
+      "description": "ツールの主要機能",
+      "items": [
+        {
+          "feature": "自動テストデータ形式でのデータ記述",
+          "description": "自動テストのテストデータと同じ形式でデータを記述できる"
+        },
+        {
+          "feature": "コンポーネント設定ファイルの利用",
+          "description": "Nablarch Application Frameworkのコンポーネント設定ファイルを使用するため、別途設定ファイルを準備する必要がない"
+        },
+        {
+          "feature": "バックアップスキーマへの同時投入",
+          "description": "バックアップスキーマへのデータ投入を同時に実行できる。バックアップスキーマは自動テストフレームワークのマスタデータ復元機能で使用するスキーマで、自動テストスキーマと同じマスタデータをバックアップスキーマにも投入する必要がある場合に、このツールを使用して2つのスキーマに同時にデータを投入できる"
+        }
+      ]
+    },
+    "limitations": {
+      "description": "ツールの制限事項",
+      "unsupported": [
+        {
+          "item": "マルチスレッド機能",
+          "description": "このツールはマルチスレッド機能をサポートしていない。マルチスレッド機能のテストは、テストフレームワークを使用しないテスト（結合テストなど）で実施すること。"
+        }
+      ]
+    },
+    "usage": {
+      "description": "ツールの使用方法",
+      "prerequisites": "ConfigMasterDataSetupToolの前提条件を参照",
+      "data_creation": {
+        "file": "MASTER_DATA.xlsx",
+        "format": "自動テストと同じ形式でデータを入力",
+        "reference": "データ入力方法の詳細はhow_to_write_setup_tableを参照"
+      },
+      "execution": {
+        "method": "AntビューからAntターゲットをダブルクリックして実行",
+        "setup_reference": "Antビューのセットアップ方法はhow_to_setup_ant_view_in_eclipseを参照"
+      }
+    },
+    "targets": {
+      "description": "実行可能なAntターゲット",
+      "targets": [
+        {
+          "name": "データ投入(main)",
+          "english_name": "Data input (main)",
+          "description": "メインプロジェクトの設定ファイルを使用してデータベースに投入する。サブ機能単体テストなど、アプリケーションサーバで実行する際のスキーマにデータを投入する。"
+        },
+        {
+          "name": "データ投入(test)",
+          "english_name": "Data input (test)",
+          "description": "テストプロジェクトの設定ファイルを使用してデータベースに投入する。自動テストで使用するスキーマにデータを投入する。同時にマスタデータバックアップスキーマにもデータを投入する。"
+        },
+        {
+          "name": "マスタデータ投入",
+          "english_name": "Master data input",
+          "description": "上記2つのターゲットをまとめて実行する。"
+        }
+      ]
+    }
+  }
+}

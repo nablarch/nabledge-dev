@@ -1,0 +1,102 @@
+{
+  "id": "ntf-JUnit5_Extension",
+  "title": "JUnit 5 Extension for Nablarch Testing Framework",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["JUnit 5", "Extension", "JUnit Jupiter", "テストフレームワーク移行"]
+    },
+    {
+      "id": "difference_from_vintage",
+      "hints": ["JUnit Vintage", "違い", "ネイティブJUnit5", "@ExtendWith"]
+    },
+    {
+      "id": "prerequisites",
+      "hints": ["前提条件", "maven-surefire-plugin", "JUnit 5依存関係"]
+    },
+    {
+      "id": "usage",
+      "hints": ["使用方法", "@ExtendWith", "NablarchTestRunner", "テストクラス"]
+    },
+    {
+      "id": "supported_features",
+      "hints": ["対応機能", "DbAccessTestSupport", "データベーステスト", "制限事項"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Nablarch Testing FrameworkをJUnit 5のネイティブテスト（JUnit Jupiter）として実行するための拡張機能。JUnit Vintageを使用せずに、JUnit 5の機能を直接使用してNablarchのテストを記述できる。",
+      "purpose": "JUnit 5の最新機能を活用しながらNablarchのテスト機能を使用できるようにし、テストコードの可読性と保守性を向上させる。"
+    },
+    "difference_from_vintage": {
+      "description": "JUnit Vintageとの違い",
+      "vintage_approach": {
+        "description": "JUnit 4で書かれたテストをJUnit 5上で動かす互換機能",
+        "limitation": "JUnit 5の新機能は使用できない",
+        "test_format": "@Test、@Before、@After等のJUnit 4アノテーションを使用"
+      },
+      "extension_approach": {
+        "description": "JUnit 5ネイティブの拡張機能として動作",
+        "benefit": "JUnit 5の全機能が使用可能",
+        "test_format": "@ExtendWith、@BeforeEach、@AfterEach等のJUnit 5アノテーションを使用"
+      }
+    },
+    "prerequisites": {
+      "description": "使用の前提条件",
+      "required": [
+        {
+          "item": "maven-surefire-plugin",
+          "version": "2.22.0以上"
+        },
+        {
+          "item": "JUnit 5依存関係",
+          "dependencies": [
+            "org.junit.jupiter:junit-jupiter (JUnit 5本体)",
+            "com.nablarch.framework:nablarch-testing-junit5 (Nablarch JUnit 5 Extension)"
+          ]
+        }
+      ]
+    },
+    "usage": {
+      "description": "使用方法",
+      "basic_usage": {
+        "annotation": "@ExtendWith(NablarchTestRunner.class)",
+        "placement": "テストクラスに付与",
+        "example": "@ExtendWith(NablarchTestRunner.class)\npublic class UserServiceTest {\n    @Test\n    void testCreateUser() {\n        // テストコード\n    }\n}"
+      },
+      "with_db_access": {
+        "description": "データベースアクセステストの場合",
+        "approach": "DbAccessTestSupportの機能を使用する代わりに、NablarchTestRunnerが提供するメソッドを使用",
+        "available_methods": ["setUpDb", "assertTableEquals", "commitTransaction"]
+      }
+    },
+    "supported_features": {
+      "description": "対応機能と制限事項",
+      "supported": [
+        {
+          "feature": "データベーステスト",
+          "description": "テストデータの準備、実行結果の検証、トランザクション制御が可能",
+          "support_class": "NablarchTestRunnerが提供"
+        },
+        {
+          "feature": "JUnit 5アノテーション",
+          "description": "@Test、@BeforeEach、@AfterEach、@BeforeAll、@AfterAll等が使用可能"
+        },
+        {
+          "feature": "パラメータ化テスト",
+          "description": "@ParameterizedTest、@ValueSource等のJUnit 5機能が使用可能"
+        }
+      ],
+      "limitations": [
+        {
+          "feature": "リクエスト単体テスト",
+          "status": "現時点では非対応",
+          "workaround": "JUnit Vintageを使用するか、JUnit 4形式で記述"
+        }
+      ]
+    }
+  }
+}

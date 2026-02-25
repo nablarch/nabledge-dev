@@ -1,0 +1,95 @@
+{
+  "id": "ntf-RequestUnitTest_rest",
+  "title": "RESTful Webサービスのリクエスト単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["REST API Test", "RestTestSupport", "RESTful", "JSON", "HTTPメソッド"]
+    },
+    {
+      "id": "test_class",
+      "hints": ["テストクラス", "RestTestSupport", "継承"]
+    },
+    {
+      "id": "test_data",
+      "hints": ["テストデータ", "REQUEST_BODY", "RESPONSE_BODY", "HTTPステータス", "Content-Type"]
+    },
+    {
+      "id": "http_methods",
+      "hints": ["HTTPメソッド", "GET", "POST", "PUT", "DELETE", "PATCH"]
+    },
+    {
+      "id": "json_validation",
+      "hints": ["JSON検証", "レスポンスボディ", "スキーマ検証"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "RESTful WebサービスのActionクラスをフレームワーク込みでテストする。HTTPメソッド（GET、POST、PUT、DELETE等）によるリクエスト、JSONレスポンスの検証、HTTPステータスコードの確認が可能。",
+      "purpose": "REST APIの動作を統合的にテストし、リクエスト処理、レスポンス生成、HTTPステータスが正しく動作することを保証する。"
+    },
+    "test_class": {
+      "description": "テストクラスの作成",
+      "base_class": "RestTestSupport",
+      "naming": "テスト対象Action名 + RequestTest",
+      "example": "public class UserApiActionRequestTest extends RestTestSupport { ... }"
+    },
+    "test_data": {
+      "description": "テストデータの種類",
+      "data_types": [
+        {
+          "type": "REQUEST_BODY",
+          "description": "リクエストボディ（JSON）を記述する"
+        },
+        {
+          "type": "RESPONSE_BODY",
+          "description": "期待するレスポンスボディ（JSON）を記述する"
+        },
+        {
+          "type": "EXPECTED_STATUS_CODE",
+          "description": "期待するHTTPステータスコードを記述する（200、404、500等）"
+        },
+        {
+          "type": "REQUEST_HEADER",
+          "description": "リクエストヘッダー（Content-Type、Acceptなど）を記述する"
+        }
+      ]
+    },
+    "http_methods": {
+      "description": "対応するHTTPメソッド",
+      "methods": [
+        {
+          "method": "GET",
+          "description": "リソースの取得"
+        },
+        {
+          "method": "POST",
+          "description": "リソースの作成"
+        },
+        {
+          "method": "PUT",
+          "description": "リソースの更新"
+        },
+        {
+          "method": "DELETE",
+          "description": "リソースの削除"
+        },
+        {
+          "method": "PATCH",
+          "description": "リソースの部分更新"
+        }
+      ]
+    },
+    "json_validation": {
+      "description": "JSONレスポンスの検証",
+      "validation_methods": [
+        "レスポンスボディの完全一致検証",
+        "JSON構造の部分一致検証",
+        "JSONスキーマ検証"
+      ]
+    }
+  }
+}

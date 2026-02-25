@@ -1,0 +1,58 @@
+{
+  "id": "ntf-RequestUnitTest_http_send_sync",
+  "title": "HTTPメッセージ同期送信のリクエスト単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_http_send_sync.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["HTTP同期送信", "HttpSendSyncSupport", "外部システム連携", "HTTPリクエスト"]
+    },
+    {
+      "id": "test_class",
+      "hints": ["テストクラス", "HttpSendSyncSupport", "継承"]
+    },
+    {
+      "id": "test_data",
+      "hints": ["テストデータ", "REQUEST_HEADER_MESSAGES", "REQUEST_BODY_MESSAGES", "RESPONSE"]
+    },
+    {
+      "id": "mock_server",
+      "hints": ["モックサーバー", "レスポンス設定", "外部システム"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "外部システムに対してHTTPメッセージを同期送信する処理のテスト。モックサーバーを使用して外部システムのレスポンスをシミュレートし、送信処理とレスポンス処理を検証する。",
+      "purpose": "外部システムとのHTTP連携処理を統合的にテストし、リクエスト送信、レスポンス受信、エラーハンドリングが正しく動作することを保証する。"
+    },
+    "test_class": {
+      "description": "テストクラスの作成",
+      "base_class": "HttpSendSyncSupport",
+      "naming": "テスト対象クラス名 + RequestTest"
+    },
+    "test_data": {
+      "description": "テストデータの種類",
+      "data_types": [
+        {
+          "type": "REQUEST_HEADER_MESSAGES",
+          "description": "送信するHTTPヘッダーを記述する"
+        },
+        {
+          "type": "REQUEST_BODY_MESSAGES",
+          "description": "送信するHTTPボディを記述する"
+        },
+        {
+          "type": "RESPONSE",
+          "description": "モックサーバーが返すレスポンスを記述する"
+        }
+      ]
+    },
+    "mock_server": {
+      "description": "モックサーバーの利用",
+      "purpose": "外部システムをモックサーバーで代替し、様々なレスポンスパターンをテストできる",
+      "setup": "RESPONSEデータとしてステータスコード、ヘッダー、ボディを定義"
+    }
+  }
+}

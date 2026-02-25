@@ -1,0 +1,44 @@
+{
+  "id": "ntf-RequestUnitTest_real",
+  "title": "データベースアクセスを伴うリクエスト単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_real.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Real Request Test", "データベースアクセス", "トランザクション", "実行時例外"]
+    },
+    {
+      "id": "use_case",
+      "hints": ["使用ケース", "共通処理", "フレームワーク制御ハンドラ", "トランザクション制御"]
+    },
+    {
+      "id": "test_points",
+      "hints": ["テストポイント", "ロールバック", "コミット", "例外ハンドリング"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "データベースアクセスを伴うリクエスト処理のテスト。実際のデータベースに接続し、トランザクション制御やエラーハンドリングを含めたフレームワークの動作を検証する。",
+      "purpose": "フレームワークのトランザクション制御、エラーハンドリング、データベース更新が正しく動作することを保証する。"
+    },
+    "use_case": {
+      "description": "このテストが必要なケース",
+      "cases": [
+        "共通処理（フレームワーク制御ハンドラ）の動作を検証したい",
+        "実行時例外が発生した場合のロールバック動作を確認したい",
+        "正常終了時のコミット動作を確認したい"
+      ]
+    },
+    "test_points": {
+      "description": "テストで検証すべきポイント",
+      "points": [
+        "正常系でのデータベース更新とコミット",
+        "異常系でのロールバック",
+        "トランザクションタイムアウト",
+        "デッドロック時の動作"
+      ]
+    }
+  }
+}

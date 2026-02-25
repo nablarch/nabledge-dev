@@ -1,0 +1,124 @@
+{
+  "id": "ntf-03_Tips",
+  "title": "自動テストフレームワーク Tips",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Tips", "ヒント", "ベストプラクティス", "トラブルシューティング"]
+    },
+    {
+      "id": "test_data_tips",
+      "hints": ["テストデータ", "Excel", "NULL", "空文字", "改行"]
+    },
+    {
+      "id": "database_tips",
+      "hints": ["データベース", "トランザクション", "ロールバック", "コミット"]
+    },
+    {
+      "id": "date_time_tips",
+      "hints": ["日付", "時刻", "システム日時", "固定"]
+    },
+    {
+      "id": "assertion_tips",
+      "hints": ["アサーション", "比較", "順序", "大文字小文字"]
+    },
+    {
+      "id": "performance_tips",
+      "hints": ["性能", "高速化", "並列実行"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "自動テストフレームワークを使用する際の便利なTipsやベストプラクティス、よくあるトラブルの解決方法をまとめる。",
+      "purpose": "テストの効率を向上させ、よくある問題を事前に回避できるようにする。"
+    },
+    "test_data_tips": {
+      "description": "テストデータ作成に関するTips",
+      "tips": [
+        {
+          "topic": "NULL値の指定",
+          "description": "Excelでセルを空にするとNULL値として扱われる。明示的にNULL文字列を入力したい場合は、セルに「null」と記述する。"
+        },
+        {
+          "topic": "空文字の指定",
+          "description": "空文字を指定したい場合は、セルに「\"\"」と記述する。"
+        },
+        {
+          "topic": "改行の指定",
+          "description": "改行を含む文字列は、Excelのセル内で実際に改行して記述する（Alt+Enterキー）。"
+        },
+        {
+          "topic": "大量データの準備",
+          "description": "大量のテストデータが必要な場合は、Excelの行コピー機能を活用する。"
+        }
+      ]
+    },
+    "database_tips": {
+      "description": "データベース関連のTips",
+      "tips": [
+        {
+          "topic": "トランザクション自動ロールバック",
+          "description": "各テストメソッドの実行後、トランザクションは自動的にロールバックされる。テスト間でデータベースの状態が影響し合うことはない。"
+        },
+        {
+          "topic": "明示的なコミット",
+          "description": "テスト内で明示的にコミットしたい場合は、commitTransaction()メソッドを使用する。"
+        },
+        {
+          "topic": "トランザクション制御の無効化",
+          "description": "トランザクション制御を無効化したい場合は、テストクラスに@Transactionアノテーションでfalseを指定する。"
+        }
+      ]
+    },
+    "date_time_tips": {
+      "description": "日付・時刻関連のTips",
+      "tips": [
+        {
+          "topic": "システム日時の固定",
+          "description": "テストで日付・時刻を固定したい場合は、setFixedSystemDate()メソッドを使用する。これにより、SystemTimeUtil.getDateやgetTimestampが常に固定値を返すようになる。"
+        },
+        {
+          "topic": "日付フォーマット",
+          "description": "Excelに日付を記述する際は、「yyyy-MM-dd」形式で記述する。時刻を含める場合は「yyyy-MM-dd HH:mm:ss」形式。"
+        }
+      ]
+    },
+    "assertion_tips": {
+      "description": "アサーション関連のTips",
+      "tips": [
+        {
+          "topic": "順序を無視した比較",
+          "description": "データベーステーブルの比較で順序を無視したい場合は、assertTableEqualsメソッドでソートキーを指定しない。"
+        },
+        {
+          "topic": "大文字小文字を無視した比較",
+          "description": "文字列比較で大文字小文字を無視したい場合は、equalsIgnoreCase()メソッドを使用するか、両方を大文字（または小文字）に変換してから比較する。"
+        },
+        {
+          "topic": "部分一致の検証",
+          "description": "文字列の部分一致を検証したい場合は、contains()メソッドやmatches()メソッドを使用する。"
+        }
+      ]
+    },
+    "performance_tips": {
+      "description": "テスト性能向上のTips",
+      "tips": [
+        {
+          "topic": "並列実行",
+          "description": "テストクラス間で依存関係がない場合、並列実行することでテスト全体の実行時間を短縮できる。Maven Surefireプラグインの設定で並列実行を有効化する。"
+        },
+        {
+          "topic": "データベース初期化の最適化",
+          "description": "全テストで共通の準備データがある場合、@BeforeClassで一度だけ初期化することで性能を向上できる。"
+        },
+        {
+          "topic": "不要なアサーションの削減",
+          "description": "過剰なアサーションはテスト実行時間を増加させる。重要な検証ポイントに絞ることで性能を向上できる。"
+        }
+      ]
+    }
+  }
+}

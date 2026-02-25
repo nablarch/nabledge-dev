@@ -1,0 +1,134 @@
+{
+  "id": "ntf-02_RequestUnitTest",
+  "title": "リクエスト単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_RequestUnitTest.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Request Unit Test", "リクエスト単体テスト", "HttpRequestTestSupport", "統合テスト"]
+    },
+    {
+      "id": "features",
+      "hints": ["特徴", "フレームワーク込みテスト", "HTMLレスポンス検証", "データベース検証"]
+    },
+    {
+      "id": "test_types",
+      "hints": ["テスト種別", "Webアプリケーション", "RESTful", "バッチ", "メッセージング"]
+    },
+    {
+      "id": "test_class_creation",
+      "hints": ["テストクラス作成", "HttpRequestTestSupport", "RestTestSupport", "BatchRequestTestSupport"]
+    },
+    {
+      "id": "test_data",
+      "hints": ["テストデータ", "REQUEST_BODY", "EXPECTED_REQUEST", "EXPECTED_STATUS_CODE"]
+    },
+    {
+      "id": "execution_method",
+      "hints": ["実行方法", "execute", "sendRequest", "HTMLダンプ"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "アプリケーションのActionクラスからフレームワークまでを含めてテストする統合テスト。Webアプリケーション、RESTful Webサービス、バッチアプリケーション、メッセージングなど、様々な処理方式に対応したテストサポートクラスを提供する。",
+      "purpose": "Actionクラスのビジネスロジック、フレームワークの動作、データベースアクセス、画面遷移などを一括してテストし、アプリケーション全体の動作を検証する。"
+    },
+    "features": {
+      "description": "主要な機能",
+      "items": [
+        {
+          "feature": "フレームワーク込みテスト",
+          "description": "Nablarchフレームワークの処理を含めてテストするため、実際の稼働環境に近い状態でテストできる"
+        },
+        {
+          "feature": "HTMLレスポンス検証",
+          "description": "レスポンスのHTMLをファイルに出力し、画面表示内容や遷移先を確認できる"
+        },
+        {
+          "feature": "データベース検証",
+          "description": "テスト実行後のデータベースの状態を期待値と比較して検証できる"
+        },
+        {
+          "feature": "リクエストパラメータ検証",
+          "description": "次画面へのリクエストパラメータの内容を検証できる"
+        }
+      ]
+    },
+    "test_types": {
+      "description": "対応するテスト種別とサポートクラス",
+      "types": [
+        {
+          "type": "Webアプリケーション",
+          "support_class": "HttpRequestTestSupport",
+          "description": "通常のWebアプリケーション（画面遷移を伴う）のテスト"
+        },
+        {
+          "type": "RESTful Webサービス",
+          "support_class": "RestTestSupport",
+          "description": "RESTful APIのテスト"
+        },
+        {
+          "type": "バッチアプリケーション",
+          "support_class": "BatchRequestTestSupport",
+          "description": "バッチ処理のテスト"
+        },
+        {
+          "type": "メッセージング",
+          "support_class": "MessagingRequestTestSupport",
+          "description": "メッセージ送受信処理のテスト"
+        }
+      ]
+    },
+    "test_class_creation": {
+      "description": "テストクラスの作成方法",
+      "structure": {
+        "inheritance": "処理方式に応じたテストサポートクラスを継承",
+        "naming": "テスト対象Action名 + RequestTest",
+        "package": "テスト対象Actionと同じパッケージ"
+      },
+      "example": "public class UserRegistrationActionRequestTest extends HttpRequestTestSupport { ... }"
+    },
+    "test_data": {
+      "description": "テストデータの種類",
+      "data_types": [
+        {
+          "type": "REQUEST_BODY",
+          "description": "リクエストパラメータやリクエストボディを記述する"
+        },
+        {
+          "type": "EXPECTED_REQUEST",
+          "description": "次画面へのリクエストパラメータの期待値を記述する"
+        },
+        {
+          "type": "EXPECTED_STATUS_CODE",
+          "description": "期待するHTTPステータスコードを記述する"
+        },
+        {
+          "type": "SETUP/EXPECTED",
+          "description": "データベースの準備データと期待値を記述する"
+        }
+      ]
+    },
+    "execution_method": {
+      "description": "テストの実行方法",
+      "methods": [
+        {
+          "method": "execute",
+          "description": "リクエスト単体テストを実行する基本メソッド。テストデータを読み込み、Actionを実行し、結果を検証する。",
+          "parameters": ["テストクラス名", "テストメソッド名"]
+        },
+        {
+          "method": "sendRequest",
+          "description": "リクエストを送信するメソッド。画面遷移を伴う場合に使用。"
+        }
+      ],
+      "html_dump": {
+        "description": "テスト実行時にレスポンスのHTMLがファイルに出力される",
+        "location": "target/html-dump/",
+        "usage": "出力されたHTMLをブラウザで開いて画面表示を確認できる"
+      }
+    }
+  }
+}

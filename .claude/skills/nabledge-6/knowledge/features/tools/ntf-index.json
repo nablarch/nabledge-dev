@@ -1,0 +1,150 @@
+{
+  "id": "ntf-index",
+  "title": "Nablarch Testing Framework索引",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/index.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Nablarch Testing Framework", "NTF", "テストフレームワーク索引", "テストサポートクラス"]
+    },
+    {
+      "id": "test_types",
+      "hints": ["テスト種別", "クラス単体テスト", "リクエスト単体テスト", "データベーステスト"]
+    },
+    {
+      "id": "support_classes",
+      "hints": ["サポートクラス", "EntityTestSupport", "HttpRequestTestSupport", "BatchRequestTestSupport", "RestTestSupport", "DbAccessTestSupport"]
+    },
+    {
+      "id": "test_tools",
+      "hints": ["テストツール", "HTTP Dump Tool", "マスタデータ投入ツール", "マスタデータ復元"]
+    },
+    {
+      "id": "framework_features",
+      "hints": ["フレームワーク機能", "JUnit4", "JUnit5", "Excel", "トランザクション制御"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Nablarch Testing Frameworkの全体像と、提供される機能の索引。各種テストサポートクラス、テストツール、テストデータの扱い方をまとめる。",
+      "purpose": "NTFの全機能を俯瞰し、目的に応じた適切なテスト方法を選択できるようにする。"
+    },
+    "test_types": {
+      "description": "提供されるテストの種類",
+      "types": [
+        {
+          "type": "クラス単体テスト",
+          "description": "個別のクラスやコンポーネントを単体でテストする",
+          "subtypes": [
+            "Entityテスト（Bean Validation、Nablarch Validation）",
+            "コンポーネントテスト（サービスクラスなど）"
+          ],
+          "related_files": ["ntf-01_entityUnitTestWithBeanValidation.json", "ntf-02_entityUnitTestWithNablarchValidation.json", "ntf-02_componentUnitTest.json"]
+        },
+        {
+          "type": "リクエスト単体テスト",
+          "description": "Actionクラスからフレームワークまでを含めて統合的にテストする",
+          "subtypes": [
+            "Webアプリケーションテスト",
+            "RESTful Webサービステスト",
+            "バッチアプリケーションテスト",
+            "メッセージングテスト"
+          ],
+          "related_files": ["ntf-02_RequestUnitTest.json", "ntf-RequestUnitTest_rest.json", "ntf-RequestUnitTest_batch.json"]
+        },
+        {
+          "type": "データベースアクセステスト",
+          "description": "データベースアクセスを伴うテストのサポート",
+          "related_files": ["ntf-02_DbAccessTest.json"]
+        }
+      ]
+    },
+    "support_classes": {
+      "description": "テストサポートクラス一覧",
+      "classes": [
+        {
+          "class": "EntityTestSupport",
+          "purpose": "Form/Entityのバリデーションテスト",
+          "test_target": "Bean ValidationまたはNablarch Validationを使用したForm/Entity"
+        },
+        {
+          "class": "HttpRequestTestSupport",
+          "purpose": "Webアプリケーションのリクエスト単体テスト",
+          "test_target": "画面遷移を伴うWebアプリケーション"
+        },
+        {
+          "class": "RestTestSupport",
+          "purpose": "RESTful WebサービスのAPIテスト",
+          "test_target": "REST API（JSON/XMLレスポンス）"
+        },
+        {
+          "class": "BatchRequestTestSupport",
+          "purpose": "バッチアプリケーションのテスト",
+          "test_target": "都度起動バッチ（Nablarchバッチ、JSR352バッチ）"
+        },
+        {
+          "class": "MessagingRequestTestSupport",
+          "purpose": "メッセージングアプリケーションのテスト",
+          "test_target": "メッセージ送受信処理、常駐バッチ"
+        },
+        {
+          "class": "DbAccessTestSupport",
+          "purpose": "データベースアクセスを伴うテスト",
+          "test_target": "データベース操作を含む任意のクラス"
+        }
+      ]
+    },
+    "test_tools": {
+      "description": "テスト支援ツール",
+      "tools": [
+        {
+          "tool": "HTTP Dump Tool（リクエスト単体データ作成ツール）",
+          "purpose": "リクエストパラメータのテストデータを自動生成",
+          "related_files": ["ntf-01_HttpDumpTool.json", "ntf-02_SetUpHttpDumpTool.json"]
+        },
+        {
+          "tool": "マスタデータ投入ツール",
+          "purpose": "テスト環境にマスタデータを投入",
+          "related_files": ["ntf-01_MasterDataSetupTool.json", "ntf-02_ConfigMasterDataSetupTool.json"]
+        },
+        {
+          "tool": "マスタデータ復元機能",
+          "purpose": "テスト実行後にマスタデータを初期状態に復元",
+          "related_files": ["ntf-04_MasterDataRestore.json"]
+        }
+      ]
+    },
+    "framework_features": {
+      "description": "フレームワークの主要機能",
+      "features": [
+        {
+          "feature": "JUnit統合",
+          "description": "JUnit 4ベース。JUnit 5でも動作可能（VintageまたはExtension使用）",
+          "related_files": ["ntf-01_Abstract.json", "ntf-JUnit5_Extension.json"]
+        },
+        {
+          "feature": "Excelテストデータ",
+          "description": "テストデータをExcelファイルで管理。準備データ、期待値、リクエストパラメータなどを記述",
+          "related_files": ["ntf-test-data.json"]
+        },
+        {
+          "feature": "自動トランザクション制御",
+          "description": "テストメソッドごとに自動的にトランザクションをロールバック",
+          "related_files": ["ntf-02_DbAccessTest.json"]
+        },
+        {
+          "feature": "アサーション機能",
+          "description": "データベーステーブル比較、メッセージ比較など、Nablarch特化のアサーション",
+          "related_files": ["ntf-assertion.json"]
+        },
+        {
+          "feature": "Tips集",
+          "description": "テストフレームワーク使用時のベストプラクティスとトラブルシューティング",
+          "related_files": ["ntf-03_Tips.json"]
+        }
+      ]
+    }
+  }
+}

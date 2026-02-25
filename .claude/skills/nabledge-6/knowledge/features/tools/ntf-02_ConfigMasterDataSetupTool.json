@@ -1,0 +1,77 @@
+{
+  "id": "ntf-02_ConfigMasterDataSetupTool",
+  "title": "マスタデータ投入ツール設定方法",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["設定方法", "Configuration", "マスタデータ投入ツール"]
+    },
+    {
+      "id": "prerequisites",
+      "hints": ["前提条件", "archetype", "ブランクプロジェクト"]
+    },
+    {
+      "id": "file_structure",
+      "hints": ["ファイル構成", "build.xml", "MASTER_DATA.xlsx", "コンポーネント設定ファイル"]
+    },
+    {
+      "id": "configuration",
+      "hints": ["設定変更", "プロパティ", "スキーマ名", "バックアップスキーマ"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "マスタデータ投入ツールの設定方法を説明する。ツールを使用するための前提条件とファイル構成、設定項目について解説する。",
+      "purpose": "プロジェクト環境に合わせてマスタデータ投入ツールを適切に設定し、使用可能な状態にする。"
+    },
+    "prerequisites": {
+      "description": "ツール使用の前提条件",
+      "required": [
+        "archetypeからブランクプロジェクトの生成が完了していること"
+      ]
+    },
+    "file_structure": {
+      "description": "ツールに関連するファイル構成",
+      "files": [
+        {
+          "name": "build.xml",
+          "location": "toolsプロジェクトのルート",
+          "description": "Antビルドファイル。マスタデータ投入のターゲットが定義されている。"
+        },
+        {
+          "name": "MASTER_DATA.xlsx",
+          "location": "toolsプロジェクトのsrc/main/resources/data",
+          "description": "投入するマスタデータを記述するExcelファイル"
+        },
+        {
+          "name": "コンポーネント設定ファイル",
+          "location": "各プロジェクトのsrc/main/resources または src/test/resources",
+          "description": "データベース接続情報等を含むNablarchの設定ファイル"
+        }
+      ]
+    },
+    "configuration": {
+      "description": "設定項目と変更方法",
+      "configurable_items": [
+        {
+          "item": "スキーマ名",
+          "location": "各プロジェクトのコンポーネント設定ファイル",
+          "description": "データを投入するスキーマ名を設定"
+        },
+        {
+          "item": "バックアップスキーマ名",
+          "location": "テストプロジェクトのコンポーネント設定ファイル",
+          "description": "マスタデータ復元機能で使用するバックアップスキーマ名を設定"
+        },
+        {
+          "item": "データファイルパス",
+          "location": "build.xml",
+          "description": "投入するマスタデータファイル（MASTER_DATA.xlsx）のパスを設定"
+        }
+      ]
+    }
+  }
+}

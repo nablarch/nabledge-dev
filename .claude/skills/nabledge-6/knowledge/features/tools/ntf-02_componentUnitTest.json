@@ -1,0 +1,88 @@
+{
+  "id": "ntf-02_componentUnitTest",
+  "title": "コンポーネント単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/6u3/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/02_componentUnitTest.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "hints": ["Component Unit Test", "コンポーネント単体テスト", "業務ロジック", "サービスクラス"]
+    },
+    {
+      "id": "target",
+      "hints": ["テスト対象", "サービスクラス", "ビジネスロジック", "Action以外"]
+    },
+    {
+      "id": "test_class",
+      "hints": ["テストクラス", "DbAccessTestSupport", "継承"]
+    },
+    {
+      "id": "test_method",
+      "hints": ["テストメソッド", "JUnit", "@Test", "アサーション"]
+    },
+    {
+      "id": "mock_usage",
+      "hints": ["モック", "依存コンポーネント", "テストダブル"]
+    }
+  ],
+  "sections": {
+    "overview": {
+      "description": "Action以外の業務ロジックを実装したコンポーネント（サービスクラスなど）の単体テスト。データベースアクセスを伴う場合はDbAccessTestSupportを使用し、伴わない場合は通常のJUnitテストとして実装する。",
+      "purpose": "ビジネスロジックの正確性を個別に検証し、Actionクラスとは独立してテストできるようにする。"
+    },
+    "target": {
+      "description": "テスト対象となるコンポーネント",
+      "components": [
+        "サービスクラス",
+        "ビジネスロジックを実装したヘルパークラス",
+        "ユーティリティクラス",
+        "その他のAction以外の業務ロジッククラス"
+      ],
+      "exclusions": "Actionクラスはリクエスト単体テストでテストするため、ここでの対象外"
+    },
+    "test_class": {
+      "description": "テストクラスの作成方法",
+      "patterns": [
+        {
+          "pattern": "データベースアクセスあり",
+          "base_class": "DbAccessTestSupport",
+          "description": "DbAccessTestSupportを継承してテストクラスを作成。データベースの準備データ投入、トランザクション制御、実行結果検証などの機能が利用できる。"
+        },
+        {
+          "pattern": "データベースアクセスなし",
+          "base_class": "なし（通常のJUnitテスト）",
+          "description": "特別なベースクラスを継承せず、通常のJUnitテストとして実装。@Testアノテーションを付与したテストメソッドで検証を行う。"
+        }
+      ]
+    },
+    "test_method": {
+      "description": "テストメソッドの実装",
+      "structure": {
+        "annotation": "@Test",
+        "naming": "test + テスト対象メソッド名 + テストケース識別子",
+        "example": "testCalculateTotal_normalCase()"
+      },
+      "implementation_steps": [
+        "1. テストデータの準備（必要に応じてデータベースに投入）",
+        "2. テスト対象メソッドの実行",
+        "3. 実行結果の検証（assertメソッドによるアサーション）",
+        "4. データベースの状態検証（必要な場合）"
+      ]
+    },
+    "mock_usage": {
+      "description": "モックの使用方法",
+      "use_case": "テスト対象コンポーネントが他のコンポーネントに依存している場合、依存先をモックに置き換えてテストを独立させることができる",
+      "mock_frameworks": [
+        "Mockito",
+        "JMockit",
+        "その他のJavaモックフレームワーク"
+      ],
+      "benefits": [
+        "テスト対象を独立してテストできる",
+        "依存コンポーネントの動作を制御できる",
+        "テストの実行速度を向上できる"
+      ]
+    }
+  }
+}
