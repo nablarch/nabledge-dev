@@ -44,7 +44,7 @@ Create JSON:
 **Action**: Read index.toon and semantically match files based on keywords:
 
 1. **Read knowledge/index.toon**
-   - Format: `Title, hint1 hint2 ..., path.json` (全エントリー)
+   - Format: `Title, hint1 hint2 ..., path.json`
    - Each line contains entry title, search hints, and file path
 
 2. **Extract matching entries**:
@@ -63,7 +63,21 @@ Create JSON:
    - Keep files with score ≥ 2
    - Select top 10 files
 
-**Output**: List of candidate files with scores in format:
+**Output format** for section-judgement workflow:
+```json
+{
+  "query": "original query",
+  "files": [
+    {"path": "knowledge/features/...", "score": 5},
+    ...
+  ]
+}
+```
+
+This structured output enables direct input to section-judgement workflow.
+
+Legacy format (for reference):
+
 ```json
 {
   "files": [

@@ -47,6 +47,7 @@ Output directory: work/20260210
 - Epoch time (seconds since 1970) for accurate duration calculation
 - Step 3.5 reads session ID from output directory
 - Files stored in same directory as code analysis output
+- Keyword search results stored in same directory: `work/YYYYMMDD/.keyword-search-results.json`
 
 **Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
 
