@@ -57,7 +57,7 @@ Nabledgeは3つの段階で価値を提供する：
 各フェーズは独立した価値を持ちながら、次のフェーズの基盤となる。
 
 ```mermaid
-graph LR
+graph TD
   %% ===== Phase 1: Unlock =====
   subgraph P1["Phase 1: Unlock Your Assets<br/>資産をAI-Readyに解き放つ"]
     direction TB
