@@ -46,7 +46,7 @@ files[{count},]{title,hints,path}:
 
 ## Hint Generation Strategy
 
-**New Design (PR #89)**: L1 technical components + entry titles + class names
+File-level hints contain technical components and entry titles.
 
 ### For Created Knowledge Files
 
@@ -61,9 +61,9 @@ Extract hints from knowledge file content:
    - ユニバーサルDAO, UniversalDao
    - データベース接続管理ハンドラ, DbConnectionManagementHandler
 
-3. **Excluded from index.toon**:
-   - Generic domain terms: データベース, ファイル, ハンドラ, バッチ (moved to section-level)
-   - Functional keywords: ページング, 検索, 登録, 更新 (moved to .index sections)
+3. **Not included in index.toon**:
+   - Generic domain terms: データベース, ファイル, ハンドラ, バッチ
+   - Functional keywords: ページング, 検索, 登録, 更新 (section-level only)
 
 4. **Deduplication**: Remove duplicate hints
 
@@ -92,8 +92,8 @@ Estimate hints from mapping file metadata:
 3. **Add entry titles** (Japanese + English):
    - From mapping title and title_ja fields
 
-4. **Exclude generic domain terms**:
-   - Do not include: バッチ, データベース, ハンドラ, ファイル
+4. **Do not include generic domain terms**:
+   - バッチ, データベース, ハンドラ, ファイル
 
 **Example**:
 ```
