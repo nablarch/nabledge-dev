@@ -18,9 +18,9 @@ This workflow executes all steps in sequence:
 
 1. **Clean** - Delete all generated files for clean state
 2. **Mapping** - Generate documentation mapping with Type/Category/PP classification
-3. **Verify Mapping** - Verify mapping classification accuracy (separate session recommended)
+3. **Verify Mapping** - Verify mapping classification accuracy by reading RST content
 4. **Knowledge** - Generate knowledge files (JSON + MD) and update index.toon
-5. **Verify Knowledge** - Verify knowledge files content accuracy (separate session recommended)
+5. **Verify Knowledge** - Verify knowledge files content accuracy and index.toon integration
 
 ## Progress Checklist Template
 
@@ -31,9 +31,9 @@ At workflow start, copy and display this checklist:
 
 □ Step 1: Clean
 □ Step 2: Mapping
-□ Step 3: Verify Mapping (optional)
+□ Step 3: Verify Mapping
 □ Step 4: Knowledge
-□ Step 5: Verify Knowledge (optional)
+□ Step 5: Verify Knowledge
 
 **Started:** [timestamp]
 **Status:** Not started
@@ -44,11 +44,11 @@ Update this checklist at each step boundary (mark → when starting, ✓ when co
 
 ## Session Management
 
-**Generation steps (clean, mapping, knowledge)** can run in a single session.
+**What this workflow does**: Executes ALL 5 steps in the current session immediately.
 
-**Verification steps (verify-mapping, verify-knowledge)** should ideally run in separate sessions to avoid context bias. However, for convenience, this workflow executes them immediately after generation.
+**About "separate session"**: Verification steps ideally run in a NEW CONVERSATION (fresh session) to avoid context bias from generation logic. However, this "all" workflow executes verification in the CURRENT SESSION for convenience.
 
-**Recommendation**: For critical verification, run verify-mapping and verify-knowledge manually in fresh sessions after generation completes.
+**Alternative**: To run verification without context bias, use individual workflows in separate conversations instead of "all" workflow.
 
 ## Workflow Steps
 
@@ -83,6 +83,8 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping.py "v{version}"
 ```
 
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
+
+**What this script does NOT do**: Processing Pattern (PP) field is NOT set by this script. PP values are determined in Step 6 (Verify Mapping) by reading actual RST content.
 
 **Exit code handling**:
 - Exit 0: Success - Proceed to Step 3
@@ -128,9 +130,17 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".c
 
 See `workflows/mapping.md` for detailed completion criteria for each sub-step.
 
-### Step 6: Verify Mapping (Optional in Same Session)
+### Step 6: Verify Mapping
 
-**Note**: Ideally run in separate session to avoid context bias. For convenience, this workflow executes verification immediately.
+**Execution**: This step is required in "all" workflow and executes immediately.
+
+**What this step does**:
+- Read actual RST content for all 329 files
+- Verify Type/Category classification accuracy
+- **Determine and set Processing Pattern (PP) values** (not set by Step 2)
+- Uses Task tool to process 23 batches in parallel
+
+**Note on session separation**: Ideally this runs in a separate session (new conversation) to avoid context bias. However, for convenience, this workflow executes it in the current session.
 
 Execute verify-mapping workflow following the checklist generated in Step 5. See `verify-mapping.md` for detailed verification process.
 
@@ -205,9 +215,11 @@ python scripts/generate-checklist.py .claude/skills/nabledge-{version}/knowledge
 
 See `workflows/knowledge.md` for detailed completion criteria for each sub-step.
 
-### Step 8: Verify Knowledge Files (Optional in Same Session)
+### Step 8: Verify Knowledge Files
 
-**Note**: Ideally run in separate session to avoid context bias. For convenience, this workflow executes verification immediately.
+**Execution**: This step is required in "all" workflow and executes immediately.
+
+**Note on session separation**: Ideally this runs in a separate session (new conversation) to avoid context bias. However, for convenience, this workflow executes it in the current session.
 
 Execute verify-knowledge workflow following the process in `verify-knowledge.md`:
 
@@ -284,7 +296,7 @@ After successful execution:
 
 1. **Filter usage**: If `--filter` is provided, only matching knowledge files are generated. Mapping generation always processes all files.
 
-2. **Session separation**: While this workflow executes verification in the same session for convenience, running verify-mapping and verify-knowledge in separate sessions provides better verification quality by avoiding context bias.
+2. **Session separation**: This workflow executes verification in the current session. For unbiased verification, run individual workflows (`/nabledge-creator verify-mapping {version}`) in new conversations instead.
 
 3. **Error handling**: If any step fails, fix the issue and resume from that step. No need to restart from clean.
 
