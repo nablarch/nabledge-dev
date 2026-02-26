@@ -125,7 +125,7 @@ For each JSON file, verify that MD conversion preserves all content:
 - **Check MD file exists**: Corresponding `.md` file in `docs/` directory
 - **Run conversion verification**:
   ```bash
-  python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/
+  python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/ .claude/skills/nabledge-{version}/docs/
   ```
 - **Check for missing content**: Script reports any JSON content not found in MD files
 - **Record result**: MD Conversion: ✓/✗ ({missing content if any})
@@ -144,7 +144,7 @@ For each JSON file, verify that MD conversion preserves all content:
 - Total JSON files: `ls .claude/skills/nabledge-{version}/knowledge/*.json | wc -l`
 - Files verified: Must equal total JSON files (ALL files verified)
 - Issues: Count by priority level
-- MD conversion: Run verify-json-md-conversion.py, check exit code (0=pass, 1=fail)
+- MD conversion: `python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/ .claude/skills/nabledge-{version}/docs/` - exit code (0=pass, 1=fail)
 
 ### Step VK3: Verify index.toon Integration
 
