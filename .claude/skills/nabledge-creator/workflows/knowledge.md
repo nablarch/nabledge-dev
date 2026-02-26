@@ -22,14 +22,27 @@ Where `{version}` is the Nablarch version number (e.g., `6` for v{version}, `5` 
 
 ## 参照ファイル
 
-- `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` - 生成対象の知識ファイル一覧とマッピング対応
+- `.claude/skills/nabledge-creator/output/mapping-v{version}.md` - ソースドキュメントとTarget Pathのマッピング
+- `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` - 統合パターンと方針（参考情報）
 - `.claude/skills/nabledge-creator/references/knowledge-schema.md` - JSON構造とカテゴリ別テンプレート
 
 ## ワークフロー手順
 
 ### Step 1: 対象の特定
 
-`.claude/skills/nabledge-creator/references/knowledge-file-plan.md`を読み、フィルタに該当する知識ファイルのリストを取得せよ。各エントリにはsources（読むべきrstファイル群）が記されている。
+`.claude/skills/nabledge-creator/output/mapping-v{version}.md`を読み、フィルタに該当するマッピング行を取得せよ。
+
+**動的スキャン方式**:
+- `nablarch-document/en/`配下の全てのRSTファイルがマッピングファイルに含まれている
+- ファイルの増減は自動的にマッピングファイルに反映される
+- knowledge-file-plan.mdの個別ファイルリストは使用しない（増減時のメンテナンス不要）
+
+各マッピング行から以下を取得:
+- Source Path (読むべきRSTファイルパス)
+- Title, Title (ja)
+- Type, Category ID, Processing Pattern
+- Target Path (生成する知識ファイルパス)
+- Official URL
 
 ### Step 2: 知識ファイル生成
 

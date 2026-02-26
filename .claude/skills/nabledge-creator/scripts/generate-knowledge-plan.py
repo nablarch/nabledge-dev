@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 """
-Generate knowledge-file-plan.md from mapping file.
+Generate detailed knowledge file plan from mapping file.
 
-This script analyzes the mapping file and creates a knowledge file plan
+**DEPRECATED**: This script is for debugging and reference only. The workflow
+now uses mapping-v{version}.md directly for knowledge file generation.
+
+knowledge-file-plan.md has been simplified to contain only 統合パターンと方針
+(integration patterns and policy). This script can optionally generate a
+detailed file list for debugging purposes, but it is NOT required for the
+normal workflow.
+
+This script analyzes the mapping file and creates a detailed knowledge file plan
 that groups source documents according to the integration patterns specified
 in the design document.
 
@@ -14,6 +22,8 @@ Integration patterns:
 - Tools: N:1 (group by tool category)
 - Checks: 1:1
 - About: Special handling
+
+Usage: For debugging or generating detailed file list for reference purposes only.
 """
 
 import sys

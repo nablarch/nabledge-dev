@@ -19,10 +19,12 @@ Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 Read the following files:
 
 ```
-.claude/skills/nabledge-{version}/knowledge/index.toon                     # Generated index
+.claude/skills/nabledge-{version}/knowledge/index.toon             # Generated index
 .claude/skills/nabledge-creator/references/index-schema.md         # Schema specification
-.claude/skills/nabledge-creator/references/knowledge-file-plan.md  # Knowledge file plan
+.claude/skills/nabledge-creator/output/mapping-v{version}.md       # Source to knowledge file mapping
 ```
+
+**Note**: Use mapping file as the source of truth for RST file locations. knowledge-file-plan.md is for reference only (統合パターンと方針).
 
 ### Step VI2: Verify Basic Structure
 
@@ -31,7 +33,7 @@ Check that the index file follows the TOON schema:
 1. **Header format**:
    - Verify header: `files[{count},]{title,hints,path}:`
    - Count should match total entries in file
-   - Count should match expected entries from knowledge-file-plan.md
+   - Dynamic count: File count may vary across versions
 
 2. **Entry completeness**:
    - All entries have non-empty title (Japanese)

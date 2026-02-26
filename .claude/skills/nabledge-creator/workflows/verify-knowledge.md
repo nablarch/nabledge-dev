@@ -23,10 +23,12 @@ The generation session makes decisions about "what to include." The verification
 Read the following files:
 
 ```
-.claude/skills/nabledge-creator/references/knowledge-file-plan.md  # Knowledge file catalog
+.claude/skills/nabledge-creator/output/mapping-v{version}.md       # Source to knowledge file mapping
 .claude/skills/nabledge-creator/references/knowledge-schema.md     # JSON schema specification
-.claude/skills/nabledge-{version}/knowledge/*.json                         # Generated knowledge files
+.claude/skills/nabledge-{version}/knowledge/*.json                 # Generated knowledge files
 ```
+
+**Note**: Use mapping file as the source of truth for RST file locations and knowledge file paths. knowledge-file-plan.md is for reference only (統合パターンと方針).
 
 ### Step VK2: Verify All Knowledge Files
 
@@ -36,7 +38,7 @@ For each knowledge file:
 
 **2.1 Read Source RST Documentation**
 
-- Locate source RST file(s) from knowledge-file-plan.md
+- Locate source RST file(s) from mapping-v{version}.md (Source Path column)
 - Read the complete RST content from `.lw/nab-official/v{version}/`
 - Understand the feature/component purpose and usage
 

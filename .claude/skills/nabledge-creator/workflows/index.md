@@ -35,9 +35,9 @@ Execute this workflow in these scenarios:
 
 ## Prerequisites
 
-- `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` exists
 - `.claude/skills/nabledge-creator/output/mapping-v${version}.md` exists (for Phase 2)
 - For updates: Knowledge files exist in `.claude/skills/nabledge-{version}/knowledge/`
+- Optional: `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` (reference for 統合パターンと方針)
 
 ## Workflow Steps
 
@@ -51,7 +51,7 @@ python .claude/skills/nabledge-creator/scripts/generate-index.py v{version}
 
 **Parameters** (all optional, use defaults):
 - `--knowledge-dir`: Knowledge files directory (default: `.claude/skills/nabledge-{version}/knowledge/`)
-- `--plan`: Knowledge file plan (default: `.claude/skills/nabledge-creator/references/knowledge-file-plan.md`)
+- `--plan`: Knowledge file plan reference (default: `.claude/skills/nabledge-creator/references/knowledge-file-plan.md`) - For 統合パターンと方針 only; actual file list from mapping
 - `--output`: Output file path (default: `{knowledge-dir}/index.toon`)
 - `--mapping`: Mapping file for Phase 2 (default: `.claude/skills/nabledge-creator/output/mapping-v${version}.md`)
 
@@ -82,7 +82,7 @@ cat .claude/skills/nabledge-{version}/knowledge/index.toon | head -20
 
 **Common issues**:
 - Empty hints → Re-run with better title extraction
-- Wrong count → Check knowledge-file-plan.md vs mapping
+- Wrong count → Check mapping file for expected entries
 - Unsorted entries → Check script's sorting logic
 
 ### Step 3: Run Validation
@@ -219,11 +219,11 @@ git push
 
 | Error | Exit Code | Response |
 |-------|-----------|----------|
-| Missing knowledge-file-plan.md | 2 | Verify plan file exists at specified path |
-| Invalid plan format | 2 | Check plan file follows expected structure |
+| Missing mapping file | 2 | Verify mapping-v${version}.md exists in output directory |
+| Invalid mapping format | 2 | Check mapping file follows expected structure |
 | Empty hints generated | 1 (warning) | Review title extraction logic, may need manual hints |
 | Created file path doesn't exist | 2 | Verify knowledge file was created correctly |
-| Duplicate titles | 2 | Check plan file for duplicate entries |
+| Duplicate titles | 2 | Check mapping file for duplicate entries |
 | Sorting failed | 2 | Check locale settings for Japanese sorting |
 
 ## Next Steps

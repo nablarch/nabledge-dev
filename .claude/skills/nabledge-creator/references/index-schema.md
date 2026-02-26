@@ -39,7 +39,7 @@ files[{count},]{title,hints,path}:
 ### Constraints
 
 1. **Sorting**: Entries sorted by title (Japanese lexical order)
-2. **Completeness**: All knowledge files from knowledge-file-plan.md included
+2. **Completeness**: All knowledge files from mapping-v{version}.md included (dynamically determined)
 3. **Status tracking**: Created files have path, uncreated files have "not yet created"
 4. **Hint quality**: 3-8 hints per file, covering L1+L2 keywords
 5. **No duplicates**: Each knowledge file appears exactly once
@@ -75,12 +75,12 @@ Aggregated hints for index.toon:
 
 ### For Not-Yet-Created Knowledge Files
 
-Estimate hints from knowledge-file-plan.md metadata:
+Estimate hints from mapping file metadata:
 
 1. **Extract nouns from title**:
    - "Jakarta Batch準拠バッチアプリケーション" → Jakarta Batch, バッチ, アプリケーション
 
-2. **Map tags to L1 keywords**:
+2. **Map categories to L1 keywords**:
    - `batch` → バッチ, 大量データ処理
    - `rest` → REST, Web API
    - `handlers` → ハンドラ, アーキテクチャ
@@ -90,9 +90,9 @@ Estimate hints from knowledge-file-plan.md metadata:
 
 **Example**:
 ```
-Plan entry:
+Mapping entry:
   title: JSR352準拠バッチ（Jakarta Batch）
-  tags: jakarta-batch
+  category: jakarta-batch
 
 Estimated hints:
   バッチ JSR352 Jakarta Batch Batchlet Chunk 標準仕様
@@ -133,7 +133,7 @@ Update after each knowledge file batch:
 ### Schema Validation
 
 - [x] Header format: `files[{count},]{title,hints,path}:`
-- [x] Entry count matches knowledge-file-plan.md total
+- [x] Entry count matches mapping-v{version}.md filtered entries (dynamic count)
 - [x] All entries have non-empty title
 - [x] All entries have non-empty hints (at least 3)
 - [x] Created file paths exist in knowledge/ directory
