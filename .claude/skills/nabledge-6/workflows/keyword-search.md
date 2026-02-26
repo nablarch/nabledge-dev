@@ -47,10 +47,10 @@ Create JSON:
    - Format: `Title, hint1 hint2 ..., path.json`
    - Each line contains entry title, search hints, and file path
 
-2. **Extract matching entries** (all entries):
+2. **Extract matching entries**:
    - For each entry, check if hints semantically match L1/L2 keywords
-   - Consider Japanese/English variations and related terms
-   - Use flexible matching (not just exact string match)
+   - **Prioritize flexible matching**: Consider Japanese/English variations, abbreviations, and related terms
+   - Use semantic understanding, not just exact string match
    - Extract L1 and L2 hints separately
 
 3. **Score files**:
@@ -69,8 +69,7 @@ Create JSON:
   "query": "original query",
   "files": [
     {"path": "knowledge/features/file1.json", "score": 5},
-    {"path": "knowledge/features/file2.json", "score": 3},
-    ...
+    {"path": "knowledge/features/file2.json", "score": 3}
   ]
 }
 ```
