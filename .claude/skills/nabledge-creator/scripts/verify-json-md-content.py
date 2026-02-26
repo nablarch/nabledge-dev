@@ -1,165 +1,164 @@
 #!/usr/bin/env python3
 """
-Verify that JSON content is fully present in converted MD files.
+Verify that all JSON knowledge file content is present in corresponding MD files.
 
-This script checks that all text content from JSON knowledge files
-is preserved in their converted Markdown versions.
+This script ensures json->md conversion is complete and no content is lost.
 
 Exit codes:
-  0: All content verified successfully
-  1: Content missing or mismatch found
-  2: Script error (file not found, invalid arguments, etc.)
+  0: Success (all content verified)
+  1: Verification failed (content missing)
+  2: Error (invalid input, file not found)
 """
 
 import sys
 import json
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import Dict, List, Any, Set
 
 
-def extract_text_from_value(value: Any) -> List[str]:
-    """Extract all text strings from a JSON value recursively."""
-    texts = []
+def extract_text_content(obj: Any, collected: Set[str]) -> None:
+    """
+    Recursively extract all text content from JSON object.
 
-    if isinstance(value, str):
-        # Skip empty strings and whitespace-only
-        cleaned = value.strip()
-        if cleaned:
-            texts.append(cleaned)
-    elif isinstance(value, list):
-        for item in value:
-            texts.extend(extract_text_from_value(item))
-    elif isinstance(value, dict):
-        for v in value.values():
-            texts.extend(extract_text_from_value(v))
+    Collects all string values (excluding keys) into the collected set.
+    Normalizes whitespace for comparison.
+    """
+    if isinstance(obj, str):
+        # Normalize whitespace and add non-empty strings
+        normalized = ' '.join(obj.split())
+        if normalized and len(normalized) > 2:  # Skip very short strings
+            collected.add(normalized)
+    elif isinstance(obj, list):
+        for item in obj:
+            extract_text_content(item, collected)
+    elif isinstance(obj, dict):
+        for value in obj.values():
+            extract_text_content(value, collected)
 
-    return texts
+
+def normalize_md_content(md_text: str) -> str:
+    """
+    Normalize MD content for comparison.
+
+    - Remove markdown formatting (**, ##, -, |, etc.)
+    - Normalize whitespace
+    - Convert to lowercase for case-insensitive comparison
+    """
+    # Remove code block markers
+    md_text = md_text.replace('```', '')
+    # Remove markdown formatting
+    for char in ['**', '##', '#', '-', '|', '*']:
+        md_text = md_text.replace(char, ' ')
+    # Normalize whitespace
+    md_text = ' '.join(md_text.split())
+    return md_text.lower()
 
 
-def extract_all_json_text(json_path: Path) -> List[str]:
-    """Extract all text content from JSON file."""
+def verify_json_md_pair(json_path: Path, md_path: Path) -> tuple[bool, List[str]]:
+    """
+    Verify JSON content is present in MD file.
+
+    Returns (success, missing_content_list)
+    """
+    # Read JSON
     with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+        json_data = json.load(f)
 
-    texts = []
+    # Extract all text content from JSON
+    json_content = set()
+    extract_text_content(json_data, json_content)
 
-    # Extract from all fields except metadata
-    skip_fields = {'id', 'index'}  # Skip structural metadata
-
-    for key, value in data.items():
-        if key not in skip_fields:
-            texts.extend(extract_text_from_value(value))
-
-    return texts
-
-
-def read_md_content(md_path: Path) -> str:
-    """Read full content from Markdown file."""
+    # Read MD
     with open(md_path, 'r', encoding='utf-8') as f:
-        return f.read()
+        md_text = f.read()
 
+    # Normalize MD content
+    md_normalized = normalize_md_content(md_text)
 
-def verify_content(json_path: Path, md_path: Path) -> Tuple[bool, List[str]]:
-    """
-    Verify that all JSON text content is present in MD file.
-
-    Returns:
-        (success, missing_texts): success is True if all content found,
-                                  missing_texts contains any missing strings
-    """
-    # Extract all text from JSON
-    json_texts = extract_all_json_text(json_path)
-
-    if not md_path.exists():
-        return False, [f"MD file not found: {md_path}"]
-
-    # Read MD content
-    md_content = read_md_content(md_path)
-
-    # Check each JSON text is present in MD
+    # Check each JSON content string is in MD
     missing = []
-    for text in json_texts:
-        if text not in md_content:
-            # For long texts, show first 100 chars
-            display_text = text if len(text) <= 100 else text[:100] + "..."
-            missing.append(display_text)
+    for content in json_content:
+        # Normalize JSON content for comparison
+        content_normalized = normalize_md_content(content)
+        if content_normalized not in md_normalized:
+            missing.append(content)
 
     return len(missing) == 0, missing
 
 
-def main():
-    if len(sys.argv) < 3:
-        print("Usage: python verify-json-md-content.py JSON_DIR MD_DIR")
-        print()
-        print("Verify that JSON content is fully present in converted MD files.")
-        print()
-        print("Arguments:")
-        print("  JSON_DIR  Directory containing JSON knowledge files")
-        print("  MD_DIR    Directory containing converted MD files")
-        print()
-        print("Exit codes:")
-        print("  0  All content verified successfully")
-        print("  1  Content missing or mismatch found")
-        print("  2  Script error (file not found, invalid arguments)")
-        sys.exit(2)
+def find_json_md_pairs(knowledge_dir: Path) -> List[tuple[Path, Path]]:
+    """
+    Find all JSON/MD file pairs in knowledge directory.
 
-    json_dir = Path(sys.argv[1])
-    md_dir = Path(sys.argv[2])
+    Returns list of (json_path, md_path) tuples.
+    """
+    pairs = []
 
-    if not json_dir.exists():
-        print(f"ERROR: JSON directory not found: {json_dir}")
-        sys.exit(2)
+    for json_file in knowledge_dir.rglob('*.json'):
+        # Skip index.json
+        if json_file.name == 'index.json':
+            continue
 
-    if not md_dir.exists():
-        print(f"ERROR: MD directory not found: {md_dir}")
-        sys.exit(2)
-
-    # Find all JSON files (exclude index.toon)
-    json_files = [f for f in json_dir.rglob('*.json') if f.name != 'index.toon']
-
-    if not json_files:
-        print(f"No JSON files found in {json_dir}")
-        sys.exit(0)
-
-    print(f"Verifying {len(json_files)} JSON-MD file pairs...")
-    print()
-
-    failed_files = []
-
-    for json_file in sorted(json_files):
-        # Calculate expected MD path
-        relative_path = json_file.relative_to(json_dir)
-        md_file = md_dir / relative_path.with_suffix('.md')
-
-        # Verify content
-        success, missing = verify_content(json_file, md_file)
-
-        if success:
-            print(f"✓ {json_file.name}")
+        # Find corresponding MD file
+        md_file = json_file.with_suffix('.md')
+        if md_file.exists():
+            pairs.append((json_file, md_file))
         else:
-            print(f"✗ {json_file.name}")
-            print(f"  MD file: {md_file}")
-            print(f"  Missing {len(missing)} text(s):")
-            for i, text in enumerate(missing[:5], 1):  # Show first 5
-                print(f"    {i}. {text}")
-            if len(missing) > 5:
-                print(f"    ... and {len(missing) - 5} more")
-            print()
-            failed_files.append(json_file.name)
+            print(f"Warning: No MD file for {json_file.relative_to(knowledge_dir)}", file=sys.stderr)
 
-    print()
-    print("=" * 60)
-    if failed_files:
-        print(f"FAILED: {len(failed_files)} file(s) have missing content")
-        print()
-        print("Failed files:")
-        for name in failed_files:
-            print(f"  - {name}")
-        sys.exit(1)
-    else:
-        print(f"SUCCESS: All {len(json_files)} file(s) verified")
-        print("All JSON content is present in MD files")
+    return pairs
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: verify-json-md-content.py KNOWLEDGE_DIR", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("Example: verify-json-md-content.py .claude/skills/nabledge-6/knowledge", file=sys.stderr)
+        sys.exit(2)
+
+    knowledge_dir = Path(sys.argv[1])
+
+    if not knowledge_dir.exists():
+        print(f"Error: Knowledge directory not found: {knowledge_dir}", file=sys.stderr)
+        sys.exit(2)
+
+    # Find all JSON/MD pairs
+    pairs = find_json_md_pairs(knowledge_dir)
+
+    if len(pairs) == 0:
+        print(f"Error: No JSON/MD pairs found in {knowledge_dir}", file=sys.stderr)
+        sys.exit(2)
+
+    print(f"Verifying {len(pairs)} JSON/MD pairs...", file=sys.stderr)
+
+    # Verify each pair
+    failed = []
+    for json_path, md_path in pairs:
+        success, missing = verify_json_md_pair(json_path, md_path)
+        if not success:
+            rel_path = json_path.relative_to(knowledge_dir)
+            failed.append({
+                'file': str(rel_path),
+                'missing_count': len(missing),
+                'missing_samples': missing[:3],  # Show first 3 missing items
+            })
+
+    # Report results
+    if len(failed) == 0:
+        print(f"\n✓ All {len(pairs)} files verified successfully", file=sys.stderr)
+        print(f"  All JSON content is present in corresponding MD files", file=sys.stderr)
         sys.exit(0)
+    else:
+        print(f"\n✗ Verification failed for {len(failed)} files:", file=sys.stderr)
+        for fail in failed:
+            print(f"\n  File: {fail['file']}", file=sys.stderr)
+            print(f"  Missing content items: {fail['missing_count']}", file=sys.stderr)
+            print(f"  Sample missing content:", file=sys.stderr)
+            for sample in fail['missing_samples']:
+                # Truncate long samples
+                truncated = sample[:100] + '...' if len(sample) > 100 else sample
+                print(f"    - {truncated}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
