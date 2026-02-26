@@ -175,7 +175,7 @@ def main():
                 pairs.append((json_path, md_path))
 
     if not pairs:
-        print(f"Error: No JSON-MD pairs found in {knowledge_dir}", file=sys.stderr)
+        print(f"Error: No JSON-MD pairs found in {json_dir}", file=sys.stderr)
         return 2
 
     print(f"Verifying {len(pairs)} JSON->MD conversions...")

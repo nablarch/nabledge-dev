@@ -49,27 +49,3 @@ nabledge-creator index
 ## Verification Sessions
 
 Verification workflows run in separate sessions to avoid context bias. The generation session creates a checklist, and the verification session reviews actual content against that checklist.
-
-## Scripts
-
-All scripts are located in `.claude/skills/nabledge-creator/scripts/`:
-
-- `generate-mapping.py` - Parse and classify documentation files
-- `validate-mapping.py` - Validate mapping structure and taxonomy
-- `export-excel.py` - Export mapping to Excel format
-- `generate-mapping-checklist.py` - Create verification checklist
-- `validate-knowledge.py` - Validate knowledge file schema
-- `convert-knowledge-md.py` - Convert JSON to human-readable Markdown
-- `generate-checklist.py` - Create knowledge verification checklist
-- `generate-index.py` - Generate index.toon from knowledge files
-- `generate-index-checklist.py` - Create index verification checklist
-
-## References
-
-Reference files in `.claude/skills/nabledge-creator/references/`:
-
-- `classification.md` - Path-based classification rules
-- `target-path.md` - Source to target path conversion rules
-- `content-judgement.md` - Content-based classification rules
-- `knowledge-file-plan.md` - Knowledge file catalog and sources
-- `knowledge-schema.md` - JSON schema and templates for knowledge files

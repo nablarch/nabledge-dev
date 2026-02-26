@@ -57,14 +57,6 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
    - Implement PP assignment based on content indicators
    - Ensure reproducibility (deterministic rules)
 
-**Categories commonly requiring content reading**:
-- `development-tools/testing-framework` - Read title to identify pattern
-- `development-tools/toolbox` - Read what the tool targets
-- `component/libraries` - Read if pattern-specific
-- `component/handlers` - Read if pattern-specific
-
-Note: Process all files in the mapping, not just these categories. These are examples of where content reading is frequently needed.
-
 **Expected outcome**:
 - All files have PP assigned based on content
 - Assignment rules documented in classification.md
