@@ -2,6 +2,10 @@
 
 Generate documentation mapping from Nablarch official documentation to nabledge knowledge file structure.
 
+## Input
+
+**Version**: Nablarch version number (e.g., `6` for v6, `5` for v5)
+
 ## Workflow Steps
 
 ### Step 1: Generate Base Mapping (Path-based Classification Only)
@@ -9,10 +13,10 @@ Generate documentation mapping from Nablarch official documentation to nabledge 
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/generate-mapping.py v6
+python .claude/skills/nabledge-creator/scripts/generate-mapping.py v{version}
 ```
 
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v6.md`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
 
 **What this step does**:
 - Classifies Type and Category based on path patterns only
@@ -67,7 +71,7 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/validate-mapping.py .claude/skills/nabledge-creator/output/mapping-v6.md
+python .claude/skills/nabledge-creator/scripts/validate-mapping.py .claude/skills/nabledge-creator/output/mapping-v{version}.md
 ```
 
 **Expected result**: All checks pass
@@ -83,10 +87,10 @@ If any check fails:
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/export-excel.py .claude/skills/nabledge-creator/output/mapping-v6.md
+python .claude/skills/nabledge-creator/scripts/export-excel.py .claude/skills/nabledge-creator/output/mapping-v{version}.md
 ```
 
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v6.xlsx`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.xlsx`
 
 This Excel file is for human review and is not used in automated workflows.
 
@@ -137,31 +141,31 @@ When adding new classification rules, update both files to ensure synchronizatio
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py .claude/skills/nabledge-creator/output/mapping-v6.md --source-dir .lw/nab-official/v6/ --output .claude/skills/nabledge-creator/output/mapping-v6.checklist.md
+python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py .claude/skills/nabledge-creator/output/mapping-v{version}.md --source-dir .lw/nab-official/v{version}/ --output .claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md
 ```
 
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v6.checklist.md`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md`
 
-This checklist is used in the verification session (`verify-mapping-6` workflow) to confirm classification accuracy (including Processing Pattern) by reading RST content.
+This checklist is used in the verification session (`verify-mapping` workflow) to confirm classification accuracy (including Processing Pattern) by reading RST content.
 
 ## Generation Session Complete
 
-Hand off the checklist to the verification session. The verification workflow (`verify-mapping-6`) runs in a separate session to avoid context bias.
+Hand off the checklist to the verification session. The verification workflow (`verify-mapping`) runs in a separate session to avoid context bias.
 
 ## Input Directories
 
 ```
-.lw/nab-official/v6/nablarch-document/en/
-.lw/nab-official/v6/nablarch-document/ja/
-.lw/nab-official/v6/nablarch-system-development-guide/
+.lw/nab-official/v{version}/nablarch-document/en/
+.lw/nab-official/v{version}/nablarch-document/ja/
+.lw/nab-official/v{version}/nablarch-system-development-guide/
 ```
 
 ## Output Files
 
 ```
-.claude/skills/nabledge-creator/output/mapping-v6.md          # Markdown table
-.claude/skills/nabledge-creator/output/mapping-v6.xlsx        # Excel table (human review)
-.claude/skills/nabledge-creator/output/mapping-v6.checklist.md # Verification checklist
+.claude/skills/nabledge-creator/output/mapping-v{version}.md          # Markdown table
+.claude/skills/nabledge-creator/output/mapping-v{version}.xlsx        # Excel table (human review)
+.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md # Verification checklist
 ```
 
 ## Reference Files

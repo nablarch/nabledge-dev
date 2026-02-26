@@ -4,11 +4,9 @@ Verify the accuracy of classification in the generated mapping by reading actual
 
 **IMPORTANT**: Run this workflow in a **separate session** from the generation workflow. This prevents context bias where the same path-based rules used in generation would blind the verification.
 
-## Invocation
+## Input
 
-```
-nabledge-creator verify-mapping-6
-```
+**Version**: Nablarch version number (e.g., `6` for v6, `5` for v5)
 
 ## Workflow Steps
 
@@ -17,9 +15,9 @@ nabledge-creator verify-mapping-6
 Read the following files:
 
 ```
-.claude/skills/nabledge-creator/output/mapping-v6.checklist.md   # Verification checklist
-.claude/skills/nabledge-creator/output/mapping-v6.md             # Generated mapping
-.claude/skills/nabledge-creator/references/classification.md     # Classification rules
+.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md   # Verification checklist
+.claude/skills/nabledge-creator/output/mapping-v{version}.md             # Generated mapping
+.claude/skills/nabledge-creator/references/classification.md              # Classification rules
 ```
 
 The checklist contains all rows from the mapping that require content verification.
@@ -96,11 +94,11 @@ Update the checklist with verification results:
 - Add notes explaining any ✗ marks
 - If all rows are ✓, mark the verification as complete
 
-Save the updated checklist to `.claude/skills/nabledge-creator/output/mapping-v6.checklist.md`.
+Save the updated checklist to `.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md`.
 
 ## Verification Complete
 
-When all checklist items are marked ✓, the mapping verification is complete. The mapping file `.claude/skills/nabledge-creator/output/mapping-v6.md` is ready for use in knowledge file generation.
+When all checklist items are marked ✓, the mapping verification is complete. The mapping file `.claude/skills/nabledge-creator/output/mapping-v{version}.md` is ready for use in knowledge file generation.
 
 ## Why Separate Session?
 
