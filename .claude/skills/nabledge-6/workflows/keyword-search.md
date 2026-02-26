@@ -41,44 +41,61 @@ Create JSON:
 
 **Tool**: Read
 
-**Action**: Read index.toon and semantically match files based on keywords:
+**Action**: Read index.toon and semantically match files based on keywords.
 
-1. **Read knowledge/index.toon**
+**Agent reads and extracts semantically** - Do NOT use scripts for matching. Agent must use semantic understanding to handle notation variations (表記揺れ) and flexible matching.
+
+1. **Read knowledge/index.toon**:
+   ```bash
+   # Agent reads using Read tool
+   Read tool: .claude/skills/nabledge-6/knowledge/index.toon
+   ```
    - Format: `Title, hint1 hint2 ..., path.json`
-   - Each line contains entry title, search hints, and file path
+   - 全エントリー from index.toon (entry count varies)
+   - Each line: entry title, search hints, file path
 
 2. **Extract all entries**:
-   - Read all entries from index.toon
-   - Each entry has: title, search hints, file path
+   - Parse each line to extract: title, hints, path
+   - Build list of all entries
 
-3. **Semantically match entries**:
+3. **Semantically match entries** (Agent judgment, not script):
    - For each entry, judge if hints semantically match L1/L2 keywords
-   - **Prioritize flexible matching**: Consider Japanese/English variations, abbreviations, and related terms
-   - Use semantic understanding, not just exact string match
-   - Consider synonyms and related concepts
+   - **Prioritize flexible matching**:
+     - Japanese/English variations (e.g., "ページング" matches "paging")
+     - Abbreviations (e.g., "DAO" matches "UniversalDao")
+     - Related terms (e.g., "検索" matches "search", "retrieve", "find")
+     - Synonyms and conceptually related terms
+   - **Use semantic understanding**, not just exact string matching
+   - Consider intent and meaning, not just character matching
 
-4. **Score files**:
-   - L1 keyword match: +2 points per hint
-   - L2 keyword match: +1 point per hint
+4. **Score files** (Agent calculates):
+   - L1 keyword match: +2 points per matched hint
+   - L2 keyword match: +1 point per matched hint
    - Sum scores for each file
    - Sort by score (descending)
 
-5. **Select top candidates**:
+5. **Select top 10ファイル**:
    - Keep files with score ≥ 2
    - Select top 10 files
 
-**Output format** for section-judgement workflow:
+**Output format** (structured for next step):
 ```json
 {
   "query": "original query",
   "files": [
-    {"path": "knowledge/features/file1.json", "score": 5},
-    {"path": "knowledge/features/file2.json", "score": 3}
+    {"path": "knowledge/features/file1.json", "score": 5, "title": "File Title"},
+    {"path": "knowledge/features/file2.json", "score": 3, "title": "Another Title"}
   ]
 }
 ```
 
-This structured output enables direct input to section-judgement workflow.
+This structured format enables section-judgement workflow to directly use files as input.
+
+**Why agent-based matching**:
+- Handles notation variations (表記揺れ) automatically
+- Flexible semantic understanding
+- Adapts to different query phrasings
+- Scripts can only do 100% mechanical tasks
 
 ### Step 3: Extract Section Hints
 
