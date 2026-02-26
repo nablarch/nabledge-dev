@@ -14,43 +14,71 @@ Answer to user's query using relevant knowledge from knowledge files
 
 ### Step 1: Select Candidate Sections
 
-Follow the workflow in `workflows/keyword-search.md`.
+**Execute**: `workflows/keyword-search.md`
+
+Keyword-search workflow handles:
+- Extract L1 (technical components) and L2 (functional terms) keywords
+- Read index.toon and semantically match files
+- Score and select top 10 files
+- Extract sections from selected files
 
 **Output**: JSON with candidate sections (conforms to `schemas/section-scoring.json`)
 
 ### Step 2: Judge Section Relevance
 
-Follow the workflow in `workflows/section-judgement.md`.
+**Execute**: `workflows/section-judgement.md`
+
+Section-judgement workflow handles:
+- Read section content for each candidate
+- Judge relevance: High (2), Partial (1), None (0)
+- Filter out None relevance
+- Sort by relevance (High first, then Partial)
 
 **Output**: JSON with relevant sections (High and Partial only)
 
 ### Step 3: Generate Answer
 
-**Action**: Based on High and Partial relevance sections:
+**Input**: Relevant sections from Step 2
 
-1. **Synthesize answer**:
-   - Use ONLY information from High/Partial sections
-   - Structure answer with clear sections
-   - Include code examples if available
-   - Cite source sections
+**Action**: Generate comprehensive answer in Japanese
 
-2. **Output format** (Japanese):
+**Answer structure**:
+1. **Direct answer** (1-2 paragraphs addressing the question)
+2. **Implementation steps** (if procedural)
+3. **Code examples** (from knowledge files with explanations)
+4. **Important notes** (warnings, best practices)
+5. **References** (links to knowledge files and sections)
+
+**Output format** (Japanese):
 ```markdown
 ## 回答
 
-[Main answer content synthesized from knowledge sections]
+[Main answer synthesized from High/Partial sections]
+
+### 実装手順
+
+1. [Step 1]
+2. [Step 2]
 
 ### コード例
 
-[Code examples if available]
+\```java
+[Code from knowledge files]
+\```
 
-### 参考情報
+[Explanation]
 
-- [File path:section] - [Brief description]
-- [File path:section] - [Brief description]
+### 重要事項
+
+- [Note 1]
+- [Note 2]
+
+### 参照
+
+- [File:section] - [Description]
 ```
 
-3. **If no High sections found**:
+**If no High sections found**:
 ```markdown
 ## 回答
 
@@ -60,20 +88,20 @@ Follow the workflow in `workflows/section-judgement.md`.
 
 以下の情報が見つかりました:
 - [Related entry from index.toon]
-- [Related entry from index.toon]
 ```
+
+**Generation constraints**:
+- Use ONLY information from knowledge files
+- Never use external knowledge or LLM training data
+- Include concrete code examples when available
+- Add links to referenced sections
 
 ## Error Handling
 
-**No keyword matches** (Step 2 returns empty files array):
-- Output message: "キーワードがマッチしませんでした"
-- List extracted keywords
-- Show available categories from index.toon
+**No keyword matches**: keyword-search.md handles and outputs message
 
-**No sections after filtering** (Step 5 returns empty sections array):
-- Output message: "該当するセクションが見つかりませんでした"
-- List related available knowledge from index.toon
+**No sections after filtering**: section-judgement.md handles and outputs message
 
-**No High relevance sections** (Step 7 finds no High sections):
+**No High relevance sections**:
 - Output Partial relevance information if available
 - Otherwise output "knowledge not found" message
