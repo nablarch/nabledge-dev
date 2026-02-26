@@ -20,6 +20,10 @@ Execute the corresponding workflow file in `workflows/<workflow>.md` with the pr
 
 ## Workflows
 
+### Complete Workflow
+
+- **all**: Execute complete workflow (clean → mapping → verify-mapping → knowledge → verify-knowledge)
+
 ### Generation Workflows
 
 - **mapping**: Generate documentation mapping from official sources (Type/Category/PP classification)
