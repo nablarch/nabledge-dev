@@ -2,17 +2,13 @@
 
 Generate documentation mapping from Nablarch official documentation to nabledge knowledge file structure.
 
-## Skill Invocation
+## Input
 
-```
-nabledge-creator mapping {version}
-```
+Skill invocation format: `nabledge-creator mapping {version}`
 
 Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 
-## Input
-
-Extract version number from skill arguments and use throughout workflow.
+Extract version number from skill arguments. Throughout this workflow, use `v{version}` format for paths and commands (e.g., `v6`, `v5`).
 
 ## Workflow Steps
 
@@ -21,11 +17,10 @@ Extract version number from skill arguments and use throughout workflow.
 Execute the following command:
 
 ```bash
-version="{version}"  # From skill invocation argument
-python .claude/skills/nabledge-creator/scripts/generate-mapping.py "v${version}"
+python .claude/skills/nabledge-creator/scripts/generate-mapping.py "v{version}"
 ```
 
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v${version}.md`
+**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
 
 **What this step does**:
 - Classifies Type and Category based on path patterns only
@@ -50,19 +45,16 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
 
 **Approach**:
 
-1. **Process all files in the mapping** (complete coverage):
-   - Read current mapping file
-   - For each file:
-     - Read source RST file (first 50-100 lines)
-     - Apply rules from `references/content-judgement.md`
-     - Look for indicators in title, first paragraph, examples
-     - Assign PP based on content, NOT path
+Process all files in the mapping (complete coverage):
 
-2. **Document assignments**:
-   - Create assignment list with reasoning
-   - File path → PP → Reason (indicators found)
-
-3. **Update generate-mapping.py**:
+1. Read current mapping file
+2. For each file:
+   - Read source RST file (first 50-100 lines)
+   - Apply rules from `references/content-judgement.md`
+   - Look for indicators in title, first paragraph, examples
+   - Assign PP based on content, NOT path
+3. Document assignments with reasoning (File path → PP → Reason)
+4. Update generate-mapping.py:
    - Add content-reading logic
    - Implement PP assignment based on content indicators
    - Ensure reproducibility (deterministic rules)
@@ -77,7 +69,7 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/validate-mapping.py ".claude/skills/nabledge-creator/output/mapping-v${version}.md"
+python .claude/skills/nabledge-creator/scripts/validate-mapping.py ".claude/skills/nabledge-creator/output/mapping-v{version}.md"
 ```
 
 **Expected result**: All checks pass
@@ -93,7 +85,7 @@ If any check fails:
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/export-excel.py ".claude/skills/nabledge-creator/output/mapping-v${version}.md"
+python .claude/skills/nabledge-creator/scripts/export-excel.py ".claude/skills/nabledge-creator/output/mapping-v{version}.md"
 ```
 
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v${version}.xlsx`
@@ -147,7 +139,7 @@ When adding new classification rules, update both files to ensure synchronizatio
 Execute the following command:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".claude/skills/nabledge-creator/output/mapping-v${version}.md" --source-dir ".lw/nab-official/v${version}/" --output ".claude/skills/nabledge-creator/output/mapping-v${version}.checklist.md"
+python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".claude/skills/nabledge-creator/output/mapping-v{version}.md" --source-dir ".lw/nab-official/v{version}/" --output ".claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md"
 ```
 
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v${version}.checklist.md`
@@ -161,17 +153,17 @@ Hand off the checklist to the verification session. The verification workflow (`
 ## Input Directories
 
 ```
-.lw/nab-official/v${version}/nablarch-document/en/
-.lw/nab-official/v${version}/nablarch-document/ja/
-.lw/nab-official/v${version}/nablarch-system-development-guide/
+.lw/nab-official/v{version}/nablarch-document/en/
+.lw/nab-official/v{version}/nablarch-document/ja/
+.lw/nab-official/v{version}/nablarch-system-development-guide/
 ```
 
 ## Output Files
 
 ```
-.claude/skills/nabledge-creator/output/mapping-v${version}.md          # Markdown table
-.claude/skills/nabledge-creator/output/mapping-v${version}.xlsx        # Excel table (human review)
-.claude/skills/nabledge-creator/output/mapping-v${version}.checklist.md # Verification checklist
+.claude/skills/nabledge-creator/output/mapping-v{version}.md          # Markdown table
+.claude/skills/nabledge-creator/output/mapping-v{version}.xlsx        # Excel table (human review)
+.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md # Verification checklist
 ```
 
 ## Reference Files

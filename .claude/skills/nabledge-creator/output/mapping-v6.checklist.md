@@ -1,6 +1,6 @@
 # Verification Checklist: mapping-v6.md
 
-**Generated**: 2026-02-25
+**Generated**: 2026-02-26
 **Total Mapping Rows**: 291
 **Excluded Files**: 768
 **Classification Checks**: 291
@@ -1093,7 +1093,7 @@ For each row, read the RST source file and verify:
 | 291 | ja/releases/index.rst | about | release-notes |  | complete verification | |
 
 **Instructions**:
-- Read the first 50 lines of the RST file at `{source_dir}/{source_path}`
+- Read the first 50 lines of the RST file at `.lw/nab-official/v6//{source_path}`
 - Check if classification matches the content
 - Mark ✓ if correct, ✗ if incorrect (note correct classification)
 
