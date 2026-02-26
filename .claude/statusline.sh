@@ -6,9 +6,16 @@ cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
 model=$(echo "$input" | jq -r '.model.display_name // empty')
 context_used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 
-# Shorten model name (e.g., "Sonnet 4.5" → "S4.5")
+# Shorten model name (e.g., "Sonnet 4.5" → "S4.5" or "claude-sonnet-4-5-..." → "S4.5")
 if [ -n "$model" ]; then
+  # Try display name format first: "Sonnet 4.5" → "S4.5"
   short_model=$(echo "$model" | sed -E 's/^([A-Z])[a-z]* ([0-9]+\.[0-9]+).*/\1\2/')
+
+  # If that didn't match, try model ID format: "claude-sonnet-4-5-..." → "S4.5"
+  if [ "$short_model" = "$model" ]; then
+    short_model=$(echo "$model" | sed -E 's/.*claude-(sonnet|opus|haiku)-([0-9]+)-([0-9]+).*/\U\1\E \2.\3/' | sed -E 's/^([A-Z])[A-Z]* ([0-9]+\.[0-9]+).*/\1\2/')
+  fi
+
   model="$short_model"
 fi
 
