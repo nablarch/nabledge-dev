@@ -6,6 +6,23 @@ cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
 model=$(echo "$input" | jq -r '.model.display_name // empty')
 context_used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 
+# Shorten model name (e.g., "Sonnet 4.5" → "S4.5" or "claude-sonnet-4-5-..." → "S4.5")
+if [ -n "$model" ]; then
+  # Try display name format first: "Sonnet 4.5" → "S4.5"
+  short_model=$(echo "$model" | sed -E 's/^([A-Z])[a-z]* ([0-9]+\.[0-9]+).*/\1\2/')
+
+  # If that didn't match, try model ID format: "claude-sonnet-4-5-..." → "S4.5"
+  # Use awk for portable case conversion (BSD sed doesn't support \U\E)
+  if [ "$short_model" = "$model" ]; then
+    short_model=$(echo "$model" | sed -E 's/.*claude-(sonnet|opus|haiku)-([0-9]+)-([0-9]+).*/\1 \2.\3/' | awk '{if (NF==2) print toupper(substr($1,1,1)) $2}')
+  fi
+
+  # Fallback: if transformation failed (empty or unchanged), keep original
+  if [ -n "$short_model" ] && [ "$short_model" != "$model" ]; then
+    model="$short_model"
+  fi
+fi
+
 # Git branch
 git_branch=""
 if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
