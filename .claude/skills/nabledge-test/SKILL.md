@@ -10,11 +10,12 @@ Benchmark framework for nabledge skills. Detects expected keywords/components an
 ## Usage
 
 ```bash
-nabledge-test 6 handlers-001                    # Single test (1 trial)
+nabledge-test 6 ks-001                          # Single test (1 trial)
 nabledge-test 6 --all                           # All tests (1 trial each)
-nabledge-test 6 --category handlers             # Category (1 trial each)
-nabledge-test 6 handlers-001 --trials 3         # Single test (3 trials)
+nabledge-test 6 --list                          # List all scenarios
+nabledge-test 6 ks-001 --trials 3               # Single test (3 trials)
 nabledge-test 6 --all --trials 5                # All tests (5 trials each)
+nabledge-test 6 "知識検索系を全部実行して"        # Free-form instruction
 ```
 
 **Trial count**: Use `--trials N` to run each scenario N times (default: 1). Results are averaged across trials.
@@ -34,19 +35,65 @@ nabledge-test 6 --all --trials 5                # All tests (5 trials each)
 
 ### Step 1: Parse arguments
 
-Format: `nabledge-test <version> [<scenario-id> | --all | --category <cat>] [--trials N]`
+Format: `nabledge-test <version> [<scenario-id> | --all | --list | "<free-form>"] [--trials N]`
+
+**If no arguments provided**: Display usage and exit.
+
+Output:
+```
+Usage: nabledge-test <version> [<scenario-id> | --all | --list | "<free-form>"] [--trials N]
+
+Examples:
+  nabledge-test 6 ks-001                          # Single test (1 trial)
+  nabledge-test 6 --all                           # All tests (1 trial each)
+  nabledge-test 6 --list                          # List all available scenarios
+  nabledge-test 6 ks-001 --trials 3               # Single test (3 trials)
+  nabledge-test 6 --all --trials 5                # All tests (5 trials each)
+  nabledge-test 6 "知識検索系を全部実行して"        # Free-form instruction
+
+Arguments:
+  <version>              Required. Version number (6 or 5)
+  <scenario-id>          Optional. Specific scenario to test (e.g., ks-001, ca-001)
+  --all                  Optional. Test all scenarios
+  --list                 Optional. List all available scenarios
+  "<free-form>"          Optional. Free-form instruction for test selection
+  --trials N             Optional. Number of trials per scenario (default: 1)
+```
+
+**If `--list` is provided**: Display scenario list and exit.
+
+1. Read scenarios file: `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`
+2. Group scenarios by type (ks-* for knowledge-search, ca-* for code-analysis)
+3. Display formatted list:
+
+```
+Available scenarios for nabledge-<version>:
+
+Knowledge Search (KS) - <count> scenarios:
+  - ks-001: <question>
+  - ks-002: <question>
+  - ks-003: <question>
+
+Code Analysis (CA) - <count> scenarios:
+  - ca-001: <question>
+  - ca-002: <question>
+
+Total: <total_count> scenarios
+```
 
 **Parse options**:
 - `<version>`: Required. Version number (6 or 5)
-- `<scenario-id>`: Optional. Specific scenario to test
+- `<scenario-id>`: Optional. Specific scenario to test (e.g., ks-001, ca-001)
 - `--all`: Optional. Test all scenarios
-- `--category <cat>`: Optional. Test scenarios by category
+- `--list`: Optional. List all available scenarios
+- `"<free-form>"`: Optional. Free-form instruction interpreted by AI (e.g., "知識検索系を全部実行して", "Run only batch-related scenarios")
 - `--trials N`: Optional. Number of trials per scenario (default: 1)
 
 **Examples**:
-- `nabledge-test 6 handlers-001` → Test handlers-001, 1 trial
-- `nabledge-test 6 handlers-001 --trials 3` → Test handlers-001, 3 trials
+- `nabledge-test 6 ks-001` → Test ks-001, 1 trial
+- `nabledge-test 6 ks-001 --trials 3` → Test ks-001, 3 trials
 - `nabledge-test 6 --all --trials 5` → Test all, 5 trials each
+- `nabledge-test 6 "知識検索系だけ"` → Test all knowledge-search scenarios (ks-*)
 
 ### Step 2: Load scenario
 
@@ -54,7 +101,7 @@ From `scenarios/nabledge-6/scenarios.json`:
 
 ```json
 {
-  "id": "handlers-001",
+  "id": "ks-001",
   "question": "データリードハンドラでファイルを読み込むには？",
   "keywords": ["DataReadHandler", "DataReader", ...],
   "sections": ["overview", "usage"]
@@ -441,8 +488,8 @@ For each scenario type (knowledge-search, code-analysis):
    ```
 
 2. **Filter by scenario type**:
-   - Knowledge-Search: processing-*, libraries-*, handlers-*
-   - Code-Analysis: code-analysis-*
+   - Knowledge-Search: ks-*
+   - Code-Analysis: ca-*
 
 3. **Extract by_step data**:
    ```bash
@@ -468,7 +515,7 @@ For each scenario type (knowledge-search, code-analysis):
 
 **Example calculation for Knowledge-Search Step 1**:
 ```
-Scenarios: processing-005, processing-002, libraries-001, handlers-001, processing-004
+Scenarios: ks-001, ks-002, ks-003, ks-004, ks-005
 Step 1 durations: [5, 4, 8, 6, 7] seconds
 - Average: (5+4+8+6+7)/5 = 6秒
 - Median: sort([5,4,8,6,7]) = [4,5,6,7,8], middle value = 6秒
@@ -677,9 +724,9 @@ nabledge-test <version> --category <category>
 ### Step 10: Display summary
 
 ```
-✓ handlers-001: 5/5 keywords + 2/2 sections detected | 68s | 9,480 tokens
-  Report: .pr/xxxxx/nabledge-test/202602260800/handlers-001-153045.md
-  Transcript: .tmp/nabledge-test/eval-handlers-001-153045/with_skill/outputs/transcript.md
+✓ ks-001: 5/5 keywords + 2/2 sections detected | 68s | 9,480 tokens
+  Report: .pr/xxxxx/nabledge-test/202602260800/ks-001-153045.md
+  Transcript: .tmp/nabledge-test/eval-ks-001-153045/with_skill/outputs/transcript.md
 
 Aggregate report: .pr/xxxxx/nabledge-test/report-202602260800.md
 ```
