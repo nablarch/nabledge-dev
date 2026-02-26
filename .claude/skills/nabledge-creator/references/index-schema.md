@@ -4,7 +4,7 @@ Knowledge file search index structure and format specification.
 
 ## Purpose
 
-nabledge-6's keyword-search reads index.toon first to filter candidate files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across 154 entries with ~5-7K tokens.
+nabledge-6's keyword-search reads index.toon first to filter candidate files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across entries with ~5-7K tokens.
 
 Including not-yet-created knowledge files allows keyword-search to respond accurately: "This information is not yet available in knowledge files."
 
@@ -31,7 +31,7 @@ files[{count},]{title,hints,path}:
 
 | Field | Type | Description | Example |
 |-------|------|-------------|---------|
-| count | integer | Total number of entries | 154 |
+| count | integer | Total number of entries | e.g., 154 |
 | title | string (Japanese) | Knowledge file title | ユニバーサルDAO |
 | hints | space-separated strings | Search keywords (Japanese/English mixed) | データベース DAO O/Rマッパー CRUD JPA |
 | path | string | Relative path from knowledge/ directory or "not yet created" | features/libraries/universal-dao.json |
@@ -109,12 +109,12 @@ Estimated hints:
 ### Phase 2 (Complete): Metadata-based Index
 
 Generated from mapping-v6.md metadata with scope filters:
-- Input: 302 documentation files
-- Filters: Coverage scope (→259) + Knowledge scope (→154)
+- Input: Documentation files
+- Filters: Coverage scope + Knowledge scope
 - Extract: title (Japanese), category, source path
 - Hints: Extract keywords from title + category mapping
 - Status: All entries marked "not yet created"
-- Output: 154 entries
+- Output: All entries
 
 **Purpose**: Establishes search structure for validation before knowledge generation (Phase 2 complete, ready for Phase 3)
 
@@ -156,17 +156,17 @@ Update after each knowledge file batch:
 
 ```
 Phase 2: mapping → index (metadata) [COMPLETE]
-         ├─ 302 docs → 154 entries (after filters)
+         ├─ Docs → entries (after filters)
          ├─ Basic hints from titles
          └─ All "not yet created"
 
 Phase 3: Pilot files → index update
-         ├─ 7-10 entries updated
+         ├─ Pilot entries updated
          ├─ Detailed hints from sections
          └─ Paths updated to .json
 
 Phase 4: All files → complete index
-         ├─ 154 entries updated
+         ├─ All entries updated
          ├─ Full hint coverage
          └─ Search-ready knowledge base
 ```
@@ -176,7 +176,7 @@ Phase 4: All files → complete index
 ```toon
 # Nabledge-6 Knowledge Index
 
-files[154,]{title,hints,path}:
+files[{count},]{title,hints,path}:
   Nablarchバッチ（都度起動型・常駐型）, バッチ 都度起動 常駐 大量データ処理 アーキテクチャ ハンドラ DataReader, features/processing/nablarch-batch.json
   JSR352準拠バッチ（Jakarta Batch）, バッチ JSR352 Jakarta Batch Batchlet Chunk 標準仕様, not yet created
   ユニバーサルDAO, データベース DAO O/Rマッパー CRUD JPA 検索 ページング 排他制御, features/libraries/universal-dao.json

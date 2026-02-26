@@ -25,12 +25,12 @@ Read the following files:
 ```
 .claude/skills/nabledge-creator/references/knowledge-file-plan.md  # Knowledge file catalog
 .claude/skills/nabledge-creator/references/knowledge-schema.md     # JSON schema specification
-.claude/skills/nabledge-{version}/knowledge/*.json                         # Generated knowledge files (162 files)
+.claude/skills/nabledge-{version}/knowledge/*.json                         # Generated knowledge files
 ```
 
-### Step VK2: Verify All Knowledge Files (All 162 Files)
+### Step VK2: Verify All Knowledge Files
 
-**Verification scope**: All 162 knowledge files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
+**Verification scope**: All knowledge files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
 
 For each knowledge file:
 
@@ -113,7 +113,7 @@ Issues: {list critical issues}
 
 ### Step VK3: Categorize Issues
 
-Group all issues found across 162 files by type:
+Group all issues found across all files by type:
 
 **Schema Violations** (Critical - must fix):
 - Missing required fields
@@ -143,7 +143,7 @@ Create comprehensive verification report at `.pr/00078/knowledge-verification-re
 # Knowledge File Verification Results
 
 **Date**: YYYY-MM-DD
-**Files Verified**: 162 files (100% coverage)
+**Files Verified**: All files (100% coverage)
 **Verification Scope**: All knowledge files
 
 ## Summary
@@ -221,31 +221,31 @@ Create comprehensive verification report at `.pr/00078/knowledge-verification-re
 
 ## Category Breakdown
 
-### Adapters (17 files)
+### Adapters
 - ✓ PASS: {count}
 - ⚠ WARNINGS: {count}
 - ✗ FAIL: {count}
 - Key issues: {summary}
 
-### Handlers (64 files)
+### Handlers
 - ✓ PASS: {count}
 - ⚠ WARNINGS: {count}
 - ✗ FAIL: {count}
 - Key issues: {summary}
 
-### Libraries (45 files)
+### Libraries
 - ✓ PASS: {count}
 - ⚠ WARNINGS: {count}
 - ✗ FAIL: {count}
 - Key issues: {summary}
 
-### Processing Patterns (6 files)
+### Processing Patterns
 - ✓ PASS: {count}
 - ⚠ WARNINGS: {count}
 - ✗ FAIL: {count}
 - Key issues: {summary}
 
-### Tools (30 files)
+### Tools
 - ✓ PASS: {count}
 - ⚠ WARNINGS: {count}
 - ✗ FAIL: {count}
@@ -307,7 +307,7 @@ Based on verification results:
 
 ## Verification Complete
 
-When all 162 files pass verification (or pass with acceptable warnings), knowledge file verification is complete. The knowledge base is validated and ready for production use.
+When all files pass verification (or pass with acceptable warnings), knowledge file verification is complete. The knowledge base is validated and ready for production use.
 
 ## Why Separate Session?
 
@@ -320,7 +320,7 @@ By verifying in a fresh session, we approach files from the user's perspective: 
 
 ## Notes
 
-1. **Full verification required**: All 162 files must be verified for mission-critical quality requirements
+1. **Full verification required**: All files must be verified for mission-critical quality requirements
 2. **Batch processing**: Use Task tool to process files in batches (e.g., 20-30 files per batch) for efficiency
 3. **User perspective**: Evaluate from user search and information needs, not generation logic
 4. **Schema first**: Schema violations are critical and must be fixed before content improvements

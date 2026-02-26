@@ -12,15 +12,15 @@ Where `{version}` is the Nablarch version number (e.g., `6` for v{version}, `5` 
 
 ## Purpose
 
-nabledge-{version}'s keyword-search workflow requires index.toon to efficiently find knowledge files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across ~154 entries with ~5-7K tokens.
+nabledge-{version}'s keyword-search workflow requires index.toon to efficiently find knowledge files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across entries with ~5-7K tokens.
 
 ## When to Execute
 
 Execute this workflow in these scenarios:
 
 1. **Phase 2 (Initial)**: Generate metadata-based index from mapping
-   - Input: mapping-v${version}.md (302 documentation files)
-   - Filters: Coverage scope (→259 files) + Knowledge scope (→154 entries)
+   - Input: mapping-v${version}.md (documentation files)
+   - Filters: Coverage scope + Knowledge scope
    - Output: index.toon with basic hints, all "not yet created"
 
 2. **Phase 3-4 (Updates)**: Update index after knowledge file batches
@@ -29,9 +29,9 @@ Execute this workflow in these scenarios:
 
 3. **Verification**: After fixing index issues found in verify-index workflow
 
-**Entry count explanation**: Starting from 302 documented features, we apply two filters:
-- Coverage scope filter: Removes out-of-scope categories → 259 files remain
-- Knowledge scope filter: Further refines based on knowledge file plan → 154 entries in index.toon
+**Entry count explanation**: Starting from documented features, we apply two filters:
+- Coverage scope filter: Removes out-of-scope categories
+- Knowledge scope filter: Further refines based on knowledge file plan to produce entries in index.toon
 
 ## Prerequisites
 
@@ -153,7 +153,7 @@ Results:
   - データベースアクセス (database-access.json)
   - データベース接続管理ハンドラ (not yet created)
 
-Coverage: 3/154 entries
+Coverage: 3 entries
 ```
 
 ### Step 5: Commit Index File
@@ -164,7 +164,7 @@ If validation passed (exit code 0 or 1), commit the index:
 git add .claude/skills/nabledge-{version}/knowledge/index.toon
 git commit -m "feat: Generate knowledge search index (Phase 2)
 
-- Generated index.toon from mapping metadata (291 entries)
+- Generated index.toon from mapping metadata
 - All entries marked 'not yet created' (knowledge files pending)
 - Basic hints extracted from titles and categories
 - Enables search structure validation before knowledge generation
@@ -177,17 +177,17 @@ git push
 
 ### Phase 2: Initial Generation from Mapping
 
-**Input**: mapping-v${version}.md (302 documentation files → 154 entries after filters)
+**Input**: mapping-v${version}.md (documentation files after filters)
 
 **Process**:
-1. Apply coverage scope filter (removes out-of-scope categories) → 259 files
-2. Apply knowledge scope filter (based on knowledge file plan) → 154 entries
+1. Apply coverage scope filter (removes out-of-scope categories)
+2. Apply knowledge scope filter (based on knowledge file plan)
 3. Extract title (Japanese) and category from each filtered entry
 4. Generate basic hints from title keywords + category keywords
 5. Set all paths to "not yet created"
 6. Sort by title
 
-**Output**: index.toon with 154 entries, metadata-only
+**Output**: index.toon with entries, metadata-only
 
 **Purpose**: Establish index structure and validate search design before knowledge file generation (Phase 2 complete)
 

@@ -22,9 +22,9 @@ Read the following files:
 
 The checklist contains all rows from the mapping that require content verification.
 
-### Step VM2: Verify Classification (All 291 Files)
+### Step VM2: Verify Classification (All Files)
 
-For each row in the mapping file (all 291 files):
+For each row in the mapping file (all files):
 
 1. **Read RST source**:
    - Read the first 50 lines of the RST file specified in Source Path
@@ -59,11 +59,11 @@ For each row in the mapping file (all 291 files):
 
 **Do NOT skip this step**. Reading the actual content is the only way to catch classification errors, especially for Processing Pattern which cannot be determined by path alone.
 
-**Verification scope**: All 291 files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
+**Verification scope**: All files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
 
-### Step VM3: Verify Target Paths (All 291 Files)
+### Step VM3: Verify Target Paths (All Files)
 
-For each row in the mapping file (all 291 files):
+For each row in the mapping file (all files):
 
 1. **Verify path structure**:
    - Target Path starts with Type (e.g., `component/`, `processing-pattern/`)
