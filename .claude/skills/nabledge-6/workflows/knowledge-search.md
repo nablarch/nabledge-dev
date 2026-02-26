@@ -23,11 +23,7 @@ This workflow orchestrates keyword-search and section-judgement workflows to fin
 **Action**: Execute keyword-search workflow to find candidate sections.
 
 1. Read `workflows/keyword-search.md`
-2. Follow the workflow steps:
-   - Extract L1/L2 keywords from query
-   - Match files in index.toon using semantic matching
-   - Extract and score section hints
-   - Return candidate sections (relevance ≥ 2)
+2. Follow the workflow to extract keywords and find candidate sections
 
 **Output**: JSON with candidate sections from keyword-search workflow
 
@@ -38,10 +34,7 @@ This workflow orchestrates keyword-search and section-judgement workflows to fin
 **Action**: Execute section-judgement workflow to filter relevant sections.
 
 1. Read `workflows/section-judgement.md`
-2. Follow the workflow steps:
-   - Read section content from candidate sections
-   - Judge relevance (High/Partial/None)
-   - Filter and sort (keep High and Partial only)
+2. Follow the workflow to judge and filter sections by relevance
 
 **Output**: JSON with relevant sections (High and Partial relevance)
 

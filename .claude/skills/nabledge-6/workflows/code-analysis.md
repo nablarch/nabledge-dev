@@ -148,16 +148,15 @@ Output directory: work/20260210
      - L1: ["DAO", "UniversalDao", "O/Rマッパー", "ExecutionContext", "コンテキスト", "ValidationUtil", "Bean Validation"]
      - L2: ["CRUD", "検索", "登録", "更新", "ページング", "リクエスト処理", "データ取得", "検証", "エラー", "例外処理"]
 
-3. **Execute keyword-search workflow once** (see workflows/keyword-search.md):
-   - Use combined keywords for all components
-   - Batch process file selection (Step 1)
-   - Batch extract candidate sections (Step 2)
-   - Get 20-30 candidates covering all components
+3. **Execute keyword-search workflow**:
+   - Read `workflows/keyword-search.md`
+   - Follow the workflow with combined keywords for all components
+   - Expected output: 20-30 candidate sections covering all components
 
-4. **Execute section-judgement workflow once** (see workflows/section-judgement.md):
-   - Batch extract all candidate sections (2-3 jq calls instead of 5-10)
-   - Judge relevance for each section
-   - Keep only High and Partial relevance sections
+4. **Execute section-judgement workflow**:
+   - Read `workflows/section-judgement.md`
+   - Follow the workflow with candidate sections from step 3
+   - Expected output: Filtered sections (High and Partial relevance only)
 
 5. **Group knowledge by component** after receiving results:
    - Parse returned sections and map to original components
