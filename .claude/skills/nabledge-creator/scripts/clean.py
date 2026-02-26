@@ -100,8 +100,8 @@ def main():
         print(f"Error: Invalid version '{args.version}'. Must be 6 or 5.", file=sys.stderr)
         sys.exit(1)
 
-    # Determine repository root (3 levels up from scripts/)
-    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    # Determine repository root (4 levels up from scripts/)
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent.parent
 
     # Execute cleanup
     results = clean_version(args.version, repo_root)
