@@ -39,23 +39,9 @@ Execute the corresponding workflow file in `workflows/<workflow>.md` with the pr
 
 ## Workflows
 
-### Complete Workflow
+Available workflows: all, mapping, knowledge, verify-mapping, verify-knowledge, clean
 
-- **all**: Execute complete workflow (clean → mapping → verify-mapping → knowledge → verify-knowledge)
-
-### Generation Workflows
-
-- **mapping**: Generate documentation mapping from official sources (Type/Category/PP classification)
-- **knowledge**: Generate knowledge files (JSON + MD) and update index.toon from RST documentation
-
-### Verification Workflows
-
-- **verify-mapping**: Verify mapping classification accuracy by reading RST content
-- **verify-knowledge**: Verify knowledge files content accuracy and index.toon integration
-
-### Maintenance Workflows
-
-- **clean**: Delete generated files (knowledge/*.json, docs/*.md, output/mapping-v{version}.*) for clean regeneration
+For detailed steps and instructions, read the workflow file in `workflows/<workflow>.md`.
 
 ---
 

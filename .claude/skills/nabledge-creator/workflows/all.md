@@ -16,11 +16,13 @@ Where:
 
 This workflow executes all steps in sequence:
 
-1. **Clean** - Delete all generated files for clean state
-2. **Mapping** - Generate documentation mapping with Type/Category/PP classification
-3. **Verify Mapping** - Verify mapping classification accuracy by reading RST content
-4. **Knowledge** - Generate knowledge files (JSON + MD) and update index.toon
-5. **Verify Knowledge** - Verify knowledge files content accuracy and index.toon integration
+1. **Clean**
+2. **Mapping**
+3. **Verify Mapping**
+4. **Knowledge**
+5. **Verify Knowledge**
+
+See each step's workflow file in `workflows/` for detailed instructions.
 
 ## Progress Checklist Template
 
@@ -54,16 +56,11 @@ Update this checklist at each step boundary (mark → when starting, ✓ when co
 
 ### Step 1: Clean
 
-Execute clean workflow to delete all generated files:
+Execute clean workflow. See `workflows/clean.md` for detailed steps.
 
 ```bash
 python .claude/skills/nabledge-creator/scripts/clean.py {version}
 ```
-
-**Deleted files**:
-- Knowledge files: `.claude/skills/nabledge-{version}/knowledge/*.json`
-- Documentation: `.claude/skills/nabledge-{version}/docs/*.md`
-- Mapping outputs: `.claude/skills/nabledge-creator/output/mapping-v{version}.*`
 
 **Completion Evidence:**
 
@@ -72,50 +69,9 @@ python .claude/skills/nabledge-creator/scripts/clean.py {version}
 | Exit code | 0 | [code] | ✓/✗ |
 | Directories cleaned | 3 (knowledge, docs, output) | [count] | ✓ |
 
-See `workflows/clean.md` for detailed completion criteria.
-
 ### Step 2: Generate Mapping
 
-Execute mapping workflow to generate documentation mapping:
-
-```bash
-python .claude/skills/nabledge-creator/scripts/generate-mapping.py "v{version}"
-```
-
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
-
-**What this script does NOT do**: Processing Pattern (PP) field is NOT set by this script. PP values are determined in Step 6 (Verify Mapping) by reading actual RST content.
-
-**Exit code handling**:
-- Exit 0: Success - Proceed to Step 3
-- Exit 1: Review items exist - Resolve review items before proceeding
-- Exit 2: Script error - Fix and retry
-
-If exit code 1, follow review item resolution process in `mapping.md` workflow before proceeding.
-
-### Step 3: Validate Mapping
-
-```bash
-python .claude/skills/nabledge-creator/scripts/validate-mapping.py ".claude/skills/nabledge-creator/output/mapping-v{version}.md"
-```
-
-**Expected**: All checks pass. If failed, fix issues in generate-mapping.py and return to Step 2.
-
-### Step 4: Export Mapping to Excel
-
-```bash
-python .claude/skills/nabledge-creator/scripts/export-excel.py ".claude/skills/nabledge-creator/output/mapping-v{version}.md"
-```
-
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.xlsx`
-
-### Step 5: Generate Mapping Verification Checklist
-
-```bash
-python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".claude/skills/nabledge-creator/output/mapping-v{version}.md" --source-dir ".lw/nab-official/v{version}/" --output ".claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md"
-```
-
-**Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md`
+Execute mapping workflow. See `workflows/mapping.md` for detailed steps.
 
 **Completion Evidence for Steps 2-5 (Mapping Generation):**
 
@@ -128,21 +84,11 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".c
 | Excel exported | Yes | [mapping-v{version}.xlsx exists] | ✓ |
 | Checklist generated | Yes | [mapping-v{version}.checklist.md exists] | ✓ |
 
-See `workflows/mapping.md` for detailed completion criteria for each sub-step.
-
 ### Step 6: Verify Mapping
 
-**Execution**: This step is required in "all" workflow and executes immediately.
-
-**What this step does**:
-- Read actual RST content for all 329 files
-- Verify Type/Category classification accuracy
-- **Determine and set Processing Pattern (PP) values** (not set by Step 2)
-- Uses Task tool to process 23 batches in parallel
+Execute verify-mapping workflow. See `workflows/verify-mapping.md` for detailed steps.
 
 **Note on session separation**: Ideally this runs in a separate session (new conversation) to avoid context bias. However, for convenience, this workflow executes it in the current session.
-
-Execute verify-mapping workflow following the checklist generated in Step 5. See `verify-mapping.md` for detailed verification process.
 
 **Decision point**:
 - If issues found, fix mapping generation logic and return to Step 2
@@ -150,57 +96,7 @@ Execute verify-mapping workflow following the checklist generated in Step 5. See
 
 ### Step 7: Generate Knowledge Files
 
-Execute knowledge workflow to generate knowledge files:
-
-**Step 7.1: Identify Targets**
-
-Read mapping file and extract targets matching filter (if provided).
-
-**Step 7.2: Generate Knowledge Files**
-
-For each target, follow the process in `knowledge.md` workflow:
-- Read RST sources
-- Determine section IDs
-- Extract hints (file-level and section-level)
-- Convert to JSON
-- Output to `.claude/skills/nabledge-{version}/knowledge/{path}.json`
-
-**Step 7.3: Markdown Conversion**
-
-```bash
-python scripts/convert-knowledge-md.py .claude/skills/nabledge-{version}/knowledge/ --output-dir .claude/skills/nabledge-{version}/docs/
-```
-
-**Step 7.4: Validation**
-
-```bash
-python scripts/validate-knowledge.py .claude/skills/nabledge-{version}/knowledge/
-```
-
-If validation fails, fix JSON files and re-execute from Step 7.3.
-
-**Step 7.5: Update index.toon**
-
-Aggregate file-level hints and update index.toon:
-
-1. Aggregate hints from all sections in each JSON file
-2. Update corresponding entry in `.claude/skills/nabledge-{version}/knowledge/index.toon`
-3. Validate format:
-   ```bash
-   python scripts/validate-index.py .claude/skills/nabledge-{version}/knowledge/index.toon
-   ```
-4. Verify status consistency:
-   ```bash
-   python scripts/verify-index-status.py .claude/skills/nabledge-{version}/knowledge/index.toon
-   ```
-
-**Step 7.6: Generate Knowledge Verification Checklists**
-
-For each generated knowledge file:
-
-```bash
-python scripts/generate-checklist.py .claude/skills/nabledge-{version}/knowledge/{file}.json --source .lw/nab-official/v{version}/nablarch-document/en/{source-path} --output .claude/skills/nabledge-{version}/knowledge/{file}.checklist.md
-```
+Execute knowledge workflow. See `workflows/knowledge.md` for detailed steps.
 
 **Completion Evidence for Step 7 (Knowledge Generation):**
 
@@ -213,44 +109,11 @@ python scripts/generate-checklist.py .claude/skills/nabledge-{version}/knowledge
 | index.toon entries | [JSON count] | [entries in index.toon] | ✓/✗ |
 | index.toon validation | PASS | [validate-index.py result] | ✓/✗ |
 
-See `workflows/knowledge.md` for detailed completion criteria for each sub-step.
-
 ### Step 8: Verify Knowledge Files
 
-**Execution**: This step is required in "all" workflow and executes immediately.
+Execute verify-knowledge workflow. See `workflows/verify-knowledge.md` for detailed steps.
 
 **Note on session separation**: Ideally this runs in a separate session (new conversation) to avoid context bias. However, for convenience, this workflow executes it in the current session.
-
-Execute verify-knowledge workflow following the process in `verify-knowledge.md`:
-
-**Step 8.1: Read Input Files**
-- Mapping file
-- Knowledge schema
-- Generated knowledge files
-
-**Step 8.2: Verify All Knowledge Files**
-
-For each file:
-- Read source RST documentation
-- Verify schema compliance
-- Verify content accuracy
-- Verify keyword coverage
-- Record results
-
-**Step 8.3: Verify index.toon Integration**
-- File-level hints verification
-- Format validation
-- Status consistency check
-
-**Step 8.4: Categorize Issues**
-- Schema violations (Critical)
-- Content gaps (High Priority)
-- Keyword deficiencies (Medium Priority)
-- index.toon integration issues (High Priority)
-
-**Step 8.5: Document Verification Results**
-
-Create verification report at `.pr/{issue_number}/knowledge-verification-results.md`.
 
 **Decision point**:
 - If verification PASSED: Workflow complete
@@ -264,8 +127,6 @@ Create verification report at `.pr/{issue_number}/knowledge-verification-results
 | Schema violations | 0 | [Critical issues count] | ✓/✗ |
 | Content accuracy | All pass | [High priority issues count] | ✓/✗ |
 | index.toon integration | All pass | [issues count] | ✓/✗ |
-
-See `workflows/verify-knowledge.md` for detailed completion criteria.
 
 ## Output Files
 
