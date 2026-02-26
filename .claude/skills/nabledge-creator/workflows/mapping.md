@@ -71,47 +71,150 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
 
 **Important:** If exit code is 1, go to Step 5 before proceeding to Step 2.
 
-### Step 2: Assign Processing Patterns (Content-based)
+### Step 2: Assign Processing Patterns (Content-based with Task Tool)
 
 **Critical**: This step reads file content to determine Processing Pattern for ALL files.
 
 **Processing Pattern MUST be determined by reading content, NOT by path patterns.**
 
-**Approach**:
+**Batch Processing Strategy**: Use Task tool to process files in category-based batches to avoid context overflow.
 
-Process all files in the mapping (complete coverage):
+#### Step 2.1: Group Files by Category
 
-1. Read current mapping file
-2. For each file:
-   - Read source RST file (first 50-100 lines)
-   - Apply rules from `references/content-judgement.md`
-   - Look for indicators in title, first paragraph, examples
-   - Assign PP based on content, NOT path
-3. Document assignments with reasoning (File path → PP → Reason)
-4. Update generate-mapping.py:
-   - Add content-reading logic
-   - Implement PP assignment based on content indicators
-   - Ensure reproducibility (deterministic rules)
+Read the mapping file and group files by `Type / Category`:
 
-**Expected outcome**:
-- All files have PP assigned based on content
-- Assignment rules documented in classification.md
-- generate-mapping.py implements content-based logic
+```bash
+grep "^|" .claude/skills/nabledge-creator/output/mapping-v{version}.md | tail -n +3 | \
+  awk -F'|' '{print $5 "/" $6}' | sed 's/^ *//;s/ *$//' | sort | uniq -c
+```
+
+Create batches:
+- Categories with >60 files: Split into 2 batches (~30 files each)
+- Categories with ≤60 files: 1 batch per category
+- Save batch definitions to `.tmp/nabledge-creator/pp-batches-v{version}.json`
+
+#### Step 2.2: Launch Task Agents (Parallel)
+
+For each batch, launch a Task agent in parallel:
+
+```
+Task (parallel × N batches)
+  subagent_type: "general-purpose"
+  description: "Assign PP: {category} batch {n}"
+  prompt: "You are assigning Processing Patterns (PP) for Nablarch v{version} documentation.
+
+## Your Assignment
+
+**Batch ID**: {batch_id}
+**Category**: {type}/{category}
+**Files**: {count} files
+
+## Input
+
+Read these files:
+1. Mapping file: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
+2. Content rules: `.claude/skills/nabledge-creator/references/content-judgement.md`
+
+Extract your batch's file list from the mapping file (rows where Type={type} AND Category={category}).
+
+## Your Task
+
+For each file in your batch:
+
+1. **Read RST content** (first 50-100 lines from `.lw/nab-official/v{version}/`)
+   - Read both English (en/) and Japanese (ja/) versions if available
+
+2. **Apply PP determination rules** from content-judgement.md:
+   - Look at title: Does it mention specific processing pattern?
+   - Look at first paragraph: What does this file describe?
+   - Look at code examples: What APIs/classes are used?
+   - Look at section headers: What scenarios are covered?
+
+3. **Assign PP**:
+   - If pattern-specific → Assign corresponding PP (e.g., 'web-application', 'restful-web-service', 'nablarch-batch', etc.)
+   - If common/general-purpose → Leave PP empty ('')
+   - Confidence: Document reasoning for each assignment
+
+4. **Update mapping file**:
+   - Modify the PP column for your batch's rows
+   - Use Edit tool to update `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
+
+## PP Values
+
+Valid PP values (or empty string for common/general):
+- jakarta-batch
+- nablarch-batch
+- web-application
+- restful-web-service
+- http-messaging
+- mom-messaging
+- db-messaging
+
+## Output
+
+After completing all files in your batch:
+
+**Report completion**:
+```
+Batch {batch_id} complete:
+- Files processed: {count}/{count}
+- PP assigned: {assigned_count}
+- PP empty (common): {empty_count}
+```
+
+**Update progress file**:
+Write to `.tmp/nabledge-creator/pp-progress-v{version}.json`:
+```json
+{
+  \"batch_id\": \"{batch_id}\",
+  \"status\": \"complete\",
+  \"processed\": {count},
+  \"pp_assigned\": {assigned_count},
+  \"pp_empty\": {empty_count}
+}
+```
+
+## Important Notes
+
+- Process ALL files in your batch
+- Read actual RST content - do NOT guess from path
+- When in doubt, leave PP empty (common/general-purpose)
+- Document reasoning for pattern-specific assignments
+"
+  run_in_background: false
+```
+
+Launch all batches in parallel (use multiple Task calls in one message).
+
+#### Step 2.3: Verify Completion
+
+After all Task agents complete:
+
+```bash
+# Count total files
+TOTAL=$(grep -v "^#" .claude/skills/nabledge-creator/output/mapping-v{version}.md | grep "^|" | tail -n +3 | wc -l)
+
+# Count files with PP assigned
+ASSIGNED=$(grep -v "^#" .claude/skills/nabledge-creator/output/mapping-v{version}.md | grep "^|" | tail -n +3 | awk -F'|' '{print $8}' | sed 's/^ *//;s/ *$//' | grep -v "^$" | wc -l)
+
+echo "Total files: $TOTAL"
+echo "Files with PP: $ASSIGNED"
+echo "Files without PP (common): $((TOTAL - ASSIGNED))"
+```
 
 **Completion Evidence:**
 
 | Criterion | Expected | Actual | Status |
 |-----------|----------|--------|--------|
-| Files in mapping | [from Step 1] | [row count] | ✓/✗ |
-| Files processed | [from Step 1] | [all files] | ✓ |
-| PP assignment logic | Implemented in generate-mapping.py | [code exists] | ✓ |
+| Files in mapping | [from Step 1] | [count] | ✓ |
+| Files processed | [from Step 1] | [all files] | ✓/✗ |
+| Task agents launched | [batches count] | [count] | ✓ |
+| All batches complete | Yes | [check progress files] | ✓/✗ |
 
 **How to measure:**
-- Files in mapping: Use count from Step 1
-- Files processed: This step processes ALL files via generate-mapping.py's `assign_processing_pattern` function
-- PP logic: Check that generate-mapping.py has content-reading functions (`read_rst_content`, `assign_processing_pattern`, etc.)
-
-**Note:** This step is about ensuring generate-mapping.py correctly implements PP assignment logic. The actual PP assignment happens automatically when Step 1 runs. If generate-mapping.py already has the logic, this step is complete.
+- Files in mapping: Row count from Step 1
+- Files processed: Sum of "processed" from all progress files
+- All batches complete: All progress files have "status": "complete"
 
 ### Step 3: Validate Mapping
 

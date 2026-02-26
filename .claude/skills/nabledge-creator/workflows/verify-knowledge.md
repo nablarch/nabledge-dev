@@ -45,28 +45,68 @@ Read the following files:
 
 **Note**: Use mapping file as the source of truth for RST file locations and knowledge file paths. knowledge-file-plan.md is for reference only (統合パターンと方針).
 
-### Step VK2: Verify All Knowledge Files
+### Step VK2: Verify All Knowledge Files (Batch Processing with Task Tool)
 
-**Verification scope**: All knowledge files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
+**Batch Processing Strategy**: Use Task tool to process files in category-based batches to avoid context overflow.
 
-For each knowledge file:
+#### Step VK2.1: Group Files by Category
 
-**2.1 Read Source RST Documentation**
+List generated JSON files grouped by category:
+
+```bash
+find .claude/skills/nabledge-{version}/knowledge -name "*.json" -type f | sort
+```
+
+Create batches (same as knowledge Step 2):
+- Categories with >60 files: Split into 2 batches
+- Categories with ≤60 files: 1 batch per category
+- Save to `.tmp/nabledge-creator/verify-knowledge-batches-v{version}.json`
+
+#### Step VK2.2: Launch Task Agents (Parallel)
+
+For each batch, launch a Task agent in parallel:
+
+```
+Task (parallel × N batches)
+  subagent_type: "general-purpose"
+  description: "Verify knowledge: {category} batch {n}"
+  prompt: "You are verifying knowledge files for Nablarch v{version} documentation.
+
+## Your Assignment
+
+**Batch ID**: {batch_id}
+**Category**: {type}/{category}
+**Files**: {count} JSON files
+
+## Input Files
+
+Read these files first:
+1. Mapping file: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
+2. Schema: `.claude/skills/nabledge-creator/references/knowledge-schema.md`
+
+Your batch's JSON files (in `.claude/skills/nabledge-{version}/knowledge/`):
+{list of JSON file paths}
+
+## Your Task
+
+For each JSON file in your batch:
+
+### 2.1 Read Source RST Documentation
 
 - Locate source RST file(s) from mapping-v{version}.md (Source Path column)
-- Read the complete RST content from `.lw/nab-official/v{version}/`
-- Understand the feature/component purpose and usage
+- Read complete RST content from `.lw/nab-official/v{version}/`
+- Understand feature/component purpose and usage
 
-**2.2 Verify Schema Compliance**
+### 2.2 Verify Schema Compliance
 
-Check the JSON file against knowledge-schema.md:
+Check JSON file against knowledge-schema.md:
 
 - **Required fields**: All mandatory fields present (class_name, purpose, usage, etc.)
 - **Section structure**: Sections follow schema templates for the category
 - **Index hints**: Each section has L1/L2/L3 keywords in index array
 - **Content format**: Text uses proper markdown, code blocks formatted correctly
 
-**2.3 Verify Content Accuracy**
+### 2.3 Verify Content Accuracy
 
 Compare JSON content against RST source:
 
@@ -76,7 +116,7 @@ Compare JSON content against RST source:
 - **Code examples**: Sample code preserved where relevant
 - **Specifications**: Directives, properties, exceptions documented
 
-**2.4 Verify Keyword Coverage**
+### 2.4 Verify Keyword Coverage
 
 Evaluate index hints quality:
 
@@ -86,7 +126,12 @@ Evaluate index hints quality:
 - **Minimum requirements**: L1 ≥ 1, L2 ≥ 2 (per knowledge-schema.md)
 - **Bilingual mix**: Japanese primary (user queries), English secondary (technical terms)
 
-**2.5 Record Result**
+### 2.5 Verify MD Conversion
+
+- Check MD file exists: Corresponding `.md` file in `docs/` directory
+- Verify content preserved (spot check key sections)
+
+### 2.6 Record Result
 
 For each file, record:
 
@@ -118,33 +163,96 @@ Overall Status: ✓ PASS / ⚠ PASS WITH WARNINGS / ✗ FAIL
 Issues: {list critical issues}
 ```
 
-**2.6 Verify MD Conversion**
+## Output
 
-For each JSON file, verify that MD conversion preserves all content:
+After completing all files in your batch:
 
-- **Check MD file exists**: Corresponding `.md` file in `docs/` directory
-- **Run conversion verification**:
-  ```bash
-  python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/ .claude/skills/nabledge-{version}/docs/
-  ```
-- **Check for missing content**: Script reports any JSON content not found in MD files
-- **Record result**: MD Conversion: ✓/✗ ({missing content if any})
+**Report completion**:
+```
+Batch {batch_id} complete:
+- Files verified: {count}/{count}
+- PASS: {pass_count}
+- PASS WITH WARNINGS: {warning_count}
+- FAIL: {fail_count}
+- Schema violations: {schema_violations}
+- Content accuracy issues: {content_issues}
+- Keyword coverage issues: {keyword_issues}
+```
+
+**Update progress file**:
+Write to `.tmp/nabledge-creator/verify-knowledge-progress-v{version}.json`:
+```json
+{
+  \"batch_id\": \"{batch_id}\",
+  \"status\": \"complete\",
+  \"verified\": {count},
+  \"pass\": {pass_count},
+  \"warnings\": {warning_count},
+  \"fail\": {fail_count},
+  \"schema_violations\": [{\"file\": \"path\", \"issue\": \"description\"}],
+  \"content_issues\": [{\"file\": \"path\", \"issue\": \"description\"}],
+  \"keyword_issues\": [{\"file\": \"path\", \"issue\": \"description\"}]
+}
+```
+
+## Important Notes
+
+- Verify ALL files in your batch
+- Read complete RST source for accurate verification
+- Focus on user perspective: Can users find what they need?
+- Schema violations are critical - must be fixed
+- Keyword coverage affects search functionality
+"
+  run_in_background: false
+```
+
+Launch all batches in parallel (use multiple Task calls in one message).
+
+#### Step VK2.3: Run MD Conversion Verification (After All Batches)
+
+After all Task agents complete, run automated MD conversion check:
+
+```bash
+python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/ .claude/skills/nabledge-{version}/docs/
+```
+
+#### Step VK2.4: Verify Completion
+
+```bash
+# Count total JSON files
+TOTAL=$(find .claude/skills/nabledge-{version}/knowledge -name "*.json" -type f | wc -l)
+
+# Sum verified from progress files
+VERIFIED=$(jq -s 'map(.verified) | add' .tmp/nabledge-creator/verify-knowledge-progress-v{version}.json)
+
+# Count issues
+SCHEMA_VIOLATIONS=$(jq -s 'map(.schema_violations | length) | add' .tmp/nabledge-creator/verify-knowledge-progress-v{version}.json)
+CONTENT_ISSUES=$(jq -s 'map(.content_issues | length) | add' .tmp/nabledge-creator/verify-knowledge-progress-v{version}.json)
+
+echo "Total JSON files: $TOTAL"
+echo "Files verified: $VERIFIED"
+echo "Schema violations: $SCHEMA_VIOLATIONS"
+echo "Content accuracy issues: $CONTENT_ISSUES"
+```
 
 **Completion Evidence:**
 
 | Criterion | Expected | Actual | Status |
 |-----------|----------|--------|--------|
-| Total JSON files | [count from knowledge dir] | [count] | ✓ |
-| Files verified | [total JSON files] | [verification count] | ✓/✗ |
-| Schema violations | 0 | [Critical issues] | ✓/✗ |
-| Content accuracy | All pass | [High priority issues] | ✓/✗ |
+| Total JSON files | [count from knowledge dir] | [find ... \| wc -l] | ✓ |
+| Files verified | [total JSON files] | [sum from progress files] | ✓/✗ |
+| Task agents launched | [batches count] | [count] | ✓ |
+| All batches complete | Yes | [check progress files] | ✓/✗ |
+| Schema violations | 0 | [sum from progress files] | ✓/✗ |
+| Content accuracy | All pass | [issues count] | ✓/✗ |
 | MD conversion | All pass | [verify-json-md exit code] | ✓/✗ |
 
 **How to measure:**
-- Total JSON files: `ls .claude/skills/nabledge-{version}/knowledge/*.json | wc -l`
-- Files verified: Must equal total JSON files (ALL files verified)
-- Issues: Count by priority level
-- MD conversion: `python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/ .claude/skills/nabledge-{version}/docs/` - exit code (0=pass, 1=fail)
+- Total JSON files: `find .claude/skills/nabledge-{version}/knowledge -name "*.json" -type f | wc -l`
+- Files verified: Sum of "verified" from all progress files
+- All batches complete: All progress files have "status": "complete"
+- Issues: Sum from all progress files by category
+- MD conversion: Exit code from verify-json-md-conversion.py (0=pass, 1=fail)
 
 ### Step VK3: Verify index.toon Integration
 

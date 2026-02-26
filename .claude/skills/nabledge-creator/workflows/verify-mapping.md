@@ -36,70 +36,171 @@ Read the following files:
 
 The checklist contains all rows from the mapping that require content verification.
 
-### Step VM2: Verify Classification (All Files)
+### Step VM2: Verify Classification and Target Paths (Batch Processing with Task Tool)
 
-For each row in the mapping file (all files):
+**Batch Processing Strategy**: Use Task tool to process files in category-based batches to avoid context overflow.
 
-1. **Read RST source**:
-   - Read the first 50 lines of the RST file specified in Source Path
-   - If these lines don't contain sufficient information to verify classification (e.g., file is mostly boilerplate or toctree directives), read up to 200 lines or until you find the main content section
-   - If the file contains `toctree` directives, read those referenced files as well
-   - Read any files that reference this file (check `:ref:` and `toctree` in parent directories)
+#### Step VM2.1: Group Files by Category
 
-2. **Verify Type and Category**:
-   - Check if the content matches the assigned Type and Category ID
-   - Determine which rule in `.claude/skills/nabledge-creator/references/classification.md` produced this classification
-   - Confirm the rule matches the actual content
+Read mapping file and group by `Type / Category`:
 
-3. **Verify Processing Pattern** (Critical):
-   - **Processing Pattern MUST be verified by reading content**
-   - Apply rules from `.claude/skills/nabledge-creator/references/content-judgement.md`
-   - Look for indicators in:
-     - Title (does it mention a specific processing pattern?)
-     - First paragraph (what does this file describe?)
-     - Code examples (what APIs are used?)
-     - Section headers (what scenarios are covered?)
-   - Confirm PP assignment matches content indicators
-   - **Common patterns to check**:
-     - development-tools/testing-framework: Title mentions "バッチ", "RESTful", "Messaging", etc.
-     - development-tools/toolbox: Tool targets specific pattern (e.g., JSP → web-application)
-     - component/libraries: Title includes "用" suffix indicating pattern-specific (e.g., "RESTful Web Service用")
-     - component/handlers: Path suggests pattern (e.g., `/rest/` → restful-web-service)
+```bash
+grep "^|" .claude/skills/nabledge-creator/output/mapping-v{version}.md | tail -n +3 | \
+  awk -F'|' '{print $5 "/" $6}' | sed 's/^ *//;s/ *$//' | sort | uniq -c
+```
 
-4. **Record result**:
-   - If classification is correct: Mark ✓
-   - If classification is incorrect: Mark ✗ and record the correct classification
-   - For PP errors, note what indicators were found vs what was assigned
+Create batches (same as mapping Step 2):
+- Categories with >60 files: Split into 2 batches
+- Categories with ≤60 files: 1 batch per category
+- Save to `.tmp/nabledge-creator/verify-batches-v{version}.json`
 
-**Do NOT skip this step**. Reading the actual content is the only way to catch classification errors, especially for Processing Pattern which cannot be determined by path alone.
+#### Step VM2.2: Launch Task Agents (Parallel)
 
-**Verification scope**: All files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
+For each batch, launch a Task agent in parallel:
+
+```
+Task (parallel × N batches)
+  subagent_type: "general-purpose"
+  description: "Verify mapping: {category} batch {n}"
+  prompt: "You are verifying mapping classification for Nablarch v{version} documentation.
+
+## Your Assignment
+
+**Batch ID**: {batch_id}
+**Category**: {type}/{category}
+**Files**: {count} files
+
+## Input Files
+
+Read these files first:
+1. Mapping file: `.claude/skills/nabledge-creator/output/mapping-v{version}.md`
+2. Classification rules: `.claude/skills/nabledge-creator/references/classification.md`
+3. Content judgement rules: `.claude/skills/nabledge-creator/references/content-judgement.md`
+
+Extract your batch's file list from the mapping file.
+
+## Your Task
+
+For each file in your batch:
+
+### 1. Read RST Source
+
+- Read first 50 lines from `.lw/nab-official/v{version}/` (Source Path)
+- If insufficient, read up to 200 lines or until main content section
+- If file contains `toctree`, read referenced files
+- Check parent directories for `:ref:` and `toctree` references
+
+### 2. Verify Type and Category
+
+- Check if content matches assigned Type and Category ID
+- Determine which rule in classification.md produced this classification
+- Confirm rule matches actual content
+
+### 3. Verify Processing Pattern (Critical)
+
+**PP MUST be verified by reading content**
+
+Apply rules from content-judgement.md. Look for indicators in:
+- **Title**: Does it mention specific processing pattern?
+- **First paragraph**: What does this file describe?
+- **Code examples**: What APIs are used?
+- **Section headers**: What scenarios are covered?
+
+**Common patterns**:
+- testing-framework: Title mentions \"バッチ\", \"RESTful\", \"Messaging\"
+- toolbox: Tool targets specific pattern (JSP → web-application)
+- libraries: Title includes \"用\" suffix (e.g., \"RESTful Web Service用\")
+- handlers: Content indicates pattern usage
+
+### 4. Verify Target Path
+
+- Target Path starts with Type (e.g., `component/`, `processing-pattern/`)
+- Filename correctly converts Source Path (`_` → `-`, `.rst` → `.json`)
+- For component category, subdirectories are preserved
+
+### 5. Record Result
+
+For each file, record:
+```
+File: {source_path}
+Type/Category: {type}/{category} - ✓ / ✗ {correct if wrong}
+PP: {pp_value} - ✓ / ✗ {correct if wrong}
+Target Path: {path} - ✓ / ✗ {issue if wrong}
+Notes: {reasoning for any ✗}
+```
+
+## Output
+
+After completing all files in your batch:
+
+**Report completion**:
+```
+Batch {batch_id} complete:
+- Files verified: {count}/{count}
+- Classification correct: {correct_count}
+- Classification errors: {error_count}
+- PP errors: {pp_error_count}
+- Path errors: {path_error_count}
+```
+
+**Update progress file**:
+Write to `.tmp/nabledge-creator/verify-progress-v{version}.json`:
+```json
+{
+  \"batch_id\": \"{batch_id}\",
+  \"status\": \"complete\",
+  \"verified\": {count},
+  \"errors\": {error_count},
+  \"details\": [{\"file\": \"path\", \"issue\": \"description\"}]
+}
+```
+
+## Important Notes
+
+- Verify ALL files in your batch
+- Read actual RST content - do NOT guess from path
+- PP cannot be determined by path alone - MUST read content
+- Document all ✗ marks with reasoning
+"
+  run_in_background: false
+```
+
+Launch all batches in parallel (use multiple Task calls in one message).
+
+#### Step VM2.3: Verify Completion
+
+After all Task agents complete:
+
+```bash
+# Count total files
+TOTAL=$(grep -v "^#" .claude/skills/nabledge-creator/output/mapping-v{version}.md | grep "^|" | tail -n +3 | wc -l)
+
+# Sum verified from progress files
+VERIFIED=$(jq -s 'map(.verified) | add' .tmp/nabledge-creator/verify-progress-v{version}.json)
+
+# Count errors
+ERRORS=$(jq -s 'map(.errors) | add' .tmp/nabledge-creator/verify-progress-v{version}.json)
+
+echo "Total files: $TOTAL"
+echo "Files verified: $VERIFIED"
+echo "Errors found: $ERRORS"
+```
 
 **Completion Evidence:**
 
 | Criterion | Expected | Actual | Status |
 |-----------|----------|--------|--------|
 | Total files in mapping | [count from mapping file] | [count] | ✓ |
-| Files verified | [total files] | [verification count] | ✓/✗ |
+| Files verified | [total files] | [sum from progress files] | ✓/✗ |
+| Task agents launched | [batches count] | [count] | ✓ |
+| All batches complete | Yes | [check progress files] | ✓/✗ |
 | Classification errors | 0 or documented | [error count] | ✓/✗ |
 
 **How to measure:**
 - Total files: Row count in mapping-v{version}.md (minus headers)
-- Files verified: Must equal total files (ALL files verified)
-- Errors: Count of files with ✗ status
-
-### Step VM3: Verify Target Paths (All Files)
-
-For each row in the mapping file (all files):
-
-1. **Verify path structure**:
-   - Target Path starts with Type (e.g., `component/`, `processing-pattern/`)
-   - Filename correctly converts Source Path filename (`_` → `-`, `.rst` → `.md`)
-   - For component category, subdirectories are preserved
-
-2. **Record result**:
-   - If path is correct: Mark ✓
-   - If path has errors: Mark ✗ and note the issue
+- Files verified: Sum of "verified" from all progress files
+- All batches complete: All progress files have "status": "complete"
+- Errors: Sum of "errors" from all progress files
 
 ### Step VM4: Apply Corrections
 
