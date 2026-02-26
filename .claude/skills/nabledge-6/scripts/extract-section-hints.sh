@@ -26,7 +26,7 @@ for file_path in $file_paths; do
   fi
 
   # Extract all section IDs and hints from .index
-  section_data=$(jq -r '.index | to_entries[] | "\(.key)|\(.value.hints | join(","))"' "$file_path" 2>/dev/null || echo "")
+  section_data=$(jq -r '.index[] | "\(.id)|\(.hints | join(","))"' "$file_path" 2>/dev/null || echo "")
 
   if [ -z "$section_data" ]; then
     continue

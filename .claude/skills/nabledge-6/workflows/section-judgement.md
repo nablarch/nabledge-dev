@@ -4,7 +4,7 @@ Judge relevance of candidate sections by reading content.
 
 ## Input
 
-JSON with candidate sections from keyword-search workflow (conforms to `schemas/section-scoring.json`)
+JSON with candidate sections from keyword-search workflow
 
 ## Output
 
@@ -38,11 +38,17 @@ When in doubt between High and Partial, choose Partial.
 
 ### Step 3: Filter and Output
 
-Filter out None (0) relevance sections.
+**Script**: Use sort-sections.sh with threshold=1 (mechanical sorting)
 
-Sort by relevance: High (2) first, then Partial (1).
+```bash
+echo '<json_from_step2>' | .claude/skills/nabledge-6/scripts/sort-sections.sh 1
+```
 
-Output JSON with filtered and sorted sections for the knowledge-search workflow to use.
+Script performs:
+- Filter: relevance >= 1 (removes None)
+- Sort: by relevance descending (High first, then Partial)
+
+**Output**: JSON with filtered and sorted sections for knowledge-search workflow
 
 ## Validation
 

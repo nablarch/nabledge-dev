@@ -39,108 +39,125 @@ Create JSON:
 
 ### Step 2: Match Files
 
-**Tool**: Read
+**Script + Agent**: Parse index → Agent judges semantically
 
-**Action**: Read index.toon and semantically match files based on keywords.
+**Action**: Use script to parse index.toon into JSON, then agent matches semantically.
 
-**Agent reads and extracts semantically** - Do NOT use scripts for matching. Agent must use semantic understanding to handle notation variations (表記揺れ) and flexible matching.
-
-1. **Read knowledge/index.toon**:
+1. **Execute parse-index.sh** (mechanical parsing):
    ```bash
-   # Agent reads using Read tool
-   Read tool: .claude/skills/nabledge-6/knowledge/index.toon
+   .claude/skills/nabledge-6/scripts/parse-index.sh
    ```
-   - Format: `Title, hint1 hint2 ..., path.json`
-   - All entries from index.toon
-   - Each line: entry title, search hints, file path
 
-2. **Extract all entries**:
-   - Parse each line to extract: title, hints, path
-   - Build list of all entries
+   Output:
+   ```json
+   {
+     "entries": [
+       {"title": "ユニバーサルDAO", "hints": "データベース DAO O/Rマッパー...", "path": "features/..."},
+       ...
+     ]
+   }
+   ```
 
-3. **Semantically match entries** (Agent judgment, not script):
+2. **Agent judges semantically** (flexible matching):
+   - Read JSON output from script
    - For each entry, judge if hints semantically match L1/L2 keywords
    - **Prioritize flexible matching**:
-     - Japanese/English variations (e.g., "ページング" matches "paging")
-     - Abbreviations (e.g., "DAO" matches "UniversalDao")
-     - Related terms (e.g., "検索" matches "search", "retrieve", "find")
+     - Japanese/English variations (e.g., "ページング" ⇔ "paging")
+     - Abbreviations (e.g., "DAO" ⇔ "UniversalDao")
+     - Related terms (e.g., "検索" ⇔ "search", "retrieve", "find")
      - Synonyms and conceptually related terms
-   - **Use semantic understanding**, not just exact string matching
-   - Consider intent and meaning, not just character matching
+   - **Use semantic understanding**, not exact string matching
 
-4. **Score files** (Agent calculates):
+3. **Score files** (Agent calculates):
    - L1 keyword match: +2 points per matched hint
    - L2 keyword match: +1 point per matched hint
    - Sum scores for each file
    - Sort by score (descending)
+   - Select top 10 files with score ≥ 2
 
-5. **Select top 10 files**:
-   - Keep files with score ≥ 2
-   - Select top 10 files
-
-**Output format** (structured for next step):
+**Output format** (for Step 3):
 ```json
 {
   "query": "original query",
+  "keywords": {"l1": [...], "l2": [...]},
   "files": [
-    {"path": "knowledge/features/file1.json", "score": 5, "title": "File Title"},
-    {"path": "knowledge/features/file2.json", "score": 3, "title": "Another Title"}
+    {"path": ".claude/skills/nabledge-6/knowledge/features/file1.json", "score": 5, "title": "Title"},
+    ...
   ]
 }
 ```
 
-This structured format enables section extraction in next step.
-
-**Why agent-based matching**:
-- Handles notation variations (表記揺れ) automatically
-- Flexible semantic understanding
-- Adapts to different query phrasings
-- Scripts can only do 100% mechanical tasks
+**Why this design**:
+- Script: Mechanical parsing (fast, deterministic)
+- Agent: Semantic matching (flexible, handles 表記揺れ)
 
 ### Step 3: Extract Section Hints
 
-**Tool**: Read, Bash with jq
+**Script**: Use extract-section-hints.sh (mechanical extraction)
 
-**Action**: Extract section hints from selected files:
+**Action**: Extract section hints from selected files using script:
 
-1. **For each selected file**, extract `.index` field:
-   ```bash
-   jq -r '.index' <file_path>
-   ```
+```bash
+echo '<json_from_step2>' | .claude/skills/nabledge-6/scripts/extract-section-hints.sh
+```
 
-2. **Collect sections**:
-   - Section ID
-   - Section hints (for matching)
-   - File path
+Script extracts `.index` field from each file and builds sections array.
 
-3. **Output**: JSON array with sections (for Step 4 scoring)
+**Output**:
+```json
+{
+  "query": "...",
+  "keywords": {"l1": [...], "l2": [...]},
+  "sections": [
+    {
+      "file_path": ".claude/skills/nabledge-6/knowledge/features/...",
+      "section_id": "paging",
+      "hints": ["DAO", "ページング", "per", "page"],
+      "relevance": 0,
+      "reasoning": ""
+    },
+    ...
+  ]
+}
+```
 
 ### Step 4: Score Section Relevance
 
-Read JSON from Step 3. For each section, judge relevance based on:
-- Keyword overlap between section hints and extracted keywords
-- Technical component match (L1 keywords in hints)
-- Functional term match (L2 keywords in hints)
+**Agent**: Judge relevance semantically (judgment required)
 
-Assign relevance score:
+**Action**: For each section in JSON from Step 3, judge relevance:
+
+- Compare section hints with L1/L2 keywords
+- Consider semantic overlap, not just exact matches
+- Think about whether section would help answer the query
+
+**Assign relevance score**:
 - **3 (high)**: Multiple L1+L2 matches, directly answers query
 - **2 (medium)**: Some L1 or L2 matches, partially relevant
 - **1 (low)**: Weak keyword overlap, tangentially related
 - **0 (not relevant)**: No meaningful keyword overlap
 
-Write reasoning (1-2 sentences) for each score.
+**Update JSON**: Add `relevance` and `reasoning` for each section
 
-Update JSON with scores and reasoning. Validate against `schemas/section-scoring.json`.
+**Output**: Same JSON structure with scores filled in
 
 ### Step 5: Sort and Filter
 
-**Action**: Sort and filter scored sections:
+**Script**: Use sort-sections.sh (mechanical sorting)
 
-1. **Sort** by relevance score (descending)
-2. **Filter** sections with relevance ≥ 2
-3. **Output** JSON with candidate sections for section-judgement workflow
+**Action**: Sort and filter using script:
 
-Return output to caller.
+```bash
+echo '<json_from_step4>' | .claude/skills/nabledge-6/scripts/sort-sections.sh
+```
+
+Script performs:
+- Sort by relevance (descending)
+- Filter sections with relevance ≥ 2
+
+**Output**: JSON with candidate sections for section-judgement workflow
+
+Return this output to caller (knowledge-search.md).
 
 ## Error Handling
 
