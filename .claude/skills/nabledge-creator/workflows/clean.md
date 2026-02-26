@@ -1,6 +1,6 @@
-# clean ワークフロー
+# clean workflow
 
-生成ファイルを削除してクリーンな状態に戻す。
+Delete generated files to restore clean state.
 
 ## Skill Invocation
 
@@ -10,7 +10,7 @@ nabledge-creator clean {version}
 
 Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 
-## 削除対象
+## Deletion Targets
 
 ### 1. Knowledge Files
 - Location: `.claude/skills/nabledge-{version}/knowledge/`
@@ -28,7 +28,7 @@ Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
   - `mapping-v{version}.checklist.md`
   - `mapping-v{version}.xlsx`
 
-## ワークフロー手順
+## Workflow Steps
 
 Execute the clean script:
 

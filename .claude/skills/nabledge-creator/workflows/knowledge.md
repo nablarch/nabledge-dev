@@ -1,6 +1,6 @@
-# knowledge ワークフロー
+# knowledge workflow
 
-マッピングファイルと公式ドキュメントから知識ファイル（JSON + Markdown）を生成する。
+Generate knowledge files (JSON + Markdown) from mapping files and official documentation.
 
 ## Skill Invocation
 
@@ -8,191 +8,191 @@
 nabledge-creator knowledge {version} [--filter "key=value"]
 ```
 
-Where `{version}` is the Nablarch version number (e.g., `6` for v{version}, `5` for v5).
+Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 
-## なぜこのワークフローが重要か
+## Why This Workflow Matters
 
-知識ファイルはnabledge-{version}スキルの検索パイプラインのデータソースになる。検索は3段階で動作する：
+Knowledge files are the data source for nabledge-{version} skill's search pipeline. The search operates in 3 stages:
 
-1. **index.toon**のヒントでファイルを選定する（L1/L2キーワード、閾値≥2点）
-2. **JSON内index配列**のヒントでセクションを選定する（L2/L3キーワード、閾値≥2点）
-3. **sectionsの中身**を読んでHigh/Partial/Noneの関連度を判定する
+1. **index.toon** hints select files (L1/L2 keywords, threshold ≥2 points)
+2. **JSON index array** hints select sections (L2/L3 keywords, threshold ≥2 points)
+3. **sections content** is read to judge High/Partial/None relevance
 
-つまり、ヒントが不十分だと検索でヒットせず、セクションの粒度が粗いとHigh判定を得られない。このワークフローの品質が検索精度に直結する。
+Insufficient hints mean no search hits; coarse section granularity means no High judgments. This workflow's quality directly affects search accuracy.
 
-## 参照ファイル
+## Reference Files
 
-- `.claude/skills/nabledge-creator/output/mapping-v{version}.md` - ソースドキュメントとTarget Pathのマッピング
-- `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` - 統合パターンと方針（参考情報）
-- `.claude/skills/nabledge-creator/references/knowledge-schema.md` - JSON構造とカテゴリ別テンプレート
+- `.claude/skills/nabledge-creator/output/mapping-v{version}.md` - Source documents to Target Path mapping
+- `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` - Integration patterns and strategy (reference info)
+- `.claude/skills/nabledge-creator/references/knowledge-schema.md` - JSON structure and category templates
 
-## ワークフロー手順
+## Workflow Steps
 
-### Step 1: 対象の特定
+### Step 1: Identify Targets
 
-`.claude/skills/nabledge-creator/output/mapping-v{version}.md`を読み、フィルタに該当するマッピング行を取得せよ。
+Read `.claude/skills/nabledge-creator/output/mapping-v{version}.md` and retrieve mapping rows matching the filter.
 
-**動的スキャン方式**:
-- `nablarch-document/en/`配下の全てのRSTファイルがマッピングファイルに含まれている
-- ファイルの増減は自動的にマッピングファイルに反映される
-- knowledge-file-plan.mdの個別ファイルリストは使用しない（増減時のメンテナンス不要）
+**Dynamic scanning approach**:
+- All RST files under `nablarch-document/en/` are included in the mapping file
+- File additions/deletions are automatically reflected in the mapping file
+- Do not use knowledge-file-plan.md's individual file list (no maintenance needed when files change)
 
-各マッピング行から以下を取得:
-- Source Path (読むべきRSTファイルパス)
+From each mapping row, extract:
+- Source Path (RST file paths to read)
 - Title, Title (ja)
 - Type, Category ID, Processing Pattern
-- Target Path (生成する知識ファイルパス)
+- Target Path (knowledge file path to generate)
 - Official URL
 
-### Step 2: 知識ファイル生成
+### Step 2: Generate Knowledge Files
 
-対象の知識ファイルを1つずつ生成せよ。各ファイルについて以下を行え。
+Generate each target knowledge file one by one. For each file:
 
-#### 2a. ソースを読む
+#### 2a. Read Sources
 
-sourcesに記されたrstファイル群を全部読め。日本語版（`en/`→`ja/`）も用語確認のため参照せよ。
+Read all RST files specified in sources. Also refer to Japanese version (`en/` → `ja/`) for terminology verification.
 
-#### 2b. セクションIDを決定する
+#### 2b. Determine Section IDs
 
-`.claude/skills/nabledge-creator/references/knowledge-schema.md`の「セクション分割ルール」に従ってセクションIDを決定せよ。rstの見出し構造から導出する。
+Follow "Section Division Rules" in `.claude/skills/nabledge-creator/references/knowledge-schema.md` to determine section IDs. Derive from RST heading structure.
 
-#### 2c. ヒントを抽出する
+#### 2c. Extract Hints
 
-`.claude/skills/nabledge-creator/references/knowledge-schema.md`の「ヒント抽出ルール」に従ってヒントを抽出せよ。抽出元はrstの構造要素で決まっている。
+Follow "Hint Extraction Rules" in `.claude/skills/nabledge-creator/references/knowledge-schema.md` to extract hints. Extraction sources are determined by RST structural elements.
 
-**セクションレベルヒント（知識ファイル内 .index[].hints、3-8個）**:
+**Section-level hints (knowledge file .index[].hints, 3-8 items)**:
 
-セクションレベルヒントには機能キーワードを含める：
+Include functional keywords in section-level hints:
 
-1. **機能キーワード（L2）** - そのセクションで何ができるか（例: "ページング", "検索", "登録", "更新", "削除"）
-2. **セクション見出し** - h2見出しテキスト（日英両方）（例: "ページング", "Paging"）
-3. **技術要素** - クラス名、プロパティ名、アノテーション名（例: "UniversalDao", "maxCount", "@GeneratedValue"）
+1. **Functional keywords (L2)** - What can be done in this section (e.g., "ページング", "検索", "登録", "更新", "削除")
+2. **Section headings** - h2 heading text (both Japanese and English) (e.g., "ページング", "Paging")
+3. **Technical elements** - Class names, property names, annotation names (e.g., "UniversalDao", "maxCount", "@GeneratedValue")
 
-**ファイルレベルヒント（index.toon用、5-8個）**:
+**File-level hints (for index.toon, 5-8 items)**:
 
-ファイルレベルヒントには技術コンポーネントとタイトルを含める：
+Include technical components and titles in file-level hints:
 
-1. **L1技術コンポーネント** - rstの主要クラス名、インターフェース名、技術用語（例: "DAO", "JDBC", "Bean Validation", "UniversalDao"）
-2. **エントリータイトル** - 日本語と英語の両方（例: "ユニバーサルDAO", "UniversalDao"）
-3. **クラス名** - 完全なクラス名（例: "DbConnectionManagementHandler"）
-4. **日英両方の用語** - L1キーワードは日本語・英語の両方を含める
+1. **L1 technical components** - Main class names, interface names, technical terms from RST (e.g., "DAO", "JDBC", "Bean Validation", "UniversalDao")
+2. **Entry titles** - Both Japanese and English (e.g., "ユニバーサルDAO", "UniversalDao")
+3. **Class names** - Full class names (e.g., "DbConnectionManagementHandler")
+4. **Bilingual terms** - Include both Japanese and English for L1 keywords
 
-**ファイルレベルに含めないもの:**
-- 汎用ドメイン用語（データベース, ファイル, ハンドラ, バッチ, 日付, ログ）
-- 機能キーワード（ページング, 検索, 登録, 更新, 削除, 設定, 管理, 処理）はセクションレベル専用
+**Do not include in file-level hints**:
+- Generic domain terms (データベース, ファイル, ハンドラ, バッチ, 日付, ログ)
+- Functional keywords (ページング, 検索, 登録, 更新, 削除, 設定, 管理, 処理) - section-level only
 
-これらはnabledge-{version}スキルのkeyword-search workflow（`.claude/skills/nabledge-{version}/workflows/keyword-search.md`）で使用される。L1技術コンポーネント+タイトルが不足すると検索でヒットしない。全対象ファイルの内容を確認してL1キーワードを抽出せよ。
+These are used by nabledge-{version} skill's keyword-search workflow (`.claude/skills/nabledge-{version}/workflows/keyword-search.md`). Without sufficient L1 technical components + titles, search will not hit. Check all target file contents and extract L1 keywords.
 
-#### 2d. JSONに変換する
+#### 2d. Convert to JSON
 
-`.claude/skills/nabledge-creator/references/knowledge-schema.md`のカテゴリ別テンプレートに従いJSONに変換せよ。
+Convert to JSON following category templates in `.claude/skills/nabledge-creator/references/knowledge-schema.md`.
 
-**変換の判断基準**：
+**Conversion criteria**:
 
-- 仕様は全部残す（設定項目、デフォルト値、型、制約、動作仕様、理由・背景、注意点、警告）
-- 考え方も全部残す（設計思想、推奨パターン、注意事項）
-- 表現は最適化する（導入文や冗長な説明は削除、箇条書き化）
-- 迷ったら：「この情報がないとAIが誤った判断をする可能性があるか？」→ YESなら残す
+- Keep all specifications (configuration items, defaults, types, constraints, behavior specs, rationale/background, notes, warnings)
+- Keep all concepts (design philosophy, recommended patterns, precautions)
+- Optimize expression (remove introductory text and verbose explanations, use bullet points)
+- When in doubt: "Would lack of this information cause AI to make incorrect decisions?" → If YES, keep it
 
-#### 2e. JSONを出力する
+#### 2e. Output JSON
 
-`.claude/skills/nabledge-{version}/knowledge/{path}.json`に書き出せ。
+Write to `.claude/skills/nabledge-{version}/knowledge/{path}.json`.
 
-### Step 3: Markdown変換
+### Step 3: Markdown Conversion
 
-以下のコマンドを実行せよ。
+Execute the following command:
 
 ```bash
 python scripts/convert-knowledge-md.py .claude/skills/nabledge-{version}/knowledge/ --output-dir .claude/skills/nabledge-{version}/docs/
 ```
 
-### Step 4: 検証
+### Step 4: Validation
 
-以下のコマンドを実行せよ。
+Execute the following command:
 
 ```bash
 python scripts/validate-knowledge.py .claude/skills/nabledge-{version}/knowledge/
 ```
 
-failした場合、エラー内容を読んでJSONを修正し、Step 3から再実行せよ。
+If failed, read error content, fix JSON, and re-execute from Step 3.
 
-### Step 5: index.toon 更新
+### Step 5: Update index.toon
 
-生成した知識ファイルから index.toon を更新せよ。
+Update index.toon from generated knowledge files.
 
-#### 5a. ファイルレベルヒントの集約
+#### 5a. Aggregate File-level Hints
 
-各生成ファイルについて、セクションレベルヒント（.index[].hints）からファイルレベルヒント（index.toon）を集約する:
+For each generated file, aggregate file-level hints (index.toon) from section-level hints (.index[].hints):
 
-1. **JSON の .index[].hints を読む**
-   - 全セクションの hints を収集
-   - L1技術コンポーネント（クラス名、技術用語）を抽出
-   - L2機能キーワード（ページング、検索等）は含めない（セクションレベル専用）
+1. **Read JSON .index[].hints**
+   - Collect hints from all sections
+   - Extract L1 technical components (class names, technical terms)
+   - Do not include L2 functional keywords (ページング, 検索, etc.) - section-level only
 
-2. **L1技術コンポーネントを抽出**
-   - JSONの主要クラス名（overview.class_name, overview.classes）
-   - 技術用語（DAO, JDBC, JPA, Bean Validation等）
-   - 日英両方の形式を含める
+2. **Extract L1 technical components**
+   - Main class names from JSON (overview.class_name, overview.classes)
+   - Technical terms (DAO, JDBC, JPA, Bean Validation, etc.)
+   - Include both Japanese and English forms
 
-3. **エントリータイトルを追加**
-   - 日本語タイトル（title フィールド）
-   - 英語タイトル（official_doc_urlsやrstから取得）
-   - クラス名（完全修飾名を短縮形でも可）
+3. **Add entry titles**
+   - Japanese title (title field)
+   - English title (from official_doc_urls or RST)
+   - Class names (full qualified names or abbreviated forms)
 
-4. **ヒントを集約**
-   - 重複を除去
-   - 5-8個に絞り込む
-   - 汎用ドメイン用語（データベース, ファイル, ハンドラ等）は含めない
-   - 機能キーワード（ページング, 検索, 登録, 更新等）は含めない（セクションレベル専用）
+4. **Aggregate hints**
+   - Remove duplicates
+   - Narrow down to 5-8 items
+   - Do not include generic domain terms (データベース, ファイル, ハンドラ, etc.)
+   - Do not include functional keywords (ページング, 検索, 登録, 更新, etc.) - section-level only
 
-5. **バイリンガル確認**
-   - 日本語: 技術用語、タイトル
-   - 英語: クラス名、技術用語、タイトル
-   - 両方が適切にバランスされているか
+5. **Bilingual check**
+   - Japanese: technical terms, titles
+   - English: class names, technical terms, titles
+   - Both are properly balanced
 
-#### 5b. index.toon エントリの更新
+#### 5b. Update index.toon Entries
 
-`.claude/skills/nabledge-{version}/knowledge/index.toon` を更新:
+Update `.claude/skills/nabledge-{version}/knowledge/index.toon`:
 
-1. **該当エントリを検索**
-   - title で検索（マッピングの Title (ja) と一致）
+1. **Search for matching entry**
+   - Search by title (matches mapping's Title (ja))
 
-2. **エントリを更新**
-   - `hints`: 集約したファイルレベルヒント
-   - `path`: `"not yet created"` → 実際のファイルパス (e.g., `features/libraries/universal-dao.json`)
+2. **Update entry**
+   - `hints`: aggregated file-level hints
+   - `path`: `"not yet created"` → actual file path (e.g., `features/libraries/universal-dao.json`)
 
-3. **新規エントリの場合**
-   - title, hints, path を持つ新規エントリを追加
-   - 日本語字句順でソート位置に挿入
+3. **For new entries**
+   - Add new entry with title, hints, path
+   - Insert at sorted position (Japanese lexical order)
 
-4. **ヘッダー更新**
-   - エントリ総数をカウント
-   - ヘッダー行 `files[{count},]{title,hints,path}:` の count 更新
+4. **Update header**
+   - Count total entries
+   - Update count in header line `files[{count},]{title,hints,path}:`
 
-#### 5c. フォーマット検証
+#### 5c. Format Validation
 
 ```bash
 python scripts/validate-index.py .claude/skills/nabledge-{version}/knowledge/index.toon
 ```
 
-検証失敗の場合、エラー内容を読んで index.toon を修正せよ。
+If validation fails, read error content and fix index.toon.
 
-#### 5d. ステータス整合性検証
+#### 5d. Status Consistency Verification
 
 ```bash
 python scripts/verify-index-status.py .claude/skills/nabledge-{version}/knowledge/index.toon
 ```
 
-不整合がある場合:
-- 実ファイルが存在するのに index にない → エントリ追加
-- index にあるのに実ファイルがない → path を "not yet created" に変更
+If inconsistencies exist:
+- Actual file exists but not in index → Add entry
+- In index but actual file doesn't exist → Change path to "not yet created"
 
-### Step 6: チェックリスト生成
+### Step 6: Generate Checklist
 
-以下のコマンドを実行せよ。
+Execute the following command:
 
 ```bash
 python scripts/generate-checklist.py .claude/skills/nabledge-{version}/knowledge/{file}.json --source .lw/nab-official/v{version}/nablarch-document/en/{source-path} --output .claude/skills/nabledge-{version}/knowledge/{file}.checklist.md
 ```
 
-スクリプトはrstとJSONの両方を解析し、検証セッション用のチェックリストを生成する。生成セッションはここで完了。検証はverifyワークフロー（別セッション）で行う。
+The script analyzes both RST and JSON to generate a checklist for verification sessions. Generation session completes here. Verification is done in verify workflow (separate session).
