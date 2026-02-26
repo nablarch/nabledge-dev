@@ -101,7 +101,66 @@ python scripts/validate-knowledge.py .claude/skills/nabledge-{version}/knowledge
 
 failした場合、エラー内容を読んでJSONを修正し、Step 3から再実行せよ。
 
-### Step 5: チェックリスト生成
+### Step 5: index.toon 更新
+
+生成した知識ファイルから index.toon を更新せよ。
+
+#### 5a. ファイルレベルヒントの集約
+
+各生成ファイルについて:
+
+1. **JSON の index[].hints を読む**
+   - 全セクションの hints を収集
+   - L1/L2/L3 キーワードをマージ
+
+2. **ファイルレベルヒントに集約**
+   - 重複を除去
+   - 頻出キーワードを優先
+   - 5-8個に絞り込む
+
+3. **バイリンガル確認**
+   - 日本語キーワード: L1カテゴリ用語、L2技術用語
+   - 英語キーワード: クラス名、技術用語、概念
+   - 両方が適切にバランスされているか
+
+#### 5b. index.toon エントリの更新
+
+`.claude/skills/nabledge-{version}/knowledge/index.toon` を更新:
+
+1. **該当エントリを検索**
+   - title で検索（マッピングの Title (ja) と一致）
+
+2. **エントリを更新**
+   - `hints`: 集約したファイルレベルヒント
+   - `path`: `"not yet created"` → 実際のファイルパス (e.g., `features/libraries/universal-dao.json`)
+
+3. **新規エントリの場合**
+   - title, hints, path を持つ新規エントリを追加
+   - 日本語字句順でソート位置に挿入
+
+4. **ヘッダー更新**
+   - エントリ総数をカウント
+   - ヘッダー行 `files[{count},]{title,hints,path}:` の count 更新
+
+#### 5c. フォーマット検証
+
+```bash
+python scripts/validate-index.py .claude/skills/nabledge-{version}/knowledge/index.toon
+```
+
+検証失敗の場合、エラー内容を読んで index.toon を修正せよ。
+
+#### 5d. ステータス整合性検証
+
+```bash
+python scripts/verify-index-status.py .claude/skills/nabledge-{version}/knowledge/index.toon
+```
+
+不整合がある場合:
+- 実ファイルが存在するのに index にない → エントリ追加
+- index にあるのに実ファイルがない → path を "not yet created" に変更
+
+### Step 6: チェックリスト生成
 
 以下のコマンドを実行せよ。
 

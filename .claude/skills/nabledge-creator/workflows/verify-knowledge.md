@@ -71,16 +71,7 @@ Evaluate index hints quality:
 - **Minimum requirements**: L1 ≥ 1, L2 ≥ 2 (per knowledge-schema.md)
 - **Bilingual mix**: Japanese primary (user queries), English secondary (technical terms)
 
-**2.5 Test Search Queries**
-
-For each knowledge file, test if it would be found by expected user queries:
-
-- Generate 3-5 expected queries from title and content
-- Check if file-level hints (index.toon) would match queries
-- Check if section-level hints (JSON index arrays) would match queries
-- Verify relevant sections contain sufficient information
-
-**2.6 Record Result**
+**2.5 Record Result**
 
 For each file, record:
 
@@ -104,16 +95,98 @@ Keyword Coverage: ✓/⚠/✗
 - L3 keywords: {count} ({list})
 - Missing important keywords: {list if any}
 
-Search Queries: ✓/⚠/✗
-- Query 1: "{query}" → File hit: YES/NO, Section hit: YES/NO
-- Query 2: "{query}" → File hit: YES/NO, Section hit: YES/NO
-- Query 3: "{query}" → File hit: YES/NO, Section hit: YES/NO
-
 Overall Status: ✓ PASS / ⚠ PASS WITH WARNINGS / ✗ FAIL
 Issues: {list critical issues}
 ```
 
-### Step VK3: Categorize Issues
+### Step VK3: Verify index.toon Integration
+
+Verify that knowledge files are properly integrated into index.toon.
+
+#### VK3.1 File-Level Hints Verification
+
+For each verified knowledge file:
+
+1. **Read JSON index arrays**
+   - Collect all hints from `index[].hints` across all sections
+   - Identify L1/L2/L3 keywords present
+
+2. **Find corresponding index.toon entry**
+   - Search index.toon by title (should match JSON title)
+   - Verify entry exists
+
+3. **Compare hints**
+   - index.toon hints should be aggregation of JSON index hints
+   - Verify L1/L2 coverage in index.toon hints
+   - Check bilingual mix (Japanese + English technical terms)
+
+4. **Verify path field**
+   - path should be actual file path (e.g., `features/libraries/universal-dao.json`)
+   - Should NOT be "not yet created" for verified files
+
+5. **Record issues**:
+   ```
+   File: {filename}
+   index.toon entry: FOUND / MISSING
+   Hints aggregation: ✓ / ⚠ / ✗
+   - Missing L1 keywords: {list}
+   - Missing L2 keywords: {list}
+   - Poor bilingual mix: {details}
+   Path field: ✓ CORRECT / ✗ INCORRECT ({actual value})
+   ```
+
+#### VK3.2 index.toon Format Validation
+
+Run format validation:
+
+```bash
+python scripts/validate-index.py .claude/skills/nabledge-{version}/knowledge/index.toon
+```
+
+Check:
+- Schema compliance (header, field structure)
+- Entry completeness (no empty titles/hints)
+- No duplicates
+- Japanese lexical sorting
+
+#### VK3.3 index.toon Status Consistency
+
+Run status consistency check:
+
+```bash
+python scripts/verify-index-status.py .claude/skills/nabledge-{version}/knowledge/index.toon
+```
+
+Verify:
+- All indexed files exist (paths in index.toon → actual .json files)
+- All actual files are indexed (actual .json files → entries in index.toon)
+- No orphaned files or missing entries
+
+#### VK3.4 Record index.toon Results
+
+```
+index.toon Verification Results:
+
+Format Validation: ✓ PASS / ✗ FAIL
+- Schema: ✓/✗
+- Completeness: ✓/✗
+- Duplicates: ✓/✗ ({count} if any)
+- Sorting: ✓/✗
+
+Status Consistency: ✓ PASS / ✗ FAIL
+- Indexed files exist: ✓/✗ ({missing count} if any)
+- All files indexed: ✓/✗ ({orphaned count} if any)
+
+Hints Integration: ✓/⚠/✗
+- Files with proper hints aggregation: {count}/{total}
+- Files with missing L1 keywords: {count}
+- Files with missing L2 keywords: {count}
+- Files with poor bilingual mix: {count}
+
+Overall: ✓ PASS / ⚠ PASS WITH WARNINGS / ✗ FAIL
+```
+
+### Step VK4: Categorize Issues
 
 Group all issues found across all files by type:
 
@@ -132,14 +205,14 @@ Group all issues found across all files by type:
 - Missing important search terms
 - Poor bilingual mix
 
-**Search Problems** (Medium Priority):
-- File not findable by expected queries
-- Sections not findable by specific queries
-- Information insufficient in found sections
+**index.toon Integration Issues** (High Priority):
+- Missing index.toon entries for knowledge files
+- Incorrect path fields (orphaned or missing files)
+- Poor hints aggregation (L1/L2 keywords missing)
 
-### Step VK4: Document Verification Results
+### Step VK5: Document Verification Results
 
-Create comprehensive verification report at `.pr/00078/knowledge-verification-results.md`:
+Create comprehensive verification report at `.pr/{issue_number}/knowledge-verification-results.md`:
 
 ```markdown
 # Knowledge File Verification Results
