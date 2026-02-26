@@ -5,16 +5,35 @@ description: Internal skill for creating and maintaining nabledge knowledge file
 
 # nabledge-creator
 
+## Argument Validation
+
+**IMPORTANT:** Before executing any workflow, check if required arguments are provided.
+
+If `<workflow>` or `<version>` arguments are missing:
+
+1. Display the usage message below to the user
+2. DO NOT prompt the user with AskUserQuestion
+3. Stop execution and wait for user to provide arguments
+
 ## Usage
 
 ```
-nabledge-creator <workflow> <version> [args...]
+/nabledge-creator <workflow> <version> [args...]
 ```
 
-Where:
-- `<workflow>`: Workflow name (mapping, knowledge, verify-mapping, verify-knowledge, clean)
-- `<version>`: Nablarch version number (6, 5, etc.)
-- `[args...]`: Additional workflow-specific arguments
+**Arguments:**
+- `<workflow>`: Workflow name (required)
+- `<version>`: Nablarch version number (required)
+- `[args...]`: Additional workflow-specific arguments (optional)
+
+**Examples:**
+```
+/nabledge-creator all 6
+/nabledge-creator mapping 6
+/nabledge-creator knowledge 6
+/nabledge-creator verify-mapping 6
+/nabledge-creator clean 6
+```
 
 Execute the corresponding workflow file in `workflows/<workflow>.md` with the provided arguments.
 
