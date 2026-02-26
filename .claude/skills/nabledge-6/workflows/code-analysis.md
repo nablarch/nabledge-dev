@@ -11,7 +11,7 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Input**: User's request (target code specification)
 
-**Output**: Documentation file (Markdown + Mermaid diagrams) in work/YYYYMMDD/
+**Output**: Documentation file (Markdown + Mermaid diagrams) in .nabledge/YYYYMMDD/
 
 **Tools**: Read, Glob, Grep, Bash with jq, Write
 
@@ -23,7 +23,7 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Action** - Store start time with unique session ID in output directory:
 ```bash
-OUTPUT_DIR="work/$(date '+%Y%m%d')"
+OUTPUT_DIR=".nabledge/$(date '+%Y%m%d')"
 mkdir -p "$OUTPUT_DIR"
 UNIQUE_ID="$(date '+%s%3N')-$$"
 echo "$UNIQUE_ID" > "$OUTPUT_DIR/.nabledge-code-analysis-id"
@@ -37,18 +37,18 @@ echo "Output directory: $OUTPUT_DIR"
 ```
 Start time recorded: 2026-02-10 14:54:00
 Session ID: 1707559440123-12345
-Output directory: work/20260210
+Output directory: .nabledge/20260210
 ```
 
 **IMPORTANT**:
-- Session ID stored in: `work/YYYYMMDD/.nabledge-code-analysis-id`
-- Start time stored in: `work/YYYYMMDD/.nabledge-code-analysis-start-$UNIQUE_ID`
+- Session ID stored in: `.nabledge/YYYYMMDD/.nabledge-code-analysis-id`
+- Start time stored in: `.nabledge/YYYYMMDD/.nabledge-code-analysis-start-$UNIQUE_ID`
 - UNIQUE_ID format: `{millisecond_timestamp}-{process_PID}`
 - Epoch time (seconds since 1970) for accurate duration calculation
 - Step 3.5 reads session ID from output directory
 - Files stored in same directory as code analysis output
-- Keyword search results stored in same directory: `work/YYYYMMDD/.keyword-search-results.json`
-- All intermediate and final outputs must stay in work/YYYYMMDD/ directory
+- Keyword search results stored in same directory: `.nabledge/YYYYMMDD/.keyword-search-results.json`
+- All intermediate and final outputs must stay in .nabledge/YYYYMMDD/ directory
 
 **Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
 
@@ -208,7 +208,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
   --source-files "<file1.java,file2.java>" \
   --knowledge-files "<knowledge1.md,knowledge2.md>" \
   --official-docs "<url1,url2>" \
-  --output-path "work/YYYYMMDD/code-analysis-<target>.md"
+  --output-path ".nabledge/YYYYMMDD/code-analysis-<target>.md"
 ```
 
 **Parameters**:
@@ -433,7 +433,7 @@ sequenceDiagram
 #### 3.5: Fill remaining placeholders and output
 
 1. **Read pre-filled template**: Use Read tool on the file created in Step 3.2
-   - File path: `work/YYYYMMDD/code-analysis-<target>.md`
+   - File path: `.nabledge/YYYYMMDD/code-analysis-<target>.md`
    - This file already contains 8/16 placeholders filled (deterministic content)
 
 2. **Construct complete content**: Build the full document content in memory by:
@@ -474,7 +474,7 @@ sequenceDiagram
    - Mermaid diagrams refined from skeletons (not regenerated)
 
 4. **Write complete file**: Use Write tool with full document content
-   - File path: Same as Step 3.2 (`work/YYYYMMDD/code-analysis-<target>.md`)
+   - File path: Same as Step 3.2 (`.nabledge/YYYYMMDD/code-analysis-<target>.md`)
    - Content: Complete document with all 16 placeholders filled (8 pre-filled + 8 generated)
    - This will overwrite the pre-filled template from Step 3.2 with the complete version
    - Write tool requires prior Read (already done in step 1)
@@ -495,7 +495,7 @@ sequenceDiagram
    Execute single bash script to fill duration placeholder:
    ```bash
    # Set output directory path
-   OUTPUT_DIR="work/YYYYMMDD"  # Replace with actual date
+   OUTPUT_DIR=".nabledge/YYYYMMDD"  # Replace with actual date
 
    # Retrieve session ID from Step 0
    UNIQUE_ID=$(cat "$OUTPUT_DIR/.nabledge-code-analysis-id" 2>/dev/null || echo "")
@@ -547,7 +547,7 @@ sequenceDiagram
 6. **Inform user**: Show output path and actual duration
 6. **Inform user**: Show output path and actual duration
 
-**Output**: Documentation file at work/YYYYMMDD/code-analysis-<target-name>.md
+**Output**: Documentation file at .nabledge/YYYYMMDD/code-analysis-<target-name>.md
 
 ## Output template
 
@@ -624,6 +624,6 @@ Key scenarios:
 - Write component details with line references
 - Write Nablarch usage with important points (✅ ⚠️ 💡)
 - Apply template with all placeholders
-- Output: work/20260210/code-analysis-login-action.md
+- Output: .nabledge/20260210/code-analysis-login-action.md
 
 **Summary**: 5 components, 2 diagrams, 2 Nablarch knowledge sections, duration ~2分
