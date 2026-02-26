@@ -8,6 +8,20 @@ Verify the accuracy of classification in the generated mapping by reading actual
 
 **Version**: Nablarch version number (e.g., `6` for v6, `5` for v5)
 
+## Progress Checklist Template
+
+```
+## nabledge-creator verify-mapping {version} - Progress
+
+□ Step VM1: Read Input Files
+□ Step VM2: Verify Classification (All Files)
+□ Step VM3: Categorize Issues
+□ Step VM4: Document Verification Results
+
+**Started:** [timestamp]
+**Status:** Not started
+```
+
 ## Workflow Steps
 
 ### Step VM1: Read Input Files
@@ -60,6 +74,19 @@ For each row in the mapping file (all files):
 **Do NOT skip this step**. Reading the actual content is the only way to catch classification errors, especially for Processing Pattern which cannot be determined by path alone.
 
 **Verification scope**: All files must be verified. Use Task tool with batch processing if needed to handle large volume efficiently.
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Total files in mapping | [count from mapping file] | [count] | ✓ |
+| Files verified | [total files] | [verification count] | ✓/✗ |
+| Classification errors | 0 or documented | [error count] | ✓/✗ |
+
+**How to measure:**
+- Total files: Row count in mapping-v{version}.md (minus headers)
+- Files verified: Must equal total files (ALL files verified)
+- Errors: Count of files with ✗ status
 
 ### Step VM3: Verify Target Paths (All Files)
 

@@ -12,6 +12,21 @@ nabledge-creator verify-knowledge {version} --all
 
 Where `{version}` is the Nablarch version number (e.g., `6` for v{version}, `5` for v5).
 
+## Progress Checklist Template
+
+```
+## nabledge-creator verify-knowledge {version} - Progress
+
+□ Step VK1: Read Input Files
+□ Step VK2: Verify All Knowledge Files
+□ Step VK3: Verify index.toon Integration
+□ Step VK4: Categorize Issues
+□ Step VK5: Document Verification Results
+
+**Started:** [timestamp]
+**Status:** Not started
+```
+
 ## Why Separate Session?
 
 The generation session makes decisions about "what to include." The verification session makes decisions about "what is missing." Running both in the same session causes the verification to be biased by generation logic, leading to overlooked issues.
@@ -98,6 +113,20 @@ Keyword Coverage: ✓/⚠/✗
 Overall Status: ✓ PASS / ⚠ PASS WITH WARNINGS / ✗ FAIL
 Issues: {list critical issues}
 ```
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Total JSON files | [count from knowledge dir] | [count] | ✓ |
+| Files verified | [total JSON files] | [verification count] | ✓/✗ |
+| Schema violations | 0 | [Critical issues] | ✓/✗ |
+| Content accuracy | All pass | [High priority issues] | ✓/✗ |
+
+**How to measure:**
+- Total JSON files: `ls .claude/skills/nabledge-{version}/knowledge/*.json | wc -l`
+- Files verified: Must equal total JSON files (ALL files verified)
+- Issues: Count by priority level
 
 ### Step VK3: Verify index.toon Integration
 

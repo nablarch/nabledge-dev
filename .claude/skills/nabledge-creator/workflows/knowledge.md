@@ -10,6 +10,24 @@ nabledge-creator knowledge {version} [--filter "key=value"]
 
 Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 
+## Progress Checklist Template
+
+```
+## nabledge-creator knowledge {version} - Progress
+
+□ Step 1: Identify Targets
+□ Step 2: Generate Knowledge Files
+□ Step 3: Markdown Conversion
+□ Step 4: Validate JSON Files
+□ Step 5: Update index.toon
+□ Step 6: Validate index.toon
+□ Step 7: Generate Verification Checklists
+
+**Started:** [timestamp]
+**Status:** Not started
+**Filter:** [if provided, else "None - full generation"]
+```
+
 ## Why This Workflow Matters
 
 Knowledge files are the data source for nabledge-{version} skill's search pipeline. The search operates in 3 stages:
@@ -43,6 +61,19 @@ From each mapping row, extract:
 - Type, Category ID, Processing Pattern
 - Target Path (knowledge file path to generate)
 - Official URL
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Mapping file read | mapping-v{version}.md | [exists] | ✓ |
+| Targets identified | >0 (or all if no filter) | [count] | ✓ |
+| Filter applied | [if provided] | [criteria] | ✓ |
+
+**How to measure:**
+- Targets count: Count of rows extracted from mapping file after filter
+- If no filter: targets = total rows in mapping file
+- If filter: targets = rows matching filter criteria
 
 ### Step 2: Generate Knowledge Files
 
@@ -97,6 +128,19 @@ Convert to JSON following category templates in `.claude/skills/nabledge-creator
 #### 2e. Output JSON
 
 Write to `.claude/skills/nabledge-{version}/knowledge/{path}.json`.
+
+**Completion Evidence for Step 2:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Targets from Step 1 | [count from Step 1] | [count] | ✓ |
+| JSON files generated | [targets count] | [ls .claude/skills/nabledge-{version}/knowledge/*.json \| wc -l] | ✓/✗ |
+| All targets processed | Yes | [compare counts] | ✓/✗ |
+
+**How to measure:**
+- Targets count: From Step 1 completion evidence
+- JSON files: Count *.json files in knowledge directory
+- Match: JSON file count must equal targets count
 
 ### Step 3: Markdown Conversion
 

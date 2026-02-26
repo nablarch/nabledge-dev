@@ -22,6 +22,26 @@ This workflow executes all steps in sequence:
 4. **Knowledge** - Generate knowledge files (JSON + MD) and update index.toon
 5. **Verify Knowledge** - Verify knowledge files content accuracy (separate session recommended)
 
+## Progress Checklist Template
+
+At workflow start, copy and display this checklist:
+
+```
+## nabledge-creator all {version} - Progress
+
+□ Step 1: Clean
+□ Step 2: Mapping
+□ Step 3: Verify Mapping (optional)
+□ Step 4: Knowledge
+□ Step 5: Verify Knowledge (optional)
+
+**Started:** [timestamp]
+**Status:** Not started
+**Filter:** [if provided, else "None - full generation"]
+```
+
+Update this checklist at each step boundary (mark → when starting, ✓ when complete).
+
 ## Session Management
 
 **Generation steps (clean, mapping, knowledge)** can run in a single session.
@@ -44,6 +64,15 @@ python .claude/skills/nabledge-creator/scripts/clean.py {version}
 - Knowledge files: `.claude/skills/nabledge-{version}/knowledge/*.json`
 - Documentation: `.claude/skills/nabledge-{version}/docs/*.md`
 - Mapping outputs: `.claude/skills/nabledge-creator/output/mapping-v{version}.*`
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Exit code | 0 | [code] | ✓/✗ |
+| Directories cleaned | 3 (knowledge, docs, output) | [count] | ✓ |
+
+See `workflows/clean.md` for detailed completion criteria.
 
 ### Step 2: Generate Mapping
 
@@ -85,6 +114,19 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".c
 ```
 
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v{version}.checklist.md`
+
+**Completion Evidence for Steps 2-5 (Mapping Generation):**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Files enumerated | >0 | [from generate-mapping.py output] | ✓ |
+| Files mapped | [enumerated count] | [row count in mapping-v{version}.md] | ✓/✗ |
+| Review items | 0 | [from generate-mapping.py output] | ✓/✗ |
+| Validation | PASS | [from validate-mapping.py] | ✓/✗ |
+| Excel exported | Yes | [mapping-v{version}.xlsx exists] | ✓ |
+| Checklist generated | Yes | [mapping-v{version}.checklist.md exists] | ✓ |
+
+See `workflows/mapping.md` for detailed completion criteria for each sub-step.
 
 ### Step 6: Verify Mapping (Optional in Same Session)
 
@@ -150,6 +192,19 @@ For each generated knowledge file:
 python scripts/generate-checklist.py .claude/skills/nabledge-{version}/knowledge/{file}.json --source .lw/nab-official/v{version}/nablarch-document/en/{source-path} --output .claude/skills/nabledge-{version}/knowledge/{file}.checklist.md
 ```
 
+**Completion Evidence for Step 7 (Knowledge Generation):**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Targets identified | [from mapping / filter] | [count] | ✓ |
+| JSON files generated | [targets count] | [ls *.json \| wc -l] | ✓/✗ |
+| MD files generated | [JSON count] | [ls *.md \| wc -l] | ✓/✗ |
+| JSON validation | PASS | [validate-knowledge.py result] | ✓/✗ |
+| index.toon entries | [JSON count] | [entries in index.toon] | ✓/✗ |
+| index.toon validation | PASS | [validate-index.py result] | ✓/✗ |
+
+See `workflows/knowledge.md` for detailed completion criteria for each sub-step.
+
 ### Step 8: Verify Knowledge Files (Optional in Same Session)
 
 **Note**: Ideally run in separate session to avoid context bias. For convenience, this workflow executes verification immediately.
@@ -188,6 +243,17 @@ Create verification report at `.pr/{issue_number}/knowledge-verification-results
 **Decision point**:
 - If verification PASSED: Workflow complete
 - If verification FAILED: Exit and fix in new generation session
+
+**Completion Evidence for Step 8 (Knowledge Verification):**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Files verified | [JSON files count from Step 7] | [verification count] | ✓/✗ |
+| Schema violations | 0 | [Critical issues count] | ✓/✗ |
+| Content accuracy | All pass | [High priority issues count] | ✓/✗ |
+| index.toon integration | All pass | [issues count] | ✓/✗ |
+
+See `workflows/verify-knowledge.md` for detailed completion criteria.
 
 ## Output Files
 

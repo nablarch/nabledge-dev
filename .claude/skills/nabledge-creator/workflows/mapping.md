@@ -10,6 +10,22 @@ Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 
 Extract version number from skill arguments. Throughout this workflow, use `v{version}` format for paths and commands (e.g., `v6`, `v5`).
 
+## Progress Checklist Template
+
+```
+## nabledge-creator mapping {version} - Progress
+
+□ Step 1: Generate Base Mapping (Path-based)
+□ Step 2: Assign Processing Patterns (Content-based)
+□ Step 3: Validate Mapping
+□ Step 4: Export to Excel
+□ Step 5: Resolve Review Items (if needed)
+□ Step 6: Generate Verification Checklist
+
+**Started:** [timestamp]
+**Status:** Not started
+```
+
 ## Workflow Steps
 
 ### Step 1: Generate Base Mapping (Path-based Classification Only)
@@ -36,6 +52,24 @@ Check the script's exit code to determine next steps:
 - **Exit 2**: Script error - Fix script issues (invalid input, file not found, etc.) and re-run Step 1
 
 Do not proceed to Step 2 until all review items from exit code 1 are resolved.
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Exit code | 0 or 1 (not 2) | [code] | ✓/✗ |
+| Output file exists | mapping-v{version}.md | [ls check] | ✓/✗ |
+| Files enumerated | >0 | [from "Found N files" in output] | ✓ |
+| Files mapped | [enumerated count] | [grep -c "^|" mapping file minus headers] | ✓/✗ |
+| Review items | 0 or documented | [from output] | ✓/✗ |
+
+**How to measure:**
+- Exit code: Script return value
+- File counts: Parse "Found 329 files", "Completed: 329 files mapped" from output
+- Row count: `grep "^|" mapping-v{version}.md | wc -l` then subtract 2 (header rows)
+- Review items: Look for "Review items: N" in output, or check exit code 1
+
+**Important:** If exit code is 1, go to Step 5 before proceeding to Step 2.
 
 ### Step 2: Assign Processing Patterns (Content-based)
 
@@ -64,6 +98,21 @@ Process all files in the mapping (complete coverage):
 - Assignment rules documented in classification.md
 - generate-mapping.py implements content-based logic
 
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Files in mapping | [from Step 1] | [row count] | ✓/✗ |
+| Files processed | [from Step 1] | [all files] | ✓ |
+| PP assignment logic | Implemented in generate-mapping.py | [code exists] | ✓ |
+
+**How to measure:**
+- Files in mapping: Use count from Step 1
+- Files processed: This step processes ALL files via generate-mapping.py's `assign_processing_pattern` function
+- PP logic: Check that generate-mapping.py has content-reading functions (`read_rst_content`, `assign_processing_pattern`, etc.)
+
+**Note:** This step is about ensuring generate-mapping.py correctly implements PP assignment logic. The actual PP assignment happens automatically when Step 1 runs. If generate-mapping.py already has the logic, this step is complete.
+
 ### Step 3: Validate Mapping
 
 Execute the following command:
@@ -80,6 +129,23 @@ If any check fails:
 3. Fix the rule
 4. Return to Step 1
 
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Exit code | 0 or 1 (warnings OK) | [code] | ✓/✗ |
+| Structure check | PASS | [from output] | ✓/✗ |
+| Taxonomy check | PASS | [from output] | ✓/✗ |
+| Source files check | PASS | [from output] | ✓/✗ |
+| Target paths check | PASS | [from output] | ✓/✗ |
+| URL format check | PASS | [from output] | ✓/✗ |
+| Consistency check | PASS | [from output] | ✓/✗ |
+
+**How to measure:**
+- Parse validation output for each check result
+- Exit code 1 with warnings is acceptable if documented
+- Any FAIL status requires fixing
+
 ### Step 4: Export to Excel
 
 Execute the following command:
@@ -91,6 +157,13 @@ python .claude/skills/nabledge-creator/scripts/export-excel.py ".claude/skills/n
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v${version}.xlsx`
 
 This Excel file is for human review and is not used in automated workflows.
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Output file exists | mapping-v{version}.xlsx | [ls check] | ✓/✗ |
+| Row count | [from mapping MD] | [from script output] | ✓/✗ |
 
 ### Step 5: Resolve Review Items
 
@@ -145,6 +218,14 @@ python .claude/skills/nabledge-creator/scripts/generate-mapping-checklist.py ".c
 **Output**: `.claude/skills/nabledge-creator/output/mapping-v${version}.checklist.md`
 
 This checklist is used in the verification session (`verify-mapping` workflow) to confirm classification accuracy (including Processing Pattern) by reading RST content.
+
+**Completion Evidence:**
+
+| Criterion | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| Output file exists | mapping-v{version}.checklist.md | [ls check] | ✓/✗ |
+| Classification checks | [mapping row count] | [from script output] | ✓/✗ |
+| Target path checks | [mapping row count] | [from script output] | ✓/✗ |
 
 ## Generation Session Complete
 
