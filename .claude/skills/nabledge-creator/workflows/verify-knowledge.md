@@ -110,9 +110,25 @@ Keyword Coverage: ✓/⚠/✗
 - L3 keywords: {count} ({list})
 - Missing important keywords: {list if any}
 
+MD Conversion: ✓/✗
+- MD file exists: ✓/✗
+- Content preserved: ✓/✗ ({missing content if any})
+
 Overall Status: ✓ PASS / ⚠ PASS WITH WARNINGS / ✗ FAIL
 Issues: {list critical issues}
 ```
+
+**2.6 Verify MD Conversion**
+
+For each JSON file, verify that MD conversion preserves all content:
+
+- **Check MD file exists**: Corresponding `.md` file in `docs/` directory
+- **Run conversion verification**:
+  ```bash
+  python scripts/verify-json-md-conversion.py .claude/skills/nabledge-{version}/knowledge/
+  ```
+- **Check for missing content**: Script reports any JSON content not found in MD files
+- **Record result**: MD Conversion: ✓/✗ ({missing content if any})
 
 **Completion Evidence:**
 
@@ -122,11 +138,13 @@ Issues: {list critical issues}
 | Files verified | [total JSON files] | [verification count] | ✓/✗ |
 | Schema violations | 0 | [Critical issues] | ✓/✗ |
 | Content accuracy | All pass | [High priority issues] | ✓/✗ |
+| MD conversion | All pass | [verify-json-md exit code] | ✓/✗ |
 
 **How to measure:**
 - Total JSON files: `ls .claude/skills/nabledge-{version}/knowledge/*.json | wc -l`
 - Files verified: Must equal total JSON files (ALL files verified)
 - Issues: Count by priority level
+- MD conversion: Run verify-json-md-conversion.py, check exit code (0=pass, 1=fail)
 
 ### Step VK3: Verify index.toon Integration
 
@@ -234,6 +252,10 @@ Group all issues found across all files by type:
 - Missing important search terms
 - Poor bilingual mix
 
+**MD Conversion Issues** (Medium Priority):
+- JSON content missing in MD files
+- Incomplete conversion
+
 **index.toon Integration Issues** (High Priority):
 - Missing index.toon entries for knowledge files
 - Incorrect path fields (orphaned or missing files)
@@ -263,6 +285,7 @@ Create comprehensive verification report at `.pr/{issue_number}/knowledge-verifi
 - Schema violations: {count} files
 - Content gaps: {count} files
 - Keyword deficiencies: {count} files
+- MD conversion issues: {count} files
 - Search problems: {count} files
 
 ## Schema Compliance Verification
@@ -306,6 +329,22 @@ Create comprehensive verification report at `.pr/{issue_number}/knowledge-verifi
    - Current L2 keywords: {list}
    - Missing important terms: {list}
    - Reasoning: {why these keywords matter}
+
+## MD Conversion Verification
+
+**Files with MD Conversion Issues**: {count}
+
+| File | MD File Exists | Missing Content | Status |
+|------|----------------|-----------------|--------|
+| {filename} | YES/NO | {list if any} | ✓/✗ |
+| ... | ... | ... | ... |
+
+**Examples of MD Conversion Issues**:
+
+1. **{filename}**:
+   - JSON content: {example text from JSON}
+   - MD file: Missing this content
+   - Impact: Documentation incomplete for users viewing MD files
 
 ## Search Functionality Verification
 
