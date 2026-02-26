@@ -24,7 +24,8 @@ nabledge-test 6 --all --trials 5                # All tests (5 trials each)
 1. Load scenario from `scenarios/nabledge-6/scenarios.json`
 2. Convert keywords/sections to expectations
 3. Execute skill-creator eval-mode procedures manually
-4. Save results to `.pr/xxxxx/test-<id>-<timestamp>.md`
+4. Save results to `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`
+5. Generate aggregate report to `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`
 
 ## When invoked
 
@@ -369,9 +370,9 @@ For each expectation in expectations list:
 
 **Update timing.json** with grader times.
 
-### Step 8: Generate summary report
+### Step 8: Generate individual scenario report
 
-Write `.pr/xxxxx/test-<scenario-id>-<timestamp>.md`:
+Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
 
 ```markdown
 # Test: <scenario-id>
@@ -414,12 +415,76 @@ See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
 See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 ```
 
-### Step 9: Display summary
+### Step 9: Generate aggregate report
+
+Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
+
+```markdown
+# Nabledge-<version> Test Run: YYYY-MM-DD HH:MM:SS
+
+| 項目 | 値 |
+|------|-----|
+| Run ID | YYYYMMDD-HHMMSS |
+| 実行シナリオ | <count> (knowledge-search: <ks_count>, code-analysis: <ca_count>) |
+| 総合合格率 | <percent>% ✓ (目標: 80%) |
+| 実行方式 | 並列実行 (<count>エージェント) |
+
+---
+
+## 📊 結果サマリー
+
+| # | Scenario | 質問 | Type | 合格率 | 所要時間 | トークン (推定) |
+|---|----------|------|------|--------|---------|------------------|
+| 1 | <scenario-id> | <question> | KS/CA | <percent>% | <seconds>秒 | <tokens> |
+...
+
+**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⭐=満点, ⚡=最速
+
+統計:
+- 満点シナリオ: <count>/<total> (<percent>%)
+- 平均実行時間: <avg_seconds>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
+- 平均トークン: <avg_tokens> (推定値)
+
+---
+
+## ⚡ パフォーマンス分析
+
+### Knowledge-Search: ステップ別平均時間
+
+| ステップ | 名称 | 平均時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
+|----------|------|---------|--------|------|------|-----------------------|
+| 1 | ワークフロー読込 | <avg>秒 | <median>秒 | <percent>% | <range> | <in>/<out> |
+...
+
+### Code-Analysis: ステップ別詳細
+
+| ステップ | 名称 | 時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
+|----------|------|------|--------|------|------|-----------------------|
+| 1 | ターゲット特定 | <time>秒 | <median>秒 | <percent>% | - | <in>/<out> |
+...
+
+---
+
+## 📎 詳細データ
+
+### 個別シナリオレポート
+- [<scenario-id>](YYYYMMDDHHMM/<scenario-id>-HHMMSS.md) - <percent>% - <description>
+...
+
+### ワークスペース
+実行時の詳細なトランスクリプトとグレーディング結果：
+- `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/`
+...
+```
+
+### Step 10: Display summary
 
 ```
 ✓ handlers-001: PASS (7/8 expectations, 87.5%)
-  Report: work/20260213/test-handlers-001-153045.md
-  Transcript: work/20260213/nabledge-test/eval-handlers-001-153045/with_skill/outputs/transcript.md
+  Report: .pr/xxxxx/nabledge-test/202602260800/handlers-001-153045.md
+  Transcript: .tmp/nabledge-test/eval-handlers-001-153045/with_skill/outputs/transcript.md
+
+Aggregate report: .pr/xxxxx/nabledge-test/report-202602260800.md
 ```
 
 ## Dependencies
