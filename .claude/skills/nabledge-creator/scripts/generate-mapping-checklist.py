@@ -173,7 +173,7 @@ def generate_checklist(mapping_path: str, source_dir: str, output_path: str):
             f.write(f"| {check['row_num']} | {check['source_path']} | {check['type']} | {check['category']} | {check['pp']} | {check['reason']} | |\n")
 
         f.write("\n**Instructions**:\n")
-        f.write("- Read the first 50 lines of the RST file at `{source_dir}/{source_path}`\n")
+        f.write(f"- Read the first 50 lines of the RST file at `{source_dir}/{{source_path}}`\n")
         f.write("- Check if classification matches the content\n")
         f.write("- Mark ✓ if correct, ✗ if incorrect (note correct classification)\n\n")
 

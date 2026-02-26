@@ -40,7 +40,7 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
 1. **Identify files requiring PP assignment**:
    - Read current mapping file
    - List all files by Type and Category
-   - Focus on: development-tools/*, component/libraries, component/handlers
+   - Process all files in the mapping (complete coverage)
 
 2. **For each file, read content and assign PP**:
    - Read source RST file (first 50-100 lines)
@@ -57,11 +57,13 @@ Do not proceed to Step 2 until all review items from exit code 1 are resolved.
    - Implement PP assignment based on content indicators
    - Ensure reproducibility (deterministic rules)
 
-**Key categories requiring content reading**:
-- `development-tools/testing-framework` (48 files) - Read title to identify pattern
-- `development-tools/toolbox` (6 files) - Read what the tool targets
-- `component/libraries` (49 files) - Read if pattern-specific
-- `component/handlers` (specific cases) - Read if pattern-specific
+**Categories commonly requiring content reading**:
+- `development-tools/testing-framework` - Read title to identify pattern
+- `development-tools/toolbox` - Read what the tool targets
+- `component/libraries` - Read if pattern-specific
+- `component/handlers` - Read if pattern-specific
+
+Note: Process all files in the mapping, not just these categories. These are examples of where content reading is frequently needed.
 
 **Expected outcome**:
 - All files have PP assigned based on content

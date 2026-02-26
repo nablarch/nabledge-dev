@@ -29,7 +29,7 @@ Check that the index file follows the TOON schema:
 1. **Header format**:
    - Verify header: `files[{count},]{title,hints,path}:`
    - Count should match total entries in file
-   - Count should match expected entries from knowledge-file-plan.md (154 entries)
+   - Count should match expected entries from knowledge-file-plan.md
 
 2. **Entry completeness**:
    - All entries have non-empty title (Japanese)
@@ -42,11 +42,11 @@ Check that the index file follows the TOON schema:
 
 **Record issues**: If any structural issues found, note them and skip to Step VI6.
 
-### Step VI3: Verify Hint Quality (All 259 Entries)
+### Step VI3: Verify Hint Quality (All Entries)
 
 Verify hint quality for all entries in the index. Use Task tool with batch processing if needed to handle large volume efficiently.
 
-**Verification scope**: All 259 entries must be verified. Process in batches if needed (e.g., 50 entries per batch).
+**Verification scope**: All entries must be verified. Process in batches if needed (e.g., 50 entries per batch).
 
 **For each entry**:
 
@@ -188,7 +188,7 @@ Create verification results document at `.pr/00078/index-verification-results.md
 ## Structural Verification
 
 - [✓/✗] Header format correct
-- [✓/✗] Entry count matches expected (154)
+- [✓/✗] Entry count matches expected count from knowledge-file-plan.md
 - [✓/✗] All entries have non-empty title
 - [✓/✗] All entries have sufficient hints (≥3)
 - [✓/✗] All entries have path field
@@ -200,7 +200,7 @@ Create verification results document at `.pr/00078/index-verification-results.md
 
 ## Hint Quality Verification
 
-**Total Entries Verified**: 259 entries (100% coverage)
+**Total Entries Verified**: {count} entries (100% coverage)
 
 **Summary**:
 - ✓ Excellent quality: {count} entries
@@ -312,7 +312,7 @@ The generation session uses hint extraction logic based on titles and categories
 ## Notes
 
 1. **Focus on hint quality**: Structural validation is automated (validate-index.py), this workflow focuses on semantic quality
-2. **Full verification**: All 259 entries must be verified for mission-critical quality requirements
+2. **Full verification**: All entries must be verified for mission-critical quality requirements
 3. **Search-first perspective**: Evaluate hints from user search perspective, not generation logic
 4. **Bilingual validation**: Japanese primary (user queries), English secondary (technical terms)
 5. **Phase-specific expectations**: Phase 2 has all "not yet created", Phase 3-4 have mix
