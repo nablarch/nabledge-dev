@@ -195,18 +195,7 @@ def classify_by_path(file_info: Dict) -> Dict:
         return {'type': 'component', 'category': 'adapters', 'pp': '', 'confidence': 'confirmed'}
 
     if path_for_matching.startswith('application_framework/application_framework/blank_project/'):
-        classification = {'type': 'setup', 'category': 'blank-project', 'pp': '', 'confidence': 'confirmed'}
-        # Check for PP in filename
-        if 'Jbatch' in path_for_matching:
-            classification['pp'] = 'jakarta-batch'
-        elif 'NablarchBatch' in path_for_matching:
-            classification['pp'] = 'nablarch-batch'
-        elif 'Web.rst' in path_for_matching or 'Web/' in path_for_matching:
-            if 'WebService' not in path_for_matching:
-                classification['pp'] = 'web-application'
-        elif 'WebService' in path_for_matching:
-            classification['pp'] = 'restful-web-service'
-        return classification
+        return {'type': 'setup', 'category': 'blank-project', 'pp': '', 'confidence': 'confirmed'}
 
     if path_for_matching.startswith('application_framework/application_framework/configuration/'):
         return {'type': 'setup', 'category': 'configuration', 'pp': '', 'confidence': 'confirmed'}
@@ -221,57 +210,38 @@ def classify_by_path(file_info: Dict) -> Dict:
     if path_for_matching.startswith('application_framework/application_framework/nablarch/'):
         return {'type': 'about', 'category': 'about-nablarch', 'pp': '', 'confidence': 'confirmed'}
 
-    # Handlers - complex logic
+    # Handlers
     if '/handlers/' in path_for_matching:
-        if '/handlers/batch/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
-        elif '/handlers/http_messaging/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'http-messaging', 'confidence': 'confirmed'}
-        elif '/handlers/mom_messaging/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'mom-messaging', 'confidence': 'confirmed'}
-        elif '/handlers/rest/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'restful-web-service', 'confidence': 'confirmed'}
-        elif '/handlers/web/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'web-application', 'confidence': 'confirmed'}
-        elif '/handlers/web_interceptor/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'web-application', 'confidence': 'confirmed'}
-        elif '/handlers/web_service/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'http-messaging', 'confidence': 'confirmed'}
-        elif '/handlers/standalone/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
-        elif '/handlers/common/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': '', 'confidence': 'confirmed'}
-        elif '/handlers/messaging/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'db-messaging', 'confidence': 'confirmed'}
+        return {'type': 'component', 'category': 'handlers', 'pp': '', 'confidence': 'confirmed'}
 
     # Processing patterns - batch
     if '/batch/jsr352/' in path_for_matching:
-        return {'type': 'processing-pattern', 'category': 'jakarta-batch', 'pp': 'jakarta-batch', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'jakarta-batch', 'pp': '', 'confidence': 'confirmed'}
     elif '/batch/nablarch_batch/' in path_for_matching:
-        return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': '', 'confidence': 'confirmed'}
     elif path_for_matching.startswith('application_framework/application_framework/batch/'):
         if 'index.rst' in path_for_matching or 'functional_comparison' in path_for_matching:
-            return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
+            return {'type': 'processing-pattern', 'category': 'nablarch-batch', 'pp': '', 'confidence': 'confirmed'}
 
     # Processing patterns - web
     if path_for_matching.startswith('application_framework/application_framework/web/'):
-        return {'type': 'processing-pattern', 'category': 'web-application', 'pp': 'web-application', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'web-application', 'pp': '', 'confidence': 'confirmed'}
 
     # Processing patterns - HTTP messaging in web_service (check before general web_service)
     if path_for_matching.startswith('application_framework/application_framework/web_service/http_messaging/'):
-        return {'type': 'processing-pattern', 'category': 'http-messaging', 'pp': 'http-messaging', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'http-messaging', 'pp': '', 'confidence': 'confirmed'}
 
     # Processing patterns - REST
     if path_for_matching.startswith('application_framework/application_framework/web_service/'):
-        return {'type': 'processing-pattern', 'category': 'restful-web-service', 'pp': 'restful-web-service', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'restful-web-service', 'pp': '', 'confidence': 'confirmed'}
 
     # Processing patterns - messaging
     if '/messaging/http/' in path_for_matching:
-        return {'type': 'processing-pattern', 'category': 'http-messaging', 'pp': 'http-messaging', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'http-messaging', 'pp': '', 'confidence': 'confirmed'}
     elif '/messaging/mom/' in path_for_matching:
-        return {'type': 'processing-pattern', 'category': 'mom-messaging', 'pp': 'mom-messaging', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'mom-messaging', 'pp': '', 'confidence': 'confirmed'}
     elif '/messaging/db/' in path_for_matching:
-        return {'type': 'processing-pattern', 'category': 'db-messaging', 'pp': 'db-messaging', 'confidence': 'confirmed'}
+        return {'type': 'processing-pattern', 'category': 'db-messaging', 'pp': '', 'confidence': 'confirmed'}
 
     # Libraries
     if path_for_matching.startswith('application_framework/application_framework/libraries/'):
@@ -342,238 +312,12 @@ def extract_first_paragraph(content: str) -> str:
     return ' '.join(paragraph_lines)
 
 
-def assign_pp_testing_framework(title: str, first_para: str, content: str) -> str:
-    """Determine PP for testing-framework files."""
-    title_lower = title.lower()
-    first_para_lower = first_para.lower()
-    content_lower = content.lower()
-
-    # Check title indicators (specific patterns first)
-    if 'restful' in title_lower or ' rest)' in title_lower or '(rest' in title_lower:
-        return 'restful-web-service'
-
-    if 'バッチ' in title or 'batch)' in title_lower or '(batch' in title_lower:
-        if 'jakarta batch' in title_lower or 'jsr352' in title_lower or 'jsr 352' in title_lower:
-            return 'jakarta-batch'
-        else:
-            return 'nablarch-batch'
-
-    if 'ウェブアプリケーション' in title or 'web application' in title_lower:
-        if 'restful' not in title_lower and ' rest' not in title_lower:
-            return 'web-application'
-
-    # Check for messaging patterns in title
-    if 'http' in title_lower and ('messaging' in title_lower or 'message' in title_lower or 'メッセージ' in title):
-        return 'http-messaging'
-
-    if 'メッセージング' in title or 'messaging' in title_lower:
-        if 'http' in title_lower:
-            return 'http-messaging'
-        return 'mom-messaging'
-
-    # Check content for RESTful indicators
-    if 'restful web service' in first_para_lower or 'resttestsupport' in content_lower.replace(' ', ''):
-        return 'restful-web-service'
-
-    if 'resttestsupport' in content_lower or 'restmockhttprequest' in content_lower.replace(' ', ''):
-        return 'restful-web-service'
-
-    # Check content for messaging patterns
-    if 'send queue' in content_lower and 'receive queue' in content_lower:
-        if 'http' in title_lower or 'communication destination' in content_lower:
-            return 'http-messaging'
-        else:
-            return 'mom-messaging'
-
-    if 'synchronous message' in content_lower or 'asynchronous message' in content_lower:
-        if 'http' in title_lower or 'http' in first_para_lower:
-            return 'http-messaging'
-        else:
-            return 'mom-messaging'
-
-    if 'messagingrequesttestsupport' in content_lower.replace(' ', ''):
-        return 'mom-messaging'
-
-    # Check for batch indicators
-    if 'batchaction' in content_lower or 'datareader' in content_lower:
-        return 'nablarch-batch'
-
-    if 'batchrequesttestsupport' in content_lower.replace(' ', ''):
-        return 'nablarch-batch'
-
-    # Check for web application indicators
-    if 'jakarta server pages' in content_lower or 'jsp' in content_lower:
-        if 'web application' in first_para_lower or 'ウェブアプリケーション' in first_para:
-            return 'web-application'
-
-    if 'file upload' in title_lower or 'duplicate form submission' in title_lower or '二重サブミット' in title:
-        return 'web-application'
-
-    # Generic testing framework - no specific PP
-    if any(word in title_lower for word in ['general', 'overview', 'framework', 'abstract', 'class unit', 'entity', 'form', 'tool', 'master data']):
-        return ''
-
-    # If we can't determine, leave empty
-    return ''
-
-
-def assign_pp_toolbox(title: str, first_para: str, content: str) -> str:
-    """Determine PP for toolbox files."""
-    title_lower = title.lower()
-    content_lower = content.lower()
-
-    # JSP-related tools are for web-application
-    if 'jsp' in title_lower or 'jakarta server pages' in title_lower:
-        return 'web-application'
-
-    # REST/OpenAPI tools are for restful-web-service
-    if 'rest' in title_lower or 'openapi' in title_lower or 'swagger' in title_lower:
-        return 'restful-web-service'
-
-    # Check content for what the tool targets
-    if 'web application' in content_lower and 'jsp' in content_lower:
-        return 'web-application'
-
-    if 'restful' in content_lower or 'rest api' in content_lower:
-        return 'restful-web-service'
-
-    # General-purpose tools
-    return ''
-
-
-def assign_pp_libraries(title: str, first_para: str, content: str) -> str:
-    """Determine PP for libraries files."""
-    title_lower = title.lower()
-
-    # Check title for explicit pattern mentions (Japanese "用" = "for")
-    if '用' in title:
-        if 'restful' in title_lower or 'restfulウェブサービス' in title:
-            return 'restful-web-service'
-        if 'ウェブアプリケーション' in title:
-            return 'web-application'
-        if 'バッチ' in title:
-            return 'nablarch-batch'
-        if 'メッセージング' in title:
-            if 'http' in title_lower:
-                return 'http-messaging'
-            else:
-                return 'mom-messaging'
-
-    # English "(for XXX)" pattern in title
-    if '(for ' in title_lower and ')' in title_lower:
-        match = re.search(r'\(for ([^)]+)\)', title_lower)
-        if match:
-            for_what = match.group(1)
-            if 'restful' in for_what or 'rest' in for_what:
-                return 'restful-web-service'
-            if 'web application' in for_what or 'web app' in for_what:
-                return 'web-application'
-            if 'batch' in for_what:
-                return 'nablarch-batch'
-            if 'messaging' in for_what:
-                if 'http' in for_what:
-                    return 'http-messaging'
-                else:
-                    return 'mom-messaging'
-
-    # Check content for pattern-specific indicators
-    content_lower = content.lower()
-    first_para_lower = first_para.lower()
-
-    if 'for restful' in first_para_lower or 'restful web service' in first_para_lower:
-        if 'only' in first_para_lower or 'specific' in first_para_lower:
-            return 'restful-web-service'
-
-    if 'for web application' in first_para_lower:
-        if 'only' in first_para_lower or 'specific' in first_para_lower:
-            return 'web-application'
-
-    # General-purpose library
-    return ''
-
-
-def assign_pp_handlers(title: str, first_para: str, content: str, path: str) -> str:
-    """Determine PP for handlers in /standalone/ or /common/."""
-    # /standalone/ handlers - check if batch-specific
-    if '/standalone/' in path:
-        content_lower = content.lower()
-        first_para_lower = first_para.lower()
-
-        if 'batch application' in first_para_lower or 'バッチアプリケーション' in first_para:
-            return 'nablarch-batch'
-
-        if 'datareader' in content_lower or 'batch' in content_lower:
-            return 'nablarch-batch'
-
-        # If no clear batch indicators, it's common
-        return ''
-
-    # /common/ handlers - always empty PP
-    if '/common/' in path:
-        return ''
-
-    return ''
-
-
-def assign_processing_pattern(classification: Dict, file_info: Dict) -> Dict:
-    """
-    Assign Processing Pattern based on file content.
-
-    Args:
-        classification: Dict with 'type', 'category', 'pp', 'confidence'
-        file_info: Dict with 'source_path', 'abs_path', 'source_repo', 'lang'
-
-    Returns:
-        Updated classification dict with PP assigned
-    """
-    category = classification.get('category')
-
-    # Only process if PP is empty and category needs content-based assignment
-    if classification.get('pp'):
-        return classification
-
-    if category not in ['testing-framework', 'toolbox', 'libraries', 'handlers']:
-        return classification
-
-    # Handlers only need PP assignment for /standalone/ and /common/
-    if category == 'handlers':
-        source_path = file_info['source_path']
-        if '/standalone/' not in source_path and '/common/' not in source_path:
-            return classification
-
-    # Read file content
-    content = read_rst_content(file_info['abs_path'], lines=100)
-    if not content:
-        return classification
-
-    title = extract_title_from_content(content)
-    first_para = extract_first_paragraph(content)
-
-    # Assign PP based on category
-    pp = ''
-    if category == 'testing-framework':
-        pp = assign_pp_testing_framework(title, first_para, content)
-    elif category == 'toolbox':
-        pp = assign_pp_toolbox(title, first_para, content)
-    elif category == 'libraries':
-        pp = assign_pp_libraries(title, first_para, content)
-    elif category == 'handlers':
-        pp = assign_pp_handlers(title, first_para, content, file_info['source_path'])
-
-    classification['pp'] = pp
-    return classification
-
-
 def verify_classification(classification: Dict, file_info: Dict) -> Dict:
     """
     Verify classification by reading content.
-    All files are read to catch the ~14% misclassified by path patterns.
+    Processing Pattern (PP) will be assigned manually by agent reading all files.
     """
     if classification['confidence'] == 'confirmed':
-        # Even confirmed classifications need spot checking
-        # For now, trust path-based confirmed classifications
-        # But still assign PP based on content
-        classification = assign_processing_pattern(classification, file_info)
         return classification
 
     if classification['confidence'] == 'needs_content':
@@ -581,15 +325,11 @@ def verify_classification(classification: Dict, file_info: Dict) -> Dict:
         content = read_rst_content(file_info['abs_path'])
         # Content verification logic here (if needed for Type/Category)
         classification['confidence'] = 'review'
-        # Assign PP based on content
-        classification = assign_processing_pattern(classification, file_info)
         return classification
 
     if classification['confidence'] == 'unknown':
         classification['confidence'] = 'review'
 
-    # Assign PP based on content for all files
-    classification = assign_processing_pattern(classification, file_info)
     return classification
 
 
