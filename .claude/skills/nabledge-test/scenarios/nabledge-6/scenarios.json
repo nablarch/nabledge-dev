@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "version": "4.0.0",
+    "version": "5.0.0",
     "created": "2026-02-09",
-    "updated": "2026-02-25",
-    "description": "Test scenarios for nabledge-6: knowledge-search (5) + code-analysis (1)",
-    "total_scenarios": 6,
+    "updated": "2026-02-26",
+    "description": "Test scenarios for nabledge-6: knowledge-search (5) + code-analysis (5)",
+    "total_scenarios": 10,
     "by_type": {
       "knowledge-search": 5,
-      "code-analysis": 1
+      "code-analysis": 5
     }
   },
   "scenarios": [
@@ -104,6 +104,91 @@
         "Analysis duration calculated and displayed"
       ],
       "notes": "Tests code-analysis workflow with proman batch action. Validates dependency tracing, Nablarch component identification, diagram generation, and documentation output."
+    },
+    {
+      "id": "code-analysis-002",
+      "type": "code-analysis",
+      "question": "LoginActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/login/LoginAction.java",
+      "expectations": [
+        "Finds target file LoginAction.java",
+        "Identifies index method for login screen display",
+        "Identifies login method with authentication logic",
+        "Identifies logout method",
+        "Identifies @OnError annotation usage",
+        "Identifies @InjectForm annotation usage",
+        "Identifies UniversalDao usage",
+        "Identifies AuthenticationUtil usage",
+        "Identifies CsrfTokenUtil usage",
+        "Identifies SessionUtil usage",
+        "Creates dependency diagram",
+        "Creates sequence diagram for authentication flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests web action analysis with authentication flow. Validates form injection, session management, and security component identification."
+    },
+    {
+      "id": "code-analysis-003",
+      "type": "code-analysis",
+      "question": "ProjectSearchActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectSearchAction.java",
+      "expectations": [
+        "Finds target file ProjectSearchAction.java",
+        "Identifies list method for search results display",
+        "Identifies UniversalDao.findAllBySqlFile usage",
+        "Identifies pagination handling",
+        "Identifies search form processing",
+        "Identifies @InjectForm annotation",
+        "Identifies @OnError annotation",
+        "Creates dependency diagram",
+        "Creates sequence diagram for search flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests search action analysis with pagination. Validates DAO query execution and result list handling."
+    },
+    {
+      "id": "code-analysis-004",
+      "type": "code-analysis",
+      "question": "ProjectCreateActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectCreateAction.java",
+      "expectations": [
+        "Finds target file ProjectCreateAction.java",
+        "Identifies index method for form display",
+        "Identifies create method for registration",
+        "Identifies BeanUtil usage for entity mapping",
+        "Identifies UniversalDao.insert usage",
+        "Identifies transaction handling",
+        "Identifies @InjectForm annotation",
+        "Identifies @OnError annotation with validation",
+        "Creates dependency diagram",
+        "Creates sequence diagram for registration flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests create action analysis with form validation and entity insertion. Validates bean mapping and transaction management."
+    },
+    {
+      "id": "code-analysis-005",
+      "type": "code-analysis",
+      "question": "ProjectUpdateActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectUpdateAction.java",
+      "expectations": [
+        "Finds target file ProjectUpdateAction.java",
+        "Identifies show method for detail display",
+        "Identifies update method for modification",
+        "Identifies UniversalDao.findById usage",
+        "Identifies UniversalDao.update usage",
+        "Identifies optimistic locking with version column",
+        "Identifies @InjectForm annotation",
+        "Identifies @OnError annotation",
+        "Creates dependency diagram",
+        "Creates sequence diagram for update flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests update action analysis with optimistic locking. Validates entity retrieval, modification, and version control."
     }
   ]
 }

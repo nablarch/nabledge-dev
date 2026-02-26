@@ -10,10 +10,14 @@ Test framework for nabledge skills using skill-creator's evaluation procedures.
 ## Usage
 
 ```bash
-nabledge-test 6 handlers-001        # Single test
-nabledge-test 6 --all               # All tests
-nabledge-test 6 --category handlers # Category
+nabledge-test 6 handlers-001                    # Single test (1 trial)
+nabledge-test 6 --all                           # All tests (1 trial each)
+nabledge-test 6 --category handlers             # Category (1 trial each)
+nabledge-test 6 handlers-001 --trials 3         # Single test (3 trials)
+nabledge-test 6 --all --trials 5                # All tests (5 trials each)
 ```
+
+**Trial count**: Use `--trials N` to run each scenario N times (default: 1). Results are averaged across trials.
 
 ## How it works
 
@@ -26,7 +30,19 @@ nabledge-test 6 --category handlers # Category
 
 ### Step 1: Parse arguments
 
-Format: `nabledge-test <version> [<scenario-id> | --all | --category <cat>]`
+Format: `nabledge-test <version> [<scenario-id> | --all | --category <cat>] [--trials N]`
+
+**Parse options**:
+- `<version>`: Required. Version number (6 or 5)
+- `<scenario-id>`: Optional. Specific scenario to test
+- `--all`: Optional. Test all scenarios
+- `--category <cat>`: Optional. Test scenarios by category
+- `--trials N`: Optional. Number of trials per scenario (default: 1)
+
+**Examples**:
+- `nabledge-test 6 handlers-001` → Test handlers-001, 1 trial
+- `nabledge-test 6 handlers-001 --trials 3` → Test handlers-001, 3 trials
+- `nabledge-test 6 --all --trials 5` → Test all, 5 trials each
 
 ### Step 2: Load scenario
 
