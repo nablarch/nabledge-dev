@@ -60,10 +60,6 @@ Update this checklist at each step boundary (mark → when starting, ✓ when co
 
 Execute clean workflow. See `workflows/clean.md` for detailed steps.
 
-```bash
-python .claude/skills/nabledge-creator/scripts/clean.py {version}
-```
-
 **Completion Evidence:**
 
 | Criterion | Expected | Actual | Status |
