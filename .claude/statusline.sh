@@ -12,11 +12,15 @@ if [ -n "$model" ]; then
   short_model=$(echo "$model" | sed -E 's/^([A-Z])[a-z]* ([0-9]+\.[0-9]+).*/\1\2/')
 
   # If that didn't match, try model ID format: "claude-sonnet-4-5-..." → "S4.5"
+  # Use awk for portable case conversion (BSD sed doesn't support \U\E)
   if [ "$short_model" = "$model" ]; then
-    short_model=$(echo "$model" | sed -E 's/.*claude-(sonnet|opus|haiku)-([0-9]+)-([0-9]+).*/\U\1\E \2.\3/' | sed -E 's/^([A-Z])[A-Z]* ([0-9]+\.[0-9]+).*/\1\2/')
+    short_model=$(echo "$model" | sed -E 's/.*claude-(sonnet|opus|haiku)-([0-9]+)-([0-9]+).*/\1 \2.\3/' | awk '{if (NF==2) print toupper(substr($1,1,1)) $2}')
   fi
 
-  model="$short_model"
+  # Fallback: if transformation failed (empty or unchanged), keep original
+  if [ -n "$short_model" ] && [ "$short_model" != "$model" ]; then
+    model="$short_model"
+  fi
 fi
 
 # Git branch
