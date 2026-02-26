@@ -1,6 +1,6 @@
 # Keyword Search Workflow
 
-Search knowledge base using keyword matching.
+Search knowledge base files using keyword matching and return candidate sections.
 
 ## Input
 
@@ -51,7 +51,7 @@ Create JSON:
    Read tool: .claude/skills/nabledge-6/knowledge/index.toon
    ```
    - Format: `Title, hint1 hint2 ..., path.json`
-   - 全エントリー from index.toon
+   - All entries from index.toon
    - Each line: entry title, search hints, file path
 
 2. **Extract all entries**:
@@ -74,9 +74,9 @@ Create JSON:
    - Sum scores for each file
    - Sort by score (descending)
 
-5. **Select top 10ファイル**:
+5. **Select top 10 files**:
    - Keep files with score ≥ 2
-   - Select top 10ファイル
+   - Select top 10 files
 
 **Output format** (structured for next step):
 ```json
@@ -89,7 +89,7 @@ Create JSON:
 }
 ```
 
-This structured format enables section-judgement workflow to directly use files as input.
+This structured format enables section extraction in next step.
 
 **Why agent-based matching**:
 - Handles notation variations (表記揺れ) automatically
@@ -140,7 +140,7 @@ Update JSON with scores and reasoning. Validate against `schemas/section-scoring
 2. **Filter** sections with relevance ≥ 2
 3. **Output** JSON with candidate sections for section-judgement workflow
 
-Pass output to section-judgement workflow.
+Return output to caller.
 
 ## Error Handling
 
@@ -151,4 +151,4 @@ Pass output to section-judgement workflow.
 
 **No sections after filtering** (Step 5 returns empty sections array):
 - Output message: "該当するセクションが見つかりませんでした"
-- Continue to section-judgement workflow with empty input
+- Return empty candidate list to caller

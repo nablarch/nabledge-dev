@@ -48,6 +48,7 @@ Output directory: work/20260210
 - Step 3.5 reads session ID from output directory
 - Files stored in same directory as code analysis output
 - Keyword search results stored in same directory: `work/YYYYMMDD/.keyword-search-results.json`
+- All intermediate and final outputs must stay in work/YYYYMMDD/ directory
 
 **Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
 

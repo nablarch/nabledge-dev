@@ -122,6 +122,7 @@ date -u +%Y-%m-%dT%H:%M:%SZ > start_time.txt
 **Load nabledge-<version> skill procedures**:
 ```bash
 Read .claude/skills/nabledge-<version>/SKILL.md
+Read .claude/skills/nabledge-<version>/workflows/knowledge-search.md
 Read .claude/skills/nabledge-<version>/workflows/keyword-search.md
 Read .claude/skills/nabledge-<version>/workflows/section-judgement.md
 Read .claude/skills/nabledge-<version>/knowledge/index.toon
