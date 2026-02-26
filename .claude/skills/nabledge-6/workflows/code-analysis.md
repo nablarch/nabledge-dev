@@ -624,6 +624,6 @@ Key scenarios:
 - Write component details with line references
 - Write Nablarch usage with important points (✅ ⚠️ 💡)
 - Apply template with all placeholders
-- Output: .nabledge/20260210/code-analysis-login-action.md
+- Output: work/20260210/code-analysis-login-action.md
 
 **Summary**: 5 components, 2 diagrams, 2 Nablarch knowledge sections, duration ~2分

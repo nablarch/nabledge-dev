@@ -47,19 +47,23 @@ Create JSON:
    - Format: `Title, hint1 hint2 ..., path.json`
    - Each line contains entry title, search hints, and file path
 
-2. **Extract matching entries**:
-   - For each entry, check if hints semantically match L1/L2 keywords
+2. **Extract all entries**:
+   - Read all entries from index.toon
+   - Each entry has: title, search hints, file path
+
+3. **Semantically match entries**:
+   - For each entry, judge if hints semantically match L1/L2 keywords
    - **Prioritize flexible matching**: Consider Japanese/English variations, abbreviations, and related terms
    - Use semantic understanding, not just exact string match
-   - Extract L1 and L2 hints separately
+   - Consider synonyms and related concepts
 
-3. **Score files**:
+4. **Score files**:
    - L1 keyword match: +2 points per hint
    - L2 keyword match: +1 point per hint
    - Sum scores for each file
    - Sort by score (descending)
 
-4. **Select top candidates**:
+5. **Select top candidates**:
    - Keep files with score ≥ 2
    - Select top 10 files
 
