@@ -13,12 +13,4 @@ Internal skill for nabledge developers to create and maintain knowledge files, d
 nabledge-creator <workflow> [args...]
 ```
 
-**Workflows:**
-- `mapping {version}` - Generate documentation mapping for Nablarch v{version}
-- `verify-mapping {version}` - Verify mapping accuracy
-- `knowledge {version}` - Generate knowledge files
-- `verify-knowledge {version}` - Verify knowledge content
-- `index {version}` - Generate search index
-- `verify-index {version}` - Verify index accuracy
-
-Refer to individual workflow files in `workflows/` directory for detailed instructions.
+Execute workflows in `workflows/` directory.
