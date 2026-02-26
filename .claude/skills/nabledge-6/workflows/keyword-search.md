@@ -51,7 +51,7 @@ Create JSON:
    Read tool: .claude/skills/nabledge-6/knowledge/index.toon
    ```
    - Format: `Title, hint1 hint2 ..., path.json`
-   - 全エントリー from index.toon (entry count varies)
+   - 全エントリー from index.toon
    - Each line: entry title, search hints, file path
 
 2. **Extract all entries**:
@@ -76,7 +76,7 @@ Create JSON:
 
 5. **Select top 10ファイル**:
    - Keep files with score ≥ 2
-   - Select top 10 files
+   - Select top 10ファイル
 
 **Output format** (structured for next step):
 ```json
