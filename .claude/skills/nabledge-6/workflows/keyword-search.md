@@ -47,7 +47,7 @@ Create JSON:
    - Format: `Title, hint1 hint2 ..., path.json`
    - Each line contains entry title, search hints, and file path
 
-2. **Extract matching entries**:
+2. **Extract matching entries** (all entries):
    - For each entry, check if hints semantically match L1/L2 keywords
    - Consider Japanese/English variations and related terms
    - Use flexible matching (not just exact string match)
@@ -68,24 +68,14 @@ Create JSON:
 {
   "query": "original query",
   "files": [
-    {"path": "knowledge/features/...", "score": 5},
+    {"path": "knowledge/features/file1.json", "score": 5},
+    {"path": "knowledge/features/file2.json", "score": 3},
     ...
   ]
 }
 ```
 
 This structured output enables direct input to section-judgement workflow.
-
-Legacy format (for reference):
-
-```json
-{
-  "files": [
-    {"path": "knowledge/features/...", "score": 5, "matched_hints": ["hint1", "hint2"]},
-    ...
-  ]
-}
-```
 
 ### Step 3: Extract Section Hints
 
