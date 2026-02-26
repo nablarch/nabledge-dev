@@ -1,14 +1,20 @@
 {
   "metadata": {
-    "version": "3.0.0",
+    "version": "6.0.0",
     "created": "2026-02-09",
-    "updated": "2026-02-13",
-    "description": "Top 5 scenarios - expectations aligned with actual knowledge file content",
-    "total_scenarios": 5
+    "updated": "2026-02-26",
+    "description": "Test scenarios for nabledge-6: Detects keywords/components in responses. No performance targets.",
+    "total_scenarios": 10,
+    "by_type": {
+      "knowledge-search": 5,
+      "code-analysis": 5
+    },
+    "evaluation_method": "Keyword/component detection via string search. Performance metrics measured but not used for pass/fail."
   },
   "scenarios": [
     {
-      "id": "processing-005",
+      "id": "ks-001",
+      "type": "knowledge-search",
       "question": "バッチの起動方法を教えてください",
       "keywords": [
         "-requestPath",
@@ -21,7 +27,8 @@
       "notes": "Keywords match actual content in request-path section. Removed 'バッチ起動' and '起動クラス' which don't appear in knowledge files."
     },
     {
-      "id": "libraries-001",
+      "id": "ks-002",
+      "type": "knowledge-search",
       "question": "UniversalDaoでページングを実装したい",
       "keywords": [
         "per",
@@ -34,7 +41,8 @@
       "notes": "Keywords and sections match actual paging section content in universal-dao.json."
     },
     {
-      "id": "handlers-001",
+      "id": "ks-003",
+      "type": "knowledge-search",
       "question": "データリードハンドラでファイルを読み込むには？",
       "keywords": [
         "DataReadHandler",
@@ -47,7 +55,8 @@
       "notes": "Replaced 'usage' with 'processing' (actual section name). Keywords match actual content."
     },
     {
-      "id": "processing-004",
+      "id": "ks-004",
+      "type": "knowledge-search",
       "question": "バッチのエラーハンドリングはどうすればいいですか？",
       "keywords": [
         "TransactionAbnormalEnd",
@@ -60,7 +69,8 @@
       "notes": "Replaced 'exception' with 'errors' (actual section name). Keywords match actual exception classes and concepts."
     },
     {
-      "id": "processing-002",
+      "id": "ks-005",
+      "type": "knowledge-search",
       "question": "バッチアクションの実装方法は？",
       "keywords": [
         "BatchAction",
@@ -71,6 +81,115 @@
       ],
       "sections": ["actions", "responsibility"],
       "notes": "Replaced non-existent sections with actual ones. Keywords match action classes and methods in knowledge files."
+    },
+    {
+      "id": "ca-001",
+      "type": "code-analysis",
+      "question": "ExportProjectsInPeriodActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java",
+      "expectations": [
+        "Finds target file ExportProjectsInPeriodAction.java",
+        "Identifies BatchAction<SqlRow> as parent class",
+        "Identifies initialize method",
+        "Identifies createReader method with DatabaseRecordReader",
+        "Identifies handle method with ProjectDto",
+        "Identifies terminate method",
+        "Identifies ObjectMapper usage for CSV output",
+        "Identifies FilePathSetting usage",
+        "Identifies BusinessDateUtil usage",
+        "Creates dependency diagram (Mermaid classDiagram)",
+        "Creates sequence diagram (Mermaid sequenceDiagram)",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section",
+        "Output file saved to .nabledge/YYYYMMDD/ directory",
+        "Analysis duration calculated and displayed"
+      ],
+      "notes": "Tests code-analysis workflow with proman batch action. Validates dependency tracing, Nablarch component identification, diagram generation, and documentation output."
+    },
+    {
+      "id": "ca-002",
+      "type": "code-analysis",
+      "question": "LoginActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/login/LoginAction.java",
+      "expectations": [
+        "Finds target file LoginAction.java",
+        "Identifies index method for login screen display",
+        "Identifies login method with authentication logic",
+        "Identifies logout method",
+        "Identifies @OnError annotation usage",
+        "Identifies @InjectForm annotation usage",
+        "Identifies UniversalDao usage",
+        "Identifies AuthenticationUtil usage",
+        "Identifies CsrfTokenUtil usage",
+        "Identifies SessionUtil usage",
+        "Creates dependency diagram",
+        "Creates sequence diagram for authentication flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests web action analysis with authentication flow. Validates form injection, session management, and security component identification."
+    },
+    {
+      "id": "ca-003",
+      "type": "code-analysis",
+      "question": "ProjectSearchActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectSearchAction.java",
+      "expectations": [
+        "Finds target file ProjectSearchAction.java",
+        "Identifies list method for search results display",
+        "Identifies UniversalDao.findAllBySqlFile usage",
+        "Identifies pagination handling",
+        "Identifies search form processing",
+        "Identifies @InjectForm annotation",
+        "Identifies @OnError annotation",
+        "Creates dependency diagram",
+        "Creates sequence diagram for search flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests search action analysis with pagination. Validates DAO query execution and result list handling."
+    },
+    {
+      "id": "ca-004",
+      "type": "code-analysis",
+      "question": "ProjectCreateActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectCreateAction.java",
+      "expectations": [
+        "Finds target file ProjectCreateAction.java",
+        "Identifies index method for form display",
+        "Identifies create method for registration",
+        "Identifies BeanUtil usage for entity mapping",
+        "Identifies UniversalDao.insert usage",
+        "Identifies transaction handling",
+        "Identifies @InjectForm annotation",
+        "Identifies @OnError annotation with validation",
+        "Creates dependency diagram",
+        "Creates sequence diagram for registration flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests create action analysis with form validation and entity insertion. Validates bean mapping and transaction management."
+    },
+    {
+      "id": "ca-005",
+      "type": "code-analysis",
+      "question": "ProjectUpdateActionの実装を理解したい",
+      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectUpdateAction.java",
+      "expectations": [
+        "Finds target file ProjectUpdateAction.java",
+        "Identifies show method for detail display",
+        "Identifies update method for modification",
+        "Identifies UniversalDao.findById usage",
+        "Identifies UniversalDao.update usage",
+        "Identifies optimistic locking with version column",
+        "Identifies @InjectForm annotation",
+        "Identifies @OnError annotation",
+        "Creates dependency diagram",
+        "Creates sequence diagram for update flow",
+        "Output includes component summary table",
+        "Output includes Nablarch usage section"
+      ],
+      "notes": "Tests update action analysis with optimistic locking. Validates entity retrieval, modification, and version control."
     }
   ]
 }
