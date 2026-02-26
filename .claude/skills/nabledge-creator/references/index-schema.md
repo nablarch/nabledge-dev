@@ -46,47 +46,54 @@ files[{count},]{title,hints,path}:
 
 ## Hint Generation Strategy
 
+**New Design (PR #89)**: L1 technical components + entry titles + class names
+
 ### For Created Knowledge Files
 
-Extract and aggregate hints from knowledge file's `index[].hints`:
+Extract hints from knowledge file content:
 
-1. **L1 keywords** (category/domain level):
-   - バッチ (batch)
-   - データベース (database)
-   - Web, REST, メッセージング (messaging)
+1. **L1 technical components**:
+   - Class names: UniversalDao, DataReader, DbConnectionManagementHandler
+   - Technologies: DAO, JDBC, JPA, Bean Validation, CSV, NTF
+   - Concepts: O/Rマッパー, CRUD, トランザクション
 
-2. **L2 keywords** (feature/component level):
-   - Class names: UniversalDao, DataReader
-   - Concepts: ページング (paging), 排他制御 (exclusive control)
-   - Technologies: JPA, JDBC, JSR352
+2. **Entry titles** (Japanese + English):
+   - ユニバーサルDAO, UniversalDao
+   - データベース接続管理ハンドラ, DbConnectionManagementHandler
 
-3. **Deduplication**: Remove duplicate hints across sections
+3. **Excluded from index.toon**:
+   - Generic domain terms: データベース, ファイル, ハンドラ, バッチ (moved to section-level)
+   - Functional keywords: ページング, 検索, 登録, 更新 (moved to .index sections)
+
+4. **Deduplication**: Remove duplicate hints
 
 **Example**:
 ```json
-Knowledge file universal-dao.json has sections:
-  - overview: hints ["データベース", "DAO", "CRUD"]
-  - paging: hints ["ページング", "検索", "Paginator"]
-  - search: hints ["検索条件", "SQLBuilder"]
+Knowledge file universal-dao.json:
+  - title: ユニバーサルDAO
+  - overview.classes: ["UniversalDao"]
+  - Technologies: DAO, JPA, JDBC, CRUD
 
 Aggregated hints for index.toon:
-  データベース DAO O/Rマッパー CRUD JPA 検索 ページング 排他制御
+  DAO O/Rマッパー CRUD JPA ユニバーサルDAO UniversalDao
 ```
 
 ### For Not-Yet-Created Knowledge Files
 
 Estimate hints from mapping file metadata:
 
-1. **Extract nouns from title**:
-   - "Jakarta Batch準拠バッチアプリケーション" → Jakarta Batch, バッチ, アプリケーション
+1. **Extract technical terms from title**:
+   - "Jakarta Batch準拠バッチアプリケーション" → Jakarta Batch, JSR352, Batchlet, Chunk
 
-2. **Map categories to L1 keywords**:
-   - `batch` → バッチ, 大量データ処理
-   - `rest` → REST, Web API
-   - `handlers` → ハンドラ, アーキテクチャ
+2. **Extract class names from source paths**:
+   - Path contains "universal_dao" → UniversalDao
+   - Path contains "db_connection" → DbConnectionManagementHandler
 
-3. **Add standard terms**:
-   - 標準仕様, 設定, 実装
+3. **Add entry titles** (Japanese + English):
+   - From mapping title and title_ja fields
+
+4. **Exclude generic domain terms**:
+   - Do not include: バッチ, データベース, ハンドラ, ファイル
 
 **Example**:
 ```
@@ -95,7 +102,7 @@ Mapping entry:
   category: jakarta-batch
 
 Estimated hints:
-  バッチ JSR352 Jakarta Batch Batchlet Chunk 標準仕様
+  JSR352 Jakarta Batch Batchlet Chunk JSR352準拠バッチ
 ```
 
 ## File Location
