@@ -2,16 +2,24 @@
 
 Generate search index (index.toon) from knowledge file plan and existing knowledge files.
 
+## Skill Invocation
+
+```
+nabledge-creator index {version}
+```
+
+Where `{version}` is the Nablarch version number (e.g., `6` for v{version}, `5` for v5).
+
 ## Purpose
 
-nabledge-6's keyword-search workflow (`.claude/skills/nabledge-6/workflows/keyword-search.md`) requires index.toon to efficiently find knowledge files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across ~154 entries with ~5-7K tokens.
+nabledge-{version}'s keyword-search workflow requires index.toon to efficiently find knowledge files. Without index, all JSON files must be scanned, consuming massive context. index.toon enables search across ~154 entries with ~5-7K tokens.
 
 ## When to Execute
 
 Execute this workflow in these scenarios:
 
 1. **Phase 2 (Initial)**: Generate metadata-based index from mapping
-   - Input: mapping-v6.md (302 documentation files)
+   - Input: mapping-v${version}.md (302 documentation files)
    - Filters: Coverage scope (→259 files) + Knowledge scope (→154 entries)
    - Output: index.toon with basic hints, all "not yet created"
 
@@ -28,8 +36,8 @@ Execute this workflow in these scenarios:
 ## Prerequisites
 
 - `.claude/skills/nabledge-creator/references/knowledge-file-plan.md` exists
-- `.claude/skills/nabledge-creator/output/mapping-v6.md` exists (for Phase 2)
-- For updates: Knowledge files exist in `.claude/skills/nabledge-6/knowledge/`
+- `.claude/skills/nabledge-creator/output/mapping-v${version}.md` exists (for Phase 2)
+- For updates: Knowledge files exist in `.claude/skills/nabledge-{version}/knowledge/`
 
 ## Workflow Steps
 
@@ -38,14 +46,14 @@ Execute this workflow in these scenarios:
 Execute the generation script:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/generate-index.py v6
+python .claude/skills/nabledge-creator/scripts/generate-index.py v{version}
 ```
 
 **Parameters** (all optional, use defaults):
-- `--knowledge-dir`: Knowledge files directory (default: `.claude/skills/nabledge-6/knowledge/`)
+- `--knowledge-dir`: Knowledge files directory (default: `.claude/skills/nabledge-{version}/knowledge/`)
 - `--plan`: Knowledge file plan (default: `.claude/skills/nabledge-creator/references/knowledge-file-plan.md`)
 - `--output`: Output file path (default: `{knowledge-dir}/index.toon`)
-- `--mapping`: Mapping file for Phase 2 (default: `.claude/skills/nabledge-creator/output/mapping-v6.md`)
+- `--mapping`: Mapping file for Phase 2 (default: `.claude/skills/nabledge-creator/output/mapping-v${version}.md`)
 
 **Exit codes**:
 - **0**: Success - Index generated with no issues
@@ -54,7 +62,7 @@ python .claude/skills/nabledge-creator/scripts/generate-index.py v6
 
 **Output location**:
 ```
-.claude/skills/nabledge-6/knowledge/index.toon
+.claude/skills/nabledge-{version}/knowledge/index.toon
 ```
 
 ### Step 2: Verify Generated Index
@@ -62,7 +70,7 @@ python .claude/skills/nabledge-creator/scripts/generate-index.py v6
 Check the generated index.toon:
 
 ```bash
-cat .claude/skills/nabledge-6/knowledge/index.toon | head -20
+cat .claude/skills/nabledge-{version}/knowledge/index.toon | head -20
 ```
 
 **Verify**:
@@ -82,7 +90,7 @@ cat .claude/skills/nabledge-6/knowledge/index.toon | head -20
 Validate index structure and quality:
 
 ```bash
-python .claude/skills/nabledge-creator/scripts/validate-index.py .claude/skills/nabledge-6/knowledge/index.toon
+python .claude/skills/nabledge-creator/scripts/validate-index.py .claude/skills/nabledge-{version}/knowledge/index.toon
 ```
 
 **Exit codes**:
@@ -125,7 +133,7 @@ English queries:
 Read index.toon and simulate search:
 
 ```bash
-grep -i "データベース" .claude/skills/nabledge-6/knowledge/index.toon
+grep -i "データベース" .claude/skills/nabledge-{version}/knowledge/index.toon
 ```
 
 Verify:
@@ -153,7 +161,7 @@ Coverage: 3/154 entries
 If validation passed (exit code 0 or 1), commit the index:
 
 ```bash
-git add .claude/skills/nabledge-6/knowledge/index.toon
+git add .claude/skills/nabledge-{version}/knowledge/index.toon
 git commit -m "feat: Generate knowledge search index (Phase 2)
 
 - Generated index.toon from mapping metadata (291 entries)
@@ -169,7 +177,7 @@ git push
 
 ### Phase 2: Initial Generation from Mapping
 
-**Input**: mapping-v6.md (302 documentation files → 154 entries after filters)
+**Input**: mapping-v${version}.md (302 documentation files → 154 entries after filters)
 
 **Process**:
 1. Apply coverage scope filter (removes out-of-scope categories) → 259 files
@@ -190,7 +198,7 @@ git push
 
 ### Phase 3-4: Updates from Knowledge Files
 
-**Input**: Created knowledge files (.json) in `.claude/skills/nabledge-6/knowledge/`
+**Input**: Created knowledge files (.json) in `.claude/skills/nabledge-{version}/knowledge/`
 
 **Process**:
 1. Scan knowledge files and extract `index[].hints`

@@ -7,8 +7,10 @@ Verify the quality of hints and search functionality in the generated index.toon
 ## Invocation
 
 ```
-nabledge-creator verify-index-6
+nabledge-creator verify-index {version}
 ```
+
+Where `{version}` is the Nablarch version number (e.g., `6` for v6, `5` for v5).
 
 ## Workflow Steps
 
@@ -17,7 +19,7 @@ nabledge-creator verify-index-6
 Read the following files:
 
 ```
-.claude/skills/nabledge-6/knowledge/index.toon                     # Generated index
+.claude/skills/nabledge-{version}/knowledge/index.toon                     # Generated index
 .claude/skills/nabledge-creator/references/index-schema.md         # Schema specification
 .claude/skills/nabledge-creator/references/knowledge-file-plan.md  # Knowledge file plan
 ```
@@ -148,11 +150,11 @@ Verify that path field accurately reflects knowledge file creation status:
    - Count how many entries show as created
 
 2. **Verify files exist**:
-   - For each path, verify the file exists in `.claude/skills/nabledge-6/knowledge/`
+   - For each path, verify the file exists in `.claude/skills/nabledge-{version}/knowledge/`
    - Check that path is relative from knowledge/ directory
 
 3. **Check for missing entries**:
-   - Scan `.claude/skills/nabledge-6/knowledge/` directory for .json files
+   - Scan `.claude/skills/nabledge-{version}/knowledge/` directory for .json files
    - Verify all existing knowledge files have corresponding index entries
    - Flag any knowledge files not in index (orphaned files)
 
@@ -173,7 +175,7 @@ Create verification results document at `.pr/00078/index-verification-results.md
 # Index Verification Results
 
 **Date**: YYYY-MM-DD
-**Index File**: .claude/skills/nabledge-6/knowledge/index.toon
+**Index File**: .claude/skills/nabledge-{version}/knowledge/index.toon
 **Phase**: Phase 2 (Initial Generation from Mapping)
 
 ## Summary

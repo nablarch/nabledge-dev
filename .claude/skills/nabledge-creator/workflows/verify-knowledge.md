@@ -7,8 +7,10 @@ Verify the quality of generated knowledge files. Run this workflow in a **separa
 ## Invocation
 
 ```
-nabledge-creator verify-knowledge --all
+nabledge-creator verify-knowledge {version} --all
 ```
+
+Where `{version}` is the Nablarch version number (e.g., `6` for v{version}, `5` for v5).
 
 ## Why Separate Session?
 
@@ -23,7 +25,7 @@ Read the following files:
 ```
 .claude/skills/nabledge-creator/references/knowledge-file-plan.md  # Knowledge file catalog
 .claude/skills/nabledge-creator/references/knowledge-schema.md     # JSON schema specification
-.claude/skills/nabledge-6/knowledge/*.json                         # Generated knowledge files (162 files)
+.claude/skills/nabledge-{version}/knowledge/*.json                         # Generated knowledge files (162 files)
 ```
 
 ### Step VK2: Verify All Knowledge Files (All 162 Files)
@@ -35,7 +37,7 @@ For each knowledge file:
 **2.1 Read Source RST Documentation**
 
 - Locate source RST file(s) from knowledge-file-plan.md
-- Read the complete RST content from `.lw/nab-official/v6/`
+- Read the complete RST content from `.lw/nab-official/v{version}/`
 - Understand the feature/component purpose and usage
 
 **2.2 Verify Schema Compliance**
