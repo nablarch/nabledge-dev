@@ -2,6 +2,8 @@
 
 Execute the complete workflow: clean, generate (mapping + knowledge), and verify (mapping + knowledge).
 
+**IMPORTANT**: Follow ALL steps in this workflow file exactly as written. Do not skip steps or use summary descriptions from SKILL.md or other files. Read and execute each step according to the detailed instructions provided here.
+
 ## Skill Invocation
 
 ```

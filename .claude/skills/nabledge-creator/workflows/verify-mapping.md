@@ -2,6 +2,8 @@
 
 Verify the accuracy of classification in the generated mapping by reading actual RST content.
 
+**IMPORTANT**: Follow ALL steps in this workflow file exactly as written. Do not skip steps or use summary descriptions from SKILL.md or other files. Read and execute each step according to the detailed instructions provided here.
+
 **IMPORTANT**: Run this workflow in a **separate session** from the generation workflow. This prevents context bias where the same path-based rules used in generation would blind the verification.
 
 ## Input

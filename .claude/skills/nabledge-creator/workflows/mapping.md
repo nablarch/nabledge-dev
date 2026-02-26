@@ -2,6 +2,8 @@
 
 Generate documentation mapping from Nablarch official documentation to nabledge knowledge file structure.
 
+**IMPORTANT**: Follow ALL steps in this workflow file exactly as written. Do not skip steps or use summary descriptions from SKILL.md or other files. Read and execute each step according to the detailed instructions provided here.
+
 ## Input
 
 Skill invocation format: `nabledge-creator mapping {version}`

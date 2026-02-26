@@ -2,6 +2,8 @@
 
 Verify the quality of generated knowledge files. Run this workflow in a **separate session** from the generation workflow.
 
+**IMPORTANT**: Follow ALL steps in this workflow file exactly as written. Do not skip steps or use summary descriptions from SKILL.md or other files. Read and execute each step according to the detailed instructions provided here.
+
 **IMPORTANT**: Run this workflow in a **separate session** from the generation workflow. This prevents context bias where generation decisions influence verification judgment.
 
 ## Invocation
