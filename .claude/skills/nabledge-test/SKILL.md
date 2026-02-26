@@ -251,6 +251,11 @@ None
 ```
 
 **Write metrics.json**:
+
+Extract data from transcript.md:
+- IN/OUT tokens from each step
+- Duration from each step (calculate from Start and End timestamps if needed)
+
 ```json
 {
   "tool_calls": {
@@ -272,21 +277,23 @@ None
       {
         "step": 1,
         "name": "Load skill workflows",
-        "in_tokens": <count>,
-        "out_tokens": <count>,
-        "duration_seconds": <duration>
+        "in_tokens": <count from transcript>,
+        "out_tokens": <count from transcript>,
+        "duration_seconds": <duration from transcript>
       },
       {
         "step": 2,
         "name": "Execute knowledge search",
-        "in_tokens": <count>,
-        "out_tokens": <count>,
-        "duration_seconds": <duration>
+        "in_tokens": <count from transcript>,
+        "out_tokens": <count from transcript>,
+        "duration_seconds": <duration from transcript>
       }
     ]
   }
 }
 ```
+
+**IMPORTANT**: Ensure duration_seconds is populated for each step. This data is used for aggregate statistics (median, range) in the final report.
 
 **Record end time and calculate duration**:
 ```bash
@@ -373,6 +380,15 @@ For each expectation in expectations list:
 
 ### Step 8: Generate individual scenario report
 
+**Read data from workspace files**:
+1. Read `grading.json` for expectations and summary
+2. Read `metrics.json` for tool_calls, tokens, and by_step data
+3. Read `timing.json` for total duration
+
+**Extract step-by-step data**:
+- From `metrics.json`, extract `tokens.by_step` array
+- Each entry contains: step, name, in_tokens, out_tokens, duration_seconds
+
 Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
 
 ```markdown
@@ -396,18 +412,20 @@ Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
   Evidence: Actual tool calls: 3
 
 ## Metrics
-- **Duration**: <seconds>s
-- **Tool Calls**: <count>
-- **Response Length**: <chars> chars
-- **Tokens**: <total> tokens (IN: <in>, OUT: <out>)
+- **Duration**: <seconds>s (from timing.json: total_duration_seconds)
+- **Tool Calls**: <count> (from metrics.json: total_tool_calls)
+- **Response Length**: <chars> chars (from metrics.json: output_chars)
+- **Tokens**: <total> tokens (IN: <in>, OUT: <out>) (from metrics.json: tokens.total_in/total_out)
 
 ### Token Usage by Step
 | Step | Name | IN Tokens | OUT Tokens | Total | Duration |
 |------|------|-----------|------------|-------|----------|
-| 1 | Load workflows | <in> | <out> | <total> | <sec>s |
-| 2 | Knowledge search | <in> | <out> | <total> | <sec>s |
-| 3 | Read sections | <in> | <out> | <total> | <sec>s |
+| 1 | Load workflows | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
+| 2 | Knowledge search | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
+| 3 | Read sections | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
 | ... | ... | ... | ... | ... | ... |
+
+**IMPORTANT**: Populate Duration column from metrics.json → tokens.by_step[].duration_seconds
 
 ## Transcript
 See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
@@ -417,6 +435,31 @@ See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 ```
 
 ### Step 9: Generate aggregate report
+
+**Calculate statistics from metrics.json files**:
+
+For each scenario type (knowledge-search, code-analysis):
+
+1. Read all `metrics.json` files from `.tmp/nabledge-test/eval-<scenario-id>-*/with_skill/outputs/metrics.json`
+2. Extract `tokens.by_step` array from each file
+3. Group by step name (e.g., "Load workflows", "Execute knowledge search")
+4. For each step, calculate:
+   - **Average duration**: mean of all duration_seconds values
+   - **Median duration**: median of all duration_seconds values
+   - **Range**: "min-max秒" format (e.g., "3-8秒")
+   - **Percentage**: (avg_duration / total_avg_duration) * 100
+   - **Avg IN tokens**: mean of all in_tokens values
+   - **Avg OUT tokens**: mean of all out_tokens values
+
+**Example calculation for Knowledge-Search Step 1**:
+```
+Scenarios: processing-005, processing-002, libraries-001, handlers-001, processing-004
+Step 1 durations: [5, 4, 8, 6, 7] seconds
+- Average: (5+4+8+6+7)/5 = 6秒
+- Median: sort([5,4,8,6,7]) = [4,5,6,7,8], middle = 6秒
+- Range: "4-8秒"
+- Percentage: 6/48 * 100 = 12.5%
+```
 
 Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 
