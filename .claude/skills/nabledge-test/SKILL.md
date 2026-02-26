@@ -1,11 +1,11 @@
 ---
 name: nabledge-test
-description: Test nabledge-6/5 using skill-creator eval procedures. Executes test scenarios, evaluates expectations, saves results to .pr/xxxxx/.
+description: Test nabledge-6/5 by detecting keywords/components in responses. Measures performance metrics without pass/fail judgment. Saves results to .pr/xxxxx/.
 ---
 
 # Nabledge-Test
 
-Test framework for nabledge skills using skill-creator's evaluation procedures.
+Benchmark framework for nabledge skills. Detects expected keywords/components and measures performance metrics.
 
 ## Usage
 
@@ -22,10 +22,13 @@ nabledge-test 6 --all --trials 5                # All tests (5 trials each)
 ## How it works
 
 1. Load scenario from `scenarios/nabledge-6/scenarios.json`
-2. Convert keywords/sections to expectations
-3. Execute skill-creator eval-mode procedures manually
-4. Save results to `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`
-5. Generate aggregate report to `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`
+2. Build detection items list (keywords + sections for KS, components for CA)
+3. Execute nabledge-<version> inline and track metrics
+4. Check detection items via string search in response
+5. Save individual results to `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`
+6. Generate aggregate report to `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`
+
+**Key principle**: Measure everything, judge nothing. Report detection rates (x/x) and measured values without arbitrary targets.
 
 ## When invoked
 
@@ -58,25 +61,24 @@ From `scenarios/nabledge-6/scenarios.json`:
 }
 ```
 
-### Step 3: Convert to expectations
+### Step 3: Build detection items list
 
-Build expectations list:
+Build detection items list (no performance targets):
 
 ```python
-expectations = []
+detection_items = []
 
 # Keyword checks
 for keyword in scenario.keywords:
-    expectations.append(f"Response includes '{keyword}'")
+    detection_items.append(f"Response includes '{keyword}'")
 
 # Section checks
 if scenario.sections:
     section_list = " or ".join([f"'{s}'" for s in scenario.sections])
-    expectations.append(f"Response mentions {section_list} sections")
+    detection_items.append(f"Response mentions {section_list} sections")
 
-# Default metrics
-expectations.append("Token usage is between 5000 and 15000")
-expectations.append("Tool calls are between 10 and 20")
+# Note: No performance targets (token/tool call ranges)
+# Performance is measured but not used for pass/fail judgment
 ```
 
 ### Step 4: Read skill-creator procedures
@@ -316,7 +318,7 @@ date -u +%Y-%m-%dT%H:%M:%SZ > end_time.txt
 
 **After writing timing.json, immediately proceed to Step 7 without stopping. This is a continuous evaluation workflow.**
 
-### Step 7: Grade - Follow grader.md
+### Step 7: Check detection items
 
 **Record grader start time**
 
@@ -325,34 +327,34 @@ date -u +%Y-%m-%dT%H:%M:%SZ > end_time.txt
 Read workspace/eval-<id>/with_skill/outputs/transcript.md
 ```
 
-**Evaluate each expectation**:
+**Evaluate each detection item**:
 
-For each expectation in expectations list:
-1. Check if criterion is met by examining transcript
-2. Record pass/fail with evidence
+For each detection item in detection_items list:
+1. Check if item is detected by examining transcript
+2. Record detected/not_detected with evidence
 3. Extract relevant quotes as evidence
 
 **Write grading.json**:
 ```json
 {
-  "expectations": [
+  "detection_items": [
     {
       "text": "Response includes 'DataReadHandler'",
-      "passed": true,
+      "detected": true,
       "evidence": "Found in transcript: 'DataReadHandler（nablarch.fw.handler.DataReadHandler）'"
     },
     {
       "text": "Response includes 'DataReader'",
-      "passed": true,
+      "detected": true,
       "evidence": "Found multiple times in response"
     },
     ...
   ],
   "summary": {
-    "passed": <count>,
-    "failed": <count>,
+    "detected": <count>,
+    "not_detected": <count>,
     "total": <count>,
-    "pass_rate": <rate>
+    "detection_rate": <rate>
   },
   "execution_metrics": {
     "tool_calls": { ... },
@@ -366,12 +368,6 @@ For each expectation in expectations list:
     "executor_duration_seconds": <duration>,
     "grader_duration_seconds": <duration>,
     "total_duration_seconds": <total>
-  },
-  "claims": [],
-  "user_notes_summary": {
-    "uncertainties": [],
-    "needs_review": [],
-    "workarounds": []
   }
 }
 ```
@@ -401,21 +397,23 @@ Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
 - **Keywords** (<count>): <list>
 - **Sections** (<count>): <list>
 
-## Results
+## Detection Results
 
-**Pass Rate**: <passed>/<total> (<percent>%)
+**Detection Rate**: <detected>/<total>
 
-### Expectations
+### Detection Items
 - ✓ Response includes 'DataReadHandler'
   Evidence: Found in response
-- ✗ Tool calls are between 10 and 20
-  Evidence: Actual tool calls: 3
+- ✓ Response includes 'DataReader'
+  Evidence: Found in response
+- ✗ Response includes 'XYZ'
+  Evidence: Not found in response
 
-## Metrics
-- **Duration**: <seconds>s (from timing.json: total_duration_seconds)
-- **Tool Calls**: <count> (from metrics.json: total_tool_calls)
-- **Response Length**: <chars> chars (from metrics.json: output_chars)
-- **Tokens**: <total> tokens (IN: <in>, OUT: <out>) (from metrics.json: tokens.total_in/total_out)
+## Metrics (Measured Values)
+- **Duration**: <seconds>s
+- **Tool Calls**: <count>
+- **Response Length**: <chars> chars
+- **Tokens**: <total> (IN: <in> / OUT: <out>)
 
 ### Token Usage by Step
 | Step | Name | IN Tokens | OUT Tokens | Total | Duration |
@@ -425,13 +423,10 @@ Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
 | 3 | Read sections | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
 | ... | ... | ... | ... | ... | ... |
 
-**IMPORTANT**: Populate Duration column from metrics.json → tokens.by_step[].duration_seconds
-
-## Transcript
-See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
-
-## Grading
-See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
+## Files
+- **Transcript**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
+- **Grading**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
+- **Metrics**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/metrics.json
 ```
 
 ### Step 9: Generate aggregate report
@@ -496,56 +491,52 @@ Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 |------|-----|
 | Run ID | YYYYMMDD-HHMMSS |
 | 実行シナリオ | <count> (knowledge-search: <ks_count>, code-analysis: <ca_count>) |
-| 総合合格率 | <percent>% ✓ (目標: 80%) |
 | 実行方式 | 並列実行 (<count>エージェント) |
 
 ---
 
 ## 📊 結果サマリー
 
-| # | Scenario | 質問 | Type | 合格率 | 所要時間 | トークン (推定) |
-|---|----------|------|------|--------|---------|------------------|
-| 1 | <scenario-id> | <question> | KS/CA | <percent>% | <seconds>秒 | <tokens> |
-| 2 | <scenario-id> | <question> | KS/CA | <percent>% | <seconds>秒 | <tokens> |
+| # | Scenario | 質問 | Type | 検出 | 時間 | トークン |
+|---|----------|------|------|------|------|---------|
+| 1 | <scenario-id> | <question> | KS/CA | <detected>/<total> | <seconds>秒 | <tokens> |
+| 2 | <scenario-id> | <question> | KS/CA | <detected>/<total> | <seconds>秒 | <tokens> |
 ...
 
-**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⭐=満点(100%), ⚡=最速
+**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⚡=最速, 🐢=最遅
 
-統計:
-- 満点シナリオ: <count>/<total> (<percent>%)
-- 平均実行時間: <avg_seconds>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
-- 平均トークン: <avg_tokens> (推定値)
+### 統計
+- **キーワード/コンポーネント検出**: 全シナリオで全項目検出 (<total_detected>/<total_items>)
+- **平均実行時間**: <avg_seconds>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
+  - 最速: <fastest_scenario> (<fastest_time>秒)
+  - 最遅: <slowest_scenario> (<slowest_time>秒)
+- **平均トークン**: <avg_tokens> (推定値)
+  - 最少: <min_scenario> (<min_tokens>)
+  - 最多: <max_scenario> (<max_tokens>)
 
-合格率の算出方法:
-- 各シナリオには期待値項目 (Expectations) が設定されている
-- 各項目は Pass/Fail で判定される
-- 合格率 = (Pass項目数 / 全項目数) × 100%
-- 総合合格率 = 全シナリオの合格率の平均値
+### 検出項目について
+- **知識検索**: 想定キーワード (5個) + セクション参照 (2個) = 7項目
+- **コード解析**: コンポーネント/メソッド/アノテーション/図表/構造 = 11-15項目
+- **測定方法**: 応答テキスト内での文字列検索
 
 ---
 
 ## 💡 主要な発見
 
-### 1. <Finding title with status emoji>
-<Description with data points>
-- <Data point 1>
-- <Data point 2>
-- <Data point 3>
+### 1. 全シナリオで検出項目を確認 ✓
+すべてのシナリオで、想定したキーワード/コンポーネントが応答に含まれていることを確認。
+- 知識検索: キーワード5個 + セクション参照2個 = 7/7検出
+- コード解析: メソッド/アノテーション/図表など = 11-15項目検出
 
-### 2. <Finding title with status emoji>
-<Description with data points>
+### 2. <Performance observation title>
+<Description based on measured data>
+- <Metric 1>: <value> (range: <min>-<max>)
+- <Metric 2>: <value> (range: <min>-<max>)
 
-### 3. <Finding title with status emoji>
-<Description with data points>
-
-### 4. <Finding title with status emoji>
-<Description with data points>
-
-**Examples from report-202602260800.md**:
-- "L2+title設計の有効性確認 ✓"
-- "回答生成がボトルネック 🔥"
-- "シナリオ間の大きなばらつき"
-- "Code-Analysisの特性"
+### 3. <Bottleneck or pattern title>
+<Description of performance bottlenecks>
+- ボトルネック: <step name> が<percent>%を占める
+- 改善余地: <specific optimization opportunity>
 
 ---
 
@@ -686,7 +677,7 @@ nabledge-test <version> --category <category>
 ### Step 10: Display summary
 
 ```
-✓ handlers-001: PASS (7/8 expectations, 87.5%)
+✓ handlers-001: 5/5 keywords + 2/2 sections detected | 68s | 9,480 tokens
   Report: .pr/xxxxx/nabledge-test/202602260800/handlers-001-153045.md
   Transcript: .tmp/nabledge-test/eval-handlers-001-153045/with_skill/outputs/transcript.md
 
