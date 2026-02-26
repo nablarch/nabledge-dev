@@ -440,26 +440,52 @@ See: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 
 For each scenario type (knowledge-search, code-analysis):
 
-1. Read all `metrics.json` files from `.tmp/nabledge-test/eval-<scenario-id>-*/with_skill/outputs/metrics.json`
-2. Extract `tokens.by_step` array from each file
-3. Group by step name (e.g., "Load workflows", "Execute knowledge search")
-4. For each step, calculate:
+1. **Read all metrics.json files**:
+   ```bash
+   find .tmp/nabledge-test/eval-*-*/with_skill/outputs/metrics.json
+   ```
+
+2. **Filter by scenario type**:
+   - Knowledge-Search: processing-*, libraries-*, handlers-*
+   - Code-Analysis: code-analysis-*
+
+3. **Extract by_step data**:
+   ```bash
+   jq '.tokens.by_step' <metrics.json>
+   ```
+
+4. **Group by step name** and calculate for each step:
    - **Average duration**: mean of all duration_seconds values
-   - **Median duration**: median of all duration_seconds values
+   - **Median duration**: median (middle value when sorted)
    - **Range**: "min-max秒" format (e.g., "3-8秒")
    - **Percentage**: (avg_duration / total_avg_duration) * 100
    - **Avg IN tokens**: mean of all in_tokens values
    - **Avg OUT tokens**: mean of all out_tokens values
+
+5. **Identify bottleneck**:
+   - Find step with highest percentage
+   - Add 🔥 emoji in 割合 column
+   - Add bottleneck note after table
+
+6. **Generate insights**:
+   - For 💡 主要な発見: Analyze data for patterns, anomalies, key findings
+   - For 🔬 仮説と改善提案: Based on bottlenecks and patterns, propose testable hypotheses
 
 **Example calculation for Knowledge-Search Step 1**:
 ```
 Scenarios: processing-005, processing-002, libraries-001, handlers-001, processing-004
 Step 1 durations: [5, 4, 8, 6, 7] seconds
 - Average: (5+4+8+6+7)/5 = 6秒
-- Median: sort([5,4,8,6,7]) = [4,5,6,7,8], middle = 6秒
-- Range: "4-8秒"
+- Median: sort([5,4,8,6,7]) = [4,5,6,7,8], middle value = 6秒
+- Range: "4-8秒" (min=4, max=8)
 - Percentage: 6/48 * 100 = 12.5%
+- Tokens: average IN/OUT from all scenarios
 ```
+
+**Step name mapping** (use actual step names from metrics.json):
+- If steps have generic names like "Step 1", "Step 2", map to meaningful names:
+  - Knowledge-Search: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
+  - Code-Analysis: ターゲット特定, 知識検索, テンプレート読込, データ事前入力, 図表生成, コンテンツ構築, 出力完成, 実行時間計算
 
 Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 
@@ -480,14 +506,46 @@ Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 | # | Scenario | 質問 | Type | 合格率 | 所要時間 | トークン (推定) |
 |---|----------|------|------|--------|---------|------------------|
 | 1 | <scenario-id> | <question> | KS/CA | <percent>% | <seconds>秒 | <tokens> |
+| 2 | <scenario-id> | <question> | KS/CA | <percent>% | <seconds>秒 | <tokens> |
 ...
 
-**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⭐=満点, ⚡=最速
+**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⭐=満点(100%), ⚡=最速
 
 統計:
 - 満点シナリオ: <count>/<total> (<percent>%)
 - 平均実行時間: <avg_seconds>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
 - 平均トークン: <avg_tokens> (推定値)
+
+合格率の算出方法:
+- 各シナリオには期待値項目 (Expectations) が設定されている
+- 各項目は Pass/Fail で判定される
+- 合格率 = (Pass項目数 / 全項目数) × 100%
+- 総合合格率 = 全シナリオの合格率の平均値
+
+---
+
+## 💡 主要な発見
+
+### 1. <Finding title with status emoji>
+<Description with data points>
+- <Data point 1>
+- <Data point 2>
+- <Data point 3>
+
+### 2. <Finding title with status emoji>
+<Description with data points>
+
+### 3. <Finding title with status emoji>
+<Description with data points>
+
+### 4. <Finding title with status emoji>
+<Description with data points>
+
+**Examples from report-202602260800.md**:
+- "L2+title設計の有効性確認 ✓"
+- "回答生成がボトルネック 🔥"
+- "シナリオ間の大きなばらつき"
+- "Code-Analysisの特性"
 
 ---
 
@@ -497,29 +555,133 @@ Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 
 | ステップ | 名称 | 平均時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
 |----------|------|---------|--------|------|------|-----------------------|
-| 1 | ワークフロー読込 | <avg>秒 | <median>秒 | <percent>% | <range> | <in>/<out> |
-...
+| 1 | ワークフロー読込 | <avg>秒 | <median>秒 | <percent>% | <min-max>秒 | <in>/<out> (推定) |
+| 2 | キーワード抽出 | <avg>秒 | <median>秒 | <percent>% | <min-max>秒 | <in>/<out> (推定) |
+| 3 | ファイルマッチング | <avg>秒 | <median>秒 | <percent>% | <min-max>秒 | <in>/<out> (推定) |
+| ... | ... | ... | ... | ... | ... | ... |
+| 8 | 回答生成 | <avg>秒 | <median>秒 | <percent>% 🔥 | <min-max>秒 | <in>/<out> (推定) |
 
-### Code-Analysis: ステップ別詳細
+ボトルネック: Step <n> (<name>) が時間の<percent>%を占める
 
-| ステップ | 名称 | 平均時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
-|----------|------|---------|--------|------|------|-----------------------|
-| 1 | ターゲット特定 | <avg>秒 | <median>秒 | <percent>% | - | <in>/<out> |
-...
+注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
+
+<details>
+<summary>Code-Analysis: ステップ別詳細</summary>
+
+| ステップ | 名称 | 時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
+|----------|------|------|--------|------|------|-----------------------|
+| 1 | ターゲット特定 | <avg>秒 | <median>秒 | <percent>% | - | <in>/<out> (推定) |
+| 2 | 知識検索 | <avg>秒 | <median>秒 | <percent>% | - | <in>/<out> (推定) |
+| ... | ... | ... | ... | ... | ... | ... |
+| 6 | コンテンツ構築 | <avg>秒 | <median>秒 | <percent>% 🔥 | - | <in>/<out> (推定) |
+
+ボトルネック: Step <n> (<name>) が全体の<percent>%
+
+注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
+</details>
+
+**IMPORTANT**:
+- Add 🔥 emoji to the step with highest percentage
+- Use <details> tag to collapse Code-Analysis table
+
+---
+
+## 🔬 仮説と改善提案
+
+### 仮説1: <Hypothesis title>
+**根拠**: <Evidence from data>
+**検証**: <How to verify>
+**期待**: <Expected outcome>
+
+### 仮説2: <Hypothesis title>
+**根拠**: <Evidence from data>
+**検証**: <How to verify>
+**期待**: <Expected outcome>
+
+### 仮説3: <Hypothesis title>
+**根拠**: <Evidence from data>
+**検証**: <How to verify>
+**期待**: <Expected outcome>
+
+**Examples from report-202602260800.md**:
+- "回答生成を段階化すれば並列化可能"
+- "トークン推定値と実測値に乖離"
+- "index.toon読み込みがオーバーヘッド"
 
 ---
 
 ## 📎 詳細データ
 
 ### 個別シナリオレポート
+各シナリオの詳細な実行ログ、期待値評価、コード例は個別レポートを参照：
+
 - [<scenario-id>](YYYYMMDDHHMM/<scenario-id>-HHMMSS.md) - <percent>% - <description>
+- [<scenario-id>](YYYYMMDDHHMM/<scenario-id>-HHMMSS.md) - <percent>% ⭐ - <description>
 ...
+
+### メトリクスデータ
+JSON形式の詳細メトリクス（トークン使用量、ツール呼び出し、タイミング）は、各シナリオのワークスペースを参照。
 
 ### ワークスペース
 実行時の詳細なトランスクリプトとグレーディング結果：
+
+- `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/`
 - `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/`
 ...
+
+---
+
+## 🧪 テスト実施方法
+
+<details>
+<summary>実行環境と設定 (オプション)</summary>
+
+### 実行環境
+- **ツール**: nabledge-test
+- **ターゲット**: nabledge-<version>
+- **並列実行**: <count>エージェント同時起動
+- **ワークスペース**: \`.tmp/nabledge-test/eval-<id>-<timestamp>/\`
+
+### エージェント構成
+| Agent ID | Scenario | Start |
+|----------|----------|-------|
+| <agent_id> | <scenario-id> | HH:MM:SS |
+...
+
+### 測定方法
+- **実行時間**: 各ステップの開始・終了時刻を記録（実測）
+- **トークン数**: 文字数÷4で推定（⚠️ 近似値）
+- **ツール呼び出し**: Read/Bash/Grep/Writeの実行回数（実測）
+
+### 制約事項
+- トークン数は推定値（実際のAPI使用量ではない）
+- 並列実行のため個別エージェントのトークン消費は合算されない
+- タイムスタンプの精度は秒単位
+</details>
+
+---
+
+## 🔄 再現手順
+
+\```bash
+# 同じテストを再実行
+nabledge-test <version> --all
+
+# 特定のシナリオのみ
+nabledge-test <version> <scenario-id>
+
+# カテゴリ別
+nabledge-test <version> --category <category>
+\```
+
+**注意**: 並列実行のため、個別シナリオのタイムスタンプは若干異なります。
+
+---
+
+*Generated by nabledge-test | Run: YYYYMMDD-HHMMSS | Duration: ~<minutes>min*
 ```
+
+**Note**: The 🧪 テスト実施方法 section is optional and can be omitted for simpler reports.
 
 ### Step 10: Display summary
 
