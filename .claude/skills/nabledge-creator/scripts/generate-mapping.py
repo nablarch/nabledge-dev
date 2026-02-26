@@ -30,6 +30,24 @@ V6_BASES = {
 }
 
 
+def should_exclude_file(rel_path_str: str) -> bool:
+    """Check if file should be excluded from mapping."""
+    # Top-level navigation index files (minimal toctree containers)
+    excluded_patterns = [
+        'index.rst',  # Root index
+        'application_framework/index.rst',
+        'nablarch_api/index.rst',
+        'external_contents/index.rst',
+        'terms_of_use/index.rst',
+        'examples/index.rst',
+        'development_tools/index.rst',
+        'application_framework/application_framework/index.rst',
+        'application_framework/application_framework/messaging/index.rst',
+        'application_framework/application_framework/handlers/index.rst',
+    ]
+    return rel_path_str in excluded_patterns
+
+
 def enumerate_files(version: str) -> List[Dict]:
     """Enumerate all documentation files for the specified version.
 
@@ -45,10 +63,11 @@ def enumerate_files(version: str) -> List[Dict]:
         if base_en.exists():
             for rst in base_en.rglob('*.rst'):
                 rel_path = rst.relative_to(base_en)
-                # Exclude root README and .textlint
-                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+                rel_path_str = str(rel_path)
+                # Exclude root README, .textlint, and navigation index files
+                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts or should_exclude_file(rel_path_str):
                     continue
-                en_files_set.add(str(rel_path))  # Track this file
+                en_files_set.add(rel_path_str)  # Track this file
                 files.append({
                     'source_path': f"en/{rel_path}",  # Include language prefix
                     'abs_path': str(rst),
@@ -58,9 +77,10 @@ def enumerate_files(version: str) -> List[Dict]:
 
             for md in base_en.rglob('*.md'):
                 rel_path = md.relative_to(base_en)
-                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+                rel_path_str = str(rel_path)
+                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts or should_exclude_file(rel_path_str):
                     continue
-                en_files_set.add(str(rel_path))  # Track this file
+                en_files_set.add(rel_path_str)  # Track this file
                 files.append({
                     'source_path': f"en/{rel_path}",  # Include language prefix
                     'abs_path': str(md),
@@ -73,11 +93,12 @@ def enumerate_files(version: str) -> List[Dict]:
         if base_ja.exists():
             for rst in base_ja.rglob('*.rst'):
                 rel_path = rst.relative_to(base_ja)
-                # Exclude root README and .textlint
-                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+                rel_path_str = str(rel_path)
+                # Exclude root README, .textlint, and navigation index files
+                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts or should_exclude_file(rel_path_str):
                     continue
                 # Only add if not already in English
-                if str(rel_path) not in en_files_set:
+                if rel_path_str not in en_files_set:
                     files.append({
                         'source_path': f"ja/{rel_path}",  # Include language prefix
                         'abs_path': str(rst),
@@ -87,10 +108,11 @@ def enumerate_files(version: str) -> List[Dict]:
 
             for md in base_ja.rglob('*.md'):
                 rel_path = md.relative_to(base_ja)
-                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts:
+                rel_path_str = str(rel_path)
+                if rel_path.name == 'README.md' or '.textlint' in rel_path.parts or should_exclude_file(rel_path_str):
                     continue
                 # Only add if not already in English
-                if str(rel_path) not in en_files_set:
+                if rel_path_str not in en_files_set:
                     files.append({
                         'source_path': f"ja/{rel_path}",  # Include language prefix
                         'abs_path': str(md),
@@ -157,6 +179,15 @@ def classify_by_path(file_info: Dict) -> Dict:
     if path_for_matching.startswith('migrationguide/'):
         return {'type': 'about', 'category': 'migration', 'pp': '', 'confidence': 'confirmed'}
 
+    if path_for_matching.startswith('migration/'):
+        return {'type': 'about', 'category': 'migration', 'pp': '', 'confidence': 'confirmed'}
+
+    if path_for_matching.startswith('jakarta_ee/'):
+        return {'type': 'about', 'category': 'about-nablarch', 'pp': '', 'confidence': 'confirmed'}
+
+    if path_for_matching.startswith('inquiry/'):
+        return {'type': 'about', 'category': 'about-nablarch', 'pp': '', 'confidence': 'confirmed'}
+
     if path_for_matching.startswith('releases/'):
         return {'type': 'about', 'category': 'release-notes', 'pp': '', 'confidence': 'confirmed'}
 
@@ -186,6 +217,10 @@ def classify_by_path(file_info: Dict) -> Dict:
     if path_for_matching.startswith('application_framework/application_framework/setting_guide/'):
         return {'type': 'setup', 'category': 'setting-guide', 'pp': '', 'confidence': 'confirmed'}
 
+    # Nablarch concept/overview files
+    if path_for_matching.startswith('application_framework/application_framework/nablarch/'):
+        return {'type': 'about', 'category': 'about-nablarch', 'pp': '', 'confidence': 'confirmed'}
+
     # Handlers - complex logic
     if '/handlers/' in path_for_matching:
         if '/handlers/batch/' in path_for_matching:
@@ -198,10 +233,12 @@ def classify_by_path(file_info: Dict) -> Dict:
             return {'type': 'component', 'category': 'handlers', 'pp': 'restful-web-service', 'confidence': 'confirmed'}
         elif '/handlers/web/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'web-application', 'confidence': 'confirmed'}
+        elif '/handlers/web_interceptor/' in path_for_matching:
+            return {'type': 'component', 'category': 'handlers', 'pp': 'web-application', 'confidence': 'confirmed'}
         elif '/handlers/web_service/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': 'http-messaging', 'confidence': 'confirmed'}
         elif '/handlers/standalone/' in path_for_matching:
-            return {'type': 'component', 'category': 'handlers', 'pp': 'nablarch-batch', 'confidence': 'needs_content'}
+            return {'type': 'component', 'category': 'handlers', 'pp': 'nablarch-batch', 'confidence': 'confirmed'}
         elif '/handlers/common/' in path_for_matching:
             return {'type': 'component', 'category': 'handlers', 'pp': '', 'confidence': 'confirmed'}
         elif '/handlers/messaging/' in path_for_matching:
@@ -249,6 +286,10 @@ def classify_by_path(file_info: Dict) -> Dict:
         return {'type': 'development-tools', 'category': 'toolbox', 'pp': '', 'confidence': 'confirmed'}
     elif path_for_matching.startswith('development_tools/java_static_analysis/'):
         return {'type': 'development-tools', 'category': 'java-static-analysis', 'pp': '', 'confidence': 'confirmed'}
+
+    # Business samples
+    if path_for_matching.startswith('biz_samples/'):
+        return {'type': 'guide', 'category': 'business-samples', 'pp': '', 'confidence': 'confirmed'}
 
     return classification
 
