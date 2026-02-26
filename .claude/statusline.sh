@@ -6,6 +6,12 @@ cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
 model=$(echo "$input" | jq -r '.model.display_name // empty')
 context_used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 
+# Shorten model name (e.g., "Sonnet 4.5" → "S4.5")
+if [ -n "$model" ]; then
+  short_model=$(echo "$model" | sed -E 's/^([A-Z])[a-z]* ([0-9]+\.[0-9]+).*/\1\2/')
+  model="$short_model"
+fi
+
 # Git branch
 git_branch=""
 if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
