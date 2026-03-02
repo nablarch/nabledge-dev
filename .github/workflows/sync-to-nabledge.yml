@@ -34,11 +34,30 @@ jobs:
       - name: Validate marketplace structure
         run: .github/scripts/validate-marketplace.sh nabledge-repo
 
+      - name: Capture and transform commit message
+        id: commit_message
+        run: |
+          .github/scripts/capture-commit-message.sh \
+            "${{ github.sha }}" \
+            "${{ github.event.head_commit.message }}"
+
+      - name: Build commit body with trigger information
+        run: |
+          .github/scripts/build-commit-body.sh \
+            "${{ github.repository }}" \
+            "${{ github.sha }}" \
+            "$COMMIT_BODY"
+
+      - name: Display commit message for verification
+        run: |
+          echo "::notice::Syncing commit to nabledge repository"
+          echo "Subject: $COMMIT_SUBJECT"
+          echo "Body preview: ${FULL_COMMIT_BODY:0:200}..."
+
       - name: Commit and Push to nabledge
         working-directory: nabledge-repo
         run: |
-          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           ../.github/scripts/commit-and-push.sh \
-            "Sync nabledge marketplace from nabledge-dev" \
-            "Triggered by: ${TRIGGER_COMMIT_URL}" \
+            "$COMMIT_SUBJECT" \
+            "$FULL_COMMIT_BODY" \
             "develop"
