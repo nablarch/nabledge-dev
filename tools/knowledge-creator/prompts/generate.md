@@ -1,40 +1,40 @@
-あなたはNablarchの公式ドキュメントをAI Readyな知識ファイルに変換するエキスパートです。
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
 
-## ⚠️ 完了条件（必ず守ること）
+## ⚠️ Completion Condition (MUST follow)
 
-知識ファイル生成の完了条件は、**構造検証スクリプトで指摘が0件になること**です。
+The completion condition for knowledge file generation is **zero validation errors from the structure validation script**.
 
-以下のプロセスを**必ず実行**してください：
+You **MUST** execute the following process:
 
-1. 知識ファイル（JSON）を生成して `{OUTPUT_PATH}` に保存
-2. 検証スクリプトを実行：
+1. Generate knowledge file (JSON) and save to `{OUTPUT_PATH}`
+2. Run validation script:
    ```bash
    python tools/knowledge-creator/validate_single.py {OUTPUT_PATH} {SOURCE_PATH} {FORMAT}
    ```
-3. 終了コードを確認：
-   - **終了コード 0**：✅ 検証パス → 完了
-   - **終了コード 1**：❌ エラーあり → エラーメッセージを読んで修正し、ステップ1に戻る
-4. **最大20回まで**繰り返す（20回でも指摘が残る場合のみ、その時点の最終版を出力）
+3. Check exit code:
+   - **Exit code 0**: ✅ Validation passed → Complete
+   - **Exit code 1**: ❌ Errors found → Read error messages, fix them, and return to step 1
+4. **Repeat up to 20 times** (only if errors remain after 20 attempts, output the final version at that point)
 
-**重要**：検証パスしない限り、絶対に完了してはいけません。
+**IMPORTANT**: You must NOT complete until validation passes.
 
 ---
 
-## タスク
+## Task
 
-以下のソースファイルを知識ファイル（JSON）に変換してください。
+Convert the following source file into a knowledge file (JSON).
 
-## ソースファイル情報
+## Source File Information
 
-- ファイルID: `{FILE_ID}`
-- 形式: `{FORMAT}` (rst/md/xlsx)
+- File ID: `{FILE_ID}`
+- Format: `{FORMAT}` (rst/md/xlsx)
 - Type: `{TYPE}`
 - Category: `{CATEGORY}`
-- 出力パス: `{OUTPUT_PATH}`
-- Assetsディレクトリ: `{ASSETS_DIR}`
-- 公式ドキュメントベースURL: `{OFFICIAL_DOC_BASE_URL}`
+- Output Path: `{OUTPUT_PATH}`
+- Assets Directory: `{ASSETS_DIR}`
+- Official Doc Base URL: `{OFFICIAL_DOC_BASE_URL}`
 
-## ソースファイル内容
+## Source File Content
 
 ```
 {SOURCE_CONTENT}
@@ -44,108 +44,108 @@
 
 ---
 
-## official_doc_urls の生成ルール
+## official_doc_urls Generation Rules
 
-`official_doc_urls` にはソースファイルに対応する公式ドキュメントのURLを設定する。
+Set URLs for the official documentation corresponding to the source file in `official_doc_urls`.
 
-### RST（公式解説書）
+### RST (Official Documentation)
 
-ソースファイルのパスから以下のルールでURLを生成する:
+Generate URL from source file path with the following rules:
 
 ```
-ベースURL: https://nablarch.github.io/docs/LATEST/doc/
-変換ルール: nablarch-document/ja/ 以降のパスから .rst を除去し、ベースURLに結合
+Base URL: https://nablarch.github.io/docs/LATEST/doc/
+Conversion rule: Remove .rst from the path after nablarch-document/ja/ and concatenate with base URL
 
-例:
-  ソースパス: .lw/nab-official/v6/nablarch-document/ja/application_framework/application_framework/handlers/common/db_connection_management_handler.rst
+Example:
+  Source path: .lw/nab-official/v6/nablarch-document/ja/application_framework/application_framework/handlers/common/db_connection_management_handler.rst
   URL: https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/db_connection_management_handler.html
 ```
 
-スクリプト側で `{OFFICIAL_DOC_BASE_URL}` にこのURLを計算して渡す。`official_doc_urls` にはこのURLを1つ設定する。
+The script calculates this URL and passes it as `{OFFICIAL_DOC_BASE_URL}`. Set this URL in `official_doc_urls`.
 
-加えて、ソース内の `:java:extdoc:` 参照からJavadoc URLを抽出し、`official_doc_urls` に追加する:
+Additionally, extract Javadoc URLs from `:java:extdoc:` references in the source and add to `official_doc_urls`:
 
 ```
-:java:extdoc:` の参照先パッケージ → https://nablarch.github.io/docs/LATEST/javadoc/ 配下のURL
-例: nablarch.common.handler.DbConnectionManagementHandler
+:java:extdoc: reference package → URL under https://nablarch.github.io/docs/LATEST/javadoc/
+Example: nablarch.common.handler.DbConnectionManagementHandler
   → https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/handler/DbConnectionManagementHandler.html
 ```
 
-### MD（パターン集）
+### MD (Pattern Collection)
 
-パターン集の公式掲載先URLを設定する:
-
-```
-https://fintan.jp/page/252/
-```
-
-全パターン集ファイルで同一のURL。
-
-### Excel（セキュリティ対応表）
-
-パターン集と同様:
+Set the official publication URL for pattern collections:
 
 ```
 https://fintan.jp/page/252/
 ```
 
-## このファイル内で定義されているラベル（内部参照判定用）
+Same URL for all pattern collection files.
+
+### Excel (Security Checklist)
+
+Same as pattern collections:
+
+```
+https://fintan.jp/page/252/
+```
+
+## Labels Defined in This File (For Internal Reference Detection)
 
 {INTERNAL_LABELS}
 
-上記は、このソースファイル内で `.. _label_name:` として定義されているラベルのリストです。
-`:ref:` 参照がこのリストに含まれる場合は「内部参照」、含まれない場合は「外部参照」です。
+The above is a list of labels defined as `.. _label_name:` in this source file.
+If a `:ref:` reference is included in this list, it's an "internal reference"; otherwise, it's an "external reference".
 
 ---
 
-## 抽出ルール（最重要）
+## Extraction Rules (MOST IMPORTANT)
 
-### 優先順位
+### Priority
 
-| 優先度 | ルール | 判定 |
+| Priority | Rule | Judgment |
 |:---:|---|:---:|
-| 1 | ソースに書いてあることが漏れる | **NG（最悪）** |
-| 2 | ソースに書いてないことを推測で入れる | **NG** |
-| 3 | ソースに書いてあることが冗長に入る | **OK（許容）** |
+| 1 | Information in source is missing | **NG (worst)** |
+| 2 | Inferred information not in source | **NG** |
+| 3 | Information in source is redundant | **OK (acceptable)** |
 
-- 迷ったら含める側に倒す
-- 「たぶんこうだろう」「一般的にはこうなる」で補完しない
-- 書いてあることであれば余分に入ってもよい、ないよりまし
-- **ソースにない説明文や前置きを追加しない**（例: "以下の手順があります"等の補足説明は不要）
+- When in doubt, include it
+- Don't supplement with "probably" or "generally"
+- Redundant information from source is OK, better than missing
+- **Don't add explanatory text or preambles not in source** (e.g., no supplementary explanations like "the following steps exist")
 
-### 残す情報
+### Information to Keep
 
-- **仕様は全部残す**: 設定項目、デフォルト値、型、制約、動作仕様、理由・背景、注意点、警告
-- **考え方も全部残す**: 設計思想、推奨パターン、注意事項
-- **表現は最適化する**: 読み物としての冗長な説明を省く。ただし情報は削らない
-- **判断基準**: 「この情報がないとAIが誤った判断をする可能性があるか？」→ YESなら残す
-- **URLとリンクは必ず保持する**: ソースに記載されているURLやリンクは削除しない
-
----
-
-## セクション分割ルール
-
-### RSTの場合
-
-- h1（`=====` で下線）→ ファイルタイトル（`title`フィールド）
-- h2（`-----` で下線）→ セクション1つに対応（分割単位）
-- h3以下 → 親セクション内に含める（分割しない）
-- **例外**: h2配下のテキスト量が2000文字以上で、ソースにh3が存在する場合、h3を分割単位に引き上げる
-  - **必ず** h3で分割すること（統合しない）
-
-### MDの場合
-
-- `#` → ファイルタイトル
-- `##` → セクション分割単位
-- `###` 以下 → 親セクション内に含める
-
-### Excelの場合
-
-- ファイル全体で1セクション
+- **Keep all specifications**: Configuration items, default values, types, constraints, behavior specs, reasons/background, notes, warnings
+- **Keep all concepts**: Design philosophy, recommended patterns, cautions
+- **Optimize expressions**: Remove verbose narrative explanations. But don't remove information
+- **Decision criteria**: "Could AI make wrong decisions without this information?" → If YES, keep it
+- **Always preserve URLs and links**: Don't remove URLs and links in the source
 
 ---
 
-## 出力JSON Schema
+## Section Splitting Rules
+
+### For RST
+
+- h1 (underlined with `=====`) → File title (`title` field)
+- h2 (underlined with `-----`) → Corresponds to one section (splitting unit)
+- h3 and below → Include in parent section (don't split)
+- **Exception**: If text under h2 exceeds 2000 characters AND h3 exists in source, promote h3 to splitting unit
+  - **MUST** split at h3 (don't consolidate)
+
+### For MD
+
+- `#` → File title
+- `##` → Section splitting unit
+- `###` and below → Include in parent section
+
+### For Excel
+
+- Entire file as one section
+
+---
+
+## Output JSON Schema
 
 ```json
 {
@@ -155,35 +155,35 @@ https://fintan.jp/page/252/
   "properties": {
     "id": {
       "type": "string",
-      "description": "知識ファイル識別子（ファイル名から拡張子を除いたもの）"
+      "description": "Knowledge file identifier (filename without extension)"
     },
     "title": {
       "type": "string",
-      "description": "ドキュメントタイトル（RST: h1見出し、MD: #見出し、Excel: ファイル名）"
+      "description": "Document title (RST: h1 heading, MD: # heading, Excel: filename)"
     },
     "official_doc_urls": {
       "type": "array",
-      "description": "公式ドキュメントのURL",
+      "description": "Official documentation URLs",
       "items": { "type": "string" }
     },
     "index": {
       "type": "array",
-      "description": "セクションの目次。検索時にhintsでセクションを絞り込む",
+      "description": "Section table of contents. Narrow down sections with hints during search",
       "items": {
         "type": "object",
         "required": ["id", "title", "hints"],
         "properties": {
           "id": {
             "type": "string",
-            "description": "セクション識別子（sectionsのキーと対応。ケバブケース）"
+            "description": "Section identifier (corresponds to sections key. kebab-case)"
           },
           "title": {
             "type": "string",
-            "description": "セクションの日本語タイトル（閲覧用MDの見出しに使用）"
+            "description": "Section title in Japanese (used for browsable MD headings)"
           },
           "hints": {
             "type": "array",
-            "description": "検索ヒント",
+            "description": "Search hints",
             "items": { "type": "string" }
           }
         }
@@ -191,17 +191,17 @@ https://fintan.jp/page/252/
     },
     "sections": {
       "type": "object",
-      "description": "セクション本体。キーはセクション識別子。値はMDテキスト",
+      "description": "Section body. Keys are section identifiers. Values are MD text",
       "additionalProperties": {
         "type": "string",
-        "description": "セクション内容（Markdown形式のテキスト）"
+        "description": "Section content (Markdown format text)"
       }
     }
   }
 }
 ```
 
-### 出力サンプル
+### Output Sample
 
 ```json
 {
@@ -231,41 +231,41 @@ https://fintan.jp/page/252/
 
 ---
 
-## セクションIDの命名規約
+## Section ID Naming Convention
 
-全パターンで**ケバブケース**（小文字、ハイフン区切り）を適用する。
+Apply **kebab-case** (lowercase, hyphen-separated) for all patterns.
 
-例: `overview`, `setup`, `handler-queue`, `anti-patterns`, `error-handling`
-
----
-
-## 検索ヒント生成ルール（index[].hints）
-
-日本語中心、技術用語は英語表記をそのまま含める。以下の観点で該当するものを**全て含める**（個数は固定しない）。
-
-含める観点:
-- 機能キーワード（そのセクションで何ができるか、日本語）
-- クラス名・インターフェース名（英語表記）
-- 設定プロパティ名（英語表記）
-- アノテーション名（英語表記）
-- 例外クラス名（英語表記）
-- **toctreeエントリ**（ソースの `.. toctree::` に列挙されている項目名）
-- **h3見出しのキーワード**（セクション内のh3見出しに含まれる重要な用語）
+Examples: `overview`, `setup`, `handler-queue`, `anti-patterns`, `error-handling`
 
 ---
 
-## セクション内MD記述ルール
+## Search Hints Generation Rules (index[].hints)
 
-### クラス・インターフェース情報
+Mainly in Japanese, include technical terms in English as-is. **Include all** applicable items from the following perspectives (no fixed count).
+
+Perspectives to include:
+- Functional keywords (what the section does, in Japanese)
+- Class names / interface names (English notation)
+- Configuration property names (English notation)
+- Annotation names (English notation)
+- Exception class names (English notation)
+- **toctree entries** (item names listed in `.. toctree::` in source)
+- **h3 heading keywords** (important terms in h3 headings within the section)
+
+---
+
+## Markdown Description Rules in Sections
+
+### Class/Interface Information
 
 ```markdown
 **クラス名**: `nablarch.common.handler.DbConnectionManagementHandler`
 ```
 
-複数クラス: `**クラス**: \`Class1\`, \`Class2\``
-アノテーション: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+Multiple classes: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
 
-### モジュール依存
+### Module Dependencies
 
 ````markdown
 **モジュール**:
@@ -277,7 +277,7 @@ https://fintan.jp/page/252/
 ```
 ````
 
-### プロパティ一覧
+### Property List
 
 ```markdown
 | プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
@@ -285,22 +285,22 @@ https://fintan.jp/page/252/
 | connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
 ```
 
-必須列: ○ = 必須、空 = 任意。デフォルト値がない場合は空。
+Required column: ○ = required, empty = optional. Empty if no default value.
 
-### コード例
+### Code Examples
 
-java, xml 等のコードブロックを使用。
+Use code blocks like java, xml, etc.
 
-### 注意喚起ディレクティブ
+### Alert Directives
 
-| RSTディレクティブ | MD表現 |
+| RST Directive | MD Expression |
 |---|---|
 | `.. important::` | `> **重要**: テキスト` |
 | `.. tip::` | `> **補足**: テキスト` |
 | `.. warning::` | `> **警告**: テキスト` |
 | `.. note::` | `> **注意**: テキスト` |
 
-### 処理の流れ
+### Process Flow
 
 ```markdown
 1. 共通起動ランチャ(Main)がハンドラキューを実行する
@@ -308,7 +308,7 @@ java, xml 等のコードブロックを使用。
 3. アクションクラスが業務ロジックを実行する
 ```
 
-### ハンドラ構成表
+### Handler Configuration Table
 
 ```markdown
 | No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
@@ -316,7 +316,7 @@ java, xml 等のコードブロックを使用。
 | 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
 ```
 
-### 機能比較表
+### Feature Comparison Table
 
 ```markdown
 | 機能 | Jakarta Batch | Nablarchバッチ |
@@ -324,108 +324,108 @@ java, xml 等のコードブロックを使用。
 | 起動パラメータ設定 | ◎ | ○ |
 ```
 
-凡例: ◎ = 仕様で定義、○ = 提供あり、△ = 一部提供、× = 提供なし、— = 対象外
+Legend: ◎ = defined in spec, ○ = provided, △ = partially provided, × = not provided, — = not applicable
 
-脚注がある場合は表の直後に記載:
+If there are footnotes, write them immediately after the table:
 
 ```markdown
 [1] ResumeDataReaderを使用することで再実行が可能。ただしファイル入力時のみ。
 ```
 
-### クロスリファレンスの変換
+### Cross-reference Conversion
 
-RSTの `:ref:` と `:doc:` 参照は、上記の「このファイル内で定義されているラベル」リストを使って内部/外部を判定します。
+RST `:ref:` and `:doc:` references are judged as internal/external using the "Labels defined in this file" list above.
 
-**判定方法**:
-- `:ref:`label_name`` または `:ref:`表示テキスト<label_name>`` のlabel_nameが上記リストに含まれる → 内部参照
-- 含まれない → 外部参照
+**Judgment method**:
+- If label_name in `:ref:`label_name`` or `:ref:`display_text<label_name>`` is in the list → internal reference
+- Not in list → external reference
 
-**内部参照（同一ファイル内のセクション）**:
+**Internal reference (section in same file)**:
 ```
-ソース: :ref:`default_metrics`
-変換先: [default_metrics](#default-metrics)
+Source: :ref:`default_metrics`
+Convert to: [default_metrics](#default-metrics)
 
-ソース: :ref:`デフォルトメトリクス<default_metrics>`
-変換先: [デフォルトメトリクス](#default-metrics)
-```
-
-**外部参照（他の知識ファイル）**:
-```
-ソース: :ref:`library`
-変換先: [library](@library)
-
-ソース: :ref:`ライブラリ<library>`
-変換先: [ライブラリ](@library)
+Source: :ref:`デフォルトメトリクス<default_metrics>`
+Convert to: [デフォルトメトリクス](#default-metrics)
 ```
 
-**その他**:
-- `:java:extdoc:` → クラス名をJavadoc URLに変換して `official_doc_urls` に追加
-- 外部URL（`http://`, `https://`）→ そのまま保持
+**External reference (other knowledge file)**:
+```
+Source: :ref:`library`
+Convert to: [library](@library)
 
-### 画像・添付ファイルの扱い
+Source: :ref:`ライブラリ<library>`
+Convert to: [ライブラリ](@library)
+```
 
-テキスト代替を優先し、代替できない場合はassetsディレクトリに取り込んでパス参照する。
+**Others**:
+- `:java:extdoc:` → Convert class name to Javadoc URL and add to `official_doc_urls`
+- External URLs (`http://`, `https://`) → Keep as-is
 
-| 画像種別 | 対応方法 |
+### Images and Attachments Handling
+
+Prioritize text alternatives. If not possible, incorporate into assets directory and reference by path.
+
+| Image Type | Handling |
 |---|---|
-| フロー図 | テキスト代替（番号付きリスト） |
-| アーキテクチャ/構成図 | テキスト代替（定義リスト形式） |
-| 画面キャプチャ | テキスト代替（手順の説明） |
-| 上記でテキスト代替が困難な図 | `assets/{知識ファイルID}/` に配置し、MD内で `![説明](assets/{知識ファイルID}/filename.png)` で参照 |
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list format) |
+| Screen captures | Text alternative (step description) |
+| Diagrams difficult for text alternative | Place in `assets/{knowledge_file_id}/` and reference in MD as `![description](assets/{knowledge_file_id}/filename.png)` |
 
-Office等の添付ファイル（テンプレートExcel等）は `assets/{知識ファイルID}/` に配置し、MD内でパス参照する。
-
----
-
-## エラーハンドリング
-
-ソースファイルの内容に問題がある場合は、以下のガイドラインに従ってください:
-
-- **破損したRST/MD構文**: 可能な範囲で解釈し、読み取れる情報を抽出。完全に解釈不能な場合はエラーメッセージを出力せず、読み取れた部分のみで知識ファイルを生成
-- **画像が見つからない**: テキスト代替に注力。画像ファイルがないことは無視
-- **不完全な表**: 読み取れる行・列のみを抽出
-- **文字化け**: 文脈から推測せず、読み取れる部分のみ抽出
+Office attachments (template Excel, etc.) are placed in `assets/{knowledge_file_id}/` and referenced by path in MD.
 
 ---
 
-## 構造検証項目（検証スクリプトがチェックする内容）
+## Error Handling
 
-検証スクリプトは以下をチェックします。エラーが出たら、メッセージを読んで修正してください：
+If there are issues with source file content, follow these guidelines:
 
-- **S3**: `index[].id` の全てが `sections` のキーとして存在すること
-- **S4**: `sections` の全キーが `index[].id` として存在すること
-- **S5**: section ID が kebab-case 形式（例: `getting-started`）
-- **S6**: 全ての `hints` が非空配列であること
-- **S7**: 全ての `sections` 内容が非空であること
-- **S9**: `sections` 数 ≥ ソース見出し数（**最重要** - セクション抜けがないこと）
-- **S13**: 全ての `sections` が最低50文字以上（「なし」等の例外を除く）
-- **S14**: 内部参照 `(#section-id)` の参照先が全て存在すること
-- **S15**: アセット参照 `(assets/xxx.png)` のファイルが全て存在すること
-
-**よくあるエラーの修正方法：**
-
-- **S9（セクション数不足）**: ソースの全h2見出し（RST: `---` で下線、MD: `##`）を確認し、不足しているセクションを追加
-- **S14（内部参照エラー）**: 参照先のセクションIDが存在しない場合は、参照を削除または正しいIDに修正
-- **S15（アセット未検出）**: アセットファイルが見つからない場合は、参照を削除してテキスト代替を記述
+- **Corrupted RST/MD syntax**: Interpret as much as possible and extract readable information. If completely uninterpretable, don't output error messages; generate knowledge file with only readable parts
+- **Image not found**: Focus on text alternatives. Ignore missing image files
+- **Incomplete tables**: Extract only readable rows/columns
+- **Garbled text**: Don't infer from context; extract only readable parts
 
 ---
 
-## 🔄 再度確認：完了条件
+## Structure Validation Items (What the Validation Script Checks)
 
-JSON出力の前に、必ず以下を実行してください：
+The validation script checks the following. If errors occur, read messages and fix them:
 
-1. JSONを `{OUTPUT_PATH}` に保存
-2. 検証スクリプトを実行：`python tools/knowledge-creator/validate_single.py {OUTPUT_PATH} {SOURCE_PATH} {FORMAT}`
-3. 終了コード 0 になるまで修正を繰り返す（最大20回）
+- **S3**: All `index[].id` must exist as keys in `sections`
+- **S4**: All keys in `sections` must exist as `index[].id`
+- **S5**: Section IDs are kebab-case format (e.g., `getting-started`)
+- **S6**: All `hints` are non-empty arrays
+- **S7**: All `sections` content is non-empty
+- **S9**: `sections` count ≥ source heading count (**MOST IMPORTANT** - no missing sections)
+- **S13**: All `sections` have at least 50 characters (except exceptions like "なし")
+- **S14**: All internal reference destinations `(#section-id)` exist
+- **S15**: All asset reference files `(assets/xxx.png)` exist
 
-**検証パスしない限り、出力してはいけません。**
+**Common Error Fixes:**
+
+- **S9 (insufficient section count)**: Check all h2 headings in source (RST: underlined with `---`, MD: `##`) and add missing sections
+- **S14 (internal reference error)**: If referenced section ID doesn't exist, remove reference or fix to correct ID
+- **S15 (asset not found)**: If asset file not found, remove reference and write text alternative
 
 ---
 
-## 出力形式
+## 🔄 Re-confirm: Completion Condition
 
-検証パス後、以下のJSON形式で最終版を出力してください。JSON以外のテキストは含めないでください。
+Before JSON output, you MUST execute the following:
+
+1. Save JSON to `{OUTPUT_PATH}`
+2. Run validation script: `python tools/knowledge-creator/validate_single.py {OUTPUT_PATH} {SOURCE_PATH} {FORMAT}`
+3. Repeat fixes until exit code 0 (max 20 times)
+
+**You must NOT output unless validation passes.**
+
+---
+
+## Output Format
+
+After validation passes, output the final version in the following JSON format. Do not include any text other than JSON.
 
 ```json
-{出力JSONをここに}
+{output JSON here}
 ```

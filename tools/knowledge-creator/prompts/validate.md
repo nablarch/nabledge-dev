@@ -1,34 +1,34 @@
-あなたはNablarchの知識ファイルの品質検証・改善エキスパートです。
-生成された知識ファイルとソースファイルを突き合わせ、構造と内容の両方を検証し、問題があれば修正してください。
+You are an expert in validating and improving Nablarch knowledge files.
+Compare the generated knowledge file with the source file to validate both structure and content, and fix any issues.
 
-## ⚠️ 完了条件（必ず守ること）
+## ⚠️ Completion Condition (MUST follow)
 
-知識ファイル改善の完了条件は、**構造検証スクリプトで指摘が0件になること**です。
+The completion condition for knowledge file improvement is **zero validation errors from the structure validation script**.
 
-以下のプロセスを**必ず実行**してください：
+You **MUST** execute the following process:
 
-1. 知識ファイルを修正（下記の検証観点を参考に）
-2. 修正したJSONを `{OUTPUT_PATH}` に保存
-3. 構造検証スクリプトを実行：
+1. Fix the knowledge file (refer to validation perspectives below)
+2. Save the fixed JSON to `{OUTPUT_PATH}`
+3. Run structure validation script:
    ```bash
    python tools/knowledge-creator/validate_single.py {OUTPUT_PATH} {SOURCE_PATH} {FORMAT}
    ```
-4. 終了コードを確認：
-   - **終了コード 0**：✅ 検証パス → 完了
-   - **終了コード 1**：❌ エラーあり → エラーメッセージを読んで修正し、ステップ1に戻る
-5. **最大20回まで**繰り返す（20回でも指摘が残る場合のみ、その時点の最終版を出力）
+4. Check exit code:
+   - **Exit code 0**: ✅ Validation passed → Complete
+   - **Exit code 1**: ❌ Errors found → Read error messages, fix them, and return to step 1
+5. **Repeat up to 20 times** (only if errors remain after 20 attempts, output the final version at that point)
 
-**重要**：検証パスしない限り、絶対に完了してはいけません。
+**IMPORTANT**: You must NOT complete until validation passes.
 
 ---
 
-## ソースファイル
+## Source File
 
 ```
 {SOURCE_CONTENT}
 ```
 
-## 知識ファイル
+## Knowledge File
 
 ```json
 {KNOWLEDGE_JSON}
@@ -36,54 +36,54 @@
 
 ---
 
-## 検証観点
+## Validation Perspectives
 
-以下の観点で検証・修正してください：
+Validate and fix from the following perspectives:
 
-**B1. 情報の漏れ（最も重要）**
+**B1. Information Omissions (Most Important)**
 
-ソースに書かれている以下の情報が知識ファイルに含まれているか確認:
-- 仕様（設定項目、デフォルト値、型、制約、動作仕様）
-- 注意点・警告（important, warning, tip, note ディレクティブの内容）
-- 設計思想、推奨パターン
-- コード例、設定例
-- クラス名、インターフェース名、アノテーション名
+Check if the knowledge file contains the following information from the source:
+- Specifications (configuration items, default values, types, constraints, behavior specs)
+- Notes and warnings (content of important, warning, tip, note directives)
+- Design philosophy, recommended patterns
+- Code examples, configuration examples
+- Class names, interface names, annotation names
 
-**修正方法:** 漏れている情報をソースから抽出して、該当セクションに追加
+**Fix method:** Extract missing information from source and add to relevant sections
 
-**B2. 情報の捏造**
+**B2. Information Fabrication**
 
-知識ファイルにソースに書かれていない情報が含まれていないか確認:
-- 推測で追加されたデフォルト値、制約、動作仕様
-- ソースにない説明の追加
-- ソースにないコード例の追加
+Check if the knowledge file contains information NOT written in the source:
+- Inferred default values, constraints, behavior specs
+- Added explanations not in source
+- Added code examples not in source
 
-**修正方法:** ソースにない情報を削除
+**Fix method:** Remove information not in source
 
-**B3. セクション分割の妥当性**
+**B3. Section Splitting Validity**
 
-- RSTの場合: h2で分割されているか。h2配下が2000文字を超える場合にh3で分割されているか
-- MDの場合: ##で分割されているか
-- h3以下が親セクションに含まれているか
-- 各セクションは最低50文字以上の内容を持つこと（空または極端に短いセクションはNG）
+- For RST: Split by h2? If text under h2 exceeds 2000 characters, split by h3?
+- For MD: Split by ##?
+- Are h3 and below included in parent sections?
+- Each section must have at least 50 characters of content (empty or extremely short sections are NG)
 
-**修正方法:** セクション分割を調整、または短いセクションに内容を追加
+**Fix method:** Adjust section splitting or add content to short sections
 
-**B4. 検索ヒントの品質**
+**B4. Search Hints Quality**
 
-- 各セクションのhints にクラス名、プロパティ名、機能キーワードが含まれているか
-- 不足しているhintがないか
-- 最低基準: セクションに登場する技術用語（クラス名、アノテーション名、プロパティ名）は必ず含めること
+- Do section hints include class names, property names, functional keywords?
+- Are any hints missing?
+- Minimum standard: Technical terms appearing in sections (class names, annotation names, property names) must be included
 
-**修正方法:** 不足しているキーワードをhintsに追加
+**Fix method:** Add missing keywords to hints
 
 ---
 
-## 出力形式
+## Output Format
 
-修正が完了したら、以下のJSON形式で出力してください。JSON以外のテキストは含めないでください。
+After fixes are complete, output in the following JSON format. Do not include any text other than JSON.
 
-**修正後の知識ファイル全体**を出力してください（元の知識ファイルと同じJSON Schema）。
+Output **the entire fixed knowledge file** (same JSON Schema as original knowledge file).
 
 ```json
 {
@@ -97,8 +97,8 @@
 
 ---
 
-## 重要な注意事項
+## Important Notes
 
-- 20回の試行でも問題が残る場合は、その時点の最終版を出力してください
-- 修正は必ずソースファイルの内容に基づいて行ってください
-- 推測や一般知識で情報を追加しないでください
+- If issues remain after 20 attempts, output the final version at that point
+- Fixes must be based on source file content
+- Do not add information by inference or general knowledge
