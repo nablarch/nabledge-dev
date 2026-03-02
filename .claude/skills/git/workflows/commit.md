@@ -81,25 +81,7 @@ Determine from diff and file names:
 
 **3.1.5 Detect Model Name**
 
-Extract the current model name from your system context to use in the Co-Authored-By line.
-
-**Detection Method:**
-
-1. Access your system context (available in your current session metadata)
-2. Search for the exact phrase: "You are powered by the model named"
-3. Extract the text immediately following this phrase (up to the next period or line break)
-4. Prepend "Claude " to the extracted model name
-
-**Examples:**
-- "You are powered by the model named Sonnet 4.5" → "Claude Sonnet 4.5"
-- "You are powered by the model named Opus 4.6" → "Claude Opus 4.6"
-- "You are powered by the model named Haiku 4.5" → "Claude Haiku 4.5"
-
-**Fallback:**
-
-If the model name cannot be detected, use "Claude" alone (without duplication).
-
-Result: `Co-Authored-By: Claude <noreply@anthropic.com>`
+Extract your model name from system context (e.g., "Sonnet 4.5", "Opus 4.6") and format as "Claude {model_name}". If unavailable, use "Claude".
 
 **3.2 Generate Message**
 
@@ -111,9 +93,7 @@ Follow project commit rules (`.claude/rules/commit-rules.md`):
 Co-Authored-By: {detected_model_name} <noreply@anthropic.com>
 ```
 
-Where `{detected_model_name}` is the complete Co-Authored-By name from step 3.1.5:
-- With detection: "Claude Sonnet 4.5", "Claude Opus 4.6", "Claude Haiku 4.5"
-- Fallback: "Claude"
+Where `{detected_model_name}` is from step 3.1.5 (e.g., "Claude Sonnet 4.5" or "Claude").
 
 **Type Examples**:
 - `feat: Add user authentication feature`
