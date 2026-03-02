@@ -114,6 +114,7 @@ class Step3Generate:
         prompt = prompt.replace("{TYPE}", file_info["type"])
         prompt = prompt.replace("{CATEGORY}", file_info["category"])
         prompt = prompt.replace("{OUTPUT_PATH}", file_info["output_path"])
+        prompt = prompt.replace("{SOURCE_PATH}", file_info["source_path"])
         prompt = prompt.replace("{ASSETS_DIR}", file_info["assets_dir"])
         prompt = prompt.replace("{OFFICIAL_DOC_BASE_URL}", self.compute_official_url(file_info))
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
@@ -209,7 +210,7 @@ class Step3Generate:
 
         # Run claude -p with JSON schema validation
         try:
-            result = run_claude(prompt, timeout=900, json_schema=self.json_schema)
+            result = run_claude(prompt, timeout=600, json_schema=self.json_schema)
         except subprocess.TimeoutExpired:
             log_entry = {
                 "file_id": file_id,

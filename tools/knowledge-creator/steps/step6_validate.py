@@ -61,7 +61,10 @@ class Step6Validate:
         for field in ["id", "title", "official_doc_urls", "index", "sections"]:
             if field not in knowledge:
                 errors.append(f"S2: Missing required field: {field}")
-        if errors:
+
+        # Continue validation even if S2 fails (to collect all errors in one pass)
+        if "index" not in knowledge or "sections" not in knowledge:
+            # Cannot continue structural validation without these fields
             return errors
 
         index_ids = [entry["id"] for entry in knowledge.get("index", [])]
@@ -194,14 +197,15 @@ class Step6Validate:
         return errors
 
     def validate_content_with_claude(self, file_info: dict, knowledge: dict, source_content: str) -> dict:
-        """Use claude -p for content validation"""
+        """Use claude -p for content validation and improvement"""
         file_id = file_info["id"]
+        json_path = f"{self.ctx.knowledge_dir}/{file_info['output_path']}"
         log_path = f"{self.ctx.log_dir}/validate/content/{file_id}.json"
 
-        # Check if already validated
+        # Check if already validated successfully
         if os.path.exists(log_path):
             cached = load_json(log_path)
-            if cached.get("verdict") == "pass":
+            if cached.get("status") == "improved":
                 return cached
 
         prompt = self.prompt_template
@@ -209,30 +213,51 @@ class Step6Validate:
         prompt = prompt.replace("{KNOWLEDGE_JSON}", json.dumps(knowledge, ensure_ascii=False, indent=2))
 
         try:
-            result = run_claude(prompt, timeout=120)
+            result = run_claude(prompt, timeout=600)
             if result.returncode == 0:
-                # Extract JSON from output
+                # Extract improved knowledge JSON from output
                 match = re.search(r'```json?\s*\n(.*?)\n```', result.stdout, re.DOTALL)
                 if match:
-                    validation_result = json.loads(match.group(1))
+                    improved_knowledge = json.loads(match.group(1))
                 else:
-                    validation_result = json.loads(result.stdout.strip())
+                    improved_knowledge = json.loads(result.stdout.strip())
 
-                validation_result["file_id"] = file_id
+                # Validate that improved knowledge has required structure
+                if not all(k in improved_knowledge for k in ["id", "title", "official_doc_urls", "index", "sections"]):
+                    error_result = {
+                        "file_id": file_id,
+                        "status": "error",
+                        "reason": "Improved knowledge missing required fields"
+                    }
+                    if not self.dry_run:
+                        write_json(log_path, error_result)
+                    return error_result
+
+                # Save improved knowledge file
                 if not self.dry_run:
-                    write_json(log_path, validation_result)
-                return validation_result
+                    write_json(json_path, improved_knowledge)
+
+                # Log success
+                success_result = {
+                    "file_id": file_id,
+                    "status": "improved",
+                    "message": "Content validated and improved"
+                }
+                if not self.dry_run:
+                    write_json(log_path, success_result)
+                return success_result
+
         except (subprocess.TimeoutExpired, json.JSONDecodeError) as e:
             error_result = {
                 "file_id": file_id,
-                "verdict": "error",
-                "issues": [{"type": "validation_error", "description": str(e)}]
+                "status": "error",
+                "reason": str(e)
             }
             if not self.dry_run:
                 write_json(log_path, error_result)
             return error_result
 
-        return {"file_id": file_id, "verdict": "error", "issues": []}
+        return {"file_id": file_id, "status": "error", "reason": "Unknown error"}
 
     def validate_one(self, file_info: dict) -> dict:
         """Validate one knowledge file"""
@@ -263,13 +288,13 @@ class Step6Validate:
             source_content = read_file(source_path) if os.path.exists(source_path) else ""
             content_result = self.validate_content_with_claude(file_info, knowledge, source_content)
         else:
-            content_result = {"verdict": "skipped", "reason": "structure validation failed"}
+            content_result = {"status": "skipped", "reason": "structure validation failed"}
 
         return {
             "id": file_id,
             "status": "validated",
             "structure": struct_result["result"],
-            "content": content_result.get("verdict", "skipped")
+            "content": content_result.get("status", "skipped")
         }
 
     def generate_summary(self):
@@ -301,8 +326,7 @@ class Step6Validate:
                         "id": file_id,
                         "structure": s["result"],
                         "structure_errors": s.get("errors", []),
-                        "content": c.get("verdict", "skipped") if c else "skipped",
-                        "content_issues": c.get("issues", []) if c else []
+                        "content": c.get("status", "skipped") if c else "skipped"
                     })
 
         summary = {
@@ -316,9 +340,9 @@ class Step6Validate:
             "validate": {
                 "total": len(validate_results),
                 "all_pass": sum(1 for r in validate_results
-                              if r["structure"] == "pass" and r["content"] == "pass"),
+                              if r["structure"] == "pass" and r["content"] == "improved"),
                 "structure_fail": sum(1 for r in validate_results if r["structure"] == "fail"),
-                "content_fail": sum(1 for r in validate_results if r["content"] == "fail"),
+                "content_error": sum(1 for r in validate_results if r["content"] == "error"),
             },
             "validate_results": validate_results,
         }

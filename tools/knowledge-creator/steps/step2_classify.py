@@ -101,7 +101,8 @@ def filter_for_test(classified: list, test_file_ids: set) -> list:
 
 
 class Step2Classify:
-    # Threshold for section splitting
+    # Thresholds for file splitting
+    FILE_LINE_THRESHOLD = 1000     # Split if file exceeds this
     SECTION_LINE_THRESHOLD = 1000  # Split if any section exceeds this
 
     def __init__(self, ctx, dry_run=False, sources_data=None):
@@ -221,7 +222,7 @@ class Step2Classify:
         return subsections
 
     def should_split_file(self, file_path: str, format: str) -> tuple:
-        """Check if file should be split based on section sizes
+        """Check if file should be split based on file size or section sizes
 
         Returns:
             (should_split: bool, sections: list, total_lines: int)
@@ -237,13 +238,19 @@ class Step2Classify:
         lines = content.splitlines()
         total_lines = len(lines)
 
-        # Analyze sections (no file-level threshold check)
+        # Analyze sections
         sections = self.analyze_rst_sections(content)
 
-        # Check if any section exceeds threshold
+        # Check if file exceeds FILE_LINE_THRESHOLD
+        file_exceeds = total_lines > self.FILE_LINE_THRESHOLD
+
+        # Check if any section exceeds SECTION_LINE_THRESHOLD
         has_large_section = any(s['line_count'] > self.SECTION_LINE_THRESHOLD for s in sections)
 
-        return has_large_section, sections, total_lines
+        # Split if either condition is true
+        should_split = file_exceeds or has_large_section
+
+        return should_split, sections, total_lines
 
     def split_file_entry(self, base_entry: dict, sections: list, content: str) -> list:
         """Split a file entry into multiple entries based on sections

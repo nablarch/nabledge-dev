@@ -95,13 +95,13 @@ def write_file(path: str, content: str):
         f.write(content)
 
 
-def run_claude(prompt: str, timeout: int = 300, json_schema: dict = None) -> subprocess.CompletedProcess:
+def run_claude(prompt: str, timeout: int = 600, json_schema: dict = None) -> subprocess.CompletedProcess:
     """
     Run claude -p via stdin
 
     Args:
         prompt: Prompt text to send to claude
-        timeout: Timeout in seconds (default: 300)
+        timeout: Timeout in seconds (default: 600)
         json_schema: JSON Schema for structured output validation (optional)
 
     Returns:
