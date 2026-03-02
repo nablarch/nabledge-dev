@@ -151,9 +151,18 @@ if ! command -v jq &> /dev/null; then
             fi
 
             # Verify checksum
-            if ! echo "${JQ_SHA256}  ${JQ_PATH}" | sha256sum -c - 2>/dev/null; then
-                echo "Warning: Could not verify jq checksum"
-                echo "Please verify the download manually"
+            if ! command -v sha256sum >/dev/null 2>&1; then
+                echo "[ERROR] sha256sum not available - cannot verify download integrity"
+                read -p "Download may be compromised. Continue anyway? (y/n) " -n 1 -r
+                echo
+                [[ $REPLY =~ ^[Yy]$ ]] || exit 1
+            elif ! echo "${JQ_SHA256}  ${JQ_PATH}" | sha256sum -c - 2>/dev/null; then
+                echo "[ERROR] Checksum verification failed - download may be compromised"
+                read -p "Continue anyway? (y/n) " -n 1 -r
+                echo
+                [[ $REPLY =~ ^[Yy]$ ]] || exit 1
+            else
+                echo "[OK] Checksum verified"
             fi
 
             chmod +x "$JQ_PATH"

@@ -95,6 +95,8 @@ resultsはrelevance降順（high → partial）でソート。空配列は該当
 
 **分岐**: 候補ファイルが0件の場合は空のポインタJSONを返して終了。
 
+空のポインタJSON: `{"results": []}`
+
 ### Step 5: セクション選定（経路2）
 
 **ツール**: _knowledge-search/section-search.md

@@ -239,6 +239,10 @@ cat .claude/skills/nabledge-5/assets/code-analysis-template.md \
 - Check error message on stderr for specific issue
 - Common causes: missing template file, invalid file paths, permission errors
 - Verify all source files exist and are readable
+- If script is missing or unrecoverable error (permission denied, corrupted file):
+  - Generate template content manually using `template-guide.md` as reference
+  - Log error to user: "自動テンプレート生成に失敗しました。手動でテンプレートを生成しています。"
+  - Continue with manual approach
 - If script succeeds but output is incorrect, verify parameters match expected format
 
 **Validation**: After script completes, verify:

@@ -21,6 +21,12 @@ fi
 for pair in "$@"; do
   file="${pair%%:*}"
   section="${pair##*:}"
+
+  # Validate file path doesn't escape knowledge directory
+  case "$file" in
+    /*|*../*) echo "Error: Invalid file path: $file" >&2; exit 1 ;;
+  esac
+
   echo "=== $file : $section ==="
   jq -r --arg sec "$section" '.sections[$sec] // "SECTION_NOT_FOUND"' "$KNOWLEDGE_DIR/$file" 2>/dev/null || echo "FILE_NOT_FOUND"
   echo "=== END ==="
