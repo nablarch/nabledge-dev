@@ -4,6 +4,7 @@ Classify source files into Type/Category based on path patterns.
 """
 
 import os
+import json
 from datetime import datetime
 from .common import load_json, write_json
 
@@ -64,6 +65,26 @@ MD_MAPPING = {
 XLSX_MAPPING = {
     "Nablarch機能のセキュリティ対応表.xlsx": ("check", "security-check"),
 }
+
+
+def load_test_file_ids(repo_path: str) -> set:
+    """Load test file IDs from test-files.json"""
+    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/test-files.json")
+
+    if not os.path.exists(test_file_path):
+        raise FileNotFoundError(f"Test file set not found: {test_file_path}")
+
+    with open(test_file_path) as f:
+        test_data = json.load(f)
+
+    # Extract file IDs from the files array
+    file_ids = set(test_data["files"])
+    return file_ids
+
+
+def filter_for_test(classified: list, test_file_ids: set) -> list:
+    """Filter file list for test mode using predefined test file set"""
+    return [f for f in classified if f['id'] in test_file_ids]
 
 
 class Step2Classify:
@@ -150,6 +171,21 @@ class Step2Classify:
                 "assets_dir": assets_dir
             })
 
+        # Apply test mode filter if enabled
+        if self.ctx.test_mode:
+            test_file_ids = load_test_file_ids(self.ctx.repo)
+            original_count = len(classified)
+            classified = filter_for_test(classified, test_file_ids)
+            print(f"\nTest mode: Filtered {original_count} files to {len(classified)} test files")
+
+            # Show missing test files (files in test set but not found in classified)
+            found_ids = {f['id'] for f in classified}
+            missing = test_file_ids - found_ids
+            if missing:
+                print(f"WARNING: {len(missing)} test files not found in classified list:")
+                for mid in sorted(missing):
+                    print(f"  - {mid}")
+
         # Generate output
         output = {
             "version": self.ctx.version,
@@ -157,7 +193,7 @@ class Step2Classify:
             "files": classified
         }
 
-        print(f"Classified {len(classified)} files")
+        print(f"\nClassified {len(classified)} files")
         print(f"  processing-pattern: {sum(1 for f in classified if f['type'] == 'processing-pattern')}")
         print(f"  component: {sum(1 for f in classified if f['type'] == 'component')}")
         print(f"  development-tools: {sum(1 for f in classified if f['type'] == 'development-tools')}")

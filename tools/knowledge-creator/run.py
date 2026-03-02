@@ -30,6 +30,7 @@ class Context:
     version: str          # "6" or "5"
     repo: str             # Repository root path
     concurrency: int      # Concurrency level for parallel processing
+    test_mode: bool = False  # Test mode: process curated file set only
 
     def __post_init__(self):
         """Validate paths after initialization"""
@@ -166,6 +167,11 @@ def main():
         action="store_true",
         help="Show what would be processed without actual execution"
     )
+    parser.add_argument(
+        "--test-mode",
+        action="store_true",
+        help="Test mode: process curated file set covering all validation scenarios"
+    )
 
     args = parser.parse_args()
 
@@ -175,9 +181,16 @@ def main():
     for v in versions:
         print(f"\n{'='*60}")
         print(f"Processing version: {v}")
+        if args.test_mode:
+            print(f"TEST MODE: Processing curated file set only")
         print(f"{'='*60}\n")
 
-        ctx = Context(version=v, repo=args.repo, concurrency=args.concurrency)
+        ctx = Context(
+            version=v,
+            repo=args.repo,
+            concurrency=args.concurrency,
+            test_mode=args.test_mode
+        )
 
         # Create log directory
         os.makedirs(ctx.log_dir, exist_ok=True)
