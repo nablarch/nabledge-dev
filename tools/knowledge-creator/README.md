@@ -30,6 +30,9 @@ python tools/knowledge-creator/run.py --version 6
 # Process both versions
 python tools/knowledge-creator/run.py --version all
 
+# Test mode (process 31 curated files for fast validation)
+python tools/knowledge-creator/run.py --version 6 --test-mode
+
 # Run specific step only
 python tools/knowledge-creator/run.py --version 6 --step 3
 
@@ -45,6 +48,7 @@ python tools/knowledge-creator/run.py --version 6 --dry-run
 | `--step` | int | No | - | Run specific step (1-6) |
 | `--concurrency` | int | No | 4 | Number of parallel claude -p sessions |
 | `--repo` | str | No | current dir | Repository root path |
+| `--test-mode` | flag | No | false | Process only 31 curated test files (see `doc/99-nabledge-creator-tool/TEST-MODE.md`) |
 | `--dry-run` | flag | No | false | Show what would be processed without execution |
 
 ## Processing Steps
