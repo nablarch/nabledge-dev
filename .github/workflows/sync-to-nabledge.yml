@@ -37,54 +37,21 @@ jobs:
       - name: Capture and transform commit message
         id: commit_message
         run: |
-          # Get original commit message from nabledge-dev
-          ORIGINAL_SUBJECT=$(git log -1 --format=%s ${{ github.sha }}) || {
-            echo "Error: Failed to extract commit subject"
-            exit 1
-          }
-          ORIGINAL_BODY=$(git log -1 --format=%b ${{ github.sha }}) || {
-            echo "Error: Failed to extract commit body"
-            exit 1
-          }
+          .github/scripts/capture-commit-message.sh \
+            "${{ github.sha }}" \
+            "${{ github.event.head_commit.message }}"
 
-          # Validate that subject is not empty
-          if [ -z "$ORIGINAL_SUBJECT" ]; then
-            echo "Error: Commit subject is empty"
-            exit 1
-          fi
-
-          # Transform issue references from #123 to nablarch/nabledge-dev#123
-          # Pattern avoids double-transformation of already-transformed references
-          TRANSFORMED_SUBJECT=$(echo "$ORIGINAL_SUBJECT" | sed -E 's/(^|[^a-zA-Z0-9\/-])#([0-9]+)/\1nablarch\/nabledge-dev#\2/g')
-          TRANSFORMED_BODY=$(echo "$ORIGINAL_BODY" | sed -E 's/(^|[^a-zA-Z0-9\/-])#([0-9]+)/\1nablarch\/nabledge-dev#\2/g')
-
-          # Save to environment file for next step
-          {
-            echo "COMMIT_SUBJECT<<NABLEDGE_EOF_DELIMITER_SUBJECT"
-            echo "$TRANSFORMED_SUBJECT"
-            echo "NABLEDGE_EOF_DELIMITER_SUBJECT"
-            echo "COMMIT_BODY<<NABLEDGE_EOF_DELIMITER_BODY"
-            echo "$TRANSFORMED_BODY"
-            echo "NABLEDGE_EOF_DELIMITER_BODY"
-          } >> $GITHUB_ENV
+      - name: Build commit body with trigger information
+        run: |
+          .github/scripts/build-commit-body.sh \
+            "${{ github.repository }}" \
+            "${{ github.sha }}" \
+            "$COMMIT_BODY"
 
       - name: Commit and Push to nabledge
         working-directory: nabledge-repo
         run: |
-          TRIGGER_COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-
-          # Combine original message with trigger information
-          if [ -n "$COMMIT_BODY" ]; then
-            FULL_BODY="${COMMIT_BODY}
-
----
-
-Triggered by: ${TRIGGER_COMMIT_URL}"
-          else
-            FULL_BODY="Triggered by: ${TRIGGER_COMMIT_URL}"
-          fi
-
           ../.github/scripts/commit-and-push.sh \
             "$COMMIT_SUBJECT" \
-            "$FULL_BODY" \
+            "$FULL_COMMIT_BODY" \
             "develop"
