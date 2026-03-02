@@ -44,7 +44,7 @@ def run_claude(prompt: str, timeout: int = 300) -> subprocess.CompletedProcess:
         CompletedProcess with stdout, stderr, returncode
     """
     return subprocess.run(
-        ["claude", "-p", "--model", "claude-sonnet-4-5-20250929"],
+        ["claude", "-p"],
         input=prompt,
         capture_output=True,
         text=True,
