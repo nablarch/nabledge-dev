@@ -81,3 +81,34 @@
 2. Defer full 10-scenario validation
 3. Fix nabledge-test in separate work (Issue #102 or similar)
 4. Re-run validation after nabledge-test fix
+
+---
+
+## 2026-03-02 (Later)
+
+### Decision: Remove all measurement data for fresh baseline
+
+**Reason**: Previous measurement data contained estimated values (not actual measurements), making accurate comparison impossible.
+
+**Issues found**:
+- Baseline timing.json had "estimated_ms" fields with "~" approximations
+- New workflow measurement (ks-001) only ran 1/10 scenarios
+- Cannot determine actual bottlenecks from estimated data
+- Comparison analysis contained speculation instead of data-driven facts
+
+**Actions taken**:
+1. Removed all measurement data:
+   - `baseline-old-workflows/` (12 files with estimates)
+   - `new-workflows/` (incomplete, 1/10 scenarios)
+   - `conversion-test-results.md`
+   - `performance-comparison.md`
+   - `phase8-evaluation.md`
+   - `.tmp/nabledge-test/` workspaces
+2. Updated Issue #98 success criteria:
+   - Changed to explicit per-scenario measurement
+   - Each scenario executed individually via Task tool
+   - Output verification required after each execution
+   - Baseline: 10 scenarios (ks-001~005, ca-001~005)
+   - Improved: 10 scenarios (same set)
+
+**Next**: Execute accurate measurements with Task tool, one scenario at a time
