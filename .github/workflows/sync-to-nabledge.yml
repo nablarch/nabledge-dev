@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode (dry-run without actual push)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   sync:
@@ -48,7 +55,21 @@ jobs:
             "${{ github.sha }}" \
             "$COMMIT_BODY"
 
+      - name: Display transformed commit message (test mode)
+        if: ${{ github.event.inputs.test_mode == 'true' }}
+        run: |
+          echo "=== Test Mode: Commit Message Transformation ==="
+          echo ""
+          echo "Subject:"
+          echo "$COMMIT_SUBJECT"
+          echo ""
+          echo "Body:"
+          echo "$FULL_COMMIT_BODY"
+          echo ""
+          echo "Push to nabledge repository: SKIPPED (test mode)"
+
       - name: Commit and Push to nabledge
+        if: ${{ github.event.inputs.test_mode != 'true' }}
         working-directory: nabledge-repo
         run: |
           ../.github/scripts/commit-and-push.sh \
