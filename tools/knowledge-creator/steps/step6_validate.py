@@ -7,7 +7,6 @@ import os
 import re
 import json
 import subprocess
-import requests
 from glob import glob
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -398,5 +397,5 @@ class Step6Validate:
         print(f"Validation: {summary['validate']['all_pass']}/{summary['validate']['total']} PASS")
         if summary['validate']['structure_fail'] > 0:
             print(f"  Structure failures: {summary['validate']['structure_fail']}")
-        if summary['validate']['content_fail'] > 0:
-            print(f"  Content failures: {summary['validate']['content_fail']}")
+        if summary['validate']['content_error'] > 0:
+            print(f"  Content errors: {summary['validate']['content_error']}")
