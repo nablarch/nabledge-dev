@@ -20,8 +20,16 @@ class Step3Generate:
         self.prompt_template = read_file(f"{ctx.repo}/tools/knowledge-creator/prompts/generate.md")
 
     def extract_assets(self, source_path: str, source_content: str, source_format: str,
-                      assets_dir: str) -> list:
-        """Extract images and attachments from source file"""
+                      assets_dir_abs: str, assets_dir_rel: str) -> list:
+        """Extract images and attachments from source file
+
+        Args:
+            source_path: Relative path to source file
+            source_content: Content of source file
+            source_format: Format (rst/md/xlsx)
+            assets_dir_abs: Absolute path to assets directory
+            assets_dir_rel: Relative path from knowledge JSON file to assets directory
+        """
         assets = []
         source_dir = os.path.dirname(f"{self.ctx.repo}/{source_path}")
 
@@ -33,12 +41,12 @@ class Step3Generate:
                 src = os.path.join(source_dir, ref)
                 if os.path.exists(src):
                     if not self.dry_run:
-                        os.makedirs(f"{self.ctx.repo}/{assets_dir}", exist_ok=True)
-                        dst = os.path.join(f"{self.ctx.repo}/{assets_dir}", os.path.basename(ref))
+                        os.makedirs(assets_dir_abs, exist_ok=True)
+                        dst = os.path.join(assets_dir_abs, os.path.basename(ref))
                         shutil.copy2(src, dst)
                     assets.append({
                         "original": ref,
-                        "assets_path": f"{assets_dir}{os.path.basename(ref)}"
+                        "assets_path": f"{assets_dir_rel}{os.path.basename(ref)}"
                     })
 
             # Extract download directive references
@@ -48,12 +56,12 @@ class Step3Generate:
                 src = os.path.join(source_dir, ref)
                 if os.path.exists(src):
                     if not self.dry_run:
-                        os.makedirs(f"{self.ctx.repo}/{assets_dir}", exist_ok=True)
-                        dst = os.path.join(f"{self.ctx.repo}/{assets_dir}", os.path.basename(ref))
+                        os.makedirs(assets_dir_abs, exist_ok=True)
+                        dst = os.path.join(assets_dir_abs, os.path.basename(ref))
                         shutil.copy2(src, dst)
                     assets.append({
                         "original": ref,
-                        "assets_path": f"{assets_dir}{os.path.basename(ref)}"
+                        "assets_path": f"{assets_dir_rel}{os.path.basename(ref)}"
                     })
 
         return assets
@@ -129,10 +137,15 @@ class Step3Generate:
         source_content = read_file(source_path)
 
         # Extract assets
-        assets_dir_rel = file_info['assets_dir']
-        assets_dir_abs = f"{self.ctx.knowledge_dir}/{assets_dir_rel}"
+        assets_dir_rel_full = file_info['assets_dir']  # "type/category/assets/file_id/"
+        assets_dir_abs = f"{self.ctx.knowledge_dir}/{assets_dir_rel_full}"
+
+        # Compute relative path from knowledge JSON to assets directory
+        json_dir = os.path.dirname(file_info['output_path'])  # "type/category"
+        assets_dir_rel = os.path.relpath(assets_dir_rel_full, json_dir) + "/"  # "assets/file_id/"
+
         assets = self.extract_assets(file_info['source_path'], source_content,
-                                     file_info['format'], assets_dir_abs)
+                                     file_info['format'], assets_dir_abs, assets_dir_rel)
 
         # Build prompt
         prompt = self.build_prompt(file_info, source_content, assets)

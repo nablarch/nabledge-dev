@@ -115,7 +115,7 @@ def delete_knowledge(ctx: Context, file_id: str, file_info: dict):
     """Delete knowledge file, docs, and assets for a file"""
     json_path = f"{ctx.knowledge_dir}/{file_info['output_path']}"
     md_path = f"{ctx.docs_dir}/{file_info['type']}/{file_info['category']}/{file_id}.md"
-    assets_path = f"{ctx.knowledge_dir}/{file_info['type']}/{file_info['category']}/assets/{file_id}/"
+    assets_path = f"{ctx.knowledge_dir}/{file_info['assets_dir']}"
 
     for path in [json_path, md_path]:
         if os.path.exists(path):
