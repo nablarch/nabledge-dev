@@ -216,7 +216,7 @@ class Step6Validate:
         prompt = prompt.replace("{FORMAT}", file_info['format'])
 
         try:
-            result = run_claude(prompt, timeout=600)
+            result = run_claude(prompt, timeout=1200)
             if result.returncode == 0:
                 # Extract improved knowledge JSON from output
                 match = re.search(r'```json?\s*\n(.*?)\n```', result.stdout, re.DOTALL)

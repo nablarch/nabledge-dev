@@ -210,7 +210,7 @@ class Step3Generate:
 
         # Run claude -p with JSON schema validation
         try:
-            result = run_claude(prompt, timeout=600, json_schema=self.json_schema)
+            result = run_claude(prompt, timeout=1200, json_schema=self.json_schema)
         except subprocess.TimeoutExpired:
             log_entry = {
                 "file_id": file_id,

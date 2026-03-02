@@ -35,7 +35,7 @@ class Step4BuildIndex:
         prompt = prompt.replace("{KNOWLEDGE_JSON}", json.dumps(knowledge, ensure_ascii=False, indent=2))
 
         try:
-            result = run_claude(prompt, timeout=600)
+            result = run_claude(prompt, timeout=1200)
             if result.returncode == 0:
                 patterns = result.stdout.strip()
                 # Remove markdown code fences if present
