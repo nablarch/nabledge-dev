@@ -109,15 +109,31 @@ class Step2Classify:
         self.dry_run = dry_run
         self.sources_data = sources_data
 
-    def generate_id(self, filename: str, format: str) -> str:
-        """Generate knowledge file ID from filename"""
+    def generate_id(self, filename: str, format: str, category: str = None) -> str:
+        """Generate knowledge file ID from filename and category
+
+        Args:
+            filename: Source filename
+            format: File format (rst/md/xlsx)
+            category: Category from classification (optional)
+
+        Returns:
+            Unique file ID (category-filename format for rst/md)
+        """
+        base_name = None
         if format == "rst":
-            return filename.replace(".rst", "")
+            base_name = filename.replace(".rst", "")
         elif format == "md":
-            return filename.replace(".md", "")
+            base_name = filename.replace(".md", "")
         elif format == "xlsx":
             return "security-check"
-        return filename
+        else:
+            base_name = filename
+
+        # Include category to ensure uniqueness
+        if category:
+            return f"{category}-{base_name}"
+        return base_name
 
     def classify_rst(self, path: str) -> tuple:
         """Classify RST file based on path pattern"""
@@ -341,9 +357,8 @@ class Step2Classify:
 
             type_ = None
             category = None
-            file_id = self.generate_id(filename, format)
 
-            # Classify based on format
+            # Classify based on format (must be done before generating ID)
             if format == "rst":
                 type_, category = self.classify_rst(path)
             elif format == "md":
@@ -360,6 +375,9 @@ class Step2Classify:
                     "format": format
                 })
                 continue
+
+            # Generate unique ID using category to avoid collisions
+            file_id = self.generate_id(filename, format, category)
 
             output_path = f"{type_}/{category}/{file_id}.json"
             assets_dir = f"{type_}/{category}/assets/{file_id}/"
