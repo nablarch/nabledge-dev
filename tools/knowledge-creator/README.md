@@ -2,262 +2,177 @@
 
 Converts Nablarch official documentation (RST/MD/Excel) to AI-ready JSON knowledge files.
 
-## Overview
+## Processing Flow
 
-This tool processes Nablarch documentation through 6 automated steps:
+| Step | Process | Method | Description |
+|------|---------|--------|-------------|
+| 1 | List Source Files | Script | Scans official docs (RST), pattern collections (MD), and security mapping (Excel). Auto-excludes index files and English translations |
+| 2 | Classify Files | Script | Determines Type/Category from directory path and sets output paths |
+| 3 | Generate Knowledge Files | claude -p | Generates JSON knowledge files (1 session per file) following "nothing missed, nothing added" principle. Supports parallel processing |
+| 4 | Build Index | Script + claude -p | Aggregates metadata from all knowledge files to create index.toon. Processing pattern classification uses claude -p |
+| 5 | Generate Docs | Script | Converts JSON knowledge files to human-readable Markdown |
+| 6 | Validate | Script + claude -p | Validates with structural checks (17 rules) + content validation (4 aspects). Binary pass/fail for all items |
 
-1. **List Source Files** - Scan documentation directories
-2. **Classify Files** - Determine Type/Category based on path patterns
-3. **Generate Knowledge Files** - Convert to JSON using claude -p
-4. **Build Index** - Create index.toon with processing pattern classification
-5. **Generate Docs** - Create browsable Markdown documentation
-6. **Validate** - Structural and content validation
+### Step 6: Validation Details
+
+Validation runs in two stages: structural checks (script) and content validation (claude -p). If any check fails, the file must be fixed or regenerated.
+
+**Structural Checks (Script, 17 rules)**
+
+| # | Check |
+|---|-------|
+| S1 | Valid JSON format |
+| S2 | Required fields exist (id, title, official_doc_urls, index, sections) |
+| S3 | All index[].id exist in sections keys |
+| S4 | All sections keys exist in index[].id |
+| S5 | index[].id follows kebab-case |
+| S6 | index[].hints is non-empty array |
+| S7 | sections values are non-empty strings |
+| S8 | id field matches filename |
+| S9 | Section count matches source heading count |
+| S10 | h3 splitting follows 2000-char rule (RST only) |
+| S11 | Official URLs are valid (HTTP 200, title match, Japanese page) |
+| S12 | Technical terms in sections are included in hints |
+| S13 | Section content is at least 50 characters |
+| S14 | Cross-references exist in knowledge base |
+| S15 | Asset references exist as files |
+| S16 | index.toon line count matches knowledge file count |
+| S17 | index.toon processing_patterns use only valid values |
+
+**Content Validation (claude -p, 4 aspects)**
+
+Uses separate claude -p session from generation to avoid bias.
+
+| Aspect | Check |
+|--------|-------|
+| Missing information | Specs, warnings, code examples missing from knowledge file |
+| Fabricated information | Information in knowledge file not found in source |
+| Section splitting validity | Deviations from heading-level splitting rules |
+| Search hint quality | Missing class names or property names |
+
+## Quality Assurance
+
+Three mechanisms ensure quality:
+
+**Rule-based constraints**: Step 3 prompts embed all extraction rules, section splitting rules, and format guidelines, minimizing AI judgment. Output follows JSON Schema, not free-form text.
+
+**Separation of generation and validation**: AI that generates (Step 3) and AI that validates (Step 6) use separate sessions. Same-session validation would introduce bias.
+
+**Script checks + AI checks**: Section counts, URL validity, hints coverage, and reference integrity are checked by script. Semantic judgments like missing/fabricated information are handled by AI. All items must pass.
 
 ## Requirements
 
-- Python 3.x
+- Python 3.x, uv, venv (set up by `setup.sh`)
 - `claude` CLI tool installed and configured
 - Access to Nablarch documentation in `.lw/nab-official/`
 
-## Quick Start
+## Usage
 
-**First time users: Start with test mode**
+### Quick Start (Recommended)
 
-Test mode processes 31 carefully selected files (instead of all 252) to validate the tool quickly:
+**First-time users: Start with test mode**
 
 ```bash
-# 1. Run test mode (processes 31 files)
+# 1. Run test mode (31 files, 8x faster)
 python tools/knowledge-creator/run.py --version 6 --test-mode
 
-# 2. Check the generated files
+# 2. Check generated files
 ls .claude/skills/nabledge-6/knowledge/
 
-# 3. If test passes, run full generation (processes 252 files)
+# 3. If successful, run full generation (252 files)
 python tools/knowledge-creator/run.py --version 6
 ```
 
-**Why use test mode first?**
-- ✅ **Fast validation**: 8x faster (31 files vs 252 files)
-- ✅ **Lower cost**: ~12% of full generation (claude -p API calls)
-- ✅ **Full coverage**: Tests all formats (RST/MD/Excel), types, and edge cases
-- ✅ **Risk-free**: Safe to try without committing to full generation
+See `doc/99-nabledge-creator-tool/TEST-MODE.md` for test mode details.
 
-See `doc/99-nabledge-creator-tool/TEST-MODE.md` for details.
-
-## Usage
-
-### All Commands
+### Basic Usage
 
 ```bash
-# Test mode (recommended for first run)
-python tools/knowledge-creator/run.py --version 6 --test-mode
-
-# Production mode (process all 252 files)
+# Generate all knowledge files for version 6
 python tools/knowledge-creator/run.py --version 6
 
-# Process both versions (v5 and v6)
+# Generate for version 5
+python tools/knowledge-creator/run.py --version 5
+
+# Generate for both v6 and v5
 python tools/knowledge-creator/run.py --version all
+```
+
+### Options
+
+```bash
+# Change concurrency (default: 4)
+python tools/knowledge-creator/run.py --version 6 --concurrency 8
 
 # Run specific step only
 python tools/knowledge-creator/run.py --version 6 --step 3
 
-# Dry run (preview without execution)
+# Preview what would be processed (no file output)
 python tools/knowledge-creator/run.py --version 6 --dry-run
+
+# Specify repository root explicitly
+python tools/knowledge-creator/run.py --version 6 --repo /path/to/repo
 ```
 
-### Command-Line Options
+| Option | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `--version` | Yes | - | Target version: `6`, `5`, or `all` |
+| `--step` | No | All steps | Run specific step only (1-6) |
+| `--concurrency` | No | 4 | Number of parallel claude -p sessions |
+| `--repo` | No | Current dir | Repository root path |
+| `--test-mode` | No | false | Process 31 test files only |
+| `--dry-run` | No | false | Preview only, no file output |
 
-| Option | Type | Required | Default | Description |
-|--------|------|----------|---------|-------------|
-| `--version` | str | Yes | - | Version to process: `6`, `5`, or `all` |
-| `--step` | int | No | - | Run specific step (1-6) |
-| `--concurrency` | int | No | 4 | Number of parallel claude -p sessions |
-| `--repo` | str | No | current dir | Repository root path |
-| `--test-mode` | flag | No | false | Process only 31 curated test files (see `doc/99-nabledge-creator-tool/TEST-MODE.md`) |
-| `--dry-run` | flag | No | false | Show what would be processed without execution |
+### Resume After Interruption
 
-## Processing Steps
+If processing is interrupted, re-run the same command to resume. Step 3 skips already-generated files, so completed work is not re-processed.
 
-### Step 1: List Source Files
+### Incremental Updates (2nd run onwards)
 
-Scans documentation directories and generates a list of source files:
-- RST files from `nablarch-document/ja/`
-- MD files from pattern collections
-- Excel files (security mapping table)
+The tool auto-detects source file changes:
 
-Output: `logs/v{version}/sources.json`
+- **Added**: Generates knowledge files for new source files
+- **Updated**: Regenerates knowledge files if source is newer
+- **Deleted**: Removes knowledge files, docs, and assets for deleted sources
 
-### Step 2: Classify Files
+### Handling Validation Failures
 
-Classifies source files into Type/Category based on path patterns:
-- **processing-pattern**: batch, web-application, REST, etc.
-- **component**: handlers, libraries, adapters
-- **development-tools**: testing framework, toolbox
-- **setup**: configuration, blank project
-- **about**: architecture, migration
-- **guide**: pattern collections
-- **check**: security check
+If Step 6 reports failures:
 
-Output: `logs/v{version}/classified.json`
+```bash
+# Example: some-handler.json failed validation
+rm .claude/skills/nabledge-6/knowledge/component/handlers/some-handler.json
 
-### Step 3: Generate Knowledge Files
+# Re-run Step 3 only (regenerates deleted file only)
+python tools/knowledge-creator/run.py --version 6 --step 3
+```
 
-Converts source files to JSON knowledge files using claude -p:
-- Extracts content from RST/MD/Excel
-- Converts to structured JSON with sections
-- Generates search hints
-- Copies image assets to `assets/` directories
+### Checking Logs
 
-Output: `.claude/skills/nabledge-{version}/knowledge/{type}/{category}/*.json`
+Logs are organized by version with per-file detail:
 
-**Concurrency**: Uses ThreadPoolExecutor to process multiple files in parallel (default: 4)
+```
+tools/knowledge-creator/logs/v{version}/
+  sources.json                      # Source file list
+  classified.json                   # Classification results
+  generate/                         # Step 3: Generation logs (per file)
+    {file_id}.json                  # Success/error details
+  classify-patterns/                # Step 4: Pattern classification logs
+    {file_id}.json
+  validate/                         # Step 6: Validation logs (per file)
+    structure/{file_id}.json        # Structural check results
+    content/{file_id}.json          # Content validation results
+  summary.json                      # Overall summary
+```
 
-**Resumable**: Skips already generated files on restart
-
-### Step 4: Build Index
-
-Creates `index.toon` with:
-- File metadata (title, type, category, path)
-- Processing pattern classification using claude -p
-- TOON format for efficient loading
-
-Output: `.claude/skills/nabledge-{version}/knowledge/index.toon`
-
-### Step 5: Generate Docs
-
-Converts JSON knowledge files to browsable Markdown documentation.
-
-Output: `.claude/skills/nabledge-{version}/docs/{type}/{category}/*.md`
-
-### Step 6: Validate
-
-Validates generated knowledge files:
-
-**Structural Checks (17 rules)**:
-- JSON schema compliance
-- Field consistency
-- Section naming conventions
-- URL validity
-- Cross-reference integrity
-- Assets file existence
-
-**Content Validation (using claude -p)**:
-- Information completeness
-- No fabricated content
-- Proper section splitting
-- Quality of search hints
-
-Output:
-- `logs/v{version}/validate/structure/{file_id}.json`
-- `logs/v{version}/validate/content/{file_id}.json`
-- `logs/v{version}/summary.json`
-
-## Incremental Updates
-
-The tool automatically detects changes:
-
-1. **Added files**: New source files are processed
-2. **Deleted files**: Removed knowledge files are cleaned up
-3. **Updated files**: Knowledge files are regenerated if source is newer
-
-On subsequent runs:
-- Step 1-2 always execute (lightweight)
-- Step 3 generates only new/updated files
-- Step 4-6 rebuild indexes and validate
-
-## Error Handling
-
-### Generation Errors
-
-If Step 3 fails for a file:
-1. Error is logged to `logs/v{version}/generate/{file_id}.json`
-2. Processing continues for other files
-3. Re-run with same command to retry failed files (or delete specific JSON and re-run)
-
-### Validation Failures
-
-If Step 6 finds issues:
-1. Review validation logs in `logs/v{version}/validate/`
-2. Check `logs/v{version}/summary.json` for overview
-3. Fix issues:
-   - Delete failed knowledge file
-   - Re-run Step 3 for that file: `python run.py --version 6 --step 3`
+Check specific file: `cat logs/v6/generate/{file_id}.json`
+Check overall status: `cat logs/v6/summary.json`
 
 ## Output Structure
 
-```
-.claude/skills/nabledge-6/
-  knowledge/
-    processing-pattern/
-      nablarch-batch/
-        *.json
-      web-application/
-        *.json
-    component/
-      handlers/
-        *.json
-        assets/
-          {file_id}/
-            *.png
-      libraries/
-        *.json
-    index.toon
-  docs/
-    processing-pattern/
-      nablarch-batch/
-        *.md
-    component/
-      handlers/
-        *.md
-
-tools/knowledge-creator/
-  logs/
-    v6/
-      sources.json
-      classified.json
-      generate/
-        {file_id}.json
-      classify-patterns/
-        {file_id}.json
-      validate/
-        structure/
-          {file_id}.json
-        content/
-          {file_id}.json
-      summary.json
-```
-
-## Troubleshooting
-
-### "knowledge file not found" during validation
-
-The file wasn't generated in Step 3. Check generation logs:
-```bash
-cat tools/knowledge-creator/logs/v6/generate/{file_id}.json
-```
-
-### Timeout errors
-
-Increase timeout in `steps/common.py` or reduce concurrency:
-```bash
-python run.py --version 6 --concurrency 2
-```
-
-### Classification errors
-
-Check `classified.json` for unmatched files. Update mapping in `steps/step2_classify.py` if needed.
-
-### URL validation failures (S11)
-
-Check if official documentation URLs have changed. Update base URLs in prompt templates if needed.
-
-## Performance
-
-Typical execution times (for v6, ~300 files):
-- Step 1-2: < 1 minute
-- Step 3: 30-60 minutes (depending on concurrency)
-- Step 4: 5-10 minutes
-- Step 5: < 1 minute
-- Step 6: 20-40 minutes
-
-Total: ~1-2 hours for initial run, much faster for incremental updates.
+| Output | Path |
+|--------|------|
+| Knowledge files (JSON) | `.claude/skills/nabledge-{6,5}/knowledge/{type}/{category}/` |
+| Assets (images, etc.) | `.claude/skills/nabledge-{6,5}/knowledge/{type}/{category}/assets/{id}/` |
+| Index | `.claude/skills/nabledge-{6,5}/knowledge/index.toon` |
+| Browsable docs (Markdown) | `.claude/skills/nabledge-{6,5}/docs/{type}/{category}/` |
