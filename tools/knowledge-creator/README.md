@@ -26,19 +26,19 @@ This tool processes Nablarch documentation through 6 automated steps:
 Test mode processes 31 carefully selected files (instead of all 252) to validate the tool quickly:
 
 ```bash
-# 1. Run test mode (takes ~3-5 minutes, processes 31 files)
+# 1. Run test mode (processes 31 files)
 python tools/knowledge-creator/run.py --version 6 --test-mode
 
 # 2. Check the generated files
 ls .claude/skills/nabledge-6/knowledge/
 
-# 3. If test passes, run full generation (takes ~30-40 minutes, processes 252 files)
+# 3. If test passes, run full generation (processes 252 files)
 python tools/knowledge-creator/run.py --version 6
 ```
 
 **Why use test mode first?**
-- ✅ **Fast validation**: 3-5 minutes vs 30-40 minutes
-- ✅ **Lower cost**: 31 files vs 252 files (claude -p API calls)
+- ✅ **Fast validation**: 8x faster (31 files vs 252 files)
+- ✅ **Lower cost**: ~12% of full generation (claude -p API calls)
 - ✅ **Full coverage**: Tests all formats (RST/MD/Excel), types, and edge cases
 - ✅ **Risk-free**: Safe to try without committing to full generation
 
