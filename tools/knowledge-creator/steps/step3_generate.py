@@ -95,6 +95,15 @@ class Step3Generate:
             return "https://fintan.jp/page/252/"
         return ""
 
+    def extract_rst_labels(self, source_content: str) -> list:
+        """Extract RST label definitions from source content
+
+        Labels are defined as: .. _label_name:
+        These indicate internal sections that can be referenced within the same file.
+        """
+        label_pattern = re.compile(r'^\.\.\s+_([a-z0-9_-]+):', re.MULTILINE)
+        return label_pattern.findall(source_content)
+
     def build_prompt(self, file_info: dict, source_content: str, assets: list) -> str:
         """Build prompt for claude -p"""
         prompt = self.prompt_template
@@ -108,6 +117,14 @@ class Step3Generate:
         prompt = prompt.replace("{ASSETS_DIR}", file_info["assets_dir"])
         prompt = prompt.replace("{OFFICIAL_DOC_BASE_URL}", self.compute_official_url(file_info))
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
+
+        # Extract internal labels for RST files
+        if file_info["format"] == "rst":
+            internal_labels = self.extract_rst_labels(source_content)
+            labels_json = json.dumps(internal_labels, ensure_ascii=False)
+            prompt = prompt.replace("{INTERNAL_LABELS}", labels_json)
+        else:
+            prompt = prompt.replace("{INTERNAL_LABELS}", "[]")
 
         # Add assets section if any
         if assets:

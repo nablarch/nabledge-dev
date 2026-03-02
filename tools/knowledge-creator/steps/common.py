@@ -115,12 +115,17 @@ def run_claude(prompt: str, timeout: int = 300, json_schema: dict = None) -> sub
         cmd.extend(["--output-format", "json"])
         cmd.extend(["--json-schema", json.dumps(json_schema)])
 
+    # Create environment without CLAUDECODE to allow nested execution
+    env = os.environ.copy()
+    env.pop('CLAUDECODE', None)
+
     result = subprocess.run(
         cmd,
         input=prompt,
         capture_output=True,
         text=True,
         timeout=timeout,
+        env=env,
     )
 
     # If json_schema was used, extract structured_output from response

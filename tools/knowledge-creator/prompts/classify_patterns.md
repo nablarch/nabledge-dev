@@ -31,10 +31,10 @@ nablarch-batch, jakarta-batch, restful-web-service, http-messaging, web-applicat
 
 ## 出力形式
 
-スペース区切りの処理パターン値のみを出力してください。該当なしの場合は空行を出力してください。
+スペース区切りの処理パターン値のみを出力してください。
+該当なしの場合は空行を出力してください。
 テキストの説明は一切不要です。
+マークダウンのコードブロック（```）で囲まないでください。
 
 例:
-```
 nablarch-batch restful-web-service
-```

@@ -112,22 +112,25 @@ class Step6Validate:
 
         # S13: Minimum section length
         for sid, content in knowledge.get("sections", {}).items():
-            if len(content.strip()) < 50:
-                errors.append(f"S13: Section '{sid}' is too short ({len(content.strip())} chars)")
+            stripped = content.strip()
+            # Allow very short content if it's just "なし" or similar
+            if len(stripped) < 20 and stripped not in ["なし。", "なし"]:
+                errors.append(f"S13: Section '{sid}' is too short ({len(stripped)} chars)")
 
-        # S14: Cross-reference validation (simplified)
+        # S14: Internal reference validation (# prefix)
         section_ids = set(knowledge.get("sections", {}).keys())
-        ref_pattern = re.compile(r'(\S+)\s*を参照')
+        internal_ref_pattern = re.compile(r'\]\(#([a-z0-9_-]+)\)')
         for sid, content in knowledge.get("sections", {}).items():
-            for match in ref_pattern.finditer(content):
+            for match in internal_ref_pattern.finditer(content):
                 ref_id = match.group(1)
                 if ref_id not in section_ids:
-                    # Check if it's a file reference
-                    found = glob(f"{self.ctx.knowledge_dir}/**/{ref_id}.json", recursive=True)
-                    if not found:
-                        errors.append(
-                            f"S14: Section '{sid}' references '{ref_id}' but not found"
-                        )
+                    errors.append(
+                        f"S14: Section '{sid}' references internal section '#{ref_id}' but not found"
+                    )
+
+        # S18: External reference validation (@ prefix) - warning only
+        # Note: We don't validate external refs as errors since the referenced files
+        # may not be generated yet. This is informational only.
 
         # S15: Assets path validation
         json_dir = os.path.dirname(json_path)

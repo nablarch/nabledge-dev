@@ -38,6 +38,8 @@ class Step4BuildIndex:
             result = run_claude(prompt, timeout=120)
             if result.returncode == 0:
                 patterns = result.stdout.strip()
+                # Remove markdown code fences if present
+                patterns = patterns.replace('```', '').strip()
                 if not self.dry_run:
                     write_json(log_path, {"file_id": file_id, "patterns": patterns})
                 return patterns
