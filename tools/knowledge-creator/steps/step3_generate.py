@@ -272,6 +272,188 @@ class Step3Generate:
 
         return {"status": "ok", "id": file_id}
 
+    def merge_split_files(self):
+        """Merge split knowledge files into single files
+
+        After generation, files with split_info.is_split=true should be merged
+        back into their original_id file.
+
+        Process:
+        1. Find all generated files with split_info
+        2. Group by original_id
+        3. Merge each group into single JSON:
+           - metadata: from part 1 (title, type, category, format, etc.)
+           - sections: concatenate all parts in order
+           - contents: concatenate all parts in order
+           - search_hints: merge and deduplicate
+           - internal_labels: merge and deduplicate
+           - related_topics: merge and deduplicate
+           - assets: concatenate all parts
+        4. Save merged file as {original_id}.json
+        5. Delete individual part files
+        """
+        classified = load_json(self.ctx.classified_list_path)
+
+        # Group files by original_id
+        split_groups = {}
+        for file_info in classified["files"]:
+            if "split_info" in file_info and file_info["split_info"]["is_split"]:
+                original_id = file_info["split_info"]["original_id"]
+                if original_id not in split_groups:
+                    split_groups[original_id] = []
+                split_groups[original_id].append(file_info)
+
+        if not split_groups:
+            return
+
+        print(f"\n--- Merging Split Files ---")
+        print(f"Found {len(split_groups)} file groups to merge")
+
+        merged_count = 0
+        total_parts = 0
+
+        for original_id, parts in split_groups.items():
+            # Sort parts by part number
+            parts.sort(key=lambda p: p["split_info"]["part"])
+
+            # Check if all parts were generated
+            part_files = []
+            all_exist = True
+            for part in parts:
+                part_path = f"{self.ctx.knowledge_dir}/{part['output_path']}"
+                if os.path.exists(part_path):
+                    part_files.append(part_path)
+                else:
+                    all_exist = False
+                    break
+
+            if not all_exist:
+                print(f"  [SKIP] {original_id}: Not all parts generated yet")
+                continue
+
+            print(f"  [MERGE] {original_id}: {len(parts)} parts")
+
+            # Load all part JSONs
+            part_jsons = []
+            for part_path in part_files:
+                with open(part_path, 'r', encoding='utf-8') as f:
+                    part_jsons.append(json.load(f))
+
+            # Merge data
+            merged = {}
+
+            # Metadata from part 1
+            first_part = part_jsons[0]
+            merged["file_id"] = original_id
+            merged["title"] = first_part["title"]
+            merged["type"] = first_part["type"]
+            merged["category"] = first_part["category"]
+            merged["format"] = first_part["format"]
+            merged["source_path"] = first_part["source_path"]
+            merged["official_doc_base_url"] = first_part["official_doc_base_url"]
+
+            # Concatenate index (sections list)
+            merged["index"] = []
+            for part_json in part_jsons:
+                merged["index"].extend(part_json.get("index", []))
+
+            # Merge sections dict - concatenate contents for each section
+            merged["sections"] = {}
+            for part_json in part_jsons:
+                for section_id, content in part_json.get("sections", {}).items():
+                    if section_id not in merged["sections"]:
+                        merged["sections"][section_id] = content
+                    else:
+                        # Concatenate with double newline separator
+                        merged["sections"][section_id] += "\n\n" + content
+
+            # Merge and deduplicate search_hints
+            all_hints = []
+            for part_json in part_jsons:
+                all_hints.extend(part_json.get("search_hints", []))
+            merged["search_hints"] = sorted(set(all_hints))
+
+            # Merge and deduplicate internal_labels
+            all_labels = []
+            for part_json in part_jsons:
+                all_labels.extend(part_json.get("internal_labels", []))
+            merged["internal_labels"] = sorted(set(all_labels))
+
+            # Merge and deduplicate related_topics
+            all_topics = []
+            for part_json in part_jsons:
+                all_topics.extend(part_json.get("related_topics", []))
+            merged["related_topics"] = sorted(set(all_topics))
+
+            # Concatenate official_doc_urls
+            all_urls = []
+            for part_json in part_jsons:
+                all_urls.extend(part_json.get("official_doc_urls", []))
+            merged["official_doc_urls"] = sorted(set(all_urls))
+
+            # Get type and category from first part
+            type_ = parts[0]["type"]
+            category = parts[0]["category"]
+
+            # Concatenate assets and update paths to point to merged assets directory
+            merged["assets"] = []
+            merged_assets_dir = f"{type_}/{category}/assets/{original_id}/"
+
+            for i, part_json in enumerate(part_jsons):
+                for asset in part_json.get("assets", []):
+                    # Update asset path to point to merged directory
+                    # Original path is like "assets/file-id-1/image.png"
+                    # Need to change to "assets/file-id/image.png"
+                    filename = os.path.basename(asset.get("assets_path", ""))
+                    if filename:
+                        merged_asset = {
+                            "original": asset.get("original", ""),
+                            "assets_path": f"{merged_assets_dir}{filename}"
+                        }
+                        merged["assets"].append(merged_asset)
+
+            # Find output path for merged file
+            merged_output_path = f"{type_}/{category}/{original_id}.json"
+            merged_file_path = f"{self.ctx.knowledge_dir}/{merged_output_path}"
+
+            # Save merged file
+            try:
+                write_json(merged_file_path, merged)
+
+                # Consolidate assets directories if they exist
+                merged_assets_abs = f"{self.ctx.knowledge_dir}/{merged_assets_dir}"
+                for part in parts:
+                    part_assets_dir = f"{self.ctx.knowledge_dir}/{part['assets_dir']}"
+                    if os.path.exists(part_assets_dir):
+                        # Move assets from part directory to merged directory
+                        os.makedirs(merged_assets_abs, exist_ok=True)
+                        for asset_file in os.listdir(part_assets_dir):
+                            src = os.path.join(part_assets_dir, asset_file)
+                            dst = os.path.join(merged_assets_abs, asset_file)
+                            if os.path.isfile(src):
+                                # Only move if destination doesn't exist (avoid overwriting)
+                                if not os.path.exists(dst):
+                                    shutil.move(src, dst)
+                        # Remove empty part assets directory
+                        try:
+                            os.rmdir(part_assets_dir)
+                        except OSError:
+                            # Directory not empty, skip
+                            pass
+
+                # Delete part files
+                for part_path in part_files:
+                    os.remove(part_path)
+
+                merged_count += 1
+                total_parts += len(parts)
+
+            except Exception as e:
+                print(f"    ERROR merging {original_id}: {e}")
+                continue
+
+        print(f"\nMerge complete: {merged_count} file groups ({total_parts} parts → {merged_count} files)")
+
     def run(self):
         """Execute Step 3: Generate all knowledge files"""
         classified = load_json(self.ctx.classified_list_path)
@@ -296,3 +478,7 @@ class Step3Generate:
         print(f"  OK: {results['ok']}")
         print(f"  Skip: {results['skip']}")
         print(f"  Error: {results['error']}")
+
+        # Merge split files after generation
+        if not self.dry_run:
+            self.merge_split_files()
