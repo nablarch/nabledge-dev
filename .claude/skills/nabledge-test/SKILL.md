@@ -31,6 +31,11 @@ nabledge-test 6 "知識検索系を全部実行して"        # Free-form instru
 
 **Key principle**: Measure everything, judge nothing. Report detection rates (x/x) and measured values without arbitrary targets.
 
+**Measurement discipline**: You are a measurement instrument, not a helper.
+- Follow target skill workflows exactly - do NOT improvise
+- Record actual execution - do NOT fabricate steps
+- Let failures be failures - do NOT mask with workarounds
+
 ## When invoked
 
 ### Step 1: Parse arguments
@@ -163,6 +168,12 @@ mkdir -p .tmp/nabledge-test/eval-<scenario-id>-$(date +%H%M%S)/with_skill/output
 
 **CRITICAL**: Do NOT use the Skill tool. Execute nabledge-<version> instructions directly in this conversation to maintain workflow continuity.
 
+**Execution Rules - You are a measurement instrument, not a helper**:
+1. **Follow workflows exactly** - Read SKILL.md → workflows in order, execute ONLY what they specify
+2. **Do NOT improvise** - If a tool fails or returns empty, record it and follow workflow error handling. Do NOT use alternative tools.
+3. **Do NOT add keywords** - Follow workflow keyword extraction rules (3-10 keywords from question text). Do NOT add answer-aware terms.
+4. **Record actual execution** - Transcript shows what you actually did, not what you think happened. No fabrication.
+
 **Record start time**:
 ```bash
 date -u +%Y-%m-%dT%H:%M:%SZ > start_time.txt
@@ -171,24 +182,24 @@ date -u +%Y-%m-%dT%H:%M:%SZ > start_time.txt
 **Load nabledge-<version> skill procedures**:
 ```bash
 Read .claude/skills/nabledge-<version>/SKILL.md
-Read .claude/skills/nabledge-<version>/workflows/knowledge-search.md
-Read .claude/skills/nabledge-<version>/workflows/keyword-search.md
-Read .claude/skills/nabledge-<version>/workflows/section-judgement.md
-Read .claude/skills/nabledge-<version>/knowledge/index.toon
 ```
 
-**Execute the question <scenario.question> by following nabledge-<version> procedures**:
-- Apply keyword-search workflow to identify relevant knowledge files
-- Use section-judgement workflow to select appropriate sections
-- Generate response following nabledge-<version> guidelines
+Then read workflows as directed by SKILL.md (e.g., qa.md → _knowledge-search.md → sub-workflows).
+
+**Execute the question <scenario.question> by following loaded procedures exactly**:
+- Follow workflow steps in order
+- Use ONLY tools specified in workflows
+- If tool returns empty/fails: Record result, follow workflow error handling
 - **Track every tool call** (Read, Bash, Grep) for metrics
 
 **While executing, track**:
-- Tool calls made (Read, Bash, Grep, etc.)
-- Steps executed
-- Response content
+- Tool calls made (exact commands)
+- Actual results received (exit codes, output)
+- Steps executed (from workflow definitions)
 
 **Write transcript** to `workspace/eval-<id>/with_skill/outputs/transcript.md`:
+
+**IMPORTANT**: Transcript records ACTUAL execution. Do NOT describe improvised actions or fabricated steps.
 
 ```markdown
 # Eval Execution Transcript
@@ -206,19 +217,17 @@ None provided
 
 ## Execution
 
-### Step 1: Load skill workflows and knowledge index
+### Step 1: Load skill workflows
 **Start**: <timestamp in ISO 8601 format>
 **Action**: Read nabledge-<version> skill procedures
-**Tool**: Read (4 calls)
+**Tool**: Read
 - SKILL.md
-- workflows/keyword-search.md
-- workflows/section-judgement.md
-- knowledge/index.toon
+- workflows as directed by SKILL.md (e.g., qa.md, _knowledge-search.md, etc.)
 
 **INPUT**: None (initial load)
 **IN Tokens**: 0
 
-**OUTPUT**: Successfully loaded workflows and knowledge index
+**OUTPUT**: Successfully loaded workflows
 **OUT Tokens**: <approx character count / 4>
 
 **End**: <timestamp in ISO 8601 format>
@@ -226,28 +235,23 @@ None provided
 
 ---
 
-### Step 2: Execute knowledge search (keyword-search workflow)
+### Step 2: [Actual step name - use workflow step name]
 **Start**: <timestamp>
-**Action**: Extract keywords and match against index
+**Action**: [Brief description of what this step does per workflow]
 
 **INPUT**:
 ```
-Query: <scenario.question>
+[Actual input data]
 ```
 **IN Tokens**: <approx character count / 4>
 
-**Tool**: Mental analysis + Read
-**Result**: <summary of keyword extraction and file selection>
+**Tool**: [Tool name]
+**Command**: [Exact command if Bash, or tool description]
+**Result**: [Actual result - exit code, output summary, or description]
 
 **OUTPUT**:
 ```
-Keywords extracted:
-- L1: [...]
-- L2: [...]
-
-Files selected:
-- <file1> (score: X)
-- <file2> (score: Y)
+[Actual output or result]
 ```
 **OUT Tokens**: <approx character count / 4>
 
@@ -256,24 +260,17 @@ Files selected:
 
 ---
 
-### Step 3: Read candidate sections (section-judgement workflow)
+### Step 3: [Next actual step name]
 **Start**: <timestamp>
-**Action**: Read specific sections from knowledge files
+**Action**: [Brief description]
 
-**INPUT**:
-```
-Files: [<file1>, <file2>]
-```
-**IN Tokens**: <approx character count / 4>
-
-**Tool**: Bash (jq)
-**Result**: <summary of sections read>
+**Tool**: [Tool name]
+**Command**: [e.g., "bash scripts/full-text-search.sh バッチ 起動 batch"]
+**Result**: [e.g., "Exit code 0, 41 sections matched" or "Exit code 0, empty output"]
 
 **OUTPUT**:
 ```
-Sections extracted:
-- <file1>: [section1, section2]
-- <file2>: [section3]
+[Show actual output - if empty, state "Empty output" - do NOT substitute with improvised result]
 ```
 **OUT Tokens**: <approx character count / 4>
 
@@ -282,7 +279,9 @@ Sections extracted:
 
 ---
 
-(... continue for each significant action with same format ...)
+(... continue for each step actually executed ...)
+
+**CRITICAL**: Each step must correspond to actual execution. Do NOT add steps for improvised actions.
 
 ## Output Files
 None created (response was inline)

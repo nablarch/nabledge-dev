@@ -29,6 +29,6 @@ done
 find "$KNOWLEDGE_DIR" -name "*.json" | sort | while read -r filepath; do
   relpath="${filepath#$KNOWLEDGE_DIR/}"
   jq -r --arg file "$relpath" \
-    ".sections | to_entries[] | select(.value | ($conditions)) | \"\($file)|\(.key)\"" \
+    '.sections | to_entries[] | select(.value | ('"$conditions"')) | "\($file)|\(.key)"' \
     "$filepath" 2>/dev/null
 done
