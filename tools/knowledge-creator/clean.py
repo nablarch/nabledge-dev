@@ -63,13 +63,17 @@ def clean_logs(version: int, repo: str):
 
 def clean_cache(repo: str):
     """Clean Python cache files"""
-    cache_dir = f"{repo}/tools/knowledge-creator/steps/__pycache__"
+    cache_dirs = [
+        f"{repo}/tools/knowledge-creator/__pycache__",
+        f"{repo}/tools/knowledge-creator/steps/__pycache__"
+    ]
 
-    if os.path.exists(cache_dir):
-        shutil.rmtree(cache_dir)
-        print(f"Removed cache directory: {cache_dir}")
-    else:
-        print(f"Cache directory not found: {cache_dir}")
+    for cache_dir in cache_dirs:
+        if os.path.exists(cache_dir):
+            shutil.rmtree(cache_dir)
+            print(f"Removed cache directory: {cache_dir}")
+        else:
+            print(f"Cache directory not found: {cache_dir}")
 
 
 def main():
