@@ -79,6 +79,10 @@ Determine from diff and file names:
 - **Change target**: Main subject of changes (from file names and diff)
 - **Change purpose**: Inferred from diff content
 
+**3.1.5 Detect Model Name**
+
+Extract your model name from system context (e.g., "Sonnet 4.5", "Opus 4.6") and format as "Claude {model_name}". If unavailable, use "Claude".
+
 **3.2 Generate Message**
 
 Follow project commit rules (`.claude/rules/commit-rules.md`):
@@ -86,8 +90,10 @@ Follow project commit rules (`.claude/rules/commit-rules.md`):
 ```
 {type}: {concise description conveying purpose/intent}
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: {detected_model_name} <noreply@anthropic.com>
 ```
+
+Where `{detected_model_name}` is from step 3.1.5 (e.g., "Claude Sonnet 4.5" or "Claude").
 
 **Type Examples**:
 - `feat: Add user authentication feature`
