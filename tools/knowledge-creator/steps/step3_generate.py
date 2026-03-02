@@ -125,13 +125,10 @@ class Step3Generate:
         return prompt
 
     def extract_json(self, output: str) -> dict:
-        """Extract JSON from claude -p output"""
-        # Try to extract from code block
-        match = re.search(r'```json?\s*\n(.*?)\n```', output, re.DOTALL)
-        if match:
-            return json.loads(match.group(1))
+        """Extract JSON from claude -p output
 
-        # Try parsing entire output
+        When using --json-schema, output is already the structured_output JSON.
+        """
         return json.loads(output.strip())
 
     def extract_section_range(self, content: str, section_range: dict) -> str:

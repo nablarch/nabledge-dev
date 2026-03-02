@@ -106,17 +106,73 @@ def run_claude(prompt: str, timeout: int = 300, json_schema: dict = None) -> sub
 
     Returns:
         CompletedProcess with stdout, stderr, returncode
+        When json_schema is provided, stdout contains the structured_output JSON
     """
     cmd = ["claude", "-p"]
 
-    # Add --json-schema option if schema provided
+    # Add --json-schema and --output-format json if schema provided
     if json_schema:
+        cmd.extend(["--output-format", "json"])
         cmd.extend(["--json-schema", json.dumps(json_schema)])
 
-    return subprocess.run(
+    result = subprocess.run(
         cmd,
         input=prompt,
         capture_output=True,
         text=True,
         timeout=timeout,
     )
+
+    # If json_schema was used, extract structured_output from response
+    if json_schema and result.returncode == 0:
+        try:
+            response = json.loads(result.stdout)
+
+            # Check subtype for success/failure
+            subtype = response.get("subtype", "")
+
+            if subtype == "success":
+                # Extract structured_output and return it as stdout
+                structured_output = response.get("structured_output")
+                if structured_output is not None:
+                    result = subprocess.CompletedProcess(
+                        args=result.args,
+                        returncode=0,
+                        stdout=json.dumps(structured_output, ensure_ascii=False),
+                        stderr=""
+                    )
+                else:
+                    # structured_output is missing
+                    result = subprocess.CompletedProcess(
+                        args=result.args,
+                        returncode=1,
+                        stdout="",
+                        stderr="structured_output field is missing in response"
+                    )
+            elif subtype == "error_max_structured_output_retries":
+                # Agent failed to produce valid output after retries
+                error_msg = response.get("result", "Failed to generate valid structured output")
+                result = subprocess.CompletedProcess(
+                    args=result.args,
+                    returncode=1,
+                    stdout="",
+                    stderr=f"Structured output error: {error_msg}"
+                )
+            else:
+                # Unknown subtype
+                result = subprocess.CompletedProcess(
+                    args=result.args,
+                    returncode=1,
+                    stdout="",
+                    stderr=f"Unknown response subtype: {subtype}"
+                )
+        except json.JSONDecodeError as e:
+            # Failed to parse response JSON
+            result = subprocess.CompletedProcess(
+                args=result.args,
+                returncode=1,
+                stdout="",
+                stderr=f"Failed to parse claude response JSON: {e}"
+            )
+
+    return result
