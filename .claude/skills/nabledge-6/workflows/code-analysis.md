@@ -47,6 +47,7 @@ Output directory: .nabledge/20260210
 - Epoch time (seconds since 1970) for accurate duration calculation
 - Step 3.5 reads session ID from output directory
 - Files stored in same directory as code analysis output
+- Keyword search results stored in same directory: `.nabledge/YYYYMMDD/.keyword-search-results.json`
 - All intermediate and final outputs must stay in .nabledge/YYYYMMDD/ directory
 
 **Why this matters**: `{{analysis_duration}}` placeholder must contain actual elapsed time. Users compare against "Cooked for X" time in IDE.
@@ -108,7 +109,7 @@ Output directory: .nabledge/20260210
 
 ### Step 2: Search Nablarch knowledge
 
-**Tools**: Read, Bash with jq (knowledge-search workflow)
+**Tools**: Read (index.toon), Bash with jq (keyword-search workflow)
 
 **Action**: Batch process knowledge searches for all Nablarch components.
 
@@ -138,28 +139,24 @@ Output directory: .nabledge/20260210
    l1_all+=("ValidationUtil" "Bean Validation")
    l2_all+=("検証" "エラー" "例外処理")
 
-   # Remove duplicates and prepare for knowledge search
+   # Remove duplicates and prepare for keyword-search workflow
    l1_keywords=($(printf '%s\n' "${l1_all[@]}" | sort -u))
    l2_keywords=($(printf '%s\n' "${l2_all[@]}" | sort -u))
    ```
 
-   **Result** - Combined keywords ready for knowledge search:
+   **Result** - Combined keywords ready for keyword-search:
      - L1: ["DAO", "UniversalDao", "O/Rマッパー", "ExecutionContext", "コンテキスト", "ValidationUtil", "Bean Validation"]
      - L2: ["CRUD", "検索", "登録", "更新", "ページング", "リクエスト処理", "データ取得", "検証", "エラー", "例外処理"]
 
-3. **Execute knowledge search workflow**:
-   - Read `workflows/_knowledge-search.md`
-   - Follow the workflow with the user's original request + detected components as search query
-   - The workflow internally handles keyword extraction, full-text search, index-based fallback, and section judgement
-   - Expected output: Pointer JSON with relevant sections (high/partial relevance)
+3. **Execute keyword-search workflow**:
+   - Read `workflows/keyword-search.md`
+   - Follow the workflow with combined keywords for all components
+   - Expected output: 20-30 candidate sections covering all components
 
-4. **Read section content from Pointer JSON**:
-   - For each result in Pointer JSON, extract section content:
-     ```bash
-     bash scripts/read-sections.sh \
-       "file1:section1" "file2:section2" ...
-     ```
-   - Expected output: Section content text for documentation
+4. **Execute section-judgement workflow**:
+   - Read `workflows/section-judgement.md`
+   - Follow the workflow with candidate sections from step 3
+   - Expected output: Filtered sections (High and Partial relevance only)
 
 5. **Group knowledge by component** after receiving results:
    - Parse returned sections and map to original components
@@ -269,10 +266,6 @@ echo "Output file: $OUTPUT_PATH"
 - Check error message on stderr for specific issue
 - Common causes: missing template file, invalid file paths, permission errors
 - Verify all source files exist and are readable
-- If script is missing or unrecoverable error (permission denied, corrupted file):
-  - Generate template content manually using `template-guide.md` as reference
-  - Log error to user: "自動テンプレート生成に失敗しました。手動でテンプレートを生成しています。"
-  - Continue with manual approach
 - If script succeeds but output is incorrect, verify parameters match expected format
 
 **Validation**: After script completes, verify:
