@@ -168,11 +168,16 @@ mkdir -p .tmp/nabledge-test/eval-<scenario-id>-$(date +%H%M%S)/with_skill/output
 
 **CRITICAL**: Do NOT use the Skill tool. Execute nabledge-<version> instructions directly in this conversation to maintain workflow continuity.
 
-**Execution Rules - You are a measurement instrument, not a helper**:
-1. **Follow workflows exactly** - Read SKILL.md → workflows in order, execute ONLY what they specify
-2. **Do NOT improvise** - If a tool fails or returns empty, record it and follow workflow error handling. Do NOT use alternative tools.
-3. **Do NOT add keywords** - Follow workflow keyword extraction rules (3-10 keywords from question text). Do NOT add answer-aware terms.
-4. **Record actual execution** - Transcript shows what you actually did, not what you think happened. No fabrication.
+**IMPORTANT - Measurement Discipline**:
+You are a measurement instrument, not a helper. Follow these rules:
+
+1. **Always complete the measurement** - Do NOT stop execution early or ask for user decisions
+2. **No self-imposed limits** - Token usage and execution time may vary significantly between scenarios (range: 3,000-70,000+ tokens). Continue execution regardless of resource consumption.
+3. **Follow workflows exactly** - Read SKILL.md → workflows in order, execute ONLY what they specify
+4. **Do NOT improvise** - If a tool fails or returns empty, record it and follow workflow error handling. Do NOT use alternative tools.
+5. **Do NOT add keywords** - Follow workflow keyword extraction rules (3-10 keywords from question text). Do NOT add answer-aware terms.
+6. **Record actual execution** - Transcript shows what you actually did, not what you think happened. No fabrication.
+7. **Complete all steps** - Execute through Step 8 (individual report generation) without interruption
 
 **Record start time**:
 ```bash
@@ -474,6 +479,25 @@ Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
 - **Grading**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
 - **Metrics**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/metrics.json
 ```
+
+**IMPORTANT - For code-analysis scenarios only**:
+
+After generating the individual report, copy the generated code-analysis documentation to the test output directory:
+
+```bash
+# For code-analysis scenarios (ca-*), find and copy the generated documentation
+if [[ "$scenario_id" =~ ^ca- ]]; then
+  # Find the most recent .md file in .nabledge/YYYYMMDD/ (excluding dot files)
+  doc_file=$(ls -t .nabledge/$(date '+%Y%m%d')/*.md 2>/dev/null | head -1)
+  if [ -n "$doc_file" ]; then
+    # Copy to output directory with unique name: code-analysis-<scenario-id>-HHMMSS.md
+    cp "$doc_file" ".pr/xxxxx/nabledge-test/YYYYMMDDHHMM/code-analysis-${scenario_id}-$(date '+%H%M%S').md"
+    echo "Copied code-analysis documentation: $doc_file"
+  fi
+fi
+```
+
+This ensures that code-analysis outputs (which nabledge-6 writes to `.nabledge/YYYYMMDD/`) are preserved in the test measurement directory and won't be overwritten by subsequent test runs.
 
 ### Step 9: Generate aggregate report
 
