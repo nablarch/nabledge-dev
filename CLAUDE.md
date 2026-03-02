@@ -16,7 +16,7 @@ See `.claude/rules/language.md` for detailed guidelines and examples.
 
 This repository develops **nabledge skills** for AI agents:
 - **nabledge-6**: Nablarch 6 (Jakarta EE 10, Java 17+)
-- **nabledge-5**: Nablarch 5 (Java EE 7/8, Java 8+) - planned
+- **nabledge-5**: Nablarch 5 (Java EE 7/8, Java 8+)
 
 ## Key Resources
 

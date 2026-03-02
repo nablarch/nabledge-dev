@@ -1,15 +1,15 @@
 ---
-name: nabledge-6
-description: Nablarch 6フレームワークの構造化知識ベース。バッチ処理、RESTful Webサービス、ハンドラ、ライブラリ等のNablarch機能について質問に回答する。コード分析も可能。
+name: nabledge-5
+description: Nablarch 5フレームワークの構造化知識ベース。バッチ処理、RESTful Webサービス、ハンドラ、ライブラリ等のNablarch機能について質問に回答する。コード分析も可能。
 ---
 
-# Nabledge-6: Nablarch 6 Knowledge Base
+# Nabledge-5: Nablarch 5 Knowledge Base
 
 ## トリガー条件
 
 以下のいずれかに該当する場合にこのスキルが呼び出される:
 
-- Nablarch 6に関する質問
+- Nablarch 5に関する質問
 - Nablarchの機能、API、設定、パターンについての質問
 - Nablarchを使ったバッチ処理、RESTful Webサービスの実装に関する質問
 - Nablarchのハンドラ、ライブラリ、テストフレームワークに関する質問
