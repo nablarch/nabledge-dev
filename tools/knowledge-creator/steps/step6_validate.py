@@ -199,6 +199,7 @@ class Step6Validate:
         """Use claude -p for content validation and improvement"""
         file_id = file_info["id"]
         json_path = f"{self.ctx.knowledge_dir}/{file_info['output_path']}"
+        source_path = f"{self.ctx.repo}/{file_info['source_path']}"
         log_path = f"{self.ctx.log_dir}/validate/content/{file_id}.json"
 
         # Check if already validated successfully
@@ -210,6 +211,9 @@ class Step6Validate:
         prompt = self.prompt_template
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
         prompt = prompt.replace("{KNOWLEDGE_JSON}", json.dumps(knowledge, ensure_ascii=False, indent=2))
+        prompt = prompt.replace("{OUTPUT_PATH}", json_path)
+        prompt = prompt.replace("{SOURCE_PATH}", source_path)
+        prompt = prompt.replace("{FORMAT}", file_info['format'])
 
         try:
             result = run_claude(prompt, timeout=600)
@@ -259,41 +263,29 @@ class Step6Validate:
         return {"file_id": file_id, "status": "error", "reason": "Unknown error"}
 
     def validate_one(self, file_info: dict) -> dict:
-        """Validate one knowledge file"""
+        """Validate one knowledge file
+
+        Claude validates both structure and content via validate_single.py in the prompt.
+        Python just invokes claude and records the result.
+        """
         file_id = file_info["id"]
         json_path = f"{self.ctx.knowledge_dir}/{file_info['output_path']}"
         source_path = f"{self.ctx.repo}/{file_info['source_path']}"
-        struct_log_path = f"{self.ctx.log_dir}/validate/structure/{file_id}.json"
 
         if not os.path.exists(json_path):
             return {"id": file_id, "status": "skipped", "reason": "knowledge file not found"}
 
         print(f"  [VAL] {file_id}")
 
-        # Structural validation
-        struct_errors = self.validate_structure(json_path, source_path, file_info['format'])
-        struct_result = {
-            "file_id": file_id,
-            "result": "pass" if not struct_errors else "fail",
-            "errors": struct_errors
-        }
-
-        if not self.dry_run:
-            write_json(struct_log_path, struct_result)
-
-        # Content validation (only if structure passed)
-        if not struct_errors:
-            knowledge = load_json(json_path)
-            source_content = read_file(source_path) if os.path.exists(source_path) else ""
-            content_result = self.validate_content_with_claude(file_info, knowledge, source_content)
-        else:
-            content_result = {"status": "skipped", "reason": "structure validation failed"}
+        # Content + Structure validation by claude
+        # Claude will run validate_single.py in a loop until all checks pass
+        knowledge = load_json(json_path)
+        source_content = read_file(source_path) if os.path.exists(source_path) else ""
+        result = self.validate_content_with_claude(file_info, knowledge, source_content)
 
         return {
             "id": file_id,
-            "status": "validated",
-            "structure": struct_result["result"],
-            "content": content_result.get("status", "skipped")
+            "status": result.get("status", "error")
         }
 
     def generate_summary(self):
@@ -308,24 +300,19 @@ class Step6Validate:
                 if f.endswith(".json"):
                     generate_results.append(load_json(os.path.join(generate_dir, f)))
 
-        # Collect validation results
-        structure_dir = f"{log_dir}/validate/structure"
+        # Collect validation results (from content logs only)
+        # Claude validates both structure and content, so we only need content logs
         content_dir = f"{log_dir}/validate/content"
         validate_results = []
 
-        if os.path.exists(structure_dir):
-            for f in sorted(os.listdir(structure_dir)):
+        if os.path.exists(content_dir):
+            for f in sorted(os.listdir(content_dir)):
                 if f.endswith(".json"):
                     file_id = f.replace(".json", "")
-                    s = load_json(os.path.join(structure_dir, f))
-                    c_path = os.path.join(content_dir, f)
-                    c = load_json(c_path) if os.path.exists(c_path) else None
-
+                    result = load_json(os.path.join(content_dir, f))
                     validate_results.append({
                         "id": file_id,
-                        "structure": s["result"],
-                        "structure_errors": s.get("errors", []),
-                        "content": c.get("status", "skipped") if c else "skipped"
+                        "status": result.get("status", "unknown")
                     })
 
         summary = {
@@ -338,10 +325,8 @@ class Step6Validate:
             },
             "validate": {
                 "total": len(validate_results),
-                "all_pass": sum(1 for r in validate_results
-                              if r["structure"] == "pass" and r["content"] == "improved"),
-                "structure_fail": sum(1 for r in validate_results if r["structure"] == "fail"),
-                "content_error": sum(1 for r in validate_results if r["content"] == "error"),
+                "improved": sum(1 for r in validate_results if r["status"] == "improved"),
+                "error": sum(1 for r in validate_results if r["status"] == "error"),
             },
             "validate_results": validate_results,
         }
@@ -378,15 +363,16 @@ class Step6Validate:
             for file_info in classified["files"]:
                 futures.append(executor.submit(self.validate_one, file_info))
 
-            results = {"validated": 0, "skipped": 0}
+            results = {"improved": 0, "error": 0, "skipped": 0}
             for future in as_completed(futures):
                 result = future.result()
                 status = result.get("status", "skipped")
                 results[status] = results.get(status, 0) + 1
 
         print(f"\nValidation complete:")
-        print(f"  Validated: {results['validated']}")
-        print(f"  Skipped: {results['skipped']}")
+        print(f"  Improved: {results.get('improved', 0)}")
+        print(f"  Error: {results.get('error', 0)}")
+        print(f"  Skipped: {results.get('skipped', 0)}")
 
         # Generate summary
         print("\nGenerating summary...")
@@ -394,8 +380,6 @@ class Step6Validate:
 
         print(f"\n=== Validation Summary ===")
         print(f"Generation: {summary['generate']['ok']}/{summary['generate']['total']} OK")
-        print(f"Validation: {summary['validate']['all_pass']}/{summary['validate']['total']} PASS")
-        if summary['validate']['structure_fail'] > 0:
-            print(f"  Structure failures: {summary['validate']['structure_fail']}")
-        if summary['validate']['content_error'] > 0:
-            print(f"  Content errors: {summary['validate']['content_error']}")
+        print(f"Validation: {summary['validate']['improved']}/{summary['validate']['total']} PASS")
+        if summary['validate']['error'] > 0:
+            print(f"  Errors: {summary['validate']['error']}")
