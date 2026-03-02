@@ -31,6 +31,21 @@ class Context:
     repo: str             # Repository root path
     concurrency: int      # Concurrency level for parallel processing
 
+    def __post_init__(self):
+        """Validate paths after initialization"""
+        if not os.path.isdir(self.repo):
+            raise ValueError(f"Repository path does not exist: {self.repo}")
+
+        # Check for critical subdirectories
+        required_dirs = [
+            f"{self.repo}/.lw/nab-official/v{self.version}",
+            f"{self.repo}/.claude/skills/nabledge-{self.version}"
+        ]
+
+        for dir_path in required_dirs:
+            if not os.path.isdir(dir_path):
+                raise ValueError(f"Required directory does not exist: {dir_path}")
+
     @property
     def source_list_path(self) -> str:
         return f"{self.repo}/tools/knowledge-creator/logs/v{self.version}/sources.json"

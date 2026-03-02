@@ -148,7 +148,7 @@ class Context:
 
 | 項目 | 内容 |
 |---|---|
-| 処理方式 | Pythonスクリプト（機械的） |
+| 処理方式 | Pythonツール（機械的） |
 | 入力 | ソースディレクトリ |
 | 出力 | `logs/v{version}/sources.json` |
 
@@ -254,7 +254,7 @@ def list_sources(ctx: Context) -> list[dict]:
 
 | 項目 | 内容 |
 |---|---|
-| 処理方式 | Pythonスクリプト（機械的） |
+| 処理方式 | Pythonツール（機械的） |
 | 入力 | `logs/v{version}/sources.json` |
 | 出力 | `logs/v{version}/classified.json` |
 
@@ -384,7 +384,7 @@ def output_path(knowledge_dir: str, type: str, category: str, file_id: str) -> s
 
 | 項目 | 内容 |
 |---|---|
-| 処理方式 | スクリプト（assets事前抽出）+ claude -p（知識ファイル生成） |
+| 処理方式 | ツール（assets事前抽出）+ claude -p（知識ファイル生成） |
 | 並行単位 | 1ソースファイル = 1 claude -pセッション |
 | 入力 | 1つのソースファイル + 分類情報 |
 | 出力 | 1つの知識ファイルJSON + assets（画像等） |
@@ -392,10 +392,10 @@ def output_path(knowledge_dir: str, type: str, category: str, file_id: str) -> s
 
 ### assets取り込みの責任分界
 
-画像・添付ファイルの取り込みはスクリプト側が担当する。claude -pはファイルシステム操作を行わない。
+画像・添付ファイルの取り込みはツール側が担当する。claude -pはファイルシステム操作を行わない。
 
 ```
-スクリプト側の責任:
+ツール側の責任:
 1. ソースファイルと同階層の画像ファイル（.png, .jpg, .gif, .svg）を検出
 2. RSTの image/figure ディレクティブから参照パスを抽出
 3. 対象ファイルを assets/{知識ファイルID}/ にコピー
@@ -407,7 +407,7 @@ claude -p側の責任:
 3. テキスト代替が困難な画像のみ ![説明](assets/...) で参照する
 ```
 
-#### 画像抽出スクリプト
+#### 画像抽出ツール
 
 ```python
 def extract_assets(source_path: str, source_content: str, source_format: str,
@@ -599,7 +599,7 @@ def generate_one(ctx: Context, file_info: dict) -> dict:
   URL: https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/db_connection_management_handler.html
 ```
 
-スクリプト側で `{OFFICIAL_DOC_BASE_URL}` にこのURLを計算して渡す。`official_doc_urls` にはこのURLを1つ設定する。
+ツール側で `{OFFICIAL_DOC_BASE_URL}` にこのURLを計算して渡す。`official_doc_urls` にはこのURLを1つ設定する。
 
 加えて、ソース内の `:java:extdoc:` 参照からJavadoc URLを抽出し、`official_doc_urls` に追加する:
 
@@ -1053,17 +1053,17 @@ def extract_json(output: str) -> dict:
 
 | 項目 | 内容 |
 |---|---|
-| 処理方式 | スクリプト + claude -p（processing_patterns判定のみ） |
+| 処理方式 | ツール + claude -p（processing_patterns判定のみ） |
 | 入力 | 生成済み知識ファイル一覧 + 分類済みファイル一覧 |
 | 出力 | `$REPO/.claude/skills/nabledge-{version}/knowledge/index.toon` |
 
 ### 処理フロー
 
 ```
-1. 分類済みファイル一覧から全エントリを取得（スクリプト）
-2. 各知識ファイルJSONからtitleを取得（スクリプト）
+1. 分類済みファイル一覧から全エントリを取得（ツール）
+2. 各知識ファイルJSONからtitleを取得（ツール）
 3. processing_patternsの判定（claude -p、並行処理）
-4. 結果をマージしてindex.toonを生成（スクリプト）
+4. 結果をマージしてindex.toonを生成（ツール）
 ```
 
 ### 処理パターン分類ルール
@@ -1136,7 +1136,7 @@ files[{COUNT},]{title,type,category,processing_patterns,path}:
 フィールドの区切り: `, `（カンマ+スペース）
 各行のインデント: 2スペース
 
-### 生成スクリプトロジック
+### 生成ツールロジック
 
 ```python
 def build_index(ctx: Context):
@@ -1278,7 +1278,7 @@ def convert_to_md(knowledge: dict) -> str:
 
 | 項目 | 内容 |
 |---|---|
-| 処理方式 | スクリプト（構造チェック）+ claude -p（内容検証、別セッション） |
+| 処理方式 | ツール（構造チェック）+ claude -p（内容検証、別セッション） |
 | 並行単位 | 1知識ファイル = 1 claude -pセッション |
 | 入力 | 知識ファイルJSON + 元のソースファイル |
 | 出力 | `logs/v{version}/validate/structure/`, `logs/v{version}/validate/content/`, `logs/v{version}/summary.json` |
@@ -1286,14 +1286,16 @@ def convert_to_md(knowledge: dict) -> str:
 ### 検証フロー
 
 ```
-1. 構造チェック（スクリプト、全ファイル対象）
+1. 構造チェック（ツール、全ファイル対象）
    → passしたファイルのみ次へ
 2. 内容検証（claude -p、並行処理）
    → 生成バイアス排除のため別セッションで実行
 3. 結果集約・レポート出力
 ```
 
-### 構造チェック（スクリプト）
+検証は2段階で行う。まず構造チェックで機械的に検証可能な項目（JSON schema、フィールド整合性、参照の実在確認など）を確認し、構造的に正しいファイルのみ内容検証に進める。これにより、内容検証で無駄なAIセッションを消費することを防ぐ。
+
+#### 構造チェック（ツール）
 
 全項目 pass / fail の2値判定。1つでもfailがあればそのファイルはNG。NGはOKになるまで修正、または修正方針をユーザーに相談する。
 
@@ -1895,12 +1897,12 @@ def validate_index_toon(index_path: str, knowledge_dir: str) -> list[str]:
     return errors
 ```
 
-### 内容検証（claude -p）
+#### 内容検証（claude -p）
 
 生成バイアスを排除するため、生成時とは別セッションのclaude -pで実行する。
 構造チェック（S1〜S17）をpassしたファイルのみが対象。
 
-### claude -p プロンプト（`prompts/validate.md`）
+#### claude -p プロンプト（`prompts/validate.md`）
 
 ````markdown
 あなたはNablarchの知識ファイルの品質検証エキスパートです。
@@ -1974,7 +1976,7 @@ def validate_index_toon(index_path: str, knowledge_dir: str) -> list[str]:
 - 全タイプのissueが同等にfailの原因となる（warningレベルは存在しない）
 ````
 
-### 検証結果の集約
+#### 検証結果の集約
 
 検証結果は個別ファイルに出力され、全並行処理の完了後にサマリーを生成する。詳細は「ログ管理」セクションを参照。
 
@@ -1984,7 +1986,7 @@ def validate_index_toon(index_path: str, knowledge_dir: str) -> list[str]:
 - サマリー: `logs/v{version}/summary.json`
 ```
 
-### fail時の対応
+#### fail時の対応
 
 全てのfailは、OKになるまで修正するか、修正方針をユーザーに相談する。
 
@@ -2147,7 +2149,7 @@ def delete_knowledge(ctx: Context, file_id: str, file_info: dict):
 エージェントの並行処理を前提に、全てのログをファイル単位の独立ファイルとして出力する。共有ファイルへの並行書き込みは行わない。
 
 - 各ステップの作業結果は `logs/v{version}/{step名}/{file_id}.json` に1ファイルずつ出力
-- ステップ完了後にマージスクリプトが個別ファイルを集約してサマリーを生成
+- ステップ完了後にマージツールが個別ファイルを集約してサマリーを生成
 - 中断再開時は個別ファイルの存在でスキップ判定
 
 ### ログファイル構成

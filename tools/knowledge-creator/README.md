@@ -168,7 +168,7 @@ If Step 6 finds issues:
       handlers/
         *.json
         assets/
-          {file-id}/
+          {file_id}/
             *.png
       libraries/
         *.json
@@ -187,14 +187,14 @@ tools/knowledge-creator/
       sources.json
       classified.json
       generate/
-        {file-id}.json
+        {file_id}.json
       classify-patterns/
-        {file-id}.json
+        {file_id}.json
       validate/
         structure/
-          {file-id}.json
+          {file_id}.json
         content/
-          {file-id}.json
+          {file_id}.json
       summary.json
 ```
 
@@ -204,7 +204,7 @@ tools/knowledge-creator/
 
 The file wasn't generated in Step 3. Check generation logs:
 ```bash
-cat tools/knowledge-creator/logs/v6/generate/{file-id}.json
+cat tools/knowledge-creator/logs/v6/generate/{file_id}.json
 ```
 
 ### Timeout errors
