@@ -1,12 +1,14 @@
 """Step 2: Type/Category Classification
 
 Classify source files into Type/Category based on path patterns.
+Split large files into multiple entries if necessary.
 """
 
 import os
 import json
+import re
 from datetime import datetime
-from .common import load_json, write_json
+from .common import load_json, write_json, read_file
 
 
 # RST path-based mapping (evaluated in order, first match wins)
@@ -83,11 +85,25 @@ def load_test_file_ids(repo_path: str) -> set:
 
 
 def filter_for_test(classified: list, test_file_ids: set) -> list:
-    """Filter file list for test mode using predefined test file set"""
-    return [f for f in classified if f['id'] in test_file_ids]
+    """Filter file list for test mode using predefined test file set
+
+    Includes split files if the original_id matches a test file ID.
+    """
+    result = []
+    for f in classified:
+        # Check direct match
+        if f['id'] in test_file_ids:
+            result.append(f)
+        # Check if this is a split file with original_id in test set
+        elif 'split_info' in f and f['split_info']['original_id'] in test_file_ids:
+            result.append(f)
+    return result
 
 
 class Step2Classify:
+    # Threshold for section splitting
+    SECTION_LINE_THRESHOLD = 1000  # Split if any section exceeds this
+
     def __init__(self, ctx, dry_run=False, sources_data=None):
         self.ctx = ctx
         self.dry_run = dry_run
@@ -119,6 +135,194 @@ class Step2Classify:
                 return type_, category
 
         return None, None
+
+    def analyze_rst_sections(self, content: str) -> list:
+        """Analyze RST file structure and return section information
+
+        Returns:
+            List of dicts with keys: title, start_line, end_line, line_count, level
+        """
+        lines = content.splitlines()
+        sections = []
+
+        # Find h2 sections (line followed by -----)
+        for i in range(len(lines) - 1):
+            if re.match(r'^-{5,}$', lines[i + 1]):
+                title = lines[i].strip()
+                sections.append({
+                    'title': title,
+                    'start_line': i,
+                    'level': 'h2'
+                })
+
+        # Calculate end_line and line_count for each section
+        for i in range(len(sections)):
+            start = sections[i]['start_line']
+            end = sections[i + 1]['start_line'] if i + 1 < len(sections) else len(lines)
+            sections[i]['end_line'] = end
+            sections[i]['line_count'] = end - start
+
+        return sections
+
+    def analyze_rst_h3_subsections(self, content: str, h2_start: int, h2_end: int) -> list:
+        """Analyze h3 subsections within an h2 section
+
+        Args:
+            content: Full file content
+            h2_start: Start line of h2 section
+            h2_end: End line of h2 section
+
+        Returns:
+            List of h3 subsection dicts with keys: title, start_line, end_line, line_count, level
+        """
+        lines = content.splitlines()
+        subsections = []
+
+        # Find h3 sections within the h2 range
+        # h3 can be marked with various underlines: ^^^^^ ~~~~~ +++++ etc.
+        # Exclude ----- (h2) and ===== (h1)
+        h3_pattern = re.compile(r'^[\^~+*.]{5,}$')
+
+        for i in range(h2_start, h2_end - 1):
+            if i + 1 < len(lines):
+                next_line = lines[i + 1]
+                # Check if next line is an h3 marker (not h1/h2)
+                if h3_pattern.match(next_line) and not re.match(r'^[-=]{5,}$', next_line):
+                    title = lines[i].strip()
+                    subsections.append({
+                        'title': title,
+                        'start_line': i,
+                        'level': 'h3'
+                    })
+
+        # Calculate end_line and line_count for each subsection
+        for i in range(len(subsections)):
+            start = subsections[i]['start_line']
+            end = subsections[i + 1]['start_line'] if i + 1 < len(subsections) else h2_end
+            subsections[i]['end_line'] = end
+            subsections[i]['line_count'] = end - start
+
+        return subsections
+
+    def should_split_file(self, file_path: str, format: str) -> tuple:
+        """Check if file should be split based on section sizes
+
+        Returns:
+            (should_split: bool, sections: list, total_lines: int)
+        """
+        if format != "rst":
+            return False, [], 0
+
+        full_path = os.path.join(self.ctx.repo, file_path)
+        if not os.path.exists(full_path):
+            return False, [], 0
+
+        content = read_file(full_path)
+        lines = content.splitlines()
+        total_lines = len(lines)
+
+        # Analyze sections (no file-level threshold check)
+        sections = self.analyze_rst_sections(content)
+
+        # Check if any section exceeds threshold
+        has_large_section = any(s['line_count'] > self.SECTION_LINE_THRESHOLD for s in sections)
+
+        return has_large_section, sections, total_lines
+
+    def split_file_entry(self, base_entry: dict, sections: list, content: str) -> list:
+        """Split a file entry into multiple entries based on sections
+
+        Args:
+            base_entry: Original classified entry
+            sections: List of h2 section info from analyze_rst_sections
+            content: Full source file content
+
+        Returns:
+            List of split entries with section_range field
+        """
+        result = []
+        base_id = base_entry['id']
+        type_ = base_entry['type']
+        category = base_entry['category']
+
+        # Expand h2 sections into h3 subsections if they're too large
+        expanded_sections = []
+        for section in sections:
+            if section['line_count'] > self.SECTION_LINE_THRESHOLD:
+                # Try to split at h3 level
+                h3_subsections = self.analyze_rst_h3_subsections(
+                    content, section['start_line'], section['end_line']
+                )
+
+                if h3_subsections:
+                    # Use h3 subsections
+                    expanded_sections.extend(h3_subsections)
+                    print(f"    Expanded h2 '{section['title']}' into {len(h3_subsections)} h3 subsections")
+                else:
+                    # No h3 subsections found, keep the large h2 section as-is
+                    expanded_sections.append(section)
+                    print(f"    WARNING: h2 '{section['title']}' has {section['line_count']} lines but no h3 subsections")
+            else:
+                expanded_sections.append(section)
+
+        # Group sections to keep each part under threshold
+        current_group = []
+        current_lines = 0
+        part_num = 1
+
+        for section in expanded_sections:
+            section_lines = section['line_count']
+
+            # If adding this section would exceed threshold, start new part
+            if current_group and (current_lines + section_lines > self.SECTION_LINE_THRESHOLD):
+                # Save current group as a part
+                split_id = f"{base_id}-{part_num}"
+                result.append({
+                    **base_entry,
+                    'id': split_id,
+                    'output_path': f"{type_}/{category}/{split_id}.json",
+                    'assets_dir': f"{type_}/{category}/assets/{split_id}/",
+                    'section_range': {
+                        'start_line': current_group[0]['start_line'],
+                        'end_line': current_group[-1]['end_line'],
+                        'sections': [s['title'] for s in current_group]
+                    },
+                    'split_info': {
+                        'is_split': True,
+                        'part': part_num,
+                        'original_id': base_id
+                    }
+                })
+
+                # Start new group
+                current_group = [section]
+                current_lines = section_lines
+                part_num += 1
+            else:
+                current_group.append(section)
+                current_lines += section_lines
+
+        # Add remaining sections as last part
+        if current_group:
+            split_id = f"{base_id}-{part_num}"
+            result.append({
+                **base_entry,
+                'id': split_id,
+                'output_path': f"{type_}/{category}/{split_id}.json",
+                'assets_dir': f"{type_}/{category}/assets/{split_id}/",
+                'section_range': {
+                    'start_line': current_group[0]['start_line'],
+                    'end_line': current_group[-1]['end_line'],
+                    'sections': [s['title'] for s in current_group]
+                },
+                'split_info': {
+                    'is_split': True,
+                    'part': part_num,
+                    'original_id': base_id
+                }
+            })
+
+        return result
 
     def run(self):
         """Execute Step 2: Classify all source files"""
@@ -170,6 +374,30 @@ class Step2Classify:
                 "output_path": output_path,
                 "assets_dir": assets_dir
             })
+
+        # Check for files that need splitting
+        final_classified = []
+        split_count = 0
+
+        for entry in classified:
+            should_split, sections, total_lines = self.should_split_file(entry['source_path'], entry['format'])
+
+            if should_split:
+                # Load content for h3 analysis
+                full_path = os.path.join(self.ctx.repo, entry['source_path'])
+                content = read_file(full_path)
+
+                split_entries = self.split_file_entry(entry, sections, content)
+                final_classified.extend(split_entries)
+                split_count += 1
+                print(f"  Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
+            else:
+                final_classified.append(entry)
+
+        if split_count > 0:
+            print(f"\nSplit {split_count} large files into {len(final_classified) - len(classified) + split_count} total entries")
+
+        classified = final_classified
 
         # Apply test mode filter if enabled
         if self.ctx.test_mode:

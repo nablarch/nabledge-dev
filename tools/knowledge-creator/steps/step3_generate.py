@@ -18,6 +18,21 @@ class Step3Generate:
         self.ctx = ctx
         self.dry_run = dry_run
         self.prompt_template = read_file(f"{ctx.repo}/tools/knowledge-creator/prompts/generate.md")
+        self.json_schema = self.extract_json_schema()
+
+    def extract_json_schema(self) -> dict:
+        """Extract JSON Schema from prompt template"""
+        # Extract JSON schema from markdown code block
+        match = re.search(r'```json\s*\n(\{[^`]+\})\s*\n```', self.prompt_template, re.DOTALL)
+        if not match:
+            raise ValueError("JSON Schema not found in prompt template")
+
+        schema_text = match.group(1)
+        # Remove $schema field as it's metadata
+        schema = json.loads(schema_text)
+        if "$schema" in schema:
+            del schema["$schema"]
+        return schema
 
     def extract_assets(self, source_path: str, source_content: str, source_format: str,
                       assets_dir_abs: str, assets_dir_rel: str) -> list:
@@ -119,6 +134,21 @@ class Step3Generate:
         # Try parsing entire output
         return json.loads(output.strip())
 
+    def extract_section_range(self, content: str, section_range: dict) -> str:
+        """Extract specific section range from content
+
+        Args:
+            content: Full file content
+            section_range: Dict with start_line, end_line, sections keys
+
+        Returns:
+            Extracted content for the specified range
+        """
+        lines = content.splitlines()
+        start = section_range['start_line']
+        end = section_range['end_line']
+        return '\n'.join(lines[start:end])
+
     def generate_one(self, file_info: dict) -> dict:
         """Generate knowledge file for one source file"""
         file_id = file_info["id"]
@@ -131,10 +161,21 @@ class Step3Generate:
             print(f"  [SKIP] {file_id} (already exists)")
             return {"status": "skip", "id": file_id}
 
-        print(f"  [GEN] {file_id}")
+        # Show split info if present
+        if 'split_info' in file_info:
+            split_info = file_info['split_info']
+            print(f"  [GEN] {file_id} (part {split_info['part']} of split file)")
+        else:
+            print(f"  [GEN] {file_id}")
 
         # Read source content
         source_content = read_file(source_path)
+
+        # Extract section range if this is a split file
+        if 'section_range' in file_info:
+            section_range = file_info['section_range']
+            source_content = self.extract_section_range(source_content, section_range)
+            print(f"    Extracted sections: {', '.join(section_range['sections'][:3])}{'...' if len(section_range['sections']) > 3 else ''}")
 
         # Extract assets
         assets_dir_rel_full = file_info['assets_dir']  # "type/category/assets/file_id/"
@@ -152,9 +193,9 @@ class Step3Generate:
 
         started_at = datetime.utcnow().isoformat() + "Z"
 
-        # Run claude -p
+        # Run claude -p with JSON schema validation
         try:
-            result = run_claude(prompt, timeout=900)
+            result = run_claude(prompt, timeout=900, json_schema=self.json_schema)
         except subprocess.TimeoutExpired:
             log_entry = {
                 "file_id": file_id,
