@@ -141,7 +141,7 @@ class Step3Generate:
 
         # Run claude -p
         try:
-            result = run_claude(prompt, timeout=300)
+            result = run_claude(prompt, timeout=600)
         except subprocess.TimeoutExpired:
             log_entry = {
                 "file_id": file_id,
