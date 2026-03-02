@@ -311,6 +311,7 @@ class Step3Generate:
 
         merged_count = 0
         total_parts = 0
+        merged_groups = {}  # Track successfully merged groups
 
         for original_id, parts in split_groups.items():
             # Sort parts by part number
@@ -447,12 +448,67 @@ class Step3Generate:
 
                 merged_count += 1
                 total_parts += len(parts)
+                merged_groups[original_id] = parts  # Track successful merge
 
             except Exception as e:
                 print(f"    ERROR merging {original_id}: {e}")
                 continue
 
         print(f"\nMerge complete: {merged_count} file groups ({total_parts} parts → {merged_count} files)")
+
+        # Update classified_list after successful merges
+        if merged_groups:
+            self.update_classified_list_after_merge(merged_groups)
+
+    def update_classified_list_after_merge(self, merged_groups: dict):
+        """Update classified_list.json after merging split files
+
+        Args:
+            merged_groups: Dict mapping original_id to list of part file_info dicts
+        """
+        classified = load_json(self.ctx.classified_list_path)
+
+        # Create set of part IDs to remove
+        part_ids_to_remove = set()
+        for original_id, parts in merged_groups.items():
+            for part in parts:
+                part_ids_to_remove.add(part['id'])
+
+        # Filter out split entries and collect other files
+        new_files = []
+        for file_info in classified['files']:
+            if file_info['id'] in part_ids_to_remove:
+                # Skip split entries
+                continue
+            new_files.append(file_info)
+
+        # Add merged file entries
+        for original_id, parts in merged_groups.items():
+            # Use part 1 as base (parts are sorted by part number)
+            base = parts[0].copy()
+
+            # Update to merged file info
+            base['id'] = original_id
+            base['output_path'] = f"{base['type']}/{base['category']}/{original_id}.json"
+            base['assets_dir'] = f"{base['type']}/{base['category']}/assets/{original_id}/"
+
+            # Remove split-specific fields
+            if 'split_info' in base:
+                del base['split_info']
+            if 'section_range' in base:
+                del base['section_range']
+
+            new_files.append(base)
+
+        # Sort by type, category, id for consistent order
+        new_files.sort(key=lambda f: (f['type'], f['category'], f['id']))
+
+        # Update classified list
+        classified['files'] = new_files
+
+        if not self.dry_run:
+            write_json(self.ctx.classified_list_path, classified)
+            print(f"  Updated classified_list: removed {len(part_ids_to_remove)} split entries, added {len(merged_groups)} merged entries")
 
     def run(self):
         """Execute Step 3: Generate all knowledge files"""
