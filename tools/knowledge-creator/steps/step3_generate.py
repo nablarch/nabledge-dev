@@ -281,16 +281,16 @@ class Step3Generate:
         Process:
         1. Find all generated files with split_info
         2. Group by original_id
-        3. Merge each group into single JSON:
-           - metadata: from part 1 (title, type, category, format, etc.)
-           - sections: concatenate all parts in order
-           - contents: concatenate all parts in order
-           - search_hints: merge and deduplicate
-           - internal_labels: merge and deduplicate
-           - related_topics: merge and deduplicate
-           - assets: concatenate all parts
-        4. Save merged file as {original_id}.json
-        5. Delete individual part files
+        3. Merge each group into single JSON with same structure as non-split files:
+           - id: original_id
+           - title: from part 1
+           - official_doc_urls: merge and deduplicate from all parts
+           - index: concatenate all parts in order
+           - sections: merge section contents (concatenate same section_id)
+        4. Consolidate assets directories (merge part assets into single directory)
+        5. Save merged file as {original_id}.json
+        6. Delete individual part files and empty assets directories
+        7. Update classified_list.json (remove split entries, add merged entry)
         """
         classified = load_json(self.ctx.classified_list_path)
 
@@ -340,78 +340,73 @@ class Step3Generate:
                 with open(part_path, 'r', encoding='utf-8') as f:
                     part_jsons.append(json.load(f))
 
-            # Merge data
+            # Merge data - use same structure as non-split files
+            # Only include fields defined in JSON Schema that AI generates
             merged = {}
 
-            # Metadata from part 1
-            first_part = part_jsons[0]
-            merged["file_id"] = original_id
-            merged["title"] = first_part["title"]
-            merged["type"] = first_part["type"]
-            merged["category"] = first_part["category"]
-            merged["format"] = first_part["format"]
-            merged["source_path"] = first_part["source_path"]
-            merged["official_doc_base_url"] = first_part["official_doc_base_url"]
+            first_part_json = part_jsons[0]
 
-            # Concatenate index (sections list)
-            merged["index"] = []
-            for part_json in part_jsons:
-                merged["index"].extend(part_json.get("index", []))
+            # Required fields from JSON Schema
+            merged["id"] = original_id
+            merged["title"] = first_part_json.get("title", "")
 
-            # Merge sections dict - concatenate contents for each section
-            merged["sections"] = {}
-            for part_json in part_jsons:
-                for section_id, content in part_json.get("sections", {}).items():
-                    if section_id not in merged["sections"]:
-                        merged["sections"][section_id] = content
-                    else:
-                        # Concatenate with double newline separator
-                        merged["sections"][section_id] += "\n\n" + content
-
-            # Merge and deduplicate search_hints
-            all_hints = []
-            for part_json in part_jsons:
-                all_hints.extend(part_json.get("search_hints", []))
-            merged["search_hints"] = sorted(set(all_hints))
-
-            # Merge and deduplicate internal_labels
-            all_labels = []
-            for part_json in part_jsons:
-                all_labels.extend(part_json.get("internal_labels", []))
-            merged["internal_labels"] = sorted(set(all_labels))
-
-            # Merge and deduplicate related_topics
-            all_topics = []
-            for part_json in part_jsons:
-                all_topics.extend(part_json.get("related_topics", []))
-            merged["related_topics"] = sorted(set(all_topics))
-
-            # Concatenate official_doc_urls
+            # Merge and deduplicate official_doc_urls
             all_urls = []
             for part_json in part_jsons:
                 all_urls.extend(part_json.get("official_doc_urls", []))
-            merged["official_doc_urls"] = sorted(set(all_urls))
+            # Keep original order, deduplicate while preserving order
+            seen = set()
+            deduped_urls = []
+            for url in all_urls:
+                if url not in seen:
+                    seen.add(url)
+                    deduped_urls.append(url)
+            merged["official_doc_urls"] = deduped_urls
 
-            # Get type and category from first part
+            # Merge index - combine entries with same section_id
+            index_map = {}  # section_id -> index entry
+            for part_json in part_jsons:
+                for entry in part_json.get("index", []):
+                    section_id = entry["id"]
+                    if section_id not in index_map:
+                        # First occurrence - copy entry
+                        index_map[section_id] = {
+                            "id": entry["id"],
+                            "title": entry["title"],
+                            "hints": entry.get("hints", []).copy()
+                        }
+                    else:
+                        # Merge hints from multiple parts
+                        existing_hints = set(index_map[section_id]["hints"])
+                        for hint in entry.get("hints", []):
+                            if hint not in existing_hints:
+                                index_map[section_id]["hints"].append(hint)
+                                existing_hints.add(hint)
+
+            # Convert map to list, preserving order of first appearance
+            merged["index"] = list(index_map.values())
+
+            # Merge sections dict - concatenate contents for each section
+            # Also update asset paths from split IDs to merged ID
+            merged["sections"] = {}
+            for i, part_json in enumerate(part_jsons):
+                part = parts[i]
+                part_id = part["id"]  # e.g., "file-id-1"
+
+                for section_id, content in part_json.get("sections", {}).items():
+                    # Update asset paths in content
+                    # Replace "assets/file-id-1/" → "assets/file-id/"
+                    updated_content = content.replace(f"assets/{part_id}/", f"assets/{original_id}/")
+
+                    if section_id not in merged["sections"]:
+                        merged["sections"][section_id] = updated_content
+                    else:
+                        # Concatenate with double newline separator
+                        merged["sections"][section_id] += "\n\n" + updated_content
+
+            # Get type and category from classified_list for file paths
             type_ = parts[0]["type"]
             category = parts[0]["category"]
-
-            # Concatenate assets and update paths to point to merged assets directory
-            merged["assets"] = []
-            merged_assets_dir = f"{type_}/{category}/assets/{original_id}/"
-
-            for i, part_json in enumerate(part_jsons):
-                for asset in part_json.get("assets", []):
-                    # Update asset path to point to merged directory
-                    # Original path is like "assets/file-id-1/image.png"
-                    # Need to change to "assets/file-id/image.png"
-                    filename = os.path.basename(asset.get("assets_path", ""))
-                    if filename:
-                        merged_asset = {
-                            "original": asset.get("original", ""),
-                            "assets_path": f"{merged_assets_dir}{filename}"
-                        }
-                        merged["assets"].append(merged_asset)
 
             # Find output path for merged file
             merged_output_path = f"{type_}/{category}/{original_id}.json"
@@ -422,6 +417,7 @@ class Step3Generate:
                 write_json(merged_file_path, merged)
 
                 # Consolidate assets directories if they exist
+                merged_assets_dir = f"{type_}/{category}/assets/{original_id}/"
                 merged_assets_abs = f"{self.ctx.knowledge_dir}/{merged_assets_dir}"
                 for part in parts:
                     part_assets_dir = f"{self.ctx.knowledge_dir}/{part['assets_dir']}"
