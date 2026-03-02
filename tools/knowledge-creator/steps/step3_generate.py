@@ -115,7 +115,7 @@ class Step3Generate:
         """Generate knowledge file for one source file"""
         file_id = file_info["id"]
         source_path = f"{self.ctx.repo}/{file_info['source_path']}"
-        output_path = f"{self.ctx.repo}/{self.ctx.knowledge_dir}/{file_info['output_path']}"
+        output_path = f"{self.ctx.knowledge_dir}/{file_info['output_path']}"
         log_path = f"{self.ctx.log_dir}/generate/{file_id}.json"
 
         # Skip if already generated
@@ -130,7 +130,7 @@ class Step3Generate:
 
         # Extract assets
         assets_dir_rel = file_info['assets_dir']
-        assets_dir_abs = f"{self.ctx.repo}/{self.ctx.knowledge_dir}/{assets_dir_rel}"
+        assets_dir_abs = f"{self.ctx.knowledge_dir}/{assets_dir_rel}"
         assets = self.extract_assets(file_info['source_path'], source_content,
                                      file_info['format'], assets_dir_abs)
 
@@ -141,7 +141,7 @@ class Step3Generate:
 
         # Run claude -p
         try:
-            result = run_claude(prompt, timeout=600)
+            result = run_claude(prompt, timeout=900)
         except subprocess.TimeoutExpired:
             log_entry = {
                 "file_id": file_id,

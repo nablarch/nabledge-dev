@@ -68,6 +68,8 @@ Three mechanisms ensure quality:
 
 ## Usage
 
+**⚠️ IMPORTANT**: This tool uses `claude -p` and **must be run from a regular shell**, not from within a Claude Code session. If run from within Claude Code, all `claude -p` commands will fail with "cannot be launched inside another Claude Code session" error.
+
 ### Quick Start (Recommended)
 
 **First-time users: Start with test mode**
