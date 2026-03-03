@@ -166,12 +166,12 @@ class PhaseBGenerate:
         prompt = self._build_prompt(file_info, source_content, assets)
         started_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        try:
-            result = self.run_claude(prompt, timeout=1200, json_schema=self.json_schema)
-        except subprocess.TimeoutExpired:
-            if not self.dry_run:
-                write_json(log_path, {"file_id": file_id, "status": "error", "error": "timeout"})
-            return {"status": "error", "id": file_id, "error": "timeout"}
+        result = self.run_claude(
+            prompt=prompt,
+            json_schema=self.json_schema,
+            log_dir=self.ctx.phase_b_executions_dir,
+            file_id=file_id
+        )
 
         if result.returncode != 0:
             if not self.dry_run:

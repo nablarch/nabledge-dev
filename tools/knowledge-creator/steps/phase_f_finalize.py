@@ -74,7 +74,12 @@ class PhaseFFinalize:
                                 json.dumps(knowledge, ensure_ascii=False, indent=2))
 
         try:
-            result = self.run_claude(prompt, timeout=1200, json_schema=CLASSIFY_PATTERNS_SCHEMA)
+            result = self.run_claude(
+                prompt=prompt,
+                json_schema=CLASSIFY_PATTERNS_SCHEMA,
+                log_dir=self.ctx.phase_f_executions_dir,
+                file_id=file_id
+            )
             if result.returncode == 0:
                 parsed = json.loads(result.stdout)
                 patterns = " ".join(parsed.get("patterns", []))
@@ -84,7 +89,7 @@ class PhaseFFinalize:
                         "file_id": file_id, "patterns": patterns, "reasoning": reasoning
                     })
                 return patterns
-        except (subprocess.TimeoutExpired, json.JSONDecodeError):
+        except json.JSONDecodeError:
             pass
 
         if not self.dry_run:

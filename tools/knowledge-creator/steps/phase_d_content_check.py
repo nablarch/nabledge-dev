@@ -73,7 +73,12 @@ class PhaseDContentCheck:
         prompt = self._build_prompt(file_info, knowledge, source)
 
         try:
-            result = self.run_claude(prompt, timeout=1200, json_schema=FINDINGS_SCHEMA)
+            result = self.run_claude(
+                prompt=prompt,
+                json_schema=FINDINGS_SCHEMA,
+                log_dir=self.ctx.phase_d_executions_dir,
+                file_id=file_id
+            )
             if result.returncode == 0:
                 findings = json.loads(result.stdout)
                 if not self.dry_run:

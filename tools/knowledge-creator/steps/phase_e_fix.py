@@ -65,7 +65,12 @@ class PhaseEFix:
         prompt = self._build_prompt(findings, knowledge, source, file_info["format"])
 
         try:
-            result = self.run_claude(prompt, timeout=1200, json_schema=KNOWLEDGE_SCHEMA)
+            result = self.run_claude(
+                prompt=prompt,
+                json_schema=KNOWLEDGE_SCHEMA,
+                log_dir=self.ctx.phase_e_executions_dir,
+                file_id=file_id
+            )
             if result.returncode == 0:
                 fixed = json.loads(result.stdout)
                 if not self.dry_run:
