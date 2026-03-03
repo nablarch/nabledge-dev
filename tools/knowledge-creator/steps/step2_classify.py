@@ -436,7 +436,9 @@ class Step2Classify:
             print(f"\nTest mode ({self.ctx.test_file}): Filtered {original_count} files to {len(classified)} test files")
 
             # Show missing test files (files in test set but not found in classified)
+            # Include both direct IDs and original_ids from split files
             found_ids = {f['id'] for f in classified}
+            found_ids.update({f['split_info']['original_id'] for f in classified if 'split_info' in f})
             missing = test_file_ids - found_ids
             if missing:
                 print(f"WARNING: {len(missing)} test files not found in classified list:")
