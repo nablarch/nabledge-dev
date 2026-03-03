@@ -61,13 +61,13 @@ class Step1ListSources:
             "sources": sources,
         }
 
-        print(f"Found {len(sources)} source files")
-        print(f"  RST: {sum(1 for s in sources if s['format'] == 'rst')}")
-        print(f"  MD:  {sum(1 for s in sources if s['format'] == 'md')}")
-        print(f"  Excel: {sum(1 for s in sources if s['format'] == 'xlsx')}")
+        print(f"\n   📊 Found {len(sources)} source files")
+        print(f"      📝 RST: {sum(1 for s in sources if s['format'] == 'rst')}")
+        print(f"      📄 MD:  {sum(1 for s in sources if s['format'] == 'md')}")
+        print(f"      📊 Excel: {sum(1 for s in sources if s['format'] == 'xlsx')}")
 
         if not self.dry_run:
             write_json(self.ctx.source_list_path, output)
-            print(f"\nWrote: {self.ctx.source_list_path}")
+            print(f"\n   💾 Saved: {self.ctx.source_list_path}")
 
         return output

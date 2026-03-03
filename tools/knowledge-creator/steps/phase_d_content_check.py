@@ -110,5 +110,6 @@ class PhaseDContentCheck:
                 elif r.get("status") == "clean":
                     clean += 1
 
-        print(f"\nContent Check: {clean} clean, {len(issue_ids)} with issues")
+        status_icon = "✅" if len(issue_ids) == 0 else "⚠️"
+        print(f"\n   {status_icon} Content Check: {clean} clean, {len(issue_ids)} with issues")
         return {"issues_count": len(issue_ids), "issue_file_ids": issue_ids}

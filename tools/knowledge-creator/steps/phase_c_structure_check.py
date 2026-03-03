@@ -142,6 +142,8 @@ class PhaseCStructureCheck:
                 results["pass_ids"].append(fi["id"])
 
         write_json(self.ctx.structure_check_path, results)
-        print(f"\nStructure Check: {results['pass']}/{results['total']} pass, "
+
+        pass_icon = "✅" if results['pass'] == results['total'] else "⚠️"
+        print(f"\n   {pass_icon} Structure Check: {results['pass']}/{results['total']} pass, "
               f"{results['error']} fail ({results['error_count']} errors)")
         return results

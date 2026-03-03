@@ -148,7 +148,7 @@ class PhaseBGenerate:
             print(f"  [SKIP] {file_id}")
             return {"status": "skip", "id": file_id}
 
-        print(f"  [GEN] {file_id}")
+        print(f"   🤖 [GEN] {file_id}")
         source_content = read_file(source_path)
 
         if 'section_range' in file_info:
@@ -246,7 +246,7 @@ class PhaseBGenerate:
                 print(f"  [SKIP] {original_id}: not all parts generated")
                 continue
 
-            print(f"  [MERGE] {original_id}: {len(parts)} parts")
+            print(f"   🔗 [MERGE] {original_id}: {len(parts)} parts")
             part_jsons = [load_json(pp) for pp in part_paths]
 
             merged = {
@@ -360,7 +360,8 @@ class PhaseBGenerate:
                 if r["status"] == "error":
                     print(f"    ERROR: {r['id']}: {r.get('error', '')}")
 
-        print(f"\nGeneration: OK={results['ok']}, Skip={results['skip']}, Error={results['error']}")
+        ok_icon = "✅" if results['error'] == 0 else "⚠️"
+        print(f"\n   {ok_icon} Generation: OK={results['ok']}, Skip={results['skip']}, Error={results['error']}")
 
         if not self.dry_run:
             self._merge_split_files()

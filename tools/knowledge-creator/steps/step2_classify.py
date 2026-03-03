@@ -419,12 +419,12 @@ class Step2Classify:
                 split_entries = self.split_file_entry(entry, sections, content)
                 final_classified.extend(split_entries)
                 split_count += 1
-                print(f"  Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
+                print(f"   ✂️  Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
             else:
                 final_classified.append(entry)
 
         if split_count > 0:
-            print(f"\nSplit {split_count} large files into {len(final_classified) - len(classified) + split_count} total entries")
+            print(f"\n   ✂️  Split {split_count} large files into {len(final_classified) - len(classified) + split_count} total entries")
 
         classified = final_classified
 
@@ -433,7 +433,7 @@ class Step2Classify:
             test_file_ids = load_test_file_ids(self.ctx.repo, self.ctx.test_file)
             original_count = len(classified)
             classified = filter_for_test(classified, test_file_ids)
-            print(f"\nTest mode ({self.ctx.test_file}): Filtered {original_count} files to {len(classified)} test files")
+            print(f"\n   🧪 Test mode ({self.ctx.test_file}): Filtered {original_count} files → {len(classified)} test files")
 
             # Show missing test files (files in test set but not found in classified)
             # Include both direct IDs and original_ids from split files
@@ -441,9 +441,9 @@ class Step2Classify:
             found_ids.update({f['split_info']['original_id'] for f in classified if 'split_info' in f})
             missing = test_file_ids - found_ids
             if missing:
-                print(f"WARNING: {len(missing)} test files not found in classified list:")
+                print(f"   ⚠️  WARNING: {len(missing)} test files not found:")
                 for mid in sorted(missing):
-                    print(f"  - {mid}")
+                    print(f"      - {mid}")
 
         # Generate output
         output = {
@@ -452,24 +452,24 @@ class Step2Classify:
             "files": classified
         }
 
-        print(f"\nClassified {len(classified)} files")
-        print(f"  processing-pattern: {sum(1 for f in classified if f['type'] == 'processing-pattern')}")
-        print(f"  component: {sum(1 for f in classified if f['type'] == 'component')}")
-        print(f"  development-tools: {sum(1 for f in classified if f['type'] == 'development-tools')}")
-        print(f"  setup: {sum(1 for f in classified if f['type'] == 'setup')}")
-        print(f"  about: {sum(1 for f in classified if f['type'] == 'about')}")
-        print(f"  guide: {sum(1 for f in classified if f['type'] == 'guide')}")
-        print(f"  check: {sum(1 for f in classified if f['type'] == 'check')}")
+        print(f"\n   📑 Classified {len(classified)} files")
+        print(f"      🔄 processing-pattern: {sum(1 for f in classified if f['type'] == 'processing-pattern')}")
+        print(f"      🧩 component: {sum(1 for f in classified if f['type'] == 'component')}")
+        print(f"      🛠️  development-tools: {sum(1 for f in classified if f['type'] == 'development-tools')}")
+        print(f"      ⚙️  setup: {sum(1 for f in classified if f['type'] == 'setup')}")
+        print(f"      ℹ️  about: {sum(1 for f in classified if f['type'] == 'about')}")
+        print(f"      📖 guide: {sum(1 for f in classified if f['type'] == 'guide')}")
+        print(f"      ✓  check: {sum(1 for f in classified if f['type'] == 'check')}")
 
         if unmatched:
-            print(f"\nWARNING: {len(unmatched)} files could not be classified:")
+            print(f"\n   ⚠️  WARNING: {len(unmatched)} files could not be classified:")
             for item in unmatched[:10]:  # Show first 10
-                print(f"  {item['path']}")
+                print(f"      {item['path']}")
             if len(unmatched) > 10:
-                print(f"  ... and {len(unmatched) - 10} more")
+                print(f"      ... and {len(unmatched) - 10} more")
 
         if not self.dry_run:
             write_json(self.ctx.classified_list_path, output)
-            print(f"\nWrote: {self.ctx.classified_list_path}")
+            print(f"\n   💾 Saved: {self.ctx.classified_list_path}")
 
         return output
