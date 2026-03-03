@@ -121,7 +121,7 @@ def main():
     print("  ║                                                                ║")
     print("  ║            Knowledge File Creator Tool                         ║")
     print("  ║                                                                ║")
-    print("  ║   Converting Nablarch docs to AI-ready knowledge files        ║")
+    print("  ║   Converting Nablarch docs to AI-ready knowledge files         ║")
     print("  ║                                                                ║")
     print("  ╚════════════════════════════════════════════════════════════════╝")
     print("")
