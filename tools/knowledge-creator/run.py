@@ -113,18 +113,21 @@ def main():
     args = parser.parse_args()
     versions = ["6", "5"] if args.version == "all" else [args.version]
 
-    # Display banner
-    print("\n")
-    print("  ╔════════════════════════════════════════════════════════════════╗")
-    print("  ║                                                                ║")
-    print("  ║          N A B L A R C H   K N O W L E D G E   V 6             ║")
-    print("  ║                                                                ║")
-    print("  ║               Knowledge File Creator Tool                      ║")
-    print("  ║                                                                ║")
-    print("  ║      Converting Nablarch docs to AI-ready knowledge files      ║")
-    print("  ║                                                                ║")
-    print("  ╚════════════════════════════════════════════════════════════════╝")
-    print("")
+    # Display banner (only once at startup)
+    def print_banner():
+        print("\n")
+        print("  ╔════════════════════════════════════════════════════════════════╗")
+        print("  ║                                                                ║")
+        print("  ║            N A B L A R C H   K N O W L E D G E                 ║")
+        print("  ║                                                                ║")
+        print("  ║               Knowledge File Creator Tool                      ║")
+        print("  ║                                                                ║")
+        print("  ║      Converting Nablarch docs to AI-ready knowledge files      ║")
+        print("  ║                                                                ║")
+        print("  ╚════════════════════════════════════════════════════════════════╝")
+        print("")
+
+    print_banner()
 
     for v in versions:
         print(f"\n{'='*60}")
