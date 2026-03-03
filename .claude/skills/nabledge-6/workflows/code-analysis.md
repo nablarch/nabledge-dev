@@ -133,9 +133,33 @@ Output directory: .nabledge/20260210
 
 **Action**: Batch process knowledge searches for all Nablarch components.
 
+#### 2.0: Extract search parameters (CONTEXT BOUNDARY)
+
+Before starting knowledge search, distill Step 1 results into a compact parameter set.
+All subsequent search steps use ONLY these parameters, not the full Step 1 context.
+
+**Extract the following** (write them out explicitly before proceeding):
+
+- **nablarch_components**: List of Nablarch class names from Step 1 (max 8)
+  - Example: ["UniversalDao", "ExecutionContext", "ObjectMapper", "FilePathSetting"]
+- **technical_terms**: Japanese/English technical terms (max 6)
+  - Example: ["DAO", "バッチ", "CSV出力", "ファイルパス"]
+- **operation_patterns**: What the code does (max 4)
+  - Example: ["検索", "出力", "データ変換"]
+
+**Rules**:
+- Combined total: max 18 items across all three lists
+- If Step 1 identified more items, prioritize by relevance to target code's main function
+- These parameters are the ONLY input to the keyword search that follows
+
+**Why this boundary**: Embedded knowledge search runs 36% slower than standalone (33.4s vs 24.6s)
+because of accumulated context from Step 1. This explicit extraction step keeps the search lightweight.
+
 **Batch processing**:
 
-1. **Identify all Nablarch components** from Step 1 analysis:
+1. **Build L1/L2 keywords from search parameters above** (not from full Step 1 context):
+   - L1 (technical domains): Derived from nablarch_components + technical_terms
+   - L2 (specific functions): Derived from operation_patterns + component-specific terms
    - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "DbAccessException"]
 
 2. **Combine keywords for batch search**:
