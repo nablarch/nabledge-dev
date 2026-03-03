@@ -162,8 +162,8 @@ def main():
                 from steps.phase_c_structure_check import PhaseCStructureCheck
                 c_result = PhaseCStructureCheck(ctx).run()
                 if c_result["error_count"] > 0:
-                    print(f"構造エラー {c_result['error_count']}件。"
-                          f"詳細: {ctx.log_dir}/structure-check.json")
+                    print(f"Structure errors: {c_result['error_count']} found. "
+                          f"Details: {ctx.log_dir}/structure-check.json")
 
             if "D" in phases:
                 print("\n--- Phase D: Content Check ---")
@@ -174,7 +174,7 @@ def main():
                 )
 
                 if d_result["issues_count"] == 0:
-                    print(f"Round {round_num}: 内容検証パス（問題なし）")
+                    print(f"Round {round_num}: Content check passed (no issues)")
                     break
 
                 if "E" in phases:

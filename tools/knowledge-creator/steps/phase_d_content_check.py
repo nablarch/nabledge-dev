@@ -110,5 +110,5 @@ class PhaseDContentCheck:
                 elif r.get("status") == "clean":
                     clean += 1
 
-        print(f"\n内容検証: {clean} clean, {len(issue_ids)} with issues")
+        print(f"\nContent Check: {clean} clean, {len(issue_ids)} with issues")
         return {"issues_count": len(issue_ids), "issue_file_ids": issue_ids}
