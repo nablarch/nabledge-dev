@@ -29,8 +29,15 @@ class PhaseCStructureCheck:
             return 1
         return 0
 
-    def validate_structure(self, json_path, source_path, source_format):
-        """Perform structural validation checks (S1-S15). Returns list of error strings."""
+    def validate_structure(self, json_path, source_path, source_format, file_info=None):
+        """Perform structural validation checks (S1-S15). Returns list of error strings.
+
+        Args:
+            json_path: Path to knowledge JSON file
+            source_path: Path to source file
+            source_format: Format of source (rst/md)
+            file_info: Optional file info dict with section_range for split files
+        """
         errors = []
 
         # S1: JSON parse
@@ -78,12 +85,19 @@ class PhaseCStructureCheck:
             errors.append(f"S8: id '{knowledge.get('id')}' != filename '{expected_id}'")
 
         # S9: Section count
-        if os.path.exists(source_path):
+        if file_info and "section_range" in file_info:
+            # For split files, use section_range as expected count
+            expected = len(file_info["section_range"]["sections"])
+        elif os.path.exists(source_path):
+            # For non-split files, count headings in source
             source_content = read_file(source_path)
             expected = self.count_source_headings(source_content, source_format)
-            actual = len(knowledge.get("sections", {}))
-            if actual < expected:
-                errors.append(f"S9: Section count {actual} < source headings {expected}")
+        else:
+            expected = 0
+
+        actual = len(knowledge.get("sections", {}))
+        if expected > 0 and actual < expected:
+            errors.append(f"S9: Section count {actual} < source headings {expected}")
 
         # S11: URL format
         for url in knowledge.get("official_doc_urls", []):
@@ -130,7 +144,7 @@ class PhaseCStructureCheck:
                 continue
 
             results["total"] += 1
-            errs = self.validate_structure(json_path, source_path, fi["format"])
+            errs = self.validate_structure(json_path, source_path, fi["format"], fi)
 
             if errs:
                 results["error"] += 1

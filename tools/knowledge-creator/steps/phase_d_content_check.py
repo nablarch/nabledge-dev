@@ -70,6 +70,13 @@ class PhaseDContentCheck:
 
         knowledge = load_json(json_path)
         source = read_file(source_path)
+
+        # For split files, extract only the section range
+        if "section_range" in file_info:
+            lines = source.splitlines()
+            sr = file_info["section_range"]
+            source = "\n".join(lines[sr["start_line"]:sr["end_line"]])
+
         prompt = self._build_prompt(file_info, knowledge, source)
 
         try:

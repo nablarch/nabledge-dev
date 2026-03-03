@@ -62,6 +62,12 @@ class PhaseEFix:
         knowledge = load_json(f"{self.ctx.knowledge_dir}/{file_info['output_path']}")
         source = read_file(f"{self.ctx.repo}/{file_info['source_path']}")
 
+        # For split files, extract only the section range
+        if "section_range" in file_info:
+            lines = source.splitlines()
+            sr = file_info["section_range"]
+            source = "\n".join(lines[sr["start_line"]:sr["end_line"]])
+
         prompt = self._build_prompt(findings, knowledge, source, file_info["format"])
 
         try:
@@ -73,6 +79,16 @@ class PhaseEFix:
             )
             if result.returncode == 0:
                 fixed = json.loads(result.stdout)
+
+                # Guard: output must not shrink drastically
+                input_sec_chars = sum(len(v) for v in knowledge.get("sections", {}).values())
+                output_sec_chars = sum(len(v) for v in fixed.get("sections", {}).values())
+                if input_sec_chars > 0 and output_sec_chars < input_sec_chars * 0.5:
+                    print(f"    WARNING: {file_id}: output shrunk to {output_sec_chars/input_sec_chars:.0%} "
+                          f"({output_sec_chars:,} / {input_sec_chars:,} chars) - rejecting fix")
+                    return {"status": "error", "id": file_id,
+                            "error": f"Output too small: {output_sec_chars}/{input_sec_chars} chars"}
+
                 if not self.dry_run:
                     write_json(
                         f"{self.ctx.knowledge_dir}/{file_info['output_path']}", fixed
