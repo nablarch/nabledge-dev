@@ -1,186 +1,186 @@
 # Knowledge Creator
 
-Nablarch公式ドキュメント（RST/MD/Excel）をAI-readyなナレッジファイル（JSON）に変換するツール。
+Converts Nablarch official documentation (RST/MD/Excel) to AI-ready knowledge files (JSON).
 
-## 概要
+## Overview
 
-マルチフェーズパイプラインでナレッジファイルを生成：
+Multi-phase pipeline for knowledge file generation:
 
-- **Phase A**: 準備 - ソースファイル一覧取得、Type/Category分類
-- **Phase B**: 生成 - claude -p でナレッジJSON生成（並列実行）
-- **Phase C**: 構造検証 - S1-S15チェック（Python、AI不要）
-- **Phase D**: 内容検証 - claude -p で内容チェック（並列実行）
-- **Phase E**: 修正 - claude -p で問題修正（並列実行）
-- **Phase G**: リンク解決 - RST cross-references を Markdown リンクに変換
-- **Phase F**: 仕上げ - 処理パターン分類、index.toon生成、閲覧用MD生成
+- **Phase A**: Preparation - List source files, classify by type/category
+- **Phase B**: Generation - Generate knowledge JSON via `claude -p` (parallel execution)
+- **Phase C**: Structure Check - Validate with S1-S15 checks (Python, no AI)
+- **Phase D**: Content Check - Validate content via `claude -p` (parallel execution)
+- **Phase E**: Fix - Fix issues via `claude -p` (parallel execution)
+- **Phase G**: Link Resolution - Convert RST cross-references to Markdown links
+- **Phase F**: Finalization - Classify patterns, generate index.toon, create browsable docs
 
-Phase C→D→E は `--max-rounds` 回ループ可能。
+Phase C→D→E can loop up to `--max-rounds` times.
 
-## 必要な環境
+## Requirements
 
 - Python 3.8+
-- Claude CLI (`claude` コマンドが利用可能)
-- 依存パッケージ: `openpyxl`, `pytest`
+- Claude CLI (`claude` command available)
+- Dependencies: `openpyxl`, `pytest`
 
-## セットアップ
+## Setup
 
 ```bash
 cd tools/knowledge-creator
 
-# 仮想環境作成（推奨）
+# Create virtual environment (recommended)
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
-# または
+# or
 .venv\Scripts\activate  # Windows
 
-# 依存パッケージインストール
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-または、リポジトリルートの `setup.sh` を実行（knowledge-creator依存も含む）：
+Or run `setup.sh` from repository root (includes knowledge-creator dependencies):
 
 ```bash
 cd /path/to/nabledge-dev
 ./setup.sh
 ```
 
-## 使い方
+## Usage
 
-### テストモード（3ファイル）
+### Test Mode (3 files)
 
-最大ファイル3つ（分割後8ファイル）で動作確認：
+Validate with 3 largest files (8 files after splitting):
 
 ```bash
 cd tools/knowledge-creator
 python run.py --version 6 --test-mode --repo /path/to/nabledge-dev
 ```
 
-**重要**: `--repo` にはリポジトリルートの絶対パスを指定してください。
+**Important**: Specify absolute path to repository root with `--repo`.
 
-### テストモード（包括的・21ファイル）
+### Test Mode (Comprehensive - 21 files)
 
-全フォーマット・タイプ・カテゴリをカバー：
+Cover all formats, types, and categories:
 
 ```bash
-# test-files.json を切り替え
+# Switch test-files.json
 cp test-files-comprehensive.json test-files.json
 
-# 実行
+# Run
 python run.py --version 6 --test-mode --repo /path/to/nabledge-dev
 ```
 
-### 本番モード（全ファイル）
+### Production Mode (All files)
 
-v6全252ソースファイル（分割後262ファイル）を生成：
+Generate all v6 source files (252 sources → 262 files after splitting):
 
 ```bash
 python run.py --version 6 --repo /path/to/nabledge-dev
 ```
 
-v5とv6を同時に生成：
+Generate both v5 and v6:
 
 ```bash
 python run.py --version all --repo /path/to/nabledge-dev
 ```
 
-### 特定フェーズのみ実行
+### Run Specific Phases
 
 ```bash
-# Phase B（生成）のみ
+# Phase B (generation) only
 python run.py --version 6 --phase B --repo /path/to/nabledge-dev
 
-# Phase C,D,E（検証・修正）のみ
+# Phase C,D,E (validation & fix) only
 python run.py --version 6 --phase CDE --repo /path/to/nabledge-dev
 
-# Phase G,F（リンク解決・仕上げ）のみ
+# Phase G,F (link resolution & finalization) only
 python run.py --version 6 --phase GF --repo /path/to/nabledge-dev
 ```
 
-### オプション
+### Options
 
-| オプション | 説明 | デフォルト |
-|----------|------|----------|
-| `--version` | バージョン（6, 5, all） | **必須** |
-| `--phase` | 実行フェーズ（A, B, C, D, E, G, F の組み合わせ） | `ABCDEFG` |
-| `--test-mode` | テストモード（test-files.json の対象ファイルのみ） | `False` |
-| `--concurrency` | 並列実行数（Phase B, D, E） | `4` |
-| `--max-rounds` | Phase C→D→E のループ回数上限 | `1` |
-| `--dry-run` | ドライラン（ファイル書き込みなし） | `False` |
-| `--repo` | リポジトリルートパス | `os.getcwd()` |
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--version` | Version (6, 5, all) | **Required** |
+| `--phase` | Phases to run (combination of A, B, C, D, E, G, F) | `ABCDEFG` |
+| `--test-mode` | Test mode (only files in test-files.json) | `False` |
+| `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
+| `--max-rounds` | Max Phase C→D→E loop iterations | `1` |
+| `--dry-run` | Dry run (no file writes) | `False` |
+| `--repo` | Repository root path | `os.getcwd()` |
 
-## 出力ファイル
+## Output Files
 
-### 最終成果物
+### Final Outputs
 
 ```
 .claude/skills/nabledge-6/
-  knowledge/              # ナレッジJSONファイル
+  knowledge/              # Knowledge JSON files
     {type}/{category}/{file-id}.json
-    index.toon            # ナレッジファイルインデックス
-  docs/                   # 閲覧用Markdown
+    index.toon            # Knowledge file index
+  docs/                   # Browsable Markdown files
     {type}/{category}/{file-id}.md
 ```
 
-### 中間成果物
+### Intermediate Artifacts
 
 ```
 tools/knowledge-creator/logs/v6/
-  sources.json                    # Phase A: ソースファイル一覧
-  classified.json                 # Phase A: 分類済みファイル一覧
-  structure-check.json            # Phase C: 構造検証結果
-  generate/trace/{file-id}.txt    # Phase B: 生成トレース
-  validate/findings/{file-id}.json # Phase D: 内容検証結果
-  knowledge-resolved/{type}/{category}/{file-id}.json # Phase G: リンク解決済み
+  sources.json                    # Phase A: Source file list
+  classified.json                 # Phase A: Classified file list
+  structure-check.json            # Phase C: Structure validation results
+  generate/trace/{file-id}.txt    # Phase B: Generation trace
+  validate/findings/{file-id}.json # Phase D: Content validation results
+  knowledge-resolved/{type}/{category}/{file-id}.json # Phase G: Link-resolved files
 ```
 
-## クリーンアップ
+## Cleanup
 
-生成ファイルを全削除してクリーンな状態に：
+Remove all generated files to start fresh:
 
 ```bash
 cd tools/knowledge-creator
 ./clean.sh /path/to/nabledge-dev
 ```
 
-## テストファイル設定
+## Test File Configuration
 
-`test-files.json` で `--test-mode` の対象ファイルを制御：
+`test-files.json` controls which files are processed in `--test-mode`:
 
-- **test-files-top3.json**: 3最大ファイル（SC検証用）
-- **test-files-comprehensive.json**: 21ファイル（包括的テスト用）
+- **test-files-top3.json**: 3 largest files (for SC validation)
+- **test-files-comprehensive.json**: 21 files (comprehensive test coverage)
 
-切り替え方法：
+Switch between configurations:
 
 ```bash
-cp test-files-top3.json test-files.json          # 3ファイル版
-cp test-files-comprehensive.json test-files.json  # 21ファイル版
+cp test-files-top3.json test-files.json          # 3-file version
+cp test-files-comprehensive.json test-files.json  # 21-file version
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
 ### `FileNotFoundError: .lw/nab-official/v6/`
 
-→ `--repo` オプションでリポジトリルートの絶対パスを指定してください。
+→ Specify absolute path to repository root with `--repo` option.
 
-### 入れ子ディレクトリ `tools/knowledge-creator/tools/...` が作成される
+### Nested directory `tools/knowledge-creator/tools/...` created
 
-→ `tools/knowledge-creator` ディレクトリから実行する場合は必ず `--repo` を指定してください。
+→ When running from `tools/knowledge-creator/` directory, always specify `--repo`.
 
 ### `claude: command not found`
 
-→ Claude CLI をインストールしてください。`--dry-run` オプションでAI呼び出しなしのテストは可能です。
+→ Install Claude CLI. Use `--dry-run` option to test without AI calls.
 
-### テストが失敗する
+### Tests fail
 
 ```bash
-# ユニットテスト実行
+# Run unit tests
 cd tools/knowledge-creator
 python -m pytest tests/ -v
 ```
 
-## 関連ドキュメント
+## Related Documentation
 
-- **設計書**: `doc/nabledge-creator-v2-task.md`
-- **マッピングファイル**: `doc/mapping/` (302ファイル)
+- **Task Specification**: `doc/nabledge-creator-v2-task.md`
+- **Mapping Files**: `doc/mapping/` (302 files)
 - **Issue**: #106
 - **PR**: #107
