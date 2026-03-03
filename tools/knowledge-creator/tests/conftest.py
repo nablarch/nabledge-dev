@@ -53,7 +53,7 @@ def make_mock_run_claude(generate_output=None, findings_output=None,
         ]
     }
 
-    def mock_fn(prompt, timeout=600, json_schema=None):
+    def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
         schema_str = json.dumps(json_schema) if json_schema else ""
         if "trace" in schema_str:
             output = _generate
