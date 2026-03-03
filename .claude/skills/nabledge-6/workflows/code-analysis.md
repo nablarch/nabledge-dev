@@ -165,15 +165,12 @@ Output directory: .nabledge/20260210
      - UniversalDao → [.claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json]
      - ValidationUtil → [.claude/skills/nabledge-6/knowledge/features/libraries/data-bind.json]
 
-6. **Collect knowledge file identifiers** for Step 3.2:
+6. **Collect knowledge file basenames** for Step 3.2:
    - Extract unique knowledge files from section-judgement output
-   - **Use basenames (recommended)** for automatic path resolution:
-     - Example: `universal-dao,data-bind,web-application`
-     - Basename format: filename without path and extension
-     - prefill-template.sh will automatically search for files
-   - **Or use full JSON paths** (pass-through mode):
-     - Example: `.claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json`
-     - Use when basenames are ambiguous (multiple matches)
+   - Use basenames only (filename without path and extension)
+   - Example: `universal-dao,data-bind,web-application`
+   - prefill-template.sh will automatically search and include all matches
+   - If multiple files with same name exist, script adds category path to labels for disambiguation
    - Deduplicate: Multiple sections may come from same file
    - Format as comma-separated list for --knowledge-files parameter
 
@@ -215,23 +212,12 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 **Action**: Execute prefill script to pre-populate 8 deterministic placeholders:
 
 ```bash
-# Using basenames (recommended - automatic search)
 .claude/skills/nabledge-6/scripts/prefill-template.sh \
   --target-name "<target-name>" \
   --target-desc "<one-line-description>" \
   --modules "<module1, module2>" \
-  --source-files "<File1.java,File2.java>" \
+  --source-files "File1.java,File2.java" \
   --knowledge-files "universal-dao,data-bind,web-application" \
-  --official-docs "<url1,url2>" \
-  --output-path ".nabledge/YYYYMMDD/code-analysis-<target>.md"
-
-# Or using full paths (pass-through mode)
-.claude/skills/nabledge-6/scripts/prefill-template.sh \
-  --target-name "<target-name>" \
-  --target-desc "<one-line-description>" \
-  --modules "<module1, module2>" \
-  --source-files "src/main/java/File1.java,src/main/java/File2.java" \
-  --knowledge-files ".claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json" \
   --official-docs "<url1,url2>" \
   --output-path ".nabledge/YYYYMMDD/code-analysis-<target>.md"
 ```
@@ -240,19 +226,22 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 - `target-name`: Target code name (e.g., "LoginAction")
 - `target-desc`: One-line description (e.g., "ログイン認証処理")
 - `modules`: Affected modules (e.g., "proman-web, proman-common")
-- `source-files`: Comma-separated source file basenames or full paths from Step 1
-  - Basename mode (recommended): "LoginAction.java,LoginForm.java" - script auto-searches
-  - Full path mode: "src/main/java/LoginAction.java" - direct pass-through
-- `knowledge-files`: Comma-separated knowledge file basenames or full JSON paths from Step 2
-  - Basename mode (recommended): "universal-dao,data-bind" - script auto-searches and converts to MD
-  - Full path mode: ".claude/skills/nabledge-6/knowledge/.../universal-dao.json" - direct conversion
+- `source-files`: Comma-separated source file basenames from Step 1
+  - Example: "LoginAction.java,LoginForm.java"
+  - Script searches from project root and includes all matches
+  - If multiple files found, directory path added to labels for disambiguation
+- `knowledge-files`: Comma-separated knowledge file basenames from Step 2
+  - Example: "universal-dao,data-bind" (extension .json is optional)
+  - Script searches in .claude/skills/nabledge-6/knowledge/ and includes all matches
+  - Automatically converts .json paths to .md paths
+  - If multiple files found, category path added to labels for disambiguation
 - `official-docs`: Comma-separated official doc URLs (optional)
 - `output-path`: Output file path
 
 **File Resolution**:
-- Basename mode: Script searches automatically, warns if not found (link omitted), errors if multiple matches
-- Full path mode: Script uses path directly, warns if not found (link omitted)
-- Choose basename mode for simplicity, full path mode when basenames are ambiguous
+- Script searches automatically by basename
+- Warns if not found (link omitted, processing continues)
+- Includes all matches if multiple files found (with path disambiguation in labels)
 
 **Pre-filled placeholders (8/16)**:
 - `{{target_name}}`: From target-name parameter

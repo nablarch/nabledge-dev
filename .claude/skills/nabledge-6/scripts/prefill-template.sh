@@ -15,32 +15,23 @@ Required arguments:
   --target-name <name>        Target name (e.g., "LoginAction", "ログイン機能")
   --target-desc <description> One-line description of the target
   --modules <modules>         Affected modules (e.g., "proman-web, proman-common")
-  --source-files <files>      Comma-separated source file paths or basenames
-                              - Full path: "src/main/java/LoginAction.java" (pass-through)
-                              - Basename: "LoginAction.java" (auto-search from project root)
-  --knowledge-files <files>   Comma-separated knowledge file paths or basenames
-                              - Full path: ".claude/skills/nabledge-6/knowledge/features/universal-dao.json"
-                              - Basename: "universal-dao" or "universal-dao.json" (auto-search)
+  --source-files <files>      Comma-separated source file basenames (e.g., "LoginAction.java,LoginForm.java")
+                              Script searches from project root and includes all matches.
+                              If multiple files found, directory path added to label for disambiguation.
+  --knowledge-files <files>   Comma-separated knowledge file basenames (e.g., "universal-dao,web-application")
+                              Script searches in .claude/skills/nabledge-6/knowledge/ and includes all matches.
+                              Extension (.json) is optional. Automatically converts to .md paths.
   --output-path <path>        Output file path
 
 Optional arguments:
   --official-docs <docs>      Comma-separated official documentation URLs (default: none)
 
-Examples:
-  # Using basenames (auto-search)
+Example:
   $0 --target-name "LoginAction" \\
      --target-desc "ログイン認証処理" \\
      --modules "proman-web" \\
      --source-files "LoginAction.java,LoginForm.java" \\
      --knowledge-files "universal-dao,web-application" \\
-     --output-path ".nabledge/20260220/code-analysis-login-action.md"
-
-  # Using full paths (pass-through)
-  $0 --target-name "LoginAction" \\
-     --target-desc "ログイン認証処理" \\
-     --modules "proman-web" \\
-     --source-files "proman-web/src/main/java/LoginAction.java,proman-web/src/main/java/LoginForm.java" \\
-     --knowledge-files ".claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json" \\
      --output-path ".nabledge/20260220/code-analysis-login-action.md"
 EOF
     exit 1
@@ -126,27 +117,15 @@ fi
 GENERATION_DATE=$(date '+%Y-%m-%d')
 GENERATION_TIME=$(date '+%H:%M:%S')
 
-# Resolve file path: supports both basename (search) and full path (pass-through)
-# Usage: resolve_file <file_pattern> <search_dir> <file_type>
-# Returns: full path on stdout, or empty if not found
-# Exit codes: 0=success, 1=multiple matches found
-resolve_file() {
+# Search for file by basename
+# Usage: search_files <file_pattern> <search_dir> <file_type>
+# Returns: all matching paths on stdout (one per line), or empty if not found
+search_files() {
     local file_pattern="$1"
     local search_dir="$2"
     local file_type="$3"  # "source" or "knowledge"
 
-    # If pattern contains '/', treat as full path (pass-through)
-    if [[ "$file_pattern" == */* ]]; then
-        if [[ -f "$file_pattern" ]]; then
-            echo "$file_pattern"
-            return 0
-        else
-            echo "Warning: ${file_type} file not found: '$file_pattern' (full path) - link will be omitted" >&2
-            return 0
-        fi
-    fi
-
-    # Basename mode: search for file
+    # Search for file
     local matches
     if [[ "$file_type" == "knowledge" ]]; then
         # For knowledge files, search for .json files
@@ -163,26 +142,9 @@ resolve_file() {
         return 0
     fi
 
-    # Count matches (only count non-empty lines)
-    local match_count=$(echo "$matches" | wc -l)
-
-    if [[ $match_count -eq 1 ]]; then
-        echo "$matches"
-        return 0
-    else
-        echo "Error: Multiple ${file_type} files found for '$file_pattern':" >&2
-        echo "$matches" | while IFS= read -r match; do
-            echo "  - $match" >&2
-        done
-        echo "" >&2
-        echo "Solution: Use full path instead of basename:" >&2
-        if [[ "$file_type" == "source" ]]; then
-            echo "  --source-files 'path/to/$file_pattern'" >&2
-        else
-            echo "  --knowledge-files 'path/to/$file_pattern'" >&2
-        fi
-        return 1
-    fi
+    # Return all matches
+    echo "$matches"
+    return 0
 }
 
 # Calculate relative path from output directory to project root
@@ -203,25 +165,38 @@ for file in "${FILES[@]}"; do
     file=$(echo "$file" | xargs) # trim whitespace
     [[ -z "$file" ]] && continue
 
-    # Resolve file path (supports basename and full path)
-    resolved_path=$(resolve_file "$file" "." "source")
-    exit_code=$?
-
-    # If multiple matches found, exit with error
-    if [[ $exit_code -ne 0 ]]; then
-        exit $exit_code
-    fi
+    # Search for files (returns all matches)
+    matches=$(search_files "$file" "." "source")
 
     # If file not found, skip (warning already printed)
-    if [[ -z "$resolved_path" ]]; then
+    if [[ -z "$matches" ]]; then
         continue
     fi
 
-    filename=$(basename "$resolved_path")
-    relative_path="${RELATIVE_PREFIX}${resolved_path}"
-    # Extract simple description from filename (remove extension)
-    desc=$(basename "$resolved_path" | sed 's/\.[^.]*$//')
-    SOURCE_FILES_LINKS+="- [${filename}](${relative_path}) - ${desc}"$'\n'
+    # Count matches
+    match_count=$(echo "$matches" | wc -l)
+
+    # Process each match
+    while IFS= read -r resolved_path; do
+        # Remove leading ./ from path
+        resolved_path=$(echo "$resolved_path" | sed 's|^\./||')
+
+        filename=$(basename "$resolved_path")
+        relative_path="${RELATIVE_PREFIX}${resolved_path}"
+
+        # If multiple matches, add directory path to label
+        if [[ $match_count -gt 1 ]]; then
+            # Extract parent directory path for disambiguation
+            dir_path=$(dirname "$resolved_path")
+            label="${filename} (${dir_path})"
+        else
+            label="${filename}"
+        fi
+
+        # Extract simple description from filename (remove extension)
+        desc=$(basename "$resolved_path" | sed 's/\.[^.]*$//')
+        SOURCE_FILES_LINKS+="- [${label}](${relative_path}) - ${desc}"$'\n'
+    done <<< "$matches"
 done
 SOURCE_FILES_LINKS=$(echo "$SOURCE_FILES_LINKS" | sed 's/^$//')
 
@@ -232,31 +207,45 @@ for file in "${FILES[@]}"; do
     file=$(echo "$file" | xargs) # trim whitespace
     [[ -z "$file" ]] && continue
 
-    # Resolve file path (supports basename and full path)
-    resolved_path=$(resolve_file "$file" ".claude/skills/nabledge-6/knowledge" "knowledge")
-    exit_code=$?
-
-    # If multiple matches found, exit with error
-    if [[ $exit_code -ne 0 ]]; then
-        exit $exit_code
-    fi
+    # Search for files (returns all matches)
+    matches=$(search_files "$file" ".claude/skills/nabledge-6/knowledge" "knowledge")
 
     # If file not found, skip (warning already printed)
-    if [[ -z "$resolved_path" ]]; then
+    if [[ -z "$matches" ]]; then
         continue
     fi
 
-    # Convert knowledge JSON paths to docs MD paths
-    # Example: .claude/skills/nabledge-6/knowledge/features/X.json
-    #       → .claude/skills/nabledge-6/docs/features/X.md
-    doc_file="${resolved_path/\/knowledge\//\/docs\/}"
-    doc_file="${doc_file/.json/.md}"
+    # Count matches
+    match_count=$(echo "$matches" | wc -l)
 
-    filename=$(basename "$doc_file" .md)
-    relative_path="${RELATIVE_PREFIX}${doc_file}"
-    # Use filename as description (capitalize first letter)
-    desc=$(echo "$filename" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
-    KNOWLEDGE_BASE_LINKS+="- [${desc}](${relative_path})"$'\n'
+    # Process each match
+    while IFS= read -r resolved_path; do
+        # Remove leading ./ from path
+        resolved_path=$(echo "$resolved_path" | sed 's|^\./||')
+
+        # Convert knowledge JSON paths to docs MD paths
+        # Example: .claude/skills/nabledge-6/knowledge/features/X.json
+        #       → .claude/skills/nabledge-6/docs/features/X.md
+        doc_file="${resolved_path/\/knowledge\//\/docs\/}"
+        doc_file="${doc_file/.json/.md}"
+
+        filename=$(basename "$doc_file" .md)
+        relative_path="${RELATIVE_PREFIX}${doc_file}"
+
+        # Use filename as description (capitalize first letter)
+        desc=$(echo "$filename" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
+
+        # If multiple matches, add category path to label for disambiguation
+        if [[ $match_count -gt 1 ]]; then
+            # Extract category from path (e.g., features/libraries, features/handlers)
+            category=$(echo "$resolved_path" | sed 's|.*/knowledge/\(.*\)/[^/]*$|\1|')
+            label="${desc} (${category})"
+        else
+            label="${desc}"
+        fi
+
+        KNOWLEDGE_BASE_LINKS+="- [${label}](${relative_path})"$'\n'
+    done <<< "$matches"
 done
 KNOWLEDGE_BASE_LINKS=$(echo "$KNOWLEDGE_BASE_LINKS" | sed 's/^$//')
 
