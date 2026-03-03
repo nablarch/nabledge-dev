@@ -43,9 +43,19 @@ Set this as the `title` field.
 
 ---
 
+## Expected Sections (if this file was split)
+
+{EXPECTED_SECTIONS}
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
 ## Work Step 2: Build the section list
 
-Scan the source and create a complete list of sections.
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
 
 ### 2-1. Count split-level headings
 

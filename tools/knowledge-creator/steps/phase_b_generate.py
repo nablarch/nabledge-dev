@@ -101,6 +101,14 @@ class PhaseBGenerate:
         else:
             prompt = prompt.replace("{INTERNAL_LABELS}", "[]")
 
+        # Pass expected sections list if file was split
+        if "section_range" in file_info and "sections" in file_info["section_range"]:
+            sections_list = file_info["section_range"]["sections"]
+            sections_md = "\n".join(f"- {s}" for s in sections_list)
+            prompt = prompt.replace("{EXPECTED_SECTIONS}", sections_md)
+        else:
+            prompt = prompt.replace("{EXPECTED_SECTIONS}", "(empty - scan the source yourself)")
+
         if assets:
             section = "\n## 画像・添付ファイル一覧\n\n"
             section += "| ソース内パス | assetsパス |\n|---|---|\n"
