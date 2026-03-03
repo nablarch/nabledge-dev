@@ -141,7 +141,7 @@ def main():
         print(f"   Mode: {mode_emoji}{mode}")
         if args.test:
             print(f"   Test File: 📄{args.test}")
-        print(f"   Phases: {args.phase or 'ABCDEFG (all)'}")
+        print(f"   Phases: {args.phase or 'ABCDEM (all)'}")
         print(f"   Max Rounds: {args.max_rounds}")
         print(f"   Concurrency: {args.concurrency}")
         print(f"   Dry-run: {'✅Yes' if args.dry_run else '❌No'}")
@@ -153,7 +153,7 @@ def main():
             test_file=args.test, max_rounds=args.max_rounds
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
-        phases = args.phase or "ABCDEFG"
+        phases = args.phase or "ABCDEM"
 
         # Phase A
         if "A" in phases:
@@ -211,15 +211,22 @@ def main():
             else:
                 break
 
-        # Phase G
-        if "G" in phases:
+        # Phase M (replaces G+F in default flow)
+        if "M" in phases:
+            print("\n📦Phase M: Merge + Resolve + Finalize")
+            print("   └─ Merging, resolving links, generating docs...")
+            from steps.phase_m_finalize import PhaseMFinalize
+            PhaseMFinalize(ctx, dry_run=args.dry_run).run()
+
+        # Phase G (backward compat: only when explicitly specified without M)
+        if "G" in phases and "M" not in phases:
             print("\n🔗Phase G: Resolve Links")
             print("   └─ Resolving RST cross-references...")
             from steps.phase_g_resolve_links import PhaseGResolveLinks
             PhaseGResolveLinks(ctx).run()
 
-        # Phase F
-        if "F" in phases:
+        # Phase F (backward compat: only when explicitly specified without M)
+        if "F" in phases and "M" not in phases:
             print("\n📦Phase F: Finalize")
             print("   └─ Generating browsable docs and index...")
             from steps.phase_f_finalize import PhaseFFinalize
