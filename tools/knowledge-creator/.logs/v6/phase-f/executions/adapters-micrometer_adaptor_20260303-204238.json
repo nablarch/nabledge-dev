@@ -1,0 +1,88 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 36221,
+  "duration_api_ms": 36069,
+  "num_turns": 2,
+  "result": "The classification is complete. The Micrometer adapter is relevant to **nablarch-batch** and **web-application** patterns, as the content explicitly describes metrics collection for both application types with dedicated sections and specific implementation examples for each.",
+  "stop_reason": null,
+  "session_id": "9aa2dcfd-f196-4cb3-8e59-a97cb53c1084",
+  "total_cost_usd": 0.5194535,
+  "usage": {
+    "input_tokens": 21,
+    "cache_creation_input_tokens": 68366,
+    "cache_read_input_tokens": 65972,
+    "output_tokens": 2363,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 68366
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+      "inputTokens": 21,
+      "outputTokens": 2363,
+      "cacheReadInputTokens": 65972,
+      "cacheCreationInputTokens": 68366,
+      "webSearchRequests": 0,
+      "costUSD": 0.5194535,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "patterns": [
+      "nablarch-batch",
+      "web-application"
+    ],
+    "reasoning": [
+      {
+        "pattern": "nablarch-batch",
+        "matched": true,
+        "evidence": "Content explicitly mentions 'バッチアプリケーション' with dedicated section describing batch-specific metrics. Includes batch-specific classes: BatchTransactionTimeMetricsLogger (for transaction time), BatchProcessedRecordCountMetricsLogger (for processing count), CommitLogger integration, and discusses Nablarch batch processing patterns like loop_handler."
+      },
+      {
+        "pattern": "jakarta-batch",
+        "matched": false,
+        "evidence": "No mentions of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch APIs anywhere in the content."
+      },
+      {
+        "pattern": "restful-web-service",
+        "matched": false,
+        "evidence": "No mentions of RESTful, JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder. Content focuses on general web applications, not REST-specific features."
+      },
+      {
+        "pattern": "http-messaging",
+        "matched": false,
+        "evidence": "No mentions of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+      },
+      {
+        "pattern": "web-application",
+        "matched": true,
+        "evidence": "Content explicitly mentions 'ウェブアプリケーション' with dedicated section describing web-specific metrics. Includes HTTP request processing time measurement, WebFrontController handler configuration, HttpRequestTimeMetricsMetaDataBuilder for HTTP-specific metrics, and servlet-related components."
+      },
+      {
+        "pattern": "mom-messaging",
+        "matched": false,
+        "evidence": "No mentions of MOMメッセージング, MQ, message queues, asynchronous messaging, or MomMessagingAction."
+      },
+      {
+        "pattern": "db-messaging",
+        "matched": false,
+        "evidence": "No mentions of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader. While SQL metrics are discussed (SqlTimeMetricsDaoContext), this is for generic database access, not DB messaging pattern."
+      }
+    ]
+  },
+  "fast_mode_state": "off",
+  "uuid": "83b563d8-6078-489c-bdb8-dd83906487e6"
+}

@@ -1,0 +1,41 @@
+{
+  "file_id": "adapters-micrometer_adaptor",
+  "patterns": "nablarch-batch web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "Content explicitly mentions 'バッチアプリケーション' with dedicated section describing batch-specific metrics. Includes batch-specific classes: BatchTransactionTimeMetricsLogger (for transaction time), BatchProcessedRecordCountMetricsLogger (for processing count), CommitLogger integration, and discusses Nablarch batch processing patterns like loop_handler."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mentions of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch APIs anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mentions of RESTful, JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder. Content focuses on general web applications, not REST-specific features."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mentions of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "Content explicitly mentions 'ウェブアプリケーション' with dedicated section describing web-specific metrics. Includes HTTP request processing time measurement, WebFrontController handler configuration, HttpRequestTimeMetricsMetaDataBuilder for HTTP-specific metrics, and servlet-related components."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mentions of MOMメッセージング, MQ, message queues, asynchronous messaging, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mentions of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader. While SQL metrics are discussed (SqlTimeMetricsDaoContext), this is for generic database access, not DB messaging pattern."
+    }
+  ]
+}

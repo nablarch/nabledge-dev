@@ -1,0 +1,574 @@
+{
+  "id": "libraries-tag",
+  "title": "Jakarta Server Pagesカスタムタグ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/CustomTagConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/encryption/Encryptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKeyConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKeyArrayConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKey.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/Object.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/download/StreamResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/download/DataRecordResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/io/File.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/sql/Blob.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/SqlRow.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/UUIDV4TokenGenerator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/text/SimpleDateFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/date/YYYYMMDDConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/date/YYYYMMDD.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Date.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/Number.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/text/DecimalFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/CodeUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/i18n/ResourcePathRule.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/ValueFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/DisplayControlChecker.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/TokenGenerator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/BigDecimalConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/IntegerConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/LongConvertor.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "title": "機能概要",
+      "hints": [
+        "HTMLエスケープ",
+        "XSS対策",
+        "入力画面と確認画面の共通化",
+        "JSP",
+        "カスタムタグ",
+        "対象範囲",
+        "単純な画面遷移",
+        "SPA非対応",
+        "HTML5属性"
+      ]
+    },
+    {
+      "id": "module-list",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web-tag",
+        "nablarch-common-encryption",
+        "nablarch-fw-web-extension",
+        "Maven依存関係"
+      ]
+    },
+    {
+      "id": "tag-setting",
+      "title": "カスタムタグの設定",
+      "hints": [
+        "nablarch_tag_handler",
+        "CustomTagConfig",
+        "NablarchTagHandler",
+        "設定",
+        "デフォルト値"
+      ]
+    },
+    {
+      "id": "tag-specify-taglib",
+      "title": "カスタムタグを使用する(taglibディレクティブの指定方法)",
+      "hints": [
+        "taglibディレクティブ",
+        "JSTL",
+        "uri指定"
+      ]
+    },
+    {
+      "id": "tag-input-form",
+      "title": "入力フォームを作る",
+      "hints": [
+        "form",
+        "input",
+        "submit",
+        "error",
+        "入力値の復元",
+        "初期値",
+        "name属性制約"
+      ]
+    },
+    {
+      "id": "tag-selection",
+      "title": "選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する",
+      "hints": [
+        "select",
+        "radioButtons",
+        "checkboxes",
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty"
+      ]
+    },
+    {
+      "id": "tag-checkbox-off-value",
+      "title": "チェックボックスでチェックなしに対する値を指定する",
+      "hints": [
+        "checkbox",
+        "useOffValue",
+        "offLabel",
+        "offValue",
+        "チェックなし"
+      ]
+    },
+    {
+      "id": "tag-window-scope",
+      "title": "入力データを画面間で持ち回る(ウィンドウスコープ)",
+      "hints": [
+        "ウィンドウスコープ",
+        "windowScopePrefixes",
+        "hidden",
+        "画面間データ保持",
+        "セッション代替"
+      ]
+    },
+    {
+      "id": "tag-hidden-encryption",
+      "title": "クライアントに保持するデータを暗号化する(hidden暗号化)",
+      "hints": [
+        "hidden暗号化",
+        "Encryptor",
+        "改竄検知",
+        "useHiddenEncryption",
+        "noHiddenEncryptionRequestIds",
+        "AES"
+      ]
+    },
+    {
+      "id": "tag-composite-key",
+      "title": "複合キーのラジオボタンやチェックボックスを作る",
+      "hints": [
+        "compositeKeyCheckbox",
+        "compositeKeyRadioButton",
+        "CompositeKey",
+        "CompositeKeyConvertor",
+        "keyNames",
+        "valueObject"
+      ]
+    },
+    {
+      "id": "tag-submit",
+      "title": "複数のボタン/リンクからフォームをサブミットする",
+      "hints": [
+        "submit",
+        "button",
+        "submitLink",
+        "popupSubmit",
+        "downloadSubmit",
+        "uri属性"
+      ]
+    },
+    {
+      "id": "tag-onclick-override",
+      "title": "サブミット前に処理を追加する",
+      "hints": [
+        "onclick",
+        "nablarch_submit",
+        "JavaScript",
+        "イベントハンドラ",
+        "確認ダイアログ"
+      ]
+    },
+    {
+      "id": "tag-onchange-submit",
+      "title": "プルダウン変更などの画面操作でサブミットする",
+      "hints": [
+        "onchange",
+        "select",
+        "click",
+        "イベント発火"
+      ]
+    },
+    {
+      "id": "tag-submit-change-parameter",
+      "title": "ボタン/リンク毎にパラメータを追加する",
+      "hints": [
+        "param",
+        "paramName",
+        "submitLink",
+        "パラメータ追加"
+      ]
+    },
+    {
+      "id": "tag-submit-display-control",
+      "title": "認可チェック/サービス提供可否に応じてボタン/リンクの表示/非表示を切り替える",
+      "hints": [
+        "displayMethod",
+        "NODISPLAY",
+        "DISABLED",
+        "NORMAL",
+        "認可チェック",
+        "サービス提供可否"
+      ]
+    },
+    {
+      "id": "popup-window",
+      "title": "別ウィンドウ/タブを開くボタン/リンクを作る(ポップアップ)",
+      "hints": [
+        "ポップアップウィンドウ",
+        "複数ウィンドウ",
+        "window.open",
+        "popupWindowName",
+        "popupOption",
+        "パラメータ名変更",
+        "nablarch_opened_windows",
+        "別ウィンドウ制御"
+      ]
+    },
+    {
+      "id": "file-download",
+      "title": "ファイルをダウンロードするボタン/リンクを作る",
+      "hints": [
+        "StreamResponse",
+        "DataRecordResponse",
+        "ファイルダウンロード",
+        "BLOBダウンロード",
+        "CSVダウンロード",
+        "Content-Disposition",
+        "nablarch.common.web.download.StreamResponse",
+        "nablarch.common.web.download.DataRecordResponse"
+      ]
+    },
+    {
+      "id": "double-submission",
+      "title": "二重サブミットを防ぐ",
+      "hints": [
+        "二重サブミット防止",
+        "トークン",
+        "allowDoubleSubmission",
+        "useToken",
+        "disabled属性",
+        "セッショントークン",
+        "クライアント側防止",
+        "サーバ側防止",
+        "doubleSubmissionTokenSessionAttributeName",
+        "doubleSubmissionTokenRequestAttributeName",
+        "doubleSubmissionTokenParameterName"
+      ]
+    },
+    {
+      "id": "db-token-storage",
+      "title": "サーバ側のトークンをデータベースに保存する",
+      "hints": [
+        "トークンDB保存",
+        "スケールアウト",
+        "セッションレプリケーション",
+        "スティッキーセッション",
+        "データベーストークン"
+      ]
+    },
+    {
+      "id": "input-confirmation-common",
+      "title": "入力画面と確認画面を共通化する",
+      "hints": [
+        "confirmationPage",
+        "forInputPage",
+        "forConfirmationPage",
+        "ignoreConfirmation",
+        "画面共通化",
+        "入力確認共通",
+        "plainHidden",
+        "hiddenStore"
+      ]
+    },
+    {
+      "id": "set-variable",
+      "title": "変数に値を設定する",
+      "hints": [
+        "変数設定",
+        "setタグ",
+        "リクエストスコープ",
+        "ページスコープ",
+        "scope",
+        "bySingleValue",
+        "配列取得",
+        "コレクション取得"
+      ]
+    },
+    {
+      "id": "get-request",
+      "title": "GETリクエストを使用する",
+      "hints": [
+        "GETリクエスト",
+        "クローラ対策",
+        "ブックマーク",
+        "hidden暗号化",
+        "plainHidden",
+        "URL長さ制限",
+        "チェックボックス制限"
+      ]
+    },
+    {
+      "id": "write-value",
+      "title": "値を出力する",
+      "hints": [
+        "値出力",
+        "writeタグ",
+        "リクエストスコープアクセス",
+        "プロパティアクセス"
+      ]
+    },
+    {
+      "id": "html-unescape",
+      "title": "HTMLエスケープせずに値を出力する",
+      "hints": [
+        "HTMLエスケープなし",
+        "prettyPrint",
+        "rawWrite",
+        "safeTags",
+        "safeAttributes",
+        "XSS脆弱性",
+        "装飾タグ"
+      ]
+    },
+    {
+      "id": "format-and-output-values",
+      "title": "フォーマットして値を出力する",
+      "hints": [
+        "FormatterUtil",
+        "n:formatByDefault",
+        "n:format",
+        "valueFormat",
+        "YYYYMMDDConvertor",
+        "YYYYMMDD",
+        "BigDecimalConvertor",
+        "IntegerConvertor",
+        "LongConvertor",
+        "値のフォーマット",
+        "日付フォーマット",
+        "数値フォーマット",
+        "EL式"
+      ]
+    },
+    {
+      "id": "display-errors",
+      "title": "エラー表示を行う",
+      "hints": [
+        "ApplicationException",
+        "n:errors",
+        "n:error",
+        "errorCss",
+        "nameAlias",
+        "エラーメッセージ表示",
+        "エラー一覧",
+        "エラー個別表示",
+        "ハイライト表示",
+        "相関バリデーション"
+      ]
+    },
+    {
+      "id": "display-code-values",
+      "title": "コード値を表示する",
+      "hints": [
+        "n:code",
+        "n:codeSelect",
+        "n:codeCheckbox",
+        "n:codeRadioButtons",
+        "n:codeCheckboxes",
+        "codeId",
+        "pattern",
+        "labelPattern",
+        "optionColumnName",
+        "CodeUtil",
+        "コード管理",
+        "プルダウン",
+        "チェックボックス",
+        "ラジオボタン"
+      ]
+    },
+    {
+      "id": "output-messages",
+      "title": "メッセージを出力する",
+      "hints": [
+        "n:message",
+        "messageId",
+        "option",
+        "language",
+        "htmlEscape",
+        "メッセージ管理",
+        "国際化",
+        "多言語対応"
+      ]
+    },
+    {
+      "id": "switch-resource-path-by-language",
+      "title": "言語毎にリソースパスを切り替える",
+      "hints": [
+        "ResourcePathRule",
+        "n:a",
+        "n:img",
+        "n:link",
+        "n:script",
+        "n:confirmationPage",
+        "n:include",
+        "n:includeParam",
+        "リソースパス",
+        "国際化",
+        "多言語対応",
+        "動的インクルード"
+      ]
+    },
+    {
+      "id": "prevent-browser-cache",
+      "title": "ブラウザのキャッシュを防止する",
+      "hints": [
+        "n:noCache",
+        "Cache-Control",
+        "Pragma",
+        "Expires",
+        "キャッシュ制御",
+        "戻るボタン対策",
+        "個人情報保護"
+      ]
+    },
+    {
+      "id": "prevent-client-cache-on-static-content-change",
+      "title": "静的コンテンツの変更時にクライアント側のキャッシュを参照しないようにする",
+      "hints": [
+        "static_content_version",
+        "n:link",
+        "n:img",
+        "n:script",
+        "n:submit",
+        "n:popupSubmit",
+        "n:downloadSubmit",
+        "キャッシュ制御",
+        "バージョン管理",
+        "静的コンテンツ"
+      ]
+    },
+    {
+      "id": "specify-boolean-attributes",
+      "title": "論理属性を指定する",
+      "hints": [
+        "disabled",
+        "readonly",
+        "checked",
+        "selected",
+        "論理属性",
+        "true",
+        "false"
+      ]
+    },
+    {
+      "id": "specify-dynamic-attributes",
+      "title": "任意の属性を指定する",
+      "hints": [
+        "DynamicAttributes",
+        "HTML5",
+        "動的属性",
+        "カスタム属性"
+      ]
+    },
+    {
+      "id": "handling-boolean-attributes",
+      "title": "論理属性の扱い",
+      "hints": [
+        "dynamicBooleanAttributes",
+        "CustomTagConfig",
+        "async",
+        "autofocus",
+        "checked",
+        "disabled",
+        "readonly",
+        "required",
+        "selected",
+        "論理属性"
+      ]
+    },
+    {
+      "id": "support-content-security-policy",
+      "title": "Content Security Policy(CSP)に対応する",
+      "hints": [
+        "CSP",
+        "nonce",
+        "n:form",
+        "n:script",
+        "n:cspNonce",
+        "セキュリティ",
+        "インラインスクリプト",
+        "Content-Security-Policy"
+      ]
+    },
+    {
+      "id": "embed-nonce-in-elements",
+      "title": "セキュアハンドラが生成したnonceを任意の要素に埋め込む",
+      "hints": [
+        "n:cspNonce",
+        "nonce",
+        "style",
+        "script",
+        "sourceFormat",
+        "セキュアハンドラ",
+        "CSP"
+      ]
+    },
+    {
+      "id": "add-javascript-to-custom-tag-elements",
+      "title": "カスタムタグが生成する要素に対してJavaScriptで処理を追加する",
+      "hints": [
+        "suppressDefaultSubmit",
+        "addEventListener",
+        "nablarch_submit",
+        "onclick",
+        "id属性",
+        "セレクタ",
+        "イベントハンドラ"
+      ]
+    },
+    {
+      "id": "extension-examples",
+      "title": "拡張例",
+      "hints": [
+        "ValueFormatter",
+        "valueFormatters",
+        "DisplayControlChecker",
+        "displayControlCheckers",
+        "TokenGenerator",
+        "nablarch_handleDoubleSubmission",
+        "フォーマッタ追加",
+        "表示制御",
+        "二重サブミット防止",
+        "拡張ポイント"
+      ]
+    },
+    {
+      "id": "custom-tag-rules",
+      "title": "カスタムタグのルール",
+      "hints": [
+        "CustomTagConfig",
+        "PersonForm",
+        "HttpResponse",
+        "PersonsForm",
+        "Person",
+        "UniversalDao",
+        "カスタムタグ命名規則",
+        "データアクセスルール",
+        "URI指定方法",
+        "HTMLエスケープ",
+        "セキュアプロトコル切り替え",
+        "命名ルール",
+        "入力/出力データへのアクセスルール",
+        "URIの指定方法",
+        "改行変換",
+        "半角スペース変換"
+      ]
+    },
+    {
+      "id": "tag-reference",
+      "title": ":ref:`tag_reference`",
+      "hints": [
+        "タグリファレンス参照"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": "## HTMLエスケープ漏れを防げる\n\nHTMLの中では「<」「>」「\\\"」といった文字は、特別な意味を持つため、それらを含む値をそのままJSPで出力してしまうと、悪意のあるユーザが容易にスクリプトを埋め込むことができ、クロスサイトスクリプティング(XSS)と呼ばれる脆弱性につながってしまう。そのため、入力値を出力する場合、HTMLエスケープが必要になる。\n\nところが、JSPでEL式を使って値を出力すると、HTMLエスケープされない。そのため、値の出力時はHTMLエスケープを考慮した実装が常に必要になり、生産性の低下につながる。\n\nカスタムタグは、デフォルトでHTMLエスケープするので、カスタムタグを使って実装している限り、HTMLエスケープ漏れを防げる。\n\n> **重要**: JavaScriptに対するエスケープ処理は、提供してないため、scriptタグのボディやonclick属性など、JavaScriptを記述する部分には、動的な値(入力データなど)を埋め込まないこと。JavaScriptを記述する部分に動的な値(入力データなど)を埋め込む場合は、プロジェクトの責任でエスケープ処理を実施すること。\n\nHTMLエスケープの詳細は :ref:`tag-html_escape` と :ref:`tag-html_unescape` を参照。\n\n## 入力画面と確認画面のJSPを共通化して実装を減らす\n\n多くのシステムでは、入力画面と確認画面でレイアウトが変わらず、似たようなJSPを作成している。\n\nカスタムタグでは、入力画面と確認画面のJSPを共通化する機能を提供しているので、入力画面向けに作成したJSPに、確認画面との差分(例えば、ボタンなど)のみを追加実装するだけで、確認画面を作成でき、生産性の向上が期待できる。\n\n入力画面と確認画面の共通化については :ref:`tag-make_common` を参照。\n\n## カスタムタグの対象範囲と制約\n\n> **重要**: カスタムタグは、以下のような単純な画面遷移があるウェブアプリケーションを対象にしている。そのため、操作性を重視したリッチな画面作成やSPA(シングルページアプリケーション)に対応していない。\n>\n> * 検索画面→詳細画面による検索/詳細表示\n> * 入力画面→確認画面→完了画面による登録/更新/削除\n> * ポップアップ(別ウィンドウ、別タブ)による入力補助\n>\n> プロジェクトでJavaScriptを多用する場合は、カスタムタグが出力するJavaScriptとプロジェクトで作成するJavaScriptで副作用が起きないように注意する。カスタムタグが出力するJavaScriptについては :ref:`tag-onclick_override` を参照。\n\n## HTML5属性のサポート\n\n> **重要**: HTML5で追加された属性は、:ref:`動的属性<dynamic_attribute>` を使用して記述できる。ただし、頻繁に使用されそうな次の属性は予めカスタムタグの属性として定義している。また、HTML5で追加されたinput要素は、それぞれ :ref:`tag-text_tag` をベースに追加されている。各input要素固有の属性はカスタムタグで個別に定義していないため、動的属性により指定する必要がある。\n>\n> **追加した属性**（属性を追加したHTMLのタグ名をカッコ内に記載）:\n>\n> * autocomplete(input、password、form)\n> * autofocus(input、textarea、select、button)\n> * placeholder(text、password、textarea)\n> * maxlength(textarea)\n> * multiple(input)\n>\n> **追加したinput要素**:\n>\n> * :ref:`tag-search_tag` (検索テキスト)\n> * :ref:`tag-tel_tag` (電話番号)\n> * :ref:`tag-url_tag` (URL)\n> * :ref:`tag-email_tag` (メールアドレス)\n> * :ref:`tag-date_tag` (日付)\n> * :ref:`tag-month_tag` (月)\n> * :ref:`tag-week_tag` (週)\n> * :ref:`tag-time_tag` (時間)\n> * :ref:`tag-datetimeLocal_tag` (ローカル日時)\n> * :ref:`tag-number_tag` (数値)\n> * :ref:`tag-range_tag` (レンジ)\n> * :ref:`tag-color_tag` (色)",
+    "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n\n<!-- hidden暗号化を使う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-encryption</artifactId>\n</dependency>\n\n<!-- ファイルダウンロードを使う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-extension</artifactId>\n</dependency>\n```",
+    "tag-reference": ":ref:`tag_reference`を参照。"
+  }
+}
