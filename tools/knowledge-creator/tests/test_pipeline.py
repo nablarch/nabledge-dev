@@ -27,6 +27,18 @@ class TestPipelineBCD:
         assert "overview" in knowledge["sections"]
         assert "module-list" in knowledge["sections"]
 
+        # Create dummy asset files referenced in knowledge (for Phase C S15 validation)
+        assets_dir = os.path.join(ctx.knowledge_dir, "component/handlers/assets/handlers-sample-handler")
+        os.makedirs(assets_dir, exist_ok=True)
+        for section_content in knowledge.get("sections", {}).values():
+            import re
+            asset_refs = re.findall(r'assets/handlers-sample-handler/([^\)]+)', section_content)
+            for asset_file in asset_refs:
+                asset_path = os.path.join(assets_dir, asset_file)
+                if not os.path.exists(asset_path):
+                    with open(asset_path, "w", encoding="utf-8") as f:
+                        f.write("dummy asset")
+
         # Trace
         trace_path = os.path.join(ctx.trace_dir, "handlers-sample-handler.json")
         assert os.path.exists(trace_path)
@@ -93,6 +105,20 @@ class TestPipelineBCD:
         # B: generate
         PhaseBGenerate(ctx, run_claude_fn=make_mock_run_claude()).run()
 
+        # Create dummy asset files for S15 validation
+        knowledge_path = os.path.join(ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
+        knowledge = json.load(open(knowledge_path, encoding="utf-8"))
+        assets_dir = os.path.join(ctx.knowledge_dir, "component/handlers/assets/handlers-sample-handler")
+        os.makedirs(assets_dir, exist_ok=True)
+        for section_content in knowledge.get("sections", {}).values():
+            import re
+            asset_refs = re.findall(r'assets/handlers-sample-handler/([^\)]+)', section_content)
+            for asset_file in asset_refs:
+                asset_path = os.path.join(assets_dir, asset_file)
+                if not os.path.exists(asset_path):
+                    with open(asset_path, "w", encoding="utf-8") as f:
+                        f.write("dummy asset")
+
         # C: pass
         c = PhaseCStructureCheck(ctx).run()
         assert c["error_count"] == 0
@@ -154,6 +180,61 @@ class TestPhaseF:
         # summary
         summary_path = os.path.join(ctx.log_dir, "summary.json")
         assert os.path.exists(summary_path)
+
+    def test_asset_path_conversion(self, ctx, mock_claude):
+        """Verify asset paths are converted correctly in browsable docs."""
+        from steps.phase_b_generate import PhaseBGenerate
+        from steps.phase_f_finalize import PhaseFFinalize
+        from steps.common import load_json
+
+        # Phase B: Generate knowledge files
+        PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
+
+        # Verify original knowledge JSON has original asset paths
+        knowledge_path = os.path.join(
+            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
+        )
+        assert os.path.exists(knowledge_path)
+        knowledge = load_json(knowledge_path)
+        overview = knowledge["sections"]["overview"]
+
+        # Knowledge JSON should have original relative paths
+        assert "assets/handlers-sample-handler/architecture.png" in overview, \
+            "Knowledge JSON should keep original asset paths"
+        assert "assets/handlers-sample-handler/settings.xlsx" in overview, \
+            "Knowledge JSON should keep original download paths"
+
+        # Phase F: Generate browsable docs
+        PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
+
+        # Verify browsable MD has converted asset paths
+        doc_path = os.path.join(
+            ctx.docs_dir, "component/handlers/handlers-sample-handler.md"
+        )
+        assert os.path.exists(doc_path)
+
+        with open(doc_path, encoding="utf-8") as f:
+            doc_content = f.read()
+
+        # Image reference should be converted
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/architecture.png" in doc_content, \
+            "Browsable MD should have converted image paths"
+
+        # Download link should be converted
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/settings.xlsx" in doc_content, \
+            "Browsable MD should have converted download paths"
+
+        # Original asset paths should NOT appear in browsable MD
+        assert "](assets/handlers-sample-handler/architecture.png)" not in doc_content, \
+            "Original asset paths should not appear in browsable MD"
+        assert "](assets/handlers-sample-handler/settings.xlsx)" not in doc_content, \
+            "Original asset paths should not appear in browsable MD"
+
+        # Verify knowledge JSON is unchanged after Phase F
+        knowledge_after = load_json(knowledge_path)
+        overview_after = knowledge_after["sections"]["overview"]
+        assert overview == overview_after, \
+            "Phase F should not modify original knowledge JSON files"
 
 
 class TestPipelineWithPhaseG:

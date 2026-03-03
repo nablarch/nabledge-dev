@@ -155,6 +155,45 @@ class PhaseFFinalize:
             write_file(self.ctx.index_path, '\n'.join(lines))
             print(f"  Wrote: {self.ctx.index_path} ({len(entries)} entries)")
 
+    def _convert_asset_paths(self, content, file_info):
+        """Convert asset paths for browsable docs.
+
+        Knowledge JSON files use relative paths: assets/file-id/filename
+        Browsable MD files need correct relative paths from docs directory.
+
+        Args:
+            content: Section content with asset references
+            file_info: File metadata with type, category, id
+
+        Returns:
+            Content with converted asset paths
+        """
+        import re
+
+        file_id = file_info["id"]
+        type_ = file_info["type"]
+        category = file_info["category"]
+
+        # Build relative path from docs/type/category/file-id.md to knowledge/type/category/assets/file-id/
+        # Result: ../../knowledge/type/category/assets/file-id/
+        relative_prefix = f"../../knowledge/{type_}/{category}/assets/{file_id}/"
+
+        # Convert image references: ![text](assets/file-id/filename) -> ![text](../../knowledge/.../assets/file-id/filename)
+        content = re.sub(
+            r'!\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)',
+            r'![\1](' + relative_prefix + r'\2)',
+            content
+        )
+
+        # Convert download links: [text](assets/file-id/filename) -> [text](../../knowledge/.../assets/file-id/filename)
+        content = re.sub(
+            r'(?<!\!)\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)',
+            r'[\1](' + relative_prefix + r'\2)',
+            content
+        )
+
+        return content
+
     def _generate_docs(self):
         classified = load_json(self.ctx.classified_list_path)
         generated = 0
@@ -173,7 +212,11 @@ class PhaseFFinalize:
                 sid = entry["id"]
                 md_lines.append(f"## {entry['title']}")
                 md_lines.append("")
-                md_lines.append(knowledge.get("sections", {}).get(sid, ""))
+
+                # Get section content and convert asset paths for browsable docs
+                section_content = knowledge.get("sections", {}).get(sid, "")
+                section_content = self._convert_asset_paths(section_content, fi)
+                md_lines.append(section_content)
                 md_lines.append("")
 
             md_path = f"{self.ctx.docs_dir}/{fi['type']}/{fi['category']}/{fi['id']}.md"

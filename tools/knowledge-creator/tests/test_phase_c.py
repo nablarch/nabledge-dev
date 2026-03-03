@@ -12,6 +12,23 @@ def write_knowledge(ctx, knowledge):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(knowledge, f, ensure_ascii=False, indent=2)
+
+    # Create dummy asset files if referenced in knowledge
+    file_id = knowledge.get("id", "handlers-sample-handler")
+    assets_dir = os.path.join(ctx.knowledge_dir, f"component/handlers/assets/{file_id}")
+    import re
+    for section_content in knowledge.get("sections", {}).values():
+        # Find asset references like assets/file-id/filename
+        asset_refs = re.findall(r'assets/' + re.escape(file_id) + r'/([^\)]+)', section_content)
+        if asset_refs:
+            os.makedirs(assets_dir, exist_ok=True)
+            for asset_file in asset_refs:
+                asset_path = os.path.join(assets_dir, asset_file)
+                # Create dummy file if not exists
+                if not os.path.exists(asset_path):
+                    with open(asset_path, "w", encoding="utf-8") as af:
+                        af.write("dummy asset content")
+
     return path
 
 
