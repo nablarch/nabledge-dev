@@ -78,6 +78,8 @@ def run_claude(prompt: str, timeout: int = 600, json_schema: dict = None) -> sub
         cmd.extend(["--output-format", "json"])
         cmd.extend(["--json-schema", json.dumps(json_schema)])
 
+    # Remove CLAUDECODE to prevent Claude CLI from detecting agent context
+    # This ensures prompts run in standard mode, not code agent mode
     env = os.environ.copy()
     env.pop('CLAUDECODE', None)
 

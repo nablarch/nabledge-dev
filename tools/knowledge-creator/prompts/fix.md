@@ -34,4 +34,4 @@ After all fixes, verify:
 - All section IDs are kebab-case
 - No section content is empty
 
-Output the entire corrected knowledge file JSON matching the provided schema.
+Output the entire corrected knowledge file JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).
