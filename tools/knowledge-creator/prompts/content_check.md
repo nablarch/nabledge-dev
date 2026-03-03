@@ -38,13 +38,16 @@ Scan the source file systematically. For each item found in source, check if it 
 - URLs (http://, https://): check each preserved.
 
 **Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
 - Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
 - Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
 - Standalone navigation sections that only list links without explanation
 - Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
-- Section overview paragraphs that only enumerate sub-sections
+- Section overview paragraphs that only enumerate sub-sections without explanation
 
-**Rule:** If a source element serves only as navigation and contains no substantive explanation, code examples, or constraints, its omission is acceptable.
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
 
 ### V2: Information Fabrication (severity: critical)
 
