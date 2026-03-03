@@ -372,6 +372,31 @@ echo "Output file: $OUTPUT_PATH"
 
 #### 3.4: Build documentation content
 
+**Quality budget** (apply BEFORE generating content):
+
+Before writing any content, plan the output to fit these targets:
+
+| Section | Target size | Items |
+|---------|-------------|-------|
+| Overview | 200-400 chars | 1 paragraph |
+| Component detail | 500-800 chars each | 3-5 key methods per component |
+| Nablarch usage | 300-600 chars each | 3-5 important points (✅⚠️💡🎯⚡) per component |
+| Code example | 1 per Nablarch component | Concise (5-15 lines) |
+
+**Output size target**: 15-20 KB total for the final document.
+
+**Rules**:
+- If a section exceeds its budget, trim verbose explanations first (keep code examples and important points)
+- If a section is under budget, add knowledge file citations or line references rather than prose
+- Every key method MUST have a line reference (`:42-58` format)
+- Dependency details not yet read: read them NOW via Grep (deferred from Step 1 Pass 2)
+  - This is the designated point to read dependency files needed for component documentation
+  - Still use Grep for partial extraction, not full file reads, unless the file is < 50 lines
+
+**Why this budget**: Measurement shows output size varies 17-19 KB across runs, and token
+usage varies 3x (35K-108K). The budget constrains generation scope to reduce both variability
+and unnecessary token consumption without reducing information quality.
+
 **CRITICAL**: All diagram work REFINES skeletons from Step 3.3. REFINE, not REGENERATE.
 
 **Refinement**:
