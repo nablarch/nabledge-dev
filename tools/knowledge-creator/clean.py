@@ -56,9 +56,9 @@ def clean_version(repo_root, version):
         removed_count += 1
 
     print("\n=== Removing Intermediate Artifacts ===")
-    logs_dir = f"{repo_root}/tools/knowledge-creator/logs/v{version}"
+    logs_dir = f"{repo_root}/tools/knowledge-creator/.logs/v{version}"
 
-    if remove_if_exists(logs_dir, f"logs/v{version}/"):
+    if remove_if_exists(logs_dir, f".logs/v{version}/"):
         removed_count += 1
 
     print(f"\n{'='*60}")
