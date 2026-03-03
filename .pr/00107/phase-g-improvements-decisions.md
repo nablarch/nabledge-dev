@@ -153,3 +153,16 @@ None needed beyond prompt changes. Architecture decisions documented in review f
 - `.pr/00107/review-phase-g-ai-expert.md`
 - `.pr/00107/review-phase-g-qa-engineer.md`
 - `.pr/00107/phase-g-improvements-decisions.md` (this file)
+
+---
+
+## Re-evaluation (2026-03-03 Update)
+
+**User feedback**: "Future improvement pass" and "MVP scope" are problem postponement. Item #2 (malformed RST guidance) should be implemented now.
+
+### Additional Item Implemented
+
+- [ ] Add malformed RST syntax examples to prompts/generate.md Work Step 4
+
+**Rationale**: Adding examples to prompt takes <2 minutes and prevents agent confusion. No reason to defer.
+

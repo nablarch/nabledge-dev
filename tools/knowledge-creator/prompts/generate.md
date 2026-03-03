@@ -231,6 +231,13 @@ For each reference found in source:
 - Do NOT normalize labels (Phase G handles variants automatically)
 - Phase G will match both `database_connection` and `database-connection` to the same target
 - Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is (Phase G will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Phase G post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
 ```
 
 ---

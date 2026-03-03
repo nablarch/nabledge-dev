@@ -18,12 +18,14 @@ def write_knowledge(ctx, knowledge):
     assets_dir = os.path.join(ctx.knowledge_dir, f"component/handlers/assets/{file_id}")
     import re
     for section_content in knowledge.get("sections", {}).values():
-        # Find asset references like assets/file-id/filename
+        # Find asset references like assets/file-id/filename (including nested paths)
         asset_refs = re.findall(r'assets/' + re.escape(file_id) + r'/([^\)]+)', section_content)
         if asset_refs:
             os.makedirs(assets_dir, exist_ok=True)
             for asset_file in asset_refs:
                 asset_path = os.path.join(assets_dir, asset_file)
+                # Create parent directories for nested paths
+                os.makedirs(os.path.dirname(asset_path), exist_ok=True)
                 # Create dummy file if not exists
                 if not os.path.exists(asset_path):
                     with open(asset_path, "w", encoding="utf-8") as af:

@@ -35,6 +35,8 @@ class TestPipelineBCD:
             asset_refs = re.findall(r'assets/handlers-sample-handler/([^\)]+)', section_content)
             for asset_file in asset_refs:
                 asset_path = os.path.join(assets_dir, asset_file)
+                # Create parent directories for nested paths
+                os.makedirs(os.path.dirname(asset_path), exist_ok=True)
                 if not os.path.exists(asset_path):
                     with open(asset_path, "w", encoding="utf-8") as f:
                         f.write("dummy asset")
@@ -115,6 +117,8 @@ class TestPipelineBCD:
             asset_refs = re.findall(r'assets/handlers-sample-handler/([^\)]+)', section_content)
             for asset_file in asset_refs:
                 asset_path = os.path.join(assets_dir, asset_file)
+                # Create parent directories for nested paths
+                os.makedirs(os.path.dirname(asset_path), exist_ok=True)
                 if not os.path.exists(asset_path):
                     with open(asset_path, "w", encoding="utf-8") as f:
                         f.write("dummy asset")
@@ -247,6 +251,16 @@ class TestPhaseF:
         # Verify absolute path is not converted
         assert "../../knowledge/component/handlers/assets/handlers-sample-handler/system.png" not in doc_content, \
             "Absolute paths should not be converted to local paths"
+
+        # Edge case: Special characters in filenames (spaces, Japanese)
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/image with spaces.png" in doc_content, \
+            "Filenames with spaces should be converted correctly"
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/設定画面.png" in doc_content, \
+            "Japanese filenames should be converted correctly"
+
+        # Edge case: Nested directory structures
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/subdir/nested.xlsx" in doc_content, \
+            "Nested directory paths should be converted correctly"
 
         # Verify knowledge JSON is unchanged after Phase F
         knowledge_after = load_json(knowledge_path)

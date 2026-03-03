@@ -55,6 +55,8 @@ class PhaseFFinalize:
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/classify_patterns.md"
         )
+        # Cache compiled regex patterns per file_id (performance optimization)
+        self._pattern_cache = {}
 
     def _classify_patterns(self, file_info, knowledge) -> str:
         file_id = file_info["id"]
@@ -162,12 +164,20 @@ class PhaseFFinalize:
         Knowledge JSON files use relative paths: assets/file-id/filename
         Browsable MD files need correct relative paths from docs directory.
 
+        Example transformation:
+            Knowledge JSON: assets/handlers-sample-handler/diagram.png
+            Browsable MD:   ../../knowledge/component/handlers/assets/handlers-sample-handler/diagram.png
+
+        Directory structure (depth=3 requires ../../ prefix):
+            docs/type/category/file-id.md           <- browsable MD location
+            knowledge/type/category/assets/file-id/ <- assets location
+
         Args:
             content: Section content with asset references
             file_info: File metadata with type, category, id
 
         Returns:
-            Content with converted asset paths
+            str: Content with converted asset paths
         """
         file_id = file_info["id"]
         type_ = file_info["type"]
@@ -177,18 +187,23 @@ class PhaseFFinalize:
         # Result: ../../knowledge/type/category/assets/file-id/
         relative_prefix = f"../../knowledge/{type_}/{category}/assets/{file_id}/"
 
+        # Compile patterns on first use per file_id (performance optimization)
+        if file_id not in self._pattern_cache:
+            self._pattern_cache[file_id] = {
+                'image': re.compile(r'!\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)'),
+                'link': re.compile(r'(?<!\!)\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)')
+            }
+
         # Convert image references: ![text](assets/file-id/filename) -> ![text](../../knowledge/.../assets/file-id/filename)
         # Only convert assets for THIS file's ID (assets/handlers-sample-handler/* for handlers-sample-handler.json)
-        content = re.sub(
-            r'!\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)',
+        content = self._pattern_cache[file_id]['image'].sub(
             r'![\1](' + relative_prefix + r'\2)',
             content
         )
 
         # Convert download links: [text](assets/file-id/filename) -> [text](../../knowledge/.../assets/file-id/filename)
         # Negative lookbehind (?<!\!) ensures we don't match image syntax ![text](...)
-        content = re.sub(
-            r'(?<!\!)\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)',
+        content = self._pattern_cache[file_id]['link'].sub(
             r'[\1](' + relative_prefix + r'\2)',
             content
         )

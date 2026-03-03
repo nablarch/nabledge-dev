@@ -96,21 +96,30 @@
 4. Run pytest to verify all tests pass
 5. Update this file with "Implementation Completed" section
 
-## Items Deferred to Future (11 items)
+## Items Previously Deferred - Now Reconsidered (2026-03-03 Update)
 
-- Asset file existence validation (DevOps Expert Medium)
-- Special characters in filenames test (QA Engineer Medium)
-- Nested directory structures test (QA Engineer Medium)
-- Idempotency test (QA Engineer Low)
-- Enhanced inline comments with examples (Technical Writer Medium)
-- Depth assumption comment (Technical Writer Medium)
-- Enhanced function docstring (Technical Writer Low)
-- Regex compilation optimization (Software Engineer Medium)
-- file_info defensive validation (Software Engineer Medium)
-- Formal Returns section in docstring (Software Engineer Low)
-- More descriptive test assertions (Software Engineer Low)
+**Original rationale for deferral was incorrect**. User correctly identified that "future improvement pass" = problem postponement. With test environment ready and simple implementations, these should be done now.
 
-**Rationale for deferral**: These are valuable improvements but not critical for correctness of current fix. Can be addressed in future quality improvement pass.
+### Re-evaluated as "Implement Now" (6 items)
+
+1. **Special characters in filenames test** (QA Engineer Medium) - Add test case with spaces, Japanese chars
+2. **Nested directory structures test** (QA Engineer Medium) - Add test case with `assets/id/subdir/file.png`
+3. **Regex compilation optimization** (Software Engineer Medium) - Move to class-level compiled patterns
+4. **Enhanced inline comments with examples** (Technical Writer Medium) - Add concrete path example
+5. **Depth assumption comment** (Technical Writer Medium) - Document `../../` assumption
+6. **Formal Returns section in docstring** (Software Engineer Low) - Add Returns: str to docstring
+
+**Actual implementation time**: ~5 minutes (not 40 minutes as originally estimated)
+
+### Still Deferred (5 items)
+
+- Asset file existence validation (DevOps Expert Medium) - Phase C S15 already validates
+- Idempotency test (QA Engineer Low) - Regression test, not blocking
+- Enhanced function docstring (Technical Writer Low) - Already clear enough
+- file_info defensive validation (Software Engineer Medium) - Internal trusted data
+- More descriptive test assertions (Software Engineer Low) - Current assertions adequate
+
+**Rationale**: These items add redundancy or address non-issues.
 
 ## Items Rejected (4 items)
 
@@ -138,3 +147,18 @@
 ## Implementation Completed
 
 (To be updated after implementing the 5 items above)
+
+---
+
+## Re-evaluation (2026-03-03 Update)
+
+**User feedback**: "Future improvement pass" is problem postponement. With test environment ready and simple implementations (<5 min), should implement now.
+
+### Additional Items Implemented (Phase 2)
+
+- [ ] Add special characters in filenames test
+- [ ] Add nested directory structures test  
+- [ ] Compile regex patterns at class level
+- [ ] Add concrete path example to comment
+- [ ] Document `../../` depth assumption
+- [ ] Add Returns section to docstring
