@@ -35,6 +35,11 @@ Example:
      --modules "proman-web" \\
      --source-files "LoginAction.java,LoginForm.java" \\
      --knowledge-files "universal-dao,web-application"
+
+# Example output:
+# Pre-filled template written to: .nabledge/20260303/code-analysis-LoginAction.md
+# ...
+# Output: .nabledge/20260303/code-analysis-LoginAction.md
 EOF
     exit 1
 }
@@ -82,6 +87,12 @@ done
 if [[ -z "$TARGET_NAME" || -z "$TARGET_DESC" || -z "$MODULES" || -z "$SOURCE_FILES" || -z "$KNOWLEDGE_FILES" ]]; then
     echo "Error: Missing required arguments" >&2
     usage
+fi
+
+# Validate jq availability (required for official docs extraction)
+if ! command -v jq &> /dev/null; then
+    echo "Warning: jq not found. Official documentation links cannot be extracted from knowledge files." >&2
+    echo "Install jq to enable automatic official docs extraction." >&2
 fi
 
 # Calculate output path internally
@@ -330,6 +341,12 @@ awk -v links="$OFFICIAL_DOCS_LINKS" '{gsub(/\{\{official_docs_links\}\}/, links)
 
 # Copy to output path
 cp "$TEMP_FILE" "$OUTPUT_PATH"
+
+# Verify write succeeded
+if [ ! -f "$OUTPUT_PATH" ]; then
+    echo "Error: Failed to write output file to $OUTPUT_PATH" >&2
+    exit 1
+fi
 
 # Trap will clean up temp files automatically
 

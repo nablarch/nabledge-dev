@@ -213,6 +213,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 
 ```bash
 # Execute prefill script (now calculates output path internally)
+# Capture output path from the script's final "Output: <path>" line
 OUTPUT_PATH=$(.claude/skills/nabledge-6/scripts/prefill-template.sh \
   --target-name "<target-name>" \
   --target-desc "<one-line-description>" \
