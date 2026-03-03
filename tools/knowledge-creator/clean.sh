@@ -3,7 +3,22 @@
 
 set -e
 
-REPO_ROOT="${1:-$(pwd)/../..}"
+# Detect repository root
+if [ -f "tools/knowledge-creator/run.py" ]; then
+    # Running from repository root
+    REPO_ROOT="$(pwd)"
+elif [ -f "run.py" ]; then
+    # Running from tools/knowledge-creator directory
+    REPO_ROOT="$(cd ../.. && pwd)"
+else
+    # Use provided argument or fail
+    if [ -n "$1" ]; then
+        REPO_ROOT="$1"
+    else
+        echo "Error: Cannot detect repository root. Please run from repository root or tools/knowledge-creator/"
+        exit 1
+    fi
+fi
 
 echo "=================================================="
 echo "Knowledge Creator - Clean Generated Files"

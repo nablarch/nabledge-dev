@@ -18,7 +18,7 @@ class Context:
     version: str
     repo: str
     concurrency: int
-    test_mode: bool = False
+    test_file: str = None
     max_rounds: int = 1
 
     def __post_init__(self):
@@ -70,9 +70,11 @@ def main():
     parser.add_argument("--phase", type=str, default=None,
                         help="Phases to run (e.g. 'B', 'CD', 'BCDEF'). Default: all")
     parser.add_argument("--concurrency", type=int, default=4)
-    parser.add_argument("--repo", default=os.getcwd())
+    parser.add_argument("--repo", default=os.getcwd(),
+                        help="Repository root path (default: current directory)")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--test-mode", action="store_true")
+    parser.add_argument("--test", type=str, default=None,
+                        help="Test mode: specify test file (e.g., test-files-top3.json)")
     parser.add_argument("--max-rounds", type=int, default=1,
                         help="Max D->E->C loop iterations (default: 1)")
 
@@ -86,7 +88,7 @@ def main():
 
         ctx = Context(
             version=v, repo=args.repo, concurrency=args.concurrency,
-            test_mode=args.test_mode, max_rounds=args.max_rounds
+            test_file=args.test, max_rounds=args.max_rounds
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
         phases = args.phase or "ABCDEFG"

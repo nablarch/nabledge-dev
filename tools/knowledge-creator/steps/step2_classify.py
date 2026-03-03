@@ -69,9 +69,9 @@ XLSX_MAPPING = {
 }
 
 
-def load_test_file_ids(repo_path: str) -> set:
-    """Load test file IDs from test-files.json"""
-    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/test-files.json")
+def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
+    """Load test file IDs from specified test file"""
+    test_file_path = os.path.join(repo_path, "tools/knowledge-creator", test_file_name)
 
     if not os.path.exists(test_file_path):
         raise FileNotFoundError(f"Test file set not found: {test_file_path}")
@@ -425,11 +425,11 @@ class Step2Classify:
         classified = final_classified
 
         # Apply test mode filter if enabled
-        if self.ctx.test_mode:
-            test_file_ids = load_test_file_ids(self.ctx.repo)
+        if self.ctx.test_file:
+            test_file_ids = load_test_file_ids(self.ctx.repo, self.ctx.test_file)
             original_count = len(classified)
             classified = filter_for_test(classified, test_file_ids)
-            print(f"\nTest mode: Filtered {original_count} files to {len(classified)} test files")
+            print(f"\nTest mode ({self.ctx.test_file}): Filtered {original_count} files to {len(classified)} test files")
 
             # Show missing test files (files in test set but not found in classified)
             found_ids = {f['id'] for f in classified}

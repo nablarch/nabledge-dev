@@ -39,27 +39,22 @@ source ~/.bashrc
 
 ## Usage
 
+**Important**: Run commands from repository root directory.
+
 ### Test Mode (3 files)
 
 Validate with 3 largest files (8 files after splitting):
 
 ```bash
-cd tools/knowledge-creator
-python run.py --version 6 --test-mode --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
 ```
-
-**Important**: Specify absolute path to repository root with `--repo`.
 
 ### Test Mode (Comprehensive - 21 files)
 
 Cover all formats, types, and categories:
 
 ```bash
-# Switch test-files.json
-cp test-files-comprehensive.json test-files.json
-
-# Run
-python run.py --version 6 --test-mode --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensive.json
 ```
 
 ### Production Mode (All files)
@@ -67,26 +62,26 @@ python run.py --version 6 --test-mode --repo /path/to/nabledge-dev
 Generate all v6 source files (252 sources → 262 files after splitting):
 
 ```bash
-python run.py --version 6 --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version 6
 ```
 
 Generate both v5 and v6:
 
 ```bash
-python run.py --version all --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version all
 ```
 
 ### Run Specific Phases
 
 ```bash
 # Phase B (generation) only
-python run.py --version 6 --phase B --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version 6 --phase B
 
 # Phase C,D,E (validation & fix) only
-python run.py --version 6 --phase CDE --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version 6 --phase CDE
 
 # Phase G,F (link resolution & finalization) only
-python run.py --version 6 --phase GF --repo /path/to/nabledge-dev
+python tools/knowledge-creator/run.py --version 6 --phase GF
 ```
 
 ### Options
@@ -95,11 +90,11 @@ python run.py --version 6 --phase GF --repo /path/to/nabledge-dev
 |--------|-------------|---------|
 | `--version` | Version (6, 5, all) | **Required** |
 | `--phase` | Phases to run (combination of A, B, C, D, E, G, F) | `ABCDEFG` |
-| `--test-mode` | Test mode (only files in test-files.json) | `False` |
+| `--test` | Test mode: specify test file (e.g., `test-files-top3.json`) | `None` |
 | `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
 | `--max-rounds` | Max Phase C→D→E loop iterations | `1` |
 | `--dry-run` | Dry run (no file writes) | `False` |
-| `--repo` | Repository root path | `os.getcwd()` |
+| `--repo` | Repository root path (advanced) | `os.getcwd()` |
 
 ## Output Files
 
@@ -131,33 +126,28 @@ tools/knowledge-creator/logs/v6/
 Remove all generated files to start fresh:
 
 ```bash
-cd tools/knowledge-creator
-./clean.sh /path/to/nabledge-dev
+tools/knowledge-creator/clean.sh
 ```
 
 ## Test File Configuration
 
-`test-files.json` controls which files are processed in `--test-mode`:
+Test files define which source files to process in test mode:
 
 - **test-files-top3.json**: 3 largest files (for SC validation)
 - **test-files-comprehensive.json**: 21 files (comprehensive test coverage)
 
-Switch between configurations:
+Specify test file with `--test` option (no need to copy files):
 
 ```bash
-cp test-files-top3.json test-files.json          # 3-file version
-cp test-files-comprehensive.json test-files.json  # 21-file version
+python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
+python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensive.json
 ```
 
 ## Troubleshooting
 
 ### `FileNotFoundError: .lw/nab-official/v6/`
 
-→ Specify absolute path to repository root with `--repo` option.
-
-### Nested directory `tools/knowledge-creator/tools/...` created
-
-→ When running from `tools/knowledge-creator/` directory, always specify `--repo`.
+→ Run commands from repository root directory (not `tools/knowledge-creator/`).
 
 ### `claude: command not found`
 
@@ -166,7 +156,10 @@ cp test-files-comprehensive.json test-files.json  # 21-file version
 ### Tests fail
 
 ```bash
-# Run unit tests
+# Run unit tests from repository root
+python -m pytest tools/knowledge-creator/tests/ -v
+
+# Or from tools/knowledge-creator directory
 cd tools/knowledge-creator
 python -m pytest tests/ -v
 ```
