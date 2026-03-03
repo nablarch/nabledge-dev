@@ -58,7 +58,9 @@ Output directory: .nabledge/20260210
 
 **Tools**: AskUserQuestion (if needed), Read, Glob, Grep
 
-**Action**:
+**Action** (two-pass approach to control scope):
+
+#### Pass 1: Structure analysis (target file ONLY)
 
 1. **Parse user request** to understand target scope:
    - Specific class (e.g., "LoginAction")
@@ -69,33 +71,51 @@ Output directory: .nabledge/20260210
 
 3. **Find target files** using Glob or Grep
 
-4. **Read target files** and extract dependencies:
-   - Imports → External dependencies
-   - Field types, method parameters → Direct dependencies
-   - Method calls → Behavioral dependencies
+4. **Read the MAIN target file** (one file only) and extract dependencies by name:
+   - Import statements → Class names and packages
+   - Field declarations → Type names
+   - Method parameters → Parameter types
+   - Method calls → Called method names
 
-5. **Classify dependencies**:
-   - Project code (proman-*): Trace further
-   - Nablarch framework: Note for knowledge search
-   - JDK/Jakarta EE: Note but don't trace
-   - Third-party libraries: Note but don't trace
+   **RULE**: In this pass, extract dependency NAMES ONLY from the target file.
+   Do NOT read any dependency file contents yet.
 
-6. **Determine trace depth** (ask user if unclear):
-   - Default: Trace project code until reaching framework/entities/utilities
-   - Stop at Nablarch framework boundaries
-   - Stop at Entity classes (pure data objects)
+5. **Classify dependencies** (by name and package, without reading files):
+   - Project code (proman-*): Record for potential deep-dive in Pass 2
+   - Nablarch framework: Record for knowledge search
+   - JDK/Jakarta EE: Record but don't trace
+   - Third-party libraries: Record but don't trace
 
-7. **Build dependency graph** (mental model):
+6. **Build dependency graph** (from target file information only):
    ```
    LoginAction
-   ├─→ LoginForm (Form, validation)
-   ├─→ SystemAccountEntity (Entity, data)
-   ├─→ UniversalDao (Nablarch, database access)
-   └─→ ExecutionContext (Nablarch, request context)
+   ├─→ LoginForm (Form) — inferred from import + field type
+   ├─→ SystemAccountEntity (Entity) — inferred from import + "Entity" suffix
+   ├─→ UniversalDao (Nablarch) — inferred from nablarch package
+   └─→ ExecutionContext (Nablarch) — inferred from nablarch package
    ```
 
-8. **Categorize components** by role:
+7. **Categorize components** by role:
    - Action/Controller, Form, Entity, Service/Logic, Utility, Handler, Configuration
+   - Role inference uses: class name suffix, package name, usage pattern in target
+
+#### Pass 2: Selective deep-dive (budgeted)
+
+8. **Evaluate which dependency files need reading** using these rules:
+
+   | Dependency type | Action | Reason |
+   |-----------------|--------|--------|
+   | Entity / DTO | Do NOT read | Target file's import + field usage is sufficient |
+   | Form | Do NOT read | Annotations visible in target, validation details come from knowledge |
+   | Service / Logic | Grep public methods ONLY | `grep "^\s*public " ServiceFile.java` (do NOT read full file) |
+   | Complex config | Grep class definition ONLY | `grep "^public class\|^\s*public " ConfigFile.java` |
+
+   **Budget**: Read at most **2 dependency files** via Grep (partial extraction only).
+   Full file reads of dependencies are NOT permitted in Step 1.
+
+   **Why this budget**: Measurement data shows reading ProjectDto.java (269 lines) adds 12-30s
+   of variability with no improvement in final output quality. Dependency details needed for
+   Step 3 documentation can be read at that point (deferred reading).
 
 9. **Identify Nablarch components** for knowledge search:
    - UniversalDao, ValidationUtil, ExecutionContext, Handler chain, etc.
@@ -105,7 +125,7 @@ Output directory: .nabledge/20260210
     - Operations: 検索, 登録, 更新, バリデーション
     - Patterns: CRUD, pagination, error handling
 
-**Output**: Target files list, dependency graph, component list with Nablarch components identified
+**Output**: Target file content, dependency graph (name-based), component list with Nablarch components identified, list of deferred reads (files that may need reading in Step 3)
 
 ### Step 2: Search Nablarch knowledge
 
