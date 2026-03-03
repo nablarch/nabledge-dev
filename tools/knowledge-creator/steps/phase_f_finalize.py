@@ -60,7 +60,7 @@ class PhaseFFinalize:
 
     def _classify_patterns(self, file_info, knowledge) -> str:
         file_id = file_info["id"]
-        log_path = f"{self.ctx.log_dir}/classify-patterns/{file_id}.json"
+        log_path = f"{self.ctx.patterns_dir}/{file_id}.json"
 
         if os.path.exists(log_path):
             return load_json(log_path).get("patterns", "")

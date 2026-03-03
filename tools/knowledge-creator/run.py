@@ -26,13 +26,61 @@ class Context:
             raise ValueError(f"Repository path does not exist: {self.repo}")
 
     @property
+    def log_dir(self) -> str:
+        return f"{self.repo}/tools/knowledge-creator/.logs/v{self.version}"
+
+    # Phase A: Preparation
+    @property
     def source_list_path(self) -> str:
-        return f"{self.repo}/tools/knowledge-creator/logs/v{self.version}/sources.json"
+        return f"{self.log_dir}/phase-a/sources.json"
 
     @property
     def classified_list_path(self) -> str:
-        return f"{self.repo}/tools/knowledge-creator/logs/v{self.version}/classified.json"
+        return f"{self.log_dir}/phase-a/classified.json"
 
+    # Phase B: Generate
+    @property
+    def trace_dir(self) -> str:
+        return f"{self.log_dir}/phase-b/traces"
+
+    @property
+    def phase_b_executions_dir(self) -> str:
+        return f"{self.log_dir}/phase-b/executions"
+
+    # Phase C: Structure Check
+    @property
+    def structure_check_path(self) -> str:
+        return f"{self.log_dir}/phase-c/results.json"
+
+    # Phase D: Content Check
+    @property
+    def findings_dir(self) -> str:
+        return f"{self.log_dir}/phase-d/findings"
+
+    @property
+    def phase_d_executions_dir(self) -> str:
+        return f"{self.log_dir}/phase-d/executions"
+
+    # Phase E: Fix
+    @property
+    def phase_e_executions_dir(self) -> str:
+        return f"{self.log_dir}/phase-e/executions"
+
+    # Phase F: Finalize
+    @property
+    def patterns_dir(self) -> str:
+        return f"{self.log_dir}/phase-f/patterns"
+
+    @property
+    def phase_f_executions_dir(self) -> str:
+        return f"{self.log_dir}/phase-f/executions"
+
+    # Phase G: Resolve Links
+    @property
+    def knowledge_resolved_dir(self) -> str:
+        return f"{self.log_dir}/phase-g/resolved"
+
+    # Output
     @property
     def knowledge_dir(self) -> str:
         return f"{self.repo}/.claude/skills/nabledge-{self.version}/knowledge"
@@ -44,22 +92,6 @@ class Context:
     @property
     def index_path(self) -> str:
         return f"{self.knowledge_dir}/index.toon"
-
-    @property
-    def log_dir(self) -> str:
-        return f"{self.repo}/tools/knowledge-creator/logs/v{self.version}"
-
-    @property
-    def findings_dir(self) -> str:
-        return f"{self.log_dir}/validate/findings"
-
-    @property
-    def trace_dir(self) -> str:
-        return f"{self.log_dir}/generate/trace"
-
-    @property
-    def knowledge_resolved_dir(self) -> str:
-        return f"{self.log_dir}/knowledge-resolved"
 
 
 def main():

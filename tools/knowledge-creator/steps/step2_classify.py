@@ -172,6 +172,10 @@ class Step2Classify:
                     'level': 'h2'
                 })
 
+        # Expand first section to include preamble (content before first h2)
+        if sections:
+            sections[0]['start_line'] = 0
+
         # Calculate end_line and line_count for each section
         for i in range(len(sections)):
             start = sections[i]['start_line']

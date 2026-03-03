@@ -141,7 +141,7 @@ class PhaseCStructureCheck:
                 results["pass"] += 1
                 results["pass_ids"].append(fi["id"])
 
-        write_json(f"{self.ctx.log_dir}/structure-check.json", results)
+        write_json(self.ctx.structure_check_path, results)
         print(f"\n構造検証: {results['pass']}/{results['total']} pass, "
               f"{results['error']} fail ({results['error_count']} errors)")
         return results

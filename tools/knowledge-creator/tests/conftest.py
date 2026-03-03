@@ -84,14 +84,14 @@ def test_repo(tmp_path):
     shutil.copy(os.path.join(FIXTURES_DIR, "sample_source.rst"), src_dir / "sample_source.rst")
 
     # classified.json (required by Phase G for doc index building)
-    log_dir = repo / "tools" / "knowledge-creator" / "logs" / "v6"
-    log_dir.mkdir(parents=True)
+    phase_a_dir = repo / "tools" / "knowledge-creator" / ".logs" / "v6" / "phase-a"
+    phase_a_dir.mkdir(parents=True)
     classified = load_fixture("sample_classified.json")
-    with open(log_dir / "classified.json", "w", encoding="utf-8") as f:
+    with open(phase_a_dir / "classified.json", "w", encoding="utf-8") as f:
         json.dump(classified, f, ensure_ascii=False, indent=2)
 
     # trace directory (required by Phase G for label index building)
-    trace_dir = log_dir / "trace"
+    trace_dir = repo / "tools" / "knowledge-creator" / ".logs" / "v6" / "phase-b" / "traces"
     trace_dir.mkdir(parents=True, exist_ok=True)
 
     # knowledge directory
