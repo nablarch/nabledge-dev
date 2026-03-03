@@ -116,7 +116,20 @@ def main():
     for v in versions:
         print(f"\n{'='*60}")
         print(f"Processing version: {v}")
-        print(f"{'='*60}\n")
+        print(f"{'='*60}")
+
+        # Display execution configuration
+        mode = "Test" if args.test else "Production"
+        print(f"\n【実行設定】")
+        print(f"  モード: {mode}")
+        if args.test:
+            print(f"  テストファイル: {args.test}")
+        print(f"  フェーズ: {args.phase or 'ABCDEFG (全て)'}")
+        print(f"  最大検証ラウンド数: {args.max_rounds}")
+        print(f"  並行処理数: {args.concurrency}")
+        print(f"  Dry-run: {'Yes' if args.dry_run else 'No'}")
+        print(f"  リポジトリ: {args.repo}")
+        print()
 
         ctx = Context(
             version=v, repo=args.repo, concurrency=args.concurrency,
