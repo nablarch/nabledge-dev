@@ -120,7 +120,8 @@ OUTPUT_DIR=$(dirname "$OUTPUT_PATH")
 LEVEL_COUNT=$(( $(echo "$OUTPUT_DIR" | tr -cd '/' | wc -c) + 1 ))
 RELATIVE_PREFIX=""
 for ((i=0; i<LEVEL_COUNT; i++)); do
-    RELATIVE_PREFIX="../$RELATIVE_PREFIX"
+    # Append ../ at end (was prepending incorrectly before fix)
+    RELATIVE_PREFIX="${RELATIVE_PREFIX}../"
 done
 
 # Build source files links
@@ -141,8 +142,15 @@ KNOWLEDGE_BASE_LINKS=""
 IFS=',' read -ra FILES <<< "$KNOWLEDGE_FILES"
 for file in "${FILES[@]}"; do
     file=$(echo "$file" | xargs) # trim whitespace
-    filename=$(basename "$file" .md)
-    relative_path="${RELATIVE_PREFIX}${file}"
+
+    # Convert knowledge JSON paths to docs MD paths
+    # Example: .claude/skills/nabledge-6/knowledge/features/X.json
+    #       → .claude/skills/nabledge-6/docs/features/X.md
+    doc_file="${file/\/knowledge\//\/docs\/}"
+    doc_file="${doc_file/.json/.md}"
+
+    filename=$(basename "$doc_file" .md)
+    relative_path="${RELATIVE_PREFIX}${doc_file}"
     # Use filename as description (capitalize first letter)
     desc=$(echo "$filename" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
     KNOWLEDGE_BASE_LINKS+="- [${desc}](${relative_path})"$'\n'
