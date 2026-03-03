@@ -147,6 +147,13 @@ search_files() {
     return 0
 }
 
+# Normalize OUTPUT_PATH to relative path if absolute
+# This ensures correct depth calculation regardless of input format
+if [[ "$OUTPUT_PATH" == /* ]]; then
+    # OUTPUT_PATH is absolute, convert to relative from project root
+    OUTPUT_PATH=$(realpath --relative-to="$PROJECT_ROOT" "$OUTPUT_PATH")
+fi
+
 # Calculate relative path from output directory to project root
 OUTPUT_DIR=$(dirname "$OUTPUT_PATH")
 # Count directory levels: Number of path components = slashes + 1
