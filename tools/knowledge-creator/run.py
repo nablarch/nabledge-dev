@@ -131,20 +131,20 @@ def main():
 
     for v in versions:
         print(f"\n{'='*60}")
-        print(f"🚀 Knowledge Creator - Version {v}")
+        print(f"🚀Knowledge Creator - Version {v}")
         print(f"{'='*60}")
 
         # Display execution configuration
         mode_emoji = "🧪" if args.test else "🏭"
         mode = "Test" if args.test else "Production"
-        print(f"\n⚙️  Configuration")
-        print(f"   Mode: {mode_emoji} {mode}")
+        print(f"\n⚙️Configuration")
+        print(f"   Mode: {mode_emoji}{mode}")
         if args.test:
-            print(f"   Test File: 📄 {args.test}")
+            print(f"   Test File: 📄{args.test}")
         print(f"   Phases: {args.phase or 'ABCDEFG (all)'}")
         print(f"   Max Rounds: {args.max_rounds}")
         print(f"   Concurrency: {args.concurrency}")
-        print(f"   Dry-run: {'✅ Yes' if args.dry_run else '❌ No'}")
+        print(f"   Dry-run: {'✅Yes' if args.dry_run else '❌No'}")
         print(f"   Repository: {args.repo}")
         print()
 
@@ -157,7 +157,7 @@ def main():
 
         # Phase A
         if "A" in phases:
-            print("\n📋 Phase A: Prepare")
+            print("\n📋Phase A: Prepare")
             print("   └─ Scanning documentation sources...")
             from steps.step1_list_sources import Step1ListSources
             from steps.step2_classify import Step2Classify
@@ -166,27 +166,28 @@ def main():
 
         # Phase B
         if "B" in phases:
-            print("\n🤖 Phase B: Generate")
+            print("\n🤖Phase B: Generate")
             print("   └─ Converting documentation to knowledge files...")
             from steps.phase_b_generate import PhaseBGenerate
             PhaseBGenerate(ctx, dry_run=args.dry_run).run()
 
         # Phase C/D/E loop
         for round_num in range(1, ctx.max_rounds + 1):
-            print(f"\n🔄 Round {round_num}/{ctx.max_rounds}")
+            print(f"\n🔄Round {round_num}/{ctx.max_rounds}")
 
             c_result = None
             if "C" in phases:
-                print("\n✅ Phase C: Structure Check")
+                print("\n✅Phase C: Structure Check")
                 print("   └─ Validating JSON schema and structure...")
                 from steps.phase_c_structure_check import PhaseCStructureCheck
                 c_result = PhaseCStructureCheck(ctx).run()
                 if c_result["error_count"] > 0:
-                    print(f"   ⚠️  Structure errors: {c_result['error_count']} found")
-                    print(f"   📄 Details: {ctx.log_dir}/structure-check.json")
+                    rel_path = os.path.relpath(f"{ctx.log_dir}/structure-check.json", ctx.repo)
+                    print(f"   ⚠️Structure errors: {c_result['error_count']} found")
+                    print(f"   📄Details: {rel_path}")
 
             if "D" in phases:
-                print("\n🔍 Phase D: Content Check")
+                print("\n🔍Phase D: Content Check")
                 print("   └─ Comparing knowledge files with source docs...")
                 from steps.phase_d_content_check import PhaseDContentCheck
                 pass_ids = c_result.get("pass_ids") if c_result else None
@@ -195,11 +196,11 @@ def main():
                 )
 
                 if d_result["issues_count"] == 0:
-                    print(f"   ✨ Round {round_num}: All checks passed!")
+                    print(f"   ✨Round {round_num}: All checks passed!")
                     break
 
                 if "E" in phases:
-                    print("\n🔧 Phase E: Fix")
+                    print("\n🔧Phase E: Fix")
                     print("   └─ Applying fixes to knowledge files...")
                     from steps.phase_e_fix import PhaseEFix
                     PhaseEFix(ctx, dry_run=args.dry_run).run(
@@ -212,20 +213,20 @@ def main():
 
         # Phase G
         if "G" in phases:
-            print("\n🔗 Phase G: Resolve Links")
+            print("\n🔗Phase G: Resolve Links")
             print("   └─ Resolving RST cross-references...")
             from steps.phase_g_resolve_links import PhaseGResolveLinks
             PhaseGResolveLinks(ctx).run()
 
         # Phase F
         if "F" in phases:
-            print("\n📦 Phase F: Finalize")
+            print("\n📦Phase F: Finalize")
             print("   └─ Generating browsable docs and index...")
             from steps.phase_f_finalize import PhaseFFinalize
             PhaseFFinalize(ctx, dry_run=args.dry_run).run()
 
         print(f"\n{'='*60}")
-        print(f"✨ Completed version {v}")
+        print(f"✨Completed version {v}")
         print(f"{'='*60}\n")
 
 

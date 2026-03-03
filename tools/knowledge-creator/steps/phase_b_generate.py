@@ -148,7 +148,7 @@ class PhaseBGenerate:
             print(f"  [SKIP] {file_id}")
             return {"status": "skip", "id": file_id}
 
-        print(f"   🤖 [GEN] {file_id}")
+        print(f"   🤖[GEN] {file_id}")
         source_content = read_file(source_path)
 
         if 'section_range' in file_info:
