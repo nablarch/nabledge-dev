@@ -24,24 +24,17 @@ Phase C→D→E can loop up to `--max-rounds` times.
 
 ## Setup
 
-```bash
-cd tools/knowledge-creator
-
-# Create virtual environment (recommended)
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# or
-.venv\Scripts\activate  # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-Or run `setup.sh` from repository root (includes knowledge-creator dependencies):
+Run `setup.sh` from repository root. This installs all system tools, Python dependencies (including knowledge-creator), and clones Nablarch official repositories:
 
 ```bash
 cd /path/to/nabledge-dev
 ./setup.sh
+```
+
+After setup completes, restart your shell or run:
+
+```bash
+source ~/.bashrc
 ```
 
 ## Usage
