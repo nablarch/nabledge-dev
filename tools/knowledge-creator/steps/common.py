@@ -78,7 +78,8 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
         "claude", "-p",
         "--output-format", "json",
         "--no-session-persistence",
-        "--json-schema", json.dumps(json_schema)
+        "--json-schema", json.dumps(json_schema),
+        "--max-turns", "10"
     ]
 
     # Remove CLAUDECODE to prevent Claude CLI from detecting agent context
