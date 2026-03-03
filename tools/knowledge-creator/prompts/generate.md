@@ -193,17 +193,20 @@ For each reference found in source:
    → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
    → Add this URL to official_doc_urls (collected in Step 6)
    → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
-   → These will be resolved to Markdown links in post-processing (Phase G)
+   → The RST syntax will be converted to inline code in post-processing (Phase G)
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
 
 2. Is it an external URL (http:// or https://) ?
    → Convert to Markdown link format: [text](url)
 
 3. Is it :ref:`label` or :ref:`display<label>` ?
-   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
    → Do NOT convert to [display](#section-id) or [display](@label)
    → Examples to preserve:
-     - :ref:`thread_context_handler`
-     - :ref:`HTTPアクセスログ <http_access_log>`
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
    → These will be resolved in post-processing (Phase G) after all files are generated
 
 4. Is it :doc:`path` or :doc:`display<path>` ?
@@ -222,6 +225,12 @@ For each reference found in source:
    → These will be resolved in post-processing (Phase G)
 
 **Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Phase G handles variants automatically)
+- Phase G will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
 ```
 
 ---

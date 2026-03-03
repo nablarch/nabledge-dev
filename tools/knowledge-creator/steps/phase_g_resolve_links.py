@@ -16,6 +16,31 @@ class PhaseGResolveLinks:
         self.label_index = {}  # label -> (file_id, section_id)
         self.doc_index = {}    # rst_path -> file_id
 
+    def _validate_file_id(self, file_id):
+        """Validate file_id contains only safe characters.
+
+        Args:
+            file_id: File identifier to validate
+
+        Returns:
+            file_id if valid
+
+        Raises:
+            ValueError: If file_id contains unsafe characters
+        """
+        if not file_id:
+            raise ValueError("file_id cannot be empty")
+
+        # Reject absolute paths, parent directory refs (..), backslashes
+        if file_id.startswith('/') or '..' in file_id or '\\' in file_id:
+            raise ValueError(f"Unsafe file_id (path traversal risk): {file_id}")
+
+        # Allow alphanumeric, underscore, hyphen, forward slash (for nested paths)
+        if not re.match(r'^[a-zA-Z0-9_/-]+$', file_id):
+            raise ValueError(f"Invalid characters in file_id: {file_id}")
+
+        return file_id
+
     def _build_label_index(self):
         """Scan all knowledge files to build global label index."""
         print("  Building label index...")
@@ -192,11 +217,23 @@ class PhaseGResolveLinks:
         display_text = download_match.group(1).strip()
         file_path = download_match.group(2).strip()
 
+        # Validate file_path for path traversal risks
+        if file_path.startswith('/') or '..' in file_path or '\\' in file_path:
+            # Suspicious path - keep as-is rather than generating unsafe asset path
+            return full_match
+
         # Extract filename
-        filename = os.path.basename(file_path)
+        filename = os.path.basename(os.path.normpath(file_path))
+
+        # Validate current_file_id before using in path
+        try:
+            validated_id = self._validate_file_id(current_file_id)
+        except ValueError:
+            # Invalid file_id - keep original syntax
+            return full_match
 
         # Format as assets link
-        return f"[{display_text}](assets/{current_file_id}/{filename})"
+        return f"[{display_text}](assets/{validated_id}/{filename})"
 
     def _resolve_java_extdoc(self, match):
         """Resolve :java:extdoc:`...` - keep as-is since already in official_doc_urls."""
@@ -228,8 +265,19 @@ class PhaseGResolveLinks:
 
     def _calculate_relative_path(self, from_file_id, to_file_id):
         """Calculate relative path from one file to another."""
+        # Validate file IDs before using in paths
+        try:
+            self._validate_file_id(from_file_id)
+            self._validate_file_id(to_file_id)
+        except ValueError as e:
+            print(f"  Warning: Invalid file_id in path calculation: {e}")
+            return f"{to_file_id}.md"  # Return simple path anyway
+
         # Simple implementation: assume flat structure for now
         # TODO: Implement proper relative path calculation based on file structure
+        if '/' in from_file_id or '/' in to_file_id:
+            print(f"  Warning: Relative path calculation for nested files not yet fully supported")
+
         return f"{to_file_id}.md"
 
     def _resolve_section_links(self, content, file_id):
