@@ -57,6 +57,10 @@ class Context:
     def trace_dir(self) -> str:
         return f"{self.log_dir}/generate/trace"
 
+    @property
+    def knowledge_resolved_dir(self) -> str:
+        return f"{self.repo}/.claude/skills/nabledge-{self.version}/knowledge-resolved"
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -85,7 +89,7 @@ def main():
             test_mode=args.test_mode, max_rounds=args.max_rounds
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
-        phases = args.phase or "ABCDEF"
+        phases = args.phase or "ABCDEFG"
 
         # Phase A
         if "A" in phases:
@@ -136,6 +140,12 @@ def main():
                     break
             else:
                 break
+
+        # Phase G
+        if "G" in phases:
+            print("\n--- Phase G: Resolve Links ---")
+            from steps.phase_g_resolve_links import PhaseGResolveLinks
+            PhaseGResolveLinks(ctx).run()
 
         # Phase F
         if "F" in phases:

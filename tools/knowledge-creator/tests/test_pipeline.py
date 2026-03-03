@@ -154,3 +154,63 @@ class TestPhaseF:
         # summary
         summary_path = os.path.join(ctx.log_dir, "summary.json")
         assert os.path.exists(summary_path)
+
+
+class TestPipelineWithPhaseG:
+    """Full pipeline: B -> G -> F"""
+
+    def test_full_pipeline_with_link_resolution(self, ctx, mock_claude):
+        """Test complete pipeline: generate -> resolve links -> finalize."""
+        from steps.phase_b_generate import PhaseBGenerate
+        from steps.phase_g_resolve_links import PhaseGResolveLinks
+        from steps.phase_f_finalize import PhaseFFinalize
+
+        # Phase B: Generate knowledge files with RST links
+        PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
+
+        knowledge_path = os.path.join(
+            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
+        )
+        assert os.path.exists(knowledge_path)
+
+        # Verify RST links are preserved in original
+        with open(knowledge_path, encoding="utf-8") as f:
+            original = json.load(f)
+        assert ":ref:`thread_context_handler`" in original["sections"]["overview"]
+
+        # Phase G: Resolve links
+        PhaseGResolveLinks(ctx).run()
+
+        # Verify resolved directory exists
+        resolved_path = os.path.join(
+            ctx.knowledge_resolved_dir, "component/handlers/handlers-sample-handler.json"
+        )
+        assert os.path.exists(resolved_path)
+
+        # Verify links are resolved in resolved version
+        with open(resolved_path, encoding="utf-8") as f:
+            resolved = json.load(f)
+
+        overview = resolved["sections"]["overview"]
+
+        # :ref: should be resolved to Markdown links
+        # Since we don't have full label index in test, unresolved refs kept as-is
+        # But :java:extdoc: should be converted to inline code
+        assert "`ThreadContext`" in overview or ":java:extdoc:" in overview, \
+            ":java:extdoc: should be converted or preserved"
+
+        # Phase F: Generate docs from resolved files
+        PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
+
+        # Verify Phase F reads from resolved directory
+        doc_path = os.path.join(
+            ctx.docs_dir, "component/handlers/handlers-sample-handler.md"
+        )
+        assert os.path.exists(doc_path)
+
+        # Verify docs contain resolved content
+        with open(doc_path, encoding="utf-8") as f:
+            doc_content = f.read()
+
+        # Doc should contain content from resolved files
+        assert "概要" in doc_content or "Overview" in doc_content

@@ -333,7 +333,7 @@ class PhaseGResolveLinks:
         self._build_doc_index()
 
         # Create output directory
-        resolved_dir = f"{self.ctx.knowledge_dir}-resolved"
+        resolved_dir = self.ctx.knowledge_resolved_dir
         os.makedirs(resolved_dir, exist_ok=True)
 
         # Process all knowledge files
