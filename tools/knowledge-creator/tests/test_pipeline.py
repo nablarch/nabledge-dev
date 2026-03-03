@@ -44,6 +44,45 @@ class TestPipelineBCD:
         )
         assert d_result["issues_count"] == 0
 
+    def test_rst_links_preserved(self, ctx, mock_claude):
+        """Verify RST link syntax is preserved in generated knowledge files."""
+        from steps.phase_b_generate import PhaseBGenerate
+
+        # Phase B: generate
+        PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
+
+        knowledge_path = os.path.join(
+            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
+        )
+        assert os.path.exists(knowledge_path)
+
+        with open(knowledge_path, encoding="utf-8") as f:
+            knowledge = json.load(f)
+
+        overview = knowledge["sections"]["overview"]
+
+        # Verify RST links are preserved (not converted to Markdown)
+        assert ":ref:`thread_context_handler`" in overview, \
+            "Simple :ref: should be preserved"
+        assert ":ref:`データベース接続 <database_connection>`" in overview, \
+            ":ref: with display text should be preserved"
+        assert ":doc:`../configuration/database`" in overview, \
+            ":doc: should be preserved"
+        assert ":download:`sample.xml <sample.xml>`" in overview, \
+            ":download: should be preserved"
+        assert ":java:extdoc:`SampleHandler <nablarch.sample.SampleHandler>`" in overview, \
+            ":java:extdoc: with display should be preserved"
+        assert ":java:extdoc:`nablarch.core.ThreadContext`" in overview, \
+            ":java:extdoc: without display should be preserved"
+
+        # Verify external URLs are converted to Markdown
+        assert "[Jackson(外部サイト、英語)](https://github.com/FasterXML/jackson)" in overview, \
+            "External URLs should be converted to Markdown format"
+
+        # Verify Javadoc URLs are added to official_doc_urls
+        assert "https://nablarch.github.io/docs/LATEST/javadoc/" in str(knowledge.get("official_doc_urls", [])), \
+            "Javadoc URLs should be in official_doc_urls"
+
     def test_fix_cycle(self, ctx):
         """Fix flow: generate -> check finds issues -> fix -> recheck clean."""
         from steps.phase_b_generate import PhaseBGenerate

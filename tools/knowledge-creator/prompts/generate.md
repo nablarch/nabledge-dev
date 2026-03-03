@@ -181,37 +181,47 @@ Office attachments → reference in `assets/{FILE_ID}/`.
 
 ---
 
-## Work Step 4: Convert cross-references
+## Work Step 4: Preserve cross-references
 
-Scan each section's content and convert all RST references using this decision flow:
+Scan each section's content and handle RST references as follows:
 
 ```
 For each reference found in source:
 
 1. Is it :java:extdoc:`...` ?
-   → Extract the fully-qualified class name.
+   → Extract the fully-qualified class name from the reference
    → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
-   → Add this URL to official_doc_urls (collected in Step 6).
-   → In section text, keep only the class name as inline code: `ClassName`
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → These will be resolved to Markdown links in post-processing (Phase G)
 
 2. Is it an external URL (http:// or https://) ?
-   → Keep as-is in Markdown link format: [text](url)
+   → Convert to Markdown link format: [text](url)
 
 3. Is it :ref:`label` or :ref:`display<label>` ?
-   → Is `label` in {INTERNAL_LABELS} ?
-     YES (internal reference):
-       → Convert to: [display_text](#section-id)
-       → section-id = the kebab-case ID from Step 2 that this label points to
-     NO (external reference):
-       → Convert to: [display_text](@label)
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler`
+     - :ref:`HTTPアクセスログ <http_access_log>`
+   → These will be resolved in post-processing (Phase G) after all files are generated
 
 4. Is it :doc:`path` or :doc:`display<path>` ?
-   → Convert to: [display_text](@knowledge-file-id)
-   → knowledge-file-id = the filename portion of path without extension
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing (Phase G)
 
 5. Is it :download:`display<path>` ?
-   → If file was extracted to assets: [display](assets/{FILE_ID}/filename)
-   → If not extracted: describe the file in text
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing (Phase G)
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
 ```
 
 ---

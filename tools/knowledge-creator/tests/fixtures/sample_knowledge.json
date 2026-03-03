@@ -2,13 +2,15 @@
   "id": "handlers-sample-handler",
   "title": "サンプルハンドラ",
   "official_doc_urls": [
-    "https://nablarch.github.io/docs/LATEST/doc/application_framework/handlers/sample.html"
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/handlers/sample.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/sample/SampleHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html"
   ],
   "index": [
     {
       "id": "overview",
       "title": "概要",
-      "hints": ["SampleHandler", "nablarch.sample.SampleHandler", "データベース接続管理"]
+      "hints": ["SampleHandler", "nablarch.sample.SampleHandler", "ThreadContext", "nablarch.core.ThreadContext", "データベース接続管理", "thread_context_handler"]
     },
     {
       "id": "module-list",
@@ -17,7 +19,7 @@
     }
   ],
   "sections": {
-    "overview": "サンプルハンドラは、データベース接続を管理するハンドラである。\n\n> **重要**: 本ハンドラはハンドラキューの先頭付近に配置すること。\n\n**クラス**: `nablarch.sample.SampleHandler`",
+    "overview": "サンプルハンドラは、データベース接続を管理するハンドラである。\n\n> **重要**: 本ハンドラはハンドラキューの先頭付近に配置すること。\n\n詳細は :ref:`thread_context_handler` を参照。また、:ref:`データベース接続 <database_connection>` の設定も必要。\n\n関連ドキュメントは :doc:`../configuration/database` を参照。\n\n設定ファイルのサンプルは :download:`sample.xml <sample.xml>` を参照。\n\n**クラス**: :java:extdoc:`SampleHandler <nablarch.sample.SampleHandler>`、:java:extdoc:`nablarch.core.ThreadContext`\n\n外部ライブラリ: [Jackson(外部サイト、英語)](https://github.com/FasterXML/jackson)",
     "module-list": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-sample</artifactId>\n</dependency>\n```\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| sampleProperty | String | ○ | | サンプルプロパティ |\n| timeout | int | | 30 | タイムアウト(秒) |"
   }
 }
