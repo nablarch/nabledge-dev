@@ -160,17 +160,26 @@ Output directory: .nabledge/20260210
 
 5. **Group knowledge by component** after receiving results:
    - Parse returned sections and map to original components
-   - UniversalDao → [universal-dao.json:overview, universal-dao.json:crud]
-   - ValidationUtil → [data-bind.json:validation]
+   - Extract unique file paths from section-judgement output
+   - Example mappings:
+     - UniversalDao → [.claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json]
+     - ValidationUtil → [.claude/skills/nabledge-6/knowledge/features/libraries/data-bind.json]
 
-6. **Collect knowledge** for documentation:
+6. **Collect knowledge file paths** for Step 3.2:
+   - Collect **full JSON file paths** from section-judgement output (use `file_path` field)
+   - Example: `.claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json`
+   - **IMPORTANT**: Use complete paths, not relative paths or basenames
+   - Deduplicate: Multiple sections may come from same file
+   - Format as comma-separated list for --knowledge-files parameter
+
+7. **Collect knowledge content** for documentation:
    - API usage patterns
    - Configuration requirements
    - Code examples
    - Error handling
    - Best practices
 
-**Output**: Relevant knowledge sections with API usage, patterns, and best practices
+**Output**: Full JSON file paths for Step 3.2, and relevant knowledge sections with API usage, patterns, and best practices
 
 ### Step 3: Generate and output documentation
 
@@ -206,7 +215,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
   --target-desc "<one-line-description>" \
   --modules "<module1, module2>" \
   --source-files "<file1.java,file2.java>" \
-  --knowledge-files "<knowledge1.md,knowledge2.md>" \
+  --knowledge-files ".claude/skills/nabledge-6/knowledge/features/file1.json,.claude/skills/nabledge-6/knowledge/features/file2.json" \
   --official-docs "<url1,url2>" \
   --output-path ".nabledge/YYYYMMDD/code-analysis-<target>.md"
 ```
@@ -216,7 +225,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 - `target-desc`: One-line description (e.g., "ログイン認証処理")
 - `modules`: Affected modules (e.g., "proman-web, proman-common")
 - `source-files`: Comma-separated source file paths from Step 1
-- `knowledge-files`: Comma-separated knowledge file paths from Step 2
+- `knowledge-files`: Comma-separated **full JSON file paths** from Step 2 section-judgement output (e.g., ".claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json"). Script will convert to MD paths automatically.
 - `official-docs`: Comma-separated official doc URLs (optional)
 - `output-path`: Output file path
 
