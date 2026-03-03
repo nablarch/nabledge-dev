@@ -4,6 +4,7 @@ Build index.toon, generate browsable docs, create summary.
 """
 
 import os
+import re
 import json
 import subprocess
 from glob import glob
@@ -168,8 +169,6 @@ class PhaseFFinalize:
         Returns:
             Content with converted asset paths
         """
-        import re
-
         file_id = file_info["id"]
         type_ = file_info["type"]
         category = file_info["category"]
@@ -179,6 +178,7 @@ class PhaseFFinalize:
         relative_prefix = f"../../knowledge/{type_}/{category}/assets/{file_id}/"
 
         # Convert image references: ![text](assets/file-id/filename) -> ![text](../../knowledge/.../assets/file-id/filename)
+        # Only convert assets for THIS file's ID (assets/handlers-sample-handler/* for handlers-sample-handler.json)
         content = re.sub(
             r'!\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)',
             r'![\1](' + relative_prefix + r'\2)',
@@ -186,6 +186,7 @@ class PhaseFFinalize:
         )
 
         # Convert download links: [text](assets/file-id/filename) -> [text](../../knowledge/.../assets/file-id/filename)
+        # Negative lookbehind (?<!\!) ensures we don't match image syntax ![text](...)
         content = re.sub(
             r'(?<!\!)\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)',
             r'[\1](' + relative_prefix + r'\2)',

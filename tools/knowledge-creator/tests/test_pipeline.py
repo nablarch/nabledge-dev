@@ -203,6 +203,8 @@ class TestPhaseF:
             "Knowledge JSON should keep original asset paths"
         assert "assets/handlers-sample-handler/settings.xlsx" in overview, \
             "Knowledge JSON should keep original download paths"
+        assert "assets/handlers-sample-handler/flow.png" in overview, \
+            "Knowledge JSON should keep multiple asset references"
 
         # Phase F: Generate browsable docs
         PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
@@ -216,9 +218,11 @@ class TestPhaseF:
         with open(doc_path, encoding="utf-8") as f:
             doc_content = f.read()
 
-        # Image reference should be converted
+        # Multiple image references should all be converted
         assert "../../knowledge/component/handlers/assets/handlers-sample-handler/architecture.png" in doc_content, \
-            "Browsable MD should have converted image paths"
+            "Browsable MD should have converted first image path"
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/flow.png" in doc_content, \
+            "Browsable MD should have converted second image path"
 
         # Download link should be converted
         assert "../../knowledge/component/handlers/assets/handlers-sample-handler/settings.xlsx" in doc_content, \
@@ -229,6 +233,20 @@ class TestPhaseF:
             "Original asset paths should not appear in browsable MD"
         assert "](assets/handlers-sample-handler/settings.xlsx)" not in doc_content, \
             "Original asset paths should not appear in browsable MD"
+
+        # Negative tests: External URLs and absolute paths should NOT be converted
+        assert "https://example.com/logo.png" in doc_content, \
+            "External URLs should be preserved unchanged"
+        assert "/absolute/path/system.png" in doc_content, \
+            "Absolute paths should NOT be converted"
+
+        # Verify external URL is not accidentally converted
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/logo.png" not in doc_content, \
+            "External URLs should not be converted to local paths"
+
+        # Verify absolute path is not converted
+        assert "../../knowledge/component/handlers/assets/handlers-sample-handler/system.png" not in doc_content, \
+            "Absolute paths should not be converted to local paths"
 
         # Verify knowledge JSON is unchanged after Phase F
         knowledge_after = load_json(knowledge_path)
