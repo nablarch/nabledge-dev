@@ -122,6 +122,17 @@ When in doubt, **include it**. Redundant is better than missing.
 - Class names, interface names, annotation names
 - URLs and links: preserve exactly as they appear in source
 
+### What to omit — Omit navigation elements redundant for AI
+
+Knowledge files are optimized for AI assistants to answer questions. Omit elements that serve only as navigation:
+
+- Table of contents / index sections (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references without explanation (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation paragraphs (e.g., "詳細については :ref:`xxx` を参照すること" with no other context)
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If a source element only provides links/references without substantive explanation, code examples, or constraints, omit it. The detailed content in target sections is sufficient for AI to answer questions.
+
 ### Forbidden — Do NOT do any of these
 
 - Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
