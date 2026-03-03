@@ -101,11 +101,16 @@ class PhaseBGenerate:
         else:
             prompt = prompt.replace("{INTERNAL_LABELS}", "[]")
 
-        # Pass expected sections list if file was split
+        # Pass detected section list to prevent Claude from missing sections (especially for large split files)
         if "section_range" in file_info and "sections" in file_info["section_range"]:
             sections_list = file_info["section_range"]["sections"]
-            sections_md = "\n".join(f"- {s}" for s in sections_list)
-            prompt = prompt.replace("{EXPECTED_SECTIONS}", sections_md)
+            if isinstance(sections_list, list) and sections_list:
+                if len(sections_list) > 10:
+                    print(f"    Passing {len(sections_list)} detected sections to Claude")
+                sections_md = "\n".join(f"- {s}" for s in sections_list)
+                prompt = prompt.replace("{EXPECTED_SECTIONS}", sections_md)
+            else:
+                prompt = prompt.replace("{EXPECTED_SECTIONS}", "(empty - scan the source yourself)")
         else:
             prompt = prompt.replace("{EXPECTED_SECTIONS}", "(empty - scan the source yourself)")
 

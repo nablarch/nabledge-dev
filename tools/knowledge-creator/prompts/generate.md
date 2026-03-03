@@ -371,6 +371,7 @@ Combine all results from Steps 1–6 into the output JSON.
 - [ ] No raw RST markup remains unconverted
 - [ ] No information was added that is not in the source
 - [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
 
 Output the JSON matching the schema above. No explanation, no markdown fences, no other text.
 ````
