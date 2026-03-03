@@ -59,7 +59,7 @@ class Context:
 
     @property
     def knowledge_resolved_dir(self) -> str:
-        return f"{self.repo}/.claude/skills/nabledge-{self.version}/knowledge-resolved"
+        return f"{self.log_dir}/knowledge-resolved"
 
 
 def main():

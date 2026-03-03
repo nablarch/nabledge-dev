@@ -47,7 +47,7 @@ class TestPhaseGLinkResolution:
 
         # Verify: Internal ref resolved to #anchor
         assert result["resolved_count"] == 1
-        resolved_path = f"{ctx.knowledge_dir}-resolved/component/test-handler.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/component/test-handler.json"
         assert os.path.exists(resolved_path)
 
         with open(resolved_path, "r", encoding="utf-8") as f:
@@ -104,7 +104,7 @@ class TestPhaseGLinkResolution:
 
         # Verify: External ref resolved to relative path
         assert result["resolved_count"] == 2
-        resolved_path = f"{ctx.knowledge_dir}-resolved/component/handler-a.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/component/handler-a.json"
 
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
@@ -141,7 +141,7 @@ class TestPhaseGLinkResolution:
         result = phase_g.run()
 
         # Verify: Display text preserved
-        resolved_path = f"{ctx.knowledge_dir}-resolved/test-doc.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/test-doc.json"
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
 
@@ -186,7 +186,7 @@ class TestPhaseGLinkResolution:
         result = phase_g.run()
 
         # Verify: :doc: resolved
-        resolved_path = f"{ctx.knowledge_dir}-resolved/test-doc.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/test-doc.json"
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
 
@@ -215,7 +215,7 @@ class TestPhaseGLinkResolution:
         result = phase_g.run()
 
         # Verify: :download: resolved to assets path
-        resolved_path = f"{ctx.knowledge_dir}-resolved/config-index.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/config-index.json"
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
 
@@ -246,7 +246,7 @@ class TestPhaseGLinkResolution:
         result = phase_g.run()
 
         # Verify: :java:extdoc: converted to inline code
-        resolved_path = f"{ctx.knowledge_dir}-resolved/test-handler.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/test-handler.json"
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
 
@@ -279,7 +279,7 @@ class TestPhaseGLinkResolution:
         result = phase_g.run()
 
         # Verify: External URL unchanged
-        resolved_path = f"{ctx.knowledge_dir}-resolved/test-doc.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/test-doc.json"
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
 
@@ -322,7 +322,7 @@ class TestPhaseGLinkResolution:
         result = phase_g.run()
 
         # Verify: All link types processed
-        resolved_path = f"{ctx.knowledge_dir}-resolved/complex-doc.json"
+        resolved_path = f"{ctx.knowledge_resolved_dir}/complex-doc.json"
         with open(resolved_path, "r", encoding="utf-8") as f:
             resolved = json.load(f)
 
