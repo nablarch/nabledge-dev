@@ -15,6 +15,59 @@ class MergeSplitFiles:
     def __init__(self, ctx):
         self.ctx = ctx
 
+    def _merge_trace_files(self, original_id, parts):
+        """Merge trace files from split parts.
+
+        Consolidates internal_labels and sections arrays from part trace files
+        into a single merged trace file for the original_id.
+
+        Args:
+            original_id: ID of the merged file
+            parts: List of part file_info dicts
+        """
+        # Collect trace data from parts
+        part_traces = []
+        for part in parts:
+            trace_path = f"{self.ctx.trace_dir}/{part['id']}.json"
+            if os.path.exists(trace_path):
+                part_traces.append((part['id'], load_json(trace_path)))
+
+        if not part_traces:
+            # No trace files to merge
+            return
+
+        # Merge internal_labels (deduplicate, preserve order)
+        seen_labels = set()
+        merged_labels = []
+        for _, trace in part_traces:
+            for label in trace.get("internal_labels", []):
+                if label not in seen_labels:
+                    seen_labels.add(label)
+                    merged_labels.append(label)
+
+        # Merge sections arrays
+        merged_sections = []
+        for _, trace in part_traces:
+            merged_sections.extend(trace.get("sections", []))
+
+        # Create merged trace
+        merged_trace = {
+            "file_id": original_id,
+            "generated_at": part_traces[0][1].get("generated_at", ""),
+            "internal_labels": merged_labels,
+            "sections": merged_sections
+        }
+
+        # Write merged trace
+        merged_trace_path = f"{self.ctx.trace_dir}/{original_id}.json"
+        write_json(merged_trace_path, merged_trace)
+
+        # Delete part trace files
+        for part_id, _ in part_traces:
+            part_trace_path = f"{self.ctx.trace_dir}/{part_id}.json"
+            if os.path.exists(part_trace_path):
+                os.remove(part_trace_path)
+
     def run(self):
         """Execute merge operation."""
         classified = load_json(self.ctx.classified_list_path)
@@ -117,6 +170,9 @@ class MergeSplitFiles:
                             os.rmdir(part_assets)
                         except OSError:
                             pass
+
+                # Merge trace files if they exist
+                self._merge_trace_files(original_id, parts)
 
                 for pp in part_paths:
                     os.remove(pp)
