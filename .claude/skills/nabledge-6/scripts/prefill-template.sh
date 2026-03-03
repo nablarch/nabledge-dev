@@ -15,19 +15,32 @@ Required arguments:
   --target-name <name>        Target name (e.g., "LoginAction", "ログイン機能")
   --target-desc <description> One-line description of the target
   --modules <modules>         Affected modules (e.g., "proman-web, proman-common")
-  --source-files <files>      Comma-separated source file paths (relative from project root)
-  --knowledge-files <files>   Comma-separated knowledge file paths (relative from project root)
+  --source-files <files>      Comma-separated source file paths or basenames
+                              - Full path: "src/main/java/LoginAction.java" (pass-through)
+                              - Basename: "LoginAction.java" (auto-search from project root)
+  --knowledge-files <files>   Comma-separated knowledge file paths or basenames
+                              - Full path: ".claude/skills/nabledge-6/knowledge/features/universal-dao.json"
+                              - Basename: "universal-dao" or "universal-dao.json" (auto-search)
   --output-path <path>        Output file path
 
 Optional arguments:
   --official-docs <docs>      Comma-separated official documentation URLs (default: none)
 
-Example:
+Examples:
+  # Using basenames (auto-search)
+  $0 --target-name "LoginAction" \\
+     --target-desc "ログイン認証処理" \\
+     --modules "proman-web" \\
+     --source-files "LoginAction.java,LoginForm.java" \\
+     --knowledge-files "universal-dao,web-application" \\
+     --output-path ".nabledge/20260220/code-analysis-login-action.md"
+
+  # Using full paths (pass-through)
   $0 --target-name "LoginAction" \\
      --target-desc "ログイン認証処理" \\
      --modules "proman-web" \\
      --source-files "proman-web/src/main/java/LoginAction.java,proman-web/src/main/java/LoginForm.java" \\
-     --knowledge-files ".claude/skills/nabledge-6/docs/features/web/web-application.md" \\
+     --knowledge-files ".claude/skills/nabledge-6/knowledge/features/libraries/universal-dao.json" \\
      --output-path ".nabledge/20260220/code-analysis-login-action.md"
 EOF
     exit 1
@@ -113,6 +126,65 @@ fi
 GENERATION_DATE=$(date '+%Y-%m-%d')
 GENERATION_TIME=$(date '+%H:%M:%S')
 
+# Resolve file path: supports both basename (search) and full path (pass-through)
+# Usage: resolve_file <file_pattern> <search_dir> <file_type>
+# Returns: full path on stdout, or empty if not found
+# Exit codes: 0=success, 1=multiple matches found
+resolve_file() {
+    local file_pattern="$1"
+    local search_dir="$2"
+    local file_type="$3"  # "source" or "knowledge"
+
+    # If pattern contains '/', treat as full path (pass-through)
+    if [[ "$file_pattern" == */* ]]; then
+        if [[ -f "$file_pattern" ]]; then
+            echo "$file_pattern"
+            return 0
+        else
+            echo "Warning: ${file_type} file not found: '$file_pattern' (full path) - link will be omitted" >&2
+            return 0
+        fi
+    fi
+
+    # Basename mode: search for file
+    local matches
+    if [[ "$file_type" == "knowledge" ]]; then
+        # For knowledge files, search for .json files
+        local basename="${file_pattern%.json}"  # Remove .json if present
+        matches=$(find "$search_dir" -type f -name "${basename}.json" 2>/dev/null)
+    else
+        # For source files, search by exact basename
+        matches=$(find "$search_dir" -type f -name "$file_pattern" 2>/dev/null)
+    fi
+
+    # Check if matches is empty
+    if [[ -z "$matches" ]]; then
+        echo "Warning: ${file_type} file not found: '$file_pattern' (searched in: $search_dir) - link will be omitted" >&2
+        return 0
+    fi
+
+    # Count matches (only count non-empty lines)
+    local match_count=$(echo "$matches" | wc -l)
+
+    if [[ $match_count -eq 1 ]]; then
+        echo "$matches"
+        return 0
+    else
+        echo "Error: Multiple ${file_type} files found for '$file_pattern':" >&2
+        echo "$matches" | while IFS= read -r match; do
+            echo "  - $match" >&2
+        done
+        echo "" >&2
+        echo "Solution: Use full path instead of basename:" >&2
+        if [[ "$file_type" == "source" ]]; then
+            echo "  --source-files 'path/to/$file_pattern'" >&2
+        else
+            echo "  --knowledge-files 'path/to/$file_pattern'" >&2
+        fi
+        return 1
+    fi
+}
+
 # Calculate relative path from output directory to project root
 OUTPUT_DIR=$(dirname "$OUTPUT_PATH")
 # Count directory levels: Number of path components = slashes + 1
@@ -129,10 +201,26 @@ SOURCE_FILES_LINKS=""
 IFS=',' read -ra FILES <<< "$SOURCE_FILES"
 for file in "${FILES[@]}"; do
     file=$(echo "$file" | xargs) # trim whitespace
-    filename=$(basename "$file")
-    relative_path="${RELATIVE_PREFIX}${file}"
-    # Extract simple description from filename (remove .java extension)
-    desc=$(basename "$file" .java)
+    [[ -z "$file" ]] && continue
+
+    # Resolve file path (supports basename and full path)
+    resolved_path=$(resolve_file "$file" "." "source")
+    exit_code=$?
+
+    # If multiple matches found, exit with error
+    if [[ $exit_code -ne 0 ]]; then
+        exit $exit_code
+    fi
+
+    # If file not found, skip (warning already printed)
+    if [[ -z "$resolved_path" ]]; then
+        continue
+    fi
+
+    filename=$(basename "$resolved_path")
+    relative_path="${RELATIVE_PREFIX}${resolved_path}"
+    # Extract simple description from filename (remove extension)
+    desc=$(basename "$resolved_path" | sed 's/\.[^.]*$//')
     SOURCE_FILES_LINKS+="- [${filename}](${relative_path}) - ${desc}"$'\n'
 done
 SOURCE_FILES_LINKS=$(echo "$SOURCE_FILES_LINKS" | sed 's/^$//')
@@ -142,11 +230,26 @@ KNOWLEDGE_BASE_LINKS=""
 IFS=',' read -ra FILES <<< "$KNOWLEDGE_FILES"
 for file in "${FILES[@]}"; do
     file=$(echo "$file" | xargs) # trim whitespace
+    [[ -z "$file" ]] && continue
+
+    # Resolve file path (supports basename and full path)
+    resolved_path=$(resolve_file "$file" ".claude/skills/nabledge-6/knowledge" "knowledge")
+    exit_code=$?
+
+    # If multiple matches found, exit with error
+    if [[ $exit_code -ne 0 ]]; then
+        exit $exit_code
+    fi
+
+    # If file not found, skip (warning already printed)
+    if [[ -z "$resolved_path" ]]; then
+        continue
+    fi
 
     # Convert knowledge JSON paths to docs MD paths
     # Example: .claude/skills/nabledge-6/knowledge/features/X.json
     #       → .claude/skills/nabledge-6/docs/features/X.md
-    doc_file="${file/\/knowledge\//\/docs\/}"
+    doc_file="${resolved_path/\/knowledge\//\/docs\/}"
     doc_file="${doc_file/.json/.md}"
 
     filename=$(basename "$doc_file" .md)
