@@ -123,10 +123,17 @@ tools/knowledge-creator/logs/v6/
 
 ## Cleanup
 
-Remove all generated files to start fresh:
+Remove generated files for specific version(s):
 
 ```bash
-tools/knowledge-creator/clean.sh
+# Clean version 6 only
+python tools/knowledge-creator/clean.py --version 6
+
+# Clean version 5 only
+python tools/knowledge-creator/clean.py --version 5
+
+# Clean both versions
+python tools/knowledge-creator/clean.py --version all
 ```
 
 ## Test File Configuration
