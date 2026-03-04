@@ -4,16 +4,12 @@ Development rules for the knowledge-creator tool.
 
 ## Intermediate Artifacts
 
-**Policy**: Include intermediate artifacts (logs) in git for investigation when issues are found in knowledge files.
+**Policy**: Intermediate artifacts (logs) are excluded from git and regenerated on each execution.
 
-### Before Generation
-
-1. Delete existing intermediate artifacts
-2. Commit and push deletions
-3. Run knowledge-creator
-4. Review diff to verify new artifacts
-
-**Rationale**: Clean state enables clear diff review of generated artifacts.
+**Rationale**:
+- Logs are large and not needed for code review
+- Each developer can regenerate them locally
+- Reduces repository size and PR noise
 
 ### Locations
 
@@ -33,20 +29,11 @@ Intermediate artifacts are stored under:
 ### Workflow
 
 ```bash
-# 1. Clean intermediate artifacts
-rm -rf tools/knowledge-creator/.logs/v6/
-git add -u tools/knowledge-creator/.logs/
-git commit -m "chore: Clean intermediate artifacts before generation"
-git push
-
-# 2. Run generation
+# Run generation (logs are automatically created in .logs/ directory)
 cd tools/knowledge-creator
 ./run.py --version 6 --test test-files-top3.json
 
-# 3. Review and commit new artifacts
-git status
-git add tools/knowledge-creator/.logs/
-git commit -m "chore: Add intermediate artifacts from generation"
+# Logs are gitignored and will be regenerated on next execution
 ```
 
 ## Execution Logs
