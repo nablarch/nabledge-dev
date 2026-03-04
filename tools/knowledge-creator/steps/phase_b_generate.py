@@ -211,15 +211,20 @@ class PhaseBGenerate:
 
         return {"status": "ok", "id": file_id}
 
-    def run(self):
+    def run(self, target_ids=None):
         classified = load_json(self.ctx.classified_list_path)
+        files = classified["files"]
+
+        if target_ids is not None:
+            target_set = set(target_ids)
+            files = [f for f in files if f["id"] in target_set]
 
         if self.dry_run:
-            self.logger.info(f"Would generate {len(classified['files'])} knowledge files")
+            self.logger.info(f"Would generate {len(files)} knowledge files")
             return
 
         with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
-            futures = [executor.submit(self.generate_one, fi) for fi in classified["files"]]
+            futures = [executor.submit(self.generate_one, fi) for fi in files]
             results = {"ok": 0, "error": 0, "skip": 0}
             for future in as_completed(futures):
                 r = future.result()
