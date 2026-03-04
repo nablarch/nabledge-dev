@@ -229,9 +229,18 @@ Replace each placeholder in the loaded template:
 
 **Step 4: Replace Expert Review Section**
 
-Path format:
-- If `issue_number` is set: `.pr/{issue_number}/review-by-{expert-role}.md`
-- If empty: `.pr/{current_branch}/review-by-{expert-role}.md`
+Generate absolute GitHub URLs for expert review files:
+
+**URL Format**:
+```
+https://github.com/{owner}/{repo}/blob/{current_branch}/.pr/{pr_number}/review-by-{expert-role}.md
+```
+
+Where:
+- `{owner}/{repo}`: From `gh repo view --json nameWithOwner -q .nameWithOwner`
+- `{current_branch}`: Current branch name
+- `{pr_number}`: Issue number (5-digit zero-padded, e.g., "00042")
+- `{expert-role}`: Expert role in lowercase with hyphens (e.g., "software-engineer")
 
 Example:
 ```markdown
@@ -239,8 +248,8 @@ Example:
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
+- [Prompt Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-prompt-engineer.md) - Rating: 5/5
 ```
 
 **Step 5: Replace Success Criteria Section**
@@ -283,8 +292,8 @@ for stateless authentication and better scalability compared to server-side sess
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -322,8 +331,8 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
