@@ -21,18 +21,20 @@ class TestE2ESplitPipeline:
             schema_str = json.dumps(json_schema) if json_schema else ""
 
             if "trace" in schema_str:
-                # Phase B: generate knowledge
-                part_num = file_id.split("--")[-1].split("-")[-1]  # test-1 -> 1, test-2 -> 2
+                # Phase B: generate knowledge (now both sections in one file)
                 knowledge = {
                     "id": file_id,
                     "title": "Test Title",
                     "official_doc_urls": ["https://example.com/test.html"],
                     "index": [
-                        {"id": f"section{part_num}", "title": f"Section {part_num}",
-                         "hints": [f"hint{part_num}", "test"]}
+                        {"id": "section1", "title": "Section 1",
+                         "hints": ["hint1", "test"]},
+                        {"id": "section2", "title": "Section 2",
+                         "hints": ["hint2", "test"]}
                     ],
                     "sections": {
-                        f"section{part_num}": f"Content for section {part_num} with enough characters for validation."
+                        "section1": "Content for section 1 with enough characters for validation.",
+                        "section2": "Content for section 2 with enough characters for validation."
                     }
                 }
                 return subprocess.CompletedProcess(
@@ -42,10 +44,14 @@ class TestE2ESplitPipeline:
                         "trace": {
                             "file_id": file_id,
                             "generated_at": "2026-01-01T00:00:00Z",
-                            "internal_labels": [f"section{part_num}", "test"],
+                            "internal_labels": ["section1", "section2", "test"],
                             "sections": [
-                                {"section_id": f"section{part_num}",
-                                 "source_heading": f"Section {part_num}",
+                                {"section_id": "section1",
+                                 "source_heading": "Section 1",
+                                 "heading_level": "h2", "h3_split": False,
+                                 "h3_split_reason": "Small section"},
+                                {"section_id": "section2",
+                                 "source_heading": "Section 2",
                                  "heading_level": "h2", "h3_split": False,
                                  "h3_split_reason": "Small section"}
                             ]
@@ -77,7 +83,7 @@ class TestE2ESplitPipeline:
             else:
                 raise ValueError(f"Unexpected schema: {schema_str}")
 
-        # Setup: 2-part split classified.json and source files
+        # Setup: 1-part split classified.json (both sections grouped under 400 lines)
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w") as f:
             f.write("Test\n====\n\nSection 1\n---------\nContent 1\n\nSection 2\n---------\nContent 2\n")
@@ -99,33 +105,13 @@ class TestE2ESplitPipeline:
                         "is_split": True,
                         "original_id": "test",
                         "part": 1,
-                        "total_parts": 2
+                        "total_parts": 1,
+                        "group_line_count": 11
                     },
                     "section_range": {
                         "start_line": 0,
-                        "end_line": 7,
-                        "sections": ["Section 1"]
-                    }
-                },
-                {
-                    "id": "test--section-2",
-                    "source_path": "test/test.rst",
-                    "format": "rst",
-                    "filename": "test.rst",
-                    "type": "component",
-                    "category": "test",
-                    "output_path": "component/test/test--section-2.json",
-                    "assets_dir": "component/test/assets/test--section-2/",
-                    "split_info": {
-                        "is_split": True,
-                        "original_id": "test",
-                        "part": 2,
-                        "total_parts": 2
-                    },
-                    "section_range": {
-                        "start_line": 7,
-                        "end_line": 15,
-                        "sections": ["Section 2"]
+                        "end_line": 11,
+                        "sections": ["Section 1", "Section 2"]
                     }
                 }
             ]
@@ -139,7 +125,7 @@ class TestE2ESplitPipeline:
         # Execute Phase C: structure check
         phase_c = PhaseCStructureCheck(ctx)
         c_result = phase_c.run()
-        assert c_result["pass"] == 2
+        assert c_result["pass"] == 1
 
         # Execute Phase D: content check (all clean)
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_run_claude)
@@ -163,18 +149,15 @@ class TestE2ESplitPipeline:
         assert "Content for section 1" in merged["sections"]["section1"]
         assert "Content for section 2" in merged["sections"]["section2"]
 
-        # Verify 2: Part files deleted
+        # Verify 2: Part file deleted
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json"), \
             "Part file test--section-1.json should be deleted after merge"
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json"), \
-            "Part file test--section-2.json should be deleted after merge"
 
-        # Verify 3: classified.json updated (parts replaced with merged entry)
+        # Verify 3: classified.json updated (part replaced with merged entry)
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
         assert "test" in ids, "Merged file ID should be in classified.json"
-        assert "test--section-1" not in ids, "Part file ID test-1 should be removed"
-        assert "test--section-2" not in ids, "Part file ID test-2 should be removed"
+        assert "test--section-1" not in ids, "Part file ID should be removed"
 
         # Verify 4: Resolved version exists
         resolved_path = f"{ctx.knowledge_resolved_dir}/component/test/test.json"
@@ -190,8 +173,7 @@ class TestE2ESplitPipeline:
         with open(index_path, "r", encoding="utf-8") as f:
             index_content = f.read()
         assert "test.json" in index_content, "index.toon should reference merged file"
-        assert "test--section-1.json" not in index_content, "index.toon should not reference part files"
-        assert "test--section-2.json" not in index_content, "index.toon should not reference part files"
+        assert "test--section-1.json" not in index_content, "index.toon should not reference part file"
         assert "nablarch-batch" in index_content, "index.toon should contain classified patterns"
 
     def test_full_pipeline_split_with_fix_cycle(self, ctx):
@@ -213,7 +195,7 @@ class TestE2ESplitPipeline:
                 if "findings" in schema_str:
                     # Phase D: content check
                     call_count["d"] += 1
-                    if call_count["d"] <= 2:  # Round 1: 2 part files have issues
+                    if call_count["d"] <= 1:  # Round 1: 1 part file has issues
                         return subprocess.CompletedProcess(
                             args=["claude"], returncode=0,
                             stdout=json.dumps({
@@ -237,18 +219,20 @@ class TestE2ESplitPipeline:
                             stderr=""
                         )
                 elif "trace" in schema_str:
-                    # Phase B: generate knowledge
-                    part_num = file_id.split("--")[-1].split("-")[-1]
+                    # Phase B: generate knowledge (both sections in one file)
                     knowledge = {
                         "id": file_id,
                         "title": "Test Title",
                         "official_doc_urls": ["https://example.com/test.html"],
                         "index": [
-                            {"id": f"section{part_num}", "title": f"Section {part_num}",
-                             "hints": [f"hint{part_num}", "test"]}
+                            {"id": "section1", "title": "Section 1",
+                             "hints": ["hint1", "test"]},
+                            {"id": "section2", "title": "Section 2",
+                             "hints": ["hint2", "test"]}
                         ],
                         "sections": {
-                            f"section{part_num}": f"Content for section {part_num} with enough characters."
+                            "section1": "Content for section 1 with enough characters.",
+                            "section2": "Content for section 2 with enough characters."
                         }
                     }
                     return subprocess.CompletedProcess(
@@ -258,10 +242,14 @@ class TestE2ESplitPipeline:
                             "trace": {
                                 "file_id": file_id,
                                 "generated_at": "2026-01-01T00:00:00Z",
-                                "internal_labels": [f"section{part_num}", "test"],
+                                "internal_labels": ["section1", "section2", "test"],
                                 "sections": [
-                                    {"section_id": f"section{part_num}",
-                                     "source_heading": f"Section {part_num}",
+                                    {"section_id": "section1",
+                                     "source_heading": "Section 1",
+                                     "heading_level": "h2", "h3_split": False,
+                                     "h3_split_reason": "Small"},
+                                    {"section_id": "section2",
+                                     "source_heading": "Section 2",
                                      "heading_level": "h2", "h3_split": False,
                                      "h3_split_reason": "Small"}
                                 ]
@@ -295,7 +283,7 @@ class TestE2ESplitPipeline:
 
         mock_fn = make_stateful_mock()
 
-        # Setup: 2-part split classified.json and source files
+        # Setup: 1-part split classified.json (both sections grouped under 400 lines)
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w") as f:
             f.write("Test\n====\n\nSection 1\n---------\nContent 1\n\nSection 2\n---------\nContent 2\n")
@@ -317,33 +305,13 @@ class TestE2ESplitPipeline:
                         "is_split": True,
                         "original_id": "test",
                         "part": 1,
-                        "total_parts": 2
+                        "total_parts": 1,
+                        "group_line_count": 11
                     },
                     "section_range": {
                         "start_line": 0,
-                        "end_line": 7,
-                        "sections": ["Section 1"]
-                    }
-                },
-                {
-                    "id": "test--section-2",
-                    "source_path": "test/test.rst",
-                    "format": "rst",
-                    "filename": "test.rst",
-                    "type": "component",
-                    "category": "test",
-                    "output_path": "component/test/test--section-2.json",
-                    "assets_dir": "component/test/assets/test--section-2/",
-                    "split_info": {
-                        "is_split": True,
-                        "original_id": "test",
-                        "part": 2,
-                        "total_parts": 2
-                    },
-                    "section_range": {
-                        "start_line": 7,
-                        "end_line": 15,
-                        "sections": ["Section 2"]
+                        "end_line": 11,
+                        "sections": ["Section 1", "Section 2"]
                     }
                 }
             ]
@@ -357,39 +325,43 @@ class TestE2ESplitPipeline:
         # Execute Phase C: structure check (round 1)
         phase_c = PhaseCStructureCheck(ctx)
         c_result = phase_c.run()
-        assert c_result["pass"] == 2
+        assert c_result["pass"] == 1
 
         # Execute Phase D: content check (round 1 - has issues)
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_fn)
         d_result1 = phase_d.run(target_ids=c_result["pass_ids"])
         assert d_result1["issues_count"] > 0, "Should find issues in round 1"
-        assert len(d_result1["issue_file_ids"]) == 2, "Both parts should have issues"
+        assert len(d_result1["issue_file_ids"]) == 1, "Single part should have issues"
 
         # Execute Phase E: fix
         phase_e = PhaseEFix(ctx, run_claude_fn=mock_fn, dry_run=False)
         e_result = phase_e.run(target_ids=d_result1["issue_file_ids"])
 
-        # Verify: Fixed files have FIXED marker and preserve all sections
+        # Verify: Fixed file has FIXED marker and preserves all sections
         for file_id in d_result1["issue_file_ids"]:
             fixed = load_json(f"{ctx.knowledge_dir}/component/test/{file_id}.json")
-            part_num = file_id.split("--")[-1].split("-")[-1]
-            section_id = f"section{part_num}"
 
-            # Critical: section should still exist (regression prevention)
-            assert section_id in fixed["sections"], \
-                f"Section {section_id} should be preserved after fix"
-            assert "FIXED" in fixed["sections"][section_id], \
-                "Fixed marker should be present"
+            # Critical: both sections should still exist (regression prevention)
+            assert "section1" in fixed["sections"], \
+                "Section 1 should be preserved after fix"
+            assert "section2" in fixed["sections"], \
+                "Section 2 should be preserved after fix"
+            assert "FIXED" in fixed["sections"]["section1"], \
+                "Fixed marker should be present in section1"
+            assert "FIXED" in fixed["sections"]["section2"], \
+                "Fixed marker should be present in section2"
 
-            # Critical: index should still exist
-            assert len(fixed["index"]) > 0, "Index should be preserved after fix"
-            assert any(item["id"] == section_id for item in fixed["index"]), \
-                f"Section {section_id} should be in index after fix"
+            # Critical: index should still exist with both entries
+            assert len(fixed["index"]) == 2, "Index should have both entries after fix"
+            assert any(item["id"] == "section1" for item in fixed["index"]), \
+                "Section 1 should be in index after fix"
+            assert any(item["id"] == "section2" for item in fixed["index"]), \
+                "Section 2 should be in index after fix"
 
         # Execute Phase C again (round 2)
         phase_c2 = PhaseCStructureCheck(ctx)
         c_result2 = phase_c2.run()
-        assert c_result2["pass"] == 2, "Should still pass structure check after fix"
+        assert c_result2["pass"] == 1, "Should still pass structure check after fix"
 
         # Execute Phase D: content check (round 2 - all clean)
         phase_d2 = PhaseDContentCheck(ctx, run_claude_fn=mock_fn)
@@ -429,17 +401,20 @@ class TestE2ESplitPipeline:
             if "trace" in schema_str:
                 # Phase B: generate knowledge
                 if file_id.startswith("split"):
-                    part_num = file_id.split("--")[-1].split("-")[-1]
+                    # Split file with both sections grouped
                     knowledge = {
                         "id": file_id,
                         "title": "Split Title",
                         "official_doc_urls": ["https://example.com/split.html"],
                         "index": [
-                            {"id": f"section{part_num}", "title": f"Section {part_num}",
-                             "hints": [f"hint{part_num}"]}
+                            {"id": "section1", "title": "Section 1",
+                             "hints": ["hint1"]},
+                            {"id": "section2", "title": "Section 2",
+                             "hints": ["hint2"]}
                         ],
                         "sections": {
-                            f"section{part_num}": f"Split content {part_num} with enough characters."
+                            "section1": "Split content 1 with enough characters.",
+                            "section2": "Split content 2 with enough characters."
                         }
                     }
                 else:
@@ -499,7 +474,7 @@ class TestE2ESplitPipeline:
             else:
                 raise ValueError(f"Unexpected schema: {schema_str}")
 
-        # Setup: mix of split and non-split files
+        # Setup: mix of split and non-split files (split has both sections grouped)
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/split.rst", "w") as f:
             f.write("Split\n=====\n\nSection 1\n---------\nContent 1\n\nSection 2\n---------\nContent 2\n")
@@ -523,33 +498,13 @@ class TestE2ESplitPipeline:
                         "is_split": True,
                         "original_id": "split",
                         "part": 1,
-                        "total_parts": 2
+                        "total_parts": 1,
+                        "group_line_count": 11
                     },
                     "section_range": {
                         "start_line": 0,
-                        "end_line": 7,
-                        "sections": ["Section 1"]
-                    }
-                },
-                {
-                    "id": "split--section-2",
-                    "source_path": "test/split.rst",
-                    "format": "rst",
-                    "filename": "split.rst",
-                    "type": "component",
-                    "category": "test",
-                    "output_path": "component/test/split--section-2.json",
-                    "assets_dir": "component/test/assets/split--section-2/",
-                    "split_info": {
-                        "is_split": True,
-                        "original_id": "split",
-                        "part": 2,
-                        "total_parts": 2
-                    },
-                    "section_range": {
-                        "start_line": 7,
-                        "end_line": 15,
-                        "sections": ["Section 2"]
+                        "end_line": 11,
+                        "sections": ["Section 1", "Section 2"]
                     }
                 },
                 {
@@ -574,7 +529,7 @@ class TestE2ESplitPipeline:
         # Execute Phase C: structure check
         phase_c = PhaseCStructureCheck(ctx)
         c_result = phase_c.run()
-        assert c_result["pass"] == 3, "All files (2 split + 1 regular) should pass"
+        assert c_result["pass"] == 2, "All files (1 split + 1 regular) should pass"
 
         # Execute Phase D: content check
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_run_claude)
@@ -592,9 +547,8 @@ class TestE2ESplitPipeline:
         assert os.path.exists(split_merged_path), "Merged split file should exist"
         assert os.path.exists(regular_path), "Regular file should exist"
 
-        # Verify: Split parts deleted
+        # Verify: Split part deleted
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split--section-1.json")
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split--section-2.json")
 
         # Verify: classified.json has both merged and regular
         updated = load_json(ctx.classified_list_path)
@@ -602,7 +556,6 @@ class TestE2ESplitPipeline:
         assert "split" in ids, "Merged split file should be in classified.json"
         assert "regular" in ids, "Regular file should be in classified.json"
         assert "split--section-1" not in ids
-        assert "split--section-2" not in ids
 
         # Verify: Both in index.toon
         with open(f"{ctx.knowledge_dir}/index.toon", "r", encoding="utf-8") as f:
