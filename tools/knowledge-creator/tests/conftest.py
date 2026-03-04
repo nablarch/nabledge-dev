@@ -4,11 +4,23 @@ import json
 import shutil
 import pytest
 import subprocess
+import logging
 
 TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, TOOL_DIR)
 
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+
+
+@pytest.fixture(autouse=True)
+def configure_logger_for_tests():
+    """Configure logger for pytest caplog compatibility."""
+    logger = logging.getLogger("knowledge_creator")
+    # Enable propagation so pytest's caplog can capture logs
+    logger.propagate = True
+    yield
+    # Restore original setting after test
+    logger.propagate = False
 
 
 def load_fixture(name):

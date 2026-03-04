@@ -60,6 +60,12 @@ def get_logger() -> logging.Logger:
     """Get the knowledge-creator logger instance.
 
     Returns:
-        Logger instance (must be initialized with setup_logger first)
+        Logger instance (auto-initializes if not yet configured)
     """
-    return logging.getLogger("knowledge_creator")
+    logger = logging.getLogger("knowledge_creator")
+
+    # Auto-initialize if not yet configured
+    if not logger.handlers:
+        setup_logger()
+
+    return logger
