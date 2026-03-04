@@ -17,18 +17,18 @@ flowchart TD
     StructWarn --> D
     D --> |AI Validation<br/>Valid files only| PassD{Content<br/>Issues?}
     PassD --> |No| CheckStruct{Structure<br/>Errors<br/>Remain?}
-    CheckStruct --> |Yes| StructError[❌ Manual Fix Required]
+    CheckStruct --> |Yes| RerunB([🔄 Re-run Phase B])
     CheckStruct --> |No| M[Phase M: Finalization]
     PassD --> |Yes| Round{Rounds<br/>Left?}
     Round --> |Yes| E[Phase E: Fix]
-    Round --> |No| MaxRound[⚠️ Max Rounds Reached<br/>Manual Fix Required]
+    Round --> |No| RerunDE([🔄 Re-run or Manual Fix])
     E --> |AI Fix<br/>Content issues only| C
-    M --> |1. Merge Split Files<br/>2. Resolve RST Links<br/>3. Generate Docs| End([✨ Complete])
+    M --> |1. Merge Split Files<br/>2. Resolve RST Links<br/>3. Generate Docs| Complete([✨ Complete])
 
     style Start fill:#e1f5e1
-    style End fill:#e1f5e1
-    style StructError fill:#ffe1e1
-    style MaxRound fill:#fff3cd
+    style Complete fill:#e1f5e1
+    style RerunB fill:#fff3cd
+    style RerunDE fill:#fff3cd
     style StructWarn fill:#fff3cd
     style M fill:#e1e5ff
 ```
