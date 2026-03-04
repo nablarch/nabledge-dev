@@ -120,9 +120,9 @@ Validate with 3 largest files (split into sections for processing):
 python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
 ```
 
-### Test Mode (Comprehensive - 21 files)
+### Test Mode (Comprehensive - 17 files)
 
-Cover all formats, types, and categories:
+Aligned with main branch knowledge files:
 
 ```bash
 python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensive.json
@@ -271,7 +271,7 @@ python tools/knowledge-creator/clean.py --version all
 Test files define which source files to process in test mode:
 
 - **test-files-top3.json**: 3 largest files (split into sections) - for success criteria validation
-- **test-files-comprehensive.json**: 21 files covering all formats, types, and categories
+- **test-files-comprehensive.json**: 17 files aligned with main branch knowledge files
 
 Specify test file with `--test` option:
 
