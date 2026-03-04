@@ -9,8 +9,8 @@ Multi-phase pipeline for knowledge file generation with automated validation and
 ```mermaid
 flowchart TD
     Start([Start]) --> A[Phase A: Preparation]
-    A --> |List & Classify Sources| B[Phase B: Generation]
-    B --> |Generate Knowledge JSON<br/>Split large files| C[Phase C: Structure Check]
+    A --> |List & Classify Sources<br/>Split large files| B[Phase B: Generation]
+    B --> |Generate Knowledge JSON| C[Phase C: Structure Check]
     C --> |S1-S15 Validation| PassC{Structure<br/>Errors?}
     PassC --> |Yes| StructWarn[⚠️ Skip files with errors<br/>Continue with valid files]
     PassC --> |No| D[Phase D: Content Check]
@@ -46,7 +46,7 @@ flowchart TD
 
 **Loop Behavior**: Phase C→D→E can repeat up to `--max-rounds` times (default: 1, max: 10) until all files pass Phase D or maximum rounds reached.
 
-**Split File Handling**: Large source files (>800 lines or >15 sections) are automatically split into parts during Phase A, processed independently through Phases B-E, then merged in Phase M to prevent context overflow.
+**Split File Handling**: RST files with multiple h2 sections (≥2) are automatically split into per-section parts during Phase A, processed independently through Phases B-E, then merged in Phase M to prevent context overflow.
 
 ## Requirements
 
@@ -114,7 +114,7 @@ cd tools/knowledge-creator
 
 ### Test Mode (3 files)
 
-Validate with 3 largest files (9 files after splitting):
+Validate with 3 largest files (split into sections for processing):
 
 ```bash
 python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
@@ -130,7 +130,7 @@ python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensiv
 
 ### Production Mode (All files)
 
-Generate all v6 source files (252 sources → 262 files after splitting):
+Generate all v6 source files (252 sources, some split into multiple sections):
 
 ```bash
 python tools/knowledge-creator/run.py --version 6
@@ -229,23 +229,24 @@ tools/knowledge-creator/.logs/v6/
 
 ## Split File Processing
 
-Large source files are automatically split to prevent context overflow during AI processing:
+RST source files with multiple h2 sections are automatically split to prevent context overflow during AI processing:
 
-**Split Criteria**:
-- File exceeds 800 lines, OR
-- Any section exceeds 800 lines (expanded to h3 subsections), OR
-- More than 15 sections in file
+**Split Criteria (Section-Unit Split)**:
+- RST files only (MD and Excel files are not split)
+- File has 2 or more h2 sections (`========` underline)
+- Each h2 section becomes one independent file
 
 **Split Processing Flow**:
-1. Phase A identifies and splits large files into parts (e.g., `libraries-tag-1`, `libraries-tag-2`)
+1. Phase A identifies and splits files into per-section parts (e.g., `libraries-tag-1`, `libraries-tag-2`)
 2. Phases B-E process each part independently
 3. Phase M merges parts back into single files
 4. Output contains merged files only (part files are deleted)
 
 **Benefits**:
-- Prevents context overflow (eff_input stays under 180K tokens)
+- Prevents context overflow (each section processed independently)
 - Maintains all sections (no data loss)
 - Transparent to end users (final output has no split files)
+- Simpler logic (one section = one file, no complex threshold tuning)
 
 ## Cleanup
 
@@ -269,7 +270,7 @@ python tools/knowledge-creator/clean.py --version all
 
 Test files define which source files to process in test mode:
 
-- **test-files-top3.json**: 3 largest files (9 after splitting) - for success criteria validation
+- **test-files-top3.json**: 3 largest files (split into sections) - for success criteria validation
 - **test-files-comprehensive.json**: 21 files covering all formats, types, and categories
 
 Specify test file with `--test` option:
