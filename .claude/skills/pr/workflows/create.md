@@ -239,8 +239,8 @@ Example:
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [Prompt Engineer](../.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
+- [Software Engineer](.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [Prompt Engineer](.pr/42/review-by-prompt-engineer.md) - Rating: 5/5
 ```
 
 **Step 5: Replace Success Criteria Section**
@@ -283,8 +283,8 @@ for stateless authentication and better scalability compared to server-side sess
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -322,8 +322,8 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](.pr/42/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](.pr/42/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 

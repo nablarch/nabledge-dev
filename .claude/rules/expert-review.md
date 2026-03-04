@@ -145,7 +145,7 @@ Modify PR template's Expert Review section to link to detailed reviews:
 ## Expert Review
 
 {For each expert}
-- [{Expert Role}](../.pr/{pr_number}/review-by-{expert_role}.md) - Rating: {X}/5
+- [{Expert Role}](.pr/{pr_number}/review-by-{expert_role}.md) - Rating: {X}/5
 ```
 
 ## Expert-Specific Guidelines
