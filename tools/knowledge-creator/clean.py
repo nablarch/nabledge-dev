@@ -90,6 +90,8 @@ def main():
         default=None,
         help="Repository root path (default: auto-detect from current directory)"
     )
+    parser.add_argument("--yes", action="store_true",
+                        help="Skip confirmation prompt")
 
     args = parser.parse_args()
 
@@ -123,6 +125,12 @@ def main():
 
     # Determine versions to clean
     versions = ["6", "5"] if args.version == "all" else [args.version]
+
+    if not args.yes:
+        answer = input(f"\nVersion {args.version} の全成果物を削除します。続行しますか？ [y/N]: ")
+        if answer.lower() != "y":
+            print("中止しました")
+            sys.exit(0)
 
     total_removed = 0
     for version in versions:
