@@ -43,7 +43,7 @@ class TestSectionSplit:
         assert len(sections) == 2
 
     def test_split_produces_one_entry_per_section(self, ctx):
-        """5セクション → 5エントリ、各1セクション。"""
+        """5セクション(各20行の本文 + ヘッダー行) → 1グループ、全5セクションを含む。"""
         classifier = Step2Classify(ctx, dry_run=True)
         content = self._make_rst(5)
         sections = classifier.analyze_rst_sections(content)
@@ -56,11 +56,14 @@ class TestSectionSplit:
         }
         entries = classifier.split_file_entry(base_entry, sections, content)
 
-        assert len(entries) == 5
-        for entry in entries:
-            assert len(entry['section_range']['sections']) == 1
-            assert entry['split_info']['total_parts'] == 5
-            assert entry['split_info']['original_id'] == 'test-file'
+        # プリアンブル + 5セクション(各22-23行) = 119行 → 400行閾値以下なので1グループ
+        assert len(entries) == 1
+        assert len(entries[0]['section_range']['sections']) == 5
+        assert entries[0]['split_info']['total_parts'] == 1
+        assert entries[0]['split_info']['original_id'] == 'test-file'
+        # 実際の行数は119行（プリアンブルとヘッダー行を含む）
+        total_lines = sum(s['line_count'] for s in sections)
+        assert entries[0]['split_info']['group_line_count'] == total_lines
 
     def test_split_id_format(self, ctx):
         """分割IDが {original}--{section_id} 形式であること。"""
@@ -144,10 +147,10 @@ class TestSectionSplit:
         """同じタイトルのh2セクションが重複しないIDを取得すること。"""
         classifier = Step2Classify(ctx, dry_run=True)
 
-        # 同じタイトルのh2セクションを3つ作る
+        # 同じタイトルのh2セクションを3つ作る(各150行)
         parts = ["Main Title\n==========\n\nPreamble.\n"]
         for i in range(3):
-            body = "\n".join([f"Line {j}" for j in range(1, 11)])
+            body = "\n".join([f"Line {j}" for j in range(1, 151)])
             parts.append(f"Same Title\n----------\n{body}\n")
         content = "\n".join(parts)
 
@@ -162,15 +165,20 @@ class TestSectionSplit:
         }
         entries = classifier.split_file_entry(base_entry, sections, content)
 
+        # 3セクション × 150行 = 450行 → グループ化される
+        # [Same Title (150)] + [Same Title (150)] = 300行 → 1グループ
+        # [Same Title (150)] = 150行 → 1グループ
+        # 合計2グループ
+        assert len(entries) == 2
+
         ids = [e['id'] for e in entries]
         assert len(ids) == len(set(ids)), f"Duplicate IDs found: {ids}"
-        # 期待: test--same-title, test--same-title-2, test--same-title-3
+        # 期待: test--same-title, test--same-title-2
         assert ids[0] == "test--same-title"
         assert ids[1] == "test--same-title-2"
-        assert ids[2] == "test--same-title-3"
 
     def test_h3_fallback_for_large_h2(self, ctx):
-        """500行超のh2セクションがh3で再分割されること。"""
+        """400行超のh2セクションがh3で再分割され、グループ化されること。"""
         classifier = Step2Classify(ctx, dry_run=True)
 
         # h2が2つ。1つ目は小さい、2つ目は600行超でh3が3つ
@@ -195,8 +203,8 @@ class TestSectionSplit:
         sections = classifier.analyze_rst_sections(content)
         assert len(sections) == 2
 
-        # 2つ目のh2が500行超であることを確認
-        assert sections[1]['line_count'] > 500
+        # 2つ目のh2が400行超であることを確認
+        assert sections[1]['line_count'] > 400
 
         base_entry = {
             'id': 'test', 'type': 'component', 'category': 'test',
@@ -206,14 +214,21 @@ class TestSectionSplit:
         }
         entries = classifier.split_file_entry(base_entry, sections, content)
 
-        # 1つ目のh2(1エントリ) + 2つ目のh2がh3展開(3エントリ) = 4エントリ
-        assert len(entries) == 4
-        # 全エントリの section_range.sections は長さ1
-        for entry in entries:
-            assert len(entry['section_range']['sections']) == 1
+        # Small Section: 23行, Subsection 1: 203行, Subsection 2: 203行, Subsection 3: 203行
+        # グループ化: [Small(23) + Sub1(203)] + [Sub2(203)] + [Sub3(203)] = 3グループ
+        assert len(entries) == 3
+        # 1つ目のグループ: Small Section + Subsection 1 (2セクション, 226行)
+        assert len(entries[0]['section_range']['sections']) == 2
+        assert entries[0]['section_range']['sections'] == ['Small Section', 'Subsection 1']
+        # 2つ目のグループ: Subsection 2 (1セクション, 203行)
+        assert len(entries[1]['section_range']['sections']) == 1
+        assert entries[1]['section_range']['sections'] == ['Subsection 2']
+        # 3つ目のグループ: Subsection 3 (1セクション, 203行)
+        assert len(entries[2]['section_range']['sections']) == 1
+        assert entries[2]['section_range']['sections'] == ['Subsection 3']
 
     def test_h3_fallback_no_h3_keeps_large_h2(self, ctx):
-        """500行超のh2にh3がない場合、そのままh2を1エントリとして扱うこと。
+        """400行超のh2にh3がない場合、そのままh2を1エントリとして扱うこと。
 
         Note: このテストでは WARNING ログが出力されるが、
         テストの主目的は分割動作の確認なので、ログ確認は省略。
@@ -243,5 +258,10 @@ class TestSectionSplit:
         }
         entries = classifier.split_file_entry(base_entry, sections, content)
 
-        # h3がないのでh2がそのまま → 2エントリ
+        # h3がないのでh2がそのまま → 2セクション
+        # グループ化: [Small(20行)] + [Large(600行)] = 2グループ
         assert len(entries) == 2
+        # 1つ目のグループ: Small Section (1セクション)
+        assert len(entries[0]['section_range']['sections']) == 1
+        # 2つ目のグループ: Large Section (1セクション、警告付きで維持)
+        assert len(entries[1]['section_range']['sections']) == 1

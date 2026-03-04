@@ -104,7 +104,7 @@ def filter_for_test(classified: list, test_file_ids: set) -> list:
 class Step2Classify:
     # Thresholds for section-unit splitting
     SPLIT_SECTION_THRESHOLD = 2  # h2セクションがこの数以上あれば分割
-    H3_FALLBACK_THRESHOLD = 500  # h2セクションがこの行数を超えたらh3で再分割
+    LINE_GROUP_THRESHOLD = 400  # セクションをグループ化する行数の閾値（h3展開とグループ化の両方に使用）
 
     def __init__(self, ctx, dry_run=False, sources_data=None):
         self.ctx = ctx
@@ -250,9 +250,10 @@ class Step2Classify:
         return should_split, sections, total_lines
 
     def split_file_entry(self, base_entry: dict, sections: list, content: str) -> list:
-        """Split a file entry into one entry per h2 section.
+        """Split a file entry into groups of sections based on line count.
 
-        h2セクションが H3_FALLBACK_THRESHOLD を超える場合、h3サブセクションで再分割する。
+        Large h2 sections (> LINE_GROUP_THRESHOLD) are expanded to h3 subsections first.
+        Then sections are grouped together until total lines exceed LINE_GROUP_THRESHOLD.
 
         Args:
             base_entry: Original classified entry
@@ -260,12 +261,32 @@ class Step2Classify:
             content: Full source file content
 
         Returns:
-            List of split entries, one per section (h2 or h3)
+            List of split entries, one per section group
         """
         # Step 1: h2セクションをh3で展開(必要な場合のみ)
+        expanded_sections = self._expand_large_sections(sections, content)
+
+        # Step 2: セクションを行数でグループ化
+        groups = self._group_sections_by_lines(expanded_sections)
+
+        # Step 3: 各グループからエントリを生成
+        result = self._generate_entries_from_groups(base_entry, groups)
+
+        return result
+
+    def _expand_large_sections(self, sections: list, content: str) -> list:
+        """Expand large h2 sections to h3 subsections if they exceed LINE_GROUP_THRESHOLD.
+
+        Args:
+            sections: List of h2 section info
+            content: Full source file content
+
+        Returns:
+            List of expanded sections (h2 or h3)
+        """
         expanded_sections = []
         for section in sections:
-            if section['line_count'] > self.H3_FALLBACK_THRESHOLD:
+            if section['line_count'] > self.LINE_GROUP_THRESHOLD:
                 h3_subs = self.analyze_rst_h3_subsections(
                     content, section['start_line'], section['end_line']
                 )
@@ -282,17 +303,68 @@ class Step2Classify:
                     self.logger.warning(f"    WARNING: '{section['title']}' has {section['line_count']} lines but no h3 subsections")
             else:
                 expanded_sections.append(section)
+        return expanded_sections
 
-        # Step 2: 各セクションから1エントリを生成
+    def _group_sections_by_lines(self, sections: list) -> list:
+        """Group sections together until total lines exceed LINE_GROUP_THRESHOLD.
+
+        Uses greedy accumulation: keep adding sections until total > threshold.
+
+        Args:
+            sections: List of section info (after h3 expansion)
+
+        Returns:
+            List of groups, each containing list of sections
+        """
+        if not sections:
+            return []
+
+        groups = []
+        current_group = []
+        current_line_count = 0
+
+        for section in sections:
+            # Try adding this section to current group
+            new_total = current_line_count + section['line_count']
+
+            if current_group and new_total > self.LINE_GROUP_THRESHOLD:
+                # Adding this section would exceed threshold, finalize current group
+                groups.append(current_group)
+                current_group = [section]
+                current_line_count = section['line_count']
+            else:
+                # Add to current group
+                current_group.append(section)
+                current_line_count = new_total
+
+        # Don't forget the last group
+        if current_group:
+            groups.append(current_group)
+
+        return groups
+
+    def _generate_entries_from_groups(self, base_entry: dict, groups: list) -> list:
+        """Generate split entries from section groups.
+
+        Args:
+            base_entry: Original classified entry
+            groups: List of section groups
+
+        Returns:
+            List of split entries
+        """
         result = []
         base_id = base_entry['id']
         type_ = base_entry['type']
         category = base_entry['category']
-        total_parts = len(expanded_sections)
+        total_parts = len(groups)
         used_ids = set()  # 同一ファイル内のID重複を回避
 
-        for part_num, section in enumerate(expanded_sections, 1):
-            section_id = self._title_to_section_id(section['title'])
+        for part_num, group in enumerate(groups, 1):
+            # Use first section's ID for the group ID
+            first_section = group[0]
+            section_id = self._title_to_section_id(first_section['title'])
+
             # 重複回避: 同じsection_idが既出なら連番を付与
             original_section_id = section_id
             counter = 2
@@ -302,21 +374,30 @@ class Step2Classify:
             used_ids.add(section_id)
             split_id = f"{base_id}--{section_id}"
 
+            # Calculate group line range
+            start_line = group[0]['start_line']
+            end_line = group[-1]['end_line']
+            group_line_count = sum(s['line_count'] for s in group)
+
+            # Collect all section titles in this group
+            section_titles = [s['title'] for s in group]
+
             result.append({
                 **base_entry,
                 'id': split_id,
                 'output_path': f"{type_}/{category}/{split_id}.json",
                 'assets_dir': f"{type_}/{category}/assets/{split_id}/",
                 'section_range': {
-                    'start_line': section['start_line'],
-                    'end_line': section['end_line'],
-                    'sections': [section['title']]
+                    'start_line': start_line,
+                    'end_line': end_line,
+                    'sections': section_titles
                 },
                 'split_info': {
                     'is_split': True,
                     'part': part_num,
                     'total_parts': total_parts,
-                    'original_id': base_id
+                    'original_id': base_id,
+                    'group_line_count': group_line_count
                 }
             })
 
