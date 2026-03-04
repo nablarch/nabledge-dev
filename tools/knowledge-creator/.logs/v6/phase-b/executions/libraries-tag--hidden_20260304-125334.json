@@ -1,0 +1,174 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 123097,
+  "duration_api_ms": 123035,
+  "num_turns": 3,
+  "result": "",
+  "stop_reason": null,
+  "session_id": "3880c767-2c8a-4f7a-9394-524374744b09",
+  "total_cost_usd": 0.1756731,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 48306,
+    "cache_read_input_tokens": 153456,
+    "output_tokens": 19984,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 48306,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 19984,
+      "cacheReadInputTokens": 153456,
+      "cacheCreationInputTokens": 48306,
+      "webSearchRequests": 0,
+      "costUSD": 0.1756731,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--hidden",
+      "title": "クライアントに保持するデータを暗号化する(hidden暗号化)",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/encryption/Encryptor.html"
+      ],
+      "index": [
+        {
+          "id": "overview",
+          "title": "概要",
+          "hints": [
+            "hidden暗号化",
+            "改竄検知",
+            "クライアント対策",
+            "非推奨機能"
+          ]
+        },
+        {
+          "id": "hidden-encryption-mechanism",
+          "title": "hidden暗号化の仕組み",
+          "hints": [
+            "form_tag",
+            "tag_handler",
+            "暗号化フロー",
+            "復号処理"
+          ]
+        },
+        {
+          "id": "encryption-process",
+          "title": "暗号化処理",
+          "hints": [
+            "Encryptor",
+            "AES",
+            "hiddenEncryptor",
+            "ハッシュ値",
+            "BASE64",
+            "JavaScript"
+          ]
+        },
+        {
+          "id": "decryption-process",
+          "title": "復号処理",
+          "hints": [
+            "改竄判定",
+            "ハッシュ値検証",
+            "リクエストID検証",
+            "BASE64デコード"
+          ]
+        },
+        {
+          "id": "key-storage",
+          "title": "暗号化に使用する鍵",
+          "hints": [
+            "セッション鍵",
+            "有効期間",
+            "ログイン",
+            "鍵生成"
+          ]
+        },
+        {
+          "id": "configuration",
+          "title": "設定",
+          "hints": [
+            "useHiddenEncryption",
+            "noHiddenEncryptionRequestIds",
+            "ログイン画面",
+            "ブックマーク",
+            "外部サイト"
+          ]
+        }
+      ],
+      "sections": {
+        "overview": ":ref:`ウィンドウスコープ<tag-window_scope>` や :ref:`tag-hidden_tag` の値はクライアント側で改竄・参照されるため、カスタムタグでは改竄・参照防止を目的にhidden暗号化機能を提供する。\n\nデフォルトではすべての :ref:`tag-form_tag` で暗号化を行い、すべてのリクエストで復号及び改竄チェックを行う。したがって、アプリケーションプログラマは実装の必要がない。\n\n> **重要**: この機能は仕様が複雑で使用困難であり、:ref:`ウィンドウスコープ <tag-window_scope>` の暗号化対象データ使用も非推奨であるため、本機能も非推奨とする。特に理由がない限り、:ref:`useHiddenEncryption <tag-use_hidden_encryption>` は `false` を設定すること。",
+        "hidden-encryption-mechanism": "hidden暗号化は :ref:`tag-form_tag` と :ref:`nablarch_tag_handler` で実現される。:ref:`tag-form_tag` が暗号化を、:ref:`nablarch_tag_handler` が復号及び改竄チェックを行う。\n\n![hidden暗号化処理フロー](assets/libraries-tag--hidden/hidden_encryption.png)",
+        "encryption-process": "暗号化は :java:extdoc:`Encryptor <nablarch.common.encryption.Encryptor>` インタフェース実装クラスが行う。デフォルトアルゴリズムは `AES(128bit)`。\n\n暗号化アルゴリズムを変更する場合は、:java:extdoc:`Encryptor <nablarch.common.encryption.Encryptor>` を実装したクラスをコンポーネント定義に `hiddenEncryptor` という名前で追加すること。\n\n#### 暗号化対象データ\n\n各 :ref:`tag-form_tag` で、以下のデータをまとめて暗号化し1つのhiddenタグで出力する：\n\n- カスタムタグの :ref:`tag-hidden_tag` で明示的に指定したhiddenパラメータ\n- :ref:`ウィンドウスコープ<tag-window_scope>` の値\n- :ref:`サブミットを行うカスタムタグ <tag_reference_submit>` で指定したリクエストID\n- :ref:`サブミットを行うカスタムタグ <tag_reference_submit>` で追加した :ref:`パラメータ<tag-submit_change_parameter>`\n\n#### 改竄検知\n\n改竄を検知するため、上記データから生成したハッシュ値を含める。リクエストIDは異なるフォーム間での値入れ替え改竄検知に、ハッシュ値は値の書き換え改竄検知に使用される。暗号化結果はBASE64エンコードしhiddenタグに出力される。\n\n> **補足**: :ref:`tag-hidden_tag` で指定したhiddenパラメータは暗号化に含まれるため、クライアント側JavaScriptで値操作不可。値操作が必要な場合は :ref:`tag-plain_hidden_tag` を使用して暗号化しないhiddenタグを出力すること。",
+        "decryption-process": "復号処理は :ref:`nablarch_tag_handler` が行う。以下の場合に改竄と判定し、設定で指定された画面に遷移させる：\n\n- 暗号化したhiddenパラメータ(`nablarch_hidden`)が存在しない\n- BASE64デコード失敗\n- 復号失敗\n- 暗号化時生成ハッシュ値と復号後ハッシュ値不一致\n- 暗号化時リクエストIDと受け付けたリクエストIDの不一致",
+        "key-storage": "鍵は有効期間を短くするためセッション毎に生成される。したがって、同一ユーザがログインをやり直した場合、ログイン前の画面から処理継続不可となる。",
+        "configuration": ":ref:`tag-setting` により、以下の設定ができる。\n\n#### useHiddenEncryptionプロパティ\n\n| 項目 | 値 |\n|---|---|\n| 説明 | hidden暗号化を使用するか否か |\n| デフォルト | `true` |\n\n#### noHiddenEncryptionRequestIdsプロパティ\n\n| 項目 | 値 |\n|---|---|\n| 説明 | hidden暗号化を行わないリクエストID |\n\nhidden暗号化が使用できないリクエスト：\n\n- ログイン画面などアプリケーション入口のリクエスト\n- ブックマークからの遷移リクエスト\n- 外部サイトからの遷移リクエスト\n\nこれらのリクエストは暗号化したhiddenパラメータ(`nablarch_hidden`)またはセッション鍵が存在しないため、当プロパティを設定しないと改竄エラーになる。\n\n#### 設定値の参照\n\n`noHiddenEncryptionRequestIdsプロパティの設定値は :ref:`tag-form_tag` と :ref:`nablarch_tag_handler` が暗号化と復号の際に参照して処理を行う。\n\n**:ref:`tag-form_tag` の動作**：\n- 暗号化対象のリクエストIDが1つでも含まれれば暗号化\n- 含まれなければ暗号化しない\n\n**:ref:`nablarch_tag_handler` の動作**：\n- リクエストIDが暗号化対象の場合のみ復号"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "overview",
+          "source_heading": "クライアントに保持するデータを暗号化する(hidden暗号化) - 概要",
+          "heading_level": "h2-intro",
+          "h3_split": true,
+          "h3_split_reason": "plain text ~3000 chars > 2000 threshold with h3 subsections"
+        },
+        {
+          "section_id": "hidden-encryption-mechanism",
+          "source_heading": "hidden暗号化",
+          "heading_level": "h3",
+          "h3_split": true,
+          "h3_split_reason": "h3 promoted to top-level section"
+        },
+        {
+          "section_id": "encryption-process",
+          "source_heading": "暗号化処理",
+          "heading_level": "h3",
+          "h3_split": true,
+          "h3_split_reason": "h3 promoted to top-level section"
+        },
+        {
+          "section_id": "decryption-process",
+          "source_heading": "復号処理",
+          "heading_level": "h3",
+          "h3_split": true,
+          "h3_split_reason": "h3 promoted to top-level section"
+        },
+        {
+          "section_id": "key-storage",
+          "source_heading": "暗号化に使用する鍵の保存場所",
+          "heading_level": "h3",
+          "h3_split": true,
+          "h3_split_reason": "h3 promoted to top-level section"
+        },
+        {
+          "section_id": "configuration",
+          "source_heading": "hidden暗号化の設定",
+          "heading_level": "h3",
+          "h3_split": true,
+          "h3_split_reason": "h3 promoted to top-level section"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "bc1d0f92-4ee5-4418-94c2-9ec337207287"
+}

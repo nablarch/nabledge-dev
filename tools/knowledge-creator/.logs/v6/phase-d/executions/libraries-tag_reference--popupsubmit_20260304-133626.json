@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 36012,
+  "duration_api_ms": 35896,
+  "num_turns": 3,
+  "result": "Validation complete. One minor issue found: the hints array is incomplete. While the knowledge file accurately captures all substantive content from the source (no omissions or fabrications), the hints should include more of the attribute names from the table, particularly the required attributes (type, uri) and basic attributes (name) for better searchability.",
+  "stop_reason": null,
+  "session_id": "02afd601-4a09-4918-af37-f7259dd70a90",
+  "total_cost_usd": 0.056916499999999995,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 14936,
+    "cache_read_input_tokens": 165015,
+    "output_tokens": 4344,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 14936,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 4344,
+      "cacheReadInputTokens": 165015,
+      "cacheCreationInputTokens": 14936,
+      "webSearchRequests": 0,
+      "costUSD": 0.056916499999999995,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "file_id": "libraries-tag_reference--popupsubmit",
+    "status": "has_issues",
+    "findings": [
+      {
+        "category": "hints_missing",
+        "severity": "minor",
+        "location": "index[0].hints",
+        "description": "Several attribute names from the attribute table are not included in hints. The table contains 18 attributes/references, but hints only include 5 (popupWindowName, popupOption, displayMethod, suppressDefaultSubmit, secure). Missing from hints: name, type, uri, disabled, value, src, alt, usemap, align, autofocus. Type and uri are marked as required in source and should be searchable hints.",
+        "source_evidence": "Source table first column lists: tag-generic_attributes_tag, tag-focus_attributes_tag, name, type, uri, disabled, value, src, alt, usemap, align, autofocus, secure, popupWindowName, popupOption, displayMethod, suppressDefaultSubmit"
+      }
+    ]
+  },
+  "fast_mode_state": "off",
+  "uuid": "31e596e4-cd96-43f1-833c-011b12fcd6fd"
+}

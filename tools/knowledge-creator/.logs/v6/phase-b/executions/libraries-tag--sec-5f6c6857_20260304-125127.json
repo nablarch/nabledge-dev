@@ -1,0 +1,92 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 70645,
+  "duration_api_ms": 70508,
+  "num_turns": 3,
+  "result": "",
+  "stop_reason": null,
+  "session_id": "ec01ab8d-0c76-4c04-9f84-3b5b04b0d58a",
+  "total_cost_usd": 0.11261645,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 36317,
+    "cache_read_input_tokens": 143352,
+    "output_tokens": 10572,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 36317,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 10572,
+      "cacheReadInputTokens": 143352,
+      "cacheCreationInputTokens": 36317,
+      "webSearchRequests": 0,
+      "costUSD": 0.11261645,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-5f6c6857",
+      "title": "選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/Object.html"
+      ],
+      "index": [
+        {
+          "id": "selection-items",
+          "title": "選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する",
+          "hints": [
+            "select_tag",
+            "radio_buttons_tag",
+            "checkboxes_tag",
+            "radio_tag",
+            "checkbox_tag",
+            "listName",
+            "elementLabelProperty",
+            "elementValueProperty",
+            "listFormat",
+            "プルダウン",
+            "ラジオボタン",
+            "チェックボックス",
+            "選択肢リスト",
+            "requestScope",
+            "HTMLデザイン自由度"
+          ]
+        }
+      ],
+      "sections": {
+        "selection-items": "選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する場合、以下のカスタムタグを使用する：\n\n- :ref:`tag-select_tag` (プルダウン)\n- :ref:`tag-radio_buttons_tag` (複数のラジオボタン)\n- :ref:`tag-checkboxes_tag` (複数のチェックボックス)\n\n選択肢リスト（選択肢のラベルと値をもつオブジェクトのリスト）をアクション側でリクエストスコープに設定し、カスタムタグで参照して表示する。\n\n> **補足**: 選択状態の判定は、選択された値と選択肢の値をともに :java:extdoc:`Object#toString <java.lang.Object.toString()>` してから行う。\n\n### 実装例\n\n**選択肢を保持するクラス:**\n\n```java\npublic class Plan {\n    private String planId;      // 選択肢の値\n    private String planName;    // 選択肢のラベル\n    \n    public Plan(String planId, String planName) {\n        this.planId = planId;\n        this.planName = planName;\n    }\n    \n    public String getPlanId() { return planId; }\n    public String getPlanName() { return planName; }\n}\n```\n\n**アクション：選択肢リストをリクエストスコープに設定**\n\n```java\nList<Plan> plans = Arrays.asList(\n    new Plan(\"A\", \"フリー\"),\n    new Plan(\"B\", \"ベーシック\"),\n    new Plan(\"C\", \"プレミアム\")\n);\ncontext.setRequestScopedVar(\"plans\", plans);\n```\n\n### プルダウン (select_tag)\n\n**属性:**\n- `listName`: リスト変数名（リクエストスコープから取得）\n- `elementLabelProperty`: ラベルを表すプロパティ名\n- `elementValueProperty`: 値を表すプロパティ名\n\n**JSP:**\n\n```jsp\n<n:select name=\"form.plan1\"\n          listName=\"plans\"\n          elementLabelProperty=\"planName\"\n          elementValueProperty=\"planId\" />\n```\n\n**出力されるHTML:**\n\n```html\n<select name=\"form.plan1\">\n  <option value=\"A\" selected=\"selected\">フリー</option>\n  <option value=\"B\">ベーシック</option>\n  <option value=\"C\">プレミアム</option>\n</select>\n```\n\n### ラジオボタン (radio_buttons_tag)\n\n**属性:** select_tagと同じ。加えて、`listFormat`属性でHTML出力形式を指定可能（div、span、ul、ol、スペース区切り）。デフォルトはbrタグ。\n\n**JSP:**\n\n```jsp\n<n:radioButtons name=\"form.plan2\"\n                listName=\"plans\"\n                elementLabelProperty=\"planName\"\n                elementValueProperty=\"planId\" />\n```\n\n**出力されるHTML:**\n\n```html\n<input id=\"nablarch_radio1\" type=\"radio\" name=\"form.plan2\" value=\"A\" />\n<label for=\"nablarch_radio1\">フリー</label><br />\n<input id=\"nablarch_radio2\" type=\"radio\" name=\"form.plan2\" value=\"B\" checked=\"checked\" />\n<label for=\"nablarch_radio2\">ベーシック</label><br />\n<input id=\"nablarch_radio3\" type=\"radio\" name=\"form.plan2\" value=\"C\" />\n<label for=\"nablarch_radio3\">プレミアム</label><br />\n```\n\n### チェックボックス (checkboxes_tag)\n\n**属性:** radio_buttons_tagと同じ。`listFormat`属性でHTML出力形式を指定可能。デフォルトはbrタグ。\n\n**JSP:**\n\n```jsp\n<n:checkboxes name=\"form.plan4\"\n              listName=\"plans\"\n              elementLabelProperty=\"planName\"\n              elementValueProperty=\"planId\" />\n```\n\n**出力されるHTML:**\n\n```html\n<input id=\"nablarch_checkbox1\" type=\"checkbox\" name=\"form.plan4\" value=\"A\" checked=\"checked\" />\n<label for=\"nablarch_checkbox1\">フリー</label><br />\n<input id=\"nablarch_checkbox2\" type=\"checkbox\" name=\"form.plan4\" value=\"B\" />\n<label for=\"nablarch_checkbox2\">ベーシック</label><br />\n<input id=\"nablarch_checkbox3\" type=\"checkbox\" name=\"form.plan4\" value=\"C\" />\n<label for=\"nablarch_checkbox3\">プレミアム</label><br />\n```\n\n### HTMLデザインの自由度が必要な場合\n\n> **重要**: :ref:`tag-radio_buttons_tag` と :ref:`tag-checkboxes_tag` はカスタムタグが選択肢をすべて出力するため、出力されるHTMLに制限が出る。デザイン会社が作成したHTMLをベースに開発する場合など、プロジェクトでデザインをコントロールできない場合は、JSTLの`c:forEach`タグと :ref:`tag-radio_tag` または :ref:`tag-checkbox_tag` を使って実装し、選択肢を表示するHTMLを自由に実装できる。\n\n```jsp\n<c:forEach items=\"${plans}\" var=\"plan\">\n  <!-- 前後に好きなHTMLを追加できる -->\n  <n:radioButton name=\"form.plan3\" label=\"${plan.planName}\" value=\"${plan.planId}\" />\n</c:forEach>\n```"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "selection-items",
+          "source_heading": "選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "Plain text content approximately 1800 chars (excluding code blocks). Subsections (プルダウン, ラジオボタン, チェックボックス) exist but lack explicit h3 underlines in source; treated as h3 content within single h2 section per expected sections list."
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "7e7b8238-426f-4542-9564-fb28031fa237"
+}

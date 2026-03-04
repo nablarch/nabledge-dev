@@ -1,0 +1,97 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 92616,
+  "duration_api_ms": 92458,
+  "num_turns": 3,
+  "result": "Knowledge file `libraries-tag--sec-fbc14d00.json` created successfully. The file includes all four extension topics as subsections within a single \"extension-examples\" section, with preserved cross-references, extracted Javadoc URLs for 5 classes, and comprehensive search hints.",
+  "stop_reason": null,
+  "session_id": "dc9a6b30-8fca-4000-bf25-29f9de1116d9",
+  "total_cost_usd": 0.15571754999999998,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 46335,
+    "cache_read_input_tokens": 157188,
+    "output_tokens": 16411,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 46335,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 16411,
+      "cacheReadInputTokens": 157188,
+      "cacheCreationInputTokens": 46335,
+      "webSearchRequests": 0,
+      "costUSD": 0.15571754999999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-fbc14d00",
+      "title": "拡張例",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/ValueFormatter.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/DisplayControlChecker.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/CustomTagConfig.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/TokenGenerator.html"
+      ],
+      "index": [
+        {
+          "id": "extension-examples",
+          "title": "拡張例",
+          "hints": [
+            "ValueFormatter",
+            "DisplayControlChecker",
+            "CustomTagConfig",
+            "TokenGenerator",
+            "valueFormatters",
+            "displayControlCheckers",
+            "tokenGenerator",
+            "YYYYMMDDFormatter",
+            "YYYYMMFormatter",
+            "DateTimeFormatter",
+            "DecimalFormatter",
+            "ServiceAvailabilityDisplayControlChecker",
+            "フォーマッター",
+            "表示制御",
+            "二重サブミット防止",
+            "トークン発行",
+            "コールバック関数"
+          ]
+        }
+      ],
+      "sections": {
+        "extension-examples": "### フォーマッタを追加する\n\n**:ref:`format` を使用する場合**\n\n:ref:`format` を使用する場合、フォーマッタの追加方法は :ref:`format` のフォーマッタを追加するの項を参照。\n\n**valueFormat属性を使用する場合**\n\nフォーマットは、:java:extdoc:`ValueFormatter <nablarch.common.web.tag.ValueFormatter>` インタフェースを実装したクラスが行う。実装したクラスをコンポーネント定義に追加することでフォーマットを変更できる。\n\nコンポーネント定義への追加は、Map型でデータタイプ名をキーに、:java:extdoc:`ValueFormatter <nablarch.common.web.tag.ValueFormatter>` を実装したクラスを値に指定する。\n\nフォーマッタのマップは、`valueFormatters` という名前でコンポーネント定義に追加する。フレームワークがデフォルトでサポートしているフォーマット設定例：\n\n```xml\n<map name=\"valueFormatters\">\n  <entry key=\"yyyymmdd\">\n    <value-component class=\"nablarch.common.web.tag.YYYYMMDDFormatter\" />\n  </entry>\n  <entry key=\"yyyymm\">\n    <value-component class=\"nablarch.common.web.tag.YYYYMMFormatter\" />\n  </entry>\n  <entry key=\"dateTime\">\n    <value-component class=\"nablarch.common.web.tag.DateTimeFormatter\" />\n  </entry>\n  <entry key=\"decimal\">\n    <value-component class=\"nablarch.common.web.tag.DecimalFormatter\" />\n  </entry>\n</map>\n```\n\n### ボタン/リンクの表示制御に使う判定処理を変更する\n\n:ref:`tag-submit_display_control` に使用する判定処理を変更したい場合は、:java:extdoc:`DisplayControlChecker <nablarch.common.web.tag.DisplayControlChecker>` インタフェースを実装することで変更できる。\n\n実装したクラスを :ref:`tag-setting` で :java:extdoc:`displayControlCheckersプロパティ<nablarch.common.web.tag.CustomTagConfig.setDisplayControlCheckers(java.util.List)>` に指定する。\n\n設定例：\n\n```xml\n<list name=\"displayControlCheckers\" >\n  <!-- サービス提供可否についてはデフォルトのDisplayControlCheckerを指定する -->\n  <component class=\"nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker\" />\n  <!-- 認可チェックについてはプロジェクトでカスタマイズしたDisplayControlCheckerを指定する -->\n  <component class=\"com.sample.app.CustomPermissionDisplayControlChecker\" />\n</list>\n\n<component name=\"customTagConfig\"\n           class=\"nablarch.common.web.tag.CustomTagConfig\">\n   <!-- 判定条件を設定する。 -->\n  <property name=\"displayControlCheckers\" ref=\"displayControlCheckers\" />\n</component>\n```\n\n### クライアント側の二重サブミット防止で、二重サブミット発生時の振る舞いを追加する\n\n:ref:`クライアント側の二重サブミット防止 <tag-double_submission_client_side>` を使用していて、アプリケーションで二重サブミット発生時の振る舞いを追加する場合は、JavaScriptでコールバック関数を実装する。\n\nフレームワークのJavaScript関数は、2回目以降のサブミット要求が発生した場合、コールバック関数が存在していれば、コールバック関数を呼び出す。\n\nコールバック関数のシグネチャ：\n\n```javascript\n/**\n * @param element 二重サブミットが行われた対象要素(ボタン又はリンク)\n */\nfunction nablarch_handleDoubleSubmission(element) {\n  // ここに処理を記述する。\n}\n```\n\n### サーバ側の二重サブミット防止で、トークンの発行処理を変更する\n\n:ref:`サーバ側の二重サブミット防止 <tag-double_submission_server_side>` を使用していて、トークンの発行処理を変更したい場合は、:java:extdoc:`TokenGenerator <nablarch.common.web.token.TokenGenerator>` インタフェースを実装することで変更できる。\n\n実装したクラスをコンポーネント定義に `tokenGenerator` という名前で追加する。"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "extension-examples",
+          "source_heading": "拡張例",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "Plain text < 2000 chars; h3 subsections consolidated into single section"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "c85db824-9d0e-4725-871e-996f1d020597"
+}

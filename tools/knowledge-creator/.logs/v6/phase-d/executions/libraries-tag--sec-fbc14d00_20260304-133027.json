@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 40860,
+  "duration_api_ms": 40630,
+  "num_turns": 3,
+  "result": "Validation complete. Found **1 minor issue**:\n\n**Hints Completeness**: The class name `CustomPermissionDisplayControlChecker` appears in the XML configuration example but is missing from the hints array. While it's a user-provided example class (not a framework class), it's still a PascalCase class name present in the content that should be included in hints for discoverability.\n\nAll other validations passed:\n- ✓ **Omissions**: No missing information\n- ✓ **Fabrications**: All statements verified against source\n- ✓ **Section structure**: Appropriate organization",
+  "stop_reason": null,
+  "session_id": "82db5a32-9a07-45da-9078-6e80f53f7fc2",
+  "total_cost_usd": 0.06337325,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 17045,
+    "cache_read_input_tokens": 168720,
+    "output_tokens": 5034,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 17045,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 5034,
+      "cacheReadInputTokens": 168720,
+      "cacheCreationInputTokens": 17045,
+      "webSearchRequests": 0,
+      "costUSD": 0.06337325,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "file_id": "libraries-tag--sec-fbc14d00",
+    "status": "has_issues",
+    "findings": [
+      {
+        "category": "hints_missing",
+        "severity": "minor",
+        "location": "index[0].hints",
+        "description": "Class name 'CustomPermissionDisplayControlChecker' appears in the XML configuration example in the content section but is not included in the hints array. This is a PascalCase class name that users may search for when implementing custom display control checkers.",
+        "source_evidence": "XML example shows: `<component class=\"com.sample.app.CustomPermissionDisplayControlChecker\" />` in the knowledge file sections.extension-examples, but this class name does not appear in the hints array alongside other class names like ServiceAvailabilityDisplayControlChecker."
+      }
+    ]
+  },
+  "fast_mode_state": "off",
+  "uuid": "3b895b25-3154-4b1a-955f-a9e07a70cb51"
+}

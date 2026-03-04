@@ -1,0 +1,80 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 80590,
+  "duration_api_ms": 80460,
+  "num_turns": 3,
+  "result": "Knowledge file conversion complete. The output has been structured and submitted using the StructuredOutput tool.",
+  "stop_reason": null,
+  "session_id": "c818957d-e93f-4190-b508-6e0849d2d794",
+  "total_cost_usd": 0.13377250000000002,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 41432,
+    "cache_read_input_tokens": 151975,
+    "output_tokens": 13352,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 41432,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 13352,
+      "cacheReadInputTokens": 151975,
+      "cacheCreationInputTokens": 41432,
+      "webSearchRequests": 0,
+      "costUSD": 0.13377250000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-872aa074",
+      "title": "静的コンテンツの変更時にクライアント側のキャッシュを参照しないようにする",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html"
+      ],
+      "index": [
+        {
+          "id": "static-content-cache-bypass",
+          "title": "静的コンテンツの変更時にクライアント側のキャッシュを参照しないようにする",
+          "hints": [
+            "static_content_version",
+            "静的コンテンツキャッシュ制御",
+            "バージョンパラメータ",
+            "非推奨機能"
+          ]
+        }
+      ],
+      "sections": {
+        "static-content-cache-bypass": "クライアント側(ブラウザ)でキャッシュを有効化している場合、サーバ上に配置した静的コンテンツを置き換えても、クライアント側では最新のコンテンツではなくキャッシュされた古いコンテンツが表示される可能性がある。\n\nこの問題を回避するため、以下のカスタムタグの `href` 属性および `src` 属性で指定された静的コンテンツのURIにパラメータでバージョンを付加する機能を提供する：\n\n* :ref:`tag-link_tag`\n* :ref:`tag-img_tag`\n* :ref:`tag-script_tag`\n* :ref:`tag-submit_tag`\n* :ref:`tag-popup_submit_tag`\n* :ref:`tag-download_submit_tag`\n\nこれにより、静的コンテンツ置き換え時にクライアント側のキャッシュではなく最新の静的コンテンツを参照できる。\n\nパラメータに付加する静的コンテンツのバージョンは、:ref:`設定ファイル(propertiesファイル)<repository-environment_configuration>` に設定する。設定ファイルに静的コンテンツのバージョンが設定されていない場合は、この機能は無効化される。\n\n**プロパティ名**: `static_content_version`\n\n設定例：\n\n```properties\n# 静的コンテンツのバージョン\nstatic_content_version=1.0\n```\n\n> **重要**: この機能は以下の理由により非推奨とする：\n>\n> * `static_content_version` による静的コンテンツのバージョンはアプリケーション内で1つしか定義できないため、値を変更すると全ての静的コンテンツ(変更していないものも含む)がキャッシュではなく最新の静的コンテンツを参照してしまう。\n>\n> 静的コンテンツの変更時にキャッシュを参照しないようにするには、この機能を使用するのではなく、静的コンテンツのファイル名を変更する等で対応すること。"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "static-content-cache-bypass",
+          "source_heading": "静的コンテンツの変更時にクライアント側のキャッシュを参照しないようにする",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "plain text ~1000 chars < 2000 threshold; no h3 headings found in source"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "401c9abc-f804-483d-b64b-f3c5f7234cd4"
+}

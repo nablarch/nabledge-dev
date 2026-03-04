@@ -1,0 +1,82 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 79765,
+  "duration_api_ms": 79602,
+  "num_turns": 3,
+  "result": "Knowledge file conversion complete. The JSON has been structured and output successfully for `libraries-tag--nonce`.",
+  "stop_reason": null,
+  "session_id": "a4ef7cf4-61b6-402a-a3d5-c1adfd3f7cd8",
+  "total_cost_usd": 0.1211443,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 39180,
+    "cache_read_input_tokens": 151393,
+    "output_tokens": 11401,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 39180,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 11401,
+      "cacheReadInputTokens": 151393,
+      "cacheCreationInputTokens": 39180,
+      "webSearchRequests": 0,
+      "costUSD": 0.1211443,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--nonce",
+      "title": "セキュアハンドラが生成したnonceを任意の要素に埋め込む",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html"
+      ],
+      "index": [
+        {
+          "id": "embed-nonce",
+          "title": "セキュアハンドラが生成したnonceを任意の要素に埋め込む",
+          "hints": [
+            "sourceFormat",
+            "CSP対応",
+            "nonce属性",
+            "インラインスクリプト",
+            "セキュリティ",
+            "メタ要素"
+          ]
+        }
+      ],
+      "sections": {
+        "embed-nonce": "## セキュアハンドラが生成したnonceを任意の要素に埋め込む\n\n:ref:`tag-csp_nonce_tag` は :ref:`セキュアハンドラ<content_security_policy>` で生成したnonceを出力するカスタムタグです。\n\nCSP対応時、スクリプトやスタイルはインラインではなく外部ファイルとして作成することを推奨します。既存コンテンツがインライン記述の場合、このタグを使用して対象要素にnonce属性を設定して対応できます。\n\n### 使用例（style要素）\n\nJSPテンプレート:\n```jsp\n<style nonce=\"<n:cspNonce />\">\n  <!-- 省略 -->\n</style>\n```\n\n出力HTML:\n```html\n<style nonce=\"DhcnhD3khTMePgXwdayK9BsMqXjhguVV\">\n  <!-- 省略 -->\n</style>\n```\n\n> **補足**: :ref:`tag-script_tag` で作成したscript要素については、:ref:`セキュアハンドラ<content_security_policy>` でnonce生成が有効な場合、nonce属性が自動で付与されます。script要素のnonce属性が必要な場合は :ref:`tag-csp_nonce_tag` ではなく :ref:`tag-script_tag` を使用してください。\n\n> **補足**: Content-Security-Policyをレスポンスヘッダで設定できない場合、meta要素で設定できます。その場合、:ref:`tag-csp_nonce_tag` の `sourceFormat` 属性を `true` に設定すると、nonceが `nonce-[生成されたnonce]` フォーマットで出力されるため、これをmeta要素に埋め込んでください。"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "embed-nonce",
+          "source_heading": "セキュアハンドラが生成したnonceを任意の要素に埋め込む",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "Plain text content is approximately 700 characters, below the 2000 character threshold for h3 splitting. No h3 headings found in source."
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "120e0541-f2ff-4d2e-adfb-3f2da8da215f"
+}

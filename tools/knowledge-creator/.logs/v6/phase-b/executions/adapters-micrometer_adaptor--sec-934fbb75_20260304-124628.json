@@ -1,0 +1,86 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 111123,
+  "duration_api_ms": 110952,
+  "num_turns": 3,
+  "result": "",
+  "stop_reason": null,
+  "session_id": "3fe39a6d-9820-4226-b733-80497270c99b",
+  "total_cost_usd": 0.1479047,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 40280,
+    "cache_read_input_tokens": 146197,
+    "output_tokens": 16582,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 40280,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 16582,
+      "cacheReadInputTokens": 146197,
+      "cacheCreationInputTokens": 40280,
+      "webSearchRequests": 0,
+      "costUSD": 0.1479047,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "adapters-micrometer_adaptor--sec-934fbb75",
+      "title": "アプリケーションの形式ごとに収集するメトリクスの例",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html"
+      ],
+      "index": [
+        {
+          "id": "metrics-by-application-type",
+          "title": "アプリケーションの形式ごとに収集するメトリクスの例",
+          "hints": [
+            "HTTPリクエスト",
+            "SQL処理時間",
+            "ログレベル",
+            "リソース監視",
+            "バッチ処理",
+            "トランザクション",
+            "パーセンタイル計測",
+            "メトリクス収集",
+            "JMXMBean",
+            "process.uptime"
+          ]
+        }
+      ],
+      "sections": {
+        "metrics-by-application-type": "## ウェブアプリケーションで収集するメトリクスの例\n\n### HTTPリクエストの処理時間\n\n計測によりURL別アクセス数・リクエスト処理時間を確認可能。パーセンタイル計測で大部分のリクエスト処理時間も確認可能。\n\n:ref:`micrometer_timer_metrics_handler`、:ref:`micrometer_timer_metrics_handler_percentiles`\n\n### SQLの処理時間\n\n各SQLの処理時間確認と想定以上に時間かかるSQL検知が可能。\n\n:ref:`micrometer_sql_time`\n\n### ログレベルごとの出力回数\n\n警告ログの異常検知（攻撃検知）・エラーログ検知が可能。\n\n:ref:`micrometer_log_count`\n\n### アプリケーションサーバやライブラリが提供するリソースの情報\n\nスレッドプール・DBコネクションプール等のリソース状態をメトリクス化。JMXのMBeanで公開されている情報を活用し、障害時の原因特定に使用。\n\n:ref:`micrometer_mbean_metrics`\n\n## バッチアプリケーションで収集するメトリクスの例\n\n### バッチの処理時間\n\n平常時の処理時間を事前計測し、処理時間が異常値になったときに迅速に検知。:ref:`micrometer_default_metrics`で自動収集される`process.uptime`を使用。\n\n### トランザクション単位の処理時間\n\nマルチスレッドバッチの処理分散確認・処理時間逸脱時の異常検知が可能。\n\n:ref:`micrometer_adaptor_batch_transaction_time`\n\n### バッチの処理件数\n\nバッチの進捗・想定速度での処理進行・想定件数の処理確認が可能。\n\n:ref:`micrometer_batch_processed_count`\n\n### SQLの処理時間\n\n各SQLの処理時間確認と想定以上に時間かかるSQL検知が可能。\n\n:ref:`micrometer_sql_time`\n\n### ログレベルごとの出力回数\n\n警告ログ・エラーログの検知が可能。\n\n:ref:`micrometer_log_count`\n\n### ライブラリが提供するリソースの情報\n\nDBコネクションプール等のリソース状態をメトリクス化。JMXのMBeanで公開されている情報を活用し、障害時の原因特定に使用。\n\n:ref:`micrometer_mbean_metrics`"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "metrics-by-application-type",
+          "source_heading": "アプリケーションの形式ごとに収集するメトリクスの例",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "Expected Sections list specifies single section; internal h3 subsections (web/batch metrics) preserved as Markdown headers within consolidated section"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "8b09a752-6121-4095-a9a8-14c0d3434536"
+}

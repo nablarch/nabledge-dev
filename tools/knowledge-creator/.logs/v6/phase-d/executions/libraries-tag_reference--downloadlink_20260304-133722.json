@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 40433,
+  "duration_api_ms": 40338,
+  "num_turns": 3,
+  "result": "Validation complete. One minor omission identified in the `displayMethod` attribute description—the knowledge file lacks the contextual purpose that this attribute is specifically for controlling display based on authorization and service provision check results.",
+  "stop_reason": null,
+  "session_id": "b036501f-f78c-45d8-9fec-478975802488",
+  "total_cost_usd": 0.0623164,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 15794,
+    "cache_read_input_tokens": 164889,
+    "output_tokens": 5212,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 15794,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 5212,
+      "cacheReadInputTokens": 164889,
+      "cacheCreationInputTokens": 15794,
+      "webSearchRequests": 0,
+      "costUSD": 0.0623164,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "file_id": "libraries-tag_reference--downloadlink",
+    "status": "has_issues",
+    "findings": [
+      {
+        "category": "omission",
+        "severity": "minor",
+        "location": "sections.downloadlink-tag - displayMethod attribute description",
+        "description": "The displayMethod attribute description is incomplete. The source specifies this attribute is used specifically 'when display control is performed based on authorization judgment and service provision check results' (認可判定とサービス提供可否判定の結果に応じて表示制御を行う場合), but the knowledge file only states it is for 'display control method' (表示制御方法) without this contextual purpose.",
+        "source_evidence": "Source RST states: 'displayMethod | 認可判定とサービス提供可否判定の結果に応じて表示制御を行う場合の表示方法。下記のいずれかを指定する。NODISPLAY (非表示) DISABLED (非活性) NORMAL (通常表示)'. Knowledge file states: 'displayMethod | 表示制御方法: NODISPLAY（非表示）、DISABLED（非活性）、NORMAL（通常表示）'. The context about authorization/service checks is missing, which is decision-necessary information for developers to understand when to use this attribute."
+      }
+    ]
+  },
+  "fast_mode_state": "off",
+  "uuid": "669b0417-58b6-4e29-a99f-9e5c78f4d8c6"
+}

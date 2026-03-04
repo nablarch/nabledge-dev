@@ -1,0 +1,90 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 155215,
+  "duration_api_ms": 155116,
+  "num_turns": 3,
+  "result": "Conversion completed successfully. The knowledge file `libraries-tag--get.json` has been generated with:\n\n- **Title**: GETリクエストを使用する\n- **1 section**: `get-requests` with comprehensive content covering:\n  - Background on GET request limitations with custom tags\n  - Workaround for restricted tags (checkbox_tag, code_checkbox_tag)\n  - 9 unusable tags with complete alternative implementations (hidden, submit, button, submitLink, popupSubmit, popupButton, popupLink, param, changeParamName)\n- **Search hints**: Key terms and tag references for discoverability\n- **Official docs URL**: Base documentation link preserved\n- **Cross-references**: All `:ref:` syntax preserved in original format for Phase G resolution",
+  "stop_reason": null,
+  "session_id": "7a59d7b0-3db8-4b28-b52e-166a539d2da8",
+  "total_cost_usd": 0.19467455,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 44239,
+    "cache_read_input_tokens": 173208,
+    "output_tokens": 24406,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 44239,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 24406,
+      "cacheReadInputTokens": 173208,
+      "cacheCreationInputTokens": 44239,
+      "webSearchRequests": 0,
+      "costUSD": 0.19467455,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--get",
+      "title": "GETリクエストを使用する",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html"
+      ],
+      "index": [
+        {
+          "id": "get-requests",
+          "title": "GETリクエストを使用する",
+          "hints": [
+            "GETリクエスト",
+            "フォーム",
+            "カスタムタグ",
+            "hiddenパラメータ",
+            "tag-form_tag",
+            "tag-checkbox_tag",
+            "tag-code_checkbox_tag",
+            "submitボタン",
+            "ポップアップウィンドウ",
+            "JavaScript画面遷移",
+            "パラメータ送信",
+            "tag-plain_hidden_tag",
+            "tag-a_tag",
+            "tag-script_tag"
+          ]
+        }
+      ],
+      "sections": {
+        "get-requests": "GETリクエスト使用時は、カスタムタグの隠れたパラメータ出力が無効化されるため、以下の制限が発生します。\n\n### 背景\n\nカスタムタグは隠れた暗号化（:ref:`hidden暗号化<tag-hidden_encryption>`）やパラメータ追加機能（:ref:`パラメータ追加<tag-submit_change_parameter>`）を実現するため、hiddenパラメータを出力しています。:ref:`tag-form_tag` でGETを指定した場合、これらのhiddenパラメータがURLに付加されるため、以下の問題が発生します：\n\n- 業務機能に不要なパラメータが増加\n- URLの長さ制限により正しくリクエストできない可能性\n\n### 対応\n\n:ref:`tag-form_tag` でGET指定時、hiddenパラメータは出力されません。これにより上記問題は発生しませんが、hiddenパラメータに依存する一部のカスタムタグが使用制限または使用不可となります。\n\n### 使用制限のあるカスタムタグ\n\n**対象**：:ref:`tag-checkbox_tag`、:ref:`tag-code_checkbox_tag`\n\n**制限理由**：これらのタグは隠れた暗号化（:ref:`hidden暗号化<tag-hidden_encryption>`）を使用してチェックなし判定を実装しているため、GETリクエストでは使用できません。\n\n**対応方法**：:ref:`バリデーション<validation>` 後に値をnull判定し、チェック有無を判断してアクション側でチェックなしに対する値を設定します。\n\n### 使用不可となるカスタムタグの対応\n\n以下のカスタムタグはGETリクエスト時に使用不可です。代替方法を使用してください。\n\n#### hiddenタグの代替\n\n**対応方法**：:ref:`tag-plain_hidden_tag` を使用します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:hidden name=\"test\" />\n\n<%-- GETの場合 --%>\n<n:plainHidden name=\"test\" />\n```\n\n#### submitタグの代替\n\n**対応方法**：HTMLのinputタグ（type=\"submit\"）を使用します。サブミット先URIは :ref:`tag-form_tag` のaction属性に指定します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:submit type=\"button\" uri=\"search\" value=\"検索\" />\n</n:form>\n\n<%-- GETの場合 --%>\n<n:form method=\"GET\" action=\"search\">\n  <input type=\"submit\" value=\"検索\" />\n</n:form>\n```\n\n#### buttonタグの代替\n\n**対応方法**：HTMLのbuttonタグ（type=\"submit\"）を使用します。サブミット先URIは :ref:`tag-form_tag` のaction属性に指定します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:button type=\"submit\" uri=\"search\" value=\"検索\" />\n</n:form>\n\n<%-- GETの場合 --%>\n<n:form method=\"GET\" action=\"search\">\n  <button type=\"submit\" value=\"検索\" />\n</n:form>\n```\n\n#### submitLinkタグの代替\n\n**対応方法**：:ref:`tag-a_tag` を使用し、onclick属性に画面遷移のJavaScript関数を指定します。関数は :ref:`tag-script_tag` 内に記述します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:text name=\"test\" />\n  <n:submitLink type=\"button\" uri=\"search\" value=\"検索\" />\n</n:form>\n\n<%-- GETの場合 --%>\n<input type=\"text\" name=\"test\" id=\"test\" />\n<n:a href=\"javascript:void(0);\" onclick=\"searchTest();\">検索</n:a>\n<n:script type=\"text/javascript\">\n  var searchTest = function() {\n    var test = document.getElementById('test').value;\n    location.href = 'search?test=' + test;\n  }\n</n:script>\n```\n\n#### popupSubmitタグの代替\n\n**対応方法**：HTMLのinputタグ（type=\"button\"）を使用し、onclick属性にJavaScriptのwindow.open()関数を指定します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:popupSubmit type=\"button\" value=\"検索\" uri=\"search\"\n    popupWindowName=\"popupWindow\" popupOption=\"width=700,height=500\" />\n</n:form>\n\n<%-- GETの場合 --%>\n<n:form method=\"GET\">\n  <input type=\"button\" value=\"検索\"\n    onclick=\"window.open('search', 'popupWindow', 'width=700,height=500')\" />\n</n:form>\n```\n\n#### popupButtonタグの代替\n\n**対応方法**：HTMLのbuttonタグ（type=\"submit\"）を使用し、onclick属性にJavaScriptのwindow.open()関数を指定します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:popupButton type=\"submit\" value=\"検索\" uri=\"search\"\n    popupWindowName=\"popupWindow\" popupOption=\"width=700,height=500\" />\n</n:form>\n\n<%-- GETの場合 --%>\n<n:form method=\"GET\">\n  <button type=\"button\" value=\"検索\"\n    onclick=\"window.open('search', 'popupWindow', 'width=700,height=500')\" />\n</n:form>\n```\n\n#### popupLinkタグの代替\n\n**対応方法**：:ref:`tag-a_tag` を使用し、onclick属性にポップアップ表示のJavaScript関数を指定します。関数は :ref:`tag-script_tag` 内に記述します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:text name=\"test\" />\n  <n:popupLink type=\"button\" value=\"検索\" uri=\"search\"\n    popupWindowName=\"popupWindow\" popupOption=\"width=700,height=500\" />\n</n:form>\n\n<%-- GETの場合 --%>\n<input type=\"text\" name=\"test\" id=\"test\" />\n<n:a href=\"javascript:void(0);\" onclick=\"openTest();\" >検索</n:a>\n<n:script type=\"text/javascript\">\n  var openTest = function() {\n    var test = document.getElementById('test').value;\n    window.open('search?test=' + test,\n                'popupWindow', 'width=700,height=500')\n  }\n</n:script>\n```\n\n#### paramタグの代替\n\n**対応方法**：パラメータを追加したいボタン/リンク毎に :ref:`tag-form_tag` を記述し、form内にそれぞれパラメータを設定します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:submit type=\"button\" uri=\"search\" value=\"検索\">\n    <n:param paramName=\"changeParam\" value=\"テスト１\"/>\n  </n:submit>\n  <n:submit type=\"button\" uri=\"search\" value=\"検索\">\n    <n:param paramName=\"changeParam\" value=\"テスト２\"/>\n  </n:submit>\n</n:form>\n\n<%-- GETの場合 --%>\n<n:form method=\"GET\" action=\"search\">\n  <n:set var=\"test\" value=\"テスト１\" />\n  <input type=\"hidden\" name=\"changeParam\" value=\"<n:write name='test' />\" />\n  <input type=\"submit\" value=\"検索\" />\n</n:form>\n\n<n:form method=\"GET\" action=\"search\">\n  <n:set var=\"test\" value=\"テスト２\" />\n  <input type=\"hidden\" name=\"changeParam\" value=\"<n:write name='test' />\" />\n  <input type=\"submit\" value=\"検索\" />\n</n:form>\n```\n\n#### changeParamNameタグの代替\n\n**対応方法**：基本的には :ref:`tag-a_tag` と同様です。window.open()の第一引数に、クエリストリングの変更後パラメータ名を指定します。\n\n**実装例**：\n```jsp\n<%-- POSTの場合 --%>\n<n:form>\n  <n:text name=\"test\" />\n  <n:popupSubmit type=\"button\" value=\"検索\" uri=\"search\"\n      popupWindowName=\"popupWindow\" popupOption=\"width=700,height=500\">\n    <n:changeParamName inputName=\"test\" paramName=\"changeParam\" />\n  </n:popupSubmit>\n</n:form>\n\n<%-- GETの場合 --%>\n<input type=\"text\" name=\"test\" id=\"test\" />\n<input type=\"button\" value=\"検索\" onclick=\"openTest();\" />\n<n:script type=\"text/javascript\">\n  var openTest = function() {\n    var test = document.getElementById('test').value;\n    window.open('search?changeParam=' + test,\n                'popupWindow', 'width=700,height=500');\n  }\n</n:script>\n```"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "get-requests",
+          "source_heading": "GETリクエストを使用する",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "Expected Sections specifies single section; no h3 headings with ~~~~~ underlines found in source"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "6ec79a57-5180-4f2f-a964-16a7db77a022"
+}

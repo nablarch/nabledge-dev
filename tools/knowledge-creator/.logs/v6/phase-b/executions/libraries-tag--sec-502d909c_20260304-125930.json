@@ -1,0 +1,92 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 110560,
+  "duration_api_ms": 110489,
+  "num_turns": 3,
+  "result": "",
+  "stop_reason": null,
+  "session_id": "d0a1061e-3901-49f4-8a13-b4d83c3ed464",
+  "total_cost_usd": 0.16181575,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 46219,
+    "cache_read_input_tokens": 156470,
+    "output_tokens": 17674,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 46219,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 17674,
+      "cacheReadInputTokens": 156470,
+      "cacheCreationInputTokens": 46219,
+      "webSearchRequests": 0,
+      "costUSD": 0.16181575,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-502d909c",
+      "title": "エラー表示を行う",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html"
+      ],
+      "index": [
+        {
+          "id": "error-display",
+          "title": "エラー表示を行う",
+          "hints": [
+            "ApplicationException",
+            "nablarch.core.message.ApplicationException",
+            "@AssertTrue",
+            "filter属性",
+            "errorCss",
+            "name属性",
+            "nameAlias属性",
+            "messageFormat",
+            "nablarch_error",
+            "エラー表示",
+            "エラーメッセージ一覧",
+            "個別表示",
+            "ハイライト表示",
+            "相関バリデーション",
+            "カスタムタグ"
+          ]
+        }
+      ],
+      "sections": {
+        "error-display": "エラー表示の機能：\n\n- :ref:`エラーメッセージの一覧表示 <tag-write_error_errors_tag>`\n- :ref:`エラーメッセージの個別表示 <tag-write_error_error_tag>`\n- :ref:`入力項目のハイライト表示 <tag-write_error_css>`\n\n> **補足**: エラー表示に使用するカスタムタグは、リクエストスコープから :java:extdoc:`ApplicationException<nablarch.core.message.ApplicationException>` を取得してエラーメッセージを出力する。:java:extdoc:`ApplicationException<nablarch.core.message.ApplicationException>` は :ref:`on_error_interceptor` を使用してリクエストスコープに設定する。\n\n### エラーメッセージの一覧表示\n\n画面上部にエラーメッセージを一覧表示する場合は :ref:`tag-errors_tag` を使用する。\n\n**すべてのエラーメッセージを表示する場合**\n\n`filter=\"all\"` を指定する。\n\n```jsp\n<n:errors filter=\"all\" errorCss=\"alert alert-danger\" />\n```\n\n![](assets/libraries-tag--sec-502d909c/errors_all.png)\n\n**入力項目に対応しないエラーメッセージのみを表示する場合**\n\n`filter=\"global\"` を指定する。\n\n```java\nthrow new ApplicationException(\n  MessageUtil.createMessage(MessageLevel.ERROR, \"errors.duplicateName\"));\n```\n\n```jsp\n<n:errors filter=\"global\" errorCss=\"alert alert-danger\" />\n```\n\n![](assets/libraries-tag--sec-502d909c/errors_global.png)\n\n### エラーメッセージの個別表示\n\n入力項目ごとにエラーメッセージを表示する場合は :ref:`tag-error_tag` を使用する。\n\n**基本的な使用法**\n\n入力項目と同じ名前を `name` 属性に指定する。\n\n```jsp\n<div>\n  <label>名前</label>\n  <n:text name=\"form.userName\" />\n  <n:error name=\"form.userName\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n</div>\n```\n\n![](assets/libraries-tag--sec-502d909c/error.png)\n\n**相関バリデーションエラーの表示**\n\n:ref:`bean_validation-correlation_validation` のエラーメッセージを特定の項目の近くに表示する場合も :ref:`tag-error_tag` を使用する。\n\n相関バリデーションの例：\n\n```java\n@AssertTrue(message = \"パスワードが一致しません。\")\npublic boolean isComparePassword() {\n    return Objects.equals(password, confirmPassword);\n}\n```\n\nJSP実装：\n\n```jsp\n<div>\n  <label>パスワード</label>\n  <n:password name=\"form.password\" nameAlias=\"form.comparePassword\" />\n  <n:error name=\"form.password\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n  <n:error name=\"form.comparePassword\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n</div>\n<div>\n  <label>パスワード(確認用)</label>\n  <n:password name=\"form.confirmPassword\" nameAlias=\"form.comparePassword\" />\n  <n:error name=\"form.confirmPassword\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n</div>\n```\n\n![](assets/libraries-tag--sec-502d909c/error_correlation_validation.png)\n\n`nameAlias` 属性で相関バリデーションのプロパティ名を指定すると、複数の入力項目を紐付けられる。\n\n### 入力項目のハイライト表示\n\n入力項目のカスタムタグは、エラーがある入力項目の `class` 属性に CSS クラス名を追記する（デフォルト: `nablarch_error`）。\n\nこのクラス名に CSS でスタイルを指定することで、エラーがある入力項目をハイライト表示する。\n\n`nameAlias` 属性を指定することで、複数の入力項目を紐付けて、:ref:`bean_validation-correlation_validation` でエラーになった場合に複数の入力項目をハイライト表示できる。\n\nCSS例：\n\n```css\ninput.nablarch_error,select.nablarch_error {\n  background-color: #FFFFB3;\n}\n```\n\nJSP例：\n\n```jsp\n<div>\n  <label>パスワード</label>\n  <n:password name=\"form.password\" nameAlias=\"form.comparePassword\" />\n  <n:error name=\"form.password\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n  <n:error name=\"form.comparePassword\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n</div>\n<div>\n  <label>パスワード(確認用)</label>\n  <n:password name=\"form.confirmPassword\" nameAlias=\"form.comparePassword\" />\n  <n:error name=\"form.confirmPassword\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n</div>\n```\n\n![](assets/libraries-tag--sec-502d909c/error_css.png)"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "error-display",
+          "source_heading": "エラー表示を行う",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "No formal h3 headings with explicit underlines; subsections marked with .. _label: are referenced sections, not split-level headings. Plain text ≈ 2000 chars, below strict split threshold."
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "f2459116-ceeb-40d0-8c77-ecf657903842"
+}

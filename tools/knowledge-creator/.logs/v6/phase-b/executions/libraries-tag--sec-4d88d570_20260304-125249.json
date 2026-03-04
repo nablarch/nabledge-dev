@@ -1,0 +1,94 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 68266,
+  "duration_api_ms": 68058,
+  "num_turns": 3,
+  "result": "",
+  "stop_reason": null,
+  "session_id": "cb1519a1-640c-437e-b761-3b860a6d519e",
+  "total_cost_usd": 0.11551045000000001,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 36323,
+    "cache_read_input_tokens": 144367,
+    "output_tokens": 11129,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 36323,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 11129,
+      "cacheReadInputTokens": 144367,
+      "cacheCreationInputTokens": 36323,
+      "webSearchRequests": 0,
+      "costUSD": 0.11551045000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-4d88d570",
+      "title": "複合キーのラジオボタンやチェックボックスを作る",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKeyConvertor.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKeyArrayConvertor.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKey.html"
+      ],
+      "index": [
+        {
+          "id": "composite-key-radio-button-checkbox",
+          "title": "複合キーのラジオボタンやチェックボックスを作る",
+          "hints": [
+            "CompositeKey",
+            "CompositeKeyConvertor",
+            "CompositeKeyArrayConvertor",
+            "@CompositeKeyType",
+            "OrderItemsForm",
+            "name属性",
+            "valueObject属性",
+            "keyNames属性",
+            "namePrefix属性",
+            "複合キー",
+            "ラジオボタン",
+            "チェックボックス",
+            "カスタムタグ",
+            "フォーム",
+            "JSP"
+          ]
+        }
+      ],
+      "sections": {
+        "composite-key-radio-button-checkbox": "一覧画面でデータ選択時は、ラジオボタンやチェックボックスを使用する。データ識別値が単一の場合は :ref:`tag-radio_tag` や :ref:`tag-checkbox_tag` を使用できるが、複合キーの場合は単純に実装できない。カスタムタグで複合キー対応のラジオボタン・チェックボックスを提供する。\n\n* :ref:`tag-composite_key_radio_button_tag` - 複合キー対応ラジオボタン\n* :ref:`tag-composite_key_checkbox_tag` - 複合キー対応チェックボックス\n\n> **重要**: この機能を使用するには、:java:extdoc:`CompositeKeyConvertor<nablarch.common.web.compositekey.CompositeKeyConvertor>` と :java:extdoc:`CompositeKeyArrayConvertor<nablarch.common.web.compositekey.CompositeKeyArrayConvertor>` をコンポーネント定義に追加する必要がある。設定方法は :ref:`nablarch_validation-definition_validator_convertor` を参照。\n\n> **重要**: この機能は :java:extdoc:`CompositeKeyConvertor<nablarch.common.web.compositekey.CompositeKeyConvertor>` と :java:extdoc:`CompositeKeyArrayConvertor<nablarch.common.web.compositekey.CompositeKeyArrayConvertor>` を使用するため、:ref:`nablarch_validation` でのみ使用できる。:ref:`bean_validation` は対応していない。\n\n### フォーム\n\n複合キーを保持するプロパティは :java:extdoc:`CompositeKey<nablarch.common.web.compositekey.CompositeKey>` として定義する。\n\n```java\npublic class OrderItemsForm {\n    // 一覧表示で複数データに対する複合キーを受け付けるので、配列として定義する\n    public CompositeKey[] orderItems;\n\n    // CompositeKeyTypeアノテーションで複合キーのサイズを指定する\n    @CompositeKeyType(keySize = 2)\n    public void setOrderItems(CompositeKey[] orderItems) {\n        this.orderItems = orderItems;\n    }\n}\n```\n\n### JSP\n\nn:compositeKeyCheckbox タグの属性：\n\n- **name属性**: フォームのプロパティ名に合わせて指定\n- **valueObject属性**: 複合キーの値を持つオブジェクト\n- **keyNames属性**: valueObject から複合キー値を取得するプロパティ名。指定順でCompositeKeyに設定される\n- **namePrefix属性**: 複合キー値をリクエストパラメータに展開する際のプレフィクス。name属性と異なる値を指定する必要がある\n\n```jsp\n<table>\n  <thead>\n    <tr>\n      <!-- ヘッダ出力は省略 -->\n    </tr>\n  </thead>\n  <tbody>\n    <c:forEach var=\"orderItem\" items=\"${orderItems}\">\n    <tr>\n      <td>\n        <n:compositeKeyCheckbox\n          name=\"form.orderItems\"\n          label=\"\"\n          valueObject=\"${orderItem}\"\n          keyNames=\"orderId,productId\"\n          namePrefix=\"orderItems\" />\n      </td>\n      <!-- 以下略 -->\n    </tr>\n    </c:forEach>\n  </tbody>\n</table>\n```"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "composite-key-radio-button-checkbox",
+          "source_heading": "複合キーのラジオボタンやチェックボックスを作る",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "plain text 1200 chars < 2000 threshold; no h3 headings with underline markers (~~~~~) in source"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "dac4103d-33c9-4b17-9f60-ddcd9f48cfab"
+}

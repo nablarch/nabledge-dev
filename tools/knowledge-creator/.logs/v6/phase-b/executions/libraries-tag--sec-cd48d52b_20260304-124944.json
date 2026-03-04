@@ -1,0 +1,83 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 110341,
+  "duration_api_ms": 110184,
+  "num_turns": 3,
+  "result": "",
+  "stop_reason": null,
+  "session_id": "f71a421b-ebfc-4f23-9e3e-1a3f0fb2bb93",
+  "total_cost_usd": 0.13700475,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 40865,
+    "cache_read_input_tokens": 145735,
+    "output_tokens": 14265,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 40865,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 14265,
+      "cacheReadInputTokens": 145735,
+      "cacheCreationInputTokens": 40865,
+      "webSearchRequests": 0,
+      "costUSD": 0.13700475,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-cd48d52b",
+      "title": "Jakarta Server Pagesカスタムタグ",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html"
+      ],
+      "index": [
+        {
+          "id": "overview",
+          "title": "機能概要",
+          "hints": [
+            "カスタムタグ",
+            "HTMLエスケープ",
+            "XSS対策",
+            "Jakarta Server Pages",
+            "tag_reference",
+            "JSP共通化",
+            "画面作成"
+          ]
+        }
+      ],
+      "sections": {
+        "overview": "> **補足**: Nablarch 5ではJSPカスタムタグと呼ばれていた。Java EEがEclipse Foundationに移管され仕様名が変わったことに伴い「Jakarta Server Pagesカスタムタグ」に名称変更された。変更されたのは名称のみで、機能的な差はない。\n\nウェブアプリケーションの画面作成を支援するカスタムタグを提供する。\n\n### 制約条件\n\n- Jakarta Server Pages 3.1以降をサポートしているWebコンテナで動作\n- 条件分岐やループなどの制御にはJakarta Standard Tag Libraryを使用\n- XHTML 1.0 Transitionalに対応した属性をサポート\n- クライアントのJavaScriptが必須 (:ref:`tag-onclick_override` 参照)\n- GETリクエストで一部のカスタムタグが使用できない (:ref:`tag-using_get` 参照)\n\n### HTML5属性とinput要素サポート\n\n> **重要**: HTML5で追加された属性は :ref:`動的属性 <dynamic_attribute>` を使用して記述できる。次の属性は予めカスタムタグの属性として定義している:\n\n**追加属性**:\n- autocomplete (input、password、form)\n- autofocus (input、textarea、select、button)\n- placeholder (text、password、textarea)\n- maxlength (textarea)\n- multiple (input)\n\n**追加されたinput要素**:\n- :ref:`tag-search_tag` (検索テキスト)\n- :ref:`tag-tel_tag` (電話番号)\n- :ref:`tag-url_tag` (URL)\n- :ref:`tag-email_tag` (メールアドレス)\n- :ref:`tag-date_tag` (日付)\n- :ref:`tag-month_tag` (月)\n- :ref:`tag-week_tag` (週)\n- :ref:`tag-time_tag` (時間)\n- :ref:`tag-datetimeLocal_tag` (ローカル日時)\n- :ref:`tag-number_tag` (数値)\n- :ref:`tag-range_tag` (レンジ)\n- :ref:`tag-color_tag` (色)\n\n各input要素固有の属性はカスタムタグで個別に定義していないため、動的属性により指定する必要がある。\n\n### 対象ユースケース\n\n> **重要**: このカスタムタグは以下のような単純な画面遷移があるWebアプリケーションを対象にしている。操作性を重視したリッチな画面作成やSPA(シングルページアプリケーション)に対応していない:\n>\n> - 検索画面→詳細画面による検索/詳細表示\n> - 入力画面→確認画面→完了画面による登録/更新/削除\n> - ポップアップ(別ウィンドウ、別タブ)による入力補助\n\nプロジェクトでJavaScriptを多用する場合は、カスタムタグが出力するJavaScriptとプロジェクトで作成するJavaScriptで副作用が起きないよう注意する。カスタムタグが出力するJavaScriptについては :ref:`tag-onclick_override` を参照。\n\n## HTMLエスケープ漏れを防げる\n\nHTMLの中では「<」「>」「\\\"」といった文字は特別な意味を持つ。これらを含む値をそのままJSPで出力すると、悪意のあるユーザが容易にスクリプトを埋め込むことができ、クロスサイトスクリプティング(XSS)と呼ばれる脆弱性につながる。入力値を出力する場合、HTMLエスケープが必要になる。\n\nJSPでEL式を使って値を出力する場合、HTMLエスケープされない。そのため、値の出力時はHTMLエスケープを考慮した実装が常に必要になり、生産性の低下につながる。\n\nカスタムタグはデフォルトでHTMLエスケープするため、カスタムタグを使って実装している限り、HTMLエスケープ漏れを防げる。\n\n> **重要**: JavaScriptに対するエスケープ処理は提供していないため、scriptタグのボディやonclick属性など、JavaScriptを記述する部分には動的な値(入力データなど)を埋め込まないこと。JavaScriptを記述する部分に動的な値を埋め込む場合は、プロジェクトの責任でエスケープ処理を実施すること。\n\n参照:\n- :ref:`tag-html_escape`\n- :ref:`tag-html_unescape`\n\n## 入力画面と確認画面のJSPを共通化して実装を減らす\n\n多くのシステムでは、入力画面と確認画面でレイアウトが変わらず、似たようなJSPを作成している。\n\nカスタムタグでは、入力画面と確認画面のJSPを共通化する機能を提供しているため、入力画面向けに作成したJSPに、確認画面との差分(ボタンなど)のみを追加実装するだけで確認画面を作成でき、生産性の向上が期待できる。\n\n参照:\n- :ref:`tag-make_common`"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "overview",
+          "source_heading": "機能概要",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "Expected Sections list specifies only '機能概要' as single section; h3 subsections consolidated as nested headings within section. Pre-section intro content included as section preamble."
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "85425980-92d8-4416-9c77-1d709e4952a7"
+}

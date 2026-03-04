@@ -1,0 +1,91 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 108732,
+  "duration_api_ms": 108565,
+  "num_turns": 3,
+  "result": "Done. Knowledge file for `libraries-tag--sec-f83d1cc8` generated successfully.",
+  "stop_reason": null,
+  "session_id": "d16fcd63-ea5e-4f43-bf83-7b0b9c67ff4d",
+  "total_cost_usd": 0.15576390000000004,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 42092,
+    "cache_read_input_tokens": 149489,
+    "output_tokens": 17635,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 42092,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 17635,
+      "cacheReadInputTokens": 149489,
+      "cacheCreationInputTokens": 42092,
+      "webSearchRequests": 0,
+      "costUSD": 0.15576390000000004,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "libraries-tag--sec-f83d1cc8",
+      "title": "入力フォームを作る",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html"
+      ],
+      "index": [
+        {
+          "id": "input-form",
+          "title": "入力フォームを作る",
+          "hints": [
+            "入力フォーム作成",
+            "カスタムタグ",
+            "入力値復元",
+            "初期値出力",
+            "サブミット制御",
+            "n:form",
+            "n:text",
+            "n:password",
+            "n:error",
+            "n:submit",
+            "name属性",
+            "uri属性",
+            "バリデーション",
+            "リクエストスコープ",
+            "JavaScript変数名"
+          ]
+        }
+      ],
+      "sections": {
+        "input-form": "カスタムタグを使用して入力フォームを作成する。\n\n**カスタムタグ一覧:**\n- `n:form` - フォームタグ\n- `n:text` など - 入力関連カスタムタグ\n- `n:submit` など - サブミット関連カスタムタグ\n- `n:error` など - エラー表示関連カスタムタグ\n\n### 入力値の復元\n\nバリデーションエラーで再表示した場合、カスタムタグがリクエストパラメータから入力値を自動復元する。\n\n### 初期値の出力\n\n初期値を表示するには：\n1. アクション側でリクエストスコープに初期値オブジェクトを設定\n2. カスタムタグの`name`属性でリクエストスコープ変数名と対応させる\n\n### サブミット先URI指定\n\nフォーム内の複数ボタン/リンクから異なるURIにサブミット可能。`uri`属性でサブミット先を指定する。\n\n### 実装例\n\n```jsp\n<n:form>\n  <div>\n    <label>ユーザID</label>\n    <n:text name=\"form.userId\" />\n    <n:error name=\"form.userId\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n  </div>\n  <div>\n    <label>パスワード</label>\n    <n:password name=\"form.password\" />\n    <n:error name=\"form.password\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n  </div>\n  <div style=\"padding: 8px 0;\">\n    <n:submit type=\"submit\" uri=\"/action/login\" value=\"ログイン\" />\n  </div>\n</n:form>\n```\n\n### 出力結果\n\n![ログインフォーム](assets/libraries-tag--sec-f83d1cc8/login_form.png)\n\n### n:form名属性の制約\n\n:ref:`tag-form_tag` の`name`属性には以下の制約がある：\n\n**画面内で一意な名前**\n\nカスタムタグはサブミット制御にJavaScriptを使用する。このJavaScriptはサブミット対象フォームを特定するために :ref:`tag-form_tag` の`name`属性を使用する。そのため、アプリケーションで`name`属性を指定する場合は、画面内で一意な名前を指定する必要がある。\n\nアプリケーションで`name`属性を指定しない場合、カスタムタグが自動的に一意な値を設定する。\n\n**JavaScriptの変数名の構文に従う**\n\n:ref:`tag-form_tag` の`name`属性はJavaScriptで使用されるため、JavaScriptの変数名の構文に則った値を指定する必要がある。\n\n変数名の構文：\n- 先頭は英字\n- 2文字目以降は英数字またはアンダーバー"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "input-form",
+          "source_heading": "入力フォームを作る",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "plain text under 2000 characters"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "c3e990f5-8b8e-4567-9225-3cc712ecf900"
+}

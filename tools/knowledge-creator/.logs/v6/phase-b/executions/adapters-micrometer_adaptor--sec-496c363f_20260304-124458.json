@@ -1,0 +1,84 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 81822,
+  "duration_api_ms": 81688,
+  "num_turns": 3,
+  "result": "Knowledge file conversion complete for `adapters-micrometer_adaptor--sec-496c363f`. The single section \"共通のタグを設定する\" has been converted to JSON with all cross-references preserved, search hints generated, and official documentation URLs collected.",
+  "stop_reason": null,
+  "session_id": "004dfdf6-22f7-46cc-9821-4ccef6bdc116",
+  "total_cost_usd": 0.12690795,
+  "usage": {
+    "input_tokens": 25,
+    "cache_creation_input_tokens": 34731,
+    "cache_read_input_tokens": 140992,
+    "output_tokens": 13874,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 34731,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 25,
+      "outputTokens": 13874,
+      "cacheReadInputTokens": 140992,
+      "cacheCreationInputTokens": 34731,
+      "webSearchRequests": 0,
+      "costUSD": 0.12690795,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "structured_output": {
+    "knowledge": {
+      "id": "adapters-micrometer_adaptor--sec-496c363f",
+      "title": "共通のタグを設定する",
+      "official_doc_urls": [
+        "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+        "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/MeterRegistryFactory.html"
+      ],
+      "index": [
+        {
+          "id": "common-tags-setup",
+          "title": "共通のタグを設定する",
+          "hints": [
+            "nablarch.integration.micrometer.MeterRegistryFactory",
+            "nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory",
+            "Map",
+            "tags",
+            "メトリクス共通タグ",
+            "タグ設定",
+            "マップ設定"
+          ]
+        }
+      ],
+      "sections": {
+        "common-tags-setup": "レジストリファクトリの:java:extdoc:`tags <nablarch.integration.micrometer.MeterRegistryFactory.setTags(java.util.Map)>` プロパティで、すべてのメトリクスに共通するタグを設定できる。この機能はアプリケーションが稼働しているホスト、インスタンス、リージョンなどを識別する情報を設定する用途として使用できる。\n\n**設定例:**\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n\n  <!-- tags プロパティで共通のタグを設定 -->\n  <property name=\"tags\">\n    <map>\n      <entry key=\"foo\" value=\"FOO\" />\n      <entry key=\"bar\" value=\"BAR\" />\n    </map>\n  </property>\n</component>\n```\n\n**プロパティ仕様:**\n\n| プロパティ名 | 型 | 説明 |\n|---|---|---|\n| tags | Map<String, String> | マップのキーがタグ名、値がタグ値に対応付けられる |\n\n**出力例:**\n\n上記設定の場合、全てのメトリクスにfoo=FOO, bar=BARのタグが設定される。\n\n```text\n2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s\n2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.uptime{bar=BAR,foo=FOO} value=27.849s\n2020-09-04 17:30:06.657 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.count{bar=BAR,foo=FOO} value=8\n2020-09-04 17:30:06.657 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.usage{bar=BAR,foo=FOO} value=0.475654\n```"
+      }
+    },
+    "trace": {
+      "sections": [
+        {
+          "section_id": "common-tags-setup",
+          "source_heading": "共通のタグを設定する",
+          "heading_level": "h2",
+          "h3_split": false,
+          "h3_split_reason": "plain text ~285 chars < 2000 threshold"
+        }
+      ]
+    }
+  },
+  "fast_mode_state": "off",
+  "uuid": "8ca6b0f0-aceb-4fca-a903-f6cce2176fd0"
+}
