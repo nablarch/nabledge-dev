@@ -109,8 +109,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", type=str, default=None,
                         help="Test mode: specify test file (e.g., test-files-top3.json)")
-    parser.add_argument("--max-rounds", type=int, default=1,
-                        help="Max D->E->C loop iterations (default: 1, max: 10)")
+    parser.add_argument("--max-rounds", type=int, default=2,
+                        help="Max D->E->C loop iterations (default: 2, max: 10)")
     parser.add_argument("--clean-phase", type=str, default=None,
                         help="Clean artifacts for specified phases before run (e.g. 'D', 'BD')")
     parser.add_argument("--target", type=str, action="append", default=None,
