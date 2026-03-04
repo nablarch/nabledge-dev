@@ -26,16 +26,23 @@ Compare the knowledge file against the source file and report all findings.
 
 ## Validation Checklist
 
-### V1: Information Omissions (severity: critical)
+### V1: Omission Check (severity: critical)
 
-Scan the source file systematically. For each item found in source, check if it exists in the knowledge file. Report every missing item.
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
 
-**What to check:**
-- Property tables: find all rows with プロパティ名, type, default. Check each exists.
-- Code blocks: count in source vs knowledge. Report any missing.
-- Warning/important/tip/note directives: check each exists.
-- Fully-qualified class names and @Annotation names: check each exists.
-- URLs (http://, https://): check each preserved.
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
 
 **Acceptable omissions (DO NOT report as missing):**
 
@@ -49,16 +56,19 @@ Knowledge files are optimized for AI assistants to answer questions. **Accept om
 
 **Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
 
-### V2: Information Fabrication (severity: critical)
+### V2: Fabrication Check (severity: critical)
 
-For each paragraph in knowledge, trace to source. Flag if no corresponding source passage exists.
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
 
-Common fabrication patterns:
-- "以下の手順があります：", "以下の〜が用意されています："
-- Default values not stated in source
-- Explanatory sentences not in source
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
 
-Decision: "Can I point to a specific passage in the source?" If NO → fabrication.
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
 
 ### V3: Section Issues (severity: minor)
 
