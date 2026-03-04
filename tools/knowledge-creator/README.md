@@ -73,6 +73,45 @@ source ~/.bashrc
 
 **Important**: Run commands from repository root directory.
 
+### Quick Start with nc.sh
+
+The `nc.sh` wrapper script provides a simple interface for common workflows:
+
+```bash
+cd tools/knowledge-creator
+
+# UC1: Initial full generation (clean + generate all phases)
+./nc.sh gen 6
+
+# UC2: Resume interrupted generation (no clean)
+./nc.sh gen 6 --resume
+
+# UC3: Regenerate files with changed sources (auto-detect)
+./nc.sh regen 6
+
+# UC4: Regenerate specific file
+./nc.sh regen 6 --target handlers-request-handler
+
+# UC5: Quality improvement (re-validate all files)
+./nc.sh fix 6
+
+# UC6: Fix specific file
+./nc.sh fix 6 --target handlers-request-handler
+```
+
+**Available Options**:
+- `--resume`: Skip cleanup (for gen command only)
+- `--target FILE_ID`: Process specific file (repeatable for multiple files)
+- `--yes`: Skip confirmation prompts
+- `--dry-run`: Dry run without file writes
+- `--max-rounds N`: Max Phase C→D→E iterations (default: 1)
+- `--concurrency N`: Parallel execution count (default: 4)
+- `--test FILE`: Use test configuration file
+
+**When to use nc.sh vs run.py**:
+- **nc.sh**: Common workflows with sensible defaults (recommended for most users)
+- **run.py**: Fine-grained control over phases and advanced options
+
 ### Test Mode (3 files)
 
 Validate with 3 largest files (9 files after splitting):
@@ -128,6 +167,10 @@ python tools/knowledge-creator/run.py --version 6 --phase GF
 | `--test` | Test mode: specify test file (e.g., `test-files-top3.json`) | `None` |
 | `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
 | `--max-rounds` | Max Phase C→D→E loop iterations (1-10) | `1` |
+| `--clean-phase` | Clean artifacts for specified phases before run (e.g., 'D', 'BD') | `None` |
+| `--target` | Target file ID(s) to process (repeatable) | `None` |
+| `--yes` | Skip confirmation prompts | `False` |
+| `--regen` | Detect source changes and regenerate affected files | `False` |
 | `--dry-run` | Dry run (no file writes) | `False` |
 | `--repo` | Repository root path (advanced) | `os.getcwd()` |
 
@@ -154,7 +197,9 @@ All intermediate files are stored in `.logs/v6/` (or `.logs/v5/`):
 tools/knowledge-creator/.logs/v6/
   sources.json                           # Phase A: Source file list
   classified.json                        # Phase A: Classified file list with split info
+  source_hashes.json                     # Source file SHA256 hashes (for --regen)
   structure-check.json                   # Phase C: Structure validation results
+  execution.log                          # Execution log with timestamps
 
   phase-b/
     traces/{file-id}.json                # Phase B: Generation traces
@@ -207,8 +252,11 @@ Large source files are automatically split to prevent context overflow during AI
 Remove generated files for specific version(s):
 
 ```bash
-# Clean version 6 only
+# Clean version 6 (with confirmation prompt)
 python tools/knowledge-creator/clean.py --version 6
+
+# Clean version 6 (skip confirmation)
+python tools/knowledge-creator/clean.py --version 6 --yes
 
 # Clean version 5 only
 python tools/knowledge-creator/clean.py --version 5
@@ -258,6 +306,10 @@ pytest tests/ --cov=steps --cov-report=html
 
 ## Troubleshooting
 
+### `nc.sh: permission denied`
+
+→ Make script executable: `chmod +x tools/knowledge-creator/nc.sh`
+
 ### `FileNotFoundError: .lw/nab-official/v6/`
 
 → Run commands from repository root directory (not `tools/knowledge-creator/`).
@@ -297,8 +349,12 @@ python -m pytest tests/ -v
 
 ### Key Components
 
+- `nc.sh`: User-friendly wrapper script for common workflows
 - `run.py`: Main entry point with phase orchestration
+- `clean.py`: Cleanup utility for generated artifacts
 - `steps/common.py`: Shared utilities (JSON I/O, Claude API wrapper)
+- `steps/cleaner.py`: Phase-specific artifact cleanup
+- `steps/source_tracker.py`: Source change detection (SHA256-based)
 - `steps/step1_list_sources.py`: Source file discovery
 - `steps/step2_classify.py`: File classification and splitting logic
 - `steps/phase_b_generate.py`: Knowledge generation via Claude API
@@ -320,5 +376,6 @@ python -m pytest tests/ -v
 
 ## Version History
 
+- **v2.1** (PR #107): Added nc.sh wrapper, source change tracking, target filtering
 - **v2.0** (PR #107): Split-aware pipeline with Phase M, context overflow prevention
 - **v1.0** (PR #106): Initial implementation with Phases A-G
