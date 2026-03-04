@@ -49,6 +49,14 @@ echo "Copying nabledge-6 skill to project..."
 cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
 # Copy GHC-specific .github/prompts directory (whitelist approach)
+#
+# Why whitelist only .github/prompts?
+# - User-facing content: GitHub Copilot prompt files for /n6 skill
+# - Excluded: Development infrastructure (.github/workflows, .github/scripts)
+#   These are for maintaining the nabledge-dev repository and should not
+#   be distributed to end users
+# - Security: Whitelist prevents accidental distribution of future dev files
+#
 echo "Setting up GitHub Copilot prompts..."
 
 # First, clean up any previously installed development infrastructure files

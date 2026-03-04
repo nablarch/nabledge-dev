@@ -64,6 +64,14 @@ mkdir -p "$DEST_DIR/plugins/nabledge-6/commands"
 cp "$SOURCE_DIR/.claude/commands/n6.md" "$DEST_DIR/plugins/nabledge-6/commands/n6.md"
 
 # Copy GHC-specific .github/prompts directory (whitelist approach)
+#
+# Why whitelist only .github/prompts?
+# - User-facing content: GitHub Copilot prompt files for /n6 skill
+# - Excluded: Development infrastructure (.github/workflows, .github/scripts)
+#   These are for maintaining the nabledge-dev repository and should not
+#   be distributed to end users
+# - Security: Whitelist prevents accidental distribution of future dev files
+#
 # Issue #112: Exclude development infrastructure from plugin distribution
 echo "Copying GHC .github/prompts directory..."
 if [ -f "$SOURCE_DIR/.github/prompts/n6.prompt.md" ]; then
