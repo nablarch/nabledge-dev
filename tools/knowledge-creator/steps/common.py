@@ -87,6 +87,11 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
     env = os.environ.copy()
     env.pop('CLAUDECODE', None)
 
+    # Sanitize potentially sensitive cloud credentials
+    for var in ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
+                'AWS_SESSION_TOKEN', 'AWS_DEFAULT_REGION']:
+        env.pop(var, None)
+
     result = subprocess.run(
         cmd, input=prompt, capture_output=True, text=True, env=env
     )

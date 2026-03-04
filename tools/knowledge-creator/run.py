@@ -108,9 +108,13 @@ def main():
     parser.add_argument("--test", type=str, default=None,
                         help="Test mode: specify test file (e.g., test-files-top3.json)")
     parser.add_argument("--max-rounds", type=int, default=1,
-                        help="Max D->E->C loop iterations (default: 1)")
+                        help="Max D->E->C loop iterations (default: 1, max: 10)")
 
     args = parser.parse_args()
+
+    # Validate --max-rounds range
+    if args.max_rounds < 1 or args.max_rounds > 10:
+        parser.error("--max-rounds must be between 1 and 10")
     versions = ["6", "5"] if args.version == "all" else [args.version]
 
     # Display banner (only once at startup)
