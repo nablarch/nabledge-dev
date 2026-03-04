@@ -70,6 +70,19 @@ XLSX_MAPPING = {
 }
 
 
+def classify_excel_by_pattern(filename: str) -> tuple:
+    """Classify Excel file by filename pattern.
+
+    Returns:
+        (type, category) tuple or None if no match
+    """
+    # Release notes: *-releasenote.xlsx (covers both v5 and v6)
+    if filename.endswith("-releasenote.xlsx"):
+        return ("releases", "releases")
+
+    return None
+
+
 def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
     """Load test file IDs from specified test file"""
     test_file_path = os.path.join(repo_path, "tools/knowledge-creator", test_file_name)
@@ -86,18 +99,19 @@ def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
 
 
 def filter_for_test(classified: list, test_file_ids: set) -> list:
-    """Filter file list for test mode using predefined test file set
+    """Filter file list for test mode using source file names (original_id).
 
-    Includes split files if the original_id matches a test file ID.
+    Test files must specify source file names, not split part IDs.
+    All split parts of a matching source file are automatically included.
     """
     result = []
     for f in classified:
-        # Check direct match
-        if f['id'] in test_file_ids:
+        # Get the original_id (for split files) or id (for non-split files)
+        original_id = f.get('split_info', {}).get('original_id') or f['id']
+
+        if original_id in test_file_ids:
             result.append(f)
-        # Check if this is a split file with original_id in test set
-        elif 'split_info' in f and f['split_info']['original_id'] in test_file_ids:
-            result.append(f)
+
     return result
 
 
@@ -123,13 +137,17 @@ class Step2Classify:
         Returns:
             Unique file ID (category-filename format for rst/md)
         """
+        # For Excel files in XLSX_MAPPING, use category as ID (fixed mapping)
+        if format == "xlsx" and filename in XLSX_MAPPING:
+            return category
+
         base_name = None
         if format == "rst":
             base_name = filename.replace(".rst", "")
         elif format == "md":
             base_name = filename.replace(".md", "")
         elif format == "xlsx":
-            return "security-check"
+            base_name = filename.replace(".xlsx", "")
         else:
             base_name = filename
 
@@ -453,6 +471,10 @@ class Step2Classify:
             elif format == "xlsx":
                 if filename in XLSX_MAPPING:
                     type_, category = XLSX_MAPPING[filename]
+                else:
+                    result = classify_excel_by_pattern(filename)
+                    if result:
+                        type_, category = result
 
             if type_ is None or category is None:
                 unmatched.append({
@@ -510,10 +532,11 @@ class Step2Classify:
             classified = filter_for_test(classified, test_file_ids)
             self.logger.info(f"\n   🧪Test mode ({self.ctx.test_file}): Filtered {original_count} files → {len(classified)} test files")
 
-            # Show missing test files (files in test set but not found in classified)
-            # Include both direct IDs and original_ids from split files
-            found_ids = {f['id'] for f in classified}
-            found_ids.update({f['split_info']['original_id'] for f in classified if 'split_info' in f})
+            # Show missing test files (source files in test set but not found)
+            found_ids = set()
+            for f in classified:
+                original_id = f.get('split_info', {}).get('original_id') or f['id']
+                found_ids.add(original_id)
             missing = test_file_ids - found_ids
             if missing:
                 self.logger.warning(f"   ⚠️WARNING: {len(missing)} test files not found:")

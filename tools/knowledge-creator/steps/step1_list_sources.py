@@ -57,6 +57,14 @@ class Step1ListSources:
                 "filename": "Nablarch機能のセキュリティ対応表.xlsx"
             })
 
+        # 4. Release notes (Excel) - scan releases directory
+        releases_dir = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/nablarch-document/ja/releases/"
+        if os.path.exists(releases_dir):
+            for f in os.listdir(releases_dir):
+                if f.endswith(".xlsx"):
+                    rel_path = os.path.relpath(os.path.join(releases_dir, f), self.ctx.repo)
+                    sources.append({"path": rel_path, "format": "xlsx", "filename": f})
+
         output = {
             "version": self.ctx.version,
             "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
