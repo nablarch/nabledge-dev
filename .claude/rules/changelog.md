@@ -36,10 +36,12 @@ Document only changes to **deployed content** (synced to nablarch/nabledge):
 2. Use appropriate category: Added, Changed, Deprecated, Removed, Fixed, Security
 3. Changes automatically sync to nablarch/nabledge:develop on merge to main
 
-## Release Workflow (nablarch/nabledge)
+## Release Workflow (nabledge-dev)
 
-Version management happens in nablarch/nabledge repository:
+When preparing a release in this repository:
 1. Move [Unreleased] content to new version section with date
-2. Update version in metadata files
-3. Create release PR from develop to main
-4. Tag and release after merge
+2. **Remove empty [Unreleased] section** (add it back in next development)
+3. Update version in metadata files
+4. Create release PR to main
+5. After merge, changes sync to nablarch/nabledge:develop
+6. In nablarch/nabledge: Create release PR from develop to main, tag and release
