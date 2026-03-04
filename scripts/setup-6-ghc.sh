@@ -64,13 +64,13 @@ if [ -d "$PROJECT_ROOT/.github/scripts" ]; then
 fi
 
 # Install only .github/prompts directory
-if [ -d "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts" ]; then
+if [ -f "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts/n6.prompt.md" ]; then
     mkdir -p "$PROJECT_ROOT/.github/prompts"
-    # Copy files only (not directory itself) to avoid including unwanted files
-    cp "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts/"* "$PROJECT_ROOT/.github/prompts/"
+    # Copy only n6.prompt.md to avoid including unwanted files
+    cp "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts/n6.prompt.md" "$PROJECT_ROOT/.github/prompts/n6.prompt.md"
     echo "GitHub Copilot prompts installed: $PROJECT_ROOT/.github/prompts/"
 else
-    echo "Warning: .github/prompts directory not found in plugin"
+    echo "Warning: .github/prompts/n6.prompt.md not found in plugin"
 fi
 
 # Verify installation
