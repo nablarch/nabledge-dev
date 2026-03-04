@@ -101,9 +101,11 @@ def filter_for_test(classified: list, test_file_ids: set) -> list:
 
 
 class Step2Classify:
-    # Thresholds for file splitting
-    FILE_LINE_THRESHOLD = 1000     # Split if file exceeds this
-    SECTION_LINE_THRESHOLD = 1000  # Split if any section exceeds this
+    # Thresholds for file splitting (updated in Task 7 for context overflow prevention)
+    FILE_LINE_THRESHOLD = 800           # File-level split threshold
+    GROUP_LINE_LIMIT = 800              # Max cumulative lines per part
+    GROUP_SECTION_LIMIT = 15            # Max sections per part
+    LARGE_SECTION_LINE_THRESHOLD = 800  # Threshold for h3 expansion
 
     def __init__(self, ctx, dry_run=False, sources_data=None):
         self.ctx = ctx
@@ -248,11 +250,14 @@ class Step2Classify:
         # Check if file exceeds FILE_LINE_THRESHOLD
         file_exceeds = total_lines > self.FILE_LINE_THRESHOLD
 
-        # Check if any section exceeds SECTION_LINE_THRESHOLD
-        has_large_section = any(s['line_count'] > self.SECTION_LINE_THRESHOLD for s in sections)
+        # Check if any section exceeds LARGE_SECTION_LINE_THRESHOLD
+        has_large_section = any(s['line_count'] > self.LARGE_SECTION_LINE_THRESHOLD for s in sections)
 
-        # Split if either condition is true
-        should_split = file_exceeds or has_large_section
+        # Check if file has too many sections
+        has_many_sections = len(sections) > self.GROUP_SECTION_LIMIT
+
+        # Split if any condition is true
+        should_split = file_exceeds or has_large_section or has_many_sections
 
         return should_split, sections, total_lines
 
@@ -275,7 +280,7 @@ class Step2Classify:
         # Expand h2 sections into h3 subsections if they're too large
         expanded_sections = []
         for section in sections:
-            if section['line_count'] > self.SECTION_LINE_THRESHOLD:
+            if section['line_count'] > self.LARGE_SECTION_LINE_THRESHOLD:
                 # Try to split at h3 level
                 h3_subsections = self.analyze_rst_h3_subsections(
                     content, section['start_line'], section['end_line']
@@ -300,8 +305,11 @@ class Step2Classify:
         for section in expanded_sections:
             section_lines = section['line_count']
 
-            # If adding this section would exceed threshold, start new part
-            if current_group and (current_lines + section_lines > self.SECTION_LINE_THRESHOLD):
+            # If adding this section would exceed line or section limit, start new part
+            if current_group and (
+                current_lines + section_lines > self.GROUP_LINE_LIMIT
+                or len(current_group) >= self.GROUP_SECTION_LIMIT
+            ):
                 # Save current group as a part
                 split_id = f"{base_id}-{part_num}"
                 result.append({
