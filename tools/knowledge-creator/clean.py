@@ -10,6 +10,10 @@ import os
 import shutil
 import sys
 
+# Add steps directory to path for logger import
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'steps'))
+from logger import get_logger
+
 
 def detect_repo_root():
     """Detect repository root from current directory."""
@@ -28,25 +32,27 @@ def detect_repo_root():
 
 
 def remove_if_exists(path, label):
+    logger = get_logger()
     """Remove directory if it exists."""
     if os.path.isdir(path):
-        print(f"  Removing: {label}")
+        logger.info(f"  Removing: {label}")
         shutil.rmtree(path)
         return True
     else:
-        print(f"  (not found: {label})")
+        logger.info(f"  (not found: {label})")
         return False
 
 
 def clean_version(repo_root, version):
+    logger = get_logger()
     """Clean generated files for a specific version."""
-    print(f"\n{'='*60}")
-    print(f"Cleaning version {version}")
-    print(f"{'='*60}\n")
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Cleaning version {version}")
+    logger.info(f"{'='*60}\n")
 
     removed_count = 0
 
-    print("=== Removing Final Outputs ===")
+    logger.info("=== Removing Final Outputs ===")
     knowledge_dir = f"{repo_root}/.claude/skills/nabledge-{version}/knowledge"
     docs_dir = f"{repo_root}/.claude/skills/nabledge-{version}/docs"
 
@@ -55,20 +61,21 @@ def clean_version(repo_root, version):
     if remove_if_exists(docs_dir, f"nabledge-{version}/docs/"):
         removed_count += 1
 
-    print("\n=== Removing Intermediate Artifacts ===")
+    logger.info("\n=== Removing Intermediate Artifacts ===")
     logs_dir = f"{repo_root}/tools/knowledge-creator/.logs/v{version}"
 
     if remove_if_exists(logs_dir, f".logs/v{version}/"):
         removed_count += 1
 
-    print(f"\n{'='*60}")
-    print(f"Version {version}: {removed_count} directories removed")
-    print(f"{'='*60}")
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Version {version}: {removed_count} directories removed")
+    logger.info(f"{'='*60}")
 
     return removed_count
 
 
 def main():
+    logger = get_logger()
     parser = argparse.ArgumentParser(
         description="Clean generated knowledge files and logs"
     )
@@ -92,27 +99,27 @@ def main():
     else:
         repo_root = detect_repo_root()
         if repo_root is None:
-            print("Error: Cannot detect repository root.")
-            print("Please run from repository root or tools/knowledge-creator/")
-            print("Or specify --repo /path/to/repository")
+            logger.error("Error: Cannot detect repository root.")
+            logger.info("Please run from repository root or tools/knowledge-creator/")
+            logger.info("Or specify --repo /path/to/repository")
             sys.exit(1)
 
     # Validate repository root
     if not os.path.isdir(repo_root):
-        print(f"Error: Repository path does not exist: {repo_root}")
+        logger.error(f"Error: Repository path does not exist: {repo_root}")
         sys.exit(1)
 
     run_py = os.path.join(repo_root, "tools/knowledge-creator/run.py")
     if not os.path.exists(run_py):
-        print(f"Error: Not a valid nabledge repository: {repo_root}")
-        print(f"Missing: tools/knowledge-creator/run.py")
+        logger.error(f"Error: Not a valid nabledge repository: {repo_root}")
+        logger.info(f"Missing: tools/knowledge-creator/run.py")
         sys.exit(1)
 
-    print("="*60)
-    print("Knowledge Creator - Clean Generated Files")
-    print("="*60)
-    print(f"\nRepository: {repo_root}")
-    print(f"Version: {args.version}\n")
+    logger.info("="*60)
+    logger.info("Knowledge Creator - Clean Generated Files")
+    logger.info("="*60)
+    logger.info(f"\nRepository: {repo_root}")
+    logger.info(f"Version: {args.version}\n")
 
     # Determine versions to clean
     versions = ["6", "5"] if args.version == "all" else [args.version]
@@ -121,9 +128,9 @@ def main():
     for version in versions:
         total_removed += clean_version(repo_root, version)
 
-    print(f"\n{'='*60}")
-    print(f"Clean complete. Total: {total_removed} directories removed")
-    print("="*60)
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Clean complete. Total: {total_removed} directories removed")
+    logger.info("="*60)
 
 
 if __name__ == "__main__":

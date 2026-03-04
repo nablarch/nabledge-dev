@@ -11,6 +11,7 @@ from glob import glob
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .common import load_json, write_json, read_file, write_file, run_claude as _default_run_claude
+from .logger import get_logger
 
 CLASSIFY_PATTERNS_SCHEMA = {
     "type": "object",
@@ -52,6 +53,7 @@ class PhaseFFinalize:
         self.ctx = ctx
         self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
+        self.logger = get_logger()
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/classify_patterns.md"
         )
@@ -129,7 +131,7 @@ class PhaseFFinalize:
             })
 
         if to_classify and not self.dry_run:
-            print(f"  Classifying {len(to_classify)} files...")
+            self.logger.info(f"  Classifying {len(to_classify)} files...")
             with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
                 futures = {}
                 for fi, knowledge in to_classify:
@@ -161,7 +163,7 @@ class PhaseFFinalize:
 
         if not self.dry_run:
             write_file(self.ctx.index_path, '\n'.join(lines))
-            print(f"  Wrote: {self.ctx.index_path} ({len(entries)} entries)")
+            self.logger.info(f"  Wrote: {self.ctx.index_path} ({len(entries)} entries)")
 
     def _convert_asset_paths(self, content, file_info):
         """Convert asset paths for browsable docs.
@@ -245,7 +247,7 @@ class PhaseFFinalize:
                 write_file(md_path, "\n".join(md_lines))
             generated += 1
 
-        print(f"  Generated {generated} docs")
+        self.logger.info(f"  Generated {generated} docs")
 
     def _generate_summary(self):
         log_dir = self.ctx.log_dir
@@ -286,14 +288,14 @@ class PhaseFFinalize:
 
         if not self.dry_run:
             write_json(f"{log_dir}/summary.json", summary)
-            print(f"  Summary: {log_dir}/summary.json")
+            self.logger.info(f"  Summary: {log_dir}/summary.json")
 
     def run(self):
-        print("  Building index.toon...")
+        self.logger.info("  Building index.toon...")
         self._build_index_toon()
 
-        print("  Generating docs...")
+        self.logger.info("  Generating docs...")
         self._generate_docs()
 
-        print("  Generating summary...")
+        self.logger.info("  Generating summary...")
         self._generate_summary()

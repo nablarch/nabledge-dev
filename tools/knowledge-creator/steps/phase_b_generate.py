@@ -11,6 +11,7 @@ import subprocess
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .common import load_json, write_json, read_file, run_claude as _default_run_claude
+from .logger import get_logger
 
 
 class PhaseBGenerate:
@@ -18,6 +19,7 @@ class PhaseBGenerate:
         self.ctx = ctx
         self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
+        self.logger = get_logger()
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/generate.md"
         )
@@ -29,6 +31,7 @@ class PhaseBGenerate:
             r'```json\s*\n(\{[^`]+\})\s*\n```',
             self.prompt_template, re.DOTALL
         )
+        self.logger = get_logger()
         if not match:
             raise ValueError("JSON Schema not found in prompt template")
         schema = json.loads(match.group(1))
@@ -106,7 +109,7 @@ class PhaseBGenerate:
             sections_list = file_info["section_range"]["sections"]
             if isinstance(sections_list, list) and sections_list:
                 if len(sections_list) > 10:
-                    print(f"    Passing {len(sections_list)} detected sections to Claude")
+                    self.logger.debug(f"    Passing {len(sections_list)} detected sections to Claude")
                 sections_md = "\n".join(f"- {s}" for s in sections_list)
                 prompt = prompt.replace("{EXPECTED_SECTIONS}", sections_md)
             else:
@@ -145,10 +148,10 @@ class PhaseBGenerate:
         log_path = f"{self.ctx.log_dir}/generate/{file_id}.json"
 
         if os.path.exists(output_path):
-            print(f"  [SKIP] {file_id}")
+            self.logger.info(f"  [SKIP] {file_id}")
             return {"status": "skip", "id": file_id}
 
-        print(f"   🤖[GEN] {file_id}")
+        self.logger.info(f"   🤖[GEN] {file_id}")
         source_content = read_file(source_path)
 
         if 'section_range' in file_info:
@@ -212,7 +215,7 @@ class PhaseBGenerate:
         classified = load_json(self.ctx.classified_list_path)
 
         if self.dry_run:
-            print(f"Would generate {len(classified['files'])} knowledge files")
+            self.logger.info(f"Would generate {len(classified['files'])} knowledge files")
             return
 
         with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
@@ -222,7 +225,7 @@ class PhaseBGenerate:
                 r = future.result()
                 results[r["status"]] += 1
                 if r["status"] == "error":
-                    print(f"    ERROR: {r['id']}: {r.get('error', '')}")
+                    self.logger.error(f"    ERROR: {r['id']}: {r.get('error', '')}")
 
         ok_icon = "✅" if results['error'] == 0 else "⚠️"
-        print(f"\n   {ok_icon} Generation: OK={results['ok']}, Skip={results['skip']}, Error={results['error']}")
+        self.logger.error(f"\n   {ok_icon} Generation: OK={results['ok']}, Skip={results['skip']}, Error={results['error']}")

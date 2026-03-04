@@ -8,6 +8,7 @@ import os
 import re
 import json
 from .common import load_json, write_json, read_file
+from .logger import get_logger
 
 KEBAB_CASE_PATTERN = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 VALID_PROCESSING_PATTERNS = {
@@ -19,6 +20,7 @@ VALID_PROCESSING_PATTERNS = {
 class PhaseCStructureCheck:
     def __init__(self, ctx):
         self.ctx = ctx
+        self.logger = get_logger()
 
     def count_source_headings(self, content, fmt):
         if fmt == "rst":
@@ -150,7 +152,7 @@ class PhaseCStructureCheck:
                 results["error"] += 1
                 results["error_count"] += len(errs)
                 results["errors"][fi["id"]] = errs
-                print(f"  [FAIL] {fi['id']}: {len(errs)} errors")
+                self.logger.warning(f"  [FAIL] {fi['id']}: {len(errs)} errors")
             else:
                 results["pass"] += 1
                 results["pass_ids"].append(fi["id"])
@@ -158,6 +160,6 @@ class PhaseCStructureCheck:
         write_json(self.ctx.structure_check_path, results)
 
         pass_icon = "✅" if results['pass'] == results['total'] else "⚠️"
-        print(f"\n   {pass_icon} Structure Check: {results['pass']}/{results['total']} pass, "
-              f"{results['error']} fail ({results['error_count']} errors)")
+        self.logger.info(f"\n   {pass_icon} Structure Check: {results['pass']}/{results['total']} pass, "
+                         f"{results['error']} fail ({results['error_count']} errors)")
         return results

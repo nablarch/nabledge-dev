@@ -7,6 +7,7 @@ import os
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .common import load_json, write_json, read_file, run_claude as _default_run_claude
+from .logger import get_logger
 
 KNOWLEDGE_SCHEMA = {
     "type": "object",
@@ -37,6 +38,7 @@ class PhaseEFix:
         self.ctx = ctx
         self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
+        self.logger = get_logger()
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/fix.md"
         )
@@ -55,6 +57,7 @@ class PhaseEFix:
         file_id = file_info["id"]
         findings_path = f"{self.ctx.findings_dir}/{file_id}.json"
 
+        self.logger = get_logger()
         if not os.path.exists(findings_path):
             return {"status": "skip", "id": file_id}
 
@@ -84,7 +87,7 @@ class PhaseEFix:
                 input_sec_chars = sum(len(v) for v in knowledge.get("sections", {}).values())
                 output_sec_chars = sum(len(v) for v in fixed.get("sections", {}).values())
                 if input_sec_chars > 0 and output_sec_chars < input_sec_chars * 0.5:
-                    print(f"    WARNING: {file_id}: output shrunk to {output_sec_chars/input_sec_chars:.0%} "
+                    self.logger.warning(f"    WARNING: {file_id}: output shrunk to {output_sec_chars/input_sec_chars:.0%} "
                           f"({output_sec_chars:,} / {input_sec_chars:,} chars) - rejecting fix")
                     return {"status": "error", "id": file_id,
                             "error": f"Output too small: {output_sec_chars}/{input_sec_chars} chars"}
@@ -105,7 +108,7 @@ class PhaseEFix:
         target_set = set(target_ids)
         targets = [f for f in classified["files"] if f["id"] in target_set]
 
-        print(f"Fixing {len(targets)} files...")
+        self.logger.info(f"Fixing {len(targets)} files...")
 
         with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
             futures = [executor.submit(self.fix_one, fi) for fi in targets]
@@ -114,9 +117,9 @@ class PhaseEFix:
                 r = future.result()
                 if r["status"] == "fixed":
                     fixed += 1
-                    print(f"  [FIXED] {r['id']}")
+                    self.logger.info(f"  [FIXED] {r['id']}")
                 elif r["status"] == "error":
-                    print(f"  [ERROR] {r['id']}: {r.get('error','')}")
+                    self.logger.error(f"  [ERROR] {r['id']}: {r.get('error','')}")
 
-        print(f"\n修正完了: {fixed}/{len(targets)}")
+        self.logger.info(f"\n修正完了: {fixed}/{len(targets)}")
         return {"fixed": fixed, "total": len(targets)}

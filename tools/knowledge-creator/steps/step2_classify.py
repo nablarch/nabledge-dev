@@ -9,6 +9,7 @@ import json
 import re
 from datetime import datetime
 from .common import load_json, write_json, read_file
+from .logger import get_logger
 
 
 # RST path-based mapping (evaluated in order, first match wins)
@@ -109,6 +110,7 @@ class Step2Classify:
         self.ctx = ctx
         self.dry_run = dry_run
         self.sources_data = sources_data
+        self.logger = get_logger()
 
     def generate_id(self, filename: str, format: str, category: str = None) -> str:
         """Generate knowledge file ID from filename and category
@@ -273,11 +275,11 @@ class Step2Classify:
                         h3_subs[0]['start_line'] = section['start_line']
                         h3_subs[0]['line_count'] = h3_subs[0]['end_line'] - h3_subs[0]['start_line']
                     expanded_sections.extend(h3_subs)
-                    print(f"    h3 fallback: '{section['title']}' ({section['line_count']} lines) → {len(h3_subs)} h3 subsections")
+                    self.logger.debug(f"    h3 fallback: '{section['title']}' ({section['line_count']} lines) → {len(h3_subs)} h3 subsections")
                 else:
                     # h3がない巨大h2 → そのまま(警告付き)
                     expanded_sections.append(section)
-                    print(f"    WARNING: '{section['title']}' has {section['line_count']} lines but no h3 subsections")
+                    self.logger.warning(f"    WARNING: '{section['title']}' has {section['line_count']} lines but no h3 subsections")
             else:
                 expanded_sections.append(section)
 
@@ -411,12 +413,12 @@ class Step2Classify:
                 split_entries = self.split_file_entry(entry, sections, content)
                 final_classified.extend(split_entries)
                 split_count += 1
-                print(f"   ✂️Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
+                self.logger.info(f"   ✂️Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
             else:
                 final_classified.append(entry)
 
         if split_count > 0:
-            print(f"\n   ✂️Split {split_count} large files into {len(final_classified) - len(classified) + split_count} total entries")
+            self.logger.info(f"\n   ✂️Split {split_count} large files into {len(final_classified) - len(classified) + split_count} total entries")
 
         classified = final_classified
 
@@ -425,7 +427,7 @@ class Step2Classify:
             test_file_ids = load_test_file_ids(self.ctx.repo, self.ctx.test_file)
             original_count = len(classified)
             classified = filter_for_test(classified, test_file_ids)
-            print(f"\n   🧪Test mode ({self.ctx.test_file}): Filtered {original_count} files → {len(classified)} test files")
+            self.logger.info(f"\n   🧪Test mode ({self.ctx.test_file}): Filtered {original_count} files → {len(classified)} test files")
 
             # Show missing test files (files in test set but not found in classified)
             # Include both direct IDs and original_ids from split files
@@ -433,9 +435,9 @@ class Step2Classify:
             found_ids.update({f['split_info']['original_id'] for f in classified if 'split_info' in f})
             missing = test_file_ids - found_ids
             if missing:
-                print(f"   ⚠️WARNING: {len(missing)} test files not found:")
+                self.logger.warning(f"   ⚠️WARNING: {len(missing)} test files not found:")
                 for mid in sorted(missing):
-                    print(f"      - {mid}")
+                    self.logger.warning(f"      - {mid}")
 
         # Generate output
         output = {
@@ -475,7 +477,7 @@ class Step2Classify:
             "security-check": "🔒"
         }
 
-        print(f"\n   📑Classified {len(classified)} files")
+        self.logger.info(f"\n   📑Classified {len(classified)} files")
 
         # Group by type, then by category
         type_order = ['processing-pattern', 'component', 'development-tools', 'setup', 'about', 'guide', 'check']
@@ -492,7 +494,7 @@ class Step2Classify:
         for type_name in type_order:
             type_files = [f for f in classified if f['type'] == type_name]
             count = len(type_files)
-            print(f"      {type_emoji[type_name]}{type_name}: {count}")
+            self.logger.info(f"      {type_emoji[type_name]}{type_name}: {count}")
 
             if count > 0:
                 # Count by category
@@ -504,18 +506,18 @@ class Step2Classify:
                 # Sort categories by count (descending) then by name
                 for cat in sorted(category_counts.keys(), key=lambda x: (-category_counts[x], x)):
                     emoji = category_emoji.get(cat, "📄")
-                    print(f"         {emoji}{cat}: {category_counts[cat]}")
+                    self.logger.info(f"         {emoji}{cat}: {category_counts[cat]}")
 
         if unmatched:
-            print(f"\n   ⚠️WARNING: {len(unmatched)} files could not be classified:")
+            self.logger.warning(f"\n   ⚠️WARNING: {len(unmatched)} files could not be classified:")
             for item in unmatched[:10]:  # Show first 10
-                print(f"      {item['path']}")
+                self.logger.warning(f"      {item['path']}")
             if len(unmatched) > 10:
-                print(f"      ... and {len(unmatched) - 10} more")
+                self.logger.warning(f"      ... and {len(unmatched) - 10} more")
 
         if not self.dry_run:
             write_json(self.ctx.classified_list_path, output)
             rel_path = os.path.relpath(self.ctx.classified_list_path, self.ctx.repo)
-            print(f"\n   💾Saved: {rel_path}")
+            self.logger.info(f"\n   💾Saved: {rel_path}")
 
         return output

@@ -2,6 +2,7 @@
 import os
 import shutil
 from steps.common import load_json, write_json
+from .logger import get_logger
 
 
 class MergeSplitFiles:
@@ -14,6 +15,7 @@ class MergeSplitFiles:
 
     def __init__(self, ctx):
         self.ctx = ctx
+        self.logger = get_logger()
 
     def _merge_trace_files(self, original_id, parts):
         """Merge trace files from split parts.
@@ -81,7 +83,7 @@ class MergeSplitFiles:
         if not split_groups:
             return
 
-        print(f"\n--- Merging Split Files ---")
+        self.logger.info(f"\n--- Merging Split Files ---")
         merged_groups = {}
 
         for original_id, parts in split_groups.items():
@@ -98,10 +100,10 @@ class MergeSplitFiles:
                     break
 
             if not all_exist:
-                print(f"  [SKIP] {original_id}: not all parts generated")
+                self.logger.info(f"  [SKIP] {original_id}: not all parts generated")
                 continue
 
-            print(f"   🔗 [MERGE] {original_id}: {len(parts)} parts")
+            self.logger.info(f"   🔗 [MERGE] {original_id}: {len(parts)} parts")
             part_jsons = [load_json(pp) for pp in part_paths]
 
             merged = {
@@ -179,7 +181,7 @@ class MergeSplitFiles:
 
                 merged_groups[original_id] = parts
             except Exception as e:
-                print(f"    ERROR: {original_id}: {e}")
+                self.logger.error(f"    ERROR: {original_id}: {e}")
 
         # Update classified_list
         if merged_groups:

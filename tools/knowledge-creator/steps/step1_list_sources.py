@@ -6,12 +6,14 @@ Scan source directories and generate a list of all documentation files to proces
 import os
 from datetime import datetime, timezone
 from .common import write_json
+from .logger import get_logger
 
 
 class Step1ListSources:
     def __init__(self, ctx, dry_run=False):
         self.ctx = ctx
         self.dry_run = dry_run
+        self.logger = get_logger()
 
     def run(self):
         sources = []
@@ -61,14 +63,14 @@ class Step1ListSources:
             "sources": sources,
         }
 
-        print(f"\n   📊Found {len(sources)} source files")
-        print(f"      📝RST: {sum(1 for s in sources if s['format'] == 'rst')}")
-        print(f"      📄MD: {sum(1 for s in sources if s['format'] == 'md')}")
-        print(f"      📊Excel: {sum(1 for s in sources if s['format'] == 'xlsx')}")
+        self.logger.info(f"\n   📊Found {len(sources)} source files")
+        self.logger.info(f"      📝RST: {sum(1 for s in sources if s['format'] == 'rst')}")
+        self.logger.info(f"      📄MD: {sum(1 for s in sources if s['format'] == 'md')}")
+        self.logger.info(f"      📊Excel: {sum(1 for s in sources if s['format'] == 'xlsx')}")
 
         if not self.dry_run:
             write_json(self.ctx.source_list_path, output)
             rel_path = os.path.relpath(self.ctx.source_list_path, self.ctx.repo)
-            print(f"\n   💾Saved: {rel_path}")
+            self.logger.info(f"\n   💾Saved: {rel_path}")
 
         return output

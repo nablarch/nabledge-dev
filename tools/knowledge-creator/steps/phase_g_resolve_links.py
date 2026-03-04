@@ -8,6 +8,7 @@ import re
 import json
 from glob import glob
 from .common import load_json, write_json
+from .logger import get_logger
 
 
 class PhaseGResolveLinks:
@@ -15,6 +16,7 @@ class PhaseGResolveLinks:
         self.ctx = ctx
         self.label_index = {}  # label -> (file_id, section_id)
         self.doc_index = {}    # rst_path -> file_id
+        self.logger = get_logger()
 
     def _validate_file_id(self, file_id):
         """Validate file_id contains only safe characters.
@@ -28,6 +30,7 @@ class PhaseGResolveLinks:
         Raises:
             ValueError: If file_id contains unsafe characters
         """
+        self.logger = get_logger()
         if not file_id:
             raise ValueError("file_id cannot be empty")
 
@@ -43,7 +46,7 @@ class PhaseGResolveLinks:
 
     def _build_label_index(self):
         """Scan all knowledge files to build global label index."""
-        print("  Building label index...")
+        self.logger.info("  Building label index...")
 
         # Get all knowledge JSON files
         pattern = f"{self.ctx.knowledge_dir}/**/*.json"
@@ -83,7 +86,7 @@ class PhaseGResolveLinks:
             self.label_index[file_label_hyphen] = (file_id, None)
             self.label_index[file_id] = (file_id, None)
 
-        print(f"    Indexed {len(self.label_index)} labels")
+        self.logger.debug(f"    Indexed {len(self.label_index)} labels")
 
     def _find_section_for_label(self, knowledge, label):
         """Find section_id that matches a label."""
@@ -109,7 +112,7 @@ class PhaseGResolveLinks:
 
     def _build_doc_index(self):
         """Build index of RST paths to file_ids."""
-        print("  Building doc index...")
+        self.logger.info("  Building doc index...")
 
         # This requires knowledge of the source file structure
         # For now, use a simple heuristic based on file_id
@@ -130,7 +133,7 @@ class PhaseGResolveLinks:
                     if partial_path not in self.doc_index:
                         self.doc_index[partial_path] = file_id
 
-        print(f"    Indexed {len(self.doc_index)} document paths")
+        self.logger.debug(f"    Indexed {len(self.doc_index)} document paths")
 
     def _resolve_ref(self, match, current_file_id):
         """Resolve :ref:`...` to Markdown link."""
@@ -270,13 +273,13 @@ class PhaseGResolveLinks:
             self._validate_file_id(from_file_id)
             self._validate_file_id(to_file_id)
         except ValueError as e:
-            print(f"  Warning: Invalid file_id in path calculation: {e}")
+            self.logger.warning(f"  Warning: Invalid file_id in path calculation: {e}")
             return f"{to_file_id}.md"  # Return simple path anyway
 
         # Simple implementation: assume flat structure for now
         # TODO: Implement proper relative path calculation based on file structure
         if '/' in from_file_id or '/' in to_file_id:
-            print(f"  Warning: Relative path calculation for nested files not yet fully supported")
+            self.logger.warning(f"  Warning: Relative path calculation for nested files not yet fully supported")
 
         return f"{to_file_id}.md"
 
@@ -326,7 +329,7 @@ class PhaseGResolveLinks:
 
     def run(self):
         """Execute Phase G: Link Resolution."""
-        print("\n=== Phase G: Link Resolution ===")
+        self.logger.info("\n=== Phase G: Link Resolution ===")
 
         # Build indices
         self._build_label_index()
@@ -353,10 +356,10 @@ class PhaseGResolveLinks:
                 write_json(output_path, resolved_knowledge)
                 resolved_count += 1
             except Exception as e:
-                print(f"  Error resolving {json_path}: {e}")
+                self.logger.error(f"  Error resolving {json_path}: {e}")
 
-        print(f"\nResolved links in {resolved_count} files")
-        print(f"Output: {resolved_dir}")
+        self.logger.info(f"\nResolved links in {resolved_count} files")
+        self.logger.info(f"Output: {resolved_dir}")
 
         return {
             "resolved_count": resolved_count,

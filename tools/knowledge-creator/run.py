@@ -12,6 +12,8 @@ from dataclasses import dataclass
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'steps'))
 
+from logger import setup_logger, get_logger
+
 
 @dataclass
 class Context:
@@ -117,52 +119,61 @@ def main():
         parser.error("--max-rounds must be between 1 and 10")
     versions = ["6", "5"] if args.version == "all" else [args.version]
 
+    # Setup logger (console only initially, file handler added per version)
+    setup_logger()
+    logger = get_logger()
+
     # Display banner (only once at startup)
     def print_banner():
-        print("\n")
-        print("  ╔════════════════════════════════════════════════════════════════╗")
-        print("  ║                                                                ║")
-        print("  ║              N A B L A R C H   K N O W L E D G E               ║")
-        print("  ║                                                                ║")
-        print("  ║                  Knowledge File Creator Tool                   ║")
-        print("  ║                                                                ║")
-        print("  ║      Converting Nablarch docs to AI-ready knowledge files      ║")
-        print("  ║                                                                ║")
-        print("  ╚════════════════════════════════════════════════════════════════╝")
-        print("")
+        logger.info("\n")
+        logger.info("  ╔════════════════════════════════════════════════════════════════╗")
+        logger.info("  ║                                                                ║")
+        logger.info("  ║              N A B L A R C H   K N O W L E D G E               ║")
+        logger.info("  ║                                                                ║")
+        logger.info("  ║                  Knowledge File Creator Tool                   ║")
+        logger.info("  ║                                                                ║")
+        logger.info("  ║      Converting Nablarch docs to AI-ready knowledge files      ║")
+        logger.info("  ║                                                                ║")
+        logger.info("  ╚════════════════════════════════════════════════════════════════╝")
+        logger.info("")
 
     print_banner()
 
     for v in versions:
-        print(f"\n{'='*60}")
-        print(f"🚀Knowledge Creator - Version {v}")
-        print(f"{'='*60}")
+        logger.info(f"\n{'='*60}")
+        logger.info(f"🚀Knowledge Creator - Version {v}")
+        logger.info(f"{'='*60}")
 
         # Display execution configuration
         mode_emoji = "🧪" if args.test else "🏭"
         mode = "Test" if args.test else "Production"
-        print(f"\n⚙️Configuration")
-        print(f"   Mode: {mode_emoji}{mode}")
+        logger.info(f"\n⚙️Configuration")
+        logger.info(f"   Mode: {mode_emoji}{mode}")
         if args.test:
-            print(f"   Test File: 📄{args.test}")
-        print(f"   Phases: {args.phase or 'ABCDEM (all)'}")
-        print(f"   Max Rounds: {args.max_rounds}")
-        print(f"   Concurrency: {args.concurrency}")
-        print(f"   Dry-run: {'✅Yes' if args.dry_run else '❌No'}")
-        print(f"   Repository: {args.repo}")
-        print()
+            logger.info(f"   Test File: 📄{args.test}")
+        logger.info(f"   Phases: {args.phase or 'ABCDEM (all)'}")
+        logger.info(f"   Max Rounds: {args.max_rounds}")
+        logger.info(f"   Concurrency: {args.concurrency}")
+        logger.info(f"   Dry-run: {'✅Yes' if args.dry_run else '❌No'}")
+        logger.info(f"   Repository: {args.repo}")
+        logger.info("")
 
         ctx = Context(
             version=v, repo=args.repo, concurrency=args.concurrency,
             test_file=args.test, max_rounds=args.max_rounds
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
+
+        # Configure logger with execution log file
+        execution_log_path = f"{ctx.log_dir}/execution.log"
+        setup_logger(log_file_path=execution_log_path)
+        logger.info(f"Logging to: {execution_log_path}")
         phases = args.phase or "ABCDEM"
 
         # Phase A
         if "A" in phases:
-            print("\n📋Phase A: Prepare")
-            print("   └─ Scanning documentation sources...")
+            logger.info("\n📋Phase A: Prepare")
+            logger.info("   └─ Scanning documentation sources...")
             from steps.step1_list_sources import Step1ListSources
             from steps.step2_classify import Step2Classify
             sources = Step1ListSources(ctx, dry_run=args.dry_run).run()
@@ -170,29 +181,29 @@ def main():
 
         # Phase B
         if "B" in phases:
-            print("\n🤖Phase B: Generate")
-            print("   └─ Converting documentation to knowledge files...")
+            logger.info("\n🤖Phase B: Generate")
+            logger.info("   └─ Converting documentation to knowledge files...")
             from steps.phase_b_generate import PhaseBGenerate
             PhaseBGenerate(ctx, dry_run=args.dry_run).run()
 
         # Phase C/D/E loop
         for round_num in range(1, ctx.max_rounds + 1):
-            print(f"\n🔄Round {round_num}/{ctx.max_rounds}")
+            logger.info(f"\n🔄Round {round_num}/{ctx.max_rounds}")
 
             c_result = None
             if "C" in phases:
-                print("\n✅Phase C: Structure Check")
-                print("   └─ Validating JSON schema and structure...")
+                logger.info("\n✅Phase C: Structure Check")
+                logger.info("   └─ Validating JSON schema and structure...")
                 from steps.phase_c_structure_check import PhaseCStructureCheck
                 c_result = PhaseCStructureCheck(ctx).run()
                 if c_result["error_count"] > 0:
                     rel_path = os.path.relpath(f"{ctx.log_dir}/structure-check.json", ctx.repo)
-                    print(f"   ⚠️Structure errors: {c_result['error_count']} found")
-                    print(f"   📄Details: {rel_path}")
+                    logger.warning(f"   ⚠️Structure errors: {c_result['error_count']} found")
+                    logger.info(f"   📄Details: {rel_path}")
 
             if "D" in phases:
-                print("\n🔍Phase D: Content Check")
-                print("   └─ Comparing knowledge files with source docs...")
+                logger.info("\n🔍Phase D: Content Check")
+                logger.info("   └─ Comparing knowledge files with source docs...")
                 from steps.phase_d_content_check import PhaseDContentCheck
                 pass_ids = c_result.get("pass_ids") if c_result else None
                 d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
@@ -200,12 +211,12 @@ def main():
                 )
 
                 if d_result["issues_count"] == 0:
-                    print(f"   ✨Round {round_num}: All checks passed!")
+                    logger.info(f"   ✨Round {round_num}: All checks passed!")
                     break
 
                 if "E" in phases:
-                    print("\n🔧Phase E: Fix")
-                    print("   └─ Applying fixes to knowledge files...")
+                    logger.info("\n🔧Phase E: Fix")
+                    logger.info("   └─ Applying fixes to knowledge files...")
                     from steps.phase_e_fix import PhaseEFix
                     PhaseEFix(ctx, dry_run=args.dry_run).run(
                         target_ids=d_result["issue_file_ids"]
@@ -217,28 +228,28 @@ def main():
 
         # Phase M (replaces G+F in default flow)
         if "M" in phases:
-            print("\n📦Phase M: Merge + Resolve + Finalize")
-            print("   └─ Merging, resolving links, generating docs...")
+            logger.info("\n📦Phase M: Merge + Resolve + Finalize")
+            logger.info("   └─ Merging, resolving links, generating docs...")
             from steps.phase_m_finalize import PhaseMFinalize
             PhaseMFinalize(ctx, dry_run=args.dry_run).run()
 
         # Phase G (backward compat: only when explicitly specified without M)
         if "G" in phases and "M" not in phases:
-            print("\n🔗Phase G: Resolve Links")
-            print("   └─ Resolving RST cross-references...")
+            logger.info("\n🔗Phase G: Resolve Links")
+            logger.info("   └─ Resolving RST cross-references...")
             from steps.phase_g_resolve_links import PhaseGResolveLinks
             PhaseGResolveLinks(ctx).run()
 
         # Phase F (backward compat: only when explicitly specified without M)
         if "F" in phases and "M" not in phases:
-            print("\n📦Phase F: Finalize")
-            print("   └─ Generating browsable docs and index...")
+            logger.info("\n📦Phase F: Finalize")
+            logger.info("   └─ Generating browsable docs and index...")
             from steps.phase_f_finalize import PhaseFFinalize
             PhaseFFinalize(ctx, dry_run=args.dry_run).run()
 
-        print(f"\n{'='*60}")
-        print(f"✨Completed version {v}")
-        print(f"{'='*60}\n")
+        logger.info(f"\n{'='*60}")
+        logger.info(f"✨Completed version {v}")
+        logger.info(f"{'='*60}\n")
 
 
 if __name__ == "__main__":

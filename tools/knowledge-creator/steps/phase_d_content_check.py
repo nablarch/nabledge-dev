@@ -8,6 +8,7 @@ import os
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .common import load_json, write_json, read_file, run_claude as _default_run_claude
+from .logger import get_logger
 
 FINDINGS_SCHEMA = {
     "type": "object",
@@ -41,6 +42,7 @@ class PhaseDContentCheck:
         self.ctx = ctx
         self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
+        self.logger = get_logger()
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/content_check.md"
         )
@@ -59,6 +61,7 @@ class PhaseDContentCheck:
         file_id = file_info["id"]
         findings_path = f"{self.ctx.findings_dir}/{file_id}.json"
 
+        self.logger = get_logger()
         if os.path.exists(findings_path):
             return load_json(findings_path)
 
@@ -105,7 +108,7 @@ class PhaseDContentCheck:
             files = [f for f in files if f["id"] in target_set]
 
         if self.dry_run:
-            print(f"Would check {len(files)} files")
+            self.logger.info(f"Would check {len(files)} files")
             return {"issues_count": 0, "issue_file_ids": []}
 
         os.makedirs(self.ctx.findings_dir, exist_ok=True)
@@ -118,10 +121,10 @@ class PhaseDContentCheck:
                 r = future.result()
                 if r.get("status") == "has_issues":
                     issue_ids.append(r["file_id"])
-                    print(f"  [ISSUE] {r['file_id']}: {len(r['findings'])} findings")
+                    self.logger.info(f"  [ISSUE] {r['file_id']}: {len(r['findings'])} findings")
                 elif r.get("status") == "clean":
                     clean += 1
 
         status_icon = "✅" if len(issue_ids) == 0 else "⚠️"
-        print(f"\n   {status_icon} Content Check: {clean} clean, {len(issue_ids)} with issues")
+        self.logger.info(f"\n   {status_icon} Content Check: {clean} clean, {len(issue_ids)} with issues")
         return {"issues_count": len(issue_ids), "issue_file_ids": issue_ids}
