@@ -26,6 +26,21 @@ jobs:
       - name: Clean nabledge repository
         run: .github/scripts/clean-repository.sh nabledge-repo
 
+      - name: Clean up development infrastructure files
+        run: |
+          echo "Removing development infrastructure files from nabledge repository..."
+          # Issue #112: Exclude development infrastructure from plugin distribution
+          # Remove .github/workflows and .github/scripts if they exist
+          if [ -d "nabledge-repo/plugins/nabledge-6/.github/workflows" ]; then
+            echo "Removing plugins/nabledge-6/.github/workflows"
+            rm -rf "nabledge-repo/plugins/nabledge-6/.github/workflows"
+          fi
+          if [ -d "nabledge-repo/plugins/nabledge-6/.github/scripts" ]; then
+            echo "Removing plugins/nabledge-6/.github/scripts"
+            rm -rf "nabledge-repo/plugins/nabledge-6/.github/scripts"
+          fi
+          echo "Cleanup complete"
+
       - name: Transform to plugin structure
         run: |
           # Use transform script
