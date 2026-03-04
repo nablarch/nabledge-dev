@@ -11,21 +11,25 @@ flowchart TD
     Start([Start]) --> A[Phase A: Preparation]
     A --> |List & Classify Sources| B[Phase B: Generation]
     B --> |Generate Knowledge JSON<br/>Split large files| C[Phase C: Structure Check]
-    C --> |S1-S15 Validation| PassC{All Pass?}
-    PassC --> |Yes| D[Phase D: Content Check]
-    PassC --> |No| Error[❌ Fix Structure Errors]
-    D --> |AI Validation| PassD{Issues<br/>Found?}
-    PassD --> |No| M[Phase M: Finalization]
+    C --> |S1-S15 Validation| PassC{Structure<br/>Errors?}
+    PassC --> |Yes| StructWarn[⚠️ Skip files with errors<br/>Continue with valid files]
+    PassC --> |No| D[Phase D: Content Check]
+    StructWarn --> D
+    D --> |AI Validation<br/>Valid files only| PassD{Content<br/>Issues?}
+    PassD --> |No| CheckStruct{Structure<br/>Errors<br/>Remain?}
+    CheckStruct --> |Yes| StructError[❌ Manual Fix Required]
+    CheckStruct --> |No| M[Phase M: Finalization]
     PassD --> |Yes| Round{Rounds<br/>Left?}
     Round --> |Yes| E[Phase E: Fix]
-    Round --> |No| MaxRound[⚠️ Max Rounds Reached]
-    E --> |AI Fix| C
+    Round --> |No| MaxRound[⚠️ Max Rounds Reached<br/>Manual Fix Required]
+    E --> |AI Fix<br/>Content issues only| C
     M --> |1. Merge Split Files<br/>2. Resolve RST Links<br/>3. Generate Docs| End([✨ Complete])
 
     style Start fill:#e1f5e1
     style End fill:#e1f5e1
-    style Error fill:#ffe1e1
+    style StructError fill:#ffe1e1
     style MaxRound fill:#fff3cd
+    style StructWarn fill:#fff3cd
     style M fill:#e1e5ff
 ```
 
