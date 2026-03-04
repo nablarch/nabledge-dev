@@ -15,7 +15,7 @@ class TestSplitFileStructureCheck:
 
         # Setup: split file entry
         knowledge = {
-            "id": "libraries-tag-1",
+            "id": "libraries-tag--overview",
             "title": "タグライブラリ",
             "official_doc_urls": ["https://example.com/tag.html"],
             "index": [
@@ -38,7 +38,7 @@ class TestSplitFileStructureCheck:
 """
 
         os.makedirs(f"{ctx.knowledge_dir}/component/libraries", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/libraries/libraries-tag-1.json", knowledge)
+        write_json(f"{ctx.knowledge_dir}/component/libraries/libraries-tag--overview.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/tag.rst", "w", encoding="utf-8") as f:
@@ -49,14 +49,14 @@ class TestSplitFileStructureCheck:
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "libraries-tag-1",
+                    "id": "libraries-tag--overview",
                     "source_path": "test/tag.rst",
                     "format": "rst",
                     "filename": "tag.rst",
                     "type": "component",
                     "category": "libraries",
-                    "output_path": "component/libraries/libraries-tag-1.json",
-                    "assets_dir": "component/libraries/assets/libraries-tag-1/",
+                    "output_path": "component/libraries/libraries-tag--overview.json",
+                    "assets_dir": "component/libraries/assets/libraries-tag--overview/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "libraries-tag",
@@ -79,7 +79,7 @@ class TestSplitFileStructureCheck:
 
         # Verify: passes without error
         assert result["error"] == 0
-        assert "libraries-tag-1" in result["pass_ids"]
+        assert "libraries-tag--overview" in result["pass_ids"]
 
     def test_split_file_s9_uses_section_range(self, ctx, mock_claude):
         """S9 check uses section_range instead of full source."""
@@ -87,7 +87,7 @@ class TestSplitFileStructureCheck:
 
         # Setup: source has 4 h2 sections, but part 1 only has 2
         knowledge = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com/test.html"],
             "index": [
@@ -122,7 +122,7 @@ Content 4
 """
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", knowledge)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -134,14 +134,14 @@ Content 4
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "section_range": {
                         "start_line": 0,
                         "end_line": 50,
@@ -157,7 +157,7 @@ Content 4
 
         # Should pass: expected=2 (from section_range), actual=2
         assert result["error"] == 0
-        assert "test-1" in result["pass_ids"]
+        assert "test--section-1" in result["pass_ids"]
 
         # Case 2: WITHOUT section_range - should fail S9
         classified["files"][0].pop("section_range")
@@ -167,7 +167,7 @@ Content 4
 
         # Should fail: expected=4 (from source), actual=2
         assert result["error"] == 1
-        assert "test-1" not in result["pass_ids"]
+        assert "test--section-1" not in result["pass_ids"]
 
 
 class TestSplitFileContentCheck:
@@ -194,7 +194,7 @@ class TestSplitFileContentCheck:
 
         # Setup: split file with section_range
         knowledge = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
@@ -214,7 +214,7 @@ Content 2 (should NOT be in prompt)
 """
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", knowledge)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -225,14 +225,14 @@ Content 2 (should NOT be in prompt)
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "section_range": {
                         "start_line": 0,
                         "end_line": 7,  # Only includes Section 1 (lines 0-6)
@@ -270,7 +270,7 @@ class TestSplitFileFix:
             captured_prompt.append(prompt)
             # Return fixed knowledge
             fixed = {
-                "id": "test-1",
+                "id": "test--section-1",
                 "title": "Test Fixed",
                 "official_doc_urls": ["https://example.com"],
                 "index": [{"id": "section1", "title": "Section 1", "hints": ["s1", "fixed"]}],
@@ -284,7 +284,7 @@ class TestSplitFileFix:
 
         # Setup: split file with issues
         knowledge = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
@@ -304,7 +304,7 @@ Content 2 (should NOT be in prompt)
 """
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", knowledge)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -312,23 +312,23 @@ Content 2 (should NOT be in prompt)
 
         os.makedirs(f"{ctx.findings_dir}", exist_ok=True)
         findings = {
-            "file_id": "test-1",
+            "file_id": "test--section-1",
             "status": "has_issues",
             "findings": [
                 {"category": "omission", "severity": "minor", "location": "section1", "description": "test finding"}
             ]
         }
-        write_json(f"{ctx.findings_dir}/test-1.json", findings)
+        write_json(f"{ctx.findings_dir}/test--section-1.json", findings)
 
         file_info = {
-            "id": "test-1",
+            "id": "test--section-1",
             "source_path": "test/test.rst",
             "format": "rst",
             "filename": "test.rst",
             "type": "component",
             "category": "test",
-            "output_path": "component/test/test-1.json",
-            "assets_dir": "component/test/assets/test-1/",
+            "output_path": "component/test/test--section-1.json",
+            "assets_dir": "component/test/assets/test--section-1/",
             "section_range": {
                 "start_line": 0,
                 "end_line": 7,  # Only Section 1 (lines 0-6)
@@ -355,7 +355,7 @@ Content 2 (should NOT be in prompt)
         # Mock that returns drastically shrunk output (5% of original)
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
             shrunk = {
-                "id": "test-1",
+                "id": "test--section-1",
                 "title": "Test",
                 "official_doc_urls": ["https://example.com"],
                 "index": [{"id": "s1", "title": "S1", "hints": []}],
@@ -370,7 +370,7 @@ Content 2 (should NOT be in prompt)
         # Setup: large input (10 sections, 10000 chars)
         sections = {f"section{i}": "Content " * 100 for i in range(1, 11)}  # ~1000 chars each
         knowledge = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": f"section{i}", "title": f"Section {i}", "hints": []} for i in range(1, 11)],
@@ -378,7 +378,7 @@ Content 2 (should NOT be in prompt)
         }
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", knowledge)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -386,21 +386,21 @@ Content 2 (should NOT be in prompt)
 
         os.makedirs(f"{ctx.findings_dir}", exist_ok=True)
         findings = {
-            "file_id": "test-1",
+            "file_id": "test--section-1",
             "status": "has_issues",
             "findings": [{"category": "omission", "severity": "minor", "location": "section1", "description": "test"}]
         }
-        write_json(f"{ctx.findings_dir}/test-1.json", findings)
+        write_json(f"{ctx.findings_dir}/test--section-1.json", findings)
 
         file_info = {
-            "id": "test-1",
+            "id": "test--section-1",
             "source_path": "test/test.rst",
             "format": "rst",
             "filename": "test.rst",
             "type": "component",
             "category": "test",
-            "output_path": "component/test/test-1.json",
-            "assets_dir": "component/test/assets/test-1/"
+            "output_path": "component/test/test--section-1.json",
+            "assets_dir": "component/test/assets/test--section-1/"
         }
 
         # Execute
@@ -412,5 +412,5 @@ Content 2 (should NOT be in prompt)
         assert "Output too small" in result["error"]
 
         # Verify: original file NOT overwritten
-        unchanged = load_json(f"{ctx.knowledge_dir}/component/test/test-1.json")
+        unchanged = load_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
         assert len(unchanged["sections"]) == 10  # Original 10 sections preserved

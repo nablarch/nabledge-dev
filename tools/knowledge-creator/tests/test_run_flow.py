@@ -47,14 +47,14 @@ class TestRunFlowWithSplitFiles:
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -68,14 +68,14 @@ class TestRunFlowWithSplitFiles:
                     }
                 },
                 {
-                    "id": "test-2",
+                    "id": "test--section-2",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-2.json",
-                    "assets_dir": "component/test/assets/test-2/",
+                    "output_path": "component/test/test--section-2.json",
+                    "assets_dir": "component/test/assets/test--section-2/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -97,8 +97,8 @@ class TestRunFlowWithSplitFiles:
         phase_b.run()
 
         # Verify: part files exist (NOT merged)
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test-1.json")
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test-2.json")
+        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
+        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json")
 
         # Verify: merged file does NOT exist
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test.json")
@@ -106,8 +106,8 @@ class TestRunFlowWithSplitFiles:
         # Verify: classified.json still has split entries
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
-        assert "test-1" in ids
-        assert "test-2" in ids
+        assert "test--section-1" in ids
+        assert "test--section-2" in ids
         assert "test" not in ids
 
     def test_split_ids_pass_through_cde_loop(self, ctx):
@@ -127,7 +127,7 @@ class TestRunFlowWithSplitFiles:
                 call_tracker["d"].append(file_id)
                 # Round 1: first file has issues, others clean
                 # Round 2+: all clean
-                if call_tracker["d_round"] == 1 and file_id == "test-1":
+                if call_tracker["d_round"] == 1 and file_id == "test--section-1":
                     return subprocess.CompletedProcess(
                         args=["claude"], returncode=0,
                         stdout=json.dumps({
@@ -163,14 +163,14 @@ class TestRunFlowWithSplitFiles:
 
         # Setup: split files already generated
         part1 = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
             "sections": {"section1": "Content 1 with enough characters for validation"}
         }
         part2 = {
-            "id": "test-2",
+            "id": "test--section-2",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section2", "title": "Section 2", "hints": ["s2"]}],
@@ -178,8 +178,8 @@ class TestRunFlowWithSplitFiles:
         }
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-2.json", part2)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w") as f:
@@ -190,14 +190,14 @@ class TestRunFlowWithSplitFiles:
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -211,14 +211,14 @@ class TestRunFlowWithSplitFiles:
                     }
                 },
                 {
-                    "id": "test-2",
+                    "id": "test--section-2",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-2.json",
-                    "assets_dir": "component/test/assets/test-2/",
+                    "output_path": "component/test/test--section-2.json",
+                    "assets_dir": "component/test/assets/test--section-2/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -241,8 +241,8 @@ class TestRunFlowWithSplitFiles:
 
         # Verify Phase C: both parts passed
         assert c_result["pass"] == 2
-        assert "test-1" in c_result["pass_ids"]
-        assert "test-2" in c_result["pass_ids"]
+        assert "test--section-1" in c_result["pass_ids"]
+        assert "test--section-2" in c_result["pass_ids"]
 
         # Execute Phase D (round 1: will find issues)
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_run_claude)
@@ -250,8 +250,8 @@ class TestRunFlowWithSplitFiles:
 
         # Verify Phase D: both parts checked (only first has issues in mock)
         assert len(call_tracker["d"]) == 2
-        assert "test-1" in call_tracker["d"]
-        assert "test-2" in call_tracker["d"]
+        assert "test--section-1" in call_tracker["d"]
+        assert "test--section-2" in call_tracker["d"]
 
         # Execute Phase E: fix issues
         phase_e = PhaseEFix(ctx, run_claude_fn=mock_run_claude, dry_run=False)

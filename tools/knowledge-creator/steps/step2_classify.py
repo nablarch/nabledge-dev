@@ -101,11 +101,9 @@ def filter_for_test(classified: list, test_file_ids: set) -> list:
 
 
 class Step2Classify:
-    # Thresholds for file splitting (updated in Task 7 for context overflow prevention)
-    FILE_LINE_THRESHOLD = 800           # File-level split threshold
-    GROUP_LINE_LIMIT = 800              # Max cumulative lines per part
-    GROUP_SECTION_LIMIT = 15            # Max sections per part
-    LARGE_SECTION_LINE_THRESHOLD = 800  # Threshold for h3 expansion
+    # Thresholds for section-unit splitting
+    SPLIT_SECTION_THRESHOLD = 2  # h2セクションがこの数以上あれば分割
+    H3_FALLBACK_THRESHOLD = 500  # h2セクションがこの行数を超えたらh3で再分割
 
     def __init__(self, ctx, dry_run=False, sources_data=None):
         self.ctx = ctx
@@ -228,7 +226,7 @@ class Step2Classify:
         return subsections
 
     def should_split_file(self, file_path: str, format: str) -> tuple:
-        """Check if file should be split based on file size or section sizes
+        """Check if file should be split into per-section files.
 
         Returns:
             (should_split: bool, sections: list, total_lines: int)
@@ -243,26 +241,16 @@ class Step2Classify:
         content = read_file(full_path)
         lines = content.splitlines()
         total_lines = len(lines)
-
-        # Analyze sections
         sections = self.analyze_rst_sections(content)
 
-        # Check if file exceeds FILE_LINE_THRESHOLD
-        file_exceeds = total_lines > self.FILE_LINE_THRESHOLD
-
-        # Check if any section exceeds LARGE_SECTION_LINE_THRESHOLD
-        has_large_section = any(s['line_count'] > self.LARGE_SECTION_LINE_THRESHOLD for s in sections)
-
-        # Check if file has too many sections
-        has_many_sections = len(sections) > self.GROUP_SECTION_LIMIT
-
-        # Split if any condition is true
-        should_split = file_exceeds or has_large_section or has_many_sections
-
+        # h2セクションが2個以上あれば分割
+        should_split = len(sections) >= self.SPLIT_SECTION_THRESHOLD
         return should_split, sections, total_lines
 
     def split_file_entry(self, base_entry: dict, sections: list, content: str) -> list:
-        """Split a file entry into multiple entries based on sections
+        """Split a file entry into one entry per h2 section.
+
+        h2セクションが H3_FALLBACK_THRESHOLD を超える場合、h3サブセクションで再分割する。
 
         Args:
             base_entry: Original classified entry
@@ -270,94 +258,90 @@ class Step2Classify:
             content: Full source file content
 
         Returns:
-            List of split entries with section_range field
+            List of split entries, one per section (h2 or h3)
         """
+        # Step 1: h2セクションをh3で展開(必要な場合のみ)
+        expanded_sections = []
+        for section in sections:
+            if section['line_count'] > self.H3_FALLBACK_THRESHOLD:
+                h3_subs = self.analyze_rst_h3_subsections(
+                    content, section['start_line'], section['end_line']
+                )
+                if h3_subs:
+                    # h2セクションのh3より前の部分(プリアンブル)を最初のh3に含める
+                    if h3_subs[0]['start_line'] > section['start_line']:
+                        h3_subs[0]['start_line'] = section['start_line']
+                        h3_subs[0]['line_count'] = h3_subs[0]['end_line'] - h3_subs[0]['start_line']
+                    expanded_sections.extend(h3_subs)
+                    print(f"    h3 fallback: '{section['title']}' ({section['line_count']} lines) → {len(h3_subs)} h3 subsections")
+                else:
+                    # h3がない巨大h2 → そのまま(警告付き)
+                    expanded_sections.append(section)
+                    print(f"    WARNING: '{section['title']}' has {section['line_count']} lines but no h3 subsections")
+            else:
+                expanded_sections.append(section)
+
+        # Step 2: 各セクションから1エントリを生成
         result = []
         base_id = base_entry['id']
         type_ = base_entry['type']
         category = base_entry['category']
+        total_parts = len(expanded_sections)
+        used_ids = set()  # 同一ファイル内のID重複を回避
 
-        # Expand h2 sections into h3 subsections if they're too large
-        expanded_sections = []
-        for section in sections:
-            if section['line_count'] > self.LARGE_SECTION_LINE_THRESHOLD:
-                # Try to split at h3 level
-                h3_subsections = self.analyze_rst_h3_subsections(
-                    content, section['start_line'], section['end_line']
-                )
+        for part_num, section in enumerate(expanded_sections, 1):
+            section_id = self._title_to_section_id(section['title'])
+            # 重複回避: 同じsection_idが既出なら連番を付与
+            original_section_id = section_id
+            counter = 2
+            while section_id in used_ids:
+                section_id = f"{original_section_id}-{counter}"
+                counter += 1
+            used_ids.add(section_id)
+            split_id = f"{base_id}--{section_id}"
 
-                if h3_subsections:
-                    # Use h3 subsections
-                    expanded_sections.extend(h3_subsections)
-                    print(f"    Expanded h2 '{section['title']}' into {len(h3_subsections)} h3 subsections")
-                else:
-                    # No h3 subsections found, keep the large h2 section as-is
-                    expanded_sections.append(section)
-                    print(f"    WARNING: h2 '{section['title']}' has {section['line_count']} lines but no h3 subsections")
-            else:
-                expanded_sections.append(section)
-
-        # Group sections to keep each part under threshold
-        current_group = []
-        current_lines = 0
-        part_num = 1
-
-        for section in expanded_sections:
-            section_lines = section['line_count']
-
-            # If adding this section would exceed line or section limit, start new part
-            if current_group and (
-                current_lines + section_lines > self.GROUP_LINE_LIMIT
-                or len(current_group) >= self.GROUP_SECTION_LIMIT
-            ):
-                # Save current group as a part
-                split_id = f"{base_id}-{part_num}"
-                result.append({
-                    **base_entry,
-                    'id': split_id,
-                    'output_path': f"{type_}/{category}/{split_id}.json",
-                    'assets_dir': f"{type_}/{category}/assets/{split_id}/",
-                    'section_range': {
-                        'start_line': current_group[0]['start_line'],
-                        'end_line': current_group[-1]['end_line'],
-                        'sections': [s['title'] for s in current_group]
-                    },
-                    'split_info': {
-                        'is_split': True,
-                        'part': part_num,
-                        'original_id': base_id
-                    }
-                })
-
-                # Start new group
-                current_group = [section]
-                current_lines = section_lines
-                part_num += 1
-            else:
-                current_group.append(section)
-                current_lines += section_lines
-
-        # Add remaining sections as last part
-        if current_group:
-            split_id = f"{base_id}-{part_num}"
             result.append({
                 **base_entry,
                 'id': split_id,
                 'output_path': f"{type_}/{category}/{split_id}.json",
                 'assets_dir': f"{type_}/{category}/assets/{split_id}/",
                 'section_range': {
-                    'start_line': current_group[0]['start_line'],
-                    'end_line': current_group[-1]['end_line'],
-                    'sections': [s['title'] for s in current_group]
+                    'start_line': section['start_line'],
+                    'end_line': section['end_line'],
+                    'sections': [section['title']]
                 },
                 'split_info': {
                     'is_split': True,
                     'part': part_num,
+                    'total_parts': total_parts,
                     'original_id': base_id
                 }
             })
 
         return result
+
+    @staticmethod
+    def _title_to_section_id(title: str) -> str:
+        """Convert section title to a safe, deterministic ID string.
+
+        ASCII英数字部分を抽出。十分な長さがなければmd5ハッシュを使う。
+
+        Examples:
+            "HTMLエスケープ漏れを防げる" -> "html"
+            "module-list" -> "module-list"
+            "モジュール一覧" -> "sec-xxxxxxxx" (md5ハッシュ)
+            "DefaultMeterBinderListProvider" -> "defaultmeterbinderlistprovider"
+        """
+        import hashlib
+        # ASCII英数字とハイフンのみ残す
+        ascii_id = re.sub(r'[^a-zA-Z0-9-]', '', title.replace(' ', '-')).lower().strip('-')
+        # 連続ハイフンを1つに
+        ascii_id = re.sub(r'-+', '-', ascii_id)
+        if ascii_id and len(ascii_id) >= 3:
+            return ascii_id[:50]
+        # 日本語タイトル等: md5ハッシュの先頭8文字
+        h = hashlib.md5(title.encode('utf-8')).hexdigest()[:8]
+        return f"sec-{h}"
 
     def run(self):
         """Execute Step 2: Classify all source files"""

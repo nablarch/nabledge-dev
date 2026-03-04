@@ -22,7 +22,7 @@ class TestE2ESplitPipeline:
 
             if "trace" in schema_str:
                 # Phase B: generate knowledge
-                part_num = file_id.split("-")[-1]  # test-1 -> 1, test-2 -> 2
+                part_num = file_id.split("--")[-1].split("-")[-1]  # test-1 -> 1, test-2 -> 2
                 knowledge = {
                     "id": file_id,
                     "title": "Test Title",
@@ -77,14 +77,14 @@ class TestE2ESplitPipeline:
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -98,14 +98,14 @@ class TestE2ESplitPipeline:
                     }
                 },
                 {
-                    "id": "test-2",
+                    "id": "test--section-2",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-2.json",
-                    "assets_dir": "component/test/assets/test-2/",
+                    "output_path": "component/test/test--section-2.json",
+                    "assets_dir": "component/test/assets/test--section-2/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -154,17 +154,17 @@ class TestE2ESplitPipeline:
         assert "Content for section 2" in merged["sections"]["section2"]
 
         # Verify 2: Part files deleted
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test-1.json"), \
-            "Part file test-1.json should be deleted after merge"
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test-2.json"), \
-            "Part file test-2.json should be deleted after merge"
+        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json"), \
+            "Part file test--section-1.json should be deleted after merge"
+        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json"), \
+            "Part file test--section-2.json should be deleted after merge"
 
         # Verify 3: classified.json updated (parts replaced with merged entry)
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
         assert "test" in ids, "Merged file ID should be in classified.json"
-        assert "test-1" not in ids, "Part file ID test-1 should be removed"
-        assert "test-2" not in ids, "Part file ID test-2 should be removed"
+        assert "test--section-1" not in ids, "Part file ID test-1 should be removed"
+        assert "test--section-2" not in ids, "Part file ID test-2 should be removed"
 
         # Verify 4: Resolved version exists
         resolved_path = f"{ctx.knowledge_resolved_dir}/component/test/test.json"
@@ -180,8 +180,8 @@ class TestE2ESplitPipeline:
         with open(index_path, "r", encoding="utf-8") as f:
             index_content = f.read()
         assert "test.json" in index_content, "index.toon should reference merged file"
-        assert "test-1.json" not in index_content, "index.toon should not reference part files"
-        assert "test-2.json" not in index_content, "index.toon should not reference part files"
+        assert "test--section-1.json" not in index_content, "index.toon should not reference part files"
+        assert "test--section-2.json" not in index_content, "index.toon should not reference part files"
 
     def test_full_pipeline_split_with_fix_cycle(self, ctx):
         """Full pipeline with fix cycle: B → C → D(issues) → E(fix) → C → D(clean) → M."""
@@ -227,7 +227,7 @@ class TestE2ESplitPipeline:
                         )
                 elif "trace" in schema_str:
                     # Phase B: generate knowledge
-                    part_num = file_id.split("-")[-1]
+                    part_num = file_id.split("--")[-1].split("-")[-1]
                     knowledge = {
                         "id": file_id,
                         "title": "Test Title",
@@ -284,14 +284,14 @@ class TestE2ESplitPipeline:
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -305,14 +305,14 @@ class TestE2ESplitPipeline:
                     }
                 },
                 {
-                    "id": "test-2",
+                    "id": "test--section-2",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-2.json",
-                    "assets_dir": "component/test/assets/test-2/",
+                    "output_path": "component/test/test--section-2.json",
+                    "assets_dir": "component/test/assets/test--section-2/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -351,7 +351,7 @@ class TestE2ESplitPipeline:
         # Verify: Fixed files have FIXED marker and preserve all sections
         for file_id in d_result1["issue_file_ids"]:
             fixed = load_json(f"{ctx.knowledge_dir}/component/test/{file_id}.json")
-            part_num = file_id.split("-")[-1]
+            part_num = file_id.split("--")[-1].split("-")[-1]
             section_id = f"section{part_num}"
 
             # Critical: section should still exist (regression prevention)
@@ -408,7 +408,7 @@ class TestE2ESplitPipeline:
             if "trace" in schema_str:
                 # Phase B: generate knowledge
                 if file_id.startswith("split"):
-                    part_num = file_id.split("-")[-1]
+                    part_num = file_id.split("--")[-1].split("-")[-1]
                     knowledge = {
                         "id": file_id,
                         "title": "Split Title",
@@ -478,14 +478,14 @@ class TestE2ESplitPipeline:
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "split-1",
+                    "id": "split--section-1",
                     "source_path": "test/split.rst",
                     "format": "rst",
                     "filename": "split.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/split-1.json",
-                    "assets_dir": "component/test/assets/split-1/",
+                    "output_path": "component/test/split--section-1.json",
+                    "assets_dir": "component/test/assets/split--section-1/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "split",
@@ -499,14 +499,14 @@ class TestE2ESplitPipeline:
                     }
                 },
                 {
-                    "id": "split-2",
+                    "id": "split--section-2",
                     "source_path": "test/split.rst",
                     "format": "rst",
                     "filename": "split.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/split-2.json",
-                    "assets_dir": "component/test/assets/split-2/",
+                    "output_path": "component/test/split--section-2.json",
+                    "assets_dir": "component/test/assets/split--section-2/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "split",
@@ -560,16 +560,16 @@ class TestE2ESplitPipeline:
         assert os.path.exists(regular_path), "Regular file should exist"
 
         # Verify: Split parts deleted
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split-1.json")
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split-2.json")
+        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split--section-1.json")
+        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split--section-2.json")
 
         # Verify: classified.json has both merged and regular
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
         assert "split" in ids, "Merged split file should be in classified.json"
         assert "regular" in ids, "Regular file should be in classified.json"
-        assert "split-1" not in ids
-        assert "split-2" not in ids
+        assert "split--section-1" not in ids
+        assert "split--section-2" not in ids
 
         # Verify: Both in index.toon
         with open(f"{ctx.knowledge_dir}/index.toon", "r", encoding="utf-8") as f:

@@ -14,14 +14,14 @@ class TestPhaseM:
 
         # Setup: 2 split parts with RST link
         part1 = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
             "sections": {"section1": "See :ref:`other-section` for details."}
         }
         part2 = {
-            "id": "test-2",
+            "id": "test--section-2",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section2", "title": "Section 2", "hints": ["s2"]}],
@@ -29,40 +29,40 @@ class TestPhaseM:
         }
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-2.json", part2)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
 
         # Create trace files with internal_labels for Phase G link resolution
         trace1 = {
-            "file_id": "test-1",
+            "file_id": "test--section-1",
             "generated_at": "2026-01-01T00:00:00Z",
             "internal_labels": ["test", "other-section", "section1"],
             "sections": [{"section_id": "section1", "source_heading": "Section 1", "heading_level": "h2"}]
         }
         trace2 = {
-            "file_id": "test-2",
+            "file_id": "test--section-2",
             "generated_at": "2026-01-01T00:00:00Z",
             "internal_labels": ["section2"],
             "sections": [{"section_id": "section2", "source_heading": "Section 2", "heading_level": "h2"}]
         }
 
         os.makedirs(f"{ctx.trace_dir}", exist_ok=True)
-        write_json(f"{ctx.trace_dir}/test-1.json", trace1)
-        write_json(f"{ctx.trace_dir}/test-2.json", trace2)
+        write_json(f"{ctx.trace_dir}/test--section-1.json", trace1)
+        write_json(f"{ctx.trace_dir}/test--section-2.json", trace2)
 
         classified = {
             "version": "6",
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -71,14 +71,14 @@ class TestPhaseM:
                     }
                 },
                 {
-                    "id": "test-2",
+                    "id": "test--section-2",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-2.json",
-                    "assets_dir": "component/test/assets/test-2/",
+                    "output_path": "component/test/test--section-2.json",
+                    "assets_dir": "component/test/assets/test--section-2/",
                     "split_info": {
                         "is_split": True,
                         "original_id": "test",
@@ -105,15 +105,15 @@ class TestPhaseM:
         assert "section2" in merged["sections"]
 
         # Verify 2: Part files deleted
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test-1.json")
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test-2.json")
+        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
+        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json")
 
         # Verify 3: classified.json updated
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
         assert "test" in ids
-        assert "test-1" not in ids
-        assert "test-2" not in ids
+        assert "test--section-1" not in ids
+        assert "test--section-2" not in ids
 
         # Verify 4: Resolved version exists
         resolved_path = f"{ctx.knowledge_resolved_dir}/component/test/test.json"
@@ -186,14 +186,14 @@ class TestPhaseM:
 
         # Setup: split files with various RST link types
         part1 = {
-            "id": "test-1",
+            "id": "test--section-1",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
             "sections": {"section1": "See :ref:`other-label` and :doc:`../other` for more."}
         }
         part2 = {
-            "id": "test-2",
+            "id": "test--section-2",
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section2", "title": "Section 2", "hints": ["s2"]}],
@@ -201,51 +201,51 @@ class TestPhaseM:
         }
 
         os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test-2.json", part2)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
 
         # Create trace files with internal_labels for Phase G
         trace1 = {
-            "file_id": "test-1",
+            "file_id": "test--section-1",
             "generated_at": "2026-01-01T00:00:00Z",
             "internal_labels": ["test", "other-label", "section1"],
             "sections": [{"section_id": "section1", "source_heading": "Section 1", "heading_level": "h2"}]
         }
         trace2 = {
-            "file_id": "test-2",
+            "file_id": "test--section-2",
             "generated_at": "2026-01-01T00:00:00Z",
             "internal_labels": ["section2"],
             "sections": [{"section_id": "section2", "source_heading": "Section 2", "heading_level": "h2"}]
         }
 
         os.makedirs(f"{ctx.trace_dir}", exist_ok=True)
-        write_json(f"{ctx.trace_dir}/test-1.json", trace1)
-        write_json(f"{ctx.trace_dir}/test-2.json", trace2)
+        write_json(f"{ctx.trace_dir}/test--section-1.json", trace1)
+        write_json(f"{ctx.trace_dir}/test--section-2.json", trace2)
 
         classified = {
             "version": "6",
             "generated_at": "2026-01-01T00:00:00Z",
             "files": [
                 {
-                    "id": "test-1",
+                    "id": "test--section-1",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-1.json",
-                    "assets_dir": "component/test/assets/test-1/",
+                    "output_path": "component/test/test--section-1.json",
+                    "assets_dir": "component/test/assets/test--section-1/",
                     "split_info": {"is_split": True, "original_id": "test", "part": 1, "total_parts": 2}
                 },
                 {
-                    "id": "test-2",
+                    "id": "test--section-2",
                     "source_path": "test/test.rst",
                     "format": "rst",
                     "filename": "test.rst",
                     "type": "component",
                     "category": "test",
-                    "output_path": "component/test/test-2.json",
-                    "assets_dir": "component/test/assets/test-2/",
+                    "output_path": "component/test/test--section-2.json",
+                    "assets_dir": "component/test/assets/test--section-2/",
                     "split_info": {"is_split": True, "original_id": "test", "part": 2, "total_parts": 2}
                 }
             ]
