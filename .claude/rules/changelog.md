@@ -44,8 +44,9 @@ Document only changes to **deployed content** (synced to nablarch/nabledge):
 - Use user-friendly language - describe what improved, not technical details
 - Focus on user impact - what users can now do or what problems were fixed
 - Keep entries consistent - use "〜問題を修正しました" format for fixes
-- Avoid unnecessary details - no disk space savings, performance metrics, etc.
-- Be concise - one sentence per entry
+- Include important user impact - inform users about automatic cleanup, breaking changes, migration steps, etc.
+- Avoid unnecessary benefits - no "disk space savings", "performance improvements" unless specific and measurable
+- Be concise - one to two sentences per entry
 
 **Examples**:
 
