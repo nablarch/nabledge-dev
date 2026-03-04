@@ -36,6 +36,28 @@ Document only changes to **deployed content** (synced to nablarch/nabledge):
 2. Use appropriate category: Added, Changed, Deprecated, Removed, Fixed, Security
 3. Changes automatically sync to nablarch/nabledge:develop on merge to main
 
+## Writing Guidelines
+
+**Target audience**: End users (Japanese Nablarch developers)
+
+**Writing style**:
+- Use user-friendly language - describe what improved, not technical details
+- Focus on user impact - what users can now do or what problems were fixed
+- Keep entries consistent - use "〜問題を修正しました" format for fixes
+- Avoid unnecessary details - no disk space savings, performance metrics, etc.
+- Be concise - one sentence per entry
+
+**Examples**:
+
+Good:
+- コード分析結果のリンクが正しく遷移しない問題を修正しました
+- 知識検索で、より適切なドキュメントが選ばれるようになりました
+
+Bad:
+- 相対パス計算のバグを修正しました（技術詳細）
+- ディスク容量を節約できます（余計な情報）
+- prefill-template.shが絶対パスを処理（ユーザーには無関係）
+
 ## Release Workflow (nabledge-dev)
 
 When preparing a release in this repository:
