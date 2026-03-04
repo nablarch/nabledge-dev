@@ -111,6 +111,14 @@ def main():
                         help="Test mode: specify test file (e.g., test-files-top3.json)")
     parser.add_argument("--max-rounds", type=int, default=1,
                         help="Max D->E->C loop iterations (default: 1, max: 10)")
+    parser.add_argument("--clean-phase", type=str, default=None,
+                        help="Clean artifacts for specified phases before run (e.g. 'D', 'BD')")
+    parser.add_argument("--target", type=str, action="append", default=None,
+                        help="Target file ID(s) to process (repeatable)")
+    parser.add_argument("--yes", action="store_true",
+                        help="Skip confirmation prompts")
+    parser.add_argument("--regen", action="store_true",
+                        help="Detect source changes and regenerate affected files")
 
     args = parser.parse_args()
 
@@ -170,6 +178,17 @@ def main():
         logger.info(f"Logging to: {execution_log_path}")
         phases = args.phase or "ABCDEM"
 
+        # --clean-phase: remove artifacts before run
+        if args.clean_phase:
+            from steps.cleaner import clean_phase_artifacts
+            clean_phase_artifacts(ctx, args.clean_phase,
+                                  target_ids=args.target, yes=args.yes)
+
+        # --regen: detect source changes and clean affected artifacts
+        if args.regen:
+            from steps.source_tracker import detect_and_clean_changed
+            detect_and_clean_changed(ctx, yes=args.yes)
+
         # Phase A
         if "A" in phases:
             logger.info("\n📋Phase A: Prepare")
@@ -184,7 +203,11 @@ def main():
             logger.info("\n🤖Phase B: Generate")
             logger.info("   └─ Converting documentation to knowledge files...")
             from steps.phase_b_generate import PhaseBGenerate
-            PhaseBGenerate(ctx, dry_run=args.dry_run).run()
+            PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=args.target)
+
+            if not args.dry_run and os.path.exists(ctx.classified_list_path):
+                from steps.source_tracker import save_hashes
+                save_hashes(ctx)
 
         # Phase C/D/E loop
         for round_num in range(1, ctx.max_rounds + 1):
@@ -206,8 +229,16 @@ def main():
                 logger.info("   └─ Comparing knowledge files with source docs...")
                 from steps.phase_d_content_check import PhaseDContentCheck
                 pass_ids = c_result.get("pass_ids") if c_result else None
+                # Intersect with --target if specified
+                if args.target and pass_ids is not None:
+                    target_set = set(args.target)
+                    effective_ids = [fid for fid in pass_ids if fid in target_set]
+                elif args.target:
+                    effective_ids = args.target
+                else:
+                    effective_ids = pass_ids
                 d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
-                    target_ids=pass_ids
+                    target_ids=effective_ids
                 )
 
                 if d_result["issues_count"] == 0:
