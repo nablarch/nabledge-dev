@@ -1,6 +1,7 @@
 """Tests for Phase M: Merge + Resolve + Finalize."""
 import json
 import os
+import subprocess
 import pytest
 from steps.common import load_json, write_json
 
@@ -90,8 +91,19 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
+        # Mock Claude CLI for Phase F pattern classification
+        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+            return subprocess.CompletedProcess(
+                args=["claude"], returncode=0,
+                stdout=json.dumps({
+                    "patterns": ["nablarch-batch"],
+                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
+                }),
+                stderr=""
+            )
+
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
         phase_m.run()
 
         # Verify 1: Merged file exists
@@ -165,8 +177,19 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
+        # Mock Claude CLI for Phase F pattern classification
+        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+            return subprocess.CompletedProcess(
+                args=["claude"], returncode=0,
+                stdout=json.dumps({
+                    "patterns": ["nablarch-batch"],
+                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
+                }),
+                stderr=""
+            )
+
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
         phase_m.run()
 
         # Verify: original file still exists (not deleted by merge)
@@ -252,8 +275,19 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
+        # Mock Claude CLI for Phase F pattern classification
+        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+            return subprocess.CompletedProcess(
+                args=["claude"], returncode=0,
+                stdout=json.dumps({
+                    "patterns": ["nablarch-batch"],
+                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
+                }),
+                stderr=""
+            )
+
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
         phase_m.run()
 
         # Verify: resolved version has Markdown links, not RST
@@ -309,8 +343,19 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
+        # Mock Claude CLI for Phase F pattern classification
+        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+            return subprocess.CompletedProcess(
+                args=["claude"], returncode=0,
+                stdout=json.dumps({
+                    "patterns": ["nablarch-batch"],
+                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
+                }),
+                stderr=""
+            )
+
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
         phase_m.run()
 
         # Verify: browsable MD has correct relative path

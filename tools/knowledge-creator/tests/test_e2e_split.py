@@ -16,7 +16,7 @@ class TestE2ESplitPipeline:
         from steps.phase_d_content_check import PhaseDContentCheck
         from steps.phase_m_finalize import PhaseMFinalize
 
-        # Mock run_claude for Phase B and D
+        # Mock run_claude for Phase B, D, and F
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
             schema_str = json.dumps(json_schema) if json_schema else ""
 
@@ -61,6 +61,16 @@ class TestE2ESplitPipeline:
                         "file_id": file_id,
                         "status": "clean",
                         "findings": []
+                    }),
+                    stderr=""
+                )
+            elif "patterns" in schema_str:
+                # Phase F: pattern classification
+                return subprocess.CompletedProcess(
+                    args=["claude"], returncode=0,
+                    stdout=json.dumps({
+                        "patterns": ["nablarch-batch"],
+                        "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
                     }),
                     stderr=""
                 )
@@ -137,7 +147,7 @@ class TestE2ESplitPipeline:
         assert d_result["issues_count"] == 0
 
         # Execute Phase M: finalize (merge + resolve + docs)
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
         phase_m.run()
 
         # Verify 1: Merged knowledge JSON exists and is correct
@@ -255,6 +265,16 @@ class TestE2ESplitPipeline:
                                      "h3_split_reason": "Small"}
                                 ]
                             }
+                        }),
+                        stderr=""
+                    )
+                elif "patterns" in schema_str:
+                    # Phase F: pattern classification
+                    return subprocess.CompletedProcess(
+                        args=["claude"], returncode=0,
+                        stdout=json.dumps({
+                            "patterns": ["nablarch-batch"],
+                            "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
                         }),
                         stderr=""
                     )
@@ -376,7 +396,7 @@ class TestE2ESplitPipeline:
         assert d_result2["issues_count"] == 0, "Should be clean in round 2"
 
         # Execute Phase M: finalize
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_fn)
         phase_m.run()
 
         # Verify: Final merged file has all sections preserved (critical)
@@ -465,6 +485,18 @@ class TestE2ESplitPipeline:
                     }),
                     stderr=""
                 )
+            elif "patterns" in schema_str:
+                # Phase F: pattern classification
+                return subprocess.CompletedProcess(
+                    args=["claude"], returncode=0,
+                    stdout=json.dumps({
+                        "patterns": ["nablarch-batch"],
+                        "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
+                    }),
+                    stderr=""
+                )
+            else:
+                raise ValueError(f"Unexpected schema: {schema_str}")
 
         # Setup: mix of split and non-split files
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
@@ -549,7 +581,7 @@ class TestE2ESplitPipeline:
         assert d_result["issues_count"] == 0
 
         # Execute Phase M: finalize
-        phase_m = PhaseMFinalize(ctx, dry_run=False)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
         phase_m.run()
 
         # Verify: Both split (merged) and non-split files exist
