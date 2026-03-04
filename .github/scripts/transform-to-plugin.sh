@@ -63,11 +63,14 @@ echo "Copying CC command..."
 mkdir -p "$DEST_DIR/plugins/nabledge-6/commands"
 cp "$SOURCE_DIR/.claude/commands/n6.md" "$DEST_DIR/plugins/nabledge-6/commands/n6.md"
 
-# Copy GHC-specific .github directory
-echo "Copying GHC .github directory..."
-if [ -d "$SOURCE_DIR/.github" ]; then
-    cp -r "$SOURCE_DIR/.github" "$DEST_DIR/plugins/nabledge-6/"
-    echo "  .github directory copied"
+# Copy GHC-specific .github/prompts directory (whitelist approach)
+echo "Copying GHC .github/prompts directory..."
+if [ -d "$SOURCE_DIR/.github/prompts" ]; then
+    mkdir -p "$DEST_DIR/plugins/nabledge-6/.github"
+    cp -r "$SOURCE_DIR/.github/prompts" "$DEST_DIR/plugins/nabledge-6/.github/"
+    echo "  .github/prompts directory copied"
+else
+    echo "Warning: .github/prompts directory not found in source"
 fi
 
 # Copy setup scripts to root

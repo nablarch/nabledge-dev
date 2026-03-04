@@ -48,13 +48,27 @@ mkdir -p "$PROJECT_ROOT/.claude/skills"
 echo "Copying nabledge-6 skill to project..."
 cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT/.claude/skills/"
 
-# Copy GHC-specific .github directory
+# Copy GHC-specific .github/prompts directory (whitelist approach)
 echo "Setting up GitHub Copilot prompts..."
-if [ -d "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github" ]; then
-    cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github" "$PROJECT_ROOT/"
-    echo "GitHub Copilot configuration installed: $PROJECT_ROOT/.github/"
+
+# First, clean up any previously installed development infrastructure files
+echo "Cleaning up previously installed development infrastructure..."
+if [ -d "$PROJECT_ROOT/.github/workflows" ]; then
+    echo "Removing .github/workflows directory..."
+    rm -rf "$PROJECT_ROOT/.github/workflows"
+fi
+if [ -d "$PROJECT_ROOT/.github/scripts" ]; then
+    echo "Removing .github/scripts directory..."
+    rm -rf "$PROJECT_ROOT/.github/scripts"
+fi
+
+# Install only .github/prompts directory
+if [ -d "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts" ]; then
+    mkdir -p "$PROJECT_ROOT/.github"
+    cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts" "$PROJECT_ROOT/.github/"
+    echo "GitHub Copilot prompts installed: $PROJECT_ROOT/.github/prompts/"
 else
-    echo "Warning: .github directory not found in plugin"
+    echo "Warning: .github/prompts directory not found in plugin"
 fi
 
 # Verify installation
