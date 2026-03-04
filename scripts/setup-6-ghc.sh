@@ -52,6 +52,7 @@ cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/skills/nabledge-6" "$PROJECT_ROOT
 echo "Setting up GitHub Copilot prompts..."
 
 # First, clean up any previously installed development infrastructure files
+# Issue #112: Exclude development infrastructure from plugin distribution
 echo "Cleaning up previously installed development infrastructure..."
 if [ -d "$PROJECT_ROOT/.github/workflows" ]; then
     echo "Removing .github/workflows directory..."
@@ -64,8 +65,9 @@ fi
 
 # Install only .github/prompts directory
 if [ -d "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts" ]; then
-    mkdir -p "$PROJECT_ROOT/.github"
-    cp -r "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts" "$PROJECT_ROOT/.github/"
+    mkdir -p "$PROJECT_ROOT/.github/prompts"
+    # Copy files only (not directory itself) to avoid including unwanted files
+    cp "$TEMP_DIR/$REPO_NAME/plugins/nabledge-6/.github/prompts/"* "$PROJECT_ROOT/.github/prompts/"
     echo "GitHub Copilot prompts installed: $PROJECT_ROOT/.github/prompts/"
 else
     echo "Warning: .github/prompts directory not found in plugin"

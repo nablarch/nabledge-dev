@@ -64,11 +64,13 @@ mkdir -p "$DEST_DIR/plugins/nabledge-6/commands"
 cp "$SOURCE_DIR/.claude/commands/n6.md" "$DEST_DIR/plugins/nabledge-6/commands/n6.md"
 
 # Copy GHC-specific .github/prompts directory (whitelist approach)
+# Issue #112: Exclude development infrastructure from plugin distribution
 echo "Copying GHC .github/prompts directory..."
 if [ -d "$SOURCE_DIR/.github/prompts" ]; then
-    mkdir -p "$DEST_DIR/plugins/nabledge-6/.github"
-    cp -r "$SOURCE_DIR/.github/prompts" "$DEST_DIR/plugins/nabledge-6/.github/"
-    echo "  .github/prompts directory copied"
+    mkdir -p "$DEST_DIR/plugins/nabledge-6/.github/prompts"
+    # Copy files only (not directory itself) to avoid including unwanted files
+    cp "$SOURCE_DIR/.github/prompts/"* "$DEST_DIR/plugins/nabledge-6/.github/prompts/"
+    echo "  .github/prompts files copied"
 else
     echo "Warning: .github/prompts directory not found in source"
 fi
