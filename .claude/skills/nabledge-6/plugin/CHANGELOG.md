@@ -4,13 +4,13 @@ nabledge-6プラグインの主な変更内容を記録しています。
 
 フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づいています。
 
-## [Unreleased]
+## [0.4] - 2026-03-04
 
 ### 変更
-- 知識検索時のファイル選択精度を向上させました。より関連性の高いドキュメントセクションを選択できるようになりました (Issue #88)
+- 知識検索時のファイル選択精度を向上させました。より関連性の高いドキュメントセクションを選択できるようになりました (nablarch/nabledge#88)
 
 ### 修正
-- コード分析出力の知識ベースリンクが正しく動作するようになりました。セットアップスクリプトでインストールした場合に、`.nabledge/YYYYMMDD/`から`.claude/skills/nabledge-6/docs/`へのリンクが正しく解決されます（相対パス計算のバグを修正） (Issue #91)
+- コード分析出力の知識ベースリンクが正しく動作するようになりました。セットアップスクリプトでインストールした場合に、`.nabledge/YYYYMMDD/`から`.claude/skills/nabledge-6/docs/`へのリンクが正しく解決されます（相対パス計算のバグを修正） (nablarch/nabledge#91)
 
 ## [0.3] - 2026-02-24
 
@@ -27,13 +27,14 @@ nabledge-6プラグインの主な変更内容を記録しています。
 ## [0.2] - 2026-02-17
 
 ### 修正
-- Claude Codeのセットアップスクリプトがマーケットプレイス設定ではなく `.claude/skills/` ディレクトリへ直接スキルをインストールするように変更し、初回起動時に再起動なしで即座に認識されるようになりました (Issue #27)
+- Claude Codeのセットアップスクリプトがマーケットプレイス設定ではなく `.claude/skills/` ディレクトリへ直接スキルをインストールするように変更し、初回起動時に再起動なしで即座に認識されるようになりました (nablarch/nabledge#27)
 
 ## [0.1] - 2026-02-16
 
 ### 追加
 - 評価版として、Nablarch 6のバッチ処理に関する基礎知識とコード分析ワークフローを提供
 
+[0.4]: https://github.com/nablarch/nabledge/releases/tag/0.4
 [0.3]: https://github.com/nablarch/nabledge/releases/tag/0.3
 [0.2]: https://github.com/nablarch/nabledge/releases/tag/0.2
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/0.1
