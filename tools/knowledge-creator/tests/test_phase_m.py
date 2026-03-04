@@ -1,7 +1,6 @@
 """Tests for Phase M: Merge + Resolve + Finalize."""
 import json
 import os
-import subprocess
 import pytest
 from steps.common import load_json, write_json
 
@@ -9,7 +8,7 @@ from steps.common import load_json, write_json
 class TestPhaseM:
     """Test Phase M finalization phase."""
 
-    def test_merge_then_resolve_then_docs(self, ctx):
+    def test_merge_then_resolve_then_docs(self, ctx, mock_claude):
         """Phase M: merge split files, resolve links, generate docs."""
         from steps.phase_m_finalize import PhaseMFinalize
 
@@ -91,19 +90,8 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
-        # Mock Claude CLI for Phase F pattern classification
-        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
-            return subprocess.CompletedProcess(
-                args=["claude"], returncode=0,
-                stdout=json.dumps({
-                    "patterns": ["nablarch-batch"],
-                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
-                }),
-                stderr=""
-            )
-
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify 1: Merged file exists
@@ -142,7 +130,7 @@ class TestPhaseM:
         # Verify 6: index.toon exists
         assert os.path.exists(f"{ctx.knowledge_dir}/index.toon")
 
-    def test_phase_m_no_split_files(self, ctx):
+    def test_phase_m_no_split_files(self, ctx, mock_claude):
         """Phase M with no split files: skip merge, proceed with resolve + docs."""
         from steps.phase_m_finalize import PhaseMFinalize
 
@@ -177,19 +165,8 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
-        # Mock Claude CLI for Phase F pattern classification
-        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
-            return subprocess.CompletedProcess(
-                args=["claude"], returncode=0,
-                stdout=json.dumps({
-                    "patterns": ["nablarch-batch"],
-                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
-                }),
-                stderr=""
-            )
-
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify: original file still exists (not deleted by merge)
@@ -203,7 +180,7 @@ class TestPhaseM:
         md_path = f"{ctx.docs_dir}/component/test/regular.md"
         assert os.path.exists(md_path)
 
-    def test_phase_m_rst_links_resolved_in_merged(self, ctx):
+    def test_phase_m_rst_links_resolved_in_merged(self, ctx, mock_claude):
         """RST links in merged file are resolved to Markdown."""
         from steps.phase_m_finalize import PhaseMFinalize
 
@@ -275,19 +252,8 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
-        # Mock Claude CLI for Phase F pattern classification
-        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
-            return subprocess.CompletedProcess(
-                args=["claude"], returncode=0,
-                stdout=json.dumps({
-                    "patterns": ["nablarch-batch"],
-                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
-                }),
-                stderr=""
-            )
-
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify: resolved version has Markdown links, not RST
@@ -304,7 +270,7 @@ class TestPhaseM:
         # :doc: may not resolve if target file doesn't exist in classified.json
         # (Phase G keeps unresolvable links as-is)
 
-    def test_phase_m_asset_paths_in_docs(self, ctx):
+    def test_phase_m_asset_paths_in_docs(self, ctx, mock_claude):
         """Asset paths in browsable MD are correct relative paths."""
         from steps.phase_m_finalize import PhaseMFinalize
 
@@ -343,19 +309,8 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
-        # Mock Claude CLI for Phase F pattern classification
-        def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
-            return subprocess.CompletedProcess(
-                args=["claude"], returncode=0,
-                stdout=json.dumps({
-                    "patterns": ["nablarch-batch"],
-                    "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
-                }),
-                stderr=""
-            )
-
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_run_claude)
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify: browsable MD has correct relative path

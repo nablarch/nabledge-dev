@@ -59,7 +59,7 @@ def make_mock_run_claude(generate_output=None, findings_output=None,
             output = _generate
         elif "findings" in schema_str:
             output = _findings
-        elif "reasoning" in schema_str:
+        elif "patterns" in schema_str:
             output = _classify
         else:
             output = _fix

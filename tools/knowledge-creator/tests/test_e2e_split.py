@@ -192,6 +192,7 @@ class TestE2ESplitPipeline:
         assert "test.json" in index_content, "index.toon should reference merged file"
         assert "test--section-1.json" not in index_content, "index.toon should not reference part files"
         assert "test--section-2.json" not in index_content, "index.toon should not reference part files"
+        assert "nablarch-batch" in index_content, "index.toon should contain classified patterns"
 
     def test_full_pipeline_split_with_fix_cycle(self, ctx):
         """Full pipeline with fix cycle: B → C → D(issues) → E(fix) → C → D(clean) → M."""
