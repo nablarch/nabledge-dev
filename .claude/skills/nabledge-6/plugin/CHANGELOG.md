@@ -6,6 +6,8 @@ nabledge-6プラグインの主な変更内容を記録しています。
 
 ## [Unreleased]
 
+## [0.4] - 2026-03-04
+
 ### 変更
 - 知識検索時のファイル選択精度を向上させました。より関連性の高いドキュメントセクションを選択できるようになりました (Issue #88)
 
@@ -34,6 +36,7 @@ nabledge-6プラグインの主な変更内容を記録しています。
 ### 追加
 - 評価版として、Nablarch 6のバッチ処理に関する基礎知識とコード分析ワークフローを提供
 
+[0.4]: https://github.com/nablarch/nabledge/releases/tag/0.4
 [0.3]: https://github.com/nablarch/nabledge/releases/tag/0.3
 [0.2]: https://github.com/nablarch/nabledge/releases/tag/0.2
 [0.1]: https://github.com/nablarch/nabledge/releases/tag/0.1
