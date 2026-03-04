@@ -139,13 +139,25 @@ Save to `.pr/{pr_number}/review-by-{expert_role}.md`:
 
 ### 6. Update PR Template
 
-Modify PR template's Expert Review section to link to detailed reviews:
+Modify PR template's Expert Review section to link to detailed reviews using absolute GitHub URLs:
 
+**URL Format**:
+```
+https://github.com/{owner}/{repo}/blob/{current_branch}/.pr/{pr_number}/review-by-{expert_role}.md
+```
+
+Where:
+- `{owner}/{repo}`: From `gh repo view --json nameWithOwner -q .nameWithOwner`
+- `{current_branch}`: Current branch name
+- `{pr_number}`: Issue number (5-digit zero-padded, e.g., "00042")
+- `{expert_role}`: Expert role in lowercase with hyphens
+
+Example:
 ```markdown
 ## Expert Review
 
 {For each expert}
-- [{Expert Role}](.pr/{pr_number}/review-by-{expert_role}.md) - Rating: {X}/5
+- [{Expert Role}](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-{expert-role}.md) - Rating: {X}/5
 ```
 
 ## Expert-Specific Guidelines
