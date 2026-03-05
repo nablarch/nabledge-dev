@@ -88,57 +88,8 @@ echo "Copying setup scripts to root..."
 cp "$SOURCE_DIR/scripts/setup-6-cc.sh" "$DEST_DIR/"
 cp "$SOURCE_DIR/scripts/setup-6-ghc.sh" "$DEST_DIR/"
 
-# nabledge-5 plugin (if exists)
-if [ -d "$SOURCE_DIR/.claude/skills/nabledge-5" ]; then
-  echo "Copying nabledge-5 plugin..."
-  mkdir -p "$DEST_DIR/plugins/nabledge-5/.claude-plugin"
-  mkdir -p "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5"
-
-  cp "$SOURCE_DIR/.claude/skills/nabledge-5/plugin/plugin.json" \
-     "$DEST_DIR/plugins/nabledge-5/.claude-plugin/"
-
-  cp "$SOURCE_DIR/.claude/skills/nabledge-5/SKILL.md" \
-     "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5/"
-  cp -r "$SOURCE_DIR/.claude/skills/nabledge-5/workflows" \
-        "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5/"
-  cp -r "$SOURCE_DIR/.claude/skills/nabledge-5/assets" \
-        "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5/"
-  cp -r "$SOURCE_DIR/.claude/skills/nabledge-5/knowledge" \
-        "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5/"
-  cp -r "$SOURCE_DIR/.claude/skills/nabledge-5/docs" \
-        "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5/"
-  cp -r "$SOURCE_DIR/.claude/skills/nabledge-5/scripts" \
-        "$DEST_DIR/plugins/nabledge-5/skills/nabledge-5/"
-
-  cp "$SOURCE_DIR/.claude/skills/nabledge-5/plugin/README.md" \
-     "$DEST_DIR/plugins/nabledge-5/"
-  cp "$SOURCE_DIR/.claude/skills/nabledge-5/plugin/CHANGELOG.md" \
-     "$DEST_DIR/plugins/nabledge-5/"
-  cp "$SOURCE_DIR/.claude/skills/nabledge-5/plugin/GUIDE-CC.md" \
-     "$DEST_DIR/plugins/nabledge-5/"
-  cp "$SOURCE_DIR/.claude/skills/nabledge-5/plugin/GUIDE-GHC.md" \
-     "$DEST_DIR/plugins/nabledge-5/"
-
-  # Copy CC-specific command
-  mkdir -p "$DEST_DIR/plugins/nabledge-5/commands"
-  cp "$SOURCE_DIR/.claude/commands/n5.md" "$DEST_DIR/plugins/nabledge-5/commands/n5.md"
-
-  # Copy GHC-specific .github directory
-  if [ -d "$SOURCE_DIR/.github/prompts" ]; then
-    mkdir -p "$DEST_DIR/plugins/nabledge-5/.github"
-    cp -r "$SOURCE_DIR/.github/prompts" "$DEST_DIR/plugins/nabledge-5/.github/" 2>/dev/null || true
-  fi
-
-  # Copy setup scripts
-  cp "$SOURCE_DIR/scripts/setup-5-cc.sh" "$DEST_DIR/"
-  cp "$SOURCE_DIR/scripts/setup-5-ghc.sh" "$DEST_DIR/"
-fi
-
 echo "Transformation complete!"
 echo ""
 echo "Marketplace structure created in: $DEST_DIR"
 echo "  - Marketplace: $DEST_DIR/.claude-plugin/marketplace.json"
 echo "  - Plugin: $DEST_DIR/plugins/nabledge-6/"
-if [ -d "$DEST_DIR/plugins/nabledge-5" ]; then
-  echo "  - Plugin: $DEST_DIR/plugins/nabledge-5/"
-fi

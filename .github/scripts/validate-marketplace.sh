@@ -62,18 +62,4 @@ echo "Validating plugin.json structure..."
 jq -e '.name' "$MARKETPLACE_ROOT/plugins/nabledge-6/.claude-plugin/plugin.json" > /dev/null || { echo "Error: plugin.json missing 'name' field"; exit 1; }
 jq -e '.version' "$MARKETPLACE_ROOT/plugins/nabledge-6/.claude-plugin/plugin.json" > /dev/null || { echo "Error: plugin.json missing 'version' field"; exit 1; }
 
-# nabledge-5 plugin validation (optional)
-if [ -d "$MARKETPLACE_ROOT/plugins/nabledge-5" ]; then
-  echo "Checking nabledge-5 plugin structure..."
-  test -f "$MARKETPLACE_ROOT/plugins/nabledge-5/.claude-plugin/plugin.json" || { echo "Error: nabledge-5/plugin.json not found"; exit 1; }
-  test -f "$MARKETPLACE_ROOT/plugins/nabledge-5/skills/nabledge-5/SKILL.md" || { echo "Error: nabledge-5/SKILL.md not found"; exit 1; }
-  test -f "$MARKETPLACE_ROOT/plugins/nabledge-5/README.md" || { echo "Error: nabledge-5/README.md not found"; exit 1; }
-  test -d "$MARKETPLACE_ROOT/plugins/nabledge-5/skills/nabledge-5/workflows" || { echo "Error: nabledge-5/workflows not found"; exit 1; }
-  test -d "$MARKETPLACE_ROOT/plugins/nabledge-5/skills/nabledge-5/knowledge" || { echo "Error: nabledge-5/knowledge not found"; exit 1; }
-  jq empty "$MARKETPLACE_ROOT/plugins/nabledge-5/.claude-plugin/plugin.json" || { echo "Error: Invalid nabledge-5/plugin.json"; exit 1; }
-  echo "nabledge-5 validation passed"
-else
-  echo "nabledge-5 not found (optional), skipping"
-fi
-
 echo "Marketplace structure validation passed!"
