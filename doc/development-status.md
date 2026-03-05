@@ -17,7 +17,6 @@
 ## ロードマップ
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#e5e7eb', 'primaryTextColor':'#1f2937', 'primaryBorderColor':'#d1d5db', 'secondaryColor':'#f3f4f6', 'tertiaryColor':'#9ca3af', 'background':'#ffffff', 'mainBkg':'#e5e7eb', 'secondBkg':'#f9fafb', 'activeBkg':'#4f46e5', 'activeTextColor':'#ffffff', 'activeBorderColor':'#4338ca', 'doneBkg':'#6b7280', 'doneTextColor':'#ffffff', 'doneBorderColor':'#4b5563', 'critBkg':'#f59e0b', 'critTextColor':'#ffffff', 'critBorderColor':'#d97706', 'todayLineColor':'#dc2626', 'gridColor':'#f3f4f6', 'fontFamily':'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 'fontSize':'13px'}}}%%
 gantt
     title Nabledge Roadmap 2026-2027
     dateFormat YYYY-MM-DD
