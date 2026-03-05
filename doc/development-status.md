@@ -35,38 +35,14 @@ gantt
     拡充＆改善               :2026-05-10, 22d
 
     section AI-Ready Nablarch/Nabledgeリリース
-    品質向上＆リリース準備     :2026-06-01, 29d
-    リリース                 :milestone, 2026-06-30, 0d
+    品質向上＆リリース準備                     :2026-06-01, 29d
+    AI-Ready Nablarch/Nabledgeリリース       :milestone, 2026-06-30, 0d
 
-    section Nableapの開発
+    section 市場拡大に向けたSoR→Nablarch移行サービス：Nableapの開発
     評価版の開発             :2026-07-01, 3M
     Nableapの開発           :2026-10-01, 3M
     Nableapリリース          :milestone, 2026-12-31, 0d
 ```
-
-### フェーズ別開発内容
-
-**評価版＆ツール整備**
-- 2/1-2/14：Nabledge評価版の開発
-- 2/15-2/28：知識生成ツールの開発
-
-**知識拡充**
-- 3/1-3/14：Nablarch v6/v5の知識生成
-- 3/15-3/28：Nablarch v1.4/v1.3/v1.2の知識生成
-
-**ワークフロー拡充**
-- 3/29-4/25：ワークフロー拡充＆Nablarch改善
-- 4/26-5/9：GW
-- 5/10-5/31：ワークフロー拡充＆Nablarch改善
-
-**AI-Ready Nablarch/Nabledgeリリース**
-- 6/1-6/29：品質向上＆リリース準備
-- 6/30：AI-Ready Nablarch/Nabledgeリリース
-
-**市場拡大に向けたSoR→Nablarch移行サービス：Nableapの開発**
-- 2Q：Nableap評価版の開発
-- 3Q：Nableapの開発
-- 4Q：Nableapリリース
 
 ## 現在の作業 (今週)
 
