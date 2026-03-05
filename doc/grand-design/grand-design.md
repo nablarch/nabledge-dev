@@ -103,19 +103,19 @@ graph TD
 ```mermaid
 graph TB
   %% ===== 3プロダクト =====
-  subgraph Nablarch["🏛️ Nablarch（SoR基盤フレームワーク）"]
-    N1["既存資産の器"] --- N2["開発標準"] --- N3["品質基準"] --- N4["技術追従"]
+  subgraph Nableap["🔧 Nableap（移行サービス）"]
+    direction LR
+    L1["ソースコード解析"] --> L2["知識抽出・構造化"]
+    L2 --> L3["マッピング生成"]
+    L3 --> L4["開発ガイド整備"]
   end
 
   subgraph Nabledge["🤖 Nabledge（AIチームメンバー）"]
     D1["実績ノウハウ"] --- D2["全行程支援"] --- D3["判断基準"]
   end
 
-  subgraph Nableap["🔧 Nableap（移行サービス）"]
-    direction LR
-    L1["ソースコード解析"] --> L2["知識抽出・構造化"]
-    L2 --> L3["マッピング生成"]
-    L3 --> L4["開発ガイド整備"]
+  subgraph Nablarch["🏛️ Nablarch（SoR基盤フレームワーク）"]
+    N1["既存資産の器"] --- N2["開発標準"] --- N3["品質基準"] --- N4["技術追従"]
   end
 
   %% ===== 既存システム =====
