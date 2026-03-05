@@ -16,13 +16,12 @@ See `.claude/rules/language.md` for detailed guidelines and examples.
 
 This repository develops **nabledge skills** for AI agents:
 - **nabledge-6**: Nablarch 6 (Jakarta EE 10, Java 17+)
-- **nabledge-5**: Nablarch 5 (Java EE 7/8, Java 8+)
 
 ## Key Resources
 
 - **Design**: `doc/nabledge-design.md` - Architecture, scope, and skill design
 - **Mapping**: `doc/mapping/` - Documentation to knowledge file mappings (302 files for v6)
-- **Official Docs**: `.lw/nab-official/` - Cloned Nablarch repositories (v6 and v5)
+- **Official Docs**: `.lw/nab-official/` - Cloned Nablarch repositories (v6)
 - **Project Rules**: `.claude/rules/` - Workflow conventions (auto-loaded)
 
 ## Important Notes

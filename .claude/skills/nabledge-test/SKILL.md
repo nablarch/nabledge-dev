@@ -757,7 +757,7 @@ Aggregate report: .pr/xxxxx/nabledge-test/report-202602260800.md
 ## Dependencies
 
 - skill-creator (evaluation procedures only - not invoked as skill)
-- nabledge-6 or nabledge-5 (target skill)
+- nabledge-6 (target skill)
 
 ## Notes
 
