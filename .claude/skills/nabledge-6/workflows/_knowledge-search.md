@@ -66,9 +66,9 @@ resultsはrelevance降順（high → partial）でソート。空配列は該当
 
 ### Step 2: 全文検索（経路1）
 
-**ツール**: _knowledge-search/full-text-search.md
+**ツール**: _knowledge-search/_full-text-search.md
 
-**やること**: `_knowledge-search/full-text-search.md` を実行する。入力はStep 1のキーワードリスト。
+**やること**: `_knowledge-search/_full-text-search.md` を実行する。入力はStep 1のキーワードリスト。
 
 **出力**: ヒットしたセクションのリスト（file, section_id）
 
@@ -87,9 +87,9 @@ resultsはrelevance降順（high → partial）でソート。空配列は該当
 
 ### Step 4: ファイル選定（経路2）
 
-**ツール**: _knowledge-search/file-search.md
+**ツール**: _knowledge-search/_file-search.md
 
-**やること**: `_knowledge-search/file-search.md` を実行する。入力は検索クエリとindex.toon。
+**やること**: `_knowledge-search/_file-search.md` を実行する。入力は検索クエリとindex.toon。
 
 **出力**: 候補ファイルのリスト
 
@@ -99,17 +99,17 @@ resultsはrelevance降順（high → partial）でソート。空配列は該当
 
 ### Step 5: セクション選定（経路2）
 
-**ツール**: _knowledge-search/section-search.md
+**ツール**: _knowledge-search/_section-search.md
 
-**やること**: `_knowledge-search/section-search.md` を実行する。入力はStep 4の候補ファイルのリストとStep 1のキーワードリスト。
+**やること**: `_knowledge-search/_section-search.md` を実行する。入力はStep 4の候補ファイルのリストとStep 1のキーワードリスト。
 
 **出力**: 候補セクションのリスト
 
 ### Step 6: セクション判定（共通）
 
-**ツール**: _knowledge-search/section-judgement.md
+**ツール**: _knowledge-search/_section-judgement.md
 
-**やること**: `_knowledge-search/section-judgement.md` を実行する。入力は候補セクションのリスト（Step 2またはStep 5から）。
+**やること**: `_knowledge-search/_section-judgement.md` を実行する。入力は候補セクションのリスト（Step 2またはStep 5から）。
 
 **出力**: 関連セクション（High/Partial）
 

@@ -4,7 +4,8 @@
 
 ## 入力
 
-候補セクションのリスト（file, section_id）
+- 候補セクションのリスト（file, section_id）
+- 検索キーワードリスト（呼び出し元のメモリ内にある。Step 0で使用）
 
 ## 出力
 
@@ -20,6 +21,35 @@ file: features/libraries/universal-dao.json, section_id: overview, relevance: pa
 呼び出し元がポインタJSONに変換する。
 
 ## 手順
+
+### Step 0: hintsベースのpre-filter
+
+**ツール**: Bash（jq）
+
+**やること**: 候補セクションのindex.hintsを取得し、検索キーワードとの関連度を簡易判定する。明らかに無関係なセクションを本文読み込み前に除外する。
+
+**コマンド**:
+```bash
+KNOWLEDGE_DIR=".claude/skills/nabledge-6/knowledge"
+
+for pair in "component/libraries/libraries-universal_dao.json:paging" \
+            "component/libraries/libraries-universal_dao.json:overview" \
+            "component/libraries/libraries-database.json:dialect-support"; do
+  file="${pair%%:*}"
+  section="${pair##*:}"
+  hints=$(jq -r --arg sec "$section" \
+    '.index[] | select(.id == $sec) | .hints | join(",")' \
+    "$KNOWLEDGE_DIR/$file" 2>/dev/null)
+  echo "$file:$section|$hints"
+done
+```
+
+**判定ルール**（エージェントがメモリ内の検索キーワードと照合）:
+- hintsに検索キーワードが1つ以上含まれる（部分一致、大文字小文字区別なし）→ **候補として残す**
+- hintsに検索キーワードが1つも含まれない → **除外**
+- hintsが空またはindex内にセクションが見つからない → **候補として残す**（安全側に倒す）
+
+**出力**: フィルタ済みの候補セクションリスト → Step A に渡す
 
 ### Step A: 候補セクションの内容を一括読み出し
 

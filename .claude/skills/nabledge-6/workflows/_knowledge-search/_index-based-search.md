@@ -14,9 +14,9 @@
 
 ### Step 1: ファイル選定
 
-**ツール**: _knowledge-search/file-search.md
+**ツール**: _knowledge-search/_file-search.md
 
-**やること**: `_knowledge-search/file-search.md` を実行する。入力は検索クエリとindex.toon。
+**やること**: `_knowledge-search/_file-search.md` を実行する。入力は検索クエリとindex.toon。
 
 **出力**: 候補ファイルのリスト
 
@@ -24,9 +24,9 @@
 
 ### Step 2: セクション選定
 
-**ツール**: _knowledge-search/section-search.md
+**ツール**: _knowledge-search/_section-search.md
 
-**やること**: `_knowledge-search/section-search.md` を実行する。入力はStep 1の候補ファイルのリストとキーワードリスト。
+**やること**: `_knowledge-search/_section-search.md` を実行する。入力はStep 1の候補ファイルのリストとキーワードリスト。
 
 **出力**: 候補セクションのリスト
 

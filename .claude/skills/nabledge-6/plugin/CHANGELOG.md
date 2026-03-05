@@ -13,7 +13,7 @@ nabledge-6プラグインの主な変更内容を記録しています。
 - 知識検索時のファイル選択精度を向上させました。より関連性の高いドキュメントセクションを選択できるようになりました (Issue #88)
 
 ### 削除
-- keyword-search.md、section-judgement.md（トップレベル）を新ワークフローに置換
+- keyword-search.md、knowledge-search.md、section-judgement.md（トップレベル）を新ワークフローに置換
 - 旧検索パイプライン用スクリプト（extract-section-hints.sh、parse-index.sh、sort-sections.sh）を削除
 - 既存の知識ファイル17件を削除（新形式での全量再生成を予定）
 
