@@ -7,7 +7,7 @@ Nablarch knowledge development
 - 📊 [Development Status](doc/development-status.md) - Current progress and roadmap
 - 📐 [Design Document](doc/nabledge-design.md) - Architecture and design details
 - 🎯 [Activity Mapping](doc/activity-mapping.md) - Workflow and role division with Nabledge
-- 🚀 [Grand Design](doc/grand-design/grand-design.md) - Strategic 3-phase approach 🚧 Draft
+- 🚀 [Grand Design](doc/grand-design/grand-design.md) - Strategic 3-phase approach ⚠️ **DRAFT - UNAPPROVED, SUBJECT TO CHANGE**
 
 ## Prerequisites
 
