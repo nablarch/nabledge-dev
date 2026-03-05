@@ -18,7 +18,7 @@
 
 ```mermaid
 gantt
-    title Nabledge Product Roadmap 2026
+    title Nabledge Roadmap 2026
     dateFormat YYYY-MM-DD
 
     section Build Phase
