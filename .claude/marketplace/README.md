@@ -9,6 +9,7 @@ Nabledgeは、NablarchによるAI支援開発スキルです。Claude CodeやGit
 | プラグイン | 対応バージョン | 状態 |
 |-----------|-------------|------|
 | [nabledge-6](plugins/nabledge-6/README.md) | Nablarch 6u3 | 提供中 |
+| nabledge-5 | Nablarch 5 | 今後提供予定 |
 
 インストール方法や使い方は各プラグインのREADMEを参照してください。
 
