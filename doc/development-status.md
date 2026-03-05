@@ -17,7 +17,7 @@
 ## ロードマップ
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#a5b4fc', 'primaryTextColor':'#1e1b4b', 'primaryBorderColor':'#818cf8', 'lineColor':'#e0e7ff', 'secondaryColor':'#fbbf24', 'tertiaryColor':'#86efac', 'background':'#ffffff', 'mainBkg':'#a5b4fc', 'secondBkg':'#fbbf24', 'activeBkg':'#60a5fa', 'activeTextColor':'#ffffff', 'doneBkg':'#d1d5db', 'doneTextColor':'#6b7280', 'critBkg':'#fb923c', 'critTextColor':'#ffffff', 'todayLineColor':'#ef4444', 'gridColor':'#e5e7eb', 'fontFamily':'system-ui', 'fontSize':'14px'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#e5e7eb', 'primaryTextColor':'#1f2937', 'primaryBorderColor':'#d1d5db', 'secondaryColor':'#f3f4f6', 'tertiaryColor':'#9ca3af', 'background':'#ffffff', 'mainBkg':'#e5e7eb', 'secondBkg':'#f9fafb', 'activeBkg':'#4f46e5', 'activeTextColor':'#ffffff', 'activeBorderColor':'#4338ca', 'doneBkg':'#6b7280', 'doneTextColor':'#ffffff', 'doneBorderColor':'#4b5563', 'critBkg':'#f59e0b', 'critTextColor':'#ffffff', 'critBorderColor':'#d97706', 'todayLineColor':'#dc2626', 'gridColor':'#f3f4f6', 'fontFamily':'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 'fontSize':'13px'}}}%%
 gantt
     title Nabledge Roadmap 2026-2027
     dateFormat YYYY-MM-DD
