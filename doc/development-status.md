@@ -22,51 +22,51 @@ gantt
     dateFormat YYYY-MM-DD
 
     section 評価版＆ツール整備
-    Nabledge評価版            :done, 2026-02-01, 14d
-    知識生成ツール            :done, 2026-02-15, 14d
+    Nabledge評価版の開発      :done, 2026-02-01, 14d
+    知識生成ツールの開発      :done, 2026-02-15, 14d
 
     section 知識拡充
-    v6/v5知識生成            :active, 2026-03-01, 14d
-    v1.x知識生成             :active, 2026-03-15, 14d
+    v6/v5の知識生成          :active, 2026-03-01, 14d
+    v1.x の知識生成          :active, 2026-03-15, 14d
 
     section ワークフロー拡充
-    ワークフロー＆改善        :2026-03-29, 28d
+    拡充＆改善               :2026-03-29, 28d
     GW                      :crit, 2026-04-26, 14d
-    ワークフロー＆改善        :2026-05-10, 22d
+    拡充＆改善               :2026-05-10, 22d
 
-    section AI-Ready Nablarch
-    品質向上＆準備            :2026-06-01, 29d
-    リリース v1.0           :milestone, 2026-06-30, 0d
+    section AI-Ready Nablarch/Nabledgeリリース
+    品質向上＆リリース準備     :2026-06-01, 29d
+    リリース                 :milestone, 2026-06-30, 0d
 
-    section Nableap
-    評価版開発               :2026-07-01, 3M
-    Nableap開発             :2026-10-01, 3M
+    section Nableapの開発
+    評価版の開発             :2026-07-01, 3M
+    Nableapの開発           :2026-10-01, 3M
     Nableapリリース          :milestone, 2026-12-31, 0d
 ```
 
 ### フェーズ別開発内容
 
-**評価版＆ツール整備（2月）**: Nabledge基盤構築
-- Nabledge評価版開発
-- 知識生成ツール開発
+**評価版＆ツール整備**
+- 2/1-2/14：Nabledge評価版の開発
+- 2/15-2/28：知識生成ツールの開発
 
-**知識拡充（3月）**: Nablarch知識ベース構築
-- Nablarch v6/v5の知識生成
-- Nablarch v1.4/v1.3/v1.2の知識生成
+**知識拡充**
+- 3/1-3/14：Nablarch v6/v5の知識生成
+- 3/15-3/28：Nablarch v1.4/v1.3/v1.2の知識生成
 
-**ワークフロー拡充（3月末-5月）**: AI開発支援機能強化
-- ワークフロー拡充＆Nablarch改善
-- GW休暇期間
-- 継続的な機能拡充と改善
+**ワークフロー拡充**
+- 3/29-4/25：ワークフロー拡充＆Nablarch改善
+- 4/26-5/9：GW
+- 5/10-5/31：ワークフロー拡充＆Nablarch改善
 
-**AI-Ready Nablarch/Nabledgeリリース（6月）**: 正式リリース
-- 品質向上とリリース準備
-- 6月30日：AI-Ready Nablarch/Nabledge v1.0リリース
+**AI-Ready Nablarch/Nabledgeリリース**
+- 6/1-6/29：品質向上＆リリース準備
+- 6/30：AI-Ready Nablarch/Nabledgeリリース
 
-**Nableap（7-12月）**: SoR→Nablarch移行サービス
-- 2Q：Nableap評価版開発
-- 3Q：Nableap本格開発
-- 4Q：Nableapリリース（市場拡大に向けた移行サービス）
+**市場拡大に向けたSoR→Nablarch移行サービス：Nableapの開発**
+- 2Q：Nableap評価版の開発
+- 3Q：Nableapの開発
+- 4Q：Nableapリリース
 
 ## 現在の作業 (今週)
 
