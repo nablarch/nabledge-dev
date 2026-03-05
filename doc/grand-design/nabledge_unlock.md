@@ -35,7 +35,7 @@ graph TB
     direction TB
 
     %% ===== 2つの解析モード =====
-    AD_GEN["汎用解析<br/>Nabチームが提供<br/>ソースコード・テーブル定義・<br/>マスタテーブルから業務仕様を<br/>機械的に抽出"]
+    AD_GEN["汎用解析<br/>Nablarchチームが提供<br/>ソースコード・テーブル定義・<br/>マスタテーブルから業務仕様を<br/>機械的に抽出"]
     AD_PJ["PJ固有解析<br/>アーキテクトが設定<br/>業務仕様の所在を指定"]
 
     %% ===== 出力生成 =====
@@ -57,7 +57,7 @@ graph TB
     PROC --> GAPS
     MAPPING -->|"構造から導出"| GUIDE_AS_IS
     KNOWLEDGE -->|"知識から導出"| GUIDE_AS_IS
-    GUIDE_AS_IS -->|"Nabチームの知識で変換"| GUIDE_AI
+    GUIDE_AS_IS -->|"Nablarchチームの知識で変換"| GUIDE_AI
   end
 
   %% ===== 起点：ソースコード解析 =====
@@ -72,7 +72,7 @@ graph TB
 
   %% ===== 知識供給 =====
   NAB["Nablarch<br/>規約・品質基準・テスト規約"]
-  TEAM["Nabチーム<br/>Nableapを操作<br/>知識・ワークフロー構築<br/>汎用解析を提供"]
+  TEAM["Nablarchチーム<br/>Nableapを操作<br/>知識・ワークフロー構築<br/>汎用解析を提供"]
 
   %% ===== ロール =====
   ARCH["アーキテクト"]
