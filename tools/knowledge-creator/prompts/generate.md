@@ -500,4 +500,3 @@ Combine all results from Steps 1–6 into the output JSON.
 - [ ] If Expected Sections was provided, section count equals expected count
 
 Output the JSON matching the schema above. No explanation, no markdown fences, no other text.
-````
