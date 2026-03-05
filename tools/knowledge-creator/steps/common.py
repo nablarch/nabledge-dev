@@ -77,7 +77,6 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
     cmd = [
         "claude", "-p",
         "--output-format", "json",
-        "--no-session-persistence",
         "--json-schema", json.dumps(json_schema),
         "--max-turns", "10"
     ]
@@ -86,11 +85,6 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
     # This ensures prompts run in standard mode, not code agent mode
     env = os.environ.copy()
     env.pop('CLAUDECODE', None)
-
-    # Sanitize potentially sensitive cloud credentials
-    for var in ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
-                'AWS_SESSION_TOKEN', 'AWS_DEFAULT_REGION']:
-        env.pop(var, None)
 
     result = subprocess.run(
         cmd, input=prompt, capture_output=True, text=True, env=env
