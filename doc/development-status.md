@@ -28,8 +28,8 @@ gantt
     v1.x知識生成             :active, 2026-03-15, 2w
     ワークフロー拡充          :2026-04-01, 4w
     Nablarch改善             :2026-04-01, 4w
-    GW                      :crit, 2026-05-01, 2w
-    v1.0準備                :2026-05-15, 2w
+    GW                      :crit, 2026-04-29, 1w
+    v1.0準備                :2026-05-08, 3w
     Build v1.0              :milestone, 2026-06-01, 0d
 
     section Unlock Phase
