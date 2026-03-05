@@ -19,26 +19,26 @@
 ```mermaid
 gantt
     title Nabledge Product Roadmap 2026
-    dateFormat YYYY-MM
+    dateFormat YYYY-MM-DD
 
     section Build Phase
-    評価版開発                :done, 2026-02, 1M
-    知識生成ツール            :done, 2026-02, 1M
-    Nablarch v6/v5知識       :done, 2026-03, 1M
-    Nablarch v1.x知識        :done, 2026-03, 1M
-    ワークフロー拡充          :active, 2026-04, 1M
-    Build Phase v1.0        :milestone, 2026-06, 0M
+    評価版開発                :done, 2026-02-01, 2w
+    知識生成ツール            :done, 2026-02-15, 2w
+    v6/v5知識生成            :done, 2026-03-01, 2w
+    v1.x知識生成             :done, 2026-03-15, 2w
+    ワークフロー拡充          :active, 2026-04-01, 4w
+    Build v1.0              :milestone, 2026-06-01, 0d
 
     section Unlock Phase
-    PJアダプター             :2026-07, 3M
-    ソースコード解析          :2026-07, 3M
-    マッピング生成           :2026-08, 2M
-    Unlock Phase α版        :milestone, 2026-09, 0M
+    PJアダプター設計          :2026-07-01, 4w
+    ソースコード解析          :2026-07-01, 6w
+    マッピング生成           :2026-08-01, 6w
+    Unlock α版              :milestone, 2026-09-01, 0d
 
     section Win Phase
-    判断パターン蓄積          :2026-10, 3M
-    実績データ活用           :2026-10, 3M
-    Win Phase プロトタイプ   :2026-11, 2M
+    判断パターン蓄積          :2026-10-01, 6w
+    実績データ活用           :2026-10-01, 8w
+    学習機構実装             :2026-11-01, 6w
 ```
 
 ### フェーズ別開発内容
