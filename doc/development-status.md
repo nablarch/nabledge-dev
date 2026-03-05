@@ -21,45 +21,52 @@ gantt
     title Nabledge Roadmap 2026
     dateFormat YYYY-MM-DD
 
-    section Build Phase
-    評価版開発                :done, 2026-02-01, 2w
-    知識生成ツール            :done, 2026-02-15, 2w
-    v6/v5知識生成            :active, 2026-03-01, 2w
-    v1.x知識生成             :active, 2026-03-15, 2w
-    ワークフロー拡充          :2026-04-01, 4w
-    Nablarch改善             :2026-04-01, 4w
-    GW                      :crit, 2026-04-29, 1w
-    v1.0準備                :2026-05-08, 3w
-    Build v1.0              :milestone, 2026-06-01, 0d
+    section 評価版＆ツール整備
+    Nabledge評価版            :done, 2026-02-01, 14d
+    知識生成ツール            :done, 2026-02-15, 14d
 
-    section Unlock Phase
-    PJアダプター設計          :2026-07-01, 4w
-    ソースコード解析          :2026-07-01, 6w
-    マッピング生成           :2026-08-01, 6w
-    Unlock α版              :milestone, 2026-09-01, 0d
+    section 知識拡充
+    v6/v5知識生成            :active, 2026-03-01, 14d
+    v1.x知識生成             :active, 2026-03-15, 14d
 
-    section Win Phase
-    判断パターン蓄積          :2026-10-01, 6w
-    実績データ活用           :2026-10-01, 8w
-    学習機構実装             :2026-11-01, 6w
+    section ワークフロー拡充
+    ワークフロー＆改善        :2026-03-29, 28d
+    GW                      :crit, 2026-04-26, 14d
+    ワークフロー＆改善        :2026-05-10, 22d
+
+    section AI-Ready Nablarch
+    品質向上＆準備            :2026-06-01, 29d
+    リリース v1.0           :milestone, 2026-06-30, 0d
+
+    section Nableap
+    評価版開発               :2026-07-01, 3M
+    Nableap開発             :2026-10-01, 3M
+    Nableapリリース          :milestone, 2026-12-31, 0d
 ```
 
 ### フェーズ別開発内容
 
-**Build Phase（2-6月）**: Nablarch開発AI支援の基礎
-- Nablarch公式ドキュメント知識ベース（v6/v5/v1.x）
-- 基本ワークフロー（知識検索、実装支援、設計サポート）
-- v1.0正式リリース
+**評価版＆ツール整備（2月）**: Nabledge基盤構築
+- Nabledge評価版開発
+- 知識生成ツール開発
 
-**Unlock Phase（7-9月）**: 既存PJ資産のAI-Ready化
-- ソースコード解析エンジン
-- 開発ガイド・成果物マッピング自動生成
-- PJアダプター（汎用＋PJ固有設定）
+**知識拡充（3月）**: Nablarch知識ベース構築
+- Nablarch v6/v5の知識生成
+- Nablarch v1.4/v1.3/v1.2の知識生成
 
-**Win Phase（10-12月）**: 組織知識の蓄積と活用
-- 判断パターン・実績ノウハウの自動蓄積
-- 実績データに基づく見積精度向上
-- PJを重ねるほど強くなる学習機構
+**ワークフロー拡充（3月末-5月）**: AI開発支援機能強化
+- ワークフロー拡充＆Nablarch改善
+- GW休暇期間
+- 継続的な機能拡充と改善
+
+**AI-Ready Nablarch/Nabledgeリリース（6月）**: 正式リリース
+- 品質向上とリリース準備
+- 6月30日：AI-Ready Nablarch/Nabledge v1.0リリース
+
+**Nableap（7-12月）**: SoR→Nablarch移行サービス
+- 2Q：Nableap評価版開発
+- 3Q：Nableap本格開発
+- 4Q：Nableapリリース（市場拡大に向けた移行サービス）
 
 ## 現在の作業 (今週)
 
