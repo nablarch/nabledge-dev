@@ -98,8 +98,21 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
             os.makedirs(log_dir, exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
             log_path = os.path.join(log_dir, f"{file_id}_{timestamp}.json")
+            cc_metrics = {
+                "duration_ms":     response.get("duration_ms"),
+                "duration_api_ms": response.get("duration_api_ms"),
+                "num_turns":       response.get("num_turns"),
+                "total_cost_usd":  response.get("total_cost_usd"),
+                "usage":           response.get("usage", {}),
+            }
+            log_data = {
+                "file_id":    file_id,
+                "timestamp":  timestamp,
+                "subtype":    response.get("subtype"),
+                "cc_metrics": cc_metrics,
+            }
             with open(log_path, 'w', encoding='utf-8') as f:
-                json.dump(response, f, ensure_ascii=False, indent=2)
+                json.dump(log_data, f, ensure_ascii=False, indent=2)
 
             # Handle structured output
             subtype = response.get("subtype", "")
@@ -133,5 +146,60 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
                 args=result.args, returncode=1,
                 stdout="", stderr=f"Failed to parse claude response JSON: {e}"
             )
+
+    return result
+
+
+def aggregate_cc_metrics(executions_dir: str) -> dict:
+    """executions ディレクトリの execution log を走査してメトリクスを集計する。
+
+    executions_dir が存在しない場合や JSON ファイルがない場合は空の結果を返す。
+
+    Returns:
+        {
+          "count": int,
+          "tokens": {"input": int, "cache_creation": int, "cache_read": int, "output": int},
+          "cost_usd": float,
+          "avg_turns": float,        # ターンデータがある場合のみ含まれる
+          "avg_duration_sec": float, # duration データがある場合のみ含まれる
+          "p95_duration_sec": float, # duration データがある場合のみ含まれる
+        }
+    """
+    import glob
+
+    tokens = {"input": 0, "cache_creation": 0, "cache_read": 0, "output": 0}
+    cost_usd = 0.0
+    turns = []
+    durations = []
+    count = 0
+
+    for path in glob.glob(os.path.join(executions_dir, "*.json")):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+
+        cc = data.get("cc_metrics", {})
+        usage = cc.get("usage", {})
+        tokens["input"]          += usage.get("input_tokens", 0)
+        tokens["cache_creation"] += usage.get("cache_creation_input_tokens", 0)
+        tokens["cache_read"]     += usage.get("cache_read_input_tokens", 0)
+        tokens["output"]         += usage.get("output_tokens", 0)
+        cost_usd                 += cc.get("total_cost_usd") or 0.0
+        if cc.get("num_turns"):
+            turns.append(cc["num_turns"])
+        if cc.get("duration_ms"):
+            durations.append(cc["duration_ms"] / 1000.0)
+        count += 1
+
+    result = {"count": count, "tokens": tokens, "cost_usd": round(cost_usd, 4)}
+    if turns:
+        result["avg_turns"] = round(sum(turns) / len(turns), 1)
+    if durations:
+        sorted_d = sorted(durations)
+        result["avg_duration_sec"] = round(sum(sorted_d) / len(sorted_d), 1)
+        p95_idx = max(0, int(len(sorted_d) * 0.95) - 1)
+        result["p95_duration_sec"] = round(sorted_d[p95_idx], 1)
 
     return result

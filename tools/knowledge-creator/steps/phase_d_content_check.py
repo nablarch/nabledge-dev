@@ -7,7 +7,7 @@ Does NOT fix anything - only reports findings.
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from .common import load_json, write_json, read_file, run_claude as _default_run_claude
+from .common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
 from .logger import get_logger
 
 FINDINGS_SCHEMA = {
@@ -127,4 +127,11 @@ class PhaseDContentCheck:
 
         status_icon = "✅" if len(issue_ids) == 0 else "⚠️"
         self.logger.info(f"\n   {status_icon} Content Check: {clean} clean, {len(issue_ids)} with issues")
-        return {"issues_count": len(issue_ids), "issue_file_ids": issue_ids}
+        metrics = aggregate_cc_metrics(self.ctx.phase_d_executions_dir)
+        self.logger.info(f"   📊 Metrics: cost=${metrics['cost_usd']:.3f} avg_turns={metrics.get('avg_turns', 'N/A')}")
+        return {
+            "issues_count":   len(issue_ids),
+            "issue_file_ids": issue_ids,
+            "clean":          clean,
+            "metrics":        metrics,
+        }

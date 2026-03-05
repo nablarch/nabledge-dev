@@ -30,7 +30,7 @@ def real_ctx(tmp_path):
         def log_dir(self):
             return str(log_base / f"v{self.version}")
 
-    ctx = RealContext(version="6", repo=REPO_ROOT, concurrency=1)
+    ctx = RealContext(version="6", repo=REPO_ROOT, concurrency=1, run_id="test")
     os.makedirs(ctx.log_dir, exist_ok=True)
     return ctx
 

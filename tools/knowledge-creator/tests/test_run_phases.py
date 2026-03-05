@@ -19,6 +19,7 @@ class TestPhaseControl:
         args.concurrency = 1
         args.dry_run = False
         args.test = None
+        args.run_id = "test"
         return args
 
     def _patch_phases(self):

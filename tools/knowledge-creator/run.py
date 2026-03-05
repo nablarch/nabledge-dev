@@ -9,6 +9,8 @@ import argparse
 import sys
 import os
 from dataclasses import dataclass
+from datetime import datetime, timezone
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'steps'))
 
@@ -22,14 +24,26 @@ class Context:
     concurrency: int
     test_file: str = None
     max_rounds: int = 1
+    run_id: str = None
 
     def __post_init__(self):
         if not os.path.isdir(self.repo):
             raise ValueError(f"Repository path does not exist: {self.repo}")
+        if self.run_id is None:
+            self.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+
+    @property
+    def version_log_dir(self) -> str:
+        """バージョン単位のログルート（latest リンクの親）"""
+        return f"{self.repo}/tools/knowledge-creator/.logs/v{self.version}"
 
     @property
     def log_dir(self) -> str:
-        return f"{self.repo}/tools/knowledge-creator/.logs/v{self.version}"
+        return f"{self.version_log_dir}/{self.run_id}"
+
+    @property
+    def report_path(self) -> str:
+        return f"{self.log_dir}/report.json"
 
     # Phase A: Preparation
     @property
@@ -119,6 +133,8 @@ def main():
                         help="Skip confirmation prompts")
     parser.add_argument("--regen", action="store_true",
                         help="Detect source changes and regenerate affected files")
+    parser.add_argument("--run-id", type=str, default=None,
+                        help="実行ID（省略時は現在時刻から自動生成、--resume 時は nc.sh が渡す）")
 
     args = parser.parse_args()
 
@@ -168,14 +184,45 @@ def main():
 
         ctx = Context(
             version=v, repo=args.repo, concurrency=args.concurrency,
-            test_file=args.test, max_rounds=args.max_rounds
+            test_file=args.test, max_rounds=args.max_rounds,
+            run_id=args.run_id
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
+
+        # latest シンボリックリンクを更新（--run-id 未指定の新規実行のみ）
+        if args.run_id is None:
+            latest_link = os.path.join(ctx.version_log_dir, "latest")
+            try:
+                if os.path.lexists(latest_link):
+                    os.remove(latest_link)
+                os.symlink(ctx.run_id, latest_link)
+            except OSError as e:
+                logger.warning(f"latest リンクの更新に失敗しました（継続します）: {e}")
 
         # Configure logger with execution log file
         execution_log_path = f"{ctx.log_dir}/execution.log"
         setup_logger(log_file_path=execution_log_path)
         logger.info(f"Logging to: {execution_log_path}")
+
+        # レポート用データ収集の初期化
+        started_at = datetime.now(timezone.utc).isoformat()
+        report = {
+            "meta": {
+                "run_id":      ctx.run_id,
+                "version":     v,
+                "started_at":  started_at,
+                "phases":      args.phase or "ABCDEM",
+                "max_rounds":  args.max_rounds,
+                "concurrency": args.concurrency,
+                "test_mode":   args.test is not None,
+            },
+            "phase_b":        None,
+            "phase_c":        None,
+            "phase_d_rounds": [],
+            "phase_e_rounds": [],
+            "totals":         None,
+        }
+
         phases = args.phase or "ABCDEM"
 
         # --clean-phase: remove artifacts before run
@@ -203,7 +250,9 @@ def main():
             logger.info("\n🤖Phase B: Generate")
             logger.info("   └─ Converting documentation to knowledge files...")
             from steps.phase_b_generate import PhaseBGenerate
-            PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=args.target)
+            b_result = PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=args.target)
+            if b_result:
+                report["phase_b"] = b_result
 
             if not args.dry_run and os.path.exists(ctx.classified_list_path):
                 from steps.source_tracker import save_hashes
@@ -219,6 +268,13 @@ def main():
                 logger.info("   └─ Validating JSON schema and structure...")
                 from steps.phase_c_structure_check import PhaseCStructureCheck
                 c_result = PhaseCStructureCheck(ctx).run()
+                report["phase_c"] = {
+                    "total":     c_result.get("total", 0),
+                    "pass":      c_result.get("pass", 0),
+                    "fail":      c_result.get("error", 0),
+                    "pass_rate": round(c_result["pass"] / c_result["total"], 3)
+                                 if c_result.get("total", 0) > 0 else 0,
+                }
                 if c_result["error_count"] > 0:
                     rel_path = os.path.relpath(f"{ctx.log_dir}/structure-check.json", ctx.repo)
                     logger.warning(f"   ⚠️Structure errors: {c_result['error_count']} found")
@@ -240,6 +296,20 @@ def main():
                 d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
                     target_ids=effective_ids
                 )
+                findings_summary = _aggregate_findings(ctx)
+                d_round = {
+                    "round":      round_num,
+                    "total":      d_result.get("clean", 0) + len(d_result.get("issue_file_ids", [])),
+                    "clean":      d_result.get("clean", 0),
+                    "has_issues": len(d_result.get("issue_file_ids", [])),
+                    "clean_rate": round(
+                        d_result.get("clean", 0) /
+                        (d_result.get("clean", 0) + len(d_result.get("issue_file_ids", []))), 3
+                    ) if (d_result.get("clean", 0) + len(d_result.get("issue_file_ids", []))) > 0 else 0,
+                    "findings": findings_summary,
+                    "metrics":  d_result.get("metrics"),
+                }
+                report["phase_d_rounds"].append(d_round)
 
                 if d_result["issues_count"] == 0:
                     logger.info(f"   ✨Round {round_num}: All checks passed!")
@@ -249,9 +319,16 @@ def main():
                     logger.info("\n🔧Phase E: Fix")
                     logger.info("   └─ Applying fixes to knowledge files...")
                     from steps.phase_e_fix import PhaseEFix
-                    PhaseEFix(ctx, dry_run=args.dry_run).run(
+                    e_result = PhaseEFix(ctx, dry_run=args.dry_run).run(
                         target_ids=d_result["issue_file_ids"]
                     )
+                    if e_result:
+                        report["phase_e_rounds"].append({
+                            "round":   round_num,
+                            "fixed":   e_result.get("fixed", 0),
+                            "error":   e_result.get("error", 0),
+                            "metrics": e_result.get("metrics"),
+                        })
                 else:
                     break
             else:
@@ -278,9 +355,75 @@ def main():
             from steps.phase_f_finalize import PhaseFFinalize
             PhaseFFinalize(ctx, dry_run=args.dry_run).run()
 
+        finished_at = datetime.now(timezone.utc).isoformat()
+        report["meta"]["finished_at"] = finished_at
+        report["meta"]["duration_sec"] = int(
+            (datetime.fromisoformat(finished_at) - datetime.fromisoformat(started_at)).total_seconds()
+        )
+        report["totals"] = _compute_totals(report)
+        _write_report(ctx, report)
+        logger.info(f"\n   📄 Report: {ctx.report_path}")
+
         logger.info(f"\n{'='*60}")
         logger.info(f"✨Completed version {v}")
         logger.info(f"{'='*60}\n")
+
+
+def _aggregate_findings(ctx) -> dict:
+    """phase-d/findings/*.json を走査して findings サマリーを集計する。"""
+    import glob
+    findings_dir = ctx.findings_dir
+    total = critical = minor = 0
+    by_category = {}
+
+    for path in glob.glob(os.path.join(findings_dir, "*.json")):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+        for finding in data.get("findings", []):
+            total += 1
+            sev = finding.get("severity", "")
+            cat = finding.get("category", "unknown")
+            if sev == "critical":
+                critical += 1
+            else:
+                minor += 1
+            by_category[cat] = by_category.get(cat, 0) + 1
+
+    return {"total": total, "critical": critical, "minor": minor, "by_category": by_category}
+
+
+def _compute_totals(report: dict) -> dict:
+    """全フェーズのトークン・コストを合計する。"""
+    tokens = {"input": 0, "cache_creation": 0, "cache_read": 0, "output": 0}
+    cost_usd = 0.0
+
+    for phase_key in ["phase_b"]:
+        phase = report.get(phase_key) or {}
+        m = phase.get("metrics") or {}
+        t = m.get("tokens") or {}
+        for k in tokens:
+            tokens[k] += t.get(k, 0)
+        cost_usd += m.get("cost_usd") or 0.0
+
+    for rounds_key in ["phase_d_rounds", "phase_e_rounds"]:
+        for rnd in report.get(rounds_key) or []:
+            m = rnd.get("metrics") or {}
+            t = m.get("tokens") or {}
+            for k in tokens:
+                tokens[k] += t.get(k, 0)
+            cost_usd += m.get("cost_usd") or 0.0
+
+    return {"tokens": tokens, "cost_usd": round(cost_usd, 4)}
+
+
+def _write_report(ctx, report: dict):
+    """report.json を log_dir に書き出す。"""
+    os.makedirs(ctx.log_dir, exist_ok=True)
+    with open(ctx.report_path, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

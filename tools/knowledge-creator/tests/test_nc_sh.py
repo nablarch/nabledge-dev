@@ -23,10 +23,27 @@ def stub_env(tmp_path):
     )
     stub_script.chmod(stub_script.stat().st_mode | stat.S_IEXEC)
 
+    # Create .logs/v6/latest symlink for --resume tests
+    # nc.sh derives REPO_ROOT as $(cd "$SCRIPT_DIR/../.." && pwd)
+    # which means REPO_ROOT = TOOL_DIR/../../
+    repo_root = os.path.join(TOOL_DIR, "..", "..")
+    latest_dir = os.path.join(repo_root, "tools", "knowledge-creator", ".logs", "v6")
+    os.makedirs(latest_dir, exist_ok=True)
+    latest_link = os.path.join(latest_dir, "latest")
+    # Clean up old link if exists
+    if os.path.lexists(latest_link):
+        os.remove(latest_link)
+    os.symlink("20250304T120000", latest_link)
+
     env = os.environ.copy()
     env["PYTHON"] = str(stub_script)
     env["PATH"] = str(tmp_path) + ":" + env.get("PATH", "")
-    return env
+
+    yield env
+
+    # Cleanup: remove the latest link after test
+    if os.path.lexists(latest_link):
+        os.remove(latest_link)
 
 
 def _run_nc(args, env):

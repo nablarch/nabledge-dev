@@ -64,7 +64,15 @@ case "$COMMAND" in
         if [ "$RESUME" = true ]; then
             # UC2: Resume interrupted generation (no clean)
             echo "🔄 中断再開モード"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" $PASSTHROUGH_ARGS
+            LATEST_LINK="$REPO_ROOT/tools/knowledge-creator/.logs/v${VERSION}/latest"
+            if [ ! -L "$LATEST_LINK" ]; then
+                echo "Error: latest リンクが見つかりません。先に ./nc.sh gen $VERSION を実行してください。"
+                exit 1
+            fi
+            EXISTING_RUN_ID=$(basename "$(readlink "$LATEST_LINK")")
+            echo "   再開する run_id: $EXISTING_RUN_ID"
+            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" \
+                --run-id "$EXISTING_RUN_ID" $PASSTHROUGH_ARGS
         else
             # UC1: Full generation (clean first)
             echo "🚀 全件生成モード"

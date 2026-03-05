@@ -6,7 +6,7 @@ Apply fixes to knowledge files based on validation findings.
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from .common import load_json, write_json, read_file, run_claude as _default_run_claude
+from .common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
 from .logger import get_logger
 
 KNOWLEDGE_SCHEMA = {
@@ -121,5 +121,12 @@ class PhaseEFix:
                 elif r["status"] == "error":
                     self.logger.error(f"  [ERROR] {r['id']}: {r.get('error','')}")
 
-        self.logger.info(f"\n修正完了: {fixed}/{len(targets)}")
-        return {"fixed": fixed, "total": len(targets)}
+        self.logger.info(f"\n   ✅ 修正完了: {fixed}/{len(targets)}")
+        metrics = aggregate_cc_metrics(self.ctx.phase_e_executions_dir)
+        self.logger.info(f"   📊 Metrics: cost=${metrics['cost_usd']:.3f}")
+        return {
+            "fixed":   fixed,
+            "error":   len(targets) - fixed,
+            "total":   len(targets),
+            "metrics": metrics,
+        }
