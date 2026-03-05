@@ -18,30 +18,31 @@
 
 ```mermaid
 gantt
-    title Nabledge Roadmap 2026
+    title Nabledge Roadmap 2026-2027
     dateFormat YYYY-MM-DD
 
     section 評価版＆ツール整備
-    Nabledge評価版の開発      :done, 2026-02-01, 14d
-    知識生成ツールの開発      :done, 2026-02-15, 14d
+    Nabledge評価版の開発             :done, 2026-02-01, 2026-02-14
+    知識生成ツールの開発             :done, 2026-02-15, 2026-02-28
 
     section 知識拡充
-    v6/v5の知識生成          :active, 2026-03-01, 14d
-    v1.x の知識生成          :active, 2026-03-15, 14d
+    Nablarch v6/v5の知識生成        :active, 2026-03-01, 2026-03-14
+    Nablarch v1.4/v1.3/v1.2の知識生成 :active, 2026-03-15, 2026-03-28
 
     section ワークフロー拡充
-    拡充＆改善               :2026-03-29, 28d
-    GW                      :crit, 2026-04-26, 14d
-    拡充＆改善               :2026-05-10, 22d
+    ワークフロー拡充＆Nablarch改善    :2026-03-29, 2026-04-25
+    GW                             :crit, 2026-04-26, 2026-05-09
+    ワークフロー拡充＆Nablarch改善    :2026-05-10, 2026-05-31
 
     section AI-Ready Nablarch/Nabledgeリリース
-    品質向上＆リリース準備                     :2026-06-01, 29d
-    AI-Ready Nablarch/Nabledgeリリース       :milestone, 2026-06-30, 0d
+    品質向上＆リリース準備                        :2026-06-01, 2026-06-29
+    AI-Ready Nablarch/Nabledgeリリース          :milestone, 2026-06-30, 0d
 
-    section 市場拡大に向けたSoR→Nablarch移行サービス：Nableapの開発
-    評価版の開発             :2026-07-01, 3M
-    Nableapの開発           :2026-10-01, 3M
-    Nableapリリース          :milestone, 2026-12-31, 0d
+    section 市場拡大に向けたSoR→Nablarch移行サービスNableapの開発
+    Nableap評価版の開発             :2026-07-01, 2026-09-30
+    Nableapの開発                  :2026-10-01, 2026-12-26
+    年末年始休暇                    :crit, 2026-12-27, 2027-01-09
+    Nableapリリース                :2027-01-10, 2027-03-31
 ```
 
 ## 現在の作業 (今週)
