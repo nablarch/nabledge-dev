@@ -14,6 +14,69 @@
 
 ※ 知識ファイルは生成AIで生成・検証し人はサンプリングチェックのみ実施、正式リリース前に全量チェックを予定している
 
+## ロードマップ
+
+```mermaid
+gantt
+    title Nabledge Development Roadmap 2026
+    dateFormat YYYY-MM-DD
+
+    section 2月: 評価版＆ツール整備
+    Nabledge評価版開発         :done, feb1, 2026-02-01, 2w
+    知識生成ツール開発         :done, feb3, 2026-02-15, 2w
+
+    section 3月: 知識拡充
+    Nablarch v6/v5知識生成     :done, mar1, 2026-03-01, 2w
+    Nablarch v1.x知識生成      :done, mar3, 2026-03-15, 2w
+
+    section 4月: AI Ready
+    ワークフロー拡充           :active, apr1, 2026-04-01, 3w
+    Nablarch改善              :active, apr2, 2026-04-08, 3w
+    GW                       :milestone, 2026-04-29, 0d
+
+    section 5月: Build実証
+    GW                       :crit, may0, 2026-05-01, 1w
+    実PJ試験運用開始           :may2, 2026-05-08, 1w
+    フィードバック収集＆改善    :may3, 2026-05-15, 2w
+
+    section 6月: Build完成
+    正式リリース準備           :jun1, 2026-06-01, 2w
+    正式リリース v1.0         :milestone, 2026-06-15, 0d
+    リリース後フォロー         :jun3, 2026-06-15, 2w
+
+    section Q2総括
+    Build Phase基盤完成       :milestone, 2026-06-30, 0d
+
+    section Q3: Unlock Phase
+    PJアダプター設計＆実装     :q3_1, 2026-07-01, 6w
+    ソースコード解析機能       :q3_2, 2026-07-15, 6w
+    マッピング生成機能         :q3_3, 2026-08-01, 4w
+    Unlock α版リリース        :milestone, 2026-09-01, 0d
+
+    section Q4: Win Phase
+    判断パターン蓄積機能       :q4_1, 2026-10-01, 6w
+    実績データ活用機能         :q4_2, 2026-10-15, 6w
+    Win Phase プロトタイプ    :q4_3, 2026-11-15, 4w
+    2027年ロードマップ策定     :q4_4, 2026-12-01, 4w
+```
+
+### フェーズ説明
+
+**Build Phase（2-6月）**: 知識検索とワークフロー実装
+- Nablarch公式ドキュメントの知識ベース化
+- 基本ワークフロー（検索、実装支援）実装
+- 実プロジェクトでの試験運用と正式リリース
+
+**Unlock Phase（7-9月）**: PJ資産のAI-Ready化
+- 既存PJのソースコード解析
+- 開発ガイド・成果物マッピング生成
+- PJアダプター（汎用＋PJ固有）開発
+
+**Win Phase（10-12月）**: 組織資産としての価値最大化
+- 判断パターン・実績ノウハウの蓄積機能
+- PJを重ねるほど強くなる仕組み
+- 見積精度向上、品質標準化の実現
+
 ## 現在の作業 (今週)
 
 - 知識ファイル生成/検証整備
