@@ -47,4 +47,4 @@ Skill name includes major version (nabledge-6 = 6.x.x). Version format: **MINOR.
 
 ### Multiple Skills
 
-Marketplace version = nabledge-6 version.
+If both nabledge-6 and nabledge-5 changed, marketplace version = highest skill version (compare MINOR first, then PATCH).
