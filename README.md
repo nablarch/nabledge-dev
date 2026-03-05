@@ -6,8 +6,8 @@ Nablarch knowledge development
 
 - 📊 [Development Status](doc/development-status.md) - Current progress and roadmap
 - 📐 [Design Document](doc/nabledge-design.md) - Architecture and design details
-- 🎯 [ToBe Image (Short-term)](doc/tobe-shortterm.md) - Activity mapping and role division with Nabledge
-- 🚀 [ToBe Image (Long-term)](doc/tobe/tobe-longterm.md) - Strategic 3-phase approach 🚧 Draft
+- 🎯 [Activity Mapping](doc/activity-mapping.md) - Workflow and role division with Nabledge
+- 🚀 [Grand Design](doc/grand-design.md) - Strategic 3-phase approach 🚧 Draft
 
 ## Prerequisites
 
