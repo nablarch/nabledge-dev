@@ -336,17 +336,32 @@ clone_or_update_repo() {
     fi
 }
 
-# Clone Nablarch 6 repositories (main branch)
-print_status info "Setting up Nablarch 6 repositories..."
-clone_or_update_repo "https://github.com/nablarch/nablarch-document.git" "$NAB_OFFICIAL_V6_DIR" "main"
-clone_or_update_repo "https://github.com/nablarch/nablarch-single-module-archetype.git" "$NAB_OFFICIAL_V6_DIR" "main"
-clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git" "$NAB_OFFICIAL_V6_DIR" "main"
+# Clone Nablarch official repositories from knowledge-creator.json
+clone_repos_from_meta() {
+    local version="$1"
+    local target_dir="$2"
+    local meta_file=".claude/skills/nabledge-${version}/plugin/knowledge-creator.json"
 
-# Clone Nablarch 5 repositories (v5-main branch)
-print_status info "Setting up Nablarch 5 repositories..."
-clone_or_update_repo "https://github.com/nablarch/nablarch-document.git" "$NAB_OFFICIAL_V5_DIR" "v5-main"
-clone_or_update_repo "https://github.com/nablarch/nablarch-single-module-archetype.git" "$NAB_OFFICIAL_V5_DIR" "v5-main"
-# Note: nablarch-system-development-guide not cloned for v5 (no v5 version exists)
+    if [ ! -f "$meta_file" ]; then
+        print_status warning "knowledge-creator.json not found: $meta_file (skip)"
+        return
+    fi
+
+    print_status info "Setting up Nablarch ${version} repositories from ${meta_file}..."
+
+    local count
+    count=$(jq '.sources | length' "$meta_file")
+
+    for i in $(seq 0 $((count - 1))); do
+        local repo_url branch
+        repo_url=$(jq -r ".sources[$i].repo" "$meta_file")
+        branch=$(jq -r ".sources[$i].branch" "$meta_file")
+        clone_or_update_repo "${repo_url%.git}.git" "$target_dir" "$branch"
+    done
+}
+
+clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
+clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
 
 # Final summary
 print_header "Setup Completed Successfully!"
