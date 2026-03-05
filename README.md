@@ -4,11 +4,10 @@ Nablarch knowledge development
 
 ## Documents
 
-- [Development Status](doc/development-status.md) - Current progress and roadmap
-- [Design Document](doc/nabledge-design.md) - Architecture and design details
-- [ToBe Image](doc/nabledge-tobe-image.md) - Activity mapping and role division with Nabledge
-- [Mapping File Design](doc/mapping/mapping-file-design.md) - Documentation mapping specification
-- [Mapping Files v6](doc/mapping/mapping-v6.md) - Documentation to knowledge file mapping ([Excel](doc/mapping/mapping-v6.xlsx))
+- 📊 [Development Status](doc/development-status.md) - Current progress and roadmap
+- 📐 [Design Document](doc/nabledge-design.md) - Architecture and design details
+- 🎯 [Activity Mapping](doc/activity-mapping.md) - Workflow and role division with Nabledge
+- 🚀 [Grand Design](doc/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3-product strategy ⚠️ **DRAFT - UNAPPROVED, SUBJECT TO CHANGE**
 
 ## Prerequisites
 
