@@ -59,9 +59,7 @@ Output directory: .nabledge/20260210
 
 **Tools**: AskUserQuestion (if needed), Read, Glob, Grep
 
-**Action** (two-pass approach to control scope):
-
-#### Pass 1: Structure analysis (target file ONLY)
+**Action**:
 
 1. **Parse user request** to understand target scope:
    - Specific class (e.g., "LoginAction")
@@ -72,51 +70,33 @@ Output directory: .nabledge/20260210
 
 3. **Find target files** using Glob or Grep
 
-4. **Read the MAIN target file** (one file only) and extract dependencies by name:
-   - Import statements → Class names and packages
-   - Field declarations → Type names
-   - Method parameters → Parameter types
-   - Method calls → Called method names
+4. **Read target files** and extract dependencies:
+   - Imports → External dependencies
+   - Field types, method parameters → Direct dependencies
+   - Method calls → Behavioral dependencies
 
-   **RULE**: In this pass, extract dependency NAMES ONLY from the target file.
-   Do NOT read any dependency file contents yet.
+5. **Classify dependencies**:
+   - Project code (proman-*): Trace further
+   - Nablarch framework: Note for knowledge search
+   - JDK/Jakarta EE: Note but don't trace
+   - Third-party libraries: Note but don't trace
 
-5. **Classify dependencies** (by name and package, without reading files):
-   - Project code (proman-*): Record for potential deep-dive in Pass 2
-   - Nablarch framework: Record for knowledge search
-   - JDK/Jakarta EE: Record but don't trace
-   - Third-party libraries: Record but don't trace
+6. **Determine trace depth** (ask user if unclear):
+   - Default: Trace project code until reaching framework/entities/utilities
+   - Stop at Nablarch framework boundaries
+   - Stop at Entity classes (pure data objects)
 
-6. **Build dependency graph** (from target file information only):
+7. **Build dependency graph** (mental model):
    ```
    LoginAction
-   ├─→ LoginForm (Form) — inferred from import + field type
-   ├─→ SystemAccountEntity (Entity) — inferred from import + "Entity" suffix
-   ├─→ UniversalDao (Nablarch) — inferred from nablarch package
-   └─→ ExecutionContext (Nablarch) — inferred from nablarch package
+   ├─→ LoginForm (Form, validation)
+   ├─→ SystemAccountEntity (Entity, data)
+   ├─→ UniversalDao (Nablarch, database access)
+   └─→ ExecutionContext (Nablarch, request context)
    ```
 
-7. **Categorize components** by role:
+8. **Categorize components** by role:
    - Action/Controller, Form, Entity, Service/Logic, Utility, Handler, Configuration
-   - Role inference uses: class name suffix, package name, usage pattern in target
-
-#### Pass 2: Selective deep-dive (budgeted)
-
-8. **Evaluate which dependency files need reading** using these rules:
-
-   | Dependency type | Action | Reason |
-   |-----------------|--------|--------|
-   | Entity / DTO | Do NOT read | Target file's import + field usage is sufficient |
-   | Form | Do NOT read | Annotations visible in target, validation details come from knowledge |
-   | Service / Logic | Grep public methods ONLY | `grep "^\s*public " ServiceFile.java` (do NOT read full file) |
-   | Complex config | Grep class definition ONLY | `grep "^public class\|^\s*public " ConfigFile.java` |
-
-   **Budget**: Read at most **2 dependency files** via Grep (partial extraction only).
-   Full file reads of dependencies are NOT permitted in Step 1.
-
-   **Why this budget**: Measurement data shows reading ProjectDto.java (269 lines) adds 12-30s
-   of variability with no improvement in final output quality. Dependency details needed for
-   Step 3 documentation can be read at that point (deferred reading).
 
 9. **Identify Nablarch components** for knowledge search:
    - UniversalDao, ValidationUtil, ExecutionContext, Handler chain, etc.
@@ -126,7 +106,7 @@ Output directory: .nabledge/20260210
     - Operations: 検索, 登録, 更新, バリデーション
     - Patterns: CRUD, pagination, error handling
 
-**Output**: Target file content, dependency graph (name-based), component list with Nablarch components identified, list of deferred reads (files that may need reading in Step 3)
+**Output**: Target files list, dependency graph, component list with Nablarch components identified
 
 ### Step 2: Search Nablarch knowledge
 
@@ -134,33 +114,9 @@ Output directory: .nabledge/20260210
 
 **Action**: Batch process knowledge searches for all Nablarch components.
 
-#### 2.0: Extract search parameters (CONTEXT BOUNDARY)
-
-Before starting knowledge search, distill Step 1 results into a compact parameter set.
-All subsequent search steps use ONLY these parameters, not the full Step 1 context.
-
-**Extract the following** (write them out explicitly before proceeding):
-
-- **nablarch_components**: List of Nablarch class names from Step 1 (max 8)
-  - Example: ["UniversalDao", "ExecutionContext", "ObjectMapper", "FilePathSetting"]
-- **technical_terms**: Japanese/English technical terms (max 6)
-  - Example: ["DAO", "バッチ", "CSV出力", "ファイルパス"]
-- **operation_patterns**: What the code does (max 4)
-  - Example: ["検索", "出力", "データ変換"]
-
-**Rules**:
-- Combined total: max 18 items across all three lists
-- If Step 1 identified more items, prioritize by relevance to target code's main function
-- These parameters are the ONLY input to the keyword search that follows
-
-**Why this boundary**: Embedded knowledge search runs 36% slower than standalone (33.4s vs 24.6s)
-because of accumulated context from Step 1. This explicit extraction step keeps the search lightweight.
-
 **Batch processing**:
 
-1. **Build L1/L2 keywords from search parameters above** (not from full Step 1 context):
-   - L1 (technical domains): Derived from nablarch_components + technical_terms
-   - L2 (specific functions): Derived from operation_patterns + component-specific terms
+1. **Identify all Nablarch components** from Step 1 analysis:
    - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "DbAccessException"]
 
 2. **Combine keywords for batch search**:
@@ -373,31 +329,6 @@ echo "Output file: $OUTPUT_PATH"
 
 #### 3.4: Build documentation content
 
-**Quality budget** (apply BEFORE generating content):
-
-Before writing any content, plan the output to fit these targets:
-
-| Section | Target size | Items |
-|---------|-------------|-------|
-| Overview | 200-400 chars | 1 paragraph |
-| Component detail | 500-800 chars each | 3-5 key methods per component |
-| Nablarch usage | 300-600 chars each | 3-5 important points (✅⚠️💡🎯⚡) per component |
-| Code example | 1 per Nablarch component | Concise (5-15 lines) |
-
-**Output size target**: 15-20 KB total for the final document.
-
-**Rules**:
-- If a section exceeds its budget, trim verbose explanations first (keep code examples and important points)
-- If a section is under budget, add knowledge file citations or line references rather than prose
-- Every key method MUST have a line reference (`:42-58` format)
-- Dependency details not yet read: read them NOW via Grep (deferred from Step 1 Pass 2)
-  - This is the designated point to read dependency files needed for component documentation
-  - Still use Grep for partial extraction, not full file reads, unless the file is < 50 lines
-
-**Why this budget**: Measurement shows output size varies 17-19 KB across runs, and token
-usage varies 3x (35K-108K). The budget constrains generation scope to reduce both variability
-and unnecessary token consumption without reducing information quality.
-
 **CRITICAL**: All diagram work REFINES skeletons from Step 3.3. REFINE, not REGENERATE.
 
 **Refinement**:
@@ -596,7 +527,7 @@ sequenceDiagram
    ```bash
    # Set output directory path
    REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-   OUTPUT_DIR="$REPO_ROOT/.nabledge/YYYYMMDD"  # Replace YYYYMMDD with actual date
+   OUTPUT_DIR="$REPO_ROOT/.nabledge/YYYYMMDD"  # Replace with actual date
 
    # Retrieve session ID from Step 0
    UNIQUE_ID=$(cat "$OUTPUT_DIR/.nabledge-code-analysis-id" 2>/dev/null || echo "")

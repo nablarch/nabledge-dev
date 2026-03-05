@@ -1,50 +1,74 @@
 ---
 name: nabledge-6
-description: Nablarch 6フレームワークの構造化知識ベース。バッチ処理、RESTful Webサービス、ハンドラ、ライブラリ等のNablarch機能について質問に回答する。コード分析も可能。
+description: Provides Nablarch 6 framework knowledge and code analysis capabilities. Use when developing Nablarch applications, implementing features, reviewing code, or answering questions about Nablarch 6.
+user-invocable: false
+disable-model-invocation: true
 ---
 
 # Nabledge-6: Nablarch 6 Knowledge Base
 
-## トリガー条件
+Knowledge base and code analysis tool for Nablarch 6 framework.
 
-以下のいずれかに該当する場合にこのスキルが呼び出される:
+## Usage
 
-- Nablarch 6に関する質問
-- Nablarchの機能、API、設定、パターンについての質問
-- Nablarchを使ったバッチ処理、RESTful Webサービスの実装に関する質問
-- Nablarchのハンドラ、ライブラリ、テストフレームワークに関する質問
-- Nablarchを使った既存コードの分析
+**Interactive mode**:
+```
+nabledge-6
+```
 
-## ワークフロー振り分け
+**Direct knowledge search**:
+```
+nabledge-6 "<question>"
+```
 
-入力を解析し、以下のワークフローに振り分ける:
+**Direct code analysis**:
+```
+nabledge-6 code-analysis
+```
 
-- 「質問」「知りたい」「教えて」「使い方」等 → workflows/qa.md
-- 「コード分析」「構造を理解」等 → workflows/code-analysis.md
-- 判定できない場合 → workflows/qa.md（デフォルト）
+## Execution Instructions
 
-## 知識制約
+### Step 0: Determine Workflow
 
-**重要**: 回答は知識ファイル（knowledge/**/*.json）の情報のみに基づく。
+**No arguments** (`nabledge-6`):
+- Show greeting
+- Ask user to choose: Knowledge Search or Code Analysis
 
-- LLMの学習データ、外部Webサイト、一般知識の使用は禁止
-- 知識ファイルにない情報は「この情報は知識ファイルに含まれていません」と明示する
+**Text argument** (`nabledge-6 "<question>"`):
+- Execute `workflows/knowledge-search.md` to answer question
+- This workflow orchestrates keyword-search and section-judgement workflows
 
-## 知識ファイルのパス
+**"code-analysis" argument** (`nabledge-6 code-analysis`):
+- Execute `workflows/code-analysis.md` to analyze user's code
 
-- 知識ファイル: knowledge/{type}/{category-id}/*.json
-- インデックス: knowledge/index.toon
-- 閲覧用Markdown: docs/
+## Critical Constraints
 
-## ワークフロー一覧
+**Knowledge files only**: Answer using ONLY information in `knowledge/*.json`. DO NOT use external knowledge or LLM training data.
 
-| ワークフロー | 役割 |
-|---|---|
-| workflows/qa.md | 質問応答 |
-| workflows/code-analysis.md | コード分析・ドキュメント生成 |
-| workflows/_knowledge-search.md | 知識検索（内部。qa.md, code-analysis.mdから呼び出される） |
+**When knowledge is missing**:
+- Output: "この情報は知識ファイルに含まれていません"
+- List related available knowledge from `knowledge/index.toon`
+- DO NOT answer from external knowledge
 
-## エラーハンドリング
+## Error Handling
 
-- 知識が見つからない場合: 「この情報は知識ファイルに含まれていません」+ index.toonから関連エントリを提示
-- LLM学習データでの補完は行わない
+**Knowledge not found** (Knowledge Search):
+- Message: "この情報は知識ファイルに含まれていません"
+- List related entries from index.toon
+
+**Target code not found** (Code Analysis):
+- Message: "指定されたコードが見つかりませんでした"
+- Show search patterns used
+- Ask for clarification
+
+**Workflow execution failure**:
+- Inform which step failed
+- Show error details
+- Suggest retry or alternative
+
+## Knowledge Structure
+
+**Files**: `knowledge/features/`, `knowledge/checks/`, `knowledge/releases/`
+**Index**: `knowledge/index.toon` (all entries with search hints)
+**Schemas**: `schemas/*.json` (JSON validation schemas)
+**Scripts**: `scripts/*.sh` (pre-built processing scripts)
