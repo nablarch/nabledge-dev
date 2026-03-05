@@ -23,7 +23,8 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Action** - Store start time with unique session ID in output directory:
 ```bash
-OUTPUT_DIR=".nabledge/$(date '+%Y%m%d')"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+OUTPUT_DIR="$REPO_ROOT/.nabledge/$(date '+%Y%m%d')"
 mkdir -p "$OUTPUT_DIR"
 UNIQUE_ID="$(date '+%s%3N')-$$"
 echo "$UNIQUE_ID" > "$OUTPUT_DIR/.nabledge-code-analysis-id"
@@ -594,7 +595,8 @@ sequenceDiagram
    Execute single bash script to fill duration placeholder:
    ```bash
    # Set output directory path
-   OUTPUT_DIR=".nabledge/YYYYMMDD"  # Replace with actual date
+   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+   OUTPUT_DIR="$REPO_ROOT/.nabledge/YYYYMMDD"  # Replace YYYYMMDD with actual date
 
    # Retrieve session ID from Step 0
    UNIQUE_ID=$(cat "$OUTPUT_DIR/.nabledge-code-analysis-id" 2>/dev/null || echo "")
