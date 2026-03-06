@@ -130,8 +130,7 @@ From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 {
   "id": "qa-001",
   "question": "バッチの起動方法を教えてください",
-  "keywords": ["keyword1", "keyword2", ...],
-  "sections": ["section1", "section2"]
+  "keywords": ["keyword1", "keyword2", ...]
 }
 ```
 
@@ -152,9 +151,6 @@ For qa (qa-*):
 detection_items = []
 for keyword in scenario.keywords:
     detection_items.append(f"Response includes '{keyword}'")
-if scenario.sections:
-    for section in scenario.sections:
-        detection_items.append(f"Response references '{section}' section")
 ```
 
 For code-analysis (ca-*):
@@ -341,7 +337,6 @@ Write to `.pr/<PR_NUMBER>/nabledge-test/<YYYYMMDDHHMM>/<scenario-id>.md`:
 ## Scenario
 - **Type**: Knowledge-Search / Code-Analysis
 - **Keywords** (<count>): <list>
-- **Sections** (<count>): <list>
 
 ## Detection Results
 
@@ -721,8 +716,8 @@ nabledge-test <version> --baseline
 **For single/all mode**:
 
 ```
-✓ qa-001: 5/5 keywords + 1/1 sections detected | 48s | 7,019 tokens
-✓ qa-002: 5/5 keywords + 1/1 sections detected | 14s | 15,200 tokens
+✓ qa-001: 5/5 keywords detected | 48s | 7,019 tokens
+✓ qa-002: 5/5 keywords detected | 14s | 15,200 tokens
 ✗ ca-004: 8/12 expectations detected | 64s | 8,820 tokens
 
 Aggregate report: .pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md

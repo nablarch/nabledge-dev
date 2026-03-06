@@ -2,7 +2,7 @@
   "metadata": {
     "version": "6.0.0",
     "created": "2026-02-09",
-    "updated": "2026-02-26",
+    "updated": "2026-03-06",
     "description": "Test scenarios for nabledge-6: Detects keywords/components in responses. No performance targets.",
     "total_scenarios": 10,
     "by_type": {
@@ -21,10 +21,11 @@
         "コマンドライン引数",
         "アクションのクラス名",
         "リクエストID",
-        "都度起動"
-      ],
-      "sections": ["request-path", "都度起動"],
-      "notes": "Keywords match actual content in request-path section. Removed 'バッチ起動' and '起動クラス' which don't appear in knowledge files."
+        "都度起動",
+        "javaコマンド",
+        "Main",
+        "ハンドラキュー"
+      ]
     },
     {
       "id": "qa-002",
@@ -35,10 +36,10 @@
         "page",
         "EntityList",
         "ページング",
-        "Pagination"
-      ],
-      "sections": ["paging"],
-      "notes": "Keywords and sections match actual paging section content in universal-dao.json."
+        "Pagination",
+        "getPagination",
+        "findAllBySqlFile"
+      ]
     },
     {
       "id": "qa-003",
@@ -49,10 +50,10 @@
         "DataReader",
         "ExecutionContext",
         "createReader",
-        "FileDataReader"
-      ],
-      "sections": ["overview", "data-readers"],
-      "notes": "Replaced 'usage' with 'processing' (actual section name). Keywords match actual content."
+        "FileDataReader",
+        "NoMoreRecord",
+        "ValidatableFileDataReader"
+      ]
     },
     {
       "id": "qa-004",
@@ -63,10 +64,10 @@
         "ProcessAbnormalEnd",
         "リラン",
         "ResumeDataReader",
-        "異常終了"
-      ],
-      "sections": ["abnormal-termination", "rerun-batch-processing"],
-      "notes": "Replaced 'exception' with 'errors' (actual section name). Keywords match actual exception classes and concepts."
+        "異常終了",
+        "プロセス終了コード",
+        "ステータス"
+      ]
     },
     {
       "id": "qa-005",
@@ -77,10 +78,10 @@
         "createReader",
         "handle",
         "FileBatchAction",
-        "NoInputDataBatchAction"
-      ],
-      "sections": ["actions", "implementation-example"],
-      "notes": "Replaced non-existent sections with actual ones. Keywords match action classes and methods in knowledge files."
+        "NoInputDataBatchAction",
+        "DataReader",
+        "ExecutionContext"
+      ]
     },
     {
       "id": "ca-001",
@@ -103,8 +104,7 @@
         "Output includes Nablarch usage section",
         "Output file saved to .nabledge/YYYYMMDD/ directory",
         "Analysis duration calculated and displayed"
-      ],
-      "notes": "Tests code-analysis workflow with proman batch action. Validates dependency tracing, Nablarch component identification, diagram generation, and documentation output."
+      ]
     },
     {
       "id": "ca-002",
@@ -126,8 +126,7 @@
         "Creates sequence diagram for authentication flow",
         "Output includes component summary table",
         "Output includes Nablarch usage section"
-      ],
-      "notes": "Tests web action analysis with authentication flow. Validates form injection, session management, and security component identification."
+      ]
     },
     {
       "id": "ca-003",
@@ -146,8 +145,7 @@
         "Creates sequence diagram for search flow",
         "Output includes component summary table",
         "Output includes Nablarch usage section"
-      ],
-      "notes": "Tests search action analysis with pagination. Validates DAO query execution and result list handling."
+      ]
     },
     {
       "id": "ca-004",
@@ -167,8 +165,7 @@
         "Creates sequence diagram for registration flow",
         "Output includes component summary table",
         "Output includes Nablarch usage section"
-      ],
-      "notes": "Tests create action analysis with form validation and entity insertion. Validates bean mapping and transaction management."
+      ]
     },
     {
       "id": "ca-005",
@@ -188,8 +185,7 @@
         "Creates sequence diagram for update flow",
         "Output includes component summary table",
         "Output includes Nablarch usage section"
-      ],
-      "notes": "Tests update action analysis with optimistic locking. Validates entity retrieval, modification, and version control."
+      ]
     }
   ]
 }
