@@ -38,11 +38,20 @@ def get_local_repo_path(repo_url: str, version: str, repo_root: str) -> str:
 
     Mirrors the directory layout used by setup.sh:
       .lw/nab-official/v{version}/{repo_name}
+
+    Falls back to v6 if the versioned path does not exist.
+    This handles shared source repositories like nablarch-system-development-guide
+    which are only cloned once under v6 but used across versions.
     """
     repo_name = repo_url.rstrip("/").split("/")[-1]
     if repo_name.endswith(".git"):
         repo_name = repo_name[:-4]
-    return os.path.join(repo_root, f".lw/nab-official/v{version}", repo_name)
+    versioned_path = os.path.join(repo_root, f".lw/nab-official/v{version}", repo_name)
+    if not os.path.isdir(versioned_path) and version != "6":
+        fallback_path = os.path.join(repo_root, ".lw/nab-official/v6", repo_name)
+        if os.path.isdir(fallback_path):
+            return fallback_path
+    return versioned_path
 
 
 def _git(args: list, cwd: str) -> subprocess.CompletedProcess:
