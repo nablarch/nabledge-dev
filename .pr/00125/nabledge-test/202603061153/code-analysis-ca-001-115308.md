@@ -1,21 +1,23 @@
 # Code Analysis: ExportProjectsInPeriodAction
 
-**Generated**: 2026-03-06 11:21:36
+**Generated**: 2026-03-06 11:54:02
 **Target**: 期間内プロジェクト一覧出力バッチアクション
 **Modules**: proman-batch
-**Analysis Duration**: 約2分35秒
+**Analysis Duration**: 約2分30秒
 
 ---
 
 ## Overview
 
-`ExportProjectsInPeriodAction`は、データベースから期間内プロジェクトを検索し、CSV形式で出力する都度起動バッチアクションクラスである。`BatchAction<SqlRow>`を継承し、Nablarchバッチフレームワークの標準ライフサイクル（initialize → createReader → handle → terminate）に従って実装されている。
+`ExportProjectsInPeriodAction` は、Nablarchバッチフレームワークを使用して期間内のプロジェクト情報をCSVファイルに出力する都度起動バッチアクションクラスである。
 
-主な処理構成:
-- **initialize**: `FilePathSetting`でCSV出力先ファイルを解決し、`ObjectMapper`を生成してリソースを確保
-- **createReader**: `DatabaseRecordReader`と`BusinessDateUtil`を使用して、業務日付を基準に期間内プロジェクトをDBから読み込むリーダーを構築
-- **handle**: `EntityUtil`でSqlRowをProjectDtoに変換し、`ObjectMapper`でCSV出力
-- **terminate**: `ObjectMapper`をクローズしてリソースを解放
+**主要な責務**:
+- `BusinessDateUtil` で業務日付を取得し、その日付に該当する期間内プロジェクトをDBから検索
+- `DatabaseRecordReader` を使用してSQLで取得したデータを1件ずつ読み込む
+- `ObjectMapper` で各レコードをCSV形式で出力ファイルに書き込む
+- ライフサイクルメソッド（`initialize` / `createReader` / `handle` / `terminate`）で処理を管理
+
+**処理パターン**: DB to FILE（データベースからCSVファイルへの出力）
 
 ---
 
@@ -25,10 +27,14 @@
 
 ```mermaid
 classDiagram
-    class ExportProjectsInPeriodAction
-    class ProjectDto
+    class ExportProjectsInPeriodAction {
+        <<Action>>
+    }
     class BatchAction {
         <<Nablarch>>
+    }
+    class ProjectDto {
+        <<Bean>>
     }
     class DatabaseRecordReader {
         <<Nablarch>>
@@ -56,11 +62,12 @@ classDiagram
     ExportProjectsInPeriodAction ..> ProjectDto : creates
     ExportProjectsInPeriodAction ..> DatabaseRecordReader : creates
     ExportProjectsInPeriodAction ..> ObjectMapper : uses
-    ExportProjectsInPeriodAction ..> ObjectMapperFactory : creates with
-    ExportProjectsInPeriodAction ..> FilePathSetting : resolves path
-    ExportProjectsInPeriodAction ..> BusinessDateUtil : gets business date
-    ExportProjectsInPeriodAction ..> EntityUtil : maps record
-    ExportProjectsInPeriodAction ..> ExecutionContext : receives
+    ObjectMapperFactory ..> ObjectMapper : creates
+    ExportProjectsInPeriodAction ..> ObjectMapperFactory : invokes
+    ExportProjectsInPeriodAction ..> FilePathSetting : queries
+    ExportProjectsInPeriodAction ..> BusinessDateUtil : queries
+    ExportProjectsInPeriodAction ..> EntityUtil : delegates to
+    ExportProjectsInPeriodAction ..> ExecutionContext : uses
 ```
 
 **Note**: This diagram uses Mermaid `classDiagram` syntax to show class names and their relationships. Use `--|>` for inheritance (extends/implements) and `..>` for dependencies (uses/creates).
@@ -69,14 +76,13 @@ classDiagram
 
 | Component | Role | Type | Dependencies |
 |-----------|------|------|--------------|
-| ExportProjectsInPeriodAction | CSV出力バッチアクション（メイン処理クラス） | Action | DatabaseRecordReader, ObjectMapper, FilePathSetting, BusinessDateUtil, EntityUtil |
-| ProjectDto | プロジェクト情報CSV出力用DTO | Bean | なし |
-| BatchAction | バッチアクション基底クラス | Nablarch Framework | ExecutionContext |
-| DatabaseRecordReader | DB読み込みデータリーダー | Nablarch Framework | SqlPStatement |
-| ObjectMapper | CSV書き込みマッパー | Nablarch Framework | ProjectDto |
-| FilePathSetting | ファイルパス管理 | Nablarch Framework | なし |
-| BusinessDateUtil | 業務日付取得ユーティリティ | Nablarch Framework | なし |
-| EntityUtil | SqlRow→DTO変換ユーティリティ | Nablarch Framework | なし |
+| ExportProjectsInPeriodAction | 期間内プロジェクトCSV出力バッチアクション | Action | DatabaseRecordReader, ObjectMapper, FilePathSetting, BusinessDateUtil, EntityUtil |
+| ProjectDto | プロジェクト情報CSVマッピングBean | Bean | なし |
+| DatabaseRecordReader | DB検索結果を1件ずつ読み込むデータリーダ | Nablarch | SqlPStatement |
+| ObjectMapper | Java BeanをCSV形式で出力するマッパー | Nablarch | ProjectDto |
+| FilePathSetting | 出力ファイルのパス管理 | Nablarch | なし |
+| BusinessDateUtil | 業務日付の取得 | Nablarch | なし |
+| EntityUtil | SqlRowからProjectDtoへの変換 | Nablarch | ProjectDto, SqlRow |
 
 ---
 
@@ -84,55 +90,54 @@ classDiagram
 
 ### Processing Flow
 
-バッチフレームワークが以下の順序でアクションのライフサイクルメソッドを呼び出す：
+バッチフレームワークのライフサイクルに従い4段階で処理が実行される：
 
-1. **initialize（初期化フェーズ）**: `FilePathSetting`でCSV出力先（論理名`csv_output`、ファイル名`N21AA002`）を解決し、`ObjectMapperFactory`でProjectDto用の`ObjectMapper`を生成する。
-
-2. **createReader（データリーダー生成フェーズ）**: `DatabaseRecordReader`を生成し、SQL `FIND_PROJECT_IN_PERIOD`に`BusinessDateUtil.getDate()`で取得した業務日付を設定（開始日・終了日として同じ日付を2回セット）してリーダーを返す。
-
-3. **handle（レコード処理フェーズ、レコード毎に繰り返し）**: `EntityUtil.createEntity()`でSqlRowをProjectDtoに変換。日付型の変換が必要な`projectStartDate`・`projectEndDate`は個別setter経由で設定後、`mapper.write(dto)`でCSV出力する。
-
-4. **terminate（終了処理フェーズ）**: `mapper.close()`でOutputStreamをフラッシュ・クローズしリソースを解放する。
+1. **initialize**: `FilePathSetting` からCSV出力先ファイルパスを取得し、`ObjectMapperFactory` で `ObjectMapper` を生成する。
+2. **createReader**: `BusinessDateUtil` で業務日付を取得し、`FIND_PROJECT_IN_PERIOD` SQLを実行する `DatabaseRecordReader` を生成・返却する。
+3. **handle**: `DataReadHandler` から1レコードずつ `SqlRow` が渡される。`EntityUtil.createEntity()` で `ProjectDto` に変換後、日付型フィールドを個別にセットし、`mapper.write(dto)` でCSVに書き込む。
+4. **terminate**: `mapper.close()` を呼び出してバッファをフラッシュし、ファイルストリームを解放する。
 
 ### Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Framework as NablarchBatchFramework
+    participant Framework as Nablarchフレームワーク
     participant Action as ExportProjectsInPeriodAction
     participant FPS as FilePathSetting
-    participant OMF as ObjectMapperFactory
+    participant Factory as ObjectMapperFactory
+    participant Mapper as ObjectMapper
     participant BDU as BusinessDateUtil
-    participant DBR as DatabaseRecordReader
+    participant Reader as DatabaseRecordReader
     participant EU as EntityUtil
-    participant OM as ObjectMapper
+    participant Dto as ProjectDto
 
     Framework->>Action: initialize(command, context)
     Action->>FPS: getInstance().getFile("csv_output", "N21AA002")
-    FPS-->>Action: File
-    Action->>OMF: create(ProjectDto.class, outputStream)
-    OMF-->>Action: ObjectMapper<ProjectDto>
+    FPS-->>Action: outputFile
+    Action->>Factory: create(ProjectDto.class, outputStream)
+    Factory-->>Action: mapper
 
     Framework->>Action: createReader(context)
     Action->>BDU: getDate()
     BDU-->>Action: bizDate
-    Action->>DBR: new DatabaseRecordReader()
-    Action->>DBR: setStatement(statement with bizDate)
-    DBR-->>Action: DatabaseRecordReader
+    Action->>Reader: new DatabaseRecordReader()
+    Action->>Reader: setStatement(FIND_PROJECT_IN_PERIOD with bizDate)
+    Reader-->>Action: reader
 
-    loop 各プロジェクトレコード
-        Framework->>Action: handle(sqlRow, context)
+    loop 全レコード処理
+        Framework->>Action: handle(record, context)
         Action->>EU: createEntity(ProjectDto.class, record)
-        EU-->>Action: ProjectDto (日付型除く)
-        Note over Action: dto.setProjectStartDate/EndDate() 個別変換
-        Action->>OM: write(dto)
-        OM-->>Action: void
-        Action-->>Framework: Result.Success
+        EU-->>Action: dto
+        Action->>Dto: setProjectStartDate(record.getDate(...))
+        Action->>Dto: setProjectEndDate(record.getDate(...))
+        Action->>Mapper: write(dto)
+        Mapper-->>Action: (void)
+        Action-->>Framework: new Success()
     end
 
     Framework->>Action: terminate(result, context)
-    Action->>OM: close()
-    OM-->>Action: void
+    Action->>Mapper: close()
+    Mapper-->>Action: (void)
 ```
 
 ---
@@ -143,19 +148,19 @@ sequenceDiagram
 
 **ファイル**: [ExportProjectsInPeriodAction.java](../../.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java)
 
-**役割**: DBから期間内プロジェクトを読み込み、CSV形式で出力する都度起動バッチアクション
+**役割**: 期間内プロジェクト一覧をCSVファイルに出力する都度起動バッチアクション。`BatchAction<SqlRow>` を継承し、4つのライフサイクルメソッドを実装する。
 
 **キーメソッド**:
-- `initialize(CommandLine, ExecutionContext)` (L44-54): FilePathSettingでCSVファイルを解決し、ObjectMapperを生成
-- `createReader(ExecutionContext)` (L57-65): DatabaseRecordReaderを構築して業務日付パラメータをセット
-- `handle(SqlRow, ExecutionContext)` (L68-75): EntityUtilでDTOに変換し、個別日付変換後にCSV書き込み
-- `terminate(Result, ExecutionContext)` (L78-80): mapper.close()でリソース解放
+- `initialize(CommandLine, ExecutionContext)` (L44-54): 出力ファイルを開き `ObjectMapper` を生成する初期化処理
+- `createReader(ExecutionContext)` (L57-65): 業務日付でフィルタリングするDBレコードリーダーを生成
+- `handle(SqlRow, ExecutionContext)` (L68-75): 1レコードをDTOに変換してCSVに書き込む
+- `terminate(Result, ExecutionContext)` (L78-80): `mapper.close()` でリソース解放
 
-**依存関係**: `BatchAction<SqlRow>`, `DatabaseRecordReader`, `ObjectMapper<ProjectDto>`, `FilePathSetting`, `BusinessDateUtil`, `EntityUtil`
+**依存関係**: `DatabaseRecordReader`, `ObjectMapper`, `FilePathSetting`, `BusinessDateUtil`, `EntityUtil`, `ProjectDto`
 
-**実装上の注意点**:
-- `EntityUtil`は型変換に制限があるため、`java.sql.Date`型の`projectStartDate`/`projectEndDate`は個別setter呼び出しで変換する（L71-72）
-- `initialize()`で生成したObjectMapperは`terminate()`で必ず`close()`すること
+**実装ポイント**:
+- `EntityUtil.createEntity()` で SqlRow → ProjectDto の自動変換が行われるが、`Date`型フィールド（`projectStartDate`, `projectEndDate`）は型の不一致のため個別に `setDate()` を呼び出す
+- `terminate()` で必ず `mapper.close()` を実行することでCSVデータのフラッシュとリソース解放を保証する
 
 ---
 
@@ -163,13 +168,14 @@ sequenceDiagram
 
 **ファイル**: [ProjectDto.java](../../.lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ProjectDto.java)
 
-**役割**: プロジェクト情報CSV出力用DTOクラス。`@Csv`と`@CsvFormat`でフォーマットを宣言的に定義
+**役割**: プロジェクト情報をCSVに出力するためのデータ転送オブジェクト。`@Csv` と `@CsvFormat` アノテーションでCSVフォーマットを宣言的に定義する。
 
-**キーアノテーション**:
-- `@Csv(type = Csv.CsvType.CUSTOM, properties = {...}, headers = {...})` (L15-19): CSVカラム順とヘッダーを定義
-- `@CsvFormat(fieldSeparator = ',', lineSeparator = "\r\n", ...)` (L20-21): CSVフォーマット設定
+**依存関係**: なし（純粋なデータクラス）
 
-**依存関係**: `nablarch.common.databind.csv.Csv`, `nablarch.common.databind.csv.CsvFormat`
+**実装ポイント**:
+- `@Csv(type = Csv.CsvType.CUSTOM)` でカスタムCSVフォーマットを定義
+- `@CsvFormat` でフィールド区切り文字（`,`）、行区切り文字（`\r\n`）、文字コード（UTF-8）を指定
+- 日付フィールドは `String` 型で保持し、`setProjectStartDate(Date)` で `yyyy/MM/dd` 形式にフォーマットする
 
 ---
 
@@ -179,30 +185,33 @@ sequenceDiagram
 
 **クラス**: `nablarch.fw.action.BatchAction`
 
-**説明**: Nablarchバッチフレームワークの汎用アクション基底クラス。データベースやファイルからデータを読み込み処理するバッチに使用する。
+**説明**: Nablarchバッチ処理の汎用アクションテンプレート。`DataReader` から取得したデータを1件ずつ処理するライフサイクルを提供する。
 
 **使用方法**:
 ```java
 public class MyBatchAction extends BatchAction<SqlRow> {
     @Override
     public DataReader<SqlRow> createReader(ExecutionContext context) {
-        // データリーダーを返す
+        return new DatabaseRecordReader();
     }
+
     @Override
     public Result handle(SqlRow record, ExecutionContext context) {
-        // レコード処理
-        return new Result.Success();
+        // 1レコードの処理
+        return new Success();
     }
 }
 ```
 
 **重要ポイント**:
-- ✅ **createReaderで適切なDataReaderを返す**: フレームワークがcreateReaderの戻り値を使って入力データを1件ずつhandleに渡す
-- 💡 **initialize/terminateをオーバーライドして前後処理**: リソースの確保・解放に活用する
-- 🎯 **SqlRow型でDBレコードを受け取る**: DBからの入力データをSqlRowとして処理する場合に適している
+- ✅ **`createReader` でリーダーを返す**: フレームワークの `DataReadHandler` がこのリーダーを使用してデータを読み込む
+- ✅ **`terminate` でリソース解放**: `ObjectMapper` など外部リソースはここでクローズする
+- 💡 **標準クラスを使い分ける**: ファイル入力なら `FileBatchAction`、DB/メッセージ入力なら `BatchAction` を使用する
+- 🎯 **使用場面**: DBからデータを読み込んでファイルに出力する「DB to FILE」パターンに最適
 
 **このコードでの使い方**:
-- `BatchAction<SqlRow>`を継承し、DBから読み込んだプロジェクトレコードをSqlRow型で処理
+- `ExportProjectsInPeriodAction` が `BatchAction<SqlRow>` を継承
+- `initialize` / `createReader` / `handle` / `terminate` の4メソッドを実装
 
 **詳細**: [Nablarch Batch Architecture](../../.claude/skills/nabledge-6/docs/processing-pattern/nablarch-batch/nablarch-batch-architecture.md)
 
@@ -212,25 +221,29 @@ public class MyBatchAction extends BatchAction<SqlRow> {
 
 **クラス**: `nablarch.fw.reader.DatabaseRecordReader`
 
-**説明**: SQLを使ってデータベースからレコードを順次読み込むデータリーダー。`createReader()`で生成してフレームワークに渡す。
+**説明**: `DataReadHandler` と連携してDBの検索結果を1件ずつ読み込む標準データリーダー。
 
 **使用方法**:
 ```java
-DatabaseRecordReader reader = new DatabaseRecordReader();
-SqlPStatement statement = getSqlPStatement("SQL_ID");
-statement.setDate(1, date);
-reader.setStatement(statement);
-return reader;
+@Override
+public DataReader<SqlRow> createReader(ExecutionContext context) {
+    DatabaseRecordReader reader = new DatabaseRecordReader();
+    SqlPStatement statement = getSqlPStatement("SQL_ID");
+    statement.setString(1, paramValue);
+    reader.setStatement(statement);
+    return reader;
+}
 ```
 
 **重要ポイント**:
-- ✅ **setSstatement()でSqlPStatementをセット**: パラメータバインド後にリーダーにセットする
-- 💡 **フレームワークが自動でclose()を呼ぶ**: リーダーのクローズ処理は不要
+- ✅ **`setStatement` で SQL を設定**: バインドパラメータは設定してから `setStatement` を呼ぶ
+- 💡 **フレームワークが自動読み込み**: `DataReadHandler` が `reader.read()` を呼び出すため、アクション側での読み込みコードは不要
+- 🎯 **使用場面**: DB検索結果を1件ずつ処理するバッチに適している
 
 **このコードでの使い方**:
-- `createReader()`内でDatabaseRecordReaderを生成し、業務日付で絞り込むSQLをセット（L58-64）
+- `createReader` で `FIND_PROJECT_IN_PERIOD` SQL を業務日付でバインドし、`DatabaseRecordReader` に設定して返却
 
-**詳細**: [Nablarch Batch Architecture](../../.claude/skills/nabledge-6/docs/processing-pattern/nablarch-batch/nablarch-batch-architecture.md)
+**詳細**: [Handlers Data_read_handler](../../.claude/skills/nabledge-6/docs/component/handlers/handlers-data_read_handler.md)
 
 ---
 
@@ -238,7 +251,7 @@ return reader;
 
 **クラス**: `nablarch.common.databind.ObjectMapper`, `nablarch.common.databind.ObjectMapperFactory`
 
-**説明**: Java Beansクラスに付与したアノテーション（`@Csv`, `@CsvFormat`）を基にCSVなどのデータファイルを書き込む機能を提供する。
+**説明**: Java BeanをCSV/TSV/固定長ファイル等に書き込む機能を提供する。フォーマットはBeanのアノテーションで宣言的に定義する。
 
 **使用方法**:
 ```java
@@ -248,14 +261,15 @@ mapper.close();
 ```
 
 **重要ポイント**:
-- ✅ **必ず`close()`を呼ぶ**: バッファをフラッシュしリソースを解放する（`terminate()`で実施）
-- ⚠️ **`initialize()`でObjectMapperを生成する**: バッチの初期化フェーズで1回だけ生成し、`handle()`で繰り返し使用する
-- 💡 **アノテーション駆動**: `@Csv`, `@CsvFormat`でフォーマットを宣言的に定義できる
+- ✅ **必ず `close()` を呼ぶ**: バッファをフラッシュしリソースを解放する。`terminate()` 内で実施すること
+- ⚠️ **型変換の制限**: `EntityUtil.createEntity()` で変換できない型（`Date` ↔ `String` など）は個別にsetterを呼ぶ必要がある
+- 💡 **アノテーション駆動**: `@Csv`, `@CsvFormat` でフォーマットを宣言的に定義できる
+- ⚡ **ストリーミング出力**: 全データをメモリに保持しないため大量データでも問題なく処理可能
 
 **このコードでの使い方**:
-- `initialize()`でProjectDto用のObjectMapperを生成（L50）
-- `handle()`で各レコードを`mapper.write(dto)`でCSV出力（L73）
-- `terminate()`で`mapper.close()`してリソース解放（L79）
+- `initialize()` で `ObjectMapperFactory.create(ProjectDto.class, outputStream)` でマッパーを生成（L50）
+- `handle()` で各レコードを `mapper.write(dto)` で出力（L73）
+- `terminate()` で `mapper.close()` してリソース解放（L79）
 
 **詳細**: [Libraries Data_bind](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-data_bind.md)
 
@@ -265,7 +279,7 @@ mapper.close();
 
 **クラス**: `nablarch.core.util.FilePathSetting`
 
-**説明**: 論理名（例: `csv_output`）からファイルの物理パスを解決するユーティリティ。ファイルパスをコンポーネント設定ファイルで一元管理できる。
+**説明**: ファイルパスを論理名で管理するユーティリティ。コンポーネント設定でディレクトリと拡張子を定義し、コード内は論理名で参照する。
 
 **使用方法**:
 ```java
@@ -274,11 +288,12 @@ File output = filePathSetting.getFile("csv_output", "N21AA002");
 ```
 
 **重要ポイント**:
-- ✅ **コンポーネント設定で`filePathSetting`という名前で定義する**: `getInstance()`はSystemRepositoryから取得する
-- 💡 **論理名でファイルパスを管理**: 環境ごとの物理パスの差異をコンポーネント設定で吸収できる
+- ✅ **コンポーネント名は `filePathSetting` に固定**: システムリポジトリからシングルトンとして取得される
+- 💡 **論理名でパス管理**: ファイルパスをソースコードにハードコードせず、設定ファイルで一元管理できる
+- ⚠️ **classpathスキームは一部サーバ非対応**: JBoss/WildFlyではfileスキームの使用を推奨
 
 **このコードでの使い方**:
-- `initialize()`で論理名`csv_output`、ファイル名`N21AA002`を使って出力ファイルを解決（L45-47）
+- `initialize()` で `"csv_output"` 論理名に対応したディレクトリに `"N21AA002"` (拡張子は設定から付与) のファイルを取得
 
 **詳細**: [Libraries File_path_management](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-file_path_management.md)
 
@@ -288,20 +303,21 @@ File output = filePathSetting.getFile("csv_output", "N21AA002");
 
 **クラス**: `nablarch.core.date.BusinessDateUtil`
 
-**説明**: システムに設定された業務日付を取得するユーティリティクラス。バッチ処理では処理対象日として業務日付を使用することが多い。
+**説明**: データベースで管理する業務日付を取得するユーティリティクラス。区分ごとに複数の業務日付を管理できる。
 
 **使用方法**:
 ```java
-String bizDateStr = BusinessDateUtil.getDate(); // yyyyMMdd形式の文字列
+String bizDateStr = BusinessDateUtil.getDate(); // デフォルト区分の業務日付(yyyyMMdd)
 Date bizDate = new Date(DateUtil.getDate(bizDateStr).getTime());
 ```
 
 **重要ポイント**:
-- ✅ **`BasicBusinessDateProvider`をコンポーネント定義に登録する必要がある**: 未設定だとSystemRepositoryから取得できずにエラー
-- 💡 **再実行時に業務日付を上書き可能**: システムプロパティ`BasicBusinessDateProvider.<区分>=yyyyMMdd`で特定区分の日付を上書きできる
+- ✅ **コンポーネント定義が必要**: `BasicBusinessDateProvider` をコンポーネント定義ファイルに登録する必要がある
+- 💡 **バッチ再実行対応**: システムプロパティで業務日付を上書き可能なため、障害時の再実行に対応できる
+- ⚠️ **文字列形式 (yyyyMMdd)**: `BusinessDateUtil.getDate()` の戻り値は文字列。`DateUtil.getDate()` で `java.util.Date` に変換が必要
 
 **このコードでの使い方**:
-- `createReader()`でSQLの期間パラメータとして業務日付を取得し、開始日・終了日の両方にセット（L60-62）
+- `createReader()` で `BusinessDateUtil.getDate()` で業務日付を取得し、SQL パラメータにバインド（L60）
 
 **詳細**: [Libraries Date](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-date.md)
 
@@ -320,8 +336,9 @@ Date bizDate = new Date(DateUtil.getDate(bizDateStr).getTime());
 
 - [Nablarch Batch Architecture](../../.claude/skills/nabledge-6/docs/processing-pattern/nablarch-batch/nablarch-batch-architecture.md)
 - [Libraries Data_bind](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-data_bind.md)
-- [Libraries File_path_management](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-file_path_management.md)
 - [Libraries Date](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-date.md)
+- [Libraries File_path_management](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-file_path_management.md)
+- [Handlers Data_read_handler](../../.claude/skills/nabledge-6/docs/component/handlers/handlers-data_read_handler.md)
 
 ### Official Documentation
 
@@ -338,11 +355,15 @@ Date bizDate = new Date(DateUtil.getDate(bizDateStr).getTime());
 - [CsvFormat](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/CsvFormat.html)
 - [Csv](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/Csv.html)
 - [Data Bind](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_bind.html)
+- [Data Read Handler](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/standalone/data_read_handler.html)
 - [DataBindConfig](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/DataBindConfig.html)
+- [DataReadHandler](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DataReadHandler.html)
+- [DataReader.NoMoreRecord](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/DataReader.NoMoreRecord.html)
 - [DataReader](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/DataReader.html)
 - [DatabaseRecordReader](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/reader/DatabaseRecordReader.html)
 - [Date](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/date.html)
 - [DispatchHandler](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DispatchHandler.html)
+- [ExecutionContext](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/ExecutionContext.html)
 - [Field](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/Field.html)
 - [File Path Management](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/file_path_management.html)
 - [FileBatchAction](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/action/FileBatchAction.html)
