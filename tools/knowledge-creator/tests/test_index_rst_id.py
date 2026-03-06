@@ -27,7 +27,7 @@ class TestIndexRstId:
             "index.rst", "rst", "nablarch-batch",
             source_path=".lw/nab-official/v6/nablarch-document/ja/application_framework/application_framework/batch/nablarch_batch/getting_started/nablarch_batch/index.rst",
             matched_pattern="application_framework/application_framework/batch/nablarch_batch"
-        ) == "nablarch-batch-getting_started-nablarch_batch"
+        ) == "nablarch-batch-getting-started-nablarch-batch"
 
     def test_same_category_unique(self, c):
         id1 = c.generate_id("index.rst", "rst", "about-nablarch",

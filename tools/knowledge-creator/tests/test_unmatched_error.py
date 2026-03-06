@@ -26,8 +26,9 @@ def ctx_with_unmatched(tmp_path):
 class TestUnmatchedError:
     def test_unmatched_raises_system_exit(self, ctx_with_unmatched):
         sources = Step1ListSources(ctx_with_unmatched, dry_run=True).run()
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc_info:
             Step2Classify(ctx_with_unmatched, dry_run=True, sources_data=sources).run()
+        assert exc_info.value.code == 1
 
     def test_all_matched_succeeds(self, tmp_path):
         repo = tmp_path / "repo"

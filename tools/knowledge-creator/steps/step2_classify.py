@@ -196,7 +196,12 @@ class Step2Classify:
                             base_name = os.path.basename(pattern_clean)
                         else:
                             dir_part = os.path.dirname(remainder)
-                            base_name = dir_part.replace("/", "-")
+                            base_name = dir_part.replace("/", "-").replace("_", "-")
+                    else:
+                        self.logger.warning(
+                            f"generate_id: pattern '{pattern_clean}' not found in path '{rst_rel}'"
+                            f" — using 'index' as base_name (potential ID collision)"
+                        )
 
         # Include category to ensure uniqueness
         if category:
