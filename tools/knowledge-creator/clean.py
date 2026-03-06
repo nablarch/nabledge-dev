@@ -16,19 +16,8 @@ from logger import get_logger
 
 
 def detect_repo_root():
-    """Detect repository root from current directory."""
-    cwd = os.getcwd()
-
-    # Check if running from repository root
-    if os.path.exists(os.path.join(cwd, "tools/knowledge-creator/run.py")):
-        return cwd
-
-    # Check if running from tools/knowledge-creator directory
-    if os.path.exists(os.path.join(cwd, "run.py")):
-        return os.path.abspath(os.path.join(cwd, "../.."))
-
-    # Cannot detect
-    return None
+    """Detect repository root from this script's location."""
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 def remove_if_exists(path, label):
@@ -85,37 +74,12 @@ def main():
         choices=["6", "5", "all"],
         help="Version to clean (6, 5, or all)"
     )
-    parser.add_argument(
-        "--repo",
-        default=None,
-        help="Repository root path (default: auto-detect from current directory)"
-    )
     parser.add_argument("--yes", action="store_true",
                         help="Skip confirmation prompt")
 
     args = parser.parse_args()
 
-    # Determine repository root
-    if args.repo:
-        repo_root = args.repo
-    else:
-        repo_root = detect_repo_root()
-        if repo_root is None:
-            logger.error("Error: Cannot detect repository root.")
-            logger.info("Please run from repository root or tools/knowledge-creator/")
-            logger.info("Or specify --repo /path/to/repository")
-            sys.exit(1)
-
-    # Validate repository root
-    if not os.path.isdir(repo_root):
-        logger.error(f"Error: Repository path does not exist: {repo_root}")
-        sys.exit(1)
-
-    run_py = os.path.join(repo_root, "tools/knowledge-creator/run.py")
-    if not os.path.exists(run_py):
-        logger.error(f"Error: Not a valid nabledge repository: {repo_root}")
-        logger.info(f"Missing: tools/knowledge-creator/run.py")
-        sys.exit(1)
+    repo_root = detect_repo_root()
 
     logger.info("="*60)
     logger.info("Knowledge Creator - Clean Generated Files")

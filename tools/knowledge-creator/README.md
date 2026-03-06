@@ -146,7 +146,7 @@ flowchart TD
 |--------|-------------|---------|
 | `--version` | Version (6, 5, all) | **Required** |
 | `--phase` | Phases to run (combination of A, B, C, D, E, M) | `ABCDEM` |
-| `--test` | Test mode: specify test file (e.g., `test-files-top3.json`) | `None` |
+| `--test` | Test mode: specify test file (e.g., `test-files-largest3.json`) | `None` |
 | `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
 | `--max-rounds` | Max Phase C→D→E loop iterations (1-10) | `1` |
 | `--clean-phase` | Clean artifacts for specified phases before run (e.g., 'D', 'BD') | `None` |
@@ -154,7 +154,6 @@ flowchart TD
 | `--yes` | Skip confirmation prompts | `False` |
 | `--regen` | Detect source changes and regenerate affected files | `False` |
 | `--dry-run` | Dry run (no file writes) | `False` |
-| `--repo` | Repository root path (advanced) | `os.getcwd()` |
 
 **Note**: Phases G and F are still available individually for backward compatibility, but Phase M (which combines merge, link resolution, and finalization) is now the default in the standard flow.
 
@@ -308,7 +307,7 @@ tools/knowledge-creator/.logs/v6/  # 中間成果物（gitignore）
 
 ## トラブルシューティング
 
-### `nc.sh: permission denied`
+### `kc.sh: permission denied`
 
 → スクリプトに実行権限を付与: `chmod +x tools/knowledge-creator/nc.sh`
 
@@ -338,6 +337,6 @@ tools/knowledge-creator/.logs/v6/  # 中間成果物（gitignore）
 
 ## Version History
 
-- **v2.1** (PR #107): Added nc.sh wrapper, source change tracking, target filtering
+- **v2.1** (PR #107): Added kc.sh wrapper, source change tracking, target filtering
 - **v2.0** (PR #107): Split-aware pipeline with Phase M, context overflow prevention
 - **v1.0** (PR #106): Initial implementation with Phases A-G
