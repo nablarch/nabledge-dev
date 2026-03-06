@@ -96,14 +96,20 @@ def test_repo(tmp_path):
     shutil.copy(os.path.join(FIXTURES_DIR, "sample_source.rst"), src_dir / "sample_source.rst")
 
     # classified.json (required by Phase G for doc index building)
-    phase_a_dir = repo / "tools" / "knowledge-creator" / ".logs" / "v6" / "phase-a"
-    phase_a_dir.mkdir(parents=True)
+    # Use Context with run_id="test" to get the correct path
+    from pathlib import Path as _Path
+    sys.path.insert(0, TOOL_DIR)
+    from run import Context as _Context
+    _ctx = _Context(version="6", repo=str(repo), concurrency=1, run_id="test")
+
+    phase_a_dir = _Path(_ctx.classified_list_path).parent
+    phase_a_dir.mkdir(parents=True, exist_ok=True)
     classified = load_fixture("sample_classified.json")
-    with open(phase_a_dir / "classified.json", "w", encoding="utf-8") as f:
+    with open(_ctx.classified_list_path, "w", encoding="utf-8") as f:
         json.dump(classified, f, ensure_ascii=False, indent=2)
 
     # trace directory (required by Phase G for label index building)
-    trace_dir = repo / "tools" / "knowledge-creator" / ".logs" / "v6" / "phase-b" / "traces"
+    trace_dir = _Path(_ctx.trace_dir)
     trace_dir.mkdir(parents=True, exist_ok=True)
 
     # knowledge directory
@@ -122,10 +128,9 @@ def test_repo(tmp_path):
 
 @pytest.fixture
 def ctx(test_repo):
-    # Import Context from run.py
     sys.path.insert(0, TOOL_DIR)
     from run import Context
-    return Context(version="6", repo=test_repo, concurrency=1)
+    return Context(version="6", repo=test_repo, concurrency=1, run_id="test")
 
 
 @pytest.fixture

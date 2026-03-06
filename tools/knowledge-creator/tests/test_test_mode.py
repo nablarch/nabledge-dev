@@ -1,4 +1,4 @@
-"""End-to-end tests for --test option (test-files-top3.json, test-files-comprehensive.json).
+"""End-to-end tests for --test option (test-files-largest3.json, test-files-comprehensive.json).
 
 These tests use the real repository with actual source files to verify test mode filtering.
 """
@@ -42,12 +42,12 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestTop3Mode:
-    """Tests for test-files-top3.json filtering."""
+    """Tests for test-files-largest3.json filtering."""
 
     def test_top3_phase_a_filtering(self, real_ctx):
-        """test-files-top3.json: 3ソースファイル → 22エントリー（分割後）"""
+        """test-files-largest3.json: 3ソースファイル → 22エントリー（分割後）"""
         # Set test mode
-        real_ctx.test_file = "test-files-top3.json"
+        real_ctx.test_file = "test-files-largest3.json"
 
         # Phase A
         sources = Step1ListSources(real_ctx, dry_run=False).run()
@@ -75,8 +75,8 @@ class TestTop3Mode:
         assert "adapters-micrometer_adaptor" in original_ids
 
     def test_top3_all_parts_present(self, real_ctx):
-        """test-files-top3.json: 分割ファイルの全パーツが含まれる"""
-        real_ctx.test_file = "test-files-top3.json"
+        """test-files-largest3.json: 分割ファイルの全パーツが含まれる"""
+        real_ctx.test_file = "test-files-largest3.json"
 
         sources = Step1ListSources(real_ctx, dry_run=False).run()
         Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
@@ -168,10 +168,10 @@ class TestTestModeEdgeCases:
 
     def test_nonexistent_test_file_id_warning(self, real_ctx):
         """存在しないファイルIDを指定 → 警告を出力"""
-        real_ctx.test_file = "test-files-top3.json"
+        real_ctx.test_file = "test-files-largest3.json"
 
         # Modify test file to include non-existent ID
-        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/test-files-top3.json"
+        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/test-files-largest3.json"
         with open(test_file_path) as f:
             original = f.read()
 
@@ -203,7 +203,7 @@ class TestTestModeEdgeCases:
 
     def test_test_mode_preserves_split_structure(self, real_ctx):
         """テストモードでも分割構造が保持される"""
-        real_ctx.test_file = "test-files-top3.json"
+        real_ctx.test_file = "test-files-largest3.json"
 
         sources = Step1ListSources(real_ctx, dry_run=False).run()
         Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()

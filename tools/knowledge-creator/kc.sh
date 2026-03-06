@@ -1,10 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Detect repository root
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-TOOL_DIR="$REPO_ROOT/tools/knowledge-creator"
+TOOL_DIR="$SCRIPT_DIR"
 PYTHON="${PYTHON:-python}"
 
 # Parse command and version
@@ -12,7 +10,7 @@ COMMAND="${1:-}"
 VERSION="${2:-}"
 
 if [ -z "$COMMAND" ] || [ -z "$VERSION" ]; then
-    echo "Usage: ./nc.sh <gen|regen|fix> <version> [options]"
+    echo "Usage: ./kc.sh <gen|regen|fix> <version> [options]"
     echo ""
     echo "Commands:"
     echo "  gen     全件生成（clean後に全フェーズ実行）"
@@ -64,36 +62,44 @@ case "$COMMAND" in
         if [ "$RESUME" = true ]; then
             # UC2: Resume interrupted generation (no clean)
             echo "🔄 中断再開モード"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" $PASSTHROUGH_ARGS
+            LATEST_LINK="$SCRIPT_DIR/.logs/v${VERSION}/latest"
+            if [ ! -L "$LATEST_LINK" ]; then
+                echo "Error: latest リンクが見つかりません。先に ./kc.sh gen $VERSION を実行してください。"
+                exit 1
+            fi
+            EXISTING_RUN_ID=$(basename "$(readlink "$LATEST_LINK")")
+            echo "   再開する run_id: $EXISTING_RUN_ID"
+            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
+                --run-id "$EXISTING_RUN_ID" $PASSTHROUGH_ARGS
         else
             # UC1: Full generation (clean first)
             echo "🚀 全件生成モード"
-            $PYTHON "$TOOL_DIR/clean.py" --version "$VERSION" --repo "$REPO_ROOT" ${YES_FLAG:---yes}
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/clean.py" --version "$VERSION" ${YES_FLAG:---yes}
+            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" $PASSTHROUGH_ARGS
         fi
         ;;
     regen)
         if [ -n "$TARGET_ARGS" ]; then
             # UC4: Regenerate specific files
             echo "🔄 特定ファイル再生成"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" \
+            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
                 --phase BCDEM --clean-phase BD $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         else
             # UC3: Detect source changes and regenerate
             echo "🔄 ソース変更検知 → 再生成"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" \
+            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
                 --regen ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         fi
         ;;
     fix)
         # UC5, UC6: Quality improvement
         echo "🔧 品質改善モード"
-        $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" --repo "$REPO_ROOT" \
+        $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
             --phase CDEM --clean-phase D $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         ;;
     *)
         echo "Error: Unknown command '$COMMAND'"
-        echo "Usage: ./nc.sh <gen|regen|fix> <version> [options]"
+        echo "Usage: ./kc.sh <gen|regen|fix> <version> [options]"
         exit 1
         ;;
 esac

@@ -10,7 +10,7 @@ import shutil
 import subprocess
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from .common import load_json, write_json, read_file, run_claude as _default_run_claude
+from .common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
 from .logger import get_logger
 
 
@@ -233,4 +233,13 @@ class PhaseBGenerate:
                     self.logger.error(f"    ERROR: {r['id']}: {r.get('error', '')}")
 
         ok_icon = "✅" if results['error'] == 0 else "⚠️"
-        self.logger.error(f"\n   {ok_icon} Generation: OK={results['ok']}, Skip={results['skip']}, Error={results['error']}")
+        self.logger.info(f"\n   {ok_icon} Generation: OK={results['ok']}, Skip={results['skip']}, Error={results['error']}")
+        metrics = aggregate_cc_metrics(self.ctx.phase_b_executions_dir)
+        self.logger.info(
+            f"   📊 Metrics: cost=${metrics['cost_usd']:.3f} "
+            f"avg_turns={metrics.get('avg_turns', 'N/A')} "
+            f"avg={metrics.get('avg_duration_sec', 'N/A')}s "
+            f"p95={metrics.get('p95_duration_sec', 'N/A')}s"
+        )
+        results["metrics"] = metrics
+        return results

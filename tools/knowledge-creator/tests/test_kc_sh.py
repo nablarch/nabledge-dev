@@ -1,7 +1,7 @@
-"""Tests for nc.sh command routing.
+"""Tests for kc.sh command routing.
 
 Strategy: Replace python with a stub that prints the command it received,
-then verify nc.sh routes to the correct command with correct arguments.
+then verify kc.sh routes to the correct command with correct arguments.
 """
 import os
 import subprocess
@@ -10,7 +10,7 @@ import tempfile
 import stat
 
 TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NC_SH = os.path.join(TOOL_DIR, "nc.sh")
+KC_SH = os.path.join(TOOL_DIR, "kc.sh")
 
 
 @pytest.fixture
@@ -30,9 +30,9 @@ def stub_env(tmp_path):
 
 
 def _run_nc(args, env):
-    """Run nc.sh with stub python and return stdout."""
+    """Run kc.sh with stub python and return stdout."""
     result = subprocess.run(
-        ["bash", NC_SH] + args,
+        ["bash", KC_SH] + args,
         capture_output=True, text=True, env=env
     )
     return result
