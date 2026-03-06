@@ -100,7 +100,7 @@ class TestComprehensiveMode:
     """Tests for test-files-comprehensive.json filtering."""
 
     def test_comprehensive_phase_a_filtering(self, real_ctx):
-        """test-files-comprehensive.json: 17ソースファイル → 24エントリー（分割後）"""
+        """test-files-comprehensive.json: 37ソースファイル → 51エントリー（分割後）"""
         real_ctx.test_file = "test-files-comprehensive.json"
 
         sources = Step1ListSources(real_ctx, dry_run=False).run()
@@ -108,8 +108,8 @@ class TestComprehensiveMode:
 
         classified = load_json(real_ctx.classified_list_path)
 
-        # Expected: 17 source files, some split into multiple parts
-        assert len(classified["files"]) == 24
+        # Expected: 37 source files, some split into multiple parts
+        assert len(classified["files"]) == 51
 
     def test_comprehensive_original_ids_match(self, real_ctx):
         """test-files-comprehensive.json: 指定した17個のoriginal_idが全て含まれる"""

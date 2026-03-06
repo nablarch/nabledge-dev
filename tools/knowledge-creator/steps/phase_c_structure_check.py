@@ -49,11 +49,19 @@ class PhaseCStructureCheck:
             return [f"S1: JSON parse error: {e}"]
 
         # S2: Required fields
-        for field in ["id", "title", "official_doc_urls", "index", "sections"]:
+        for field in ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"]:
             if field not in knowledge:
                 errors.append(f"S2: Missing required field: {field}")
 
         if "index" not in knowledge or "sections" not in knowledge:
+            return errors
+
+        # S16: no_knowledge_content validation
+        if knowledge.get("no_knowledge_content") is True:
+            if knowledge.get("index"):
+                errors.append("S16: no_knowledge_content=true but index is not empty")
+            if knowledge.get("sections"):
+                errors.append("S16: no_knowledge_content=true but sections is not empty")
             return errors
 
         index_ids = [entry["id"] for entry in knowledge.get("index", [])]

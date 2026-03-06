@@ -24,7 +24,7 @@ FINDINGS_SCHEMA = {
                 "properties": {
                     "category": {
                         "type": "string",
-                        "enum": ["omission", "fabrication", "hints_missing", "section_issue"]
+                        "enum": ["omission", "fabrication", "hints_missing", "section_issue", "no_knowledge_content_invalid"]
                     },
                     "severity": {"type": "string", "enum": ["critical", "minor"]},
                     "location": {"type": "string"},

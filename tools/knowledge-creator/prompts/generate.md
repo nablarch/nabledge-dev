@@ -43,6 +43,28 @@ Set this as the `title` field.
 
 ---
 
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- In trace, set `sections` to `[]` and add `"no_knowledge_content_reason": "..."` explaining why
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
 ## Expected Sections (if this file was split)
 
 {EXPECTED_SECTIONS}
@@ -427,11 +449,15 @@ Combine all results from Steps 1–6 into the output JSON.
   "properties": {
     "knowledge": {
       "type": "object",
-      "required": ["id", "title", "official_doc_urls", "index", "sections"],
+      "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
       "properties": {
         "id": {
           "type": "string",
           "description": "Knowledge file identifier. Must equal FILE_ID."
+        },
+        "no_knowledge_content": {
+          "type": "boolean",
+          "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
         },
         "title": {
           "type": "string",
@@ -479,6 +505,10 @@ Combine all results from Steps 1–6 into the output JSON.
               "h3_split_reason": { "type": "string" }
             }
           }
+        },
+        "no_knowledge_content_reason": {
+          "type": "string",
+          "description": "Reason for no_knowledge_content=true (required when true)"
         }
       }
     }
@@ -498,5 +528,9 @@ Combine all results from Steps 1–6 into the output JSON.
 - [ ] No information was added that is not in the source
 - [ ] All URLs from source are preserved
 - [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: true`, trace has `no_knowledge_content_reason`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
 
 Output the JSON matching the schema above. No explanation, no markdown fences, no other text.
