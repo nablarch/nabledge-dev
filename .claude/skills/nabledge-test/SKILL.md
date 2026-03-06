@@ -1,59 +1,59 @@
 ---
 name: nabledge-test
-description: Test nabledge-6/5 by detecting keywords/components in responses. Measures performance metrics without pass/fail judgment. Saves results to .pr/xxxxx/.
+description: Benchmark framework for nabledge skills. Runs scenarios in isolated sub-agent contexts to eliminate bias. Supports baseline mode for improvement verification.
 ---
 
 # Nabledge-Test
 
 Benchmark framework for nabledge skills. Detects expected keywords/components and measures performance metrics.
+Each scenario runs in an isolated sub-agent context (Task tool) to eliminate cross-scenario bias.
 
 ## Usage
 
 ```bash
-nabledge-test 6 ks-001                          # Single test (1 trial)
-nabledge-test 6 --all                           # All tests (1 trial each)
+nabledge-test 6 ks-001                          # Single scenario (1 trial)
+nabledge-test 6 --all                           # All scenarios (1 trial each)
 nabledge-test 6 --list                          # List all scenarios
-nabledge-test 6 ks-001 --trials 3               # Single test (3 trials)
-nabledge-test 6 --all --trials 5                # All tests (5 trials each)
+nabledge-test 6 ks-001 --trials 3               # Single scenario (3 trials)
+nabledge-test 6 --all --trials 5                # All scenarios (5 trials each)
 nabledge-test 6 "知識検索系を全部実行して"        # Free-form instruction
+nabledge-test 6 --baseline                      # Baseline mode: run all, save baseline, generate comparison report
 ```
 
 **Trial count**: Use `--trials N` to run each scenario N times (default: 1). Results are averaged across trials.
 
-## How it works
+## Key Principles
 
-1. Load scenario from `scenarios/nabledge-6/scenarios.json`
-2. Build detection items list (keywords + sections for KS, components for CA)
-3. Execute nabledge-<version> inline and track metrics
-4. Check detection items via string search in response
-5. Save individual results to `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`
-6. Generate aggregate report to `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`
+- **Measure everything, judge nothing**: Report detection rates and measured values without arbitrary targets
+- **Isolated execution**: Each scenario runs in a separate Task tool context to prevent cross-contamination
+- **Measurement discipline**: You are a measurement instrument, not a helper
 
-**Key principle**: Measure everything, judge nothing. Report detection rates (x/x) and measured values without arbitrary targets.
+### Measurement Discipline Rules
 
-**Measurement discipline**: You are a measurement instrument, not a helper.
-- Follow target skill workflows exactly - do NOT improvise
-- Record actual execution - do NOT fabricate steps
-- Let failures be failures - do NOT mask with workarounds
+- Follow target skill workflows exactly — do NOT improvise
+- Record actual execution — do NOT fabricate steps
+- Let failures be failures — do NOT mask with workarounds
+- Always complete the measurement — do NOT stop execution early
+- No self-imposed limits — token usage and execution time may vary significantly (3,000-70,000+)
 
 ## When invoked
 
 ### Step 1: Parse arguments
 
-Format: `nabledge-test <version> [<scenario-id> | --all | --list | "<free-form>"] [--trials N]`
+Format: `nabledge-test <version> [<scenario-id> | --all | --list | --baseline | "<free-form>"] [--trials N]`
 
 **If no arguments provided**: Display usage and exit.
 
-Output:
 ```
-Usage: nabledge-test <version> [<scenario-id> | --all | --list | "<free-form>"] [--trials N]
+Usage: nabledge-test <version> [<scenario-id> | --all | --list | --baseline | "<free-form>"] [--trials N]
 
 Examples:
-  nabledge-test 6 ks-001                          # Single test (1 trial)
-  nabledge-test 6 --all                           # All tests (1 trial each)
+  nabledge-test 6 ks-001                          # Single scenario (1 trial)
+  nabledge-test 6 --all                           # All scenarios (1 trial each)
   nabledge-test 6 --list                          # List all available scenarios
-  nabledge-test 6 ks-001 --trials 3               # Single test (3 trials)
-  nabledge-test 6 --all --trials 5                # All tests (5 trials each)
+  nabledge-test 6 --baseline                      # Baseline mode (all scenarios, save + compare)
+  nabledge-test 6 ks-001 --trials 3               # Single scenario (3 trials)
+  nabledge-test 6 --all --trials 5                # All scenarios (5 trials each)
   nabledge-test 6 "知識検索系を全部実行して"        # Free-form instruction
 
 Arguments:
@@ -61,6 +61,7 @@ Arguments:
   <scenario-id>          Optional. Specific scenario to test (e.g., ks-001, ca-001)
   --all                  Optional. Test all scenarios
   --list                 Optional. List all available scenarios
+  --baseline             Optional. Baseline mode: run all scenarios, save to baseline/, generate comparison
   "<free-form>"          Optional. Free-form instruction for test selection
   --trials N             Optional. Number of trials per scenario (default: 1)
 ```
@@ -77,7 +78,6 @@ Available scenarios for nabledge-<version>:
 Knowledge Search (KS) - <count> scenarios:
   - ks-001: <question>
   - ks-002: <question>
-  - ks-003: <question>
 
 Code Analysis (CA) - <count> scenarios:
   - ca-001: <question>
@@ -86,357 +86,241 @@ Code Analysis (CA) - <count> scenarios:
 Total: <total_count> scenarios
 ```
 
-**Parse options**:
-- `<version>`: Required. Version number (6 or 5)
-- `<scenario-id>`: Optional. Specific scenario to test (e.g., ks-001, ca-001)
-- `--all`: Optional. Test all scenarios
-- `--list`: Optional. List all available scenarios
-- `"<free-form>"`: Optional. Free-form instruction interpreted by AI (e.g., "知識検索系を全部実行して", "Run only batch-related scenarios")
-- `--trials N`: Optional. Number of trials per scenario (default: 1)
+**Parse modes**:
 
-**Examples**:
-- `nabledge-test 6 ks-001` → Test ks-001, 1 trial
-- `nabledge-test 6 ks-001 --trials 3` → Test ks-001, 3 trials
-- `nabledge-test 6 --all --trials 5` → Test all, 5 trials each
-- `nabledge-test 6 "知識検索系だけ"` → Test all knowledge-search scenarios (ks-*)
+| Argument | Mode | Scenarios | Baseline |
+|----------|------|-----------|----------|
+| `ks-001` | single | 1個 | No |
+| `--all` | all | 全件 | No |
+| `--baseline` | baseline | 全件 | Yes |
+| `"free text"` | free-form | AI判断 | No |
 
-### Step 2: Load scenario
+**`--baseline` implies `--all`**: Baseline mode always runs all scenarios. `--trials N` can be combined.
 
-From `scenarios/nabledge-6/scenarios.json`:
+### Step 2: Resolve PR number
+
+PR番号は作業記録の保存先 `.pr/xxxxx/` を決定するために必要。
+
+**Resolve from current branch name**:
+
+```bash
+# Get current branch name
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Extract PR number from branch name pattern: <number>-<description>
+# Examples: 125-improve-search-performance → 00125
+#           88-redesign-index-hints → 00088
+pr_number=$(echo "$branch" | grep -oP '^\d+' | xargs printf '%05d')
+
+# Verify .pr directory exists
+if [ ! -d ".pr/${pr_number}" ]; then
+  mkdir -p ".pr/${pr_number}"
+fi
+```
+
+**If branch is `main` or has no number prefix**: Use `00000` as fallback and warn the user.
+
+Store as `$PR_NUMBER` (5-digit zero-padded string) for use in subsequent steps.
+
+### Step 3: Load scenarios
+
+From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 
 ```json
 {
   "id": "ks-001",
-  "question": "データリードハンドラでファイルを読み込むには？",
-  "keywords": ["DataReadHandler", "DataReader", ...],
-  "sections": ["overview", "usage"]
+  "question": "バッチの起動方法を教えてください",
+  "keywords": ["keyword1", "keyword2", ...],
+  "sections": ["section1", "section2"]
 }
 ```
 
-### Step 3: Build detection items list
-
-Build detection items list (no performance targets):
-
-```python
-detection_items = []
-
-# Keyword checks
-for keyword in scenario.keywords:
-    detection_items.append(f"Response includes '{keyword}'")
-
-# Section checks
-if scenario.sections:
-    section_list = " or ".join([f"'{s}'" for s in scenario.sections])
-    detection_items.append(f"Response mentions {section_list} sections")
-
-# Note: No performance targets (token/tool call ranges)
-# Performance is measured but not used for pass/fail judgment
-```
-
-### Step 4: Read skill-creator procedures
-
-Read skill-creator eval-mode documentation:
-
-```
-Read .claude/skills/skill-creator/references/eval-mode.md
-Read .claude/skills/skill-creator/references/schemas.md
-Read .claude/skills/skill-creator/agents/executor.md
-Read .claude/skills/skill-creator/agents/grader.md
-```
-
-### Step 5: Setup workspace
-
-**Workspace location**: `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/` (temporary workspace, timestamp-based to avoid conflicts)
-
-Create structure:
-```
-.tmp/nabledge-test/
-└── eval-<scenario-id>-HHMMSS/
-    ├── with_skill/
-    │   ├── outputs/
-    │   │   ├── transcript.md
-    │   │   └── metrics.json
-    │   ├── grading.json
-    │   └── timing.json
-```
-
-```bash
-mkdir -p .tmp/nabledge-test/eval-<scenario-id>-$(date +%H%M%S)/with_skill/outputs
-```
-
-### Step 6: Execute nabledge-6 inline - Follow executor.md
-
-**CRITICAL**: Do NOT use the Skill tool. Execute nabledge-<version> instructions directly in this conversation to maintain workflow continuity.
-
-**IMPORTANT - Measurement Discipline**:
-You are a measurement instrument, not a helper. Follow these rules:
-
-1. **Always complete the measurement** - Do NOT stop execution early or ask for user decisions
-2. **No self-imposed limits** - Token usage and execution time may vary significantly between scenarios (range: 3,000-70,000+ tokens). Continue execution regardless of resource consumption.
-3. **Follow workflows exactly** - Read SKILL.md → workflows in order, execute ONLY what they specify
-4. **Do NOT improvise** - If a tool fails or returns empty, record it and follow workflow error handling. Do NOT use alternative tools.
-5. **Do NOT add keywords** - Follow workflow keyword extraction rules (3-10 keywords from question text). Do NOT add answer-aware terms.
-6. **Record actual execution** - Transcript shows what you actually did, not what you think happened. No fabrication.
-7. **Complete all steps** - Execute through Step 8 (individual report generation) without interruption
-
-**Record start time**:
-```bash
-date -u +%Y-%m-%dT%H:%M:%SZ > start_time.txt
-```
-
-**Load nabledge-<version> skill procedures**:
-```bash
-Read .claude/skills/nabledge-<version>/SKILL.md
-```
-
-Then read workflows as directed by SKILL.md (e.g., qa.md → _knowledge-search.md → sub-workflows).
-
-**Execute the question <scenario.question> by following loaded procedures exactly**:
-- Follow workflow steps in order
-- Use ONLY tools specified in workflows
-- If tool returns empty/fails: Record result, follow workflow error handling
-- **Track every tool call** (Read, Bash, Grep) for metrics
-
-**While executing, track**:
-- Tool calls made (exact commands)
-- Actual results received (exit codes, output)
-- Steps executed (from workflow definitions)
-
-**Write transcript** to `workspace/eval-<id>/with_skill/outputs/transcript.md`:
-
-**IMPORTANT**: Transcript records ACTUAL execution. Do NOT describe improvised actions or fabricated steps.
-
-```markdown
-# Eval Execution Transcript
-
-## Eval Prompt
-<scenario.question>
-
-## Skill
-- Path: .claude/skills/nabledge-<version>
-- Name: nabledge-<version>
-- Description: Nablarch <version> Knowledge Base
-
-## Input Files
-None provided
-
-## Execution
-
-### Step 1: Load skill workflows
-**Start**: <timestamp in ISO 8601 format>
-**Action**: Read nabledge-<version> skill procedures
-**Tool**: Read
-- SKILL.md
-- workflows as directed by SKILL.md (e.g., qa.md, _knowledge-search.md, etc.)
-
-**INPUT**: None (initial load)
-**IN Tokens**: 0
-
-**OUTPUT**: Successfully loaded workflows
-**OUT Tokens**: <approx character count / 4>
-
-**End**: <timestamp in ISO 8601 format>
-**Duration**: <seconds>s
-
----
-
-### Step 2: [Actual step name - use workflow step name]
-**Start**: <timestamp>
-**Action**: [Brief description of what this step does per workflow]
-
-**INPUT**:
-```
-[Actual input data]
-```
-**IN Tokens**: <approx character count / 4>
-
-**Tool**: [Tool name]
-**Command**: [Exact command if Bash, or tool description]
-**Result**: [Actual result - exit code, output summary, or description]
-
-**OUTPUT**:
-```
-[Actual output or result]
-```
-**OUT Tokens**: <approx character count / 4>
-
-**End**: <timestamp>
-**Duration**: <seconds>s
-
----
-
-### Step 3: [Next actual step name]
-**Start**: <timestamp>
-**Action**: [Brief description]
-
-**Tool**: [Tool name]
-**Command**: [e.g., "bash scripts/full-text-search.sh バッチ 起動 batch"]
-**Result**: [e.g., "Exit code 0, 41 sections matched" or "Exit code 0, empty output"]
-
-**OUTPUT**:
-```
-[Show actual output - if empty, state "Empty output" - do NOT substitute with improvised result]
-```
-**OUT Tokens**: <approx character count / 4>
-
-**End**: <timestamp>
-**Duration**: <seconds>s
-
----
-
-(... continue for each step actually executed ...)
-
-**CRITICAL**: Each step must correspond to actual execution. Do NOT add steps for improvised actions.
-
-## Output Files
-None created (response was inline)
-
-## Final Result
-<Copy the full response from nabledge-6 here>
-
-## Token Summary
-- **Total IN Tokens**: <sum of all IN tokens>
-- **Total OUT Tokens**: <sum of all OUT tokens>
-- **Total Tokens**: <IN + OUT>
-
-## Issues
-None
-```
-
-**Write metrics.json**:
-
-Extract data from transcript.md:
-- IN/OUT tokens from each step
-- Duration from each step (calculate from Start and End timestamps if needed)
-
+For code-analysis scenarios (ca-*), additional fields:
 ```json
 {
+  "id": "ca-001",
+  "question": "ExportProjectsInPeriodActionの実装を理解したい",
+  "target_file": "path/to/file.java",
+  "expectations": ["expectation1", "expectation2", ...]
+}
+```
+
+**Build detection items**:
+
+For knowledge-search (ks-*):
+```
+detection_items = []
+for keyword in scenario.keywords:
+    detection_items.append(f"Response includes '{keyword}'")
+if scenario.sections:
+    for section in scenario.sections:
+        detection_items.append(f"Response references '{section}' section")
+```
+
+For code-analysis (ca-*):
+```
+detection_items = []
+for expectation in scenario.expectations:
+    detection_items.append(expectation)
+```
+
+### Step 4: Execute scenarios via sub-agents
+
+**CRITICAL**: Each scenario MUST run in a separate Task tool invocation. This ensures:
+- No context bleeding between scenarios (bias elimination)
+- Each scenario starts from a clean state
+- Metrics reflect true isolated performance
+
+**For each scenario**, spawn a Task tool with the following prompt:
+
+```
+You are a measurement instrument executing a nabledge skill test.
+
+## Rules
+- Follow target skill workflows EXACTLY — do NOT improvise
+- Record actual execution — do NOT fabricate steps
+- Let failures be failures — do NOT mask with workarounds
+- Complete all steps without stopping
+- No self-imposed limits on token usage or execution time
+
+## Task
+1. Read `.claude/skills/nabledge-<version>/SKILL.md` and follow its instructions
+2. Execute the following question: "<scenario.question>"
+3. Record timing for each step (use `date -u +%Y-%m-%dT%H:%M:%SZ`)
+
+## Output
+When complete, output the following clearly delimited sections:
+
+### RESPONSE_START
+<paste the complete response/answer from nabledge-<version> here>
+### RESPONSE_END
+
+### METRICS_START
+```json
+{
+  "total_duration_seconds": <number>,
+  "steps": [
+    {
+      "step": <number>,
+      "name": "<step name>",
+      "duration_seconds": <number>,
+      "in_tokens_estimate": <number>,
+      "out_tokens_estimate": <number>
+    }
+  ],
   "tool_calls": {
     "Read": <count>,
     "Bash": <count>,
-    "Grep": <count>
+    "Grep": <count>,
+    "Write": <count>
   },
-  "total_tool_calls": <total>,
-  "total_steps": <count>,
-  "files_created": [],
-  "errors_encountered": 0,
-  "output_chars": <char count of response>,
-  "transcript_chars": <char count of transcript>,
-  "tokens": {
-    "total_in": <sum of all IN tokens>,
-    "total_out": <sum of all OUT tokens>,
-    "total": <IN + OUT>,
-    "by_step": [
-      {
-        "step": 1,
-        "name": "Load skill workflows",
-        "in_tokens": <count from transcript>,
-        "out_tokens": <count from transcript>,
-        "duration_seconds": <duration from transcript>
-      },
-      {
-        "step": 2,
-        "name": "Execute knowledge search",
-        "in_tokens": <count from transcript>,
-        "out_tokens": <count from transcript>,
-        "duration_seconds": <duration from transcript>
-      }
-    ]
-  }
+  "total_tool_calls": <number>,
+  "response_chars": <number>
 }
 ```
+### METRICS_END
 
-**IMPORTANT**: Ensure duration_seconds is populated for each step. This data is used for aggregate statistics (median, range) in the final report.
-
-**Record end time and calculate duration**:
-```bash
-date -u +%Y-%m-%dT%H:%M:%SZ > end_time.txt
-# Calculate duration_seconds
+### OUTPUT_FILES_START
+<list any files created by the skill, with their full paths, one per line>
+<if no files created, write "none">
+### OUTPUT_FILES_END
 ```
 
-**Write timing.json**:
-```json
-{
-  "executor_start": "<start_time>",
-  "executor_end": "<end_time>",
-  "executor_duration_seconds": <duration>,
-  "grader_start": null,
-  "grader_end": null,
-  "grader_duration_seconds": 0,
-  "total_duration_seconds": <duration>
-}
+**Execution strategy**:
+
+- Launch scenarios **one at a time** (sequential), not in parallel
+- Wait for each Task to complete before starting the next
+- This is because Task tool results must be parsed and saved per scenario
+
+**For multiple trials** (`--trials N`):
+
+- Run each scenario N times sequentially
+- Each trial is a separate Task tool invocation
+- Collect all trial results, then average metrics
+
+**After each Task completes**:
+
+1. Parse the delimited output sections (RESPONSE, METRICS, OUTPUT_FILES)
+2. Save results to the workspace (see Step 5)
+3. Run detection check (see Step 6)
+
+### Step 5: Save workspace results
+
+**Workspace location**: `.tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/`
+
+For each completed scenario:
+
+```
+.tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/
+  <scenario-id>/
+    response.md          # Full response text from RESPONSE section
+    metrics.json         # Parsed from METRICS section
+    grading.json         # Detection check results (Step 6)
+    output/              # Output files (ca-* only, copied from paths in OUTPUT_FILES)
 ```
 
-**After writing timing.json, immediately proceed to Step 7 without stopping. This is a continuous evaluation workflow.**
+**Save response.md**: Extract text between `### RESPONSE_START` and `### RESPONSE_END`.
 
-### Step 7: Check detection items
+**Save metrics.json**: Parse JSON from between `### METRICS_START` and `### METRICS_END`. If parsing fails (sub-agent didn't output clean JSON), extract what's available and note the error.
 
-**Record grader start time**
+**Save output files** (ca-* scenarios only): Copy files listed in OUTPUT_FILES section to `output/` directory.
 
-**Read transcript and outputs**:
-```bash
-Read workspace/eval-<id>/with_skill/outputs/transcript.md
+### Step 6: Check detection items
+
+For each scenario, evaluate detection items against the response:
+
+**Knowledge-search (ks-*)**:
+
+```python
+for item in detection_items:
+    if "includes" in item:
+        keyword = extract_keyword(item)  # e.g., "DataReadHandler"
+        detected = keyword in response_text
+    elif "references" in item:
+        section = extract_section(item)  # e.g., "request-path"
+        detected = section in response_text
 ```
 
-**Evaluate each detection item**:
+**Code-analysis (ca-*)**:
 
-For each detection item in detection_items list:
-1. Check if item is detected by examining transcript
-2. Record detected/not_detected with evidence
-3. Extract relevant quotes as evidence
+Each expectation is checked by examining the response text and output files:
+- "Finds target file X" → check if filename appears in response
+- "Identifies X" → check if X appears in response or output
+- "Creates dependency diagram" → check for "classDiagram" or "graph" in output
+- "Creates sequence diagram" → check for "sequenceDiagram" in output
+- "Output includes X" → check output files for X
+- "Output file saved to" → check if output files exist
+- "Analysis duration calculated" → check if duration appears in response
 
 **Write grading.json**:
+
 ```json
 {
+  "scenario_id": "<id>",
   "detection_items": [
     {
       "text": "Response includes 'DataReadHandler'",
       "detected": true,
-      "evidence": "Found in transcript: 'DataReadHandler（nablarch.fw.handler.DataReadHandler）'"
+      "evidence": "Found in response: 'DataReadHandler（nablarch.fw.handler.DataReadHandler）'"
     },
     {
       "text": "Response includes 'DataReader'",
-      "detected": true,
-      "evidence": "Found multiple times in response"
-    },
-    ...
+      "detected": false,
+      "evidence": "Not found in response text"
+    }
   ],
   "summary": {
-    "detected": <count>,
-    "not_detected": <count>,
-    "total": <count>,
-    "detection_rate": <rate>
-  },
-  "execution_metrics": {
-    "tool_calls": { ... },
-    "total_tool_calls": <count>,
-    "total_steps": <count>,
-    "errors_encountered": 0,
-    "output_chars": <count>,
-    "transcript_chars": <count>
-  },
-  "timing": {
-    "executor_duration_seconds": <duration>,
-    "grader_duration_seconds": <duration>,
-    "total_duration_seconds": <total>
+    "detected": 5,
+    "not_detected": 1,
+    "total": 6,
+    "detection_rate": 0.833
   }
 }
 ```
 
-**Update timing.json** with grader times.
+### Step 7: Generate individual scenario reports
 
-### Step 8: Generate individual scenario report
-
-**Read data from workspace files**:
-1. Read `grading.json` for expectations and summary
-2. Read `metrics.json` for tool_calls, tokens, and by_step data
-3. Read `timing.json` for total duration
-
-**Extract step-by-step data**:
-- From `metrics.json`, extract `tokens.by_step` array
-- Each entry contains: step, name, in_tokens, out_tokens, duration_seconds
-
-Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
+Write to `.pr/<PR_NUMBER>/nabledge-test/<YYYYMMDDHHMM>/<scenario-id>.md`:
 
 ```markdown
 # Test: <scenario-id>
@@ -445,123 +329,66 @@ Write `.pr/xxxxx/nabledge-test/YYYYMMDDHHMM/<scenario-id>-HHMMSS.md`:
 **Question**: <scenario.question>
 
 ## Scenario
+- **Type**: Knowledge-Search / Code-Analysis
 - **Keywords** (<count>): <list>
 - **Sections** (<count>): <list>
 
 ## Detection Results
 
-**Detection Rate**: <detected>/<total>
+**Detection Rate**: <detected>/<total> (<percentage>%)
 
 ### Detection Items
 - ✓ Response includes 'DataReadHandler'
   Evidence: Found in response
-- ✓ Response includes 'DataReader'
-  Evidence: Found in response
 - ✗ Response includes 'XYZ'
   Evidence: Not found in response
 
-## Metrics (Measured Values)
-- **Duration**: <seconds>s
+## Metrics
+- **Duration**: <seconds>秒
 - **Tool Calls**: <count>
 - **Response Length**: <chars> chars
-- **Tokens**: <total> (IN: <in> / OUT: <out>)
+- **Tokens (estimate)**: <total> (IN: <in> / OUT: <out>)
 
-### Token Usage by Step
-| Step | Name | IN Tokens | OUT Tokens | Total | Duration |
-|------|------|-----------|------------|-------|----------|
-| 1 | Load workflows | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
-| 2 | Knowledge search | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
-| 3 | Read sections | <in_tokens> | <out_tokens> | <in+out> | <duration_seconds>s |
-| ... | ... | ... | ... | ... | ... |
+### Step Breakdown
+| Step | Name | Duration | IN Tokens | OUT Tokens |
+|------|------|----------|-----------|------------|
+| 1 | <name> | <seconds>秒 | <count> | <count> |
+| 2 | <name> | <seconds>秒 | <count> | <count> |
+
+## 目視判定
+
+| 観点 | 判定 | メモ |
+|------|------|------|
+| 回答の正確性 | ◯ / △ / ✗ | （手動記入） |
+| 回答の網羅性 | ◯ / △ / ✗ | （手動記入） |
+| コード例の品質 | ◯ / △ / ✗ | （手動記入） |
+| 日本語の自然さ | ◯ / △ / ✗ | （手動記入） |
 
 ## Files
-- **Transcript**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/transcript.md
-- **Grading**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/grading.json
-- **Metrics**: .tmp/nabledge-test/eval-<id>-HHMMSS/with_skill/outputs/metrics.json
+- **Response**: <workspace>/<scenario-id>/response.md
+- **Metrics**: <workspace>/<scenario-id>/metrics.json
+- **Grading**: <workspace>/<scenario-id>/grading.json
 ```
 
-**IMPORTANT - For code-analysis scenarios only**:
+**目視判定テンプレート**: 自動実行では空欄のまま生成する。改善検証時にkiyohomeが手動で埋める用途。
 
-After generating the individual report, copy the generated code-analysis documentation to the test output directory:
+### Step 8: Generate aggregate report
 
-```bash
-# For code-analysis scenarios (ca-*), find and copy the generated documentation
-if [[ "$scenario_id" =~ ^ca- ]]; then
-  # Find the most recent .md file in .nabledge/YYYYMMDD/ (excluding dot files)
-  doc_file=$(ls -t .nabledge/$(date '+%Y%m%d')/*.md 2>/dev/null | head -1)
-  if [ -n "$doc_file" ]; then
-    # Copy to output directory with unique name: code-analysis-<scenario-id>-HHMMSS.md
-    cp "$doc_file" ".pr/xxxxx/nabledge-test/YYYYMMDDHHMM/code-analysis-${scenario_id}-$(date '+%H%M%S').md"
-    echo "Copied code-analysis documentation: $doc_file"
-  fi
-fi
-```
+**This step runs for `--all` mode and `--baseline` mode.**
 
-This ensures that code-analysis outputs (which nabledge-6 writes to `.nabledge/YYYYMMDD/`) are preserved in the test measurement directory and won't be overwritten by subsequent test runs.
-
-### Step 9: Generate aggregate report
-
-**Calculate statistics from metrics.json files**:
-
-For each scenario type (knowledge-search, code-analysis):
-
-1. **Read all metrics.json files**:
-   ```bash
-   find .tmp/nabledge-test/eval-*-*/with_skill/outputs/metrics.json
-   ```
-
-2. **Filter by scenario type**:
-   - Knowledge-Search: ks-*
-   - Code-Analysis: ca-*
-
-3. **Extract by_step data**:
-   ```bash
-   jq '.tokens.by_step' <metrics.json>
-   ```
-
-4. **Group by step name** and calculate for each step:
-   - **Average duration**: mean of all duration_seconds values
-   - **Median duration**: median (middle value when sorted)
-   - **Range**: "min-max秒" format (e.g., "3-8秒")
-   - **Percentage**: (avg_duration / total_avg_duration) * 100
-   - **Avg IN tokens**: mean of all in_tokens values
-   - **Avg OUT tokens**: mean of all out_tokens values
-
-5. **Identify bottleneck**:
-   - Find step with highest percentage
-   - Add 🔥 emoji in 割合 column
-   - Add bottleneck note after table
-
-6. **Generate insights**:
-   - For 💡 主要な発見: Analyze data for patterns, anomalies, key findings
-   - For 🔬 仮説と改善提案: Based on bottlenecks and patterns, propose testable hypotheses
-
-**Example calculation for Knowledge-Search Step 1**:
-```
-Scenarios: ks-001, ks-002, ks-003, ks-004, ks-005
-Step 1 durations: [5, 4, 8, 6, 7] seconds
-- Average: (5+4+8+6+7)/5 = 6秒
-- Median: sort([5,4,8,6,7]) = [4,5,6,7,8], middle value = 6秒
-- Range: "4-8秒" (min=4, max=8)
-- Percentage: 6/48 * 100 = 12.5%
-- Tokens: average IN/OUT from all scenarios
-```
-
-**Step name mapping** (use actual step names from metrics.json):
-- If steps have generic names like "Step 1", "Step 2", map to meaningful names:
-  - Knowledge-Search: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
-  - Code-Analysis: ターゲット特定, 知識検索, テンプレート読込, データ事前入力, 図表生成, コンテンツ構築, 出力完成, 実行時間計算
-
-Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
+Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 
 ```markdown
-# Nabledge-<version> Test Run: YYYY-MM-DD HH:MM:SS
+# Nabledge-<version> Test Run: YYYY-MM-DD HH:MM
 
 | 項目 | 値 |
 |------|-----|
 | Run ID | YYYYMMDD-HHMMSS |
-| 実行シナリオ | <count> (knowledge-search: <ks_count>, code-analysis: <ca_count>) |
-| 実行方式 | 並列実行 (<count>エージェント) |
+| Branch | <branch_name> |
+| Commit | <git_commit_sha_short> |
+| 実行シナリオ | <count> (KS: <ks_count>, CA: <ca_count>) |
+| 実行方式 | サブエージェント逐次実行 |
+| Trials | <trials_count> |
 
 ---
 
@@ -569,44 +396,21 @@ Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 
 | # | Scenario | 質問 | Type | 検出 | 時間 | トークン |
 |---|----------|------|------|------|------|---------|
-| 1 | <scenario-id> | <question> | KS/CA | <detected>/<total> | <seconds>秒 | <tokens> |
-| 2 | <scenario-id> | <question> | KS/CA | <detected>/<total> | <seconds>秒 | <tokens> |
+| 1 | <id> | <question> | KS/CA | <detected>/<total> | <seconds>秒 | <tokens> |
 ...
 
-**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⚡=最速, 🐢=最遅
+**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⚡=最速, 🐢=最遅, 🔥=最大トークン, ⭐=100%検出
 
 ### 統計
-- **キーワード/コンポーネント検出**: 全シナリオで全項目検出 (<total_detected>/<total_items>)
-- **平均実行時間**: <avg_seconds>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
-  - 最速: <fastest_scenario> (<fastest_time>秒)
-  - 最遅: <slowest_scenario> (<slowest_time>秒)
-- **平均トークン**: <avg_tokens> (推定値)
-  - 最少: <min_scenario> (<min_tokens>)
-  - 最多: <max_scenario> (<max_tokens>)
-
-### 検出項目について
-- **知識検索**: 想定キーワード (5個) + セクション参照 (2個) = 7項目
-- **コード解析**: コンポーネント/メソッド/アノテーション/図表/構造 = 11-15項目
-- **測定方法**: 応答テキスト内での文字列検索
-
----
-
-## 💡 主要な発見
-
-### 1. 全シナリオで検出項目を確認 ✓
-すべてのシナリオで、想定したキーワード/コンポーネントが応答に含まれていることを確認。
-- 知識検索: キーワード5個 + セクション参照2個 = 7/7検出
-- コード解析: メソッド/アノテーション/図表など = 11-15項目検出
-
-### 2. <Performance observation title>
-<Description based on measured data>
-- <Metric 1>: <value> (range: <min>-<max>)
-- <Metric 2>: <value> (range: <min>-<max>)
-
-### 3. <Bottleneck or pattern title>
-<Description of performance bottlenecks>
-- ボトルネック: <step name> が<percent>%を占める
-- 改善余地: <specific optimization opportunity>
+- **キーワード/コンポーネント検出**: <total_detected>/<total_items> (<rate>%)
+  - KS: <ks_detected>/<ks_total> (<ks_rate>%)
+  - CA: <ca_detected>/<ca_total> (<ca_rate>%)
+- **平均実行時間**: <avg>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
+  - 最速: <id> (<time>秒)
+  - 最遅: <id> (<time>秒)
+- **平均トークン**: <avg> (推定値)
+  - 最少: <id> (<tokens>)
+  - 最多: <id> (<tokens>)
 
 ---
 
@@ -614,154 +418,318 @@ Write `.pr/xxxxx/nabledge-test/report-YYYYMMDDHHMM.md`:
 
 ### Knowledge-Search: ステップ別平均時間
 
-| ステップ | 名称 | 平均時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
-|----------|------|---------|--------|------|------|-----------------------|
-| 1 | ワークフロー読込 | <avg>秒 | <median>秒 | <percent>% | <min-max>秒 | <in>/<out> (推定) |
-| 2 | キーワード抽出 | <avg>秒 | <median>秒 | <percent>% | <min-max>秒 | <in>/<out> (推定) |
-| 3 | ファイルマッチング | <avg>秒 | <median>秒 | <percent>% | <min-max>秒 | <in>/<out> (推定) |
-| ... | ... | ... | ... | ... | ... | ... |
-| 8 | 回答生成 | <avg>秒 | <median>秒 | <percent>% 🔥 | <min-max>秒 | <in>/<out> (推定) |
+| ステップ | 名称 | 平均 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
+|----------|------|------|--------|------|------|-----------------------|
+| 1 | <name> | <avg>秒 | <med>秒 | <pct>% | <min>-<max>秒 | <in>/<out> |
+...
 
-ボトルネック: Step <n> (<name>) が時間の<percent>%を占める
-
-注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
+ボトルネック: Step <n> (<name>) が時間の<pct>%を占める 🔥
 
 <details>
 <summary>Code-Analysis: ステップ別詳細</summary>
 
-| ステップ | 名称 | 時間 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
+| ステップ | 名称 | 平均 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
 |----------|------|------|--------|------|------|-----------------------|
-| 1 | ターゲット特定 | <avg>秒 | <median>秒 | <percent>% | - | <in>/<out> (推定) |
-| 2 | 知識検索 | <avg>秒 | <median>秒 | <percent>% | - | <in>/<out> (推定) |
-| ... | ... | ... | ... | ... | ... | ... |
-| 6 | コンテンツ構築 | <avg>秒 | <median>秒 | <percent>% 🔥 | - | <in>/<out> (推定) |
+| 1 | <name> | <avg>秒 | <med>秒 | <pct>% | <min>-<max>秒 | <in>/<out> |
+...
 
-ボトルネック: Step <n> (<name>) が全体の<percent>%
-
-注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
+ボトルネック: Step <n> (<name>) が時間の<pct>%を占める 🔥
 </details>
 
-**IMPORTANT**:
-- Add 🔥 emoji to the step with highest percentage
-- Use <details> tag to collapse Code-Analysis table
+**Step name mapping** (use actual step names from metrics, fallback to these):
+- Knowledge-Search: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
+- Code-Analysis: ターゲット特定, 知識検索, テンプレート読込, データ事前入力, 図表生成, コンテンツ構築, 出力完成, 実行時間計算
+
+注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
+
+---
+
+## 💡 主要な発見
+
+<Analyze data for patterns, anomalies, key findings. Write 2-3 sections.>
 
 ---
 
 ## 🔬 仮説と改善提案
 
-### 仮説1: <Hypothesis title>
-**根拠**: <Evidence from data>
-**検証**: <How to verify>
-**期待**: <Expected outcome>
+### 仮説1: <title>
+**根拠**: <evidence>
+**検証**: <how>
+**期待**: <outcome>
 
-### 仮説2: <Hypothesis title>
-**根拠**: <Evidence from data>
-**検証**: <How to verify>
-**期待**: <Expected outcome>
-
-### 仮説3: <Hypothesis title>
-**根拠**: <Evidence from data>
-**検証**: <How to verify>
-**期待**: <Expected outcome>
-
-**Examples from report-202602260800.md**:
-- "回答生成を段階化すれば並列化可能"
-- "トークン推定値と実測値に乖離"
-- "index.toon読み込みがオーバーヘッド"
+### 仮説2: <title>
+...
 
 ---
 
 ## 📎 詳細データ
 
 ### 個別シナリオレポート
-各シナリオの詳細な実行ログ、期待値評価、コード例は個別レポートを参照：
-
-- [<scenario-id>](YYYYMMDDHHMM/<scenario-id>-HHMMSS.md) - <percent>% - <description>
-- [<scenario-id>](YYYYMMDDHHMM/<scenario-id>-HHMMSS.md) - <percent>% ⭐ - <description>
+- [<id>](<YYYYMMDDHHMM>/<id>.md) - <rate>% - <question>
 ...
-
-### メトリクスデータ
-JSON形式の詳細メトリクス（トークン使用量、ツール呼び出し、タイミング）は、各シナリオのワークスペースを参照。
 
 ### ワークスペース
-実行時の詳細なトランスクリプトとグレーディング結果：
-
-- `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/`
-- `.tmp/nabledge-test/eval-<scenario-id>-HHMMSS/`
-...
+- `.tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/`
 
 ---
 
-## 🧪 テスト実施方法
-
-<details>
-<summary>実行環境と設定 (オプション)</summary>
-
-### 実行環境
-- **ツール**: nabledge-test
-- **ターゲット**: nabledge-<version>
-- **並列実行**: <count>エージェント同時起動
-- **ワークスペース**: \`.tmp/nabledge-test/eval-<id>-<timestamp>/\`
-
-### エージェント構成
-| Agent ID | Scenario | Start |
-|----------|----------|-------|
-| <agent_id> | <scenario-id> | HH:MM:SS |
-...
-
-### 測定方法
-- **実行時間**: 各ステップの開始・終了時刻を記録（実測）
-- **トークン数**: 文字数÷4で推定（⚠️ 近似値）
-- **ツール呼び出し**: Read/Bash/Grep/Writeの実行回数（実測）
-
-### 制約事項
-- トークン数は推定値（実際のAPI使用量ではない）
-- 並列実行のため個別エージェントのトークン消費は合算されない
-- タイムスタンプの精度は秒単位
-</details>
-
----
-
-## 🔄 再現手順
-
-\```bash
-# 同じテストを再実行
-nabledge-test <version> --all
-
-# 特定のシナリオのみ
-nabledge-test <version> <scenario-id>
-
-# カテゴリ別
-nabledge-test <version> --category <category>
-\```
-
-**注意**: 並列実行のため、個別シナリオのタイムスタンプは若干異なります。
-
----
-
-*Generated by nabledge-test | Run: YYYYMMDD-HHMMSS | Duration: ~<minutes>min*
+*Generated by nabledge-test v2 | Run: YYYYMMDD-HHMMSS | Commit: <sha_short>*
 ```
 
-**Note**: The 🧪 テスト実施方法 section is optional and can be omitted for simpler reports.
+**Statistics calculation**:
+
+1. Read all metrics.json and grading.json from workspace
+2. Filter by scenario type (ks-*, ca-*)
+3. For step-by-step analysis:
+   - Group by step name across scenarios of same type
+   - Calculate: average, median, range, percentage of total
+4. Identify bottleneck (step with highest percentage) → add 🔥
+5. Apply ⚡ to fastest, 🐢 to slowest, ⭐ to 100% detection
+
+### Step 9: Baseline mode — save baseline
+
+**This step runs ONLY when `--baseline` flag is provided.**
+
+#### 9a: Create baseline directory
+
+```bash
+BASELINE_DIR=".claude/skills/nabledge-test/baseline"
+TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
+TARGET_DIR="${BASELINE_DIR}/${TIMESTAMP}"
+mkdir -p "${TARGET_DIR}"
+```
+
+#### 9b: Save meta.json
+
+```json
+{
+  "timestamp": "2026-03-06T14:30:00Z",
+  "run_id": "20260306-143000",
+  "version": 6,
+  "branch": "<branch_name>",
+  "commit": "<full_git_commit_sha>",
+  "commit_short": "<7-char_sha>",
+  "scenarios_count": 10,
+  "trials": 1,
+  "scenarios": {
+    "knowledge-search": ["ks-001", "ks-002", "ks-003", "ks-004", "ks-005"],
+    "code-analysis": ["ca-001", "ca-002", "ca-003", "ca-004", "ca-005"]
+  }
+}
+```
+
+#### 9c: Copy per-scenario data
+
+For each scenario, copy from workspace to baseline:
+
+```bash
+for scenario_id in $(ls .tmp/nabledge-test/run-${TIMESTAMP}/); do
+  mkdir -p "${TARGET_DIR}/${scenario_id}"
+
+  # Copy metrics
+  cp ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/metrics.json" \
+     "${TARGET_DIR}/${scenario_id}/metrics.json"
+
+  # Copy response
+  cp ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/response.md" \
+     "${TARGET_DIR}/${scenario_id}/response.md"
+
+  # Copy grading
+  cp ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/grading.json" \
+     "${TARGET_DIR}/${scenario_id}/grading.json"
+
+  # Copy output files (ca-* only)
+  if [ -d ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/output" ]; then
+    cp -r ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/output" \
+       "${TARGET_DIR}/${scenario_id}/output"
+  fi
+done
+```
+
+#### 9d: Update latest symlink
+
+```bash
+cd "${BASELINE_DIR}"
+rm -f latest
+ln -s "${TIMESTAMP}" latest
+```
+
+#### 9e: Generate comparison report (if previous baseline exists)
+
+**Check for previous baseline**:
+
+```bash
+# Count baseline directories (excluding 'latest' symlink)
+BASELINE_COUNT=$(ls -d ${BASELINE_DIR}/2* 2>/dev/null | wc -l)
+
+if [ "${BASELINE_COUNT}" -le 1 ]; then
+  echo "No previous baseline found. Generating initial baseline report."
+  PREV=""
+else
+  # Get second-to-last (= previous) baseline directory
+  PREV=$(ls -d ${BASELINE_DIR}/2* | sort | tail -2 | head -1)
+fi
+
+CURR="${TARGET_DIR}"
+```
+
+**Generate `comparison-report.md`** in `${TARGET_DIR}/`:
+
+**If no previous baseline (PREV is empty)**:
+
+```markdown
+# ベースライン比較レポート
+
+## 概要
+
+| 項目 | 値 |
+|------|-----|
+| 今回 | <TIMESTAMP> |
+| 前回 | （初回ベースライン） |
+| Branch | <branch_name> |
+| Commit | <commit_short> |
+
+---
+
+初回ベースラインのため、比較データはありません。
+次回 `--baseline` 実行時に、このベースラインとの比較レポートが生成されます。
+```
+
+**If previous baseline exists**:
+
+Read `${PREV}/meta.json` for previous run info. Read all `${PREV}/<scenario-id>/metrics.json` and `${PREV}/<scenario-id>/grading.json` for previous data.
+
+Write comparison-report.md:
+
+```markdown
+# ベースライン比較レポート
+
+## 概要
+
+| 項目 | 前回 | 今回 | 差分 |
+|------|------|------|------|
+| Run ID | <prev_run_id> | <curr_run_id> | |
+| Branch | <prev_branch> | <curr_branch> | |
+| Commit | <prev_commit> | <curr_commit> | |
+| 日時 | <prev_timestamp> | <curr_timestamp> | |
+
+---
+
+## 総合評価
+
+<ここに第三者視点でフラットに改善効果を評価する文章を書く。>
+
+ポイント:
+- 改善したことと改善していないことを公平に記述
+- 数値の変化を根拠に、「改善」「横ばい」「劣化」を判定
+- 統計的にサンプル1回の場合はばらつきの可能性に言及
+- 特定のシナリオだけ改善/劣化している場合はその偏りを指摘
+
+---
+
+## シナリオ別比較表
+
+| # | Scenario | 検出率 (前回) | 検出率 (今回) | 変化 | 時間 (前回) | 時間 (今回) | 変化 | トークン (前回) | トークン (今回) | 変化 | 目視 |
+|---|----------|-------------|-------------|------|-----------|-----------|------|---------------|---------------|------|------|
+| 1 | ks-001 | 6/6 | 6/6 | → | 48秒 | 42秒 | ↓6秒 🟢 | 7,019 | 6,500 | ↓519 🟢 | |
+...
+
+**凡例**:
+- 🟢 改善（検出率↑ or 時間/トークン↓10%超）
+- 🔴 劣化（検出率↓ or 時間/トークン↑10%超）
+- → 変化なし（±10%以内）
+- 目視: 手動記入欄（◯改善 / △変化なし / ✗劣化）
+
+**変化判定ルール**:
+- 検出率: 1項目でも減少 → 🔴、増加 → 🟢、同数 → →
+- 時間: ±10%以内 → →、10%超の短縮 → 🟢、10%超の増加 → 🔴
+- トークン: ±10%以内 → →、10%超の削減 → 🟢、10%超の増加 → 🔴
+
+---
+
+## 統計比較
+
+| 指標 | 前回 | 今回 | 変化 |
+|------|------|------|------|
+| 全体検出率 | <prev>% | <curr>% | <diff>pp |
+| KS検出率 | <prev>% | <curr>% | <diff>pp |
+| CA検出率 | <prev>% | <curr>% | <diff>pp |
+| 平均実行時間 | <prev>秒 | <curr>秒 | <diff>秒 (<pct>%) |
+| KS平均実行時間 | <prev>秒 | <curr>秒 | <diff>秒 |
+| CA平均実行時間 | <prev>秒 | <curr>秒 | <diff>秒 |
+| 平均トークン | <prev> | <curr> | <diff> (<pct>%) |
+
+---
+
+## 実測データからの分析
+
+<全シナリオの実測データを俯瞰して、パターンや傾向を分析する。>
+
+分析の観点:
+- 全体的なトレンド（改善/劣化の方向性）
+- シナリオタイプ別の傾向（KS vs CA）
+- 特異なシナリオの特定（他と異なる動きをしたもの）
+- ステップ別の変化（ボトルネックの移動）
+- ばらつきの変化
+
+---
+
+## 分析を受けた仮説
+
+<実測データの分析結果を踏まえて、実装を見た上での仮説を立てる。>
+
+### 仮説1: <title>
+**根拠**: <実測データのどの数値が根拠か>
+**実装の該当箇所**: <ワークフローやスクリプトのどこが関連するか>
+**予測**: <この仮説が正しければ、次に何が起きるか>
+
+### 仮説2: <title>
+...
+
+---
+
+## 再現手順
+
+```bash
+# 今回のベースラインと同じ状態で再計測
+git checkout <commit_sha>
+nabledge-test <version> --baseline
+
+# 前回のベースラインと同じ状態で再計測
+git checkout <prev_commit_sha>
+nabledge-test <version> --baseline
+```
+
+---
+
+*Generated by nabledge-test v2 baseline mode | Compared: <prev_timestamp> → <curr_timestamp>*
+```
 
 ### Step 10: Display summary
 
-```
-✓ ks-001: 5/5 keywords + 2/2 sections detected | 68s | 9,480 tokens
-  Report: .pr/xxxxx/nabledge-test/202602260800/ks-001-153045.md
-  Transcript: .tmp/nabledge-test/eval-ks-001-153045/with_skill/outputs/transcript.md
+**For single/all mode**:
 
-Aggregate report: .pr/xxxxx/nabledge-test/report-202602260800.md
+```
+✓ ks-001: 5/5 keywords + 1/1 sections detected | 48s | 7,019 tokens
+✓ ks-002: 5/5 keywords + 1/1 sections detected | 14s | 15,200 tokens
+✗ ca-004: 8/12 expectations detected | 64s | 8,820 tokens
+
+Aggregate report: .pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md
+Workspace: .tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/
+```
+
+**For baseline mode** (append to above):
+
+```
+Baseline saved: .claude/skills/nabledge-test/baseline/<TIMESTAMP>/
+Latest symlink: .claude/skills/nabledge-test/baseline/latest → <TIMESTAMP>/
+Comparison report: .claude/skills/nabledge-test/baseline/<TIMESTAMP>/comparison-report.md
 ```
 
 ## Dependencies
 
-- skill-creator (evaluation procedures only - not invoked as skill)
-- nabledge-6 (target skill)
+- **Task tool**: Required for sub-agent execution (Claude Code Task tool)
+- **nabledge-6 / nabledge-5**: Target skill to be tested
+- **git**: For branch name and commit SHA resolution
 
-## Notes
-
-- nabledge-test follows skill-creator's eval-mode procedures
-- Does NOT invoke skill-creator as a skill
-- Manually executes executor and grader steps
-- Workspace: `.tmp/nabledge-test/eval-<id>-HHMMSS/` (timestamp-based to avoid conflicts)
+Does NOT depend on skill-creator. nabledge-test v2 is self-contained.
