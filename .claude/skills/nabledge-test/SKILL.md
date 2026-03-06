@@ -130,7 +130,7 @@ From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 {
   "id": "qa-001",
   "question": "バッチの起動方法を教えてください",
-  "keywords": ["keyword1", "keyword2", ...]
+  "expectations": ["keyword1", "keyword2", ...]
 }
 ```
 
@@ -140,7 +140,17 @@ For code-analysis scenarios (ca-*), additional fields:
   "id": "ca-001",
   "question": "ExportProjectsInPeriodActionの実装を理解したい",
   "target_file": "path/to/file.java",
-  "expectations": ["expectation1", "expectation2", ...]
+  "expectations": {
+    "class_diagram": {
+      "classes": ["ClassName1", "ClassName2"],
+      "relationships": ["ClassA --|> ClassB"]
+    },
+    "sequence_diagram": {
+      "objects": ["ObjectName1", "ObjectName2"],
+      "messages": ["methodCall1", "methodCall2"]
+    },
+    "output": ["Component Summary", "Nablarch Framework Usage", ".nabledge/"]
+  }
 }
 ```
 
@@ -149,15 +159,23 @@ For code-analysis scenarios (ca-*), additional fields:
 For qa (qa-*):
 ```
 detection_items = []
-for keyword in scenario.keywords:
+for keyword in scenario.expectations:
     detection_items.append(f"Response includes '{keyword}'")
 ```
 
 For code-analysis (ca-*):
 ```
 detection_items = []
-for expectation in scenario.expectations:
-    detection_items.append(expectation)
+for class_name in scenario.expectations.class_diagram.classes:
+    detection_items.append(f"Class diagram includes class '{class_name}'")
+for relationship in scenario.expectations.class_diagram.relationships:
+    detection_items.append(f"Class diagram includes relationship '{relationship}'")
+for object_name in scenario.expectations.sequence_diagram.objects:
+    detection_items.append(f"Sequence diagram includes object '{object_name}'")
+for message in scenario.expectations.sequence_diagram.messages:
+    detection_items.append(f"Sequence diagram includes message '{message}'")
+for item in scenario.expectations.output:
+    detection_items.append(f"Output includes '{item}'")
 ```
 
 ### Step 4: Execute scenarios via sub-agents
@@ -289,14 +307,12 @@ for item in detection_items:
 
 **Code-analysis (ca-*)**:
 
-Each expectation is checked by examining the response text and output files:
-- "Finds target file X" → check if filename appears in response
-- "Identifies X" → check if X appears in response or output
-- "Creates dependency diagram" → check for "classDiagram" or "graph" in output
-- "Creates sequence diagram" → check for "sequenceDiagram" in output
-- "Output includes X" → check output files for X
-- "Output file saved to" → check if output files exist
-- "Analysis duration calculated" → check if duration appears in response
+Each detection item is checked by examining the response text and output files:
+- "Class diagram includes class 'X'" → check if class name X appears within a `classDiagram` block in the output
+- "Class diagram includes relationship 'X'" → check if relationship string X appears within a `classDiagram` block in the output
+- "Sequence diagram includes object 'X'" → check if participant/object X appears within a `sequenceDiagram` block in the output
+- "Sequence diagram includes message 'X'" → check if message/method call X appears within a `sequenceDiagram` block in the output
+- "Output includes 'X'" → check output files or response for X
 
 **Write grading.json**:
 
@@ -336,7 +352,7 @@ Write to `.pr/<PR_NUMBER>/nabledge-test/<YYYYMMDDHHMM>/<scenario-id>.md`:
 
 ## Scenario
 - **Type**: Knowledge-Search / Code-Analysis
-- **Keywords** (<count>): <list>
+- **Expectations** (<count>): <list>
 
 ## Detection Results
 
@@ -716,8 +732,8 @@ nabledge-test <version> --baseline
 **For single/all mode**:
 
 ```
-✓ qa-001: 5/5 keywords detected | 48s | 7,019 tokens
-✓ qa-002: 5/5 keywords detected | 14s | 15,200 tokens
+✓ qa-001: 5/5 expectations detected | 48s | 7,019 tokens
+✓ qa-002: 5/5 expectations detected | 14s | 15,200 tokens
 ✗ ca-004: 8/12 expectations detected | 64s | 8,820 tokens
 
 Aggregate report: .pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md

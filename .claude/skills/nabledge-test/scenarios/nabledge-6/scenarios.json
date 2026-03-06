@@ -3,7 +3,7 @@
     "version": "6.0.0",
     "created": "2026-02-09",
     "updated": "2026-03-06",
-    "description": "Test scenarios for nabledge-6: Detects keywords/components in responses. No performance targets.",
+    "description": "Test scenarios for nabledge-6: Detects expected keywords/components in responses. No performance targets.",
     "total_scenarios": 10,
     "by_type": {
       "qa": 5,
@@ -16,7 +16,7 @@
       "id": "qa-001",
       "type": "qa",
       "question": "バッチの起動方法を教えてください",
-      "keywords": [
+      "expectations": [
         "-requestPath",
         "コマンドライン引数",
         "アクションのクラス名",
@@ -31,7 +31,7 @@
       "id": "qa-002",
       "type": "qa",
       "question": "UniversalDaoでページングを実装したい",
-      "keywords": [
+      "expectations": [
         "per",
         "page",
         "EntityList",
@@ -45,7 +45,7 @@
       "id": "qa-003",
       "type": "qa",
       "question": "データリードハンドラでファイルを読み込むには？",
-      "keywords": [
+      "expectations": [
         "DataReadHandler",
         "DataReader",
         "ExecutionContext",
@@ -59,7 +59,7 @@
       "id": "qa-004",
       "type": "qa",
       "question": "バッチのエラーハンドリングはどうすればいいですか？",
-      "keywords": [
+      "expectations": [
         "TransactionAbnormalEnd",
         "ProcessAbnormalEnd",
         "リラン",
@@ -73,7 +73,7 @@
       "id": "qa-005",
       "type": "qa",
       "question": "バッチアクションの実装方法は？",
-      "keywords": [
+      "expectations": [
         "BatchAction",
         "createReader",
         "handle",
@@ -88,104 +88,198 @@
       "type": "code-analysis",
       "question": "code-analysis ExportProjectsInPeriodAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java",
-      "expectations": [
-        "Finds target file ExportProjectsInPeriodAction.java",
-        "Identifies BatchAction<SqlRow> as parent class",
-        "Identifies initialize method",
-        "Identifies createReader method with DatabaseRecordReader",
-        "Identifies handle method with ProjectDto",
-        "Identifies terminate method",
-        "Identifies ObjectMapper usage for CSV output",
-        "Identifies FilePathSetting usage",
-        "Identifies BusinessDateUtil usage",
-        "Creates dependency diagram (Mermaid classDiagram)",
-        "Creates sequence diagram (Mermaid sequenceDiagram)",
-        "Output includes component summary table",
-        "Output includes Nablarch usage section",
-        "Output file saved to .nabledge/YYYYMMDD/ directory",
-        "Analysis duration calculated and displayed"
-      ]
+      "expectations": {
+        "class_diagram": {
+          "classes": [
+            "ExportProjectsInPeriodAction",
+            "BatchAction",
+            "DatabaseRecordReader",
+            "ObjectMapper",
+            "FilePathSetting",
+            "BusinessDateUtil",
+            "ProjectDto"
+          ],
+          "relationships": [
+            "ExportProjectsInPeriodAction --|> BatchAction"
+          ]
+        },
+        "sequence_diagram": {
+          "objects": [
+            "ExportProjectsInPeriodAction",
+            "FilePathSetting",
+            "DatabaseRecordReader",
+            "BusinessDateUtil"
+          ],
+          "messages": [
+            "initialize",
+            "createReader",
+            "handle",
+            "terminate"
+          ]
+        },
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
     },
     {
       "id": "ca-002",
       "type": "code-analysis",
       "question": "code-analysis LoginAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/login/LoginAction.java",
-      "expectations": [
-        "Finds target file LoginAction.java",
-        "Identifies index method for login screen display",
-        "Identifies login method with authentication logic",
-        "Identifies logout method",
-        "Identifies @OnError annotation usage",
-        "Identifies @InjectForm annotation usage",
-        "Identifies UniversalDao usage",
-        "Identifies AuthenticationUtil usage",
-        "Identifies CsrfTokenUtil usage",
-        "Identifies SessionUtil usage",
-        "Creates dependency diagram",
-        "Creates sequence diagram for authentication flow",
-        "Output includes component summary table",
-        "Output includes Nablarch usage section"
-      ]
+      "expectations": {
+        "class_diagram": {
+          "classes": [
+            "LoginAction",
+            "LoginForm",
+            "AuthenticationUtil",
+            "UniversalDao",
+            "SessionUtil",
+            "CsrfTokenUtil",
+            "LoginUserPrincipal"
+          ],
+          "relationships": [
+            "LoginAction ..> AuthenticationUtil",
+            "LoginAction ..> UniversalDao",
+            "LoginAction ..> SessionUtil"
+          ]
+        },
+        "sequence_diagram": {
+          "objects": [
+            "LoginAction",
+            "AuthenticationUtil",
+            "SessionUtil",
+            "CsrfTokenUtil"
+          ],
+          "messages": [
+            "authenticate",
+            "changeId",
+            "regenerateCsrfToken"
+          ]
+        },
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
     },
     {
       "id": "ca-003",
       "type": "code-analysis",
       "question": "code-analysis ProjectSearchAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectSearchAction.java",
-      "expectations": [
-        "Finds target file ProjectSearchAction.java",
-        "Identifies list method for search results display",
-        "Identifies UniversalDao.findAllBySqlFile usage",
-        "Identifies pagination handling",
-        "Identifies search form processing",
-        "Identifies @InjectForm annotation",
-        "Identifies @OnError annotation",
-        "Creates dependency diagram",
-        "Creates sequence diagram for search flow",
-        "Output includes component summary table",
-        "Output includes Nablarch usage section"
-      ]
+      "expectations": {
+        "class_diagram": {
+          "classes": [
+            "ProjectSearchAction",
+            "ProjectSearchForm",
+            "ProjectService",
+            "SessionUtil",
+            "BeanUtil"
+          ],
+          "relationships": [
+            "ProjectSearchAction ..> ProjectService",
+            "ProjectSearchAction ..> SessionUtil"
+          ]
+        },
+        "sequence_diagram": {
+          "objects": [
+            "ProjectSearchAction",
+            "ProjectService"
+          ],
+          "messages": [
+            "list",
+            "findAllBySqlFile",
+            "BeanUtil"
+          ]
+        },
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
     },
     {
       "id": "ca-004",
       "type": "code-analysis",
       "question": "code-analysis ProjectCreateAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectCreateAction.java",
-      "expectations": [
-        "Finds target file ProjectCreateAction.java",
-        "Identifies index method for form display",
-        "Identifies create method for registration",
-        "Identifies BeanUtil usage for entity mapping",
-        "Identifies UniversalDao.insert usage",
-        "Identifies transaction handling",
-        "Identifies @InjectForm annotation",
-        "Identifies @OnError annotation with validation",
-        "Creates dependency diagram",
-        "Creates sequence diagram for registration flow",
-        "Output includes component summary table",
-        "Output includes Nablarch usage section"
-      ]
+      "expectations": {
+        "class_diagram": {
+          "classes": [
+            "ProjectCreateAction",
+            "ProjectCreateForm",
+            "ProjectService",
+            "SessionUtil",
+            "BeanUtil"
+          ],
+          "relationships": [
+            "ProjectCreateAction ..> ProjectService",
+            "ProjectCreateAction ..> SessionUtil"
+          ]
+        },
+        "sequence_diagram": {
+          "objects": [
+            "ProjectCreateAction",
+            "ProjectService",
+            "SessionUtil"
+          ],
+          "messages": [
+            "confirmRegistration",
+            "register",
+            "insertProject",
+            "BeanUtil"
+          ]
+        },
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
     },
     {
       "id": "ca-005",
       "type": "code-analysis",
       "question": "code-analysis ProjectUpdateAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectUpdateAction.java",
-      "expectations": [
-        "Finds target file ProjectUpdateAction.java",
-        "Identifies show method for detail display",
-        "Identifies update method for modification",
-        "Identifies UniversalDao.findById usage",
-        "Identifies UniversalDao.update usage",
-        "Identifies optimistic locking with version column",
-        "Identifies @InjectForm annotation",
-        "Identifies @OnError annotation",
-        "Creates dependency diagram",
-        "Creates sequence diagram for update flow",
-        "Output includes component summary table",
-        "Output includes Nablarch usage section"
-      ]
+      "expectations": {
+        "class_diagram": {
+          "classes": [
+            "ProjectUpdateAction",
+            "ProjectUpdateForm",
+            "ProjectService",
+            "SessionUtil",
+            "BeanUtil"
+          ],
+          "relationships": [
+            "ProjectUpdateAction ..> ProjectService",
+            "ProjectUpdateAction ..> SessionUtil"
+          ]
+        },
+        "sequence_diagram": {
+          "objects": [
+            "ProjectUpdateAction",
+            "ProjectService",
+            "SessionUtil"
+          ],
+          "messages": [
+            "confirmUpdate",
+            "update",
+            "updateProject",
+            "BeanUtil"
+          ]
+        },
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
     }
   ]
 }
