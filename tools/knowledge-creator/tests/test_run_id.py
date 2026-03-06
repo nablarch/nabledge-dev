@@ -1,6 +1,7 @@
 """Tests for run_id, latest symlink, and report.json generation."""
 import json
 import os
+import subprocess
 import sys
 import pytest
 from datetime import datetime, timezone
@@ -201,3 +202,36 @@ class TestWriteReport:
         with open(ctx.report_path) as f:
             loaded = json.load(f)
         assert loaded["version"] == 2
+
+
+RUN_PY = os.path.join(TOOL_DIR, "run.py")
+
+
+class TestPathResolution:
+    """run.py はどのディレクトリから実行しても正しいパスに解決される。"""
+
+    def _run_help(self, cwd):
+        """指定ディレクトリから run.py --help を実行して成功することを確認する。"""
+        result = subprocess.run(
+            [sys.executable, RUN_PY, "--help"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+        )
+        return result
+
+    def test_run_from_tool_dir(self, tmp_path):
+        """tools/knowledge-creator ディレクトリから実行できる。"""
+        result = self._run_help(TOOL_DIR)
+        assert result.returncode == 0, f"--help failed from tool dir: {result.stderr}"
+
+    def test_run_from_repo_root(self, tmp_path):
+        """リポジトリルートから実行できる。"""
+        repo_root = os.path.dirname(os.path.dirname(TOOL_DIR))
+        result = self._run_help(repo_root)
+        assert result.returncode == 0, f"--help failed from repo root: {result.stderr}"
+
+    def test_run_from_tmp_dir(self, tmp_path):
+        """任意のディレクトリから実行できる。"""
+        result = self._run_help(str(tmp_path))
+        assert result.returncode == 0, f"--help failed from tmp dir: {result.stderr}"

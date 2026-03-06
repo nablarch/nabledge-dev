@@ -10,7 +10,7 @@ import sys
 import os
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'steps'))
 
@@ -30,7 +30,8 @@ class Context:
         if not os.path.isdir(self.repo):
             raise ValueError(f"Repository path does not exist: {self.repo}")
         if self.run_id is None:
-            self.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+            jst = timezone(timedelta(hours=9))
+            self.run_id = datetime.now(jst).strftime("%Y%m%dT%H%M%S")
 
     @property
     def version_log_dir(self) -> str:
@@ -612,100 +613,113 @@ def _fmt_tok(n) -> str:
     return str(n)
 
 
+def _utc_to_jst(iso_str: str) -> str:
+    """Convert UTC ISO timestamp string to JST (UTC+9) display string."""
+    if not iso_str or iso_str == '-':
+        return '-'
+    try:
+        jst = timezone(timedelta(hours=9))
+        dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
+        dt_jst = dt.astimezone(jst)
+        return dt_jst.strftime('%Y-%m-%d %H:%M:%S')
+    except (ValueError, AttributeError):
+        return iso_str[:19]
+
+
 def _render_summary_md(ctx, report, file_details) -> str:
     meta = report.get('meta', {})
     lines = []
-    lines.append(f'# Knowledge Creator Report')
+    lines.append(f'# Knowledge Creator レポート')
     lines.append(f'')
-    lines.append(f'| Item | Value |')
+    lines.append(f'| 項目 | 値 |')
     lines.append(f'|------|-------|')
-    lines.append(f'| Run ID | `{meta.get("run_id", "-")}` |')
-    lines.append(f'| Started | {meta.get("started_at", "-")[:19]} UTC |')
-    lines.append(f'| Finished | {meta.get("finished_at", "-")[:19]} UTC |')
-    lines.append(f'| Duration | {meta.get("duration_sec", "-")}s |')
-    lines.append(f'| Version | nabledge-{meta.get("version", "-")} |')
-    lines.append(f'| Phases | {meta.get("phases", "-")} |')
-    lines.append(f'| Max Rounds | {meta.get("max_rounds", "-")} |')
-    lines.append(f'| Concurrency | {meta.get("concurrency", "-")} |')
-    lines.append(f'| Test Mode | {"Yes" if meta.get("test_mode") else "No"} |')
+    lines.append(f'| 実行ID | `{meta.get("run_id", "-")}` |')
+    lines.append(f'| 開始時刻 | {_utc_to_jst(meta.get("started_at", "-"))} JST |')
+    lines.append(f'| 終了時刻 | {_utc_to_jst(meta.get("finished_at", "-"))} JST |')
+    lines.append(f'| 実行時間 | {meta.get("duration_sec", "-")}秒 |')
+    lines.append(f'| バージョン | nabledge-{meta.get("version", "-")} |')
+    lines.append(f'| フェーズ | {meta.get("phases", "-")} |')
+    lines.append(f'| 最大ラウンド数 | {meta.get("max_rounds", "-")} |')
+    lines.append(f'| 並列数 | {meta.get("concurrency", "-")} |')
+    lines.append(f'| テストモード | {"あり" if meta.get("test_mode") else "なし"} |')
     lines.append(f'')
 
     # Phase B
     pb = report.get('phase_b') or {}
     if pb:
-        lines.append(f'## Phase B: Generate')
+        lines.append(f'## フェーズB: 知識ファイル生成')
         lines.append(f'')
-        lines.append(f'| Metric | Value |')
+        lines.append(f'| 指標 | 値 |')
         lines.append(f'|--------|-------|')
-        lines.append(f'| OK | {pb.get("ok", 0)} |')
-        lines.append(f'| Error | {pb.get("error", 0)} |')
-        lines.append(f'| Skip | {pb.get("skip", 0)} |')
+        lines.append(f'| 成功件数 | {pb.get("ok", 0)} |')
+        lines.append(f'| エラー件数 | {pb.get("error", 0)} |')
+        lines.append(f'| スキップ件数 | {pb.get("skip", 0)} |')
         m = pb.get('metrics') or {}
-        lines.append(f'| Cost | {_fmt_usd(m.get("cost_usd"))} |')
-        lines.append(f'| Avg Turns | {m.get("avg_turns", "-")} |')
-        lines.append(f'| Avg Duration | {m.get("avg_duration_sec", "-")}s |')
-        lines.append(f'| p95 Duration | {m.get("p95_duration_sec", "-")}s |')
+        lines.append(f'| APIコスト | {_fmt_usd(m.get("cost_usd"))} |')
+        lines.append(f'| 平均ターン数 | {m.get("avg_turns", "-")} |')
+        lines.append(f'| 平均実行時間 | {m.get("avg_duration_sec", "-")}秒 |')
+        lines.append(f'| p95実行時間 | {m.get("p95_duration_sec", "-")}秒 |')
         t = m.get('tokens') or {}
-        lines.append(f'| Tokens (in/cache_cr/cache_rd/out) | {_fmt_tok(t.get("input"))}/{_fmt_tok(t.get("cache_creation"))}/{_fmt_tok(t.get("cache_read"))}/{_fmt_tok(t.get("output"))} |')
+        lines.append(f'| トークン数 (入力/キャッシュ作成/キャッシュ読込/出力) | {_fmt_tok(t.get("input"))}/{_fmt_tok(t.get("cache_creation"))}/{_fmt_tok(t.get("cache_read"))}/{_fmt_tok(t.get("output"))} |')
         lines.append(f'')
 
     # Phase C
     pc = report.get('phase_c') or {}
     if pc:
-        lines.append(f'## Phase C: Structure Check')
+        lines.append(f'## フェーズC: 構造チェック')
         lines.append(f'')
-        lines.append(f'| Metric | Value |')
+        lines.append(f'| 指標 | 値 |')
         lines.append(f'|--------|-------|')
-        lines.append(f'| Total | {pc.get("total", 0)} |')
-        lines.append(f'| Pass | {pc.get("pass", 0)} |')
-        lines.append(f'| Fail | {pc.get("fail", 0)} |')
-        lines.append(f'| Pass Rate | {pc.get("pass_rate", 0):.1%} |')
+        lines.append(f'| 対象件数 | {pc.get("total", 0)} |')
+        lines.append(f'| 合格件数 | {pc.get("pass", 0)} |')
+        lines.append(f'| 不合格件数 | {pc.get("fail", 0)} |')
+        lines.append(f'| 合格率 | {pc.get("pass_rate", 0):.1%} |')
         lines.append(f'')
 
     # Phase D/E rounds
     d_rounds = report.get('phase_d_rounds') or []
     e_rounds = report.get('phase_e_rounds') or []
     if d_rounds:
-        lines.append(f'## Phase D/E: Content Check & Fix')
+        lines.append(f'## フェーズD/E: 内容チェックと修正')
         lines.append(f'')
         for dr in d_rounds:
             rn = dr.get('round', '?')
-            lines.append(f'### Round {rn}')
+            lines.append(f'### ラウンド {rn}')
             lines.append(f'')
-            lines.append(f'**Phase D (Content Check)**')
+            lines.append(f'**フェーズD (内容チェック)**')
             lines.append(f'')
-            lines.append(f'| Metric | Value |')
+            lines.append(f'| 指標 | 値 |')
             lines.append(f'|--------|-------|')
-            lines.append(f'| Total | {dr.get("total", 0)} |')
-            lines.append(f'| Clean | {dr.get("clean", 0)} |')
-            lines.append(f'| Has Issues | {dr.get("has_issues", 0)} |')
-            lines.append(f'| Clean Rate | {dr.get("clean_rate", 0):.1%} |')
+            lines.append(f'| 対象件数 | {dr.get("total", 0)} |')
+            lines.append(f'| 問題なし件数 | {dr.get("clean", 0)} |')
+            lines.append(f'| 問題あり件数 | {dr.get("has_issues", 0)} |')
+            lines.append(f'| 問題なし率 | {dr.get("clean_rate", 0):.1%} |')
             f_sum = dr.get('findings') or {}
-            lines.append(f'| Findings Total | {f_sum.get("total", 0)} |')
-            lines.append(f'| Findings Critical | {f_sum.get("critical", 0)} |')
-            lines.append(f'| Findings Minor | {f_sum.get("minor", 0)} |')
+            lines.append(f'| 指摘事項 合計 | {f_sum.get("total", 0)} |')
+            lines.append(f'| 指摘事項 重大 | {f_sum.get("critical", 0)} |')
+            lines.append(f'| 指摘事項 軽微 | {f_sum.get("minor", 0)} |')
             by_cat = f_sum.get('by_category') or {}
             if by_cat:
-                lines.append(f'| By Category | {", ".join(f"{k}:{v}" for k,v in by_cat.items())} |')
+                lines.append(f'| カテゴリ別 | {", ".join(f"{k}:{v}" for k,v in by_cat.items())} |')
             dm = dr.get('metrics') or {}
-            lines.append(f'| Cost | {_fmt_usd(dm.get("cost_usd"))} |')
-            lines.append(f'| Avg Turns | {dm.get("avg_turns", "-")} |')
-            lines.append(f'| Avg Duration | {dm.get("avg_duration_sec", "-")}s |')
+            lines.append(f'| APIコスト | {_fmt_usd(dm.get("cost_usd"))} |')
+            lines.append(f'| 平均ターン数 | {dm.get("avg_turns", "-")} |')
+            lines.append(f'| 平均実行時間 | {dm.get("avg_duration_sec", "-")}秒 |')
             lines.append(f'')
 
             # Matching E round
             er = next((e for e in e_rounds if e.get('round') == rn), None)
             if er:
-                lines.append(f'**Phase E (Fix)**')
+                lines.append(f'**フェーズE (修正)**')
                 lines.append(f'')
-                lines.append(f'| Metric | Value |')
+                lines.append(f'| 指標 | 値 |')
                 lines.append(f'|--------|-------|')
-                lines.append(f'| Fixed | {er.get("fixed", 0)} |')
-                lines.append(f'| Error | {er.get("error", 0)} |')
+                lines.append(f'| 修正件数 | {er.get("fixed", 0)} |')
+                lines.append(f'| エラー件数 | {er.get("error", 0)} |')
                 em = er.get('metrics') or {}
-                lines.append(f'| Cost | {_fmt_usd(em.get("cost_usd"))} |')
-                lines.append(f'| Avg Turns | {em.get("avg_turns", "-")} |')
-                lines.append(f'| Avg Duration | {em.get("avg_duration_sec", "-")}s |')
+                lines.append(f'| APIコスト | {_fmt_usd(em.get("cost_usd"))} |')
+                lines.append(f'| 平均ターン数 | {em.get("avg_turns", "-")} |')
+                lines.append(f'| 平均実行時間 | {em.get("avg_duration_sec", "-")}秒 |')
                 lines.append(f'')
 
     # File size comparison
@@ -713,40 +727,40 @@ def _render_summary_md(ctx, report, file_details) -> str:
         total_rst = sum(d['rst_bytes'] for d in file_details if d['rst_bytes'])
         total_json = sum(d['json_bytes'] for d in file_details if d['json_bytes'])
         count_with_sizes = sum(1 for d in file_details if d['rst_bytes'] and d['json_bytes'])
-        lines.append(f'## File Size Comparison (RST -> JSON)')
+        lines.append(f'## ファイルサイズ比較 (RST -> JSON)')
         lines.append(f'')
-        lines.append(f'| Metric | Value |')
+        lines.append(f'| 指標 | 値 |')
         lines.append(f'|--------|-------|')
-        lines.append(f'| Files with size data | {count_with_sizes} |')
-        lines.append(f'| Total RST size | {_fmt_bytes(total_rst)} |')
-        lines.append(f'| Total JSON size | {_fmt_bytes(total_json)} |')
+        lines.append(f'| サイズデータありファイル数 | {count_with_sizes} |')
+        lines.append(f'| RST合計サイズ | {_fmt_bytes(total_rst)} |')
+        lines.append(f'| JSON合計サイズ | {_fmt_bytes(total_json)} |')
         if total_rst > 0:
-            lines.append(f'| Overall ratio (JSON/RST) | {total_json/total_rst:.2f} |')
+            lines.append(f'| 全体比率 (JSON/RST) | {total_json/total_rst:.2f} |')
         if count_with_sizes > 0:
             avg_rst = total_rst / count_with_sizes
             avg_json = total_json / count_with_sizes
-            lines.append(f'| Avg RST size | {_fmt_bytes(int(avg_rst))} |')
-            lines.append(f'| Avg JSON size | {_fmt_bytes(int(avg_json))} |')
+            lines.append(f'| RST平均サイズ | {_fmt_bytes(int(avg_rst))} |')
+            lines.append(f'| JSON平均サイズ | {_fmt_bytes(int(avg_json))} |')
         lines.append(f'')
 
     # Totals
     totals = report.get('totals') or {}
     if totals:
-        lines.append(f'## Totals')
+        lines.append(f'## 合計')
         lines.append(f'')
-        lines.append(f'| Metric | Value |')
+        lines.append(f'| 指標 | 値 |')
         lines.append(f'|--------|-------|')
-        lines.append(f'| Total Cost | {_fmt_usd(totals.get("cost_usd"))} |')
+        lines.append(f'| 総APIコスト | {_fmt_usd(totals.get("cost_usd"))} |')
         t = totals.get('tokens') or {}
-        lines.append(f'| Tokens input | {_fmt_tok(t.get("input"))} |')
-        lines.append(f'| Tokens cache_creation | {_fmt_tok(t.get("cache_creation"))} |')
-        lines.append(f'| Tokens cache_read | {_fmt_tok(t.get("cache_read"))} |')
-        lines.append(f'| Tokens output | {_fmt_tok(t.get("output"))} |')
+        lines.append(f'| トークン数 入力 | {_fmt_tok(t.get("input"))} |')
+        lines.append(f'| トークン数 キャッシュ作成 | {_fmt_tok(t.get("cache_creation"))} |')
+        lines.append(f'| トークン数 キャッシュ読込 | {_fmt_tok(t.get("cache_read"))} |')
+        lines.append(f'| トークン数 出力 | {_fmt_tok(t.get("output"))} |')
         lines.append(f'')
 
     lines.append(f'---')
     lines.append(f'')
-    lines.append(f'*See `{ctx.run_id}-files.md` for per-file details.*')
+    lines.append(f'*ファイル別詳細は `{ctx.run_id}-files.md` を参照してください。*')
     lines.append(f'')
 
     return '\n'.join(lines)
@@ -754,30 +768,53 @@ def _render_summary_md(ctx, report, file_details) -> str:
 
 def _render_files_md(ctx, file_details) -> str:
     if not file_details:
-        return '# File Details\n\nNo file data available.\n'
+        return '# ファイル別詳細\n\nデータがありません。\n'
 
     # Determine max rounds across all files
     max_d_rounds = max((len(d['d_rounds']) for d in file_details), default=0)
     max_e_rounds = max((len(d['e_rounds']) for d in file_details), default=0)
 
     lines = []
-    lines.append('# File Details')
+    lines.append('# ファイル別詳細')
     lines.append('')
-    lines.append(f'Total files: {len(file_details)}')
+    lines.append(f'対象ファイル数: {len(file_details)}')
     lines.append('')
+
+    # Column header descriptions:
+    # file_id: ファイルID
+    # rst_B: ソースファイルサイズ(バイト)
+    # json_B: 生成JSONサイズ(バイト)
+    # ratio: サイズ比(JSON/RST)
+    # B_turns: フェーズB ターン数
+    # B_sec: フェーズB 実行時間(秒)
+    # B_USD: フェーズB APIコスト
+    # B_in: フェーズB 入力トークン数
+    # B_cache_cr: フェーズB キャッシュ作成トークン数
+    # B_cache_rd: フェーズB キャッシュ読込トークン数
+    # B_out: フェーズB 出力トークン数
+    # C: フェーズC 構造チェック結果
+    # Dn: フェーズD ラウンドn 内容チェック結果
+    # Dn_crit: フェーズD ラウンドn 重大指摘数
+    # Dn_min: フェーズD ラウンドn 軽微指摘数
+    # Dn_turns: フェーズD ラウンドn ターン数
+    # Dn_sec: フェーズD ラウンドn 実行時間(秒)
+    # Dn_USD: フェーズD ラウンドn APIコスト
+    # En_turns: フェーズE ラウンドn ターン数
+    # En_sec: フェーズE ラウンドn 実行時間(秒)
+    # En_USD: フェーズE ラウンドn APIコスト
 
     # Build header
     headers = [
-        'file_id',
-        'rst_B', 'json_B', 'ratio',
-        'B_turns', 'B_sec', 'B_USD',
-        'B_in', 'B_cache_cr', 'B_cache_rd', 'B_out',
-        'C',
+        'ファイルID',
+        'RST(B)', 'JSON(B)', 'サイズ比',
+        'B_ターン', 'B_秒', 'B_USD',
+        'B_入力tok', 'B_cache作成tok', 'B_cache読込tok', 'B_出力tok',
+        'C構造チェック',
     ]
     for rn in range(1, max_d_rounds + 1):
-        headers += [f'D{rn}', f'D{rn}_crit', f'D{rn}_min', f'D{rn}_turns', f'D{rn}_sec', f'D{rn}_USD']
+        headers += [f'D{rn}_結果', f'D{rn}_重大', f'D{rn}_軽微', f'D{rn}_ターン', f'D{rn}_秒', f'D{rn}_USD']
         if rn <= max_e_rounds:
-            headers += [f'E{rn}_turns', f'E{rn}_sec', f'E{rn}_USD']
+            headers += [f'E{rn}_ターン', f'E{rn}_秒', f'E{rn}_USD']
 
     sep = ['---'] * len(headers)
     lines.append('| ' + ' | '.join(headers) + ' |')
