@@ -166,6 +166,16 @@ for expectation in scenario.expectations:
 
 ### Step 4: Execute scenarios via sub-agents
 
+**Before launching sub-agents**, capture the run timestamp once:
+
+```bash
+RUN_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+WORKSPACE=".tmp/nabledge-test/run-${RUN_TIMESTAMP}"
+mkdir -p "${WORKSPACE}"
+```
+
+Use `$RUN_TIMESTAMP` and `$WORKSPACE` consistently in all subsequent steps (Step 5, Step 9c).
+
 **CRITICAL**: Each scenario MUST run in a separate Task tool invocation. This ensures:
 - No context bleeding between scenarios (bias elimination)
 - Each scenario starts from a clean state
@@ -246,12 +256,12 @@ When complete, output the following clearly delimited sections:
 
 ### Step 5: Save workspace results
 
-**Workspace location**: `.tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/`
+**Workspace location**: `$WORKSPACE` (`.tmp/nabledge-test/run-<RUN_TIMESTAMP>/`, captured in Step 4 before execution)
 
 For each completed scenario:
 
 ```
-.tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/
+.tmp/nabledge-test/run-<RUN_TIMESTAMP>/
   <scenario-id>/
     response.md          # Full response text from RESPONSE section
     metrics.json         # Parsed from METRICS section
@@ -494,8 +504,9 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 
 ```bash
 BASELINE_DIR=".claude/skills/nabledge-test/baseline"
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-TARGET_DIR="${BASELINE_DIR}/${TIMESTAMP}"
+# Use RUN_TIMESTAMP (captured in Step 4) for the baseline directory name
+# This ensures the baseline timestamp matches the workspace timestamp
+TARGET_DIR="${BASELINE_DIR}/${RUN_TIMESTAMP}"
 mkdir -p "${TARGET_DIR}"
 ```
 
@@ -523,24 +534,24 @@ mkdir -p "${TARGET_DIR}"
 For each scenario, copy from workspace to baseline:
 
 ```bash
-for scenario_id in $(ls .tmp/nabledge-test/run-${TIMESTAMP}/); do
+for scenario_id in $(ls "${WORKSPACE}/"); do
   mkdir -p "${TARGET_DIR}/${scenario_id}"
 
   # Copy metrics
-  cp ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/metrics.json" \
+  cp "${WORKSPACE}/${scenario_id}/metrics.json" \
      "${TARGET_DIR}/${scenario_id}/metrics.json"
 
   # Copy response
-  cp ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/response.md" \
+  cp "${WORKSPACE}/${scenario_id}/response.md" \
      "${TARGET_DIR}/${scenario_id}/response.md"
 
   # Copy grading
-  cp ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/grading.json" \
+  cp "${WORKSPACE}/${scenario_id}/grading.json" \
      "${TARGET_DIR}/${scenario_id}/grading.json"
 
   # Copy output files (ca-* only)
-  if [ -d ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/output" ]; then
-    cp -r ".tmp/nabledge-test/run-${TIMESTAMP}/${scenario_id}/output" \
+  if [ -d "${WORKSPACE}/${scenario_id}/output" ]; then
+    cp -r "${WORKSPACE}/${scenario_id}/output" \
        "${TARGET_DIR}/${scenario_id}/output"
   fi
 done
