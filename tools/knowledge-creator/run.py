@@ -134,7 +134,7 @@ def main():
     parser.add_argument("--regen", action="store_true",
                         help="Detect source changes and regenerate affected files")
     parser.add_argument("--run-id", type=str, default=None,
-                        help="実行ID（省略時は現在時刻から自動生成、--resume 時は nc.sh が渡す）")
+                        help="実行ID（省略時は現在時刻から自動生成、--resume 時は kc.sh が渡す）")
 
     args = parser.parse_args()
 

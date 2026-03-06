@@ -87,7 +87,7 @@ class TestLatestSymlink:
         latest_link = os.path.join(ctx.version_log_dir, "latest")
         os.symlink(original_run_id, latest_link)
 
-        # nc.sh が行う操作をシミュレート: latest を読んで同じ run_id で Context を作る
+        # kc.sh が行う操作をシミュレート: latest を読んで同じ run_id で Context を作る
         resumed_run_id = os.readlink(latest_link)
         ctx_resumed = Context(version="6", repo=str(tmp_path), concurrency=4, run_id=resumed_run_id)
 

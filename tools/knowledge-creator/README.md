@@ -73,30 +73,30 @@ source ~/.bashrc
 
 **Important**: Run commands from repository root directory.
 
-### Quick Start with nc.sh
+### Quick Start with kc.sh
 
-The `nc.sh` wrapper script provides a simple interface for common workflows:
+The `kc.sh` wrapper script provides a simple interface for common workflows:
 
 ```bash
 cd tools/knowledge-creator
 
 # UC1: Initial full generation (clean + generate all phases)
-./nc.sh gen 6
+./kc.sh gen 6
 
 # UC2: Resume interrupted generation (no clean)
-./nc.sh gen 6 --resume
+./kc.sh gen 6 --resume
 
 # UC3: Regenerate files with changed sources (auto-detect)
-./nc.sh regen 6
+./kc.sh regen 6
 
 # UC4: Regenerate specific file
-./nc.sh regen 6 --target handlers-request-handler
+./kc.sh regen 6 --target handlers-request-handler
 
 # UC5: Quality improvement (re-validate all files)
-./nc.sh fix 6
+./kc.sh fix 6
 
 # UC6: Fix specific file
-./nc.sh fix 6 --target handlers-request-handler
+./kc.sh fix 6 --target handlers-request-handler
 ```
 
 **Available Options**:
@@ -107,10 +107,6 @@ cd tools/knowledge-creator
 - `--max-rounds N`: Max Phase C→D→E iterations (default: 1)
 - `--concurrency N`: Parallel execution count (default: 4)
 - `--test FILE`: Use test configuration file
-
-**When to use nc.sh vs run.py**:
-- **nc.sh**: Common workflows with sensible defaults (recommended for most users)
-- **run.py**: Fine-grained control over phases and advanced options
 
 ### Test Mode - Smallest (3 files)
 
@@ -319,9 +315,9 @@ pytest tests/ --cov=steps --cov-report=html
 
 ## Troubleshooting
 
-### `nc.sh: permission denied`
+### `kc.sh: permission denied`
 
-→ Make script executable: `chmod +x tools/knowledge-creator/nc.sh`
+→ Make script executable: `chmod +x tools/knowledge-creator/kc.sh`
 
 ### `FileNotFoundError: .lw/nab-official/v6/`
 
@@ -362,7 +358,7 @@ python -m pytest tests/ -v
 
 ### Key Components
 
-- `nc.sh`: User-friendly wrapper script for common workflows
+- `kc.sh`: User-friendly wrapper script for common workflows
 - `run.py`: Main entry point with phase orchestration
 - `clean.py`: Cleanup utility for generated artifacts
 - `steps/common.py`: Shared utilities (JSON I/O, Claude API wrapper)
@@ -389,6 +385,6 @@ python -m pytest tests/ -v
 
 ## Version History
 
-- **v2.1** (PR #107): Added nc.sh wrapper, source change tracking, target filtering
+- **v2.1** (PR #107): Added kc.sh wrapper, source change tracking, target filtering
 - **v2.0** (PR #107): Split-aware pipeline with Phase M, context overflow prevention
 - **v1.0** (PR #106): Initial implementation with Phases A-G

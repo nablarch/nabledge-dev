@@ -12,7 +12,7 @@ COMMAND="${1:-}"
 VERSION="${2:-}"
 
 if [ -z "$COMMAND" ] || [ -z "$VERSION" ]; then
-    echo "Usage: ./nc.sh <gen|regen|fix> <version> [options]"
+    echo "Usage: ./kc.sh <gen|regen|fix> <version> [options]"
     echo ""
     echo "Commands:"
     echo "  gen     全件生成（clean後に全フェーズ実行）"
@@ -66,7 +66,7 @@ case "$COMMAND" in
             echo "🔄 中断再開モード"
             LATEST_LINK="$REPO_ROOT/tools/knowledge-creator/.logs/v${VERSION}/latest"
             if [ ! -L "$LATEST_LINK" ]; then
-                echo "Error: latest リンクが見つかりません。先に ./nc.sh gen $VERSION を実行してください。"
+                echo "Error: latest リンクが見つかりません。先に ./kc.sh gen $VERSION を実行してください。"
                 exit 1
             fi
             EXISTING_RUN_ID=$(basename "$(readlink "$LATEST_LINK")")
@@ -101,7 +101,7 @@ case "$COMMAND" in
         ;;
     *)
         echo "Error: Unknown command '$COMMAND'"
-        echo "Usage: ./nc.sh <gen|regen|fix> <version> [options]"
+        echo "Usage: ./kc.sh <gen|regen|fix> <version> [options]"
         exit 1
         ;;
 esac

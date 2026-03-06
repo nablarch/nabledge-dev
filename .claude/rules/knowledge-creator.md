@@ -31,7 +31,7 @@ Intermediate artifacts are stored under:
 ```bash
 # Run generation (logs are automatically created in .logs/ directory)
 cd tools/knowledge-creator
-./run.py --version 6 --test test-files-largest3.json
+./run.py --version 6 --test test-files-smallest3.json
 
 # Logs are gitignored and will be regenerated on next execution
 ```
