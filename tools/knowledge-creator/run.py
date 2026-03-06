@@ -602,7 +602,12 @@ def _fmt_usd(v) -> str:
 def _fmt_dur(ms) -> str:
     if ms is None:
         return '-'
-    return f'{ms/1000:.1f}s'
+    total_sec = int(ms / 1000)
+    if total_sec < 60:
+        return f'{total_sec}秒'
+    minutes = total_sec // 60
+    seconds = total_sec % 60
+    return f'{minutes}分{seconds}秒'
 
 
 def _fmt_tok(n) -> str:
@@ -786,7 +791,7 @@ def _render_files_md(ctx, file_details) -> str:
     # json_B: 生成JSONサイズ(バイト)
     # ratio: サイズ比(JSON/RST)
     # B_turns: フェーズB ターン数
-    # B_sec: フェーズB 実行時間(秒)
+    # B_時間: フェーズB 実行時間(分秒)
     # B_USD: フェーズB APIコスト
     # B_in: フェーズB 入力トークン数
     # B_cache_cr: フェーズB キャッシュ作成トークン数
@@ -797,24 +802,24 @@ def _render_files_md(ctx, file_details) -> str:
     # Dn_crit: フェーズD ラウンドn 重大指摘数
     # Dn_min: フェーズD ラウンドn 軽微指摘数
     # Dn_turns: フェーズD ラウンドn ターン数
-    # Dn_sec: フェーズD ラウンドn 実行時間(秒)
+    # Dn_時間: フェーズD ラウンドn 実行時間(分秒)
     # Dn_USD: フェーズD ラウンドn APIコスト
     # En_turns: フェーズE ラウンドn ターン数
-    # En_sec: フェーズE ラウンドn 実行時間(秒)
+    # En_時間: フェーズE ラウンドn 実行時間(分秒)
     # En_USD: フェーズE ラウンドn APIコスト
 
     # Build header
     headers = [
         'ファイルID',
         'RST(B)', 'JSON(B)', 'サイズ比',
-        'B_ターン', 'B_秒', 'B_USD',
+        'B_ターン', 'B_時間', 'B_USD',
         'B_入力tok', 'B_cache作成tok', 'B_cache読込tok', 'B_出力tok',
         'C構造チェック',
     ]
     for rn in range(1, max_d_rounds + 1):
-        headers += [f'D{rn}_結果', f'D{rn}_重大', f'D{rn}_軽微', f'D{rn}_ターン', f'D{rn}_秒', f'D{rn}_USD']
+        headers += [f'D{rn}_結果', f'D{rn}_重大', f'D{rn}_軽微', f'D{rn}_ターン', f'D{rn}_時間', f'D{rn}_USD']
         if rn <= max_e_rounds:
-            headers += [f'E{rn}_ターン', f'E{rn}_秒', f'E{rn}_USD']
+            headers += [f'E{rn}_ターン', f'E{rn}_時間', f'E{rn}_USD']
 
     sep = ['---'] * len(headers)
     lines.append('| ' + ' | '.join(headers) + ' |')
