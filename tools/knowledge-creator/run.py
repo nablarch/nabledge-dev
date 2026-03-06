@@ -618,6 +618,38 @@ def _fmt_tok(n) -> str:
     return str(n)
 
 
+def _fmt_bytes_plain(n: int) -> str:
+    """Return byte value without unit suffix, for use in table columns where header has the unit."""
+    if n == 0:
+        return '-'
+    if n < 1024:
+        return str(n)
+    return f'{n/1024:.1f}'
+
+
+def _fmt_usd_plain(v) -> str:
+    """Return USD value without $ prefix, for use in table columns where header has the unit."""
+    if v is None:
+        return '-'
+    return f'{v:.4f}'
+
+
+def _fmt_dur_sec(ms) -> str:
+    """Return duration as plain seconds, for use in table columns where header has the unit."""
+    if ms is None:
+        return '-'
+    return str(int(ms / 1000))
+
+
+def _fmt_tok_plain(n) -> str:
+    """Return token count without K suffix, for use in table columns where header has the unit."""
+    if not n:
+        return '-'
+    if n >= 1000:
+        return f'{n/1000:.1f}'
+    return str(n)
+
+
 def _utc_to_jst(iso_str: str) -> str:
     """Convert UTC ISO timestamp string to JST (UTC+9) display string."""
     if not iso_str or iso_str == '-':
@@ -785,41 +817,46 @@ def _render_files_md(ctx, file_details) -> str:
     lines.append(f'対象ファイル数: {len(file_details)}')
     lines.append('')
 
-    # Column header descriptions:
-    # file_id: ファイルID
-    # rst_B: ソースファイルサイズ(バイト)
-    # json_B: 生成JSONサイズ(バイト)
-    # ratio: サイズ比(JSON/RST)
-    # B_turns: フェーズB ターン数
-    # B_時間: フェーズB 実行時間(分秒)
-    # B_USD: フェーズB APIコスト
-    # B_in: フェーズB 入力トークン数
-    # B_cache_cr: フェーズB キャッシュ作成トークン数
-    # B_cache_rd: フェーズB キャッシュ読込トークン数
-    # B_out: フェーズB 出力トークン数
-    # C: フェーズC 構造チェック結果
-    # Dn: フェーズD ラウンドn 内容チェック結果
-    # Dn_crit: フェーズD ラウンドn 重大指摘数
-    # Dn_min: フェーズD ラウンドn 軽微指摘数
-    # Dn_turns: フェーズD ラウンドn ターン数
-    # Dn_時間: フェーズD ラウンドn 実行時間(分秒)
-    # Dn_USD: フェーズD ラウンドn APIコスト
-    # En_turns: フェーズE ラウンドn ターン数
-    # En_時間: フェーズE ラウンドn 実行時間(分秒)
-    # En_USD: フェーズE ラウンドn APIコスト
+    # Column header descriptions (units are in headers; values are plain numbers):
+    # ファイルID: ファイル識別子
+    # RST(B/KB): ソースファイルサイズ (< 1024 は B 単位、それ以上は KB 単位の数値)
+    # JSON(B/KB): 生成JSONサイズ (同上)
+    # サイズ比: サイズ比(JSON/RST)
+    # B_ターン数: フェーズB ターン数
+    # B_実行時間(秒): フェーズB 実行時間（秒）
+    # B_コスト($): フェーズB APIコスト（USD）
+    # B_入力tok(K): フェーズB 入力トークン数（K = 1000単位の数値）
+    # B_cache作成tok(K): フェーズB キャッシュ作成トークン数
+    # B_cache読込tok(K): フェーズB キャッシュ読込トークン数
+    # B_出力tok(K): フェーズB 出力トークン数
+    # C構造チェック: フェーズC 構造チェック結果
+    # Dn_結果: フェーズD ラウンドn 内容チェック結果
+    # Dn_重大: フェーズD ラウンドn 重大指摘数
+    # Dn_軽微: フェーズD ラウンドn 軽微指摘数
+    # Dn_ターン数: フェーズD ラウンドn ターン数
+    # Dn_実行時間(秒): フェーズD ラウンドn 実行時間（秒）
+    # Dn_コスト($): フェーズD ラウンドn APIコスト（USD）
+    # En_ターン数: フェーズE ラウンドn ターン数
+    # En_実行時間(秒): フェーズE ラウンドn 実行時間（秒）
+    # En_コスト($): フェーズE ラウンドn APIコスト（USD）
 
     # Build header
+    # Units are in column headers; values do not repeat units.
+    # Byte columns: B (< 1024) or KB (>= 1024) - header shows (B/KB)
+    # Duration columns: seconds - header shows (秒)
+    # Cost columns: USD - header shows ($)
+    # Token columns: K tokens - header shows (K tok)
     headers = [
         'ファイルID',
-        'RST(B)', 'JSON(B)', 'サイズ比',
-        'B_ターン', 'B_時間', 'B_USD',
-        'B_入力tok', 'B_cache作成tok', 'B_cache読込tok', 'B_出力tok',
+        'RST(B/KB)', 'JSON(B/KB)', 'サイズ比',
+        'B_ターン数', 'B_実行時間(秒)', 'B_コスト($)',
+        'B_入力tok(K)', 'B_cache作成tok(K)', 'B_cache読込tok(K)', 'B_出力tok(K)',
         'C構造チェック',
     ]
     for rn in range(1, max_d_rounds + 1):
-        headers += [f'D{rn}_結果', f'D{rn}_重大', f'D{rn}_軽微', f'D{rn}_ターン', f'D{rn}_時間', f'D{rn}_USD']
+        headers += [f'D{rn}_結果', f'D{rn}_重大', f'D{rn}_軽微', f'D{rn}_ターン数', f'D{rn}_実行時間(秒)', f'D{rn}_コスト($)']
         if rn <= max_e_rounds:
-            headers += [f'E{rn}_ターン', f'E{rn}_時間', f'E{rn}_USD']
+            headers += [f'E{rn}_ターン数', f'E{rn}_実行時間(秒)', f'E{rn}_コスト($)']
 
     sep = ['---'] * len(headers)
     lines.append('| ' + ' | '.join(headers) + ' |')
@@ -834,16 +871,16 @@ def _render_files_md(ctx, file_details) -> str:
 
         row = [
             d['file_id'],
-            _fmt_bytes(d['rst_bytes']),
-            _fmt_bytes(d['json_bytes']),
+            _fmt_bytes_plain(d['rst_bytes']),
+            _fmt_bytes_plain(d['json_bytes']),
             ratio_str,
             str(b.get('num_turns', '-')),
-            _fmt_dur(b.get('duration_ms')),
-            _fmt_usd(b.get('total_cost_usd')),
-            _fmt_tok(b_usage.get('input_tokens')),
-            _fmt_tok(b_usage.get('cache_creation_input_tokens')),
-            _fmt_tok(b_usage.get('cache_read_input_tokens')),
-            _fmt_tok(b_usage.get('output_tokens')),
+            _fmt_dur_sec(b.get('duration_ms')),
+            _fmt_usd_plain(b.get('total_cost_usd')),
+            _fmt_tok_plain(b_usage.get('input_tokens')),
+            _fmt_tok_plain(b_usage.get('cache_creation_input_tokens')),
+            _fmt_tok_plain(b_usage.get('cache_read_input_tokens')),
+            _fmt_tok_plain(b_usage.get('output_tokens')),
             d['c_result'],
         ]
 
@@ -865,8 +902,8 @@ def _render_files_md(ctx, file_details) -> str:
                     d_crit,
                     d_minor,
                     str(dr.get('num_turns', '-')),
-                    _fmt_dur(dr.get('duration_ms')),
-                    _fmt_usd(dr.get('total_cost_usd')),
+                    _fmt_dur_sec(dr.get('duration_ms')),
+                    _fmt_usd_plain(dr.get('total_cost_usd')),
                 ]
             else:
                 row += ['-', '-', '-', '-', '-', '-']
@@ -877,8 +914,8 @@ def _render_files_md(ctx, file_details) -> str:
                     er = d['e_rounds'][idx]
                     row += [
                         str(er.get('num_turns', '-')),
-                        _fmt_dur(er.get('duration_ms')),
-                        _fmt_usd(er.get('total_cost_usd')),
+                        _fmt_dur_sec(er.get('duration_ms')),
+                        _fmt_usd_plain(er.get('total_cost_usd')),
                     ]
                 else:
                     row += ['-', '-', '-']
