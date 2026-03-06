@@ -134,6 +134,8 @@ def main():
                         help="Skip confirmation prompts")
     parser.add_argument("--regen", action="store_true",
                         help="Detect source changes and regenerate affected files")
+    parser.add_argument("--run-id", type=str, default=None,
+                        help="Run ID (auto-generated from timestamp if omitted; pass existing ID to resume)")
 
     args = parser.parse_args()
 
@@ -186,9 +188,20 @@ def main():
 
         ctx = Context(
             version=v, repo=repo_root, concurrency=args.concurrency,
-            test_file=args.test, max_rounds=args.max_rounds
+            test_file=args.test, max_rounds=args.max_rounds,
+            run_id=args.run_id,
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
+
+        # Update latest symlink (only for new runs, not resume)
+        if args.run_id is None:
+            latest_link = os.path.join(ctx.version_log_dir, "latest")
+            try:
+                if os.path.lexists(latest_link):
+                    os.remove(latest_link)
+                os.symlink(ctx.run_id, latest_link)
+            except OSError as e:
+                logger.warning(f"latest リンクの更新に失敗しました（継続します）: {e}")
 
         # Configure logger with execution log file
         execution_log_path = f"{ctx.log_dir}/execution.log"
