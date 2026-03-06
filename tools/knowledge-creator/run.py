@@ -45,6 +45,10 @@ class Context:
     def report_path(self) -> str:
         return f"{self.log_dir}/report.json"
 
+    @property
+    def reports_dir(self) -> str:
+        return f"{self.repo}/tools/knowledge-creator/reports"
+
     # Phase A: Preparation
     @property
     def source_list_path(self) -> str:
@@ -362,7 +366,8 @@ def main():
         )
         report["totals"] = _compute_totals(report)
         _write_report(ctx, report)
-        logger.info(f"\n   📄 Report: {ctx.report_path}")
+        _publish_reports(ctx, report)
+        logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
 
         logger.info(f"\n{'='*60}")
         logger.info(f"✨Completed version {v}")
@@ -424,6 +429,414 @@ def _write_report(ctx, report: dict):
     os.makedirs(ctx.log_dir, exist_ok=True)
     with open(ctx.report_path, 'w', encoding='utf-8') as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
+
+
+def _collect_file_details(ctx) -> list:
+    """各ファイルの全フェーズデータを収集する。"""
+    import glob as _glob
+
+    # Load classified.json
+    classified_files = []
+    if os.path.exists(ctx.classified_list_path):
+        try:
+            with open(ctx.classified_list_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            classified_files = data.get('files', [])
+        except (json.JSONDecodeError, OSError):
+            pass
+    if not classified_files:
+        return []
+
+    # Phase C results
+    c_pass_ids = set()
+    c_errors = {}
+    if os.path.exists(ctx.structure_check_path):
+        try:
+            with open(ctx.structure_check_path, 'r', encoding='utf-8') as f:
+                c_data = json.load(f)
+            c_pass_ids = set(c_data.get('pass_ids', []))
+            c_errors = c_data.get('errors', {})
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Phase D findings (latest state per file)
+    d_findings_map = {}
+    for path in _glob.glob(os.path.join(ctx.findings_dir, '*.json')):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                fdata = json.load(f)
+            fid = fdata.get('file_id') or os.path.splitext(os.path.basename(path))[0]
+            d_findings_map[fid] = fdata
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    def load_exec_rounds(executions_dir, file_id):
+        """指定ファイルのexecution logsをタイムスタンプ順に返す（ラウンド順）。"""
+        pattern = os.path.join(executions_dir, f'{file_id}_*.json')
+        paths = sorted(_glob.glob(pattern))
+        rounds = []
+        for p in paths:
+            try:
+                with open(p, 'r', encoding='utf-8') as f:
+                    d = json.load(f)
+                rounds.append(d.get('cc_metrics', {}))
+            except (json.JSONDecodeError, OSError):
+                pass
+        return rounds
+
+    details = []
+    for cf in classified_files:
+        file_id = cf.get('id')
+        if not file_id:
+            continue
+
+        # File sizes
+        rst_bytes = 0
+        src = cf.get('source_path', '')
+        if src:
+            full_src = os.path.join(ctx.repo, src)
+            if os.path.exists(full_src):
+                rst_bytes = os.path.getsize(full_src)
+
+        json_bytes = 0
+        out = cf.get('output_path', '')
+        if out:
+            full_out = os.path.join(ctx.knowledge_dir, out)
+            if os.path.exists(full_out):
+                json_bytes = os.path.getsize(full_out)
+
+        # Phase B
+        b_rounds = load_exec_rounds(ctx.phase_b_executions_dir, file_id)
+        b = b_rounds[0] if b_rounds else {}
+
+        # Phase C
+        if file_id in c_pass_ids:
+            c_result = 'pass'
+            c_error = None
+        elif file_id in c_errors:
+            c_result = 'fail'
+            c_error = '; '.join(c_errors[file_id])
+        elif c_pass_ids or c_errors:
+            c_result = 'skip'
+            c_error = None
+        else:
+            c_result = '-'
+            c_error = None
+
+        # Phase D and E rounds
+        d_rounds = load_exec_rounds(ctx.phase_d_executions_dir, file_id)
+        e_rounds = load_exec_rounds(ctx.phase_e_executions_dir, file_id)
+
+        # D findings per round (use final findings file for last round, others N/A)
+        final_f = d_findings_map.get(file_id, {})
+        final_findings = final_f.get('findings', [])
+        final_status = final_f.get('status', '-')
+        final_crit = sum(1 for f in final_findings if f.get('severity') == 'critical')
+        final_minor = sum(1 for f in final_findings if f.get('severity') != 'critical')
+
+        details.append({
+            'file_id': file_id,
+            'source_path': src,
+            'output_path': out,
+            'rst_bytes': rst_bytes,
+            'json_bytes': json_bytes,
+            'b': b,
+            'c_result': c_result,
+            'c_error': c_error,
+            'd_rounds': d_rounds,    # list of cc_metrics per round
+            'e_rounds': e_rounds,    # list of cc_metrics per round
+            'd_final_status': final_status,
+            'd_final_crit': final_crit,
+            'd_final_minor': final_minor,
+        })
+
+    return details
+
+
+def _fmt_bytes(n: int) -> str:
+    if n == 0:
+        return '-'
+    if n < 1024:
+        return f'{n}B'
+    return f'{n/1024:.1f}KB'
+
+
+def _fmt_usd(v) -> str:
+    if v is None:
+        return '-'
+    return f'${v:.4f}'
+
+
+def _fmt_dur(ms) -> str:
+    if ms is None:
+        return '-'
+    return f'{ms/1000:.1f}s'
+
+
+def _fmt_tok(n) -> str:
+    if not n:
+        return '-'
+    if n >= 1000:
+        return f'{n/1000:.1f}K'
+    return str(n)
+
+
+def _render_summary_md(ctx, report, file_details) -> str:
+    meta = report.get('meta', {})
+    lines = []
+    lines.append(f'# Knowledge Creator Report')
+    lines.append(f'')
+    lines.append(f'| Item | Value |')
+    lines.append(f'|------|-------|')
+    lines.append(f'| Run ID | `{meta.get("run_id", "-")}` |')
+    lines.append(f'| Started | {meta.get("started_at", "-")[:19]} UTC |')
+    lines.append(f'| Finished | {meta.get("finished_at", "-")[:19]} UTC |')
+    lines.append(f'| Duration | {meta.get("duration_sec", "-")}s |')
+    lines.append(f'| Version | nabledge-{meta.get("version", "-")} |')
+    lines.append(f'| Phases | {meta.get("phases", "-")} |')
+    lines.append(f'| Max Rounds | {meta.get("max_rounds", "-")} |')
+    lines.append(f'| Concurrency | {meta.get("concurrency", "-")} |')
+    lines.append(f'| Test Mode | {"Yes" if meta.get("test_mode") else "No"} |')
+    lines.append(f'')
+
+    # Phase B
+    pb = report.get('phase_b') or {}
+    if pb:
+        lines.append(f'## Phase B: Generate')
+        lines.append(f'')
+        lines.append(f'| Metric | Value |')
+        lines.append(f'|--------|-------|')
+        lines.append(f'| OK | {pb.get("ok", 0)} |')
+        lines.append(f'| Error | {pb.get("error", 0)} |')
+        lines.append(f'| Skip | {pb.get("skip", 0)} |')
+        m = pb.get('metrics') or {}
+        lines.append(f'| Cost | {_fmt_usd(m.get("cost_usd"))} |')
+        lines.append(f'| Avg Turns | {m.get("avg_turns", "-")} |')
+        lines.append(f'| Avg Duration | {m.get("avg_duration_sec", "-")}s |')
+        lines.append(f'| p95 Duration | {m.get("p95_duration_sec", "-")}s |')
+        t = m.get('tokens') or {}
+        lines.append(f'| Tokens (in/cache_cr/cache_rd/out) | {_fmt_tok(t.get("input"))}/{_fmt_tok(t.get("cache_creation"))}/{_fmt_tok(t.get("cache_read"))}/{_fmt_tok(t.get("output"))} |')
+        lines.append(f'')
+
+    # Phase C
+    pc = report.get('phase_c') or {}
+    if pc:
+        lines.append(f'## Phase C: Structure Check')
+        lines.append(f'')
+        lines.append(f'| Metric | Value |')
+        lines.append(f'|--------|-------|')
+        lines.append(f'| Total | {pc.get("total", 0)} |')
+        lines.append(f'| Pass | {pc.get("pass", 0)} |')
+        lines.append(f'| Fail | {pc.get("fail", 0)} |')
+        lines.append(f'| Pass Rate | {pc.get("pass_rate", 0):.1%} |')
+        lines.append(f'')
+
+    # Phase D/E rounds
+    d_rounds = report.get('phase_d_rounds') or []
+    e_rounds = report.get('phase_e_rounds') or []
+    if d_rounds:
+        lines.append(f'## Phase D/E: Content Check & Fix')
+        lines.append(f'')
+        for dr in d_rounds:
+            rn = dr.get('round', '?')
+            lines.append(f'### Round {rn}')
+            lines.append(f'')
+            lines.append(f'**Phase D (Content Check)**')
+            lines.append(f'')
+            lines.append(f'| Metric | Value |')
+            lines.append(f'|--------|-------|')
+            lines.append(f'| Total | {dr.get("total", 0)} |')
+            lines.append(f'| Clean | {dr.get("clean", 0)} |')
+            lines.append(f'| Has Issues | {dr.get("has_issues", 0)} |')
+            lines.append(f'| Clean Rate | {dr.get("clean_rate", 0):.1%} |')
+            f_sum = dr.get('findings') or {}
+            lines.append(f'| Findings Total | {f_sum.get("total", 0)} |')
+            lines.append(f'| Findings Critical | {f_sum.get("critical", 0)} |')
+            lines.append(f'| Findings Minor | {f_sum.get("minor", 0)} |')
+            by_cat = f_sum.get('by_category') or {}
+            if by_cat:
+                lines.append(f'| By Category | {", ".join(f"{k}:{v}" for k,v in by_cat.items())} |')
+            dm = dr.get('metrics') or {}
+            lines.append(f'| Cost | {_fmt_usd(dm.get("cost_usd"))} |')
+            lines.append(f'| Avg Turns | {dm.get("avg_turns", "-")} |')
+            lines.append(f'| Avg Duration | {dm.get("avg_duration_sec", "-")}s |')
+            lines.append(f'')
+
+            # Matching E round
+            er = next((e for e in e_rounds if e.get('round') == rn), None)
+            if er:
+                lines.append(f'**Phase E (Fix)**')
+                lines.append(f'')
+                lines.append(f'| Metric | Value |')
+                lines.append(f'|--------|-------|')
+                lines.append(f'| Fixed | {er.get("fixed", 0)} |')
+                lines.append(f'| Error | {er.get("error", 0)} |')
+                em = er.get('metrics') or {}
+                lines.append(f'| Cost | {_fmt_usd(em.get("cost_usd"))} |')
+                lines.append(f'| Avg Turns | {em.get("avg_turns", "-")} |')
+                lines.append(f'| Avg Duration | {em.get("avg_duration_sec", "-")}s |')
+                lines.append(f'')
+
+    # File size comparison
+    if file_details:
+        total_rst = sum(d['rst_bytes'] for d in file_details if d['rst_bytes'])
+        total_json = sum(d['json_bytes'] for d in file_details if d['json_bytes'])
+        count_with_sizes = sum(1 for d in file_details if d['rst_bytes'] and d['json_bytes'])
+        lines.append(f'## File Size Comparison (RST -> JSON)')
+        lines.append(f'')
+        lines.append(f'| Metric | Value |')
+        lines.append(f'|--------|-------|')
+        lines.append(f'| Files with size data | {count_with_sizes} |')
+        lines.append(f'| Total RST size | {_fmt_bytes(total_rst)} |')
+        lines.append(f'| Total JSON size | {_fmt_bytes(total_json)} |')
+        if total_rst > 0:
+            lines.append(f'| Overall ratio (JSON/RST) | {total_json/total_rst:.2f} |')
+        if count_with_sizes > 0:
+            avg_rst = total_rst / count_with_sizes
+            avg_json = total_json / count_with_sizes
+            lines.append(f'| Avg RST size | {_fmt_bytes(int(avg_rst))} |')
+            lines.append(f'| Avg JSON size | {_fmt_bytes(int(avg_json))} |')
+        lines.append(f'')
+
+    # Totals
+    totals = report.get('totals') or {}
+    if totals:
+        lines.append(f'## Totals')
+        lines.append(f'')
+        lines.append(f'| Metric | Value |')
+        lines.append(f'|--------|-------|')
+        lines.append(f'| Total Cost | {_fmt_usd(totals.get("cost_usd"))} |')
+        t = totals.get('tokens') or {}
+        lines.append(f'| Tokens input | {_fmt_tok(t.get("input"))} |')
+        lines.append(f'| Tokens cache_creation | {_fmt_tok(t.get("cache_creation"))} |')
+        lines.append(f'| Tokens cache_read | {_fmt_tok(t.get("cache_read"))} |')
+        lines.append(f'| Tokens output | {_fmt_tok(t.get("output"))} |')
+        lines.append(f'')
+
+    lines.append(f'---')
+    lines.append(f'')
+    lines.append(f'*See `{ctx.run_id}-files.md` for per-file details.*')
+    lines.append(f'')
+
+    return '\n'.join(lines)
+
+
+def _render_files_md(ctx, file_details) -> str:
+    if not file_details:
+        return '# File Details\n\nNo file data available.\n'
+
+    # Determine max rounds across all files
+    max_d_rounds = max((len(d['d_rounds']) for d in file_details), default=0)
+    max_e_rounds = max((len(d['e_rounds']) for d in file_details), default=0)
+
+    lines = []
+    lines.append('# File Details')
+    lines.append('')
+    lines.append(f'Total files: {len(file_details)}')
+    lines.append('')
+
+    # Build header
+    headers = [
+        'file_id',
+        'rst_B', 'json_B', 'ratio',
+        'B_turns', 'B_sec', 'B_USD',
+        'B_in', 'B_cache_cr', 'B_cache_rd', 'B_out',
+        'C',
+    ]
+    for rn in range(1, max_d_rounds + 1):
+        headers += [f'D{rn}', f'D{rn}_crit', f'D{rn}_min', f'D{rn}_turns', f'D{rn}_sec', f'D{rn}_USD']
+        if rn <= max_e_rounds:
+            headers += [f'E{rn}_turns', f'E{rn}_sec', f'E{rn}_USD']
+
+    sep = ['---'] * len(headers)
+    lines.append('| ' + ' | '.join(headers) + ' |')
+    lines.append('| ' + ' | '.join(sep) + ' |')
+
+    for d in file_details:
+        b = d['b']
+        b_usage = b.get('usage') or {}
+        ratio_str = '-'
+        if d['rst_bytes'] and d['json_bytes']:
+            ratio_str = f'{d["json_bytes"]/d["rst_bytes"]:.2f}'
+
+        row = [
+            d['file_id'],
+            _fmt_bytes(d['rst_bytes']),
+            _fmt_bytes(d['json_bytes']),
+            ratio_str,
+            str(b.get('num_turns', '-')),
+            _fmt_dur(b.get('duration_ms')),
+            _fmt_usd(b.get('total_cost_usd')),
+            _fmt_tok(b_usage.get('input_tokens')),
+            _fmt_tok(b_usage.get('cache_creation_input_tokens')),
+            _fmt_tok(b_usage.get('cache_read_input_tokens')),
+            _fmt_tok(b_usage.get('output_tokens')),
+            d['c_result'],
+        ]
+
+        for rn in range(1, max_d_rounds + 1):
+            idx = rn - 1
+            if idx < len(d['d_rounds']):
+                dr = d['d_rounds'][idx]
+                # For D status, use final findings for last round, '-' for intermediate
+                if idx == len(d['d_rounds']) - 1:
+                    d_status = d['d_final_status']
+                    d_crit = str(d['d_final_crit']) if d['d_final_crit'] is not None else '-'
+                    d_minor = str(d['d_final_minor']) if d['d_final_minor'] is not None else '-'
+                else:
+                    d_status = '-'
+                    d_crit = '-'
+                    d_minor = '-'
+                row += [
+                    d_status,
+                    d_crit,
+                    d_minor,
+                    str(dr.get('num_turns', '-')),
+                    _fmt_dur(dr.get('duration_ms')),
+                    _fmt_usd(dr.get('total_cost_usd')),
+                ]
+            else:
+                row += ['-', '-', '-', '-', '-', '-']
+
+            if rn <= max_e_rounds:
+                idx = rn - 1
+                if idx < len(d['e_rounds']):
+                    er = d['e_rounds'][idx]
+                    row += [
+                        str(er.get('num_turns', '-')),
+                        _fmt_dur(er.get('duration_ms')),
+                        _fmt_usd(er.get('total_cost_usd')),
+                    ]
+                else:
+                    row += ['-', '-', '-']
+
+        lines.append('| ' + ' | '.join(str(c) for c in row) + ' |')
+
+    lines.append('')
+    return '\n'.join(lines)
+
+
+def _publish_reports(ctx, report):
+    """reports/ ディレクトリに JSON・サマリーMD・詳細MDを書き出す。"""
+    import shutil
+    os.makedirs(ctx.reports_dir, exist_ok=True)
+
+    # Copy report.json
+    dst_json = os.path.join(ctx.reports_dir, f'{ctx.run_id}.json')
+    shutil.copy2(ctx.report_path, dst_json)
+
+    # Collect per-file details
+    file_details = _collect_file_details(ctx)
+
+    # Summary MD
+    summary_md = _render_summary_md(ctx, report, file_details)
+    with open(os.path.join(ctx.reports_dir, f'{ctx.run_id}.md'), 'w', encoding='utf-8') as f:
+        f.write(summary_md)
+
+    # Files detail MD
+    files_md = _render_files_md(ctx, file_details)
+    with open(os.path.join(ctx.reports_dir, f'{ctx.run_id}-files.md'), 'w', encoding='utf-8') as f:
+        f.write(files_md)
 
 
 if __name__ == "__main__":
