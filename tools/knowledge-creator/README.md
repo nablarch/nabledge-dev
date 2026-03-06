@@ -36,12 +36,12 @@ source ~/.bashrc
 
 | UC | コマンド | 用途 | 何が起きるか |
 |---|---|---|---|
-| UC1 | `nc.sh gen 6` | 初回の全件生成 | 全クリーン → Phase A〜M を順次実行 |
-| UC2 | `nc.sh gen 6 --resume` | 中断からの再開 | 生成済みファイルをスキップして続行 |
-| UC3 | `nc.sh regen 6` | 公式ドキュメント更新への追随 | git pull → コミット比較 → 変更ファイルのみ再生成 |
-| UC4 | `nc.sh regen 6 --target FILE_ID` | 特定ファイルの再生成 | 指定ファイルをクリーン → 再生成 |
-| UC5 | `nc.sh fix 6` | 品質改善（全件） | Phase C→D→E→M で再検証・修正 |
-| UC6 | `nc.sh fix 6 --target FILE_ID` | 品質改善（指定ファイル） | 指定ファイルのみ再検証・修正 |
+| UC1 | `kc.sh gen 6` | 初回の全件生成 | 全クリーン → Phase A〜M を順次実行 |
+| UC2 | `kc.sh gen 6 --resume` | 中断からの再開 | 生成済みファイルをスキップして続行 |
+| UC3 | `kc.sh regen 6` | 公式ドキュメント更新への追随 | git pull → コミット比較 → 変更ファイルのみ再生成 |
+| UC4 | `kc.sh regen 6 --target FILE_ID` | 特定ファイルの再生成 | 指定ファイルをクリーン → 再生成 |
+| UC5 | `kc.sh fix 6` | 品質改善（全件） | Phase C→D→E→M で再検証・修正 |
+| UC6 | `kc.sh fix 6 --target FILE_ID` | 品質改善（指定ファイル） | 指定ファイルのみ再検証・修正 |
 
 ### ソース変更追随の仕組み
 
@@ -66,10 +66,10 @@ source ~/.bashrc
 
 #### UC3 の処理フロー
 
-`nc.sh regen 6` を実行すると以下のステップが順次実行される:
+`kc.sh regen 6` を実行すると以下のステップが順次実行される:
 
 ```
-nc.sh regen 6
+kc.sh regen 6
   1. 公式リポを git pull（最新化）
   2. knowledge-creator.json の記録済みコミット vs HEAD を比較
   3. コミット同一 → 「更新なし」で終了
@@ -124,7 +124,7 @@ flowchart TD
 
 ### オプション一覧
 
-#### nc.sh オプション
+#### kc.sh オプション
 
 | オプション | 説明 |
 |---|---|
@@ -136,8 +136,8 @@ flowchart TD
 | `--concurrency N` | 並列実行数（デフォルト: 4） |
 | `--test FILE` | テスト設定ファイルを使用 |
 
-**nc.sh と run.py の使い分け**:
-- **nc.sh**: 一般的なワークフロー向け（推奨）
+**kc.sh と run.py の使い分け**:
+- **kc.sh**: 一般的なワークフロー向け（推奨）
 - **run.py**: フェーズや詳細オプションを細かく制御したい場合
 
 #### run.py オプション
@@ -240,7 +240,7 @@ pytest tests/ --cov=steps --cov-report=html
 
 ```
 tools/knowledge-creator/
-  nc.sh                        # ユーザー向けラッパースクリプト
+  kc.sh                        # ユーザー向けラッパースクリプト
   run.py                       # メインエントリーポイント
   clean.py                     # 生成物クリーンアップユーティリティ
   steps/
@@ -309,7 +309,7 @@ tools/knowledge-creator/.logs/v6/  # 中間成果物（gitignore）
 
 ### `kc.sh: permission denied`
 
-→ スクリプトに実行権限を付与: `chmod +x tools/knowledge-creator/nc.sh`
+→ スクリプトに実行権限を付与: `chmod +x tools/knowledge-creator/kc.sh`
 
 ### `FileNotFoundError: .lw/nab-official/v6/`
 
