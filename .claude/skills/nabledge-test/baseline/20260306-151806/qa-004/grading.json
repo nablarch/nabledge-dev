@@ -1,0 +1,46 @@
+{
+  "scenario_id": "qa-004",
+  "detection_items": [
+    {
+      "text": "Response includes 'TransactionAbnormalEnd'",
+      "detected": true,
+      "evidence": "Found in response: '`TransactionAbnormalEnd` を送出すると `retry_handler` により処理が継続されます'"
+    },
+    {
+      "text": "Response includes 'ProcessAbnormalEnd'",
+      "detected": true,
+      "evidence": "Found in response: '`ProcessAbnormalEnd` を送出します'"
+    },
+    {
+      "text": "Response includes 'リラン'",
+      "detected": true,
+      "evidence": "Found in response: 'リラン（再実行）設計', 'リラン機能は提供されていません'"
+    },
+    {
+      "text": "Response includes 'ResumeDataReader'",
+      "detected": true,
+      "evidence": "Found in response: '`ResumeDataReader`（レジューム機能付き読み込み）を使用することで'"
+    },
+    {
+      "text": "Response includes '異常終了'",
+      "detected": true,
+      "evidence": "Found in response: 'バッチ処理を異常終了させる', 'バッチ処理が異常終了となります'"
+    },
+    {
+      "text": "Response references 'error-handling' section",
+      "detected": false,
+      "evidence": "String 'error-handling' not found in response text. References are: #abnormal-termination, #continue-on-error, #rerun-batch-processing, etc."
+    },
+    {
+      "text": "Response references 'errors' section",
+      "detected": false,
+      "evidence": "String 'errors' not found in response text as a section reference."
+    }
+  ],
+  "summary": {
+    "detected": 5,
+    "not_detected": 2,
+    "total": 7,
+    "detection_rate": 0.714
+  }
+}

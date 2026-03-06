@@ -1,0 +1,46 @@
+{
+  "scenario_id": "qa-002",
+  "detection_items": [
+    {
+      "text": "Response includes 'per'",
+      "detected": true,
+      "evidence": "Found in response: 'UniversalDao.per(件数/ページ).page(ページ番号)', '`per(long)` : 1ページあたりの件数を指定します'"
+    },
+    {
+      "text": "Response includes 'page'",
+      "detected": true,
+      "evidence": "Found in response: '.page(ページ番号)', '`page(long)` : 取得するページ番号（1始まり）を指定します'"
+    },
+    {
+      "text": "Response includes 'EntityList'",
+      "detected": true,
+      "evidence": "Found in response: 'EntityList<User> users = UniversalDao.per(3).page(1)'"
+    },
+    {
+      "text": "Response includes 'ページング'",
+      "detected": true,
+      "evidence": "Found in response: 'UniversalDaoでページングを実装するには', 'ページング処理では'"
+    },
+    {
+      "text": "Response includes 'Pagination'",
+      "detected": true,
+      "evidence": "Found in response: '`Pagination` オブジェクトには総件数や総ページ数', 'Pagination pagination = users.getPagination()'"
+    },
+    {
+      "text": "Response references 'paging' section",
+      "detected": true,
+      "evidence": "Found in response: 'libraries-universal_dao.json#paging'"
+    },
+    {
+      "text": "Response references 'overview' section",
+      "detected": false,
+      "evidence": "String 'overview' not found in response text. References are: #paging, #extension-examples, #lazy-load"
+    }
+  ],
+  "summary": {
+    "detected": 6,
+    "not_detected": 1,
+    "total": 7,
+    "detection_rate": 0.857
+  }
+}

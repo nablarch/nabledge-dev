@@ -1,0 +1,46 @@
+{
+  "scenario_id": "qa-003",
+  "detection_items": [
+    {
+      "text": "Response includes 'DataReadHandler'",
+      "detected": true,
+      "evidence": "Found in response: 'データリードハンドラ（`DataReadHandler`）でファイルを読み込むには'"
+    },
+    {
+      "text": "Response includes 'DataReader'",
+      "detected": true,
+      "evidence": "Found in response: '`DataReader`を使って入力データを1件ずつ読み込み', 'DataReader<SqlRow> createReader'"
+    },
+    {
+      "text": "Response includes 'ExecutionContext'",
+      "detected": true,
+      "evidence": "Found in response code: 'public DataReader<SqlRow> createReader(final ExecutionContext ctx)'"
+    },
+    {
+      "text": "Response includes 'createReader'",
+      "detected": true,
+      "evidence": "Found in response: '`createReader` メソッドをオーバーライドして `FileDataReader`'"
+    },
+    {
+      "text": "Response includes 'FileDataReader'",
+      "detected": true,
+      "evidence": "Found in response: '`FileDataReader`（またはバリデーション付きの `ValidatableFileDataReader`）を返却します'"
+    },
+    {
+      "text": "Response references 'overview' section",
+      "detected": true,
+      "evidence": "Found in response: 'handlers-data_read_handler.json#overview'"
+    },
+    {
+      "text": "Response references 'processing' section",
+      "detected": false,
+      "evidence": "String 'processing' not found in response text. References are: #overview, #data-readers, #max-count-setting"
+    }
+  ],
+  "summary": {
+    "detected": 6,
+    "not_detected": 1,
+    "total": 7,
+    "detection_rate": 0.857
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "total_duration_seconds": 99,
+  "steps": [
+    {
+      "step": 1,
+      "name": "Read SKILL.md and qa.md and _knowledge-search.md",
+      "duration_seconds": 12,
+      "in_tokens_estimate": 800,
+      "out_tokens_estimate": 50
+    },
+    {
+      "step": 2,
+      "name": "Read sub-workflow files (_full-text-search.md, _section-judgement.md)",
+      "duration_seconds": 7,
+      "in_tokens_estimate": 600,
+      "out_tokens_estimate": 30
+    },
+    {
+      "step": 3,
+      "name": "Keyword extraction (in-memory)",
+      "duration_seconds": 1,
+      "in_tokens_estimate": 200,
+      "out_tokens_estimate": 50
+    },
+    {
+      "step": 4,
+      "name": "Full-text search (scripts/full-text-search.sh)",
+      "duration_seconds": 13,
+      "in_tokens_estimate": 100,
+      "out_tokens_estimate": 200
+    },
+    {
+      "step": 5,
+      "name": "Hints-based pre-filter (jq)",
+      "duration_seconds": 11,
+      "in_tokens_estimate": 200,
+      "out_tokens_estimate": 800
+    },
+    {
+      "step": 6,
+      "name": "Read candidate sections batch 1 (read-sections.sh)",
+      "duration_seconds": 5,
+      "in_tokens_estimate": 200,
+      "out_tokens_estimate": 1800
+    },
+    {
+      "step": 7,
+      "name": "Read additional sections batch 2 (read-sections.sh)",
+      "duration_seconds": 5,
+      "in_tokens_estimate": 200,
+      "out_tokens_estimate": 800
+    },
+    {
+      "step": 8,
+      "name": "Read remaining error process sections",
+      "duration_seconds": 3,
+      "in_tokens_estimate": 150,
+      "out_tokens_estimate": 300
+    },
+    {
+      "step": 9,
+      "name": "Section judgement and pointer JSON assembly (in-memory)",
+      "duration_seconds": 2,
+      "in_tokens_estimate": 400,
+      "out_tokens_estimate": 200
+    },
+    {
+      "step": 10,
+      "name": "Answer generation (in-memory LLM)",
+      "duration_seconds": 20,
+      "in_tokens_estimate": 3000,
+      "out_tokens_estimate": 700
+    }
+  ],
+  "tool_calls": {
+    "Read": 5,
+    "Bash": 8,
+    "Grep": 0,
+    "Write": 0
+  },
+  "total_tool_calls": 13,
+  "response_chars": 1980
+}

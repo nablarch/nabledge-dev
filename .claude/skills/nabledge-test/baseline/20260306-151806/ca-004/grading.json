@@ -1,0 +1,71 @@
+{
+  "scenario_id": "ca-004",
+  "detection_items": [
+    {
+      "text": "Finds target file ProjectCreateAction.java",
+      "detected": true,
+      "evidence": "Found in output: 'ProjectCreateAction.java' referenced in Components and References sections"
+    },
+    {
+      "text": "Identifies index method for form display",
+      "detected": true,
+      "evidence": "Found in output: '`index(HttpRequest, ExecutionContext)` [L33-39]: 初期表示'"
+    },
+    {
+      "text": "Identifies create method for registration",
+      "detected": true,
+      "evidence": "Found in output: '`register(HttpRequest, ExecutionContext)` [L72-78]: `@OnDoubleSubmission`付き。セッションからProject取得→`ProjectService.insertProject()`'"
+    },
+    {
+      "text": "Identifies BeanUtil usage for entity mapping",
+      "detected": true,
+      "evidence": "Found in output: '`BeanUtil.createAndCopy(Project, form)' and BeanUtil in dependency graph"
+    },
+    {
+      "text": "Identifies UniversalDao.insert usage",
+      "detected": true,
+      "evidence": "Found in output: 'universalDao.insert(project)' and 'insertProject(project): `insert`でプロジェクトを登録'"
+    },
+    {
+      "text": "Identifies transaction handling",
+      "detected": false,
+      "evidence": "Explicit transaction handling discussion not found in response. The output covers OnDoubleSubmission for double-submit prevention but does not explicitly discuss transaction management."
+    },
+    {
+      "text": "Identifies @InjectForm annotation",
+      "detected": true,
+      "evidence": "Found in output: '### InjectForm インターセプタ' section with @InjectForm(form = ProjectCreateForm.class) example"
+    },
+    {
+      "text": "Identifies @OnError annotation with validation",
+      "detected": true,
+      "evidence": "Found in output: '@OnError(type = ApplicationException.class, path = \"forward:///app/project/errorRegister\")'"
+    },
+    {
+      "text": "Creates dependency diagram",
+      "detected": true,
+      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class ProjectCreateAction'"
+    },
+    {
+      "text": "Creates sequence diagram for registration flow",
+      "detected": true,
+      "evidence": "Found in output: '```mermaid\\nsequenceDiagram' with registration flow"
+    },
+    {
+      "text": "Output includes component summary table",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+    },
+    {
+      "text": "Output includes Nablarch usage section",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage' with InjectForm, OnDoubleSubmission, UniversalDao sections"
+    }
+  ],
+  "summary": {
+    "detected": 11,
+    "not_detected": 1,
+    "total": 12,
+    "detection_rate": 0.917
+  }
+}

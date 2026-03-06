@@ -1,0 +1,71 @@
+{
+  "scenario_id": "ca-005",
+  "detection_items": [
+    {
+      "text": "Finds target file ProjectUpdateAction.java",
+      "detected": true,
+      "evidence": "Found in output: 'ProjectUpdateAction.java' referenced in Components and References sections"
+    },
+    {
+      "text": "Identifies show method for detail display",
+      "detected": false,
+      "evidence": "No 'show' method found in output. The action uses 'index()' for initial display of the update form. String 'show' not found in response."
+    },
+    {
+      "text": "Identifies update method for modification",
+      "detected": true,
+      "evidence": "Found in output: '`update()` (L72-77): `@OnDoubleSubmission` 付き更新処理。PRGパターンでリダイレクト'"
+    },
+    {
+      "text": "Identifies UniversalDao.findById usage",
+      "detected": true,
+      "evidence": "Found in output: '`universalDao.findById(Project.class, projectId)` によるプロジェクト取得（L125）'"
+    },
+    {
+      "text": "Identifies UniversalDao.update usage",
+      "detected": true,
+      "evidence": "Found in output: '`universalDao.update(project)` によるプロジェクト更新（L91）'"
+    },
+    {
+      "text": "Identifies optimistic locking with version column",
+      "detected": false,
+      "evidence": "String 'optimistic' and 'version' (in context of locking) not found in response. UniversalDao.update() is described but optimistic locking mechanism is not mentioned."
+    },
+    {
+      "text": "Identifies @InjectForm annotation",
+      "detected": true,
+      "evidence": "Found in output: '`@InjectForm` でプロジェクトIDを検証し', '@InjectForm と @OnError でバリデーションと画面戻り制御'"
+    },
+    {
+      "text": "Identifies @OnError annotation",
+      "detected": true,
+      "evidence": "Found in output: '`@OnError` でバリデーションと画面戻り制御' and OnDoubleSubmission section"
+    },
+    {
+      "text": "Creates dependency diagram",
+      "detected": true,
+      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class ProjectUpdateAction'"
+    },
+    {
+      "text": "Creates sequence diagram for update flow",
+      "detected": true,
+      "evidence": "Found in output: '```mermaid\\nsequenceDiagram' with update flow"
+    },
+    {
+      "text": "Output includes component summary table",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+    },
+    {
+      "text": "Output includes Nablarch usage section",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage' with SessionUtil, OnDoubleSubmission, BeanUtil, DaoContext sections"
+    }
+  ],
+  "summary": {
+    "detected": 10,
+    "not_detected": 2,
+    "total": 12,
+    "detection_rate": 0.833
+  }
+}

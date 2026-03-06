@@ -1,0 +1,66 @@
+{
+  "scenario_id": "ca-003",
+  "detection_items": [
+    {
+      "text": "Finds target file ProjectSearchAction.java",
+      "detected": true,
+      "evidence": "Found in output: 'ProjectSearchAction.java' referenced in Components section"
+    },
+    {
+      "text": "Identifies list method for search results display",
+      "detected": true,
+      "evidence": "Found in output: '`list(HttpRequest, ExecutionContext)` [:51-69] - 一覧検索処理'"
+    },
+    {
+      "text": "Identifies UniversalDao.findAllBySqlFile usage",
+      "detected": true,
+      "evidence": "Found in output: 'findAllBySqlFile(ProjectWithOrganizationDto.class, \"FIND_PROJECT_WITH_ORGANIZATION\", condition)'"
+    },
+    {
+      "text": "Identifies pagination handling",
+      "detected": true,
+      "evidence": "Found in output: '`per(RECORDS_PER_PAGE).page(condition.getPageNumber())` を検索前に呼び出すことでページング実行'"
+    },
+    {
+      "text": "Identifies search form processing",
+      "detected": true,
+      "evidence": "Found in output: 'ProjectSearchForm' section and form processing in list() method description"
+    },
+    {
+      "text": "Identifies @InjectForm annotation",
+      "detected": true,
+      "evidence": "Found in output: '@InjectForm(form = ProjectSearchForm.class, prefix = \"form\")' in code example"
+    },
+    {
+      "text": "Identifies @OnError annotation",
+      "detected": true,
+      "evidence": "Found in output: '@OnError(type = ApplicationException.class, path = \"forward://search\")'"
+    },
+    {
+      "text": "Creates dependency diagram",
+      "detected": true,
+      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class ProjectSearchAction'"
+    },
+    {
+      "text": "Creates sequence diagram for search flow",
+      "detected": true,
+      "evidence": "Found in output: '```mermaid\\nsequenceDiagram' with search flow"
+    },
+    {
+      "text": "Output includes component summary table",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+    },
+    {
+      "text": "Output includes Nablarch usage section",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage' with InjectForm/OnError, UniversalDao, SessionUtil sections"
+    }
+  ],
+  "summary": {
+    "detected": 11,
+    "not_detected": 0,
+    "total": 11,
+    "detection_rate": 1.0
+  }
+}
