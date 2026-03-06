@@ -141,14 +141,18 @@ For code-analysis scenarios (ca-*), additional fields:
   "question": "ExportProjectsInPeriodActionの実装を理解したい",
   "target_file": "path/to/file.java",
   "expectations": {
+    "overview": ["ClassName1", "concept1"],
     "class_diagram": {
       "classes": ["ClassName1", "ClassName2"],
       "relationships": ["ClassA --|> ClassB"]
     },
+    "component_summary": ["ClassName1", "ClassName2"],
+    "processing_flow": ["methodName1", "keyword1"],
     "sequence_diagram": {
       "objects": ["ObjectName1", "ObjectName2"],
       "messages": ["methodCall1", "methodCall2"]
     },
+    "nablarch_usage": ["NablarchClass1", "NablarchClass2"],
     "output": ["Component Summary", "Nablarch Framework Usage", ".nabledge/"]
   }
 }
@@ -166,14 +170,22 @@ for keyword in scenario.expectations:
 For code-analysis (ca-*):
 ```
 detection_items = []
+for keyword in scenario.expectations.overview:
+    detection_items.append(f"Overview includes '{keyword}'")
 for class_name in scenario.expectations.class_diagram.classes:
     detection_items.append(f"Class diagram includes class '{class_name}'")
 for relationship in scenario.expectations.class_diagram.relationships:
     detection_items.append(f"Class diagram includes relationship '{relationship}'")
+for component in scenario.expectations.component_summary:
+    detection_items.append(f"Component Summary includes '{component}'")
+for keyword in scenario.expectations.processing_flow:
+    detection_items.append(f"Processing Flow includes '{keyword}'")
 for object_name in scenario.expectations.sequence_diagram.objects:
     detection_items.append(f"Sequence diagram includes object '{object_name}'")
 for message in scenario.expectations.sequence_diagram.messages:
     detection_items.append(f"Sequence diagram includes message '{message}'")
+for class_name in scenario.expectations.nablarch_usage:
+    detection_items.append(f"Nablarch Framework Usage includes '{class_name}'")
 for item in scenario.expectations.output:
     detection_items.append(f"Output includes '{item}'")
 ```
@@ -308,10 +320,14 @@ for item in detection_items:
 **Code-analysis (ca-*)**:
 
 Each detection item is checked by examining the response text and output files:
+- "Overview includes 'X'" → check if keyword X appears within the `## Overview` section of the output
 - "Class diagram includes class 'X'" → check if class name X appears within a `classDiagram` block in the output
 - "Class diagram includes relationship 'X'" → check if relationship string X appears within a `classDiagram` block in the output
+- "Component Summary includes 'X'" → check if component name X appears within the `### Component Summary` section of the output
+- "Processing Flow includes 'X'" → check if keyword X appears within the `### Processing Flow` section of the output
 - "Sequence diagram includes object 'X'" → check if participant/object X appears within a `sequenceDiagram` block in the output
 - "Sequence diagram includes message 'X'" → check if message/method call X appears within a `sequenceDiagram` block in the output
+- "Nablarch Framework Usage includes 'X'" → check if class name X appears as a heading within the `## Nablarch Framework Usage` section of the output
 - "Output includes 'X'" → check output files or response for X
 
 **Write grading.json**:

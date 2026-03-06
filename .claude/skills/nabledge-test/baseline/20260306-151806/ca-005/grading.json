@@ -2,70 +2,185 @@
   "scenario_id": "ca-005",
   "detection_items": [
     {
-      "text": "Finds target file ProjectUpdateAction.java",
+      "text": "Overview includes 'ProjectUpdateAction'",
       "detected": true,
-      "evidence": "Found in output: 'ProjectUpdateAction.java' referenced in Components and References sections"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies show method for detail display",
-      "detected": false,
-      "evidence": "No 'show' method found in output. The action uses 'index()' for initial display of the update form. String 'show' not found in response."
-    },
-    {
-      "text": "Identifies update method for modification",
+      "text": "Overview includes 'confirmUpdate'",
       "detected": true,
-      "evidence": "Found in output: '`update()` (L72-77): `@OnDoubleSubmission` 付き更新処理。PRGパターンでリダイレクト'"
+      "evidence": "Found in Overview section: '`confirmUpdate()`: 入力内容の確認画面表示'"
     },
     {
-      "text": "Identifies UniversalDao.findById usage",
+      "text": "Overview includes 'update'",
       "detected": true,
-      "evidence": "Found in output: '`universalDao.findById(Project.class, projectId)` によるプロジェクト取得（L125）'"
+      "evidence": "Found in Overview section: '`update()`: プロジェクト情報の更新実行'"
     },
     {
-      "text": "Identifies UniversalDao.update usage",
+      "text": "Overview includes 'SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: '`universalDao.update(project)` によるプロジェクト更新（L91）'"
+      "evidence": "Found in Overview section: 'セッションに一時保存したプロジェクトエンティティを利用し'"
     },
     {
-      "text": "Identifies optimistic locking with version column",
-      "detected": false,
-      "evidence": "String 'optimistic' and 'version' (in context of locking) not found in response. UniversalDao.update() is described but optimistic locking mechanism is not mentioned."
-    },
-    {
-      "text": "Identifies @InjectForm annotation",
+      "text": "Overview includes 'OnDoubleSubmission'",
       "detected": true,
-      "evidence": "Found in output: '`@InjectForm` でプロジェクトIDを検証し', '@InjectForm と @OnError でバリデーションと画面戻り制御'"
+      "evidence": "Found in Overview section: '二重サブミット防止付き'"
     },
     {
-      "text": "Identifies @OnError annotation",
+      "text": "Class diagram includes class 'ProjectUpdateAction'",
       "detected": true,
-      "evidence": "Found in output: '`@OnError` でバリデーションと画面戻り制御' and OnDoubleSubmission section"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates dependency diagram",
+      "text": "Class diagram includes class 'ProjectUpdateForm'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class ProjectUpdateAction'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates sequence diagram for update flow",
+      "text": "Class diagram includes class 'ProjectService'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nsequenceDiagram' with update flow"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Output includes component summary table",
+      "text": "Class diagram includes class 'SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Output includes Nablarch usage section",
+      "text": "Class diagram includes class 'BeanUtil'",
       "detected": true,
-      "evidence": "Found in output: '## Nablarch Framework Usage' with SessionUtil, OnDoubleSubmission, BeanUtil, DaoContext sections"
+      "evidence": "Found in classDiagram block"
+    },
+    {
+      "text": "Class diagram includes relationship 'ProjectUpdateAction ..> ProjectService'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'ProjectUpdateAction ..> ProjectService : delegates to'"
+    },
+    {
+      "text": "Class diagram includes relationship 'ProjectUpdateAction ..> SessionUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'ProjectUpdateAction ..> SessionUtil : stores/retrieves'"
+    },
+    {
+      "text": "Component Summary includes 'ProjectUpdateAction'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'ProjectUpdateForm'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'ProjectService'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'ProjectUpdateInitialForm'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Processing Flow includes 'index'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '1. **更新入力画面表示 (`index`)'"
+    },
+    {
+      "text": "Processing Flow includes 'confirmUpdate'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '2. **確認画面表示 (`confirmUpdate`)'"
+    },
+    {
+      "text": "Processing Flow includes 'update'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '3. **更新実行 (`update`)'"
+    },
+    {
+      "text": "Processing Flow includes 'BeanUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: BeanUtil usage for form-entity conversion"
+    },
+    {
+      "text": "Processing Flow includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: 'セッションのプロジェクトエンティティにフォームデータをコピーし'"
+    },
+    {
+      "text": "Sequence diagram includes object 'ProjectUpdateAction'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'ProjectService'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes message 'confirmUpdate'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'POST /project/confirmUpdate'"
+    },
+    {
+      "text": "Sequence diagram includes message 'update'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'POST /project/update (@OnDoubleSubmission)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'updateProject'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'ProjectUpdateAction->>ProjectService: updateProject(project)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'BeanUtil'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: BeanUtil.createAndCopy and BeanUtil.copy calls"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found as section heading: '### SessionUtil'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'OnDoubleSubmission'",
+      "detected": true,
+      "evidence": "Found as section heading: '### OnDoubleSubmission'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'BeanUtil'",
+      "detected": true,
+      "evidence": "Found as section heading: '### BeanUtil'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'UniversalDao'",
+      "detected": true,
+      "evidence": "Found as section heading: '### DaoContext (UniversalDAO)'"
+    },
+    {
+      "text": "Output includes 'Component Summary'",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary'"
+    },
+    {
+      "text": "Output includes 'Nablarch Framework Usage'",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage'"
+    },
+    {
+      "text": "Output includes '.nabledge/'",
+      "detected": true,
+      "evidence": "Output file saved to .nabledge/20260306/code-analysis-ProjectUpdateAction.md"
     }
   ],
   "summary": {
-    "detected": 10,
-    "not_detected": 2,
-    "total": 12,
-    "detection_rate": 0.833
+    "detected": 35,
+    "not_detected": 0,
+    "total": 35,
+    "detection_rate": 1.0
   }
 }

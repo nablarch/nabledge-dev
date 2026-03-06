@@ -2,70 +2,175 @@
   "scenario_id": "ca-004",
   "detection_items": [
     {
-      "text": "Finds target file ProjectCreateAction.java",
+      "text": "Overview includes 'ProjectCreateAction'",
       "detected": true,
-      "evidence": "Found in output: 'ProjectCreateAction.java' referenced in Components and References sections"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies index method for form display",
+      "text": "Overview includes 'InjectForm'",
       "detected": true,
-      "evidence": "Found in output: '`index(HttpRequest, ExecutionContext)` [L33-39]: 初期表示'"
+      "evidence": "Found in Overview section: '`@InjectForm`でフォームのバリデーション・バインドを宣言的に実施'"
     },
     {
-      "text": "Identifies create method for registration",
+      "text": "Overview includes 'OnDoubleSubmission'",
       "detected": true,
-      "evidence": "Found in output: '`register(HttpRequest, ExecutionContext)` [L72-78]: `@OnDoubleSubmission`付き。セッションからProject取得→`ProjectService.insertProject()`'"
+      "evidence": "Found in Overview section: '`@OnDoubleSubmission`で二重登録防止'"
     },
     {
-      "text": "Identifies BeanUtil usage for entity mapping",
+      "text": "Overview includes 'ProjectService'",
       "detected": true,
-      "evidence": "Found in output: '`BeanUtil.createAndCopy(Project, form)' and BeanUtil in dependency graph"
+      "evidence": "Found in Overview section: 'DB操作（事業部/部門検索、プロジェクト登録）は`ProjectService`に委譲し'"
     },
     {
-      "text": "Identifies UniversalDao.insert usage",
+      "text": "Overview includes 'SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: 'universalDao.insert(project)' and 'insertProject(project): `insert`でプロジェクトを登録'"
+      "evidence": "Found in Overview section: 'セッション活用: 確認画面表示から登録処理まで'"
     },
     {
-      "text": "Identifies transaction handling",
-      "detected": false,
-      "evidence": "Explicit transaction handling discussion not found in response. The output covers OnDoubleSubmission for double-submit prevention but does not explicitly discuss transaction management."
+      "text": "Class diagram includes class 'ProjectCreateAction'",
+      "detected": true,
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies @InjectForm annotation",
+      "text": "Class diagram includes class 'ProjectCreateForm'",
       "detected": true,
-      "evidence": "Found in output: '### InjectForm インターセプタ' section with @InjectForm(form = ProjectCreateForm.class) example"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies @OnError annotation with validation",
+      "text": "Class diagram includes class 'ProjectService'",
       "detected": true,
-      "evidence": "Found in output: '@OnError(type = ApplicationException.class, path = \"forward:///app/project/errorRegister\")'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates dependency diagram",
+      "text": "Class diagram includes class 'SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class ProjectCreateAction'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates sequence diagram for registration flow",
+      "text": "Class diagram includes class 'BeanUtil'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nsequenceDiagram' with registration flow"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Output includes component summary table",
+      "text": "Class diagram includes relationship 'ProjectCreateAction ..> ProjectService'",
       "detected": true,
-      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+      "evidence": "Found in classDiagram block: 'ProjectCreateAction ..> ProjectService : delegates to'"
     },
     {
-      "text": "Output includes Nablarch usage section",
+      "text": "Class diagram includes relationship 'ProjectCreateAction ..> SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: '## Nablarch Framework Usage' with InjectForm, OnDoubleSubmission, UniversalDao sections"
+      "evidence": "Found in classDiagram block: 'ProjectCreateAction ..> SessionUtil : stores/retrieves'"
+    },
+    {
+      "text": "Component Summary includes 'ProjectCreateAction'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'ProjectCreateForm'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'ProjectService'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Processing Flow includes 'confirmRegistration'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '2. **確認画面表示** (`confirmRegistration`)'"
+    },
+    {
+      "text": "Processing Flow includes 'register'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '3. **登録処理** (`register`)'"
+    },
+    {
+      "text": "Processing Flow includes 'BeanUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`BeanUtil`でProjectエンティティに変換し'"
+    },
+    {
+      "text": "Processing Flow includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: 'セッションに保存して確認画面を表示'"
+    },
+    {
+      "text": "Processing Flow includes 'OnDoubleSubmission'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`@OnDoubleSubmission`で二重送信を防止しつつ'"
+    },
+    {
+      "text": "Sequence diagram includes object 'ProjectCreateAction'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'ProjectService'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block: 'participant Session as SessionUtil'"
+    },
+    {
+      "text": "Sequence diagram includes message 'confirmRegistration'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'POST /app/project/confirmRegistration'"
+    },
+    {
+      "text": "Sequence diagram includes message 'register'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: register action"
+    },
+    {
+      "text": "Sequence diagram includes message 'insertProject'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'ProjectService.insertProject()'"
+    },
+    {
+      "text": "Sequence diagram includes message 'BeanUtil'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: BeanUtil usage"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'InjectForm'",
+      "detected": true,
+      "evidence": "Found as section heading: '### InjectForm インターセプタ'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'OnDoubleSubmission'",
+      "detected": true,
+      "evidence": "Found as section heading: '### OnDoubleSubmission インターセプタ'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'UniversalDao'",
+      "detected": true,
+      "evidence": "Found as section heading: '### UniversalDao (DaoContext)'"
+    },
+    {
+      "text": "Output includes 'Component Summary'",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary'"
+    },
+    {
+      "text": "Output includes 'Nablarch Framework Usage'",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage'"
+    },
+    {
+      "text": "Output includes '.nabledge/'",
+      "detected": true,
+      "evidence": "Output file saved to .nabledge/20260306/code-analysis-ProjectCreateAction.md"
     }
   ],
   "summary": {
-    "detected": 11,
-    "not_detected": 1,
-    "total": 12,
-    "detection_rate": 0.917
+    "detected": 33,
+    "not_detected": 0,
+    "total": 33,
+    "detection_rate": 1.0
   }
 }

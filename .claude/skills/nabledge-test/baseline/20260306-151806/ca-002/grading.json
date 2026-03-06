@@ -2,80 +2,200 @@
   "scenario_id": "ca-002",
   "detection_items": [
     {
-      "text": "Finds target file LoginAction.java",
+      "text": "Overview includes 'LoginAction'",
       "detected": true,
-      "evidence": "Found in output: 'LoginAction.java（`proman-web/src/main/java/com/nablarch/example/proman/web/login/`）'"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies index method for login screen display",
+      "text": "Overview includes 'AuthenticationUtil'",
       "detected": true,
-      "evidence": "Found in output: '`index(request, context)` [L38-40]: ログイン画面JSPを返す'"
+      "evidence": "Found in Overview section: '認証処理は`AuthenticationUtil`に委譲し'"
     },
     {
-      "text": "Identifies login method with authentication logic",
+      "text": "Overview includes 'SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: '`login(request, context)` [L49-71]: 認証処理のメインメソッド'"
+      "evidence": "Found in Overview section: 'Nablarchの`SessionUtil`でセッションIDを切り替えて'"
     },
     {
-      "text": "Identifies logout method",
+      "text": "Overview includes 'InjectForm'",
       "detected": true,
-      "evidence": "Found in output: '`logout(request, context)` [L102-106]: セッションを無効化してログイン画面にリダイレクト'"
+      "evidence": "Found in Overview section: '`@InjectForm`インターセプタにより'"
     },
     {
-      "text": "Identifies @OnError annotation usage",
+      "text": "Overview includes 'UniversalDao'",
       "detected": true,
-      "evidence": "Found in output: 'OnError（インターセプタ）' section, '@OnError`インターセプタが付与されている'"
+      "evidence": "Found in Overview section: 'ユーザ情報は`UniversalDao`でDBから取得し'"
     },
     {
-      "text": "Identifies @InjectForm annotation usage",
+      "text": "Class diagram includes class 'LoginAction'",
       "detected": true,
-      "evidence": "Found in output: 'InjectForm（インターセプタ）' section, '`@InjectForm(form = LoginForm.class)`インターセプタ'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies UniversalDao usage",
+      "text": "Class diagram includes class 'LoginForm'",
       "detected": true,
-      "evidence": "Found in output: '### UniversalDao' section with findBySqlFile and findById usage"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies AuthenticationUtil usage",
+      "text": "Class diagram includes class 'AuthenticationUtil'",
       "detected": true,
-      "evidence": "Found in output: 'AuthenticationUtil' component section and 'AuthenticationUtil.authenticate()'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies CsrfTokenUtil usage",
+      "text": "Class diagram includes class 'UniversalDao'",
       "detected": true,
-      "evidence": "Found in output: 'CsrfTokenUtil.regenerateCsrfToken(context)' in sequence diagram and flow description"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies SessionUtil usage",
+      "text": "Class diagram includes class 'SessionUtil'",
       "detected": true,
-      "evidence": "Found in output: '### SessionUtil' section with changeId() and put() usage"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates dependency diagram",
+      "text": "Class diagram includes class 'CsrfTokenUtil'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class LoginAction'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates sequence diagram for authentication flow",
+      "text": "Class diagram includes class 'LoginUserPrincipal'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nsequenceDiagram' with authentication flow"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Output includes component summary table",
+      "text": "Class diagram includes relationship 'LoginAction ..> AuthenticationUtil'",
       "detected": true,
-      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+      "evidence": "Found in classDiagram block: 'LoginAction ..> AuthenticationUtil : delegates to'"
     },
     {
-      "text": "Output includes Nablarch usage section",
+      "text": "Class diagram includes relationship 'LoginAction ..> UniversalDao'",
       "detected": true,
-      "evidence": "Found in output: '## Nablarch Framework Usage' with UniversalDao, InjectForm, OnError, SessionUtil sections"
+      "evidence": "Found in classDiagram block: 'LoginAction ..> UniversalDao : queries'"
+    },
+    {
+      "text": "Class diagram includes relationship 'LoginAction ..> SessionUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'LoginAction ..> SessionUtil : invokes'"
+    },
+    {
+      "text": "Component Summary includes 'LoginAction'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'LoginForm'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Component Summary includes 'LoginUserPrincipal'",
+      "detected": true,
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Processing Flow includes 'authenticate'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: 'AuthenticationUtil.authenticate(loginId, password)で認証処理'"
+    },
+    {
+      "text": "Processing Flow includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`SessionUtil.changeId(context)`でセッションIDを変更し'"
+    },
+    {
+      "text": "Processing Flow includes 'CsrfTokenUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`CsrfTokenUtil.regenerateCsrfToken(context)`'"
+    },
+    {
+      "text": "Processing Flow includes 'LoginUserPrincipal'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`LoginUserPrincipal`を生成する'"
+    },
+    {
+      "text": "Processing Flow includes 'invalidate'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`SessionUtil.invalidate(context)`でセッションを無効化する'"
+    },
+    {
+      "text": "Sequence diagram includes object 'LoginAction'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes object 'CsrfTokenUtil'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes message 'authenticate'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes message 'changeId'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block"
+    },
+    {
+      "text": "Sequence diagram includes message 'regenerateCsrfToken'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'UniversalDao'",
+      "detected": true,
+      "evidence": "Found as section heading: '### UniversalDao'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'InjectForm'",
+      "detected": true,
+      "evidence": "Found as section heading: '### InjectForm（インターセプタ）'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'OnError'",
+      "detected": true,
+      "evidence": "Found as section heading: '### OnError（インターセプタ）'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found as section heading: '### SessionUtil'"
+    },
+    {
+      "text": "Output includes 'Component Summary'",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary'"
+    },
+    {
+      "text": "Output includes 'Nablarch Framework Usage'",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage'"
+    },
+    {
+      "text": "Output includes '.nabledge/'",
+      "detected": true,
+      "evidence": "Output file saved to .nabledge/20260306/code-analysis-LoginAction.md"
     }
   ],
   "summary": {
-    "detected": 14,
+    "detected": 38,
     "not_detected": 0,
-    "total": 14,
+    "total": 38,
     "detection_rate": 1.0
   }
 }

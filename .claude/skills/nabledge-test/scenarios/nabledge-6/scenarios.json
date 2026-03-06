@@ -89,6 +89,13 @@
       "question": "code-analysis ExportProjectsInPeriodAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java",
       "expectations": {
+        "overview": [
+          "ExportProjectsInPeriodAction",
+          "BatchAction",
+          "DatabaseRecordReader",
+          "ObjectMapper",
+          "CSV"
+        ],
         "class_diagram": {
           "classes": [
             "ExportProjectsInPeriodAction",
@@ -103,6 +110,16 @@
             "ExportProjectsInPeriodAction --|> BatchAction"
           ]
         },
+        "component_summary": [
+          "ExportProjectsInPeriodAction",
+          "ProjectDto"
+        ],
+        "processing_flow": [
+          "initialize",
+          "createReader",
+          "handle",
+          "terminate"
+        ],
         "sequence_diagram": {
           "objects": [
             "ExportProjectsInPeriodAction",
@@ -117,6 +134,13 @@
             "terminate"
           ]
         },
+        "nablarch_usage": [
+          "BatchAction",
+          "DatabaseRecordReader",
+          "ObjectMapper",
+          "FilePathSetting",
+          "BusinessDateUtil"
+        ],
         "output": [
           "Component Summary",
           "Nablarch Framework Usage",
@@ -130,6 +154,13 @@
       "question": "code-analysis LoginAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/login/LoginAction.java",
       "expectations": {
+        "overview": [
+          "LoginAction",
+          "AuthenticationUtil",
+          "SessionUtil",
+          "InjectForm",
+          "UniversalDao"
+        ],
         "class_diagram": {
           "classes": [
             "LoginAction",
@@ -146,6 +177,19 @@
             "LoginAction ..> SessionUtil"
           ]
         },
+        "component_summary": [
+          "LoginAction",
+          "LoginForm",
+          "AuthenticationUtil",
+          "LoginUserPrincipal"
+        ],
+        "processing_flow": [
+          "authenticate",
+          "SessionUtil",
+          "CsrfTokenUtil",
+          "LoginUserPrincipal",
+          "invalidate"
+        ],
         "sequence_diagram": {
           "objects": [
             "LoginAction",
@@ -159,6 +203,12 @@
             "regenerateCsrfToken"
           ]
         },
+        "nablarch_usage": [
+          "UniversalDao",
+          "InjectForm",
+          "OnError",
+          "SessionUtil"
+        ],
         "output": [
           "Component Summary",
           "Nablarch Framework Usage",
@@ -172,6 +222,13 @@
       "question": "code-analysis ProjectSearchAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectSearchAction.java",
       "expectations": {
+        "overview": [
+          "ProjectSearchAction",
+          "InjectForm",
+          "OnError",
+          "ProjectService",
+          "UniversalDao"
+        ],
         "class_diagram": {
           "classes": [
             "ProjectSearchAction",
@@ -185,6 +242,19 @@
             "ProjectSearchAction ..> SessionUtil"
           ]
         },
+        "component_summary": [
+          "ProjectSearchAction",
+          "ProjectSearchForm",
+          "ProjectService",
+          "ProjectSearchConditionDto"
+        ],
+        "processing_flow": [
+          "search",
+          "list",
+          "detail",
+          "BeanUtil",
+          "SessionUtil"
+        ],
         "sequence_diagram": {
           "objects": [
             "ProjectSearchAction",
@@ -196,6 +266,12 @@
             "BeanUtil"
           ]
         },
+        "nablarch_usage": [
+          "InjectForm",
+          "OnError",
+          "UniversalDao",
+          "SessionUtil"
+        ],
         "output": [
           "Component Summary",
           "Nablarch Framework Usage",
@@ -209,6 +285,13 @@
       "question": "code-analysis ProjectCreateAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectCreateAction.java",
       "expectations": {
+        "overview": [
+          "ProjectCreateAction",
+          "InjectForm",
+          "OnDoubleSubmission",
+          "ProjectService",
+          "SessionUtil"
+        ],
         "class_diagram": {
           "classes": [
             "ProjectCreateAction",
@@ -222,6 +305,18 @@
             "ProjectCreateAction ..> SessionUtil"
           ]
         },
+        "component_summary": [
+          "ProjectCreateAction",
+          "ProjectCreateForm",
+          "ProjectService"
+        ],
+        "processing_flow": [
+          "confirmRegistration",
+          "register",
+          "BeanUtil",
+          "SessionUtil",
+          "OnDoubleSubmission"
+        ],
         "sequence_diagram": {
           "objects": [
             "ProjectCreateAction",
@@ -235,6 +330,11 @@
             "BeanUtil"
           ]
         },
+        "nablarch_usage": [
+          "InjectForm",
+          "OnDoubleSubmission",
+          "UniversalDao"
+        ],
         "output": [
           "Component Summary",
           "Nablarch Framework Usage",
@@ -248,6 +348,13 @@
       "question": "code-analysis ProjectUpdateAction",
       "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectUpdateAction.java",
       "expectations": {
+        "overview": [
+          "ProjectUpdateAction",
+          "confirmUpdate",
+          "update",
+          "SessionUtil",
+          "OnDoubleSubmission"
+        ],
         "class_diagram": {
           "classes": [
             "ProjectUpdateAction",
@@ -261,6 +368,19 @@
             "ProjectUpdateAction ..> SessionUtil"
           ]
         },
+        "component_summary": [
+          "ProjectUpdateAction",
+          "ProjectUpdateForm",
+          "ProjectService",
+          "ProjectUpdateInitialForm"
+        ],
+        "processing_flow": [
+          "index",
+          "confirmUpdate",
+          "update",
+          "BeanUtil",
+          "SessionUtil"
+        ],
         "sequence_diagram": {
           "objects": [
             "ProjectUpdateAction",
@@ -274,6 +394,12 @@
             "BeanUtil"
           ]
         },
+        "nablarch_usage": [
+          "SessionUtil",
+          "OnDoubleSubmission",
+          "BeanUtil",
+          "UniversalDao"
+        ],
         "output": [
           "Component Summary",
           "Nablarch Framework Usage",

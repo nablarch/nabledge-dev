@@ -2,85 +2,185 @@
   "scenario_id": "ca-001",
   "detection_items": [
     {
-      "text": "Finds target file ExportProjectsInPeriodAction.java",
+      "text": "Overview includes 'ExportProjectsInPeriodAction'",
       "detected": true,
-      "evidence": "Found in output: 'ExportProjectsInPeriodAction.java' referenced multiple times"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies BatchAction<SqlRow> as parent class",
+      "text": "Overview includes 'BatchAction'",
       "detected": true,
-      "evidence": "Found in output: 'public class ExportProjectsInPeriodAction extends BatchAction<SqlRow>'"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies initialize method",
+      "text": "Overview includes 'DatabaseRecordReader'",
       "detected": true,
-      "evidence": "Found in output: 'initialize（初期化）: `FilePathSetting`から出力先ファイルパスを取得し'"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies createReader method with DatabaseRecordReader",
+      "text": "Overview includes 'ObjectMapper'",
       "detected": true,
-      "evidence": "Found in output: 'createReader（データリーダ生成）: `DatabaseRecordReader`を生成し'"
+      "evidence": "Found in Overview section"
     },
     {
-      "text": "Identifies handle method with ProjectDto",
+      "text": "Overview includes 'CSV'",
       "detected": true,
-      "evidence": "Found in output: 'handle（レコード処理）: データリーダが返す各`SqlRow`を`EntityUtil.createEntity()`で`ProjectDto`に変換する'"
+      "evidence": "Found in Overview section: 'CSVファイルとして出力する'"
     },
     {
-      "text": "Identifies terminate method",
+      "text": "Class diagram includes class 'ExportProjectsInPeriodAction'",
       "detected": true,
-      "evidence": "Found in output: 'terminate（終了処理）: `mapper.close()`を呼び出してバッファをフラッシュし'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies ObjectMapper usage for CSV output",
+      "text": "Class diagram includes class 'BatchAction'",
       "detected": true,
-      "evidence": "Found in output: 'ObjectMapper / ObjectMapperFactory' section with CSV output details"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies FilePathSetting usage",
+      "text": "Class diagram includes class 'DatabaseRecordReader'",
       "detected": true,
-      "evidence": "Found in output: 'FilePathSetting' section with getFile() usage"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Identifies BusinessDateUtil usage",
+      "text": "Class diagram includes class 'ObjectMapper'",
       "detected": true,
-      "evidence": "Found in output: 'BusinessDateUtil' section with getDate() usage"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates dependency diagram (Mermaid classDiagram)",
+      "text": "Class diagram includes class 'FilePathSetting'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nclassDiagram\\n    class ExportProjectsInPeriodAction'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Creates sequence diagram (Mermaid sequenceDiagram)",
+      "text": "Class diagram includes class 'BusinessDateUtil'",
       "detected": true,
-      "evidence": "Found in output: '```mermaid\\nsequenceDiagram\\n    participant FW as BatchFramework'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Output includes component summary table",
+      "text": "Class diagram includes class 'ProjectDto'",
       "detected": true,
-      "evidence": "Found in output: '### Component Summary\\n\\n| Component | Role | Type | Dependencies |'"
+      "evidence": "Found in classDiagram block"
     },
     {
-      "text": "Output includes Nablarch usage section",
+      "text": "Class diagram includes relationship 'ExportProjectsInPeriodAction --|> BatchAction'",
       "detected": true,
-      "evidence": "Found in output: '## Nablarch Framework Usage' section"
+      "evidence": "Found in classDiagram block: 'ExportProjectsInPeriodAction --|> BatchAction : extends'"
     },
     {
-      "text": "Output file saved to .nabledge/YYYYMMDD/ directory",
+      "text": "Component Summary includes 'ExportProjectsInPeriodAction'",
       "detected": true,
-      "evidence": "File created: /home/tie303177/work/nabledge/work4/.nabledge/20260306/code-analysis-ExportProjectsInPeriodAction.md"
+      "evidence": "Found in Component Summary table"
     },
     {
-      "text": "Analysis duration calculated and displayed",
+      "text": "Component Summary includes 'ProjectDto'",
       "detected": true,
-      "evidence": "Found in output: '**Analysis Duration**: 約3分40秒'"
+      "evidence": "Found in Component Summary table"
+    },
+    {
+      "text": "Processing Flow includes 'initialize'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '1. **initialize**（初期化）'"
+    },
+    {
+      "text": "Processing Flow includes 'createReader'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '2. **createReader**（データリーダ生成）'"
+    },
+    {
+      "text": "Processing Flow includes 'handle'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '3. **handle**（レコード処理）'"
+    },
+    {
+      "text": "Processing Flow includes 'terminate'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '4. **terminate**（終了処理）'"
+    },
+    {
+      "text": "Sequence diagram includes object 'ExportProjectsInPeriodAction'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block: 'participant Action as ExportProjectsInPeriodAction'"
+    },
+    {
+      "text": "Sequence diagram includes object 'FilePathSetting'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block: 'participant FPS as FilePathSetting'"
+    },
+    {
+      "text": "Sequence diagram includes object 'DatabaseRecordReader'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block: 'participant DBR as DatabaseRecordReader'"
+    },
+    {
+      "text": "Sequence diagram includes object 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found as participant in sequenceDiagram block: 'participant BDU as BusinessDateUtil'"
+    },
+    {
+      "text": "Sequence diagram includes message 'initialize'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'FW->>Action: initialize(command, context)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'createReader'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'FW->>Action: createReader(context)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'handle'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'FW->>Action: handle(sqlRow, context)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'terminate'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'FW->>Action: terminate(result, context)'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'BatchAction'",
+      "detected": true,
+      "evidence": "Found as section heading: '### BatchAction'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'DatabaseRecordReader'",
+      "detected": true,
+      "evidence": "Found as section heading: '### DatabaseRecordReader'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'ObjectMapper'",
+      "detected": true,
+      "evidence": "Found as section heading: '### ObjectMapper / ObjectMapperFactory'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'FilePathSetting'",
+      "detected": true,
+      "evidence": "Found as section heading: '### FilePathSetting'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found as section heading: '### BusinessDateUtil'"
+    },
+    {
+      "text": "Output includes 'Component Summary'",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary'"
+    },
+    {
+      "text": "Output includes 'Nablarch Framework Usage'",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage'"
+    },
+    {
+      "text": "Output includes '.nabledge/'",
+      "detected": true,
+      "evidence": "Output file saved to .nabledge/20260306/code-analysis-ExportProjectsInPeriodAction.md"
     }
   ],
   "summary": {
-    "detected": 15,
+    "detected": 35,
     "not_detected": 0,
-    "total": 15,
+    "total": 35,
     "detection_rate": 1.0
   }
 }
