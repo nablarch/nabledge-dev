@@ -20,6 +20,10 @@ class TestPhaseControl:
         args.dry_run = False
         args.test = None
         args.run_id = None
+        args.regen = False
+        args.clean_phase = None
+        args.target = None
+        args.yes = False
         return args
 
     def _patch_phases(self):
