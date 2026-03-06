@@ -178,16 +178,44 @@ def main():
         logger.info(f"Logging to: {execution_log_path}")
         phases = args.phase or "ABCDEM"
 
+        # effective_target: per-version target list
+        # --target from CLI is the default; --regen may override per version
+        effective_target = args.target
+
         # --clean-phase: remove artifacts before run
         if args.clean_phase:
             from steps.cleaner import clean_phase_artifacts
             clean_phase_artifacts(ctx, args.clean_phase,
-                                  target_ids=args.target, yes=args.yes)
+                                  target_ids=effective_target, yes=args.yes)
 
-        # --regen: detect source changes and clean affected artifacts
+        # --regen: pull official repos, detect source changes, clean affected
+        # Note: This runs BEFORE Phase A. detect_changed_files reads the
+        # PREVIOUS run's classified.json (from .logs/) to map git diff paths
+        # to file_ids. If classified.json does not exist (first run), it
+        # returns None → all files will be generated (same as UC1).
         if args.regen:
-            from steps.source_tracker import detect_and_clean_changed
-            detect_and_clean_changed(ctx, yes=args.yes)
+            from steps.knowledge_meta import pull_official_repos, detect_changed_files
+            logger.info("\n📥 公式リポジトリを更新中...")
+            pull_official_repos(ctx)
+
+            logger.info("\n🔍 ソース変更を検知中...")
+            changed = detect_changed_files(ctx)
+
+            if changed is not None and len(changed) == 0:
+                logger.info("   ✨ ソース変更なし")
+                # Phase M の update_knowledge_meta を通らずに終了する（意図通り）
+                continue
+
+            if changed is not None:
+                logger.info(f"   🔄 変更検知: {len(changed)} ファイル")
+                for fid in changed[:10]:
+                    logger.info(f"     - {fid}")
+                if len(changed) > 10:
+                    logger.info(f"     ... 他 {len(changed) - 10} ファイル")
+                from steps.cleaner import clean_phase_artifacts
+                clean_phase_artifacts(ctx, "BD", target_ids=changed, yes=args.yes)
+                effective_target = changed
+            # changed is None → 初回生成扱い、effective_target = None のまま全件実行
 
         # Phase A
         if "A" in phases:
@@ -203,11 +231,7 @@ def main():
             logger.info("\n🤖Phase B: Generate")
             logger.info("   └─ Converting documentation to knowledge files...")
             from steps.phase_b_generate import PhaseBGenerate
-            PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=args.target)
-
-            if not args.dry_run and os.path.exists(ctx.classified_list_path):
-                from steps.source_tracker import save_hashes
-                save_hashes(ctx)
+            PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
 
         # Phase C/D/E loop
         for round_num in range(1, ctx.max_rounds + 1):
@@ -229,12 +253,12 @@ def main():
                 logger.info("   └─ Comparing knowledge files with source docs...")
                 from steps.phase_d_content_check import PhaseDContentCheck
                 pass_ids = c_result.get("pass_ids") if c_result else None
-                # Intersect with --target if specified
-                if args.target and pass_ids is not None:
-                    target_set = set(args.target)
+                # Intersect with effective_target if specified
+                if effective_target and pass_ids is not None:
+                    target_set = set(effective_target)
                     effective_ids = [fid for fid in pass_ids if fid in target_set]
-                elif args.target:
-                    effective_ids = args.target
+                elif effective_target:
+                    effective_ids = effective_target
                 else:
                     effective_ids = pass_ids
                 d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
@@ -263,6 +287,10 @@ def main():
             logger.info("   └─ Merging, resolving links, generating docs...")
             from steps.phase_m_finalize import PhaseMFinalize
             PhaseMFinalize(ctx, dry_run=args.dry_run).run()
+
+            logger.info("\n📝 knowledge-creator.json 更新")
+            from steps.knowledge_meta import update_knowledge_meta
+            update_knowledge_meta(ctx, dry_run=args.dry_run)
 
         # Phase G (backward compat: only when explicitly specified without M)
         if "G" in phases and "M" not in phases:
