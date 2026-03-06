@@ -70,29 +70,14 @@ class TestGetLocalRepoPath:
         )
         assert path == "/repo/.lw/nab-official/v5/nablarch-document"
 
-    def test_version_5_falls_back_to_v6_when_v5_path_missing(self, tmp_path):
-        # Simulate a repo that exists only under v6 (e.g., nablarch-system-development-guide)
-        v6_path = tmp_path / ".lw" / "nab-official" / "v6" / "nablarch-system-development-guide"
-        v6_path.mkdir(parents=True)
-
+    def test_version_5_system_development_guide(self):
+        # nablarch-system-development-guide is listed in v5's knowledge-creator.json
+        # and cloned under v5 by setup.sh, same as any other source repo
         path = get_local_repo_path(
             "https://github.com/Fintan-contents/nablarch-system-development-guide",
-            "5", str(tmp_path)
+            "5", "/repo"
         )
-        assert path == str(v6_path)
-
-    def test_version_5_no_fallback_when_v5_path_exists(self, tmp_path):
-        # When the v5 path exists, it should be used even if v6 also exists
-        v5_path = tmp_path / ".lw" / "nab-official" / "v5" / "nablarch-document"
-        v5_path.mkdir(parents=True)
-        v6_path = tmp_path / ".lw" / "nab-official" / "v6" / "nablarch-document"
-        v6_path.mkdir(parents=True)
-
-        path = get_local_repo_path(
-            "https://github.com/nablarch/nablarch-document",
-            "5", str(tmp_path)
-        )
-        assert path == str(v5_path)
+        assert path == "/repo/.lw/nab-official/v5/nablarch-system-development-guide"
 
 
 class TestGetHeadCommit:
