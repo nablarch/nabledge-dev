@@ -112,12 +112,20 @@ cd tools/knowledge-creator
 - **nc.sh**: Common workflows with sensible defaults (recommended for most users)
 - **run.py**: Fine-grained control over phases and advanced options
 
-### Test Mode (3 files)
+### Test Mode - Smallest (3 files)
+
+Validate with 3 smallest files (minimal processing time):
+
+```bash
+python tools/knowledge-creator/run.py --version 6 --test test-files-smallest3.json
+```
+
+### Test Mode - Largest (3 files)
 
 Validate with 3 largest files (split into sections for processing):
 
 ```bash
-python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
+python tools/knowledge-creator/run.py --version 6 --test test-files-largest3.json
 ```
 
 ### Test Mode (Comprehensive - 17 files)
@@ -164,7 +172,7 @@ python tools/knowledge-creator/run.py --version 6 --phase GF
 |--------|-------------|---------|
 | `--version` | Version (6, 5, all) | **Required** |
 | `--phase` | Phases to run (combination of A, B, C, D, E, M) | `ABCDEM` |
-| `--test` | Test mode: specify test file (e.g., `test-files-top3.json`) | `None` |
+| `--test` | Test mode: specify test file (e.g., `test-files-largest3.json`) | `None` |
 | `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
 | `--max-rounds` | Max Phase C→D→E loop iterations (1-10) | `1` |
 | `--clean-phase` | Clean artifacts for specified phases before run (e.g., 'D', 'BD') | `None` |
@@ -270,13 +278,17 @@ python tools/knowledge-creator/clean.py --version all
 
 Test files define which source files to process in test mode:
 
-- **test-files-top3.json**: 3 largest files (split into sections) - for success criteria validation
-- **test-files-comprehensive.json**: 17 files aligned with main branch knowledge files
+| File | Files | Description |
+|------|-------|-------------|
+| **test-files-smallest3.json** | 3 | 3 smallest files — fastest, minimal processing time |
+| **test-files-largest3.json** | 3 | 3 largest files (split into 22 sections) — tests split file handling |
+| **test-files-comprehensive.json** | 17 | Aligned with main branch knowledge files — broad category coverage |
 
 Specify test file with `--test` option:
 
 ```bash
-python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
+python tools/knowledge-creator/run.py --version 6 --test test-files-smallest3.json
+python tools/knowledge-creator/run.py --version 6 --test test-files-largest3.json
 python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensive.json
 ```
 
