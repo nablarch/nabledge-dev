@@ -8,8 +8,8 @@ import os
 import json
 import re
 from datetime import datetime
-from .common import load_json, write_json, read_file
-from .logger import get_logger
+from common import load_json, write_json, read_file
+from logger import get_logger
 
 
 # RST path-based mapping (evaluated in order, first match wins)
@@ -102,7 +102,7 @@ def classify_excel_by_pattern(filename: str) -> tuple:
 
 def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
     """Load test file IDs from specified test file"""
-    test_file_path = os.path.join(repo_path, "tools/knowledge-creator", test_file_name)
+    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/tests/mode", test_file_name)
 
     if not os.path.exists(test_file_path):
         raise FileNotFoundError(f"Test file set not found: {test_file_path}")

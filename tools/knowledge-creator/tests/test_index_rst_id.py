@@ -1,6 +1,6 @@
 """Tests: index.rst ID generation (pattern-remainder approach)."""
 import pytest
-from steps.step2_classify import Step2Classify
+from step2_classify import Step2Classify
 
 
 class TestIndexRstId:

@@ -3,7 +3,7 @@ import json
 import os
 import subprocess
 import pytest
-from steps.common import write_json, load_json
+from common import write_json, load_json
 
 
 def _make_classified_2files(ctx):
@@ -33,7 +33,7 @@ def _make_classified_2files(ctx):
 class TestPhaseBTargetFilter:
 
     def test_target_generates_only_specified_file(self, ctx, mock_claude):
-        from steps.phase_b_generate import PhaseBGenerate
+        from phase_b_generate import PhaseBGenerate
 
         _make_classified_2files(ctx)
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run(target_ids=["file-a"])
@@ -42,7 +42,7 @@ class TestPhaseBTargetFilter:
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/file-b.json")
 
     def test_no_target_generates_all(self, ctx, mock_claude):
-        from steps.phase_b_generate import PhaseBGenerate
+        from phase_b_generate import PhaseBGenerate
 
         _make_classified_2files(ctx)
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run(target_ids=None)
@@ -52,7 +52,7 @@ class TestPhaseBTargetFilter:
 
     def test_existing_run_calls_still_work(self, ctx, mock_claude):
         """Backward compat: run() without args still processes all files."""
-        from steps.phase_b_generate import PhaseBGenerate
+        from phase_b_generate import PhaseBGenerate
 
         _make_classified_2files(ctx)
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()

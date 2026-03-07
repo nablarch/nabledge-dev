@@ -1,8 +1,8 @@
 """Tests for steps/cleaner.py"""
 import os
 import pytest
-from steps.common import write_json, load_json
-from steps.cleaner import clean_phase_artifacts, _list_phase_b_artifacts, _list_phase_d_artifacts
+from common import write_json, load_json
+from cleaner import clean_phase_artifacts, _list_phase_b_artifacts, _list_phase_d_artifacts
 
 
 class TestListPhaseDAllFiles:

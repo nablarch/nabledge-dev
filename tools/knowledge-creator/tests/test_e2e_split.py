@@ -3,7 +3,7 @@ import json
 import os
 import pytest
 import subprocess
-from steps.common import load_json, write_json
+from common import load_json, write_json
 
 
 class TestE2ESplitPipeline:
@@ -11,10 +11,10 @@ class TestE2ESplitPipeline:
 
     def test_full_pipeline_split_to_final(self, ctx):
         """Full pipeline: Phase B → C → D(clean) → M with split files."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_c_structure_check import PhaseCStructureCheck
-        from steps.phase_d_content_check import PhaseDContentCheck
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_b_generate import PhaseBGenerate
+        from phase_c_structure_check import PhaseCStructureCheck
+        from phase_d_content_check import PhaseDContentCheck
+        from phase_m_finalize import PhaseMFinalize
 
         # Mock run_claude for Phase B, D, and F
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
@@ -179,11 +179,11 @@ class TestE2ESplitPipeline:
 
     def test_full_pipeline_split_with_fix_cycle(self, ctx):
         """Full pipeline with fix cycle: B → C → D(issues) → E(fix) → C → D(clean) → M."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_c_structure_check import PhaseCStructureCheck
-        from steps.phase_d_content_check import PhaseDContentCheck
-        from steps.phase_e_fix import PhaseEFix
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_b_generate import PhaseBGenerate
+        from phase_c_structure_check import PhaseCStructureCheck
+        from phase_d_content_check import PhaseDContentCheck
+        from phase_e_fix import PhaseEFix
+        from phase_m_finalize import PhaseMFinalize
 
         # Use stateful mock to control Phase D responses per round
         def make_stateful_mock():
@@ -391,10 +391,10 @@ class TestE2ESplitPipeline:
 
     def test_mixed_split_and_nonsplit(self, ctx):
         """Mixed pipeline: split files + non-split files."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_c_structure_check import PhaseCStructureCheck
-        from steps.phase_d_content_check import PhaseDContentCheck
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_b_generate import PhaseBGenerate
+        from phase_c_structure_check import PhaseCStructureCheck
+        from phase_d_content_check import PhaseDContentCheck
+        from phase_m_finalize import PhaseMFinalize
 
         # Mock run_claude
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):

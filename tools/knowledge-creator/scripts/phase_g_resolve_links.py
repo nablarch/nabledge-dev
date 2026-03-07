@@ -7,8 +7,8 @@ import os
 import re
 import json
 from glob import glob
-from .common import load_json, write_json
-from .logger import get_logger
+from common import load_json, write_json
+from logger import get_logger
 
 
 class PhaseGResolveLinks:

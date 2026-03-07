@@ -2,7 +2,7 @@
 import os
 import re
 import pytest
-from steps.step2_classify import Step2Classify
+from step2_classify import Step2Classify
 
 
 class TestSectionSplit:

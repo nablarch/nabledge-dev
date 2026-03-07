@@ -24,9 +24,9 @@ class PhaseMFinalize:
 
     def run(self):
         """Execute merge, link resolution, and doc generation."""
-        from steps.merge import MergeSplitFiles
-        from steps.phase_g_resolve_links import PhaseGResolveLinks
-        from steps.phase_f_finalize import PhaseFFinalize
+        from merge import MergeSplitFiles
+        from phase_g_resolve_links import PhaseGResolveLinks
+        from phase_f_finalize import PhaseFFinalize
 
         # Step 1: Merge split files
         MergeSplitFiles(self.ctx).run()

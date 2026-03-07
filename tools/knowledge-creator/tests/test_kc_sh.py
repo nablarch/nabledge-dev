@@ -44,8 +44,8 @@ class TestGenCommand:
         result = _run_nc(["gen", "6"], stub_env)
         lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
         assert len(lines) == 2, f"Expected 2 commands, got: {lines}"
-        assert "clean.py" in lines[0] and "--version 6" in lines[0]
-        assert "run.py" in lines[1] and "--version 6" in lines[1]
+        assert "scripts/clean.py" in lines[0] and "--version 6" in lines[0]
+        assert "scripts/run.py" in lines[1] and "--version 6" in lines[1]
 
     def test_gen_resume_skips_clean(self, stub_env):
         # --resume は SCRIPT_DIR/.logs/v6/latest symlink を必要とする
@@ -60,8 +60,8 @@ class TestGenCommand:
             result = _run_nc(["gen", "6", "--resume"], stub_env)
             lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
             assert len(lines) == 1, f"Expected 1 command, got: {lines}"
-            assert "run.py" in lines[0]
-            assert "clean.py" not in lines[0]
+            assert "scripts/run.py" in lines[0]
+            assert "scripts/clean.py" not in lines[0]
         finally:
             if created_link and os.path.lexists(latest_link):
                 os.remove(latest_link)

@@ -2,7 +2,7 @@
 import os
 import pytest
 from run import Context
-from steps.step1_list_sources import Step1ListSources
+from step1_list_sources import Step1ListSources
 
 
 @pytest.fixture

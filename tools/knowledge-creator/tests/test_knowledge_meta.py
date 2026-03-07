@@ -3,8 +3,8 @@ import json
 import os
 import subprocess
 import pytest
-from steps.common import load_json, write_json
-from steps.knowledge_meta import (
+from common import load_json, write_json
+from knowledge_meta import (
     get_meta_path,
     load_meta,
     get_local_repo_path,

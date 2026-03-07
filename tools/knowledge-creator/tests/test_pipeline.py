@@ -10,9 +10,9 @@ class TestPipelineBCD:
 
     def test_generate_and_validate_clean(self, ctx, mock_claude):
         """Normal flow: generate -> structure pass -> content clean."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_c_structure_check import PhaseCStructureCheck
-        from steps.phase_d_content_check import PhaseDContentCheck
+        from phase_b_generate import PhaseBGenerate
+        from phase_c_structure_check import PhaseCStructureCheck
+        from phase_d_content_check import PhaseDContentCheck
 
         # Phase B
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
@@ -60,7 +60,7 @@ class TestPipelineBCD:
 
     def test_rst_links_preserved(self, ctx, mock_claude):
         """Verify RST link syntax is preserved in generated knowledge files."""
-        from steps.phase_b_generate import PhaseBGenerate
+        from phase_b_generate import PhaseBGenerate
 
         # Phase B: generate
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
@@ -99,10 +99,10 @@ class TestPipelineBCD:
 
     def test_fix_cycle(self, ctx):
         """Fix flow: generate -> check finds issues -> fix -> recheck clean."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_c_structure_check import PhaseCStructureCheck
-        from steps.phase_d_content_check import PhaseDContentCheck
-        from steps.phase_e_fix import PhaseEFix
+        from phase_b_generate import PhaseBGenerate
+        from phase_c_structure_check import PhaseCStructureCheck
+        from phase_d_content_check import PhaseDContentCheck
+        from phase_e_fix import PhaseEFix
 
         # B: generate
         PhaseBGenerate(ctx, run_claude_fn=make_mock_run_claude()).run()
@@ -164,8 +164,8 @@ class TestPipelineBCD:
 
 class TestPhaseF:
     def test_finalize(self, ctx, mock_claude):
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_f_finalize import PhaseFFinalize
+        from phase_b_generate import PhaseBGenerate
+        from phase_f_finalize import PhaseFFinalize
 
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
         PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
@@ -187,9 +187,9 @@ class TestPhaseF:
 
     def test_asset_path_conversion(self, ctx, mock_claude):
         """Verify asset paths are converted correctly in browsable docs."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_f_finalize import PhaseFFinalize
-        from steps.common import load_json
+        from phase_b_generate import PhaseBGenerate
+        from phase_f_finalize import PhaseFFinalize
+        from common import load_json
 
         # Phase B: Generate knowledge files
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
@@ -274,9 +274,9 @@ class TestPipelineWithPhaseG:
 
     def test_full_pipeline_with_link_resolution(self, ctx, mock_claude):
         """Test complete pipeline: generate -> resolve links -> finalize."""
-        from steps.phase_b_generate import PhaseBGenerate
-        from steps.phase_g_resolve_links import PhaseGResolveLinks
-        from steps.phase_f_finalize import PhaseFFinalize
+        from phase_b_generate import PhaseBGenerate
+        from phase_g_resolve_links import PhaseGResolveLinks
+        from phase_f_finalize import PhaseFFinalize
 
         # Phase B: Generate knowledge files with RST links
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()

@@ -12,7 +12,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'steps'))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from logger import setup_logger, get_logger
 
@@ -126,7 +126,7 @@ def main():
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", type=str, default=None,
-                        help="Test mode: specify test file (e.g., test-files-largest3.json)")
+                        help="Test mode: specify test file (e.g., largest3.json)")
     parser.add_argument("--max-rounds", type=int, default=2,
                         help="Max D->E->C loop iterations (default: 2, max: 10)")
     parser.add_argument("--clean-phase", type=str, default=None,
@@ -143,7 +143,7 @@ def main():
     args = parser.parse_args()
 
     # Auto-detect repository root from this script's location
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
     # Validate --max-rounds range
     if args.max_rounds < 1 or args.max_rounds > 10:
@@ -237,7 +237,7 @@ def main():
 
         # --clean-phase: remove artifacts before run
         if args.clean_phase:
-            from steps.cleaner import clean_phase_artifacts
+            from cleaner import clean_phase_artifacts
             clean_phase_artifacts(ctx, args.clean_phase,
                                   target_ids=effective_target, yes=args.yes)
 
@@ -247,7 +247,7 @@ def main():
         # to file_ids. If classified.json does not exist (first run), it
         # returns None → all files will be generated (same as UC1).
         if args.regen:
-            from steps.knowledge_meta import pull_official_repos, detect_changed_files
+            from knowledge_meta import pull_official_repos, detect_changed_files
             logger.info("\n📥 公式リポジトリを更新中...")
             pull_official_repos(ctx)
 
@@ -265,7 +265,7 @@ def main():
                     logger.info(f"     - {fid}")
                 if len(changed) > 10:
                     logger.info(f"     ... 他 {len(changed) - 10} ファイル")
-                from steps.cleaner import clean_phase_artifacts
+                from cleaner import clean_phase_artifacts
                 clean_phase_artifacts(ctx, "BD", target_ids=changed, yes=args.yes)
                 effective_target = changed
             # changed is None → 初回生成扱い、effective_target = None のまま全件実行
@@ -274,8 +274,8 @@ def main():
         if "A" in phases:
             logger.info("\n📋Phase A: Prepare")
             logger.info("   └─ Scanning documentation sources...")
-            from steps.step1_list_sources import Step1ListSources
-            from steps.step2_classify import Step2Classify
+            from step1_list_sources import Step1ListSources
+            from step2_classify import Step2Classify
             sources = Step1ListSources(ctx, dry_run=args.dry_run).run()
             Step2Classify(ctx, dry_run=args.dry_run, sources_data=sources).run()
 
@@ -283,7 +283,7 @@ def main():
         if "B" in phases:
             logger.info("\n🤖Phase B: Generate")
             logger.info("   └─ Converting documentation to knowledge files...")
-            from steps.phase_b_generate import PhaseBGenerate
+            from phase_b_generate import PhaseBGenerate
             b_result = PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
             if b_result:
                 report["phase_b"] = b_result
@@ -296,7 +296,7 @@ def main():
             if "C" in phases:
                 logger.info("\n✅Phase C: Structure Check")
                 logger.info("   └─ Validating JSON schema and structure...")
-                from steps.phase_c_structure_check import PhaseCStructureCheck
+                from phase_c_structure_check import PhaseCStructureCheck
                 c_result = PhaseCStructureCheck(ctx).run()
                 report["phase_c"] = {
                     "total":     c_result.get("total", 0),
@@ -313,7 +313,7 @@ def main():
             if "D" in phases:
                 logger.info("\n🔍Phase D: Content Check")
                 logger.info("   └─ Comparing knowledge files with source docs...")
-                from steps.phase_d_content_check import PhaseDContentCheck
+                from phase_d_content_check import PhaseDContentCheck
                 pass_ids = c_result.get("pass_ids") if c_result else None
                 # Intersect with effective_target if specified
                 if effective_target and pass_ids is not None:
@@ -348,7 +348,7 @@ def main():
                 if "E" in phases:
                     logger.info("\n🔧Phase E: Fix")
                     logger.info("   └─ Applying fixes to knowledge files...")
-                    from steps.phase_e_fix import PhaseEFix
+                    from phase_e_fix import PhaseEFix
                     e_result = PhaseEFix(ctx, dry_run=args.dry_run).run(
                         target_ids=d_result["issue_file_ids"]
                     )
@@ -368,10 +368,10 @@ def main():
         if "M" in phases:
             logger.info("\n📦Phase M: Merge + Resolve + Finalize")
             logger.info("   └─ Merging, resolving links, generating docs...")
-            from steps.phase_m_finalize import PhaseMFinalize
+            from phase_m_finalize import PhaseMFinalize
             PhaseMFinalize(ctx, dry_run=args.dry_run).run()
 
-            from steps.knowledge_meta import update_knowledge_meta
+            from knowledge_meta import update_knowledge_meta
             if ctx.test_file:
                 logger.info("\n📝 knowledge-creator.json 更新（テストモード: スキップ）")
             else:
@@ -382,14 +382,14 @@ def main():
         if "G" in phases and "M" not in phases:
             logger.info("\n🔗Phase G: Resolve Links")
             logger.info("   └─ Resolving RST cross-references...")
-            from steps.phase_g_resolve_links import PhaseGResolveLinks
+            from phase_g_resolve_links import PhaseGResolveLinks
             PhaseGResolveLinks(ctx).run()
 
         # Phase F (backward compat: only when explicitly specified without M)
         if "F" in phases and "M" not in phases:
             logger.info("\n📦Phase F: Finalize")
             logger.info("   └─ Generating browsable docs and index...")
-            from steps.phase_f_finalize import PhaseFFinalize
+            from phase_f_finalize import PhaseFFinalize
             PhaseFFinalize(ctx, dry_run=args.dry_run).run()
 
         finished_at = datetime.now(timezone.utc).isoformat()

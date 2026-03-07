@@ -10,14 +10,12 @@ import os
 import shutil
 import sys
 
-# Add steps directory to path for logger import
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'steps'))
 from logger import get_logger
 
 
 def detect_repo_root():
     """Detect repository root from this script's location."""
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 
 def remove_if_exists(path, label):

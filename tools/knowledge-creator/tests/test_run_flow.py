@@ -3,7 +3,7 @@ import json
 import os
 import pytest
 import subprocess
-from steps.common import load_json, write_json
+from common import load_json, write_json
 
 
 class TestRunFlowWithSplitFiles:
@@ -11,7 +11,7 @@ class TestRunFlowWithSplitFiles:
 
     def test_phase_b_no_longer_merges(self, ctx):
         """Phase B no longer merges split files."""
-        from steps.phase_b_generate import PhaseBGenerate
+        from phase_b_generate import PhaseBGenerate
 
         # Mock run_claude
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
@@ -113,9 +113,9 @@ class TestRunFlowWithSplitFiles:
 
     def test_split_ids_pass_through_cde_loop(self, ctx):
         """Split file IDs pass through C -> D -> E loop correctly."""
-        from steps.phase_c_structure_check import PhaseCStructureCheck
-        from steps.phase_d_content_check import PhaseDContentCheck
-        from steps.phase_e_fix import PhaseEFix
+        from phase_c_structure_check import PhaseCStructureCheck
+        from phase_d_content_check import PhaseDContentCheck
+        from phase_e_fix import PhaseEFix
 
         # Mock run_claude for Phase D (content check) and Phase E (fix)
         call_tracker = {"d": [], "e": [], "d_round": 1}

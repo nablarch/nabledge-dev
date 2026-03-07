@@ -5,8 +5,8 @@ Scan source directories and generate a list of all documentation files to proces
 
 import os
 from datetime import datetime, timezone
-from .common import write_json
-from .logger import get_logger
+from common import write_json
+from logger import get_logger
 
 
 class Step1ListSources:

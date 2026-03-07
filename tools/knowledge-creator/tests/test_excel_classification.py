@@ -3,8 +3,8 @@ import pytest
 import os
 import tempfile
 import shutil
-from steps.step1_list_sources import Step1ListSources
-from steps.step2_classify import Step2Classify, classify_excel_by_pattern, XLSX_MAPPING
+from step1_list_sources import Step1ListSources
+from step2_classify import Step2Classify, classify_excel_by_pattern, XLSX_MAPPING
 
 
 @pytest.fixture
