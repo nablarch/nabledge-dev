@@ -47,6 +47,16 @@ Each Phase B/D/E/F execution saves metrics to `executions/` directory:
 
 **Purpose**: Performance analysis, cost tracking, and debugging.
 
+## Reports
+
+Reports are saved to `tools/knowledge-creator/reports/` after each execution.
+
+**Why not gitignored**: Production generation reports should be committed as a record of what was generated and when. Gitignoring would cause them to be missed at release time.
+
+**Development**: Delete reports generated during development or testing before requesting PR review.
+
+**Production generation**: Commit reports as part of the generation PR to record the run.
+
 ## Bug Reproduction Tests
 
 When a bug is found, add a reproduction test before fixing it.
