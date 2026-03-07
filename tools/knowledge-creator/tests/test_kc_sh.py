@@ -48,11 +48,23 @@ class TestGenCommand:
         assert "run.py" in lines[1] and "--version 6" in lines[1]
 
     def test_gen_resume_skips_clean(self, stub_env):
-        result = _run_nc(["gen", "6", "--resume"], stub_env)
-        lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
-        assert len(lines) == 1, f"Expected 1 command, got: {lines}"
-        assert "run.py" in lines[0]
-        assert "clean.py" not in lines[0]
+        # --resume は SCRIPT_DIR/.logs/v6/latest symlink を必要とする
+        logs_dir = os.path.join(TOOL_DIR, ".logs", "v6")
+        latest_link = os.path.join(logs_dir, "latest")
+        os.makedirs(logs_dir, exist_ok=True)
+        created_link = False
+        if not os.path.lexists(latest_link):
+            os.symlink("test-run", latest_link)
+            created_link = True
+        try:
+            result = _run_nc(["gen", "6", "--resume"], stub_env)
+            lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
+            assert len(lines) == 1, f"Expected 1 command, got: {lines}"
+            assert "run.py" in lines[0]
+            assert "clean.py" not in lines[0]
+        finally:
+            if created_link and os.path.lexists(latest_link):
+                os.remove(latest_link)
 
 
 class TestRegenCommand:

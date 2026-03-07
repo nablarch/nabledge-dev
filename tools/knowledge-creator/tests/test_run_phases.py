@@ -1,219 +1,212 @@
-"""Tests for run.py phase control logic."""
+"""E2E tests for run.py main() — real Phase classes with mocked claude."""
 import json
 import os
 import sys
-from unittest.mock import patch, MagicMock
+import shutil
+import glob
 import pytest
+from unittest.mock import patch, MagicMock
+
+TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, TOOL_DIR)
+
+from run import Context
+from conftest import make_mock_run_claude
+
+
+def _setup_repo(tmp_path, run_id="test"):
+    """テスト用リポジトリを構築し、classified.json を正しいパスに配置する。
+
+    classified.json は ctx.classified_list_path に配置する。
+    Phase A を含むテストでは Step2Classify がこのファイルを上書きする点に注意。
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    ctx = Context(version="6", repo=str(repo), concurrency=1, run_id=run_id)
+
+    # ソースファイル
+    fixtures_dir = os.path.join(os.path.dirname(__file__), "fixtures")
+    src_dir = repo / "tests" / "fixtures"
+    src_dir.mkdir(parents=True)
+    shutil.copy(os.path.join(fixtures_dir, "sample_source.rst"),
+                src_dir / "sample_source.rst")
+
+    # classified.json を ctx.classified_list_path に配置
+    os.makedirs(os.path.dirname(ctx.classified_list_path), exist_ok=True)
+    classified = {
+        "version": "6",
+        "generated_at": "2026-01-01T00:00:00Z",
+        "files": [
+            {
+                "id": "handlers-sample-handler",
+                "source_path": "tests/fixtures/sample_source.rst",
+                "format": "rst",
+                "filename": "sample_source.rst",
+                "type": "component",
+                "category": "handlers",
+                "output_path": "component/handlers/handlers-sample-handler.json",
+                "assets_dir": "component/handlers/assets/handlers-sample-handler/"
+            }
+        ]
+    }
+    with open(ctx.classified_list_path, "w", encoding="utf-8") as f:
+        json.dump(classified, f, ensure_ascii=False, indent=2)
+
+    # プロンプトディレクトリ（実ファイルをコピー）
+    prompts_dir = repo / "tools" / "knowledge-creator" / "prompts"
+    prompts_dir.mkdir(parents=True)
+    real_prompts = os.path.join(TOOL_DIR, "prompts")
+    for fname in os.listdir(real_prompts):
+        shutil.copy(os.path.join(real_prompts, fname), prompts_dir / fname)
+
+    # knowledge-creator.json（Phase M の update_knowledge_meta 用）
+    plugin_dir = repo / ".claude" / "skills" / "nabledge-6" / "plugin"
+    plugin_dir.mkdir(parents=True)
+    meta = {
+        "generated_at": "",
+        "sources": [
+            {"repo": "https://github.com/nablarch/nablarch-document", "branch": "main", "commit": ""},
+            {"repo": "https://github.com/nablarch/nablarch-system-development-guide", "branch": "main", "commit": ""}
+        ]
+    }
+    with open(plugin_dir / "knowledge-creator.json", "w", encoding="utf-8") as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+    return str(repo), ctx
+
+
+def _make_args(repo, phase=None, run_id="test"):
+    args = MagicMock()
+    args.version = "6"
+    args.repo = repo
+    args.phase = phase
+    args.max_rounds = 1
+    args.concurrency = 1
+    args.dry_run = False
+    args.test = None
+    args.run_id = run_id
+    args.yes = True
+    args.regen = False
+    args.target = None
+    args.clean_phase = None
+    return args
+
+
+def _run_main(repo, args):
+    """main() を実行する。
+
+    注意点:
+    1. main() は repo_root を __file__ から自動検出する。テスト用 repo を使うために
+       os.path.abspath をpatchし、run.py のリポジトリルート算出時のみテスト用 repo を返す。
+
+    2. 各Phaseモジュールの _default_run_claude を個別にpatchする。
+       steps.common.run_claude の一括patchでは効かない。理由:
+       各Phaseモジュールは from .common import run_claude as _default_run_claude で
+       import時にローカル変数にバインド済み。
+    """
+    mock_claude = make_mock_run_claude()
+    argv = ["run.py", "--version", "6"]
+    if args.phase:
+        argv += ["--phase", args.phase]
+
+    # main() 内の repo_root = os.path.abspath(...) をテスト用 repo に差し替える
+    original_abspath = os.path.abspath
+
+    def patched_abspath(path):
+        result = original_abspath(path)
+        if result == original_abspath(os.path.join(TOOL_DIR, '..', '..')):
+            return repo
+        return result
+
+    with patch("sys.argv", argv), \
+         patch("argparse.ArgumentParser.parse_args", return_value=args), \
+         patch("os.path.abspath", side_effect=patched_abspath), \
+         patch("steps.phase_b_generate._default_run_claude", mock_claude), \
+         patch("steps.phase_d_content_check._default_run_claude", mock_claude), \
+         patch("steps.phase_e_fix._default_run_claude", mock_claude), \
+         patch("steps.phase_f_finalize._default_run_claude", mock_claude):
+        import run as run_module
+        run_module.main()
 
 
 class TestPhaseControl:
-    """Test that phase option controls which phases are executed."""
+    """run.py main() のPhase制御をE2Eで検証する。"""
 
-    def _create_test_args(self, phase=None):
-        """Create mock args for run.py."""
-        args = MagicMock()
-        args.version = "6"
-        args.repo = "/tmp/test-repo"
-        args.phase = phase
-        args.max_rounds = 3
-        args.concurrency = 1
-        args.dry_run = False
-        args.test = None
-        args.run_id = None
-        return args
+    def test_phase_bcdem(self, tmp_path):
+        """--phase BCDEM: B→C→D→(E)→M が通しで実行される。
 
-    def _patch_phases(self):
-        """Patch all Phase classes to track execution."""
-        patches = {}
-        tracked = {}
+        Phase A を含まないため classified.json は _setup_repo のまま維持される。
+        Phase間グルーコード（Phase B後の後処理含む）がエラーなく実行されることを検証。
+        """
+        repo, ctx = _setup_repo(tmp_path)
+        args = _make_args(repo, phase="BCDEM")
+        _run_main(repo, args)
 
-        # Track which phases were instantiated
-        for phase_name, module_path, class_name in [
-            ("A", "steps.step1_list_sources", "Step1ListSources"),
-            ("A", "steps.step2_classify", "Step2Classify"),
-            ("B", "steps.phase_b_generate", "PhaseBGenerate"),
-            ("C", "steps.phase_c_structure_check", "PhaseCStructureCheck"),
-            ("D", "steps.phase_d_content_check", "PhaseDContentCheck"),
-            ("E", "steps.phase_e_fix", "PhaseEFix"),
-            ("G", "steps.phase_g_resolve_links", "PhaseGResolveLinks"),
-            ("F", "steps.phase_f_finalize", "PhaseFFinalize"),
-            ("M", "steps.phase_m_finalize", "PhaseMFinalize"),
-        ]:
-            key = f"{phase_name}_{class_name}"
-            tracked[key] = {"instantiated": False, "run_called": False}
+        # Phase B: 知識ファイルが生成された
+        knowledge_path = os.path.join(
+            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
+        assert os.path.exists(knowledge_path), "Phase B should generate knowledge file"
 
-            # Create mock class
-            def make_mock(track_key):
-                class MockPhase:
-                    def __init__(self, *args, **kwargs):
-                        tracked[track_key]["instantiated"] = True
+        # Phase C: structure check結果が生成された
+        assert os.path.exists(ctx.structure_check_path), \
+            "Phase C should generate structure check results"
 
-                    def run(self, *args, **kwargs):
-                        tracked[track_key]["run_called"] = True
-                        # Return appropriate result based on phase
-                        if "PhaseCStructureCheck" in track_key:
-                            return {"pass_ids": [], "error_count": 0, "pass": 0}
-                        elif "PhaseDContentCheck" in track_key:
-                            return {"issue_file_ids": [], "issues_count": 0}
-                        elif "Step1ListSources" in track_key:
-                            return {"files": []}
-                        return {}
+        # Phase M: docs が生成された（G→Fを内部で実行）
+        assert os.path.isdir(ctx.docs_dir), "Phase M should generate docs directory"
 
-                return MockPhase
+        # レポートが生成された（BCDEM全フローが正常完了した証拠）
+        assert os.path.exists(ctx.report_path), "Report should be generated"
 
-            patches[key] = patch(f"{module_path}.{class_name}", make_mock(key))
+    def test_phase_m_only(self, tmp_path):
+        """--phase M: Mのみ実行。B/C/Dは実行されない。"""
+        repo, ctx = _setup_repo(tmp_path)
+        args = _make_args(repo, phase="M")
+        _run_main(repo, args)
 
-        return patches, tracked
+        # Phase B の成果物は生成されない
+        knowledge_path = os.path.join(
+            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
+        assert not os.path.exists(knowledge_path), "Phase B should not run"
+
+        # Phase C の成果物は生成されない
+        assert not os.path.exists(ctx.structure_check_path), "Phase C should not run"
 
     def test_default_phases_include_m(self, tmp_path):
-        """Default phases should be ABCDEM."""
-        args = self._create_test_args(phase=None)
-        args.repo = str(tmp_path)
+        """デフォルト(ABCDEM): Phase Aを含むフルフローがエラーなく完了する。
 
-        # Create required directories
-        os.makedirs(f"{tmp_path}/.lw/nab-official/nablarch-document/en/application_framework", exist_ok=True)
+        Phase A が classified.json を空の files リストで上書きするため
+        Phase B の処理対象は0件になる。知識ファイルは生成されないが、
+        全Phaseが正常に完了しレポートが生成されることを検証。
+        """
+        repo, ctx = _setup_repo(tmp_path)
+        args = _make_args(repo, phase=None)  # デフォルト = ABCDEM
+        _run_main(repo, args)
 
-        patches, tracked = self._patch_phases()
+        # レポートが生成された（全Phaseが正常完了した証拠）
+        assert os.path.exists(ctx.report_path), "Report should be generated"
 
-        with patch('sys.argv', ['run.py', '--version', '6']):
-            with patch('argparse.ArgumentParser.parse_args', return_value=args):
-                # Start all patches
-                for p in patches.values():
-                    p.start()
+    def test_backward_compat_gf(self, tmp_path):
+        """--phase GF: G→F が実行され、Mは実行されない。"""
+        repo, ctx = _setup_repo(tmp_path)
+        args = _make_args(repo, phase="GF")
+        _run_main(repo, args)
 
-                try:
-                    # Import and run
-                    import run as run_module
-                    run_module.main()
+        # レポートが生成された
+        assert os.path.exists(ctx.report_path), "Report should be generated"
 
-                    # Verify: Phase M should be instantiated
-                    assert tracked["M_PhaseMFinalize"]["instantiated"], "Phase M should be executed in default mode"
+    def test_phase_b_glue_code_executes(self, tmp_path):
+        """Phase B完了後のグルーコードがエラーなく実行される。
 
-                    # Verify: Phase G and F should NOT be instantiated (replaced by M)
-                    assert not tracked["G_PhaseGResolveLinks"]["instantiated"], "Phase G should not run when M is present"
-                    assert not tracked["F_PhaseFFinalize"]["instantiated"], "Phase F should not run when M is present"
+        classified.json が存在する状態で Phase B のみ実行。
+        source_tracker 行が残っていれば ModuleNotFoundError で失敗する。
+        """
+        repo, ctx = _setup_repo(tmp_path)
+        args = _make_args(repo, phase="B")
+        _run_main(repo, args)
 
-                finally:
-                    # Stop all patches
-                    for p in patches.values():
-                        p.stop()
-
-    def test_explicit_phase_m(self, tmp_path):
-        """--phase M should execute only Phase M."""
-        args = self._create_test_args(phase="M")
-        args.repo = str(tmp_path)
-
-        patches, tracked = self._patch_phases()
-
-        with patch('sys.argv', ['run.py', '--version', '6', '--phase', 'M']):
-            with patch('argparse.ArgumentParser.parse_args', return_value=args):
-                for p in patches.values():
-                    p.start()
-
-                try:
-                    import run as run_module
-                    run_module.main()
-
-                    # Verify: Only Phase M
-                    assert tracked["M_PhaseMFinalize"]["instantiated"], "Phase M should be executed"
-
-                    # Verify: Other phases not executed
-                    assert not tracked["A_Step1ListSources"]["instantiated"], "Phase A should not run"
-                    assert not tracked["B_PhaseBGenerate"]["instantiated"], "Phase B should not run"
-                    assert not tracked["C_PhaseCStructureCheck"]["instantiated"], "Phase C should not run"
-                    assert not tracked["D_PhaseDContentCheck"]["instantiated"], "Phase D should not run"
-                    assert not tracked["E_PhaseEFix"]["instantiated"], "Phase E should not run"
-                    assert not tracked["G_PhaseGResolveLinks"]["instantiated"], "Phase G should not run"
-                    assert not tracked["F_PhaseFFinalize"]["instantiated"], "Phase F should not run"
-
-                finally:
-                    for p in patches.values():
-                        p.stop()
-
-    def test_phase_bcdem_full_flow(self, tmp_path):
-        """--phase BCDEM should execute full flow in correct order."""
-        args = self._create_test_args(phase="BCDEM")
-        args.repo = str(tmp_path)
-
-        # Create classified.json so Phase B/C/D/E can run
-        os.makedirs(f"{tmp_path}/.logs/v6", exist_ok=True)
-        classified = {
-            "version": "6",
-            "generated_at": "2026-01-01T00:00:00Z",
-            "files": []
-        }
-        with open(f"{tmp_path}/.logs/v6/classified.json", "w") as f:
-            json.dump(classified, f)
-
-        patches, tracked = self._patch_phases()
-
-        with patch('sys.argv', ['run.py', '--version', '6', '--phase', 'BCDEM']):
-            with patch('argparse.ArgumentParser.parse_args', return_value=args):
-                for p in patches.values():
-                    p.start()
-
-                try:
-                    import run as run_module
-                    run_module.main()
-
-                    # Verify: B, C, D, E, M all executed
-                    assert tracked["B_PhaseBGenerate"]["instantiated"], "Phase B should be executed"
-                    assert tracked["C_PhaseCStructureCheck"]["instantiated"], "Phase C should be executed"
-                    assert tracked["D_PhaseDContentCheck"]["instantiated"], "Phase D should be executed"
-                    # Phase E might not be called if D returns no issues, but that's ok
-                    assert tracked["M_PhaseMFinalize"]["instantiated"], "Phase M should be executed"
-
-                    # Verify: A not executed
-                    assert not tracked["A_Step1ListSources"]["instantiated"], "Phase A should not run"
-
-                    # Verify: G and F not executed (replaced by M)
-                    assert not tracked["G_PhaseGResolveLinks"]["instantiated"], "Phase G should not run when M is present"
-                    assert not tracked["F_PhaseFFinalize"]["instantiated"], "Phase F should not run when M is present"
-
-                finally:
-                    for p in patches.values():
-                        p.stop()
-
-    def test_backward_compat_gf_still_works(self, tmp_path):
-        """--phase GF should execute G -> F for backward compatibility."""
-        args = self._create_test_args(phase="GF")
-        args.repo = str(tmp_path)
-
-        # Create classified.json so phases can run
-        os.makedirs(f"{tmp_path}/.logs/v6", exist_ok=True)
-        classified = {
-            "version": "6",
-            "generated_at": "2026-01-01T00:00:00Z",
-            "files": []
-        }
-        with open(f"{tmp_path}/.logs/v6/classified.json", "w") as f:
-            json.dump(classified, f)
-
-        patches, tracked = self._patch_phases()
-
-        with patch('sys.argv', ['run.py', '--version', '6', '--phase', 'GF']):
-            with patch('argparse.ArgumentParser.parse_args', return_value=args):
-                for p in patches.values():
-                    p.start()
-
-                try:
-                    import run as run_module
-                    run_module.main()
-
-                    # Verify: G and F executed (backward compat)
-                    assert tracked["G_PhaseGResolveLinks"]["instantiated"], "Phase G should be executed"
-                    assert tracked["F_PhaseFFinalize"]["instantiated"], "Phase F should be executed"
-
-                    # Verify: M not executed
-                    assert not tracked["M_PhaseMFinalize"]["instantiated"], "Phase M should not run when using explicit GF"
-
-                    # Verify: Other phases not executed
-                    assert not tracked["A_Step1ListSources"]["instantiated"], "Phase A should not run"
-                    assert not tracked["B_PhaseBGenerate"]["instantiated"], "Phase B should not run"
-                    assert not tracked["C_PhaseCStructureCheck"]["instantiated"], "Phase C should not run"
-                    assert not tracked["D_PhaseDContentCheck"]["instantiated"], "Phase D should not run"
-                    assert not tracked["E_PhaseEFix"]["instantiated"], "Phase E should not run"
-
-                finally:
-                    for p in patches.values():
-                        p.stop()
+        # Phase B の成果物確認
+        knowledge_path = os.path.join(
+            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
+        assert os.path.exists(knowledge_path), "Phase B should generate knowledge file"

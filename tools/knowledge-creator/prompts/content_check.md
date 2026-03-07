@@ -88,6 +88,6 @@ For each section, check hints include:
 
 ## Output
 
-Report all findings as JSON matching the provided schema.
+Respond with the findings as JSON matching the provided schema.
 If no issues found, set status to "clean" with empty findings array.
 Do NOT attempt to fix anything. Only identify and describe.
