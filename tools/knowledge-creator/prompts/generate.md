@@ -10,8 +10,6 @@ Convert the source file below into a knowledge file (JSON) by following Work Ste
 - Format: `{FORMAT}` (rst/md/xlsx)
 - Type: `{TYPE}`
 - Category: `{CATEGORY}`
-- Output Path: `{OUTPUT_PATH}`
-- Assets Directory: `{ASSETS_DIR}`
 - Official Doc Base URL: `{OFFICIAL_DOC_BASE_URL}`
 
 ## Source File Content
@@ -499,4 +497,4 @@ Combine all results from Steps 1–6 into the output JSON.
 - [ ] All URLs from source are preserved
 - [ ] If Expected Sections was provided, section count equals expected count
 
-Output the JSON matching the schema above. No explanation, no markdown fences, no other text.
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

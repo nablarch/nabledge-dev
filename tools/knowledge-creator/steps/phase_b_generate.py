@@ -92,9 +92,6 @@ class PhaseBGenerate:
         prompt = prompt.replace("{FORMAT}", file_info["format"])
         prompt = prompt.replace("{TYPE}", file_info["type"])
         prompt = prompt.replace("{CATEGORY}", file_info["category"])
-        prompt = prompt.replace("{OUTPUT_PATH}", file_info["output_path"])
-        prompt = prompt.replace("{SOURCE_PATH}", file_info["source_path"])
-        prompt = prompt.replace("{ASSETS_DIR}", file_info["assets_dir"])
         prompt = prompt.replace("{OFFICIAL_DOC_BASE_URL}", self._compute_official_url(file_info))
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
 
