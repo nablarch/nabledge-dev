@@ -139,13 +139,11 @@ def main():
                         help="Detect source changes and regenerate affected files")
     parser.add_argument("--run-id", type=str, default=None,
                         help="Run ID (auto-generated from timestamp if omitted; pass existing ID to resume)")
-    parser.add_argument("--repo", type=str, default=None,
-                        help="Repository root path (auto-detected from script location if omitted)")
 
     args = parser.parse_args()
 
-    # Use --repo if specified, otherwise auto-detect from script location
-    repo_root = os.path.abspath(args.repo) if args.repo else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    # Auto-detect repository root from this script's location
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
     # Validate --max-rounds range
     if args.max_rounds < 1 or args.max_rounds > 10:

@@ -87,7 +87,7 @@ flowchart TD
     Start([Start]) --> A[Phase A: Preparation]
     A --> |List & Classify Sources<br/>Split large files| B[Phase B: Generation]
     B --> |Generate Knowledge JSON| C[Phase C: Structure Check]
-    C --> |S1-S15 Validation| PassC{Structure<br/>Errors?}
+    C --> |S1-S16 Validation| PassC{Structure<br/>Errors?}
     PassC --> |Yes| StructWarn[Skip files with errors<br/>Continue with valid files]
     PassC --> |No| D[Phase D: Content Check]
     StructWarn --> D
@@ -113,12 +113,14 @@ flowchart TD
 |-------|-------------|------|--------------|
 | **A** | Preparation | List source files, classify by type/category, split large files | Python | No |
 | **B** | Generation | Generate knowledge JSON from sources using Claude API | AI | Yes |
-| **C** | Structure Check | Validate JSON structure with S1-S15 checks | Python | No |
+| **C** | Structure Check | Validate JSON structure with S1-S16 checks | Python | No |
 | **D** | Content Check | Validate content accuracy against sources using Claude API | AI | Yes |
 | **E** | Fix | Automatically fix issues found in Phase D using Claude API | AI | Yes |
 | **M** | Finalization | Merge split files → Resolve RST links → Generate index & browsable docs | Hybrid | No |
 
-**Loop Behavior**: Phase C→D→E can repeat up to `--max-rounds` times (default: 1, max: 10) until all files pass Phase D or maximum rounds reached.
+**Loop Behavior**: Phase C→D→E can repeat up to `--max-rounds` times (default: 2, max: 10) until all files pass Phase D or maximum rounds reached.
+
+**No-Knowledge-Content Handling**: RST files that contain only toctree directives, navigation links, and headings (no substantive content) are flagged with `no_knowledge_content: true` during Phase B. These files are validated in Phase C (S16) and Phase D (V5), and excluded from index/docs generation in Phase M.
 
 **Split File Handling**: RST files with multiple h2 sections (≥2) are automatically split into per-section parts during Phase A, processed independently through Phases B-E, then merged in Phase M to prevent context overflow.
 
@@ -132,7 +134,7 @@ flowchart TD
 | `--target FILE_ID` | 特定ファイルのみ処理（複数指定可） |
 | `--yes` | 確認プロンプトをスキップ |
 | `--dry-run` | ファイル書き込みなしのドライラン |
-| `--max-rounds N` | Phase C→D→E の最大繰り返し回数（デフォルト: 1） |
+| `--max-rounds N` | Phase C→D→E の最大繰り返し回数（デフォルト: 2） |
 | `--concurrency N` | 並列実行数（デフォルト: 4） |
 | `--test FILE` | テスト設定ファイルを使用 |
 
@@ -148,11 +150,12 @@ flowchart TD
 | `--phase` | Phases to run (combination of A, B, C, D, E, M) | `ABCDEM` |
 | `--test` | Test mode: specify test file (e.g., `test-files-largest3.json`) | `None` |
 | `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
-| `--max-rounds` | Max Phase C→D→E loop iterations (1-10) | `1` |
+| `--max-rounds` | Max Phase C→D→E loop iterations (1-10) | `2` |
 | `--clean-phase` | Clean artifacts for specified phases before run (e.g., 'D', 'BD') | `None` |
 | `--target` | Target file ID(s) to process (repeatable) | `None` |
 | `--yes` | Skip confirmation prompts | `False` |
 | `--regen` | Detect source changes and regenerate affected files | `False` |
+| `--run-id` | Run ID (auto-generated from timestamp if omitted; pass existing ID to resume) | `None` |
 | `--dry-run` | Dry run (no file writes) | `False` |
 
 **Note**: Phases G and F are still available individually for backward compatibility, but Phase M (which combines merge, link resolution, and finalization) is now the default in the standard flow.
@@ -162,13 +165,13 @@ flowchart TD
 テスト設定ファイルで処理対象ソースファイルを指定する:
 
 - **test-files-top3.json**: 最大 3 ファイル（セクション分割あり）— 成功基準検証向け
-- **test-files-comprehensive.json**: main ブランチのナレッジファイルに対応する 17 ファイル
+- **test-files-comprehensive.json**: main ブランチのナレッジファイルに対応する 37 ファイル
 
 ```bash
 # 3 ファイルでテスト
 python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
 
-# 17 ファイルで総合テスト
+# 37 ファイルで総合テスト
 python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensive.json
 ```
 
@@ -250,7 +253,7 @@ tools/knowledge-creator/
     step1_list_sources.py      # ソースファイル検索
     step2_classify.py          # ファイル分類・分割ロジック
     phase_b_generate.py        # Claude API によるナレッジ生成
-    phase_c_structure_check.py # 構造検証（S1-S15）
+    phase_c_structure_check.py # 構造検証（S1-S16）
     phase_d_content_check.py   # Claude API によるコンテンツ検証
     phase_e_fix.py             # Claude API による自動修正
     phase_m_finalize.py        # マージ → リンク解決 → 生成（オーケストレーター）
