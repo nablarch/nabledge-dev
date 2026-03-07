@@ -50,6 +50,23 @@ class TestContext:
         assert "20250304T120000" in ctx.findings_dir
         assert "20250304T120000" in ctx.phase_b_executions_dir
 
+    def test_reports_dir_production_mode(self, tmp_path):
+        """本番モードの reports_dir はリポジトリ内の reports/ ディレクトリ。"""
+        ctx = Context(version="6", repo=str(tmp_path), concurrency=4, run_id="20250304T120000")
+        assert ctx.reports_dir == f"{tmp_path}/tools/knowledge-creator/reports"
+
+    def test_reports_dir_test_mode_uses_logs(self, tmp_path):
+        """テストモードの reports_dir は .logs/ 以下（gitignore対象）。"""
+        ctx = Context(version="6", repo=str(tmp_path), concurrency=4,
+                      run_id="20250304T120000", test_file="test-files-top3.json")
+        assert ctx.reports_dir.startswith(f"{tmp_path}/tools/knowledge-creator/.logs/")
+
+    def test_reports_dir_test_mode_not_in_tracked_dir(self, tmp_path):
+        """テストモードの reports_dir はトラッキング対象の reports/ 以下でない。"""
+        ctx = Context(version="6", repo=str(tmp_path), concurrency=4,
+                      run_id="20250304T120000", test_file="test-files-top3.json")
+        assert not ctx.reports_dir.startswith(f"{tmp_path}/tools/knowledge-creator/reports")
+
 
 class TestLatestSymlink:
     def test_latest_created_on_new_run(self, tmp_path):

@@ -47,6 +47,8 @@ class Context:
 
     @property
     def reports_dir(self) -> str:
+        if self.test_file:
+            return f"{self.log_dir}/reports"
         return f"{self.repo}/tools/knowledge-creator/reports"
 
     # Phase A: Preparation
