@@ -200,10 +200,16 @@ def update_knowledge_meta(ctx, dry_run: bool = False):
     resolves each to a local clone path, reads the current HEAD commit,
     and writes back generated_at + commits.
 
+    Skipped in test mode to prevent overwriting production metadata.
+
     Args:
         ctx: Context object (ctx.repo, ctx.version)
         dry_run: If True, print what would be written but do not write.
     """
+    if getattr(ctx, "test_file", None):
+        print(f"   ⏭️ テストモードのため knowledge-creator.json の更新をスキップ")
+        return
+
     meta_path = get_meta_path(ctx)
 
     if not os.path.exists(meta_path):

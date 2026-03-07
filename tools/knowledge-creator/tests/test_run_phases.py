@@ -67,6 +67,16 @@ class TestPhaseControl:
 
             patches[key] = patch(f"{module_path}.{class_name}", make_mock(key))
 
+        # Track update_knowledge_meta calls
+        tracked["update_knowledge_meta"] = {"called": False}
+
+        def mock_update_meta(*args, **kwargs):
+            tracked["update_knowledge_meta"]["called"] = True
+
+        patches["update_knowledge_meta"] = patch(
+            "steps.knowledge_meta.update_knowledge_meta", mock_update_meta
+        )
+
         return patches, tracked
 
     def test_default_phases_include_m(self, tmp_path):
@@ -174,6 +184,54 @@ class TestPhaseControl:
                     assert not tracked["G_PhaseGResolveLinks"]["instantiated"], "Phase G should not run when M is present"
                     assert not tracked["F_PhaseFFinalize"]["instantiated"], "Phase F should not run when M is present"
 
+                finally:
+                    for p in patches.values():
+                        p.stop()
+
+    def test_test_mode_skips_knowledge_meta_update(self, tmp_path):
+        """テストモードの Phase M では update_knowledge_meta を呼ばない。"""
+        args = self._create_test_args(phase="M")
+        args.repo = str(tmp_path)
+        args.test = "test-files-top3.json"
+
+        patches, tracked = self._patch_phases()
+
+        with patch('sys.argv', ['run.py', '--version', '6', '--phase', 'M', '--test', 'test-files-top3.json']):
+            with patch('argparse.ArgumentParser.parse_args', return_value=args):
+                for p in patches.values():
+                    p.start()
+                try:
+                    import run as run_module
+                    run_module.main()
+
+                    assert tracked["M_PhaseMFinalize"]["instantiated"], \
+                        "Phase M 自体は実行される"
+                    assert not tracked["update_knowledge_meta"]["called"], \
+                        "テストモードでは update_knowledge_meta を呼んではいけない"
+                finally:
+                    for p in patches.values():
+                        p.stop()
+
+    def test_production_mode_calls_knowledge_meta_update(self, tmp_path):
+        """本番モードの Phase M では update_knowledge_meta を呼ぶ。"""
+        args = self._create_test_args(phase="M")
+        args.repo = str(tmp_path)
+        args.test = None
+
+        patches, tracked = self._patch_phases()
+
+        with patch('sys.argv', ['run.py', '--version', '6', '--phase', 'M']):
+            with patch('argparse.ArgumentParser.parse_args', return_value=args):
+                for p in patches.values():
+                    p.start()
+                try:
+                    import run as run_module
+                    run_module.main()
+
+                    assert tracked["M_PhaseMFinalize"]["instantiated"], \
+                        "Phase M が実行される"
+                    assert tracked["update_knowledge_meta"]["called"], \
+                        "本番モードでは update_knowledge_meta を呼ぶ"
                 finally:
                     for p in patches.values():
                         p.stop()
