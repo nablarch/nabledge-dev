@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Generate individual scenario reports and aggregate report from nabledge-test workspace data.
 
