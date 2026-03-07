@@ -20,11 +20,11 @@ This repository develops **nabledge skills** for AI agents:
 
 ## Key Resources
 
-- **Design**: `doc/nabledge-design.md` - Architecture, scope, and skill design
-- **Mapping**: `doc/mapping/` - Documentation to knowledge file mappings (302 files for v6)
+- **Design**: `docs/nabledge-design.md` - Architecture, scope, and skill design
+- **Mapping**: `docs/mapping/` - Documentation to knowledge file mappings (302 files for v6)
 - **Official Docs**: `.lw/nab-official/` - Cloned Nablarch repositories (v6 and v5)
 - **Project Rules**: `.claude/rules/` - Workflow conventions (auto-loaded)
 
 ## Important Notes
 
-**Mapping Files** enable category-based filtering for incremental knowledge file creation. See `doc/mapping/mapping-file-design.md` for details.
+**Mapping Files** enable category-based filtering for incremental knowledge file creation. See `docs/mapping/mapping-file-design.md` for details.

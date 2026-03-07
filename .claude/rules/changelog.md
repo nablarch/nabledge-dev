@@ -22,7 +22,7 @@ Document only changes to **deployed content** (synced to nablarch/nabledge):
 **Include:**
 - Plugin content (`.claude/skills/nabledge-6/`)
 - Marketplace metadata (`.claude/marketplace/`)
-- Setup scripts (`scripts/setup-6-*.sh`)
+- Setup scripts (`tools/setup/setup-6-*.sh`)
 - Knowledge files, workflows, user-facing docs
 
 **Exclude:**
