@@ -46,3 +46,28 @@ Each Phase B/D/E/F execution saves metrics to `executions/` directory:
   - `structured_output` - Generated knowledge file content
 
 **Purpose**: Performance analysis, cost tracking, and debugging.
+
+## Reports
+
+Reports are saved to `tools/knowledge-creator/reports/` after each execution.
+
+**Why not gitignored**: Production generation reports should be committed as a record of what was generated and when. Gitignoring would cause them to be missed at release time.
+
+**Development**: Delete reports generated during development or testing before requesting PR review.
+
+**Production generation**: Commit reports as part of the generation PR to record the run.
+
+## Bug Reproduction Tests
+
+When a bug is found, add a reproduction test before fixing it.
+
+**File naming**: `tools/knowledge-creator/tests/test_fix_issue_<number>.py`
+
+**Header**: Include the GitHub issue URL at the top for traceability.
+
+**Pattern**: Call `main()` via the real entry point, not internal classes (Step1Classify, Step2Classify, PhaseB, etc.) directly.
+Use `_run_main()` from `test_run_phases.py` if testing with fixtures, or patch `argparse`/`sys.argv` to call `main()` directly when testing against real sources.
+
+**Real v6 sources**: Tests against `.lw/nab-official/v6/` must assert the sources exist
+and fail with a clear error message if they are not available. Do not use `pytest.mark.skipif`
+— silently skipping means the test provides no safety guarantee in that environment.
