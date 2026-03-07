@@ -24,7 +24,7 @@ class Step1ListSources:
             for root, dirs, files in os.walk(rst_base):
                 dirs[:] = [d for d in dirs if not d.startswith("_")]
                 for f in files:
-                    if f.endswith(".rst") and f != "index.rst":
+                    if f.endswith(".rst"):
                         rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
                         sources.append({"path": rel_path, "format": "rst", "filename": f})
 

@@ -284,6 +284,36 @@ class TestUpdateKnowledgeMeta:
         assert after["generated_at"] == ""
         assert after["sources"][0]["commit"] == ""
 
+    def test_test_mode_skips_update(self, tmp_path):
+        """テストモード時は knowledge-creator.json を更新しない。"""
+        from run import Context
+        local_repo = str(
+            tmp_path / "repo" / ".lw" / "nab-official" / "v6" / "nablarch-document"
+        )
+        _create_local_repo(local_repo)
+
+        ctx = Context(
+            version="6", repo=str(tmp_path / "repo"), concurrency=1,
+            test_file="test-files-top3.json"
+        )
+        meta_path = get_meta_path(ctx)
+        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
+        original = {
+            "generated_at": "",
+            "sources": [{
+                "repo": "https://github.com/nablarch/nablarch-document",
+                "branch": "main",
+                "commit": ""
+            }]
+        }
+        write_json(meta_path, original)
+
+        update_knowledge_meta(ctx)
+
+        after = load_json(meta_path)
+        assert after["generated_at"] == "", "テストモードでは generated_at を更新してはいけない"
+        assert after["sources"][0]["commit"] == "", "テストモードでは commit を更新してはいけない"
+
 
 class TestEffectiveTargetIsolation:
     """Verify that --regen detection does not leak between versions.

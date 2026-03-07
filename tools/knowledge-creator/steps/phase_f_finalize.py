@@ -116,6 +116,8 @@ class PhaseFFinalize:
                 continue
 
             knowledge = load_json(json_path)
+            if knowledge.get("no_knowledge_content") is True:
+                continue
             title = knowledge.get("title", fi["id"])
 
             if fi["type"] == "processing-pattern":
@@ -230,6 +232,8 @@ class PhaseFFinalize:
                 continue
 
             knowledge = load_json(json_path)
+            if knowledge.get("no_knowledge_content") is True:
+                continue
             md_lines = [f"# {knowledge['title']}", ""]
             for entry in knowledge.get("index", []):
                 sid = entry["id"]

@@ -16,6 +16,7 @@ class TestSplitFileStructureCheck:
         # Setup: split file entry
         knowledge = {
             "id": "libraries-tag--overview",
+            "no_knowledge_content": False,
             "title": "タグライブラリ",
             "official_doc_urls": ["https://example.com/tag.html"],
             "index": [
@@ -88,6 +89,7 @@ class TestSplitFileStructureCheck:
         # Setup: source has 4 h2 sections, but part 1 only has 2
         knowledge = {
             "id": "test--section-1",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com/test.html"],
             "index": [
@@ -195,6 +197,7 @@ class TestSplitFileContentCheck:
         # Setup: split file with section_range
         knowledge = {
             "id": "test--section-1",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
@@ -285,6 +288,7 @@ class TestSplitFileFix:
         # Setup: split file with issues
         knowledge = {
             "id": "test--section-1",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
@@ -371,6 +375,7 @@ Content 2 (should NOT be in prompt)
         sections = {f"section{i}": "Content " * 100 for i in range(1, 11)}  # ~1000 chars each
         knowledge = {
             "id": "test--section-1",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": f"section{i}", "title": f"Section {i}", "hints": []} for i in range(1, 11)],

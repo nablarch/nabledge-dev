@@ -86,6 +86,7 @@ class TestVerificationLoopMultipleRounds:
         # Create initial knowledge file
         knowledge = {
             "id": "test-file",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com/test"],
             "index": [{"id": "overview", "title": "Overview", "hints": ["test"]}],
@@ -171,6 +172,7 @@ class TestVerificationLoopMultipleRounds:
 
         knowledge = {
             "id": "test-file",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com/test"],
             "index": [{"id": "overview", "title": "Overview", "hints": ["test"]}],
@@ -243,6 +245,7 @@ class TestVerificationLoopMultipleRounds:
 
         knowledge = {
             "id": "test-file",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com/test"],
             "index": [{"id": "overview", "title": "Overview", "hints": ["test"]}],
@@ -359,6 +362,7 @@ class TestVerificationLoopMultipleRounds:
         for file_id in ["file-1", "file-2"]:
             knowledge = {
                 "id": file_id,
+                "no_knowledge_content": False,
                 "title": "Test",
                 "official_doc_urls": ["https://example.com/test"],
                 "index": [{"id": "section1", "title": "Section", "hints": ["test"]}],

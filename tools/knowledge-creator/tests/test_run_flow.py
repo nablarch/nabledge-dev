@@ -17,6 +17,7 @@ class TestRunFlowWithSplitFiles:
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
             knowledge = {
                 "id": file_id,
+                "no_knowledge_content": False,
                 "title": "Test",
                 "official_doc_urls": ["https://example.com"],
                 "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
@@ -164,6 +165,7 @@ class TestRunFlowWithSplitFiles:
         # Setup: split files already generated
         part1 = {
             "id": "test--section-1",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
@@ -171,6 +173,7 @@ class TestRunFlowWithSplitFiles:
         }
         part2 = {
             "id": "test--section-2",
+            "no_knowledge_content": False,
             "title": "Test",
             "official_doc_urls": ["https://example.com"],
             "index": [{"id": "section2", "title": "Section 2", "hints": ["s2"]}],

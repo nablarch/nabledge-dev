@@ -11,10 +11,11 @@ from .logger import get_logger
 
 KNOWLEDGE_SCHEMA = {
     "type": "object",
-    "required": ["id", "title", "official_doc_urls", "index", "sections"],
+    "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
     "properties": {
         "id": {"type": "string"},
         "title": {"type": "string"},
+        "no_knowledge_content": {"type": "boolean"},
         "official_doc_urls": {"type": "array", "items": {"type": "string"}},
         "index": {
             "type": "array",

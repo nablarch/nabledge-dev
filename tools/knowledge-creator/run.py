@@ -47,6 +47,8 @@ class Context:
 
     @property
     def reports_dir(self) -> str:
+        if self.test_file:
+            return f"{self.log_dir}/reports"
         return f"{self.repo}/tools/knowledge-creator/reports"
 
     # Phase A: Preparation
@@ -369,9 +371,12 @@ def main():
             from steps.phase_m_finalize import PhaseMFinalize
             PhaseMFinalize(ctx, dry_run=args.dry_run).run()
 
-            logger.info("\n📝 knowledge-creator.json 更新")
             from steps.knowledge_meta import update_knowledge_meta
-            update_knowledge_meta(ctx, dry_run=args.dry_run)
+            if ctx.test_file:
+                logger.info("\n📝 knowledge-creator.json 更新（テストモード: スキップ）")
+            else:
+                logger.info("\n📝 knowledge-creator.json 更新")
+                update_knowledge_meta(ctx, dry_run=args.dry_run)
 
         # Phase G (backward compat: only when explicitly specified without M)
         if "G" in phases and "M" not in phases:

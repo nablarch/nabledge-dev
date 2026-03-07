@@ -55,6 +55,23 @@ RST_MAPPING = [
 
     # biz_samples - examples and utilities
     ("biz_samples/", "about", "about-nablarch"),
+
+    # messaging intermediate page
+    ("application_framework/application_framework/messaging/", "processing-pattern", "db-messaging"),
+
+    # Standalone content pages
+    ("examples/", "about", "about-nablarch"),
+    ("external_contents/", "about", "about-nablarch"),
+    ("inquiry/", "about", "about-nablarch"),
+    ("jakarta_ee/", "about", "about-nablarch"),
+    ("nablarch_api/", "about", "about-nablarch"),
+    ("releases/", "about", "release-notes"),
+    ("terms_of_use/", "about", "about-nablarch"),
+
+    # Intermediate toctree pages (will be no_knowledge_content in Phase B)
+    ("application_framework/application_framework/", "about", "about-nablarch"),
+    ("application_framework/", "about", "about-nablarch"),
+    ("development_tools/", "development-tools", "testing-framework"),
 ]
 
 # MD filename-based mapping
@@ -126,13 +143,16 @@ class Step2Classify:
         self.sources_data = sources_data
         self.logger = get_logger()
 
-    def generate_id(self, filename: str, format: str, category: str = None) -> str:
+    def generate_id(self, filename: str, format: str, category: str = None,
+                    source_path: str = None, matched_pattern: str = None) -> str:
         """Generate knowledge file ID from filename and category
 
         Args:
             filename: Source filename
             format: File format (rst/md/xlsx)
             category: Category from classification (optional)
+            source_path: Source file path for index.rst disambiguation (optional)
+            matched_pattern: RST_MAPPING pattern that matched (optional, for index.rst)
 
         Returns:
             Unique file ID (category-filename format for rst/md)
@@ -151,6 +171,38 @@ class Step2Classify:
         else:
             base_name = filename
 
+        # index.rst: use pattern-remainder path to avoid ID collisions.
+        # Multiple index.rst files can map to the same category, so filename alone
+        # ("index") is insufficient. Use the path after the matched pattern as context.
+        #
+        # Examples:
+        #   handlers/batch/index.rst matched by "handlers/" -> remainder "batch/index.rst" -> "batch"
+        #   handlers/index.rst matched by "handlers/" -> remainder "index.rst" -> pattern basename "handlers"
+        #   top-level index.rst matched by "" -> "top"
+        if base_name == "index" and source_path is not None and matched_pattern is not None:
+            marker = "nablarch-document/ja/"
+            marker_idx = source_path.find(marker)
+            if marker_idx >= 0:
+                rst_rel = source_path[marker_idx + len(marker):]
+                pattern_clean = matched_pattern.rstrip("/")
+                if not pattern_clean:
+                    # Top-level index.rst (matched by "")
+                    base_name = "top"
+                else:
+                    pat_idx = rst_rel.find(pattern_clean)
+                    if pat_idx >= 0:
+                        remainder = rst_rel[pat_idx + len(pattern_clean):].strip("/")
+                        if remainder == "index.rst":
+                            base_name = os.path.basename(pattern_clean)
+                        else:
+                            dir_part = os.path.dirname(remainder)
+                            base_name = dir_part.replace("/", "-").replace("_", "-")
+                    else:
+                        self.logger.warning(
+                            f"generate_id: pattern '{pattern_clean}' not found in path '{rst_rel}'"
+                            f" — using 'index' as base_name (potential ID collision)"
+                        )
+
         # Include category to ensure uniqueness
         if category:
             return f"{category}-{base_name}"
@@ -162,16 +214,21 @@ class Step2Classify:
         marker = "nablarch-document/ja/"
         idx = path.find(marker)
         if idx < 0:
-            return None, None
+            return None, None, None
 
         rel_path = path[idx + len(marker):]
+
+        # Top-level index.rst: no RST_MAPPING pattern can match "index.rst" alone
+        # because "" would match everything. Handle explicitly.
+        if rel_path == "index.rst":
+            return "about", "about-nablarch", ""
 
         # Try to match against RST_MAPPING
         for pattern, type_, category in RST_MAPPING:
             if pattern in rel_path:
-                return type_, category
+                return type_, category, pattern
 
-        return None, None
+        return None, None, None
 
     def analyze_rst_sections(self, content: str) -> list:
         """Analyze RST file structure and return section information
@@ -463,8 +520,9 @@ class Step2Classify:
             category = None
 
             # Classify based on format (must be done before generating ID)
+            matched_pattern = None
             if format == "rst":
-                type_, category = self.classify_rst(path)
+                type_, category, matched_pattern = self.classify_rst(path)
             elif format == "md":
                 if filename in MD_MAPPING:
                     type_, category = MD_MAPPING[filename]
@@ -485,7 +543,8 @@ class Step2Classify:
                 continue
 
             # Generate unique ID using category to avoid collisions
-            file_id = self.generate_id(filename, format, category)
+            file_id = self.generate_id(filename, format, category,
+                                       source_path=path, matched_pattern=matched_pattern)
 
             output_path = f"{type_}/{category}/{file_id}.json"
             assets_dir = f"{type_}/{category}/assets/{file_id}/"
@@ -613,11 +672,17 @@ class Step2Classify:
                     self.logger.info(f"         {emoji}{cat}: {category_counts[cat]}")
 
         if unmatched:
-            self.logger.warning(f"\n   ⚠️WARNING: {len(unmatched)} files could not be classified:")
-            for item in unmatched[:10]:  # Show first 10
-                self.logger.warning(f"      {item['path']}")
-            if len(unmatched) > 10:
-                self.logger.warning(f"      ... and {len(unmatched) - 10} more")
+            self.logger.error(f"\n   ❌ ERROR: {len(unmatched)} RST files have no RST_MAPPING entry.")
+            self.logger.error(f"   Add a mapping for each file to RST_MAPPING in:")
+            self.logger.error(f"   tools/knowledge-creator/steps/step2_classify.py")
+            self.logger.error(f"")
+            self.logger.error(f"   Unmapped files:")
+            for item in unmatched:
+                self.logger.error(f"     {item['path']}")
+            self.logger.error(f"")
+            self.logger.error(f"   Example: (\"examples/\", \"about\", \"about-nablarch\"),")
+            self.logger.error(f"   If no existing type/category fits, add a new one.")
+            raise SystemExit(1)
 
         if not self.dry_run:
             write_json(self.ctx.classified_list_path, output)

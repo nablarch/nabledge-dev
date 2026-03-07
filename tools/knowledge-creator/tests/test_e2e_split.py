@@ -24,6 +24,7 @@ class TestE2ESplitPipeline:
                 # Phase B: generate knowledge (now both sections in one file)
                 knowledge = {
                     "id": file_id,
+                    "no_knowledge_content": False,
                     "title": "Test Title",
                     "official_doc_urls": ["https://example.com/test.html"],
                     "index": [
@@ -222,6 +223,7 @@ class TestE2ESplitPipeline:
                     # Phase B: generate knowledge (both sections in one file)
                     knowledge = {
                         "id": file_id,
+                        "no_knowledge_content": False,
                         "title": "Test Title",
                         "official_doc_urls": ["https://example.com/test.html"],
                         "index": [
@@ -404,6 +406,7 @@ class TestE2ESplitPipeline:
                     # Split file with both sections grouped
                     knowledge = {
                         "id": file_id,
+                        "no_knowledge_content": False,
                         "title": "Split Title",
                         "official_doc_urls": ["https://example.com/split.html"],
                         "index": [
@@ -421,6 +424,7 @@ class TestE2ESplitPipeline:
                     # Non-split file
                     knowledge = {
                         "id": file_id,
+                        "no_knowledge_content": False,
                         "title": "Regular Title",
                         "official_doc_urls": ["https://example.com/regular.html"],
                         "index": [

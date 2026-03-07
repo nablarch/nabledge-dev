@@ -210,3 +210,52 @@ class TestPhaseControl:
         knowledge_path = os.path.join(
             ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
         assert os.path.exists(knowledge_path), "Phase B should generate knowledge file"
+
+    def test_test_mode_skips_knowledge_meta_update(self, tmp_path):
+        """テストモード時は knowledge-creator.json を更新しない。"""
+        repo, ctx = _setup_repo(tmp_path)
+        meta_path = os.path.join(
+            repo, ".claude", "skills", "nabledge-6", "plugin", "knowledge-creator.json")
+        with open(meta_path) as f:
+            before = json.load(f)
+
+        args = _make_args(repo, phase="M")
+        args.test = "test-files-top3.json"
+        _run_main(repo, args)
+
+        with open(meta_path) as f:
+            after = json.load(f)
+
+        assert after["generated_at"] == before["generated_at"], \
+            "テストモードでは generated_at を更新してはいけない"
+        assert after["sources"][0]["commit"] == before["sources"][0]["commit"], \
+            "テストモードでは commit を更新してはいけない"
+
+    def test_production_mode_calls_knowledge_meta_update(self, tmp_path):
+        """本番モード時は knowledge-creator.json を更新する。"""
+        repo, ctx = _setup_repo(tmp_path)
+        meta_path = os.path.join(
+            repo, ".claude", "skills", "nabledge-6", "plugin", "knowledge-creator.json")
+
+        args = _make_args(repo, phase="M")
+        args.test = None
+        _run_main(repo, args)
+
+        with open(meta_path) as f:
+            after = json.load(f)
+
+        assert after["generated_at"] != "", \
+            "本番モードでは generated_at を更新する"
+
+    def test_no_report_files_leaked_to_repo(self, tmp_path):
+        """テスト実行で実リポジトリの reports/ にファイルが生成されない。"""
+        repo_reports = os.path.join(TOOL_DIR, "reports")
+        before = set(glob.glob(os.path.join(repo_reports, "*")))
+
+        repo, ctx = _setup_repo(tmp_path)
+        args = _make_args(repo, phase="ABCDEM")
+        _run_main(repo, args)
+
+        after = set(glob.glob(os.path.join(repo_reports, "*")))
+        new_files = after - before
+        assert not new_files, f"実リポジトリの reports/ にファイルが漏出: {new_files}"
