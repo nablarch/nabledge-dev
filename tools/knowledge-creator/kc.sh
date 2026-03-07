@@ -69,32 +69,32 @@ case "$COMMAND" in
             fi
             EXISTING_RUN_ID=$(basename "$(readlink "$LATEST_LINK")")
             echo "   再開する run_id: $EXISTING_RUN_ID"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
+            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
                 --run-id "$EXISTING_RUN_ID" $PASSTHROUGH_ARGS
         else
             # UC1: Full generation (clean first)
             echo "🚀 全件生成モード"
-            $PYTHON "$TOOL_DIR/clean.py" --version "$VERSION" ${YES_FLAG:---yes}
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/clean.py" --version "$VERSION" ${YES_FLAG:---yes}
+            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" $PASSTHROUGH_ARGS
         fi
         ;;
     regen)
         if [ -n "$TARGET_ARGS" ]; then
             # UC4: Regenerate specific files
             echo "🔄 特定ファイル再生成"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
+            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
                 --phase BCDEM --clean-phase BD $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         else
             # UC3: Detect source changes and regenerate
             echo "🔄 ソース変更検知 → 再生成"
-            $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
+            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
                 --regen ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         fi
         ;;
     fix)
         # UC5, UC6: Quality improvement
         echo "🔧 品質改善モード"
-        $PYTHON "$TOOL_DIR/run.py" --version "$VERSION" \
+        $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
             --phase CDEM --clean-phase D $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         ;;
     *)

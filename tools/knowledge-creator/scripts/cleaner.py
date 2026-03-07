@@ -6,7 +6,7 @@ optionally filtered by target file IDs.
 import os
 import glob
 import shutil
-from .common import load_json
+from common import load_json
 
 
 def clean_phase_artifacts(ctx, phases: str, target_ids: list = None, yes: bool = False):

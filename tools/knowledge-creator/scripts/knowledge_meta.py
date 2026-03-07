@@ -11,7 +11,7 @@ with current HEAD of local clones.
 import os
 import subprocess
 from datetime import date
-from .common import load_json, write_json
+from common import load_json, write_json
 
 
 KNOWLEDGE_META_RELATIVE = ".claude/skills/nabledge-{version}/plugin/knowledge-creator.json"

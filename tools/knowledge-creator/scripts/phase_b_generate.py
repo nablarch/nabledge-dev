@@ -10,8 +10,8 @@ import shutil
 import subprocess
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from .common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
-from .logger import get_logger
+from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
+from logger import get_logger
 
 
 class PhaseBGenerate:

@@ -7,8 +7,8 @@ Pure Python, no AI needed.
 import os
 import re
 import json
-from .common import load_json, write_json, read_file
-from .logger import get_logger
+from common import load_json, write_json, read_file
+from logger import get_logger
 
 KEBAB_CASE_PATTERN = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 VALID_PROCESSING_PATTERNS = {

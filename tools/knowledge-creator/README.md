@@ -1,86 +1,6 @@
 # Knowledge Creator
 
-Nablarch 公式ドキュメント（RST/MD/Excel）を AI 対応ナレッジファイル（JSON）に変換するマルチフェーズパイプライン。
-
-## セットアップ
-
-### 必要なもの
-
-- Python 3.8+
-- Claude CLI（`claude` コマンドが使える状態）
-- `jq`
-- Python パッケージ: `openpyxl`, `pytest`
-
-### セットアップ手順
-
-リポジトリルートから `setup.sh` を実行する。システムツール・Python 依存パッケージ（knowledge-creator を含む）のインストールと、Nablarch 公式リポジトリのクローンを行う:
-
-```bash
-cd /path/to/nabledge-dev
-./setup.sh
-```
-
-セットアップ完了後、シェルを再起動するか以下を実行:
-
-```bash
-source ~/.bashrc
-```
-
-**Note**: `setup.sh` はクローン対象リポジトリの情報を `plugin/knowledge-creator.json` から読み取る。
-
-## 運用ガイド
-
-**Important**: コマンドはリポジトリルートディレクトリから実行すること。
-
-### UC 一覧
-
-| UC | コマンド | 用途 | 何が起きるか |
-|---|---|---|---|
-| UC1 | `kc.sh gen 6` | 初回の全件生成 | 全クリーン → Phase A〜M を順次実行 |
-| UC2 | `kc.sh gen 6 --resume` | 中断からの再開 | 生成済みファイルをスキップして続行 |
-| UC3 | `kc.sh regen 6` | 公式ドキュメント更新への追随 | git pull → コミット比較 → 変更ファイルのみ再生成 |
-| UC4 | `kc.sh regen 6 --target FILE_ID` | 特定ファイルの再生成 | 指定ファイルをクリーン → 再生成 |
-| UC5 | `kc.sh fix 6` | 品質改善（全件） | Phase C→D→E→M で再検証・修正 |
-| UC6 | `kc.sh fix 6 --target FILE_ID` | 品質改善（指定ファイル） | 指定ファイルのみ再検証・修正 |
-
-### ソース変更追随の仕組み
-
-#### knowledge-creator.json の役割
-
-`plugin/knowledge-creator.json` はナレッジファイル生成に使用したソースリポジトリのコミット情報を記録する。フォーマット例:
-
-```json
-{
-  "generated_at": "2026-03-01T12:00:00Z",
-  "sources": [
-    {
-      "repo": "nablarch/nablarch-document",
-      "branch": "develop",
-      "commit": "abc1234..."
-    }
-  ]
-}
-```
-
-`setup.sh` もこのファイルを読み取り、クローン対象リポジトリと対象ブランチを決定する。
-
-#### UC3 の処理フロー
-
-`kc.sh regen 6` を実行すると以下のステップが順次実行される:
-
-```
-kc.sh regen 6
-  1. 公式リポを git pull（最新化）
-  2. knowledge-creator.json の記録済みコミット vs HEAD を比較
-  3. コミット同一 → 「更新なし」で終了
-  4. コミット異なる → git diff --name-only <old> HEAD で変更ファイル一覧取得
-  5. classified.json の source_path と突き合わせて対象 file_id を特定
-  6. 対象の Phase B/D 成果物をクリーン
-  7. Phase BCDEM を対象 file_id に対して実行
-  8. Phase M 完了後、knowledge-creator.json に HEAD コミットを書き戻し
-```
-
-### Phase 詳細
+Nablarch公式ドキュメント（RST/MD/Excel）をAI用ナレッジファイル（JSON）に変換するマルチフェーズパイプライン。
 
 ```mermaid
 flowchart TD
@@ -109,237 +29,81 @@ flowchart TD
     style M fill:#e1e5ff
 ```
 
-| Phase | Description | Type | Parallelized |
-|-------|-------------|------|--------------|
-| **A** | Preparation | List source files, classify by type/category, split large files | Python | No |
-| **B** | Generation | Generate knowledge JSON from sources using Claude API | AI | Yes |
-| **C** | Structure Check | Validate JSON structure with S1-S16 checks | Python | No |
-| **D** | Content Check | Validate content accuracy against sources using Claude API | AI | Yes |
-| **E** | Fix | Automatically fix issues found in Phase D using Claude API | AI | Yes |
-| **M** | Finalization | Merge split files → Resolve RST links → Generate index & browsable docs | Hybrid | No |
+### フェーズ詳細
 
-**Loop Behavior**: Phase C→D→E can repeat up to `--max-rounds` times (default: 2, max: 10) until all files pass Phase D or maximum rounds reached.
+| フェーズ | 処理内容 | 種別 | 並列 |
+|----------|----------|------|------|
+| **A** | ソースファイルの一覧・分類・分割 | Python | No |
+| **B** | Claude APIによるナレッジJSON生成 | AI | Yes |
+| **C** | JSON構造バリデーション（S1-S16） | Python | No |
+| **D** | Claude APIによるコンテンツ検証 | AI | Yes |
+| **E** | Phase Dで検出した問題の自動修正 | AI | Yes |
+| **M** | 分割ファイル統合 → RSTリンク解決 → インデックス・ドキュメント生成 | Hybrid | No |
 
-**No-Knowledge-Content Handling**: RST files that contain only toctree directives, navigation links, and headings (no substantive content) are flagged with `no_knowledge_content: true` during Phase B. These files are validated in Phase C (S16) and Phase D (V5), and excluded from index/docs generation in Phase M.
+Phase C→D→Eは `--max-rounds` 回（デフォルト: 2、最大: 10）まで繰り返す。
 
-**Split File Handling**: RST files with multiple h2 sections (≥2) are automatically split into per-section parts during Phase A, processed independently through Phases B-E, then merged in Phase M to prevent context overflow.
-
-### オプション一覧
-
-#### kc.sh オプション
-
-| オプション | 説明 |
-|---|---|
-| `--resume` | クリーンをスキップ（gen コマンドのみ） |
-| `--target FILE_ID` | 特定ファイルのみ処理（複数指定可） |
-| `--yes` | 確認プロンプトをスキップ |
-| `--dry-run` | ファイル書き込みなしのドライラン |
-| `--max-rounds N` | Phase C→D→E の最大繰り返し回数（デフォルト: 2） |
-| `--concurrency N` | 並列実行数（デフォルト: 4） |
-| `--test FILE` | テスト設定ファイルを使用 |
-
-**kc.sh と run.py の使い分け**:
-- **kc.sh**: 一般的なワークフロー向け（推奨）
-- **run.py**: フェーズや詳細オプションを細かく制御したい場合
-
-#### run.py オプション
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--version` | Version (6, 5, all) | **Required** |
-| `--phase` | Phases to run (combination of A, B, C, D, E, M) | `ABCDEM` |
-| `--test` | Test mode: specify test file (e.g., `test-files-largest3.json`) | `None` |
-| `--concurrency` | Parallel execution count (Phase B, D, E) | `4` |
-| `--max-rounds` | Max Phase C→D→E loop iterations (1-10) | `2` |
-| `--clean-phase` | Clean artifacts for specified phases before run (e.g., 'D', 'BD') | `None` |
-| `--target` | Target file ID(s) to process (repeatable) | `None` |
-| `--yes` | Skip confirmation prompts | `False` |
-| `--regen` | Detect source changes and regenerate affected files | `False` |
-| `--run-id` | Run ID (auto-generated from timestamp if omitted; pass existing ID to resume) | `None` |
-| `--dry-run` | Dry run (no file writes) | `False` |
-
-**Note**: Phases G and F are still available individually for backward compatibility, but Phase M (which combines merge, link resolution, and finalization) is now the default in the standard flow.
-
-### テストモード
-
-テスト設定ファイルで処理対象ソースファイルを指定する:
-
-- **test-files-top3.json**: 最大 3 ファイル（セクション分割あり）— 成功基準検証向け
-- **test-files-comprehensive.json**: main ブランチのナレッジファイルに対応する 37 ファイル
+## セットアップ
 
 ```bash
-# 3 ファイルでテスト
-python tools/knowledge-creator/run.py --version 6 --test test-files-top3.json
-
-# 37 ファイルで総合テスト
-python tools/knowledge-creator/run.py --version 6 --test test-files-comprehensive.json
+cd /path/to/nabledge-dev
+./setup.sh
+source ~/.bashrc
 ```
 
-### 特定フェーズのみ実行
+## 運用コマンド
 
-```bash
-# Phase B（生成）のみ
-python tools/knowledge-creator/run.py --version 6 --phase B
+### kc.sh
 
-# Phase C,D,E（検証・修正ループ）のみ
-python tools/knowledge-creator/run.py --version 6 --phase CDE
+| 用途 | コマンド |
+|------|---------|
+| 全件生成 | `./kc.sh gen 6` |
+| 中断再開 | `./kc.sh gen 6 --resume` |
+| ソース変更追随 | `./kc.sh regen 6` |
+| 特定ファイル再生成 | `./kc.sh regen 6 --target FILE_ID` |
+| 品質改善 | `./kc.sh fix 6` |
+| 特定ファイル修正 | `./kc.sh fix 6 --target FILE_ID` |
 
-# Phase M（最終化）のみ
-python tools/knowledge-creator/run.py --version 6 --phase M
+FILE_ID はナレッジファイルの拡張子なしファイル名（例: `handlers-data_read_handler`）。`.claude/skills/nabledge-6/knowledge/` 配下で確認できる。
 
-# 後方互換: Phase G,F（旧最終化）
-python tools/knowledge-creator/run.py --version 6 --phase GF
-```
+### オプション
 
-### クリーンアップ
+| オプション | 説明 | デフォルト |
+|-----------|------|-----------|
+| `--version` | バージョン（6, 5, all） | **必須** |
+| `--resume` | 中断再開（genのみ） | - |
+| `--target FILE_ID` | 対象ファイル指定（複数可） | 全件 |
+| `--yes` | 確認プロンプトスキップ | `False` |
+| `--dry-run` | ドライラン | `False` |
+| `--max-rounds N` | CDEループ回数 | `2` |
+| `--concurrency N` | 並列数 | `4` |
+| `--test FILE` | テストファイル指定 | `None` |
 
-生成済みファイルを削除する:
+### テストモードファイル
 
-```bash
-# v6 をクリーン（確認プロンプトあり）
-python tools/knowledge-creator/clean.py --version 6
+`tests/mode/` 配下。`--test` オプションにファイル名を指定する。
 
-# v6 をクリーン（確認スキップ）
-python tools/knowledge-creator/clean.py --version 6 --yes
-
-# v5 のみクリーン
-python tools/knowledge-creator/clean.py --version 5
-
-# 両バージョンをクリーン
-python tools/knowledge-creator/clean.py --version all
-```
+| ファイル | 内容 |
+|---------|------|
+| `largest3.json` | 最大3ファイル（分割後22エントリー）— 高速検証向け |
+| `smallest3.json` | 最小3ファイル — 最速検証向け |
+| `batch.json` | main branch準拠の37ファイル（分割後51エントリー） |
 
 ## 開発ガイド
+
+### テスト種類
+
+- **Unit Tests**: Phase C構造バリデーション、分割ロジック等
+- **Integration Tests**: Phase C/D/E/M統合、マージ、パイプラインフロー
+- **E2E Tests**: 分割ファイル・修正サイクルを含むフルパイプライン
 
 ### テスト実行
 
 ```bash
-# リポジトリルートから全テストを実行
-python -m pytest tools/knowledge-creator/tests/ -v
-
-# tools/knowledge-creator ディレクトリから実行
 cd tools/knowledge-creator
+
+# 全テスト
 pytest tests/ -v
 
-# 特定テストファイルのみ実行
-pytest tests/test_phase_c.py -v
-
-# カバレッジ付きで実行
-pytest tests/ --cov=steps --cov-report=html
+# テストモード実行
+python scripts/run.py --version 6 --test smallest3.json
 ```
-
-### テストの種類
-
-- **Unit Tests**: Phase C structure validation, split criteria logic, source change detection
-- **Integration Tests**: Phase C/D/E/M integration, merge logic, pipeline flow
-- **E2E Tests**: Full pipeline scenarios with split files, fix cycles
-
-主なテストファイル:
-- `tests/test_phase_c.py`: Phase C 構造チェック検証
-- `tests/test_knowledge_meta.py`: ソース変更検知（git commit ベース）
-- その他 Phase D/E/M のインテグレーション・E2E テスト
-
-### ディレクトリ構成
-
-```
-tools/knowledge-creator/
-  kc.sh                        # ユーザー向けラッパースクリプト
-  run.py                       # メインエントリーポイント
-  clean.py                     # 生成物クリーンアップユーティリティ
-  steps/
-    common.py                  # 共通ユーティリティ（JSON I/O、Claude API ラッパー）
-    cleaner.py                 # フェーズ別成果物クリーンアップ
-    knowledge_meta.py          # ソース変更検知（git commit ベース）
-    step1_list_sources.py      # ソースファイル検索
-    step2_classify.py          # ファイル分類・分割ロジック
-    phase_b_generate.py        # Claude API によるナレッジ生成
-    phase_c_structure_check.py # 構造検証（S1-S16）
-    phase_d_content_check.py   # Claude API によるコンテンツ検証
-    phase_e_fix.py             # Claude API による自動修正
-    phase_m_finalize.py        # マージ → リンク解決 → 生成（オーケストレーター）
-    merge.py                   # 分割ファイルマージロジック
-    phase_g_resolve_links.py   # RST→Markdown リンク変換
-    phase_f_finalize.py        # パターン分類、インデックス、ドキュメント生成
-  tests/
-    test_phase_c.py
-    test_knowledge_meta.py
-    ...
-
-.claude/skills/nabledge-6/
-  knowledge/                   # 最終成果物: ナレッジ JSON ファイル
-    {type}/{category}/{file-id}.json
-    index.toon                 # ナレッジファイルインデックス
-  docs/                        # 閲覧可能な Markdown ファイル
-    {type}/{category}/{file-id}.md
-  plugin/
-    knowledge-creator.json     # 生成時ソースリポジトリのコミット情報
-
-tools/knowledge-creator/.logs/v6/  # 中間成果物（gitignore）
-  sources.json                 # Phase A: ソースファイル一覧
-  classified.json              # Phase A: 分類済みファイル一覧（分割情報含む）
-  structure-check.json         # Phase C: 構造検証結果
-  execution.log                # タイムスタンプ付き実行ログ
-  phase-b/
-    traces/{file-id}.json
-    executions/{file-id}_{timestamp}.json
-  phase-c/
-    results.json
-  phase-d/
-    findings/{file-id}.json
-    executions/{file-id}_{timestamp}.json
-  phase-e/
-    executions/{file-id}_{timestamp}.json
-  phase-g/
-    resolved/{type}/{category}/{file-id}.json
-  summary.json
-```
-
-**Execution Metrics**: 各 `executions/` ディレクトリには AI コールの詳細メトリクスが含まれる:
-- `num_turns`: エージェントターン数
-- `duration_ms`: 実行時間
-- `total_cost_usd`: API コスト
-- `structured_output`: 生成コンテンツ
-
-### アーキテクチャ方針
-
-1. **Separation of Concerns**: 各フェーズは単一責任
-2. **Split-Aware Processing**: 大きなファイルを早期に分割し、後で統合してコンテキストオーバーフローを防止
-3. **Defensive Programming**: 出力サイズガード、不完全パート検出
-4. **Observability**: 全 AI 操作の詳細メトリクスとトレース
-5. **Idempotency**: フェーズの再実行が副作用なく安全に行える
-
-## トラブルシューティング
-
-### `kc.sh: permission denied`
-
-→ スクリプトに実行権限を付与: `chmod +x tools/knowledge-creator/kc.sh`
-
-### `FileNotFoundError: .lw/nab-official/v6/`
-
-→ リポジトリルートディレクトリからコマンドを実行すること（`tools/knowledge-creator/` からではない）。
-
-### `claude: command not found`
-
-→ Claude CLI をインストールすること。AI コールなしでテストするには `--dry-run` オプションを使用。
-
-### Phase E output too small warning
-
-→ これは安全ガード。Phase E の出力が入力の 50% 未満に縮小した場合、データ消失防止のため修正を却下する。`.logs/v6/phase-e/executions/` でメトリクスを確認し、必要に応じて `--max-rounds` を調整。
-
-### Max rounds reached without all files passing
-
-→ `.logs/v6/phase-d/findings/` で継続的な問題を確認すること。一部の問題はソースドキュメントの手動修正またはプロンプト調整が必要な場合がある。
-
-## 関連ドキュメント
-
-- **Task Specification**: `doc/nabledge-creator-v2-task.md`
-- **Split-Aware Pipeline**: `.pr/00107/split-aware-pipeline-tasks.md`
-- **Mapping Files**: `doc/mapping/` (302 files)
-- **Issue**: #106
-- **PR**: #107
-
-## Version History
-
-- **v2.1** (PR #107): Added kc.sh wrapper, source change tracking, target filtering
-- **v2.0** (PR #107): Split-aware pipeline with Phase M, context overflow prevention
-- **v1.0** (PR #106): Initial implementation with Phases A-G

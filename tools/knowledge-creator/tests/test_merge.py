@@ -2,7 +2,7 @@
 import json
 import os
 import pytest
-from steps.common import load_json, write_json
+from common import load_json, write_json
 
 
 class TestMergeSplitFiles:
@@ -10,7 +10,7 @@ class TestMergeSplitFiles:
 
     def test_merge_two_parts(self, ctx, tmp_path):
         """Normal case: merge 2 parts into single file."""
-        from steps.merge import MergeSplitFiles
+        from merge import MergeSplitFiles
 
         # Setup: create 2 part files
         part1 = {
@@ -144,7 +144,7 @@ class TestMergeSplitFiles:
 
     def test_merge_skips_incomplete_parts(self, ctx):
         """Skip merge if not all parts exist."""
-        from steps.merge import MergeSplitFiles
+        from merge import MergeSplitFiles
 
         # Setup: only part 1 and 2 exist, part 3 missing
         part1 = {"id": "test--section-1", "title": "Test", "official_doc_urls": [],
@@ -212,7 +212,7 @@ class TestMergeSplitFiles:
 
     def test_no_split_files_noop(self, ctx):
         """No-op when there are no split files."""
-        from steps.merge import MergeSplitFiles
+        from merge import MergeSplitFiles
 
         # Setup: only non-split files
         regular = {"id": "regular", "title": "Regular", "official_doc_urls": [],
@@ -251,7 +251,7 @@ class TestMergeSplitFiles:
 
     def test_merge_preserves_non_split_files(self, ctx):
         """Mixed split and non-split: non-split files preserved."""
-        from steps.merge import MergeSplitFiles
+        from merge import MergeSplitFiles
 
         # Setup: 1 split file (2 parts) + 1 non-split file
         part1 = {"id": "split--section-1", "title": "Split", "official_doc_urls": [],
@@ -333,7 +333,7 @@ class TestMergeSplitFiles:
 
     def test_merge_consolidates_trace_files(self, ctx):
         """Merge consolidates internal_labels from part trace files."""
-        from steps.merge import MergeSplitFiles
+        from merge import MergeSplitFiles
 
         # Setup: 2 split parts with trace files containing internal_labels
         part1 = {
@@ -439,7 +439,7 @@ class TestMergeSplitFiles:
 
     def test_merge_trace_with_partial_missing(self, ctx):
         """片方のパートにだけtraceがある場合、存在するtraceのみで統合する。"""
-        from steps.merge import MergeSplitFiles
+        from merge import MergeSplitFiles
 
         # Setup: 2パートだがpart2のtraceだけ存在
         part1 = {

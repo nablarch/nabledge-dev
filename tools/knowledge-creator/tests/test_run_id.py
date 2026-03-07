@@ -221,7 +221,7 @@ class TestWriteReport:
         assert loaded["version"] == 2
 
 
-RUN_PY = os.path.join(TOOL_DIR, "run.py")
+RUN_PY = os.path.join(TOOL_DIR, "scripts", "run.py")
 
 
 class TestPathResolution:

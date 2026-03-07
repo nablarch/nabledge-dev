@@ -2,7 +2,7 @@
 import os
 import json
 import pytest
-from steps.phase_g_resolve_links import PhaseGResolveLinks
+from phase_g_resolve_links import PhaseGResolveLinks
 
 
 class TestPhaseGLinkResolution:

@@ -2,7 +2,7 @@
 import json
 import os
 import pytest
-from steps.common import load_json, write_json
+from common import load_json, write_json
 
 
 class TestPhaseM:
@@ -10,7 +10,7 @@ class TestPhaseM:
 
     def test_merge_then_resolve_then_docs(self, ctx, mock_claude):
         """Phase M: merge split files, resolve links, generate docs."""
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_m_finalize import PhaseMFinalize
 
         # Setup: 2 split parts with RST link
         part1 = {
@@ -132,7 +132,7 @@ class TestPhaseM:
 
     def test_phase_m_no_split_files(self, ctx, mock_claude):
         """Phase M with no split files: skip merge, proceed with resolve + docs."""
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_m_finalize import PhaseMFinalize
 
         # Setup: regular file (no split)
         regular = {
@@ -182,7 +182,7 @@ class TestPhaseM:
 
     def test_phase_m_rst_links_resolved_in_merged(self, ctx, mock_claude):
         """RST links in merged file are resolved to Markdown."""
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_m_finalize import PhaseMFinalize
 
         # Setup: split files with various RST link types
         part1 = {
@@ -272,7 +272,7 @@ class TestPhaseM:
 
     def test_phase_m_asset_paths_in_docs(self, ctx, mock_claude):
         """Asset paths in browsable MD are correct relative paths."""
-        from steps.phase_m_finalize import PhaseMFinalize
+        from phase_m_finalize import PhaseMFinalize
 
         # Setup: merged file with asset reference
         knowledge = {

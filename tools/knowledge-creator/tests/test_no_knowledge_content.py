@@ -15,7 +15,7 @@ def _write_knowledge(ctx, knowledge, file_id="handlers-sample-handler"):
 
 class TestPhaseCNoContent:
     def test_no_content_true_with_empty_passes(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         jp = _write_knowledge(ctx, {
             "id": "handlers-sample-handler", "title": "一覧",
             "no_knowledge_content": True,
@@ -25,7 +25,7 @@ class TestPhaseCNoContent:
         assert errors == []
 
     def test_no_content_true_with_non_empty_index_fails_s16(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         jp = _write_knowledge(ctx, {
             "id": "handlers-sample-handler", "title": "一覧",
             "no_knowledge_content": True,
@@ -37,7 +37,7 @@ class TestPhaseCNoContent:
         assert any("S16" in e for e in errors)
 
     def test_no_content_true_with_non_empty_sections_fails_s16(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         jp = _write_knowledge(ctx, {
             "id": "handlers-sample-handler", "title": "一覧",
             "no_knowledge_content": True,
@@ -48,7 +48,7 @@ class TestPhaseCNoContent:
         assert any("S16" in e for e in errors)
 
     def test_no_content_missing_fails_s2(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         jp = _write_knowledge(ctx, {
             "id": "handlers-sample-handler", "title": "一覧",
             "official_doc_urls": [], "index": [], "sections": {}
@@ -58,7 +58,7 @@ class TestPhaseCNoContent:
 
     def test_existing_valid_knowledge_still_passes(self, ctx):
         """Regression: existing knowledge files with no_knowledge_content: false still pass."""
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         # After fixture update, k has no_knowledge_content: false
         jp = _write_knowledge(ctx, k)

@@ -2,8 +2,8 @@
 import os
 import pytest
 from run import Context
-from steps.step1_list_sources import Step1ListSources
-from steps.step2_classify import Step2Classify
+from step1_list_sources import Step1ListSources
+from step2_classify import Step2Classify
 
 
 @pytest.fixture

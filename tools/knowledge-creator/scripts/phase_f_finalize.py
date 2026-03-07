@@ -10,8 +10,8 @@ import subprocess
 from glob import glob
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from .common import load_json, write_json, read_file, write_file, run_claude as _default_run_claude
-from .logger import get_logger
+from common import load_json, write_json, read_file, write_file, run_claude as _default_run_claude
+from logger import get_logger
 
 CLASSIFY_PATTERNS_SCHEMA = {
     "type": "object",

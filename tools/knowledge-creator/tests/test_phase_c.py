@@ -37,14 +37,14 @@ def write_knowledge(ctx, knowledge):
 class TestStructureValidation:
 
     def test_valid_passes(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         assert PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst") == []
 
     def test_s3_index_without_section(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         del k["sections"]["overview"]
         jp = write_knowledge(ctx, k)
@@ -53,7 +53,7 @@ class TestStructureValidation:
         assert any("S3" in e for e in errors)
 
     def test_s4_section_without_index(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["sections"]["orphan"] = "content"
         jp = write_knowledge(ctx, k)
@@ -62,7 +62,7 @@ class TestStructureValidation:
         assert any("S4" in e for e in errors)
 
     def test_s5_non_kebab(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["index"].append({"id": "badCamel", "title": "Bad", "hints": ["x"]})
         k["sections"]["badCamel"] = "content"
@@ -72,7 +72,7 @@ class TestStructureValidation:
         assert any("S5" in e for e in errors)
 
     def test_s6_empty_hints(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["index"][0]["hints"] = []
         jp = write_knowledge(ctx, k)
@@ -81,7 +81,7 @@ class TestStructureValidation:
         assert any("S6" in e for e in errors)
 
     def test_s7_empty_section(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["sections"]["overview"] = ""
         jp = write_knowledge(ctx, k)
@@ -90,7 +90,7 @@ class TestStructureValidation:
         assert any("S7" in e for e in errors)
 
     def test_s8_id_mismatch(self, ctx):
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["id"] = "wrong-id"
         jp = write_knowledge(ctx, k)

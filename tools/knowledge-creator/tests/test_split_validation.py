@@ -3,7 +3,7 @@ import json
 import os
 import pytest
 import subprocess
-from steps.common import load_json, write_json
+from common import load_json, write_json
 
 
 class TestSplitFileStructureCheck:
@@ -11,7 +11,7 @@ class TestSplitFileStructureCheck:
 
     def test_split_file_passes_structure_check(self, ctx, mock_claude):
         """Split file with split_info passes Phase C."""
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
 
         # Setup: split file entry
         knowledge = {
@@ -84,7 +84,7 @@ class TestSplitFileStructureCheck:
 
     def test_split_file_s9_uses_section_range(self, ctx, mock_claude):
         """S9 check uses section_range instead of full source."""
-        from steps.phase_c_structure_check import PhaseCStructureCheck
+        from phase_c_structure_check import PhaseCStructureCheck
 
         # Setup: source has 4 h2 sections, but part 1 only has 2
         knowledge = {
@@ -177,7 +177,7 @@ class TestSplitFileContentCheck:
 
     def test_split_file_content_check_uses_section_range(self, ctx):
         """Phase D uses section_range to extract source."""
-        from steps.phase_d_content_check import PhaseDContentCheck
+        from phase_d_content_check import PhaseDContentCheck
 
         # Mock run_claude that captures the prompt
         captured_prompt = []
@@ -264,7 +264,7 @@ class TestSplitFileFix:
 
     def test_split_file_fix_uses_section_range(self, ctx):
         """Phase E uses section_range to extract source."""
-        from steps.phase_e_fix import PhaseEFix
+        from phase_e_fix import PhaseEFix
 
         # Mock run_claude that captures the prompt
         captured_prompt = []
@@ -354,7 +354,7 @@ Content 2 (should NOT be in prompt)
 
     def test_fix_rejects_drastically_shrunk_output(self, ctx):
         """Phase E rejects output that shrunk to < 50%."""
-        from steps.phase_e_fix import PhaseEFix
+        from phase_e_fix import PhaseEFix
 
         # Mock that returns drastically shrunk output (5% of original)
         def mock_run_claude(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):

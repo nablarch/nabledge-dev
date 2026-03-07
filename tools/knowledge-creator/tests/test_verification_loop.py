@@ -2,10 +2,10 @@
 import pytest
 import subprocess
 import json
-from steps.phase_c_structure_check import PhaseCStructureCheck
-from steps.phase_d_content_check import PhaseDContentCheck
-from steps.phase_e_fix import PhaseEFix
-from steps.common import load_json, write_json
+from phase_c_structure_check import PhaseCStructureCheck
+from phase_d_content_check import PhaseDContentCheck
+from phase_e_fix import PhaseEFix
+from common import load_json, write_json
 
 
 class TestVerificationLoopMultipleRounds:
