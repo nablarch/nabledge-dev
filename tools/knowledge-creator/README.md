@@ -332,9 +332,9 @@ tools/knowledge-creator/.logs/v6/  # 中間成果物（gitignore）
 
 ## 関連ドキュメント
 
-- **Task Specification**: `doc/nabledge-creator-v2-task.md`
+- **Task Specification**: `docs/nabledge-creator-v2-task.md`
 - **Split-Aware Pipeline**: `.pr/00107/split-aware-pipeline-tasks.md`
-- **Mapping Files**: `doc/mapping/` (302 files)
+- **Mapping Files**: `docs/mapping/` (302 files)
 - **Issue**: #106
 - **PR**: #107
 

@@ -4,10 +4,10 @@ Nablarch knowledge development
 
 ## Documents
 
-- 📊 [Development Status](doc/development-status.md) - Current progress and roadmap
-- 📐 [Design Document](doc/nabledge-design.md) - Architecture and design details
-- 🎯 [Activity Mapping](doc/activity-mapping.md) - Workflow and role division with Nabledge
-- 🚀 [Grand Design](doc/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3-product strategy ⚠️ **DRAFT - UNAPPROVED, SUBJECT TO CHANGE**
+- 📊 [Development Status](docs/development-status.md) - Current progress and roadmap
+- 📐 [Design Document](docs/nabledge-design.md) - Architecture and design details
+- 🎯 [Activity Mapping](docs/activity-mapping.md) - Workflow and role division with Nabledge
+- 🚀 [Grand Design](docs/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3-product strategy ⚠️ **DRAFT - UNAPPROVED, SUBJECT TO CHANGE**
 
 ## Prerequisites
 
