@@ -7,7 +7,6 @@ Split large files into multiple entries if necessary.
 import os
 import json
 import re
-from collections import Counter
 from datetime import datetime
 from common import load_json, write_json, read_file
 from logger import get_logger
@@ -157,12 +156,6 @@ class Step2Classify:
 
         Returns:
             Unique file ID (category-filename format for rst/md)
-
-        Note:
-            This method applies first-pass disambiguation for index.rst files using
-            the pattern-remainder path strategy. Any collisions that still slip through
-            (e.g. non-index files sharing the same filename within a category) are
-            resolved by the separate _resolve_duplicate_ids() safety-net in run().
         """
         # For Excel files in XLSX_MAPPING, use category as ID (fixed mapping)
         if format == "xlsx" and filename in XLSX_MAPPING:
@@ -508,86 +501,6 @@ class Step2Classify:
         h = hashlib.md5(title.encode('utf-8')).hexdigest()[:8]
         return f"sec-{h}"
 
-    def _disambiguate_id(self, entry: dict) -> str:
-        """Generate a path-based ID to resolve duplicate ID collisions.
-
-        This is a fallback called by _resolve_duplicate_ids() for any entries
-        whose IDs still collide after generate_id()'s first-pass logic.
-
-        For index.rst files, uses the full directory path to handle nested patterns
-        with the same basename (e.g. application_framework/ vs
-        application_framework/application_framework/).
-        For other files, uses the immediate parent directory name to differentiate
-        same-named files in sibling subdirectories.
-        """
-        path = entry['source_path']
-        category = entry['category']
-        filename = entry['filename']
-
-        marker = "nablarch-document/ja/"
-        idx = path.find(marker)
-        if idx < 0:
-            return entry['id']
-
-        rst_rel = path[idx + len(marker):]
-        dir_rel = os.path.dirname(rst_rel)
-
-        def norm(s):
-            s = re.sub(r'[^a-z0-9]', '-', s.lower())
-            return re.sub(r'-+', '-', s).strip('-')
-
-        filename_base = filename.rsplit('.', 1)[0]
-
-        if filename_base == 'index':
-            # Use full dir path for index.rst to disambiguate nested patterns
-            dir_norm = norm(dir_rel) if dir_rel else 'root'
-        else:
-            # Use immediate parent directory for non-index files
-            if not dir_rel:
-                dir_norm = 'root'
-            else:
-                dir_norm = norm(dir_rel.split('/')[-1])
-
-        return f"{category}-{dir_norm}-{filename_base}"
-
-    def _resolve_duplicate_ids(self, classified: list) -> list:
-        """Detect and resolve duplicate file IDs using path-based disambiguation.
-
-        This is a catch-all safety net that runs after generate_id(). It catches
-        any remaining collisions (e.g. non-index files sharing the same filename
-        within a category) that generate_id()'s first-pass logic did not resolve.
-
-        When multiple source files produce the same ID, the duplicate entries are
-        renamed by incorporating their directory path into the ID.
-        """
-        id_counts = Counter(entry['id'] for entry in classified)
-        duplicate_ids = {k for k, v in id_counts.items() if v > 1}
-
-        if not duplicate_ids:
-            return classified
-
-        result = []
-        for entry in classified:
-            if entry['id'] not in duplicate_ids:
-                result.append(entry)
-                continue
-
-            new_id = self._disambiguate_id(entry)
-            type_ = entry['type']
-            category = entry['category']
-            new_entry = {
-                **entry,
-                'id': new_id,
-                'output_path': f"{type_}/{category}/{new_id}.json",
-                'assets_dir': f"{type_}/{category}/assets/{new_id}/",
-            }
-            self.logger.warning(
-                f"   ⚠️Duplicate ID resolved: {entry['id']} → {new_id}"
-            )
-            result.append(new_entry)
-
-        return result
-
     def run(self):
         """Execute Step 2: Classify all source files"""
         # Use cached data in dry-run mode, otherwise load from file
@@ -646,9 +559,6 @@ class Step2Classify:
                 "output_path": output_path,
                 "assets_dir": assets_dir
             })
-
-        # Resolve any duplicate IDs before splitting
-        classified = self._resolve_duplicate_ids(classified)
 
         # Check for files that need splitting
         final_classified = []
