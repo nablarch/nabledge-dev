@@ -1,0 +1,2 @@
+Output file generated: .nabledge/20260307/code-analysis-LoginAction.md
+See output/code-analysis-LoginAction.md for full content.
