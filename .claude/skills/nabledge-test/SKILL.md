@@ -75,7 +75,7 @@ Arguments:
 ```
 Available scenarios for nabledge-<version>:
 
-QA (QA) - <count> scenarios:
+QA - <count> scenarios:
   - qa-001: <question>
   - qa-002: <question>
 
@@ -367,7 +367,7 @@ Write to `.pr/<PR_NUMBER>/nabledge-test/<YYYYMMDDHHMM>/<scenario-id>.md`:
 **Question**: <scenario.question>
 
 ## Scenario
-- **Type**: Knowledge-Search / Code-Analysis
+- **Type**: QA / Code-Analysis
 - **Expectations** (<count>): <list>
 
 ## Detection Results
@@ -436,7 +436,7 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 | 1 | <id> | <question> | QA/CA | <detected>/<total> | <seconds>秒 | <tokens> |
 ...
 
-**凡例**: QA=QA, CA=Code-Analysis, ⚡=最速, 🐢=最遅, 🔥=最大トークン, ⭐=100%検出
+**凡例**: CA=Code-Analysis, ⚡=最速, 🐢=最遅, 🔥=最大トークン, ⭐=100%検出
 
 ### 統計
 - **キーワード/コンポーネント検出**: <total_detected>/<total_items> (<rate>%)
@@ -453,7 +453,7 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 
 ## ⚡ パフォーマンス分析
 
-### Knowledge-Search: ステップ別平均時間
+### QA: ステップ別平均時間
 
 | ステップ | 名称 | 平均 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
 |----------|------|------|--------|------|------|-----------------------|
@@ -474,7 +474,7 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 </details>
 
 **Step name mapping** (use actual step names from metrics, fallback to these):
-- Knowledge-Search: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
+- QA: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
 - Code-Analysis: ターゲット特定, 知識検索, テンプレート読込, データ事前入力, 図表生成, コンテンツ構築, 出力完成, 実行時間計算
 
 注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
@@ -517,11 +517,13 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 
 1. Read all metrics.json and grading.json from workspace
 2. Filter by scenario type (qa-*, ca-*)
-3. For step-by-step analysis:
+3. **Detection rate**: Sum grading.json summary.detected / summary.total across all scenarios
+4. **Token column**: Per-scenario token = sum of all steps[].in_tokens_estimate + steps[].out_tokens_estimate from metrics.json. Average = mean of per-scenario totals. This is consistent with the individual report format (Tokens (estimate): <total> (IN: <in> / OUT: <out>))
+5. For step-by-step analysis:
    - Group by step name across scenarios of same type
    - Calculate: average, median, range, percentage of total
-4. Identify bottleneck (step with highest percentage) → add 🔥
-5. Apply ⚡ to fastest, 🐢 to slowest, ⭐ to 100% detection
+6. Identify bottleneck (step with highest percentage) → add 🔥
+7. Apply ⚡ to fastest, 🐢 to slowest, ⭐ to 100% detection
 
 ### Step 9: Baseline mode — save baseline
 
@@ -589,7 +591,7 @@ done
 ```bash
 cd "${BASELINE_DIR}"
 rm -f latest
-ln -s "${TIMESTAMP}" latest
+ln -s "${RUN_TIMESTAMP}" latest
 ```
 
 #### 9e: Generate comparison report (if previous baseline exists)

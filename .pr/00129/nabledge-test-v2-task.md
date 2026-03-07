@@ -33,11 +33,11 @@
     latest -> 20260306-143000/                      # シンボリックリンク（最新ベースラインを常に指す）
     20260306-143000/                                # ベースラインディレクトリ（例）
       meta.json                                     # 実行メタ情報
-      ks-001/
+      qa-001/
         metrics.json                                # 実測データ
         response.md                                 # 回答テキスト
         grading.json                                # キーワード検出結果
-      ks-002/
+      qa-002/
         ...
       ca-001/
         metrics.json
@@ -81,10 +81,10 @@ Each scenario runs in an isolated sub-agent context (Task tool) to eliminate cro
 ## Usage
 
 ```bash
-nabledge-test 6 ks-001                          # Single scenario (1 trial)
+nabledge-test 6 qa-001                          # Single scenario (1 trial)
 nabledge-test 6 --all                           # All scenarios (1 trial each)
 nabledge-test 6 --list                          # List all scenarios
-nabledge-test 6 ks-001 --trials 3               # Single scenario (3 trials)
+nabledge-test 6 qa-001 --trials 3               # Single scenario (3 trials)
 nabledge-test 6 --all --trials 5                # All scenarios (5 trials each)
 nabledge-test 6 "知識検索系を全部実行して"        # Free-form instruction
 nabledge-test 6 --baseline                      # Baseline mode: run all, save baseline, generate comparison report
@@ -118,17 +118,17 @@ Format: `nabledge-test <version> [<scenario-id> | --all | --list | --baseline | 
 Usage: nabledge-test <version> [<scenario-id> | --all | --list | --baseline | "<free-form>"] [--trials N]
 
 Examples:
-  nabledge-test 6 ks-001                          # Single scenario (1 trial)
+  nabledge-test 6 qa-001                          # Single scenario (1 trial)
   nabledge-test 6 --all                           # All scenarios (1 trial each)
   nabledge-test 6 --list                          # List all available scenarios
   nabledge-test 6 --baseline                      # Baseline mode (all scenarios, save + compare)
-  nabledge-test 6 ks-001 --trials 3               # Single scenario (3 trials)
+  nabledge-test 6 qa-001 --trials 3               # Single scenario (3 trials)
   nabledge-test 6 --all --trials 5                # All scenarios (5 trials each)
   nabledge-test 6 "知識検索系を全部実行して"        # Free-form instruction
 
 Arguments:
   <version>              Required. Version number (6 or 5)
-  <scenario-id>          Optional. Specific scenario to test (e.g., ks-001, ca-001)
+  <scenario-id>          Optional. Specific scenario to test (e.g., qa-001, ca-001)
   --all                  Optional. Test all scenarios
   --list                 Optional. List all available scenarios
   --baseline             Optional. Baseline mode: run all scenarios, save to baseline/, generate comparison
@@ -139,15 +139,15 @@ Arguments:
 **If `--list` is provided**: Display scenario list and exit.
 
 1. Read scenarios file: `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`
-2. Group scenarios by type (ks-* for knowledge-search, ca-* for code-analysis)
+2. Group scenarios by type (qa-* for qa, ca-* for code-analysis)
 3. Display formatted list:
 
 ```
 Available scenarios for nabledge-<version>:
 
-Knowledge Search (KS) - <count> scenarios:
-  - ks-001: <question>
-  - ks-002: <question>
+QA - <count> scenarios:
+  - qa-001: <question>
+  - qa-002: <question>
 
 Code Analysis (CA) - <count> scenarios:
   - ca-001: <question>
@@ -160,7 +160,7 @@ Total: <total_count> scenarios
 
 | Argument | Mode | Scenarios | Baseline |
 |----------|------|-----------|----------|
-| `ks-001` | single | 1個 | No |
+| `qa-001` | single | 1個 | No |
 | `--all` | all | 全件 | No |
 | `--baseline` | baseline | 全件 | Yes |
 | `"free text"` | free-form | AI判断 | No |
@@ -198,7 +198,7 @@ From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 
 ```json
 {
-  "id": "ks-001",
+  "id": "qa-001",
   "question": "バッチの起動方法を教えてください",
   "keywords": ["keyword1", "keyword2", ...],
   "sections": ["section1", "section2"]
@@ -217,7 +217,7 @@ For code-analysis scenarios (ca-*), additional fields:
 
 **Build detection items**:
 
-For knowledge-search (ks-*):
+For qa (qa-*):
 ```
 detection_items = []
 for keyword in scenario.keywords:
@@ -339,7 +339,7 @@ For each completed scenario:
 
 For each scenario, evaluate detection items against the response:
 
-**Knowledge-search (ks-*)**:
+**QA (qa-*)**:
 
 ```python
 for item in detection_items:
@@ -466,16 +466,16 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 
 | # | Scenario | 質問 | Type | 検出 | 時間 | トークン |
 |---|----------|------|------|------|------|---------|
-| 1 | <id> | <question> | KS/CA | <detected>/<total> | <seconds>秒 | <tokens> |
+| 1 | <id> | <question> | QA/CA | <detected>/<total> | <seconds>秒 | <tokens> |
 ...
 
-**凡例**: KS=Knowledge-Search, CA=Code-Analysis, ⚡=最速, 🐢=最遅, 🔥=最大トークン, ⭐=100%検出
+**凡例**: CA=Code-Analysis, ⚡=最速, 🐢=最遅, 🔥=最大トークン, ⭐=100%検出
 
 ### 統計
 - **キーワード/コンポーネント検出**: <total_detected>/<total_items> (<rate>%)
-  - KS: <ks_detected>/<ks_total> (<ks_rate>%)
+  - QA: <qa_detected>/<qa_total> (<qa_rate>%)
   - CA: <ca_detected>/<ca_total> (<ca_rate>%)
-- **平均実行時間**: <avg>秒 (KS: <ks_avg>秒 / CA: <ca_avg>秒)
+- **平均実行時間**: <avg>秒 (QA: <qa_avg>秒 / CA: <ca_avg>秒)
   - 最速: <id> (<time>秒)
   - 最遅: <id> (<time>秒)
 - **平均トークン**: <avg> (推定値)
@@ -486,7 +486,7 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 
 ## ⚡ パフォーマンス分析
 
-### Knowledge-Search: ステップ別平均時間
+### QA: ステップ別平均時間
 
 | ステップ | 名称 | 平均 | 中間値 | 割合 | 範囲 | 推定トークン (IN/OUT) |
 |----------|------|------|--------|------|------|-----------------------|
@@ -507,7 +507,7 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 </details>
 
 **Step name mapping** (use actual step names from metrics, fallback to these):
-- Knowledge-Search: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
+- QA: ワークフロー読込, キーワード抽出, ファイルマッチング, セクション抽出, 関連性スコアリング, コンテンツ読込, セクション判定, 回答生成
 - Code-Analysis: ターゲット特定, 知識検索, テンプレート読込, データ事前入力, 図表生成, コンテンツ構築, 出力完成, 実行時間計算
 
 注: トークン数は推定値 (文字数÷4)。正確な測定にはClaude API responseのusageフィールドが必要。
@@ -549,7 +549,7 @@ Write `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`:
 **Statistics calculation**:
 
 1. Read all metrics.json and grading.json from workspace
-2. Filter by scenario type (ks-*, ca-*)
+2. Filter by scenario type (qa-*, ca-*)
 3. For step-by-step analysis:
    - Group by step name across scenarios of same type
    - Calculate: average, median, range, percentage of total
@@ -582,7 +582,7 @@ mkdir -p "${TARGET_DIR}"
   "scenarios_count": 10,
   "trials": 1,
   "scenarios": {
-    "knowledge-search": ["ks-001", "ks-002", "ks-003", "ks-004", "ks-005"],
+    "qa": ["qa-001", "qa-002", "qa-003", "qa-004", "qa-005"],
     "code-analysis": ["ca-001", "ca-002", "ca-003", "ca-004", "ca-005"]
   }
 }
@@ -701,7 +701,7 @@ Write comparison-report.md:
 
 | # | Scenario | 検出率 (前回) | 検出率 (今回) | 変化 | 時間 (前回) | 時間 (今回) | 変化 | トークン (前回) | トークン (今回) | 変化 | 目視 |
 |---|----------|-------------|-------------|------|-----------|-----------|------|---------------|---------------|------|------|
-| 1 | ks-001 | 6/6 | 6/6 | → | 48秒 | 42秒 | ↓6秒 🟢 | 7,019 | 6,500 | ↓519 🟢 | |
+| 1 | qa-001 | 6/6 | 6/6 | → | 48秒 | 42秒 | ↓6秒 🟢 | 7,019 | 6,500 | ↓519 🟢 | |
 ...
 
 **凡例**:
@@ -780,8 +780,8 @@ nabledge-test <version> --baseline
 **For single/all mode**:
 
 ```
-✓ ks-001: 5/5 keywords + 1/1 sections detected | 48s | 7,019 tokens
-✓ ks-002: 5/5 keywords + 1/1 sections detected | 14s | 15,200 tokens
+✓ qa-001: 5/5 keywords + 1/1 sections detected | 48s | 7,019 tokens
+✓ qa-002: 5/5 keywords + 1/1 sections detected | 14s | 15,200 tokens
 ✗ ca-004: 8/12 expectations detected | 64s | 8,820 tokens
 
 Aggregate report: .pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md
@@ -865,8 +865,8 @@ Does NOT depend on skill-creator. nabledge-test v2 is self-contained.
 
 | # | Scenario | 検出率 (前回) | 検出率 (今回) | 変化 | 時間 (前回) | 時間 (今回) | 変化 | トークン (前回) | トークン (今回) | 変化 | 目視 |
 |---|----------|-------------|-------------|------|-----------|-----------|------|---------------|---------------|------|------|
-| 1 | ks-001 | 6/6 | 6/6 | → | 48秒 | 42秒 | ↓6秒 🟢 | 7,019 | 6,500 | ↓519 🟢 | |
-| 2 | ks-002 | 6/6 | 5/6 | ↓1 🔴 | 14秒 | 12秒 | ↓2秒 🟢 | 15,200 | 14,800 | ↓400 🟢 | |
+| 1 | qa-001 | 6/6 | 6/6 | → | 48秒 | 42秒 | ↓6秒 🟢 | 7,019 | 6,500 | ↓519 🟢 | |
+| 2 | qa-002 | 6/6 | 5/6 | ↓1 🔴 | 14秒 | 12秒 | ↓2秒 🟢 | 15,200 | 14,800 | ↓400 🟢 | |
 | 3 | ca-001 | 15/15 | 15/15 | → | 104秒 | 95秒 | ↓9秒 🟢 | 41,956 | 38,000 | ↓3,956 🟢 | |
 ...
 
@@ -1012,7 +1012,7 @@ SKILL.mdは「エージェントが読んで従う手順書」であり、コー
 
 ### 既存との互換性
 
-- [ ] `nabledge-test 6 ks-001` （単体実行）が引き続き動作する
+- [ ] `nabledge-test 6 qa-001` （単体実行）が引き続き動作する
 - [ ] `nabledge-test 6 --all` （全件実行）が引き続き動作する
 - [ ] `nabledge-test 6 --list` （一覧表示）が引き続き動作する
 - [ ] scenarios.json のフォーマットに変更がない
