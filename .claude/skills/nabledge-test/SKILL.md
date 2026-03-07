@@ -447,10 +447,10 @@ for scenario_id in $(ls "${WORKSPACE}/"); do
   cp "${WORKSPACE}/${scenario_id}/grading.json" \
      "${TARGET_DIR}/${scenario_id}/grading.json"
 
-  # Copy output files (ca-* only)
+  # Copy output files to scenario directory (ca-* only)
   if [ -d "${WORKSPACE}/${scenario_id}/output" ]; then
-    cp -r "${WORKSPACE}/${scenario_id}/output" \
-       "${TARGET_DIR}/${scenario_id}/output"
+    cp "${WORKSPACE}/${scenario_id}/output"/* \
+       "${TARGET_DIR}/${scenario_id}/"
   fi
 done
 ```
