@@ -49,4 +49,4 @@ For each pattern, record whether it matched and what evidence was found (or why 
 {KNOWLEDGE_JSON}
 ```
 
-Output the result as JSON matching the provided schema.
+Respond with the result as JSON matching the provided schema.

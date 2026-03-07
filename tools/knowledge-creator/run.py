@@ -290,10 +290,6 @@ def main():
             if b_result:
                 report["phase_b"] = b_result
 
-            if not args.dry_run and os.path.exists(ctx.classified_list_path):
-                from steps.source_tracker import save_hashes
-                save_hashes(ctx)
-
         # Phase C/D/E loop
         for round_num in range(1, ctx.max_rounds + 1):
             logger.info(f"\n🔄Round {round_num}/{ctx.max_rounds}")

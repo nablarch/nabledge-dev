@@ -10,8 +10,6 @@ Convert the source file below into a knowledge file (JSON) by following Work Ste
 - Format: `{FORMAT}` (rst/md/xlsx)
 - Type: `{TYPE}`
 - Category: `{CATEGORY}`
-- Output Path: `{OUTPUT_PATH}`
-- Assets Directory: `{ASSETS_DIR}`
 - Official Doc Base URL: `{OFFICIAL_DOC_BASE_URL}`
 
 ## Source File Content
@@ -533,4 +531,4 @@ Combine all results from Steps 1–6 into the output JSON.
 - [ ] If `no_knowledge_content: true`, trace has `no_knowledge_content_reason`
 - [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
 
-Output the JSON matching the schema above. No explanation, no markdown fences, no other text.
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.
