@@ -85,8 +85,8 @@ fi
 
 # Copy setup scripts to root
 echo "Copying setup scripts to root..."
-cp "$SOURCE_DIR/scripts/setup-6-cc.sh" "$DEST_DIR/"
-cp "$SOURCE_DIR/scripts/setup-6-ghc.sh" "$DEST_DIR/"
+cp "$SOURCE_DIR/tools/setup/setup-6-cc.sh" "$DEST_DIR/"
+cp "$SOURCE_DIR/tools/setup/setup-6-ghc.sh" "$DEST_DIR/"
 
 echo "Transformation complete!"
 echo ""
