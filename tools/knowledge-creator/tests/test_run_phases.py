@@ -236,6 +236,35 @@ class TestPhaseControl:
                     for p in patches.values():
                         p.stop()
 
+    def test_no_report_files_leaked_to_repo(self, tmp_path):
+        """自動テスト実行で実リポジトリの reports/ にファイルが生成されない。"""
+        import glob
+        repo_reports = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "reports"
+        )
+        before = set(glob.glob(os.path.join(repo_reports, "*")))
+
+        args = self._create_test_args(phase="ABCDEM")
+        args.repo = str(tmp_path)
+
+        patches, tracked = self._patch_phases()
+
+        with patch('sys.argv', ['run.py', '--version', '6']):
+            with patch('argparse.ArgumentParser.parse_args', return_value=args):
+                for p in patches.values():
+                    p.start()
+                try:
+                    import run as run_module
+                    run_module.main()
+                finally:
+                    for p in patches.values():
+                        p.stop()
+
+        after = set(glob.glob(os.path.join(repo_reports, "*")))
+        new_files = after - before
+        assert not new_files, f"実リポジトリの reports/ にファイルが漏出: {new_files}"
+
     def test_backward_compat_gf_still_works(self, tmp_path):
         """--phase GF should execute G -> F for backward compatibility."""
         args = self._create_test_args(phase="GF")
