@@ -2,6 +2,19 @@
 
 Development rules for the knowledge-creator tool.
 
+## Phase Naming Convention
+
+When referring to phases, always use the full format: **Phase A: Preparation**, **Phase B: Generation**, etc.
+
+| Phase | Name |
+|-------|------|
+| A | Preparation |
+| B | Generation |
+| C | Structure Check |
+| D | Content Check |
+| E | Fix |
+| M | Finalization |
+
 ## Intermediate Artifacts
 
 **Policy**: Intermediate artifacts (logs) are excluded from git and regenerated on each execution.
