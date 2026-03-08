@@ -65,6 +65,10 @@ class Context:
     def classified_list_path(self) -> str:
         return f"{self.cache_dir}/catalog.json"
 
+    @property
+    def knowledge_cache_dir(self) -> str:
+        return f"{self.cache_dir}/knowledge"
+
     # Phase B: Generate
     @property
     def trace_dir(self) -> str:
@@ -228,6 +232,19 @@ def main():
         # --target from CLI is the default; --regen may override per version
         effective_target = args.target
 
+        # Resolve --target base_name to split IDs
+        if effective_target and os.path.exists(ctx.classified_list_path):
+            from common import load_json
+            catalog = load_json(ctx.classified_list_path)
+            resolved = []
+            for t in effective_target:
+                matched = [f["id"] for f in catalog["files"] if f.get("base_name") == t]
+                if matched:
+                    resolved.extend(matched)
+                else:
+                    resolved.append(t)
+            effective_target = resolved
+
         # --clean-phase: remove artifacts before run
         if args.clean_phase:
             from cleaner import clean_phase_artifacts
@@ -362,7 +379,7 @@ def main():
             logger.info("\n📦Phase M: Merge + Resolve + Finalize")
             logger.info("   └─ Merging, resolving links, generating docs...")
             from phase_m_finalize import PhaseMFinalize
-            PhaseMFinalize(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
+            PhaseMFinalize(ctx, dry_run=args.dry_run).run()
 
             from knowledge_meta import update_knowledge_meta
             if ctx.test_file:
@@ -527,7 +544,7 @@ def _collect_file_details(ctx) -> list:
         json_bytes = 0
         out = cf.get('output_path', '')
         if out:
-            full_out = os.path.join(ctx.knowledge_dir, out)
+            full_out = os.path.join(ctx.knowledge_cache_dir, out)
             if os.path.exists(full_out):
                 json_bytes = os.path.getsize(full_out)
 

@@ -97,12 +97,12 @@ class TestRunFlowWithSplitFiles:
         phase_b = PhaseBGenerate(ctx, run_claude_fn=mock_run_claude, dry_run=False)
         phase_b.run()
 
-        # Verify: part files exist (NOT merged)
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json")
+        # Verify: part files exist in cache (NOT merged)
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json")
 
-        # Verify: merged file does NOT exist
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test.json")
+        # Verify: merged file does NOT exist in cache
+        assert not os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/test.json")
 
         # Verify: classified.json still has split entries
         updated = load_json(ctx.classified_list_path)
@@ -154,7 +154,7 @@ class TestRunFlowWithSplitFiles:
             else:
                 # Phase E: fix
                 call_tracker["e"].append(file_id)
-                knowledge = load_json(f"{ctx.knowledge_dir}/component/test/{file_id}.json")
+                knowledge = load_json(f"{ctx.knowledge_cache_dir}/component/test/{file_id}.json")
                 # Return same knowledge (fixed)
                 return subprocess.CompletedProcess(
                     args=["claude"], returncode=0,
@@ -180,9 +180,9 @@ class TestRunFlowWithSplitFiles:
             "sections": {"section2": "Content 2 with enough characters for validation"}
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w") as f:

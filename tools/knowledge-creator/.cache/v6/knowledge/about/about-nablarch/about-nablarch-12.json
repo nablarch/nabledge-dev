@@ -1,0 +1,158 @@
+{
+  "id": "about-nablarch-12",
+  "title": "OIDCのIDトークンを用いた認証サンプル",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/12/index.html"
+  ],
+  "index": [
+    {
+      "id": "providing-package",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.common.oidc.verification",
+        "OIDCサンプルパッケージ",
+        "ソースコード"
+      ]
+    },
+    {
+      "id": "overview",
+      "title": "概要",
+      "hints": [
+        "OIDC認証",
+        "IDトークン検証",
+        "Amazon Cognito",
+        "Azure Active Directory B2C",
+        "RESTfulウェブサービス認証",
+        "ステートフルセッション管理",
+        "please.change.me.common.oidc.verification.cognito",
+        "please.change.me.common.oidc.verification.adb2c"
+      ]
+    },
+    {
+      "id": "configuration",
+      "title": "構成",
+      "hints": [
+        "IdTokenVerifier",
+        "SignatureAlgorithmProvider",
+        "CognitoIdTokenVerifier",
+        "CognitoSignatureAlgorithmProvider",
+        "CognitoRSAKeyProvider",
+        "LoginAction",
+        "LoginRequestForm",
+        "クラス構成",
+        "IDトークン検証クラス"
+      ]
+    },
+    {
+      "id": "dependency-setup",
+      "title": "依存ライブラリの追加",
+      "hints": [
+        "java-jwt",
+        "jwks-rsa",
+        "Auth0",
+        "JWT",
+        "JWTライブラリ",
+        "依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "environment-config",
+      "title": "環境依存値の設定",
+      "hints": [
+        "aws.cognito.region",
+        "aws.cognito.userPool.id",
+        "aws.cognito.userPool.clientId",
+        "環境依存値",
+        "リージョン",
+        "ユーザープールID",
+        "クライアントID"
+      ]
+    },
+    {
+      "id": "component-definition",
+      "title": "コンポーネント定義の設定",
+      "hints": [
+        "CognitoIdTokenVerifier",
+        "CognitoSignatureAlgorithmProvider",
+        "CognitoRSAKeyProvider",
+        "idTokenVerifier",
+        "signatureAlgorithmProvider",
+        "rsaKeyProvider",
+        "コンポーネント定義"
+      ]
+    },
+    {
+      "id": "id-token-verification",
+      "title": "IDトークンの検証",
+      "hints": [
+        "CognitoIdTokenVerifier",
+        "CognitoSignatureAlgorithmProvider",
+        "CognitoRSAKeyProvider",
+        "IdTokenVerifier",
+        "SignatureAlgorithmProvider",
+        "RSAKeyProvider",
+        "JwkProvider",
+        "JwkProviderBuilder",
+        "DecodedJWT",
+        "JWTVerifier",
+        "JWTVerificationException",
+        "JwkException",
+        "Initializable",
+        "Jwk",
+        "Algorithm",
+        "IDトークン検証",
+        "JWT署名検証",
+        "JWKS公開鍵取得",
+        "AWS Cognito認証",
+        "OpenID Connect認証",
+        "キャッシュ",
+        "レート制限",
+        "プロキシ"
+      ]
+    },
+    {
+      "id": "auth-action-path-config",
+      "title": "認証用業務アクションのパス設定",
+      "hints": [
+        "LoginAction",
+        "@Path",
+        "JAX-RS",
+        "Pathアノテーション",
+        "認証アクション",
+        "router_adaptor_path_annotation"
+      ]
+    },
+    {
+      "id": "auth-and-login-state",
+      "title": "認証および成功時のログイン状態設定",
+      "hints": [
+        "LoginRequestForm",
+        "SessionUtil",
+        "CsrfTokenUtil",
+        "@Valid",
+        "@POST",
+        "@Consumes",
+        "HttpErrorResponse",
+        "DecodedJWT",
+        "JWTVerificationException",
+        "IdTokenVerifier",
+        "ログインセッション",
+        "CSRFトークン",
+        "セッションID",
+        "認証成功"
+      ]
+    }
+  ],
+  "sections": {
+    "providing-package": "[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-oidc)\n\n**パッケージ**: `please.change.me.common.oidc.verification`",
+    "overview": "OIDCで発行されるIDトークンを用いて認証を行うサンプル。\n\n想定構成:\n1. NablarchのRESTfulウェブサービスをバックエンドとして稼働\n2. IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信\n3. 認証成功時にログインセッションを確立し、認証後はステートフルなセッション管理\n4. 認証処理は業務アクションで実装\n\n対応サービス別パッケージ:\n- [Amazon Cognito ユーザープール](https://aws.amazon.com/jp/cognito/): `please.change.me.common.oidc.verification.cognito`\n- [Azure Active Directory B2C](https://learn.microsoft.com/ja-jp/azure/active-directory-b2c/): `please.change.me.common.oidc.verification.adb2c`\n\nadb2cパッケージ使用時は、対応するコンポーネントに読み替えること。\n\n> **補足**: 本サンプルは2024年9月時点のユーザープール・ADB2Cの仕様に合わせて実装。利用するサービスの最新仕様を必ず確認し、適宜カスタマイズすること。\n\n本サンプルの対象範囲はNablarchバックエンドアプリケーションのみ。フロントエンドでのIDトークン取得方法は対象外。\n\n![処理フロー全体像](assets/about-nablarch-12/nablarch-example-oidc-scope.drawio.png)",
+    "configuration": "![クラス図](assets/about-nablarch-12/nablarch-example-oidc-class.drawio.png)\n\n**インタフェース**:\n\n| インタフェース名 | 概要 |\n|---|---|\n| `IdTokenVerifier` | IDトークンが有効であるか検証する |\n| `SignatureAlgorithmProvider` | トークンの署名検証に使用するアルゴリズムを提供する |\n\n**クラス（コンポーネント）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `CognitoIdTokenVerifier` | CognitoのIDトークンが有効であるか検証する |\n| `CognitoSignatureAlgorithmProvider` | Cognitoのトークン署名検証に使用するアルゴリズムを提供する |\n| `CognitoRSAKeyProvider` | Cognitoのトークン検証に使用するRSA公開鍵を提供する |\n\n**クラス（業務アクション）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `LoginAction` | 認証処理の業務アクション |\n| `LoginRequestForm` | 認証のリクエスト情報を格納するフォーム |",
+    "dependency-setup": "IDトークンはJSON Web Tokens（JWT）形式で作成される。サンプルではAuth0が公開している `java-jwt` と `jwks-rsa-java` を使用する。\n\n> **補足**: JWTを扱うライブラリは[OpenID Foundation](https://openid.net/developers/jwt-jws-jwe-jwk-and-jwa-implementations/)や[jwt.io](https://jwt.io/libraries)でも紹介されている。\n\nプロジェクトの依存関係設定に以下を追加する:\n```xml\n<dependencies>\n  ...\n  <!-- JWTライブラリ -->\n  <dependency>\n    <groupId>com.auth0</groupId>\n    <artifactId>java-jwt</artifactId>\n    <version>4.4.0</version>\n  </dependency>\n  <dependency>\n    <groupId>com.auth0</groupId>\n    <artifactId>jwks-rsa</artifactId>\n    <version>0.22.1</version>\n  </dependency>\n  ...\n</dependencies>\n```",
+    "environment-config": "IDトークン検証コンポーネントは環境依存値をプロパティとして参照するため、以下の環境依存値を実行環境に設定する:\n\n| 名前 | 説明 |\n|---|---|\n| aws.cognito.region | Cognitoを作成しているリージョンコード（例：ap-northeast-1） |\n| aws.cognito.userPool.id | ユーザープールID |\n| aws.cognito.userPool.clientId | ユーザープールに登録したアプリケーションのクライアントID |\n\n環境依存値の設定方法は :ref:`repository-overwrite_environment_configuration` や :ref:`repository-overwrite_environment_configuration_by_os_env_var` を参照。\n\n> **補足**: 秘匿すべき情報はバージョン管理システムで管理されるファイルへの記述を避け、システムプロパティまたはOS環境変数として設定する。",
+    "component-definition": "IDトークン検証処理はプロパティの使用や起動時の初期化を考慮してコンポーネントとして作成する。以下をコンポーネント設定ファイルに定義する:\n\n```xml\n<!-- IDトークン検証コンポーネント -->\n<component name=\"idTokenVerifier\" class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoIdTokenVerifier\">\n  <property name=\"region\" value=\"${aws.cognito.region}\" />\n  <property name=\"userPoolId\" value=\"${aws.cognito.userPool.id}\" />\n  <property name=\"clientId\" value=\"${aws.cognito.userPool.clientId}\" />\n  <property name=\"signatureAlgorithmProvider\" ref=\"signatureAlgorithmProvider\" />\n</component>\n<!-- トークン署名検証用アルゴリズム提供コンポーネント -->\n<component name=\"signatureAlgorithmProvider\" class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoSignatureAlgorithmProvider\">\n  <property name=\"rsaKeyProvider\" ref=\"rsaKeyProvider\" />\n</component>\n<!-- トークン署名検証用RSA公開鍵提供コンポーネント -->\n<component name=\"rsaKeyProvider\" class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoRSAKeyProvider\">\n  <property name=\"region\" value=\"${aws.cognito.region}\" />\n  <property name=\"userPoolId\" value=\"${aws.cognito.userPool.id}\" />\n</component>\n```",
+    "id-token-verification": "**`CognitoIdTokenVerifier`**: Cognitoのガイドに従ってIDトークンを検証する（有効期限の許容範囲は60秒）:\n```java\nJWTVerifier verifier = JWT.require(signatureAlgorithmProvider.get())\n        .acceptExpiresAt(60)\n        .withAudience(clientId)\n        .withIssuer(createUserPoolUrl(region, userPoolId))\n        .withClaim(\"token_use\", \"id\")\n        .build();\nreturn verifier.verify(idToken);\n```\n\n**`CognitoSignatureAlgorithmProvider`**: RSA署名に対応するアルゴリズム情報を返す:\n```java\n@Override\npublic Algorithm get() {\n    return Algorithm.RSA256(rsaKeyProvider);\n}\n```\n\n**`CognitoRSAKeyProvider`**: `RSAKeyProvider`と`Initializable`を実装し、JWKSエンドポイントからRSA公開鍵を取得する:\n```java\n@Override\npublic RSAPublicKey getPublicKeyById(String keyId) {\n    try {\n        Jwk jwk = provider.get(keyId);\n        return (RSAPublicKey) jwk.getPublicKey();\n    } catch (JwkException e) {\n        return null;\n    }\n}\n```\n\n`initialize()`でJwkProviderBuilderを構築する際の設定:\n- **キャッシュ**: キーIDごとに1時間に4つまでキャッシュ（キーのローテーションを跨いだ場合でも通常使用ではキャッシュされる範囲）\n- **レート制限**: JWKSエンドポイントへのアクセスは1分間に10回まで（キャッシュを考慮すると通常使用では到達しない範囲）\n- **プロキシ**: プロキシは使用しない（`Proxy.NO_PROXY`）\n\n```java\nthis.provider = new JwkProviderBuilder(createUserPoolUrl(region, userPoolId))\n        .cached(true)\n        .cached(4, 1, TimeUnit.HOURS)\n        .rateLimited(true)\n        .rateLimited(10, 1, TimeUnit.MINUTES)\n        .proxied(Proxy.NO_PROXY)\n        .build();\n```\n\n> **補足**: 署名キーはローテーションや情報漏洩等の緊急事態で変更される可能性がある。事前にキー情報が判明していても固定値を使用せず、JWKSエンドポイントから最新情報を取得すること。",
+    "auth-action-path-config": "認証用業務アクションのパスはJAX-RSの`@Path`アノテーションで設定する:\n```java\n@Path(\"/cognito/login\")\npublic class LoginAction {\n```\n\nJAX-RSの`@Path`アノテーションによるマッピングの詳細は :ref:`router_adaptor_path_annotation` を参照。",
+    "auth-and-login-state": "業務アクションでIDトークンを検証し、成功すればログインセッションを確立する。失敗時はHTTPステータス401のレスポンスを返却する。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic void login(ExecutionContext context, LoginRequestForm form) {\n    // IDトークンが有効であるか検証する\n    DecodedJWT decodedJWT = verifyIdToken(form.getIdToken());\n\n    // 安全性向上のため、認証成功後にセッションIDおよびCSRFトークンを変更する\n    SessionUtil.changeId(context);\n    CsrfTokenUtil.regenerateCsrfToken(context);\n\n    // IDトークンで連携された情報からユーザー情報を特定して、認証状態をセッションに保持する\n    String userId = decodedJWT.getSubject();\n    SessionUtil.put(context, \"user.id\", userId);\n}\n```\n\nIDトークン検証失敗時（`JWTVerificationException`）は`HttpErrorResponse(401)`をスロー:\n```java\nIdTokenVerifier idTokenVerifier = SystemRepository.get(\"idTokenVerifier\");\ntry {\n    return idTokenVerifier.verify(idToken);\n} catch (JWTVerificationException e) {\n    throw new HttpErrorResponse(HttpResponse.Status.UNAUTHORIZED.getStatusCode());\n}\n```\n\n> **補足**: CSRFへの対策のためCSRFトークン検証ハンドラの使用を想定。詳細は :ref:`csrf_token_verification_handler` を参照。"
+  }
+}

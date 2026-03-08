@@ -234,7 +234,7 @@ class TestPhaseEVerbosePropagation:
                 args=[], returncode=0,
                 stdout=json.dumps(knowledge), stderr="")
         from phase_e_fix import PhaseEFix
-        write_json(f"{ctx.knowledge_dir}/component/handlers/handlers-sample-handler.json",
+        write_json(f"{ctx.knowledge_cache_dir}/component/handlers/handlers-sample-handler.json",
                     {"id": "test-file", "no_knowledge_content": False, "title": "T",
                      "official_doc_urls": [],
                      "index": [{"id": "s", "title": "S", "hints": ["h"]}],

@@ -65,7 +65,7 @@ class PhaseDContentCheck:
         if os.path.exists(findings_path):
             return load_json(findings_path)
 
-        json_path = f"{self.ctx.knowledge_dir}/{file_info['output_path']}"
+        json_path = f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}"
         source_path = f"{self.ctx.repo}/{file_info['source_path']}"
 
         if not os.path.exists(json_path) or not os.path.exists(source_path):

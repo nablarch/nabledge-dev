@@ -153,7 +153,7 @@ class PhaseCStructureCheck:
         }
 
         for fi in files:
-            json_path = f"{self.ctx.knowledge_dir}/{fi['output_path']}"
+            json_path = f"{self.ctx.knowledge_cache_dir}/{fi['output_path']}"
             source_path = f"{self.ctx.repo}/{fi['source_path']}"
 
             if not os.path.exists(json_path):

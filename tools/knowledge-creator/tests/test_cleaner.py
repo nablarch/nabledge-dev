@@ -40,7 +40,7 @@ class TestListPhaseBWithTarget:
 
     def test_returns_knowledge_json_and_trace(self, ctx):
         # knowledge JSON
-        json_path = f"{ctx.knowledge_dir}/component/handlers/handlers-sample-handler.json"
+        json_path = f"{ctx.knowledge_cache_dir}/component/handlers/handlers-sample-handler.json"
         os.makedirs(os.path.dirname(json_path), exist_ok=True)
         write_json(json_path, {"id": "handlers-sample-handler"})
         # trace
@@ -70,7 +70,7 @@ class TestListPhaseBAllFiles:
         }
         write_json(ctx.classified_list_path, classified)
 
-        json_path = f"{ctx.knowledge_dir}/component/handlers/handlers-sample-handler.json"
+        json_path = f"{ctx.knowledge_cache_dir}/component/handlers/handlers-sample-handler.json"
         os.makedirs(os.path.dirname(json_path), exist_ok=True)
         write_json(json_path, {"id": "handlers-sample-handler"})
 
@@ -115,7 +115,7 @@ class TestCleanPhaseArtifacts:
         write_json(ctx.classified_list_path, classified)
 
         # Phase B artifact
-        json_path = f"{ctx.knowledge_dir}/component/handlers/handlers-sample-handler.json"
+        json_path = f"{ctx.knowledge_cache_dir}/component/handlers/handlers-sample-handler.json"
         os.makedirs(os.path.dirname(json_path), exist_ok=True)
         write_json(json_path, {"id": "handlers-sample-handler"})
 

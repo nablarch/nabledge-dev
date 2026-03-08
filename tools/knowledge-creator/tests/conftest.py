@@ -115,6 +115,9 @@ def test_repo(tmp_path):
     # knowledge directory
     (repo / ".claude" / "skills" / "nabledge-6" / "knowledge" / "component" / "handlers").mkdir(parents=True)
 
+    # knowledge_cache_dir
+    (repo / "tools" / "knowledge-creator" / ".cache" / "v6" / "knowledge" / "component" / "handlers").mkdir(parents=True)
+
     # prompts directory - copy real prompts
     prompts_dir = repo / "tools" / "knowledge-creator" / "prompts"
     prompts_dir.mkdir(parents=True)

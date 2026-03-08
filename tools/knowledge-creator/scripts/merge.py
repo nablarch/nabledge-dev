@@ -9,8 +9,8 @@ class MergeSplitFiles:
     """Merge split knowledge files into single files.
 
     Files with split_info.is_split=true are parts of a larger file.
-    Group by original_id, merge, save as {original_id}.json,
-    delete part files, update classified_list.json.
+    Group by original_id, merge, save as {original_id}.json to knowledge_dir.
+    Part files in knowledge_cache_dir are preserved (not deleted).
     """
 
     def __init__(self, ctx):
@@ -22,6 +22,7 @@ class MergeSplitFiles:
 
         Consolidates internal_labels and sections arrays from part trace files
         into a single merged trace file for the original_id.
+        Part trace files are deleted after merging.
 
         Args:
             original_id: ID of the merged file
@@ -70,12 +71,16 @@ class MergeSplitFiles:
             if os.path.exists(part_trace_path):
                 os.remove(part_trace_path)
 
-    def run(self, target_ids=None):
+    def run(self):
         """Execute merge operation.
 
-        Args:
-            target_ids: Optional list of file IDs. When specified, only merge
-                        split groups that contain at least one targeted part.
+        Reads split parts from knowledge_cache_dir, merges them, and writes
+        merged files to knowledge_dir. Non-split files are copied from
+        knowledge_cache_dir to knowledge_dir.
+
+        Returns:
+            Merged catalog dict (split entries replaced by merged entries)
+            if any merges were performed, None otherwise.
         """
         classified = load_json(self.ctx.classified_list_path)
 
@@ -84,17 +89,6 @@ class MergeSplitFiles:
             if "split_info" in fi and fi["split_info"].get("is_split"):
                 oid = fi["split_info"]["original_id"]
                 split_groups.setdefault(oid, []).append(fi)
-
-        if not split_groups:
-            return
-
-        # Filter by target_ids: only merge groups containing targeted parts
-        if target_ids is not None:
-            target_set = set(target_ids)
-            split_groups = {
-                oid: parts for oid, parts in split_groups.items()
-                if any(p["id"] in target_set for p in parts)
-            }
 
         self.logger.info(f"\n--- Merging Split Files ---")
         merged_groups = {}
@@ -105,7 +99,7 @@ class MergeSplitFiles:
             part_paths = []
             all_exist = True
             for part in parts:
-                pp = f"{self.ctx.knowledge_dir}/{part['output_path']}"
+                pp = f"{self.ctx.knowledge_cache_dir}/{part['output_path']}"
                 if os.path.exists(pp):
                     part_paths.append(pp)
                 else:
@@ -170,49 +164,62 @@ class MergeSplitFiles:
             try:
                 write_json(merged_path, merged)
 
-                # Consolidate assets
+                # Consolidate assets: copy from cache to knowledge_dir (preserve cache)
                 merged_assets = f"{self.ctx.knowledge_dir}/{type_}/{category}/assets/{original_id}/"
                 for part in parts:
-                    part_assets = f"{self.ctx.knowledge_dir}/{part['assets_dir']}"
+                    part_assets = f"{self.ctx.knowledge_cache_dir}/{part['assets_dir']}"
                     if os.path.exists(part_assets):
                         os.makedirs(merged_assets, exist_ok=True)
                         for af in os.listdir(part_assets):
                             src = os.path.join(part_assets, af)
                             dst = os.path.join(merged_assets, af)
                             if os.path.isfile(src) and not os.path.exists(dst):
-                                shutil.move(src, dst)
-                        try:
-                            os.rmdir(part_assets)
-                        except OSError:
-                            pass
+                                shutil.copy2(src, dst)
 
                 # Merge trace files if they exist
                 self._merge_trace_files(original_id, parts)
-
-                for pp in part_paths:
-                    os.remove(pp)
 
                 merged_groups[original_id] = parts
             except Exception as e:
                 self.logger.error(f"    ERROR: {original_id}: {e}")
 
-        # Update classified_list
-        if merged_groups:
-            part_ids = set()
-            for parts in merged_groups.values():
-                for p in parts:
-                    part_ids.add(p["id"])
+        # Copy non-split files from knowledge_cache_dir to knowledge_dir
+        for fi in classified["files"]:
+            if "split_info" in fi and fi["split_info"].get("is_split"):
+                continue
+            src = f"{self.ctx.knowledge_cache_dir}/{fi['output_path']}"
+            dst = f"{self.ctx.knowledge_dir}/{fi['output_path']}"
+            if os.path.exists(src):
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+                src_assets = f"{self.ctx.knowledge_cache_dir}/{fi['assets_dir']}"
+                if os.path.isdir(src_assets):
+                    dst_assets = f"{self.ctx.knowledge_dir}/{fi['assets_dir']}"
+                    if os.path.exists(dst_assets):
+                        shutil.rmtree(dst_assets)
+                    shutil.copytree(src_assets, dst_assets)
 
-            new_files = [fi for fi in classified["files"] if fi["id"] not in part_ids]
-            for oid, parts in merged_groups.items():
-                base = parts[0].copy()
-                base["id"] = oid
-                base["output_path"] = f"{base['type']}/{base['category']}/{oid}.json"
-                base["assets_dir"] = f"{base['type']}/{base['category']}/assets/{oid}/"
-                base.pop("split_info", None)
-                base.pop("section_range", None)
-                new_files.append(base)
+        # Build and return merged catalog dict if any merges happened
+        if not merged_groups:
+            return None
 
-            new_files.sort(key=lambda f: (f["type"], f["category"], f["id"]))
-            classified["files"] = new_files
-            write_json(self.ctx.classified_list_path, classified)
+        part_ids = set()
+        for parts in merged_groups.values():
+            for p in parts:
+                part_ids.add(p["id"])
+
+        new_files = [fi for fi in classified["files"] if fi["id"] not in part_ids]
+        for oid, parts in merged_groups.items():
+            base = parts[0].copy()
+            base["id"] = oid
+            base["output_path"] = f"{base['type']}/{base['category']}/{oid}.json"
+            base["assets_dir"] = f"{base['type']}/{base['category']}/assets/{oid}/"
+            base.pop("split_info", None)
+            base.pop("section_range", None)
+            base.pop("base_name", None)
+            new_files.append(base)
+
+        new_files.sort(key=lambda f: (f["type"], f["category"], f["id"]))
+        merged_catalog = dict(classified)
+        merged_catalog["files"] = new_files
+        return merged_catalog

@@ -38,8 +38,8 @@ class TestSplitFileStructureCheck:
 タグライブラリの概要。
 """
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/libraries", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/libraries/libraries-tag--overview.json", knowledge)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--overview.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/tag.rst", "w", encoding="utf-8") as f:
@@ -123,8 +123,8 @@ Section 4
 Content 4
 """
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -216,8 +216,8 @@ Section 2
 Content 2 (should NOT be in prompt)
 """
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -307,8 +307,8 @@ Section 2
 Content 2 (should NOT be in prompt)
 """
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -382,8 +382,8 @@ Content 2 (should NOT be in prompt)
             "sections": sections
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", knowledge)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", knowledge)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
         with open(f"{ctx.repo}/test/test.rst", "w", encoding="utf-8") as f:
@@ -417,5 +417,5 @@ Content 2 (should NOT be in prompt)
         assert "Output too small" in result["error"]
 
         # Verify: original file NOT overwritten
-        unchanged = load_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
+        unchanged = load_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json")
         assert len(unchanged["sections"]) == 10  # Original 10 sections preserved

@@ -36,16 +36,16 @@ class TestMergeSplitFiles:
             }
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/libraries", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/libraries/libraries-tag--overview.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/libraries/libraries-tag--usage.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--overview.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--usage.json", part2)
 
         # Create assets
-        os.makedirs(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag--overview", exist_ok=True)
-        os.makedirs(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag--usage", exist_ok=True)
-        with open(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag--overview/image.png", "w") as f:
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries/assets/libraries-tag--overview", exist_ok=True)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries/assets/libraries-tag--usage", exist_ok=True)
+        with open(f"{ctx.knowledge_cache_dir}/component/libraries/assets/libraries-tag--overview/image.png", "w") as f:
             f.write("fake-image")
-        with open(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag--usage/diagram.png", "w") as f:
+        with open(f"{ctx.knowledge_cache_dir}/component/libraries/assets/libraries-tag--usage/diagram.png", "w") as f:
             f.write("fake-diagram")
 
         # Setup: classified.json with split info
@@ -100,7 +100,7 @@ class TestMergeSplitFiles:
         write_json(ctx.classified_list_path, classified)
 
         # Execute
-        MergeSplitFiles(ctx).run()
+        merged_catalog = MergeSplitFiles(ctx).run()
 
         # Verify: merged file exists
         merged_path = f"{ctx.knowledge_dir}/component/libraries/libraries-tag.json"
@@ -120,9 +120,9 @@ class TestMergeSplitFiles:
         assert "assets/libraries-tag/image.png" in merged["sections"]["overview"]
         assert "assets/libraries-tag/diagram.png" in merged["sections"]["usage"]
 
-        # Verify: part files deleted
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/libraries/libraries-tag--overview.json")
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/libraries/libraries-tag--usage.json")
+        # Verify: part files preserved in cache (not deleted)
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--overview.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--usage.json")
 
         # Verify: assets consolidated
         assert os.path.exists(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag/image.png")
@@ -130,14 +130,14 @@ class TestMergeSplitFiles:
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag-1")
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/libraries/assets/libraries-tag-2")
 
-        # Verify: classified.json updated
-        updated = load_json(ctx.classified_list_path)
-        ids = [f["id"] for f in updated["files"]]
+        # Verify: merged catalog returned (not written to classified.json)
+        assert merged_catalog is not None
+        ids = [f["id"] for f in merged_catalog["files"]]
         assert "libraries-tag" in ids
         assert "libraries-tag--overview" not in ids
         assert "libraries-tag--usage" not in ids
 
-        merged_entry = next(f for f in updated["files"] if f["id"] == "libraries-tag")
+        merged_entry = next(f for f in merged_catalog["files"] if f["id"] == "libraries-tag")
         assert "split_info" not in merged_entry
         assert "section_range" not in merged_entry
         assert merged_entry["output_path"] == "component/libraries/libraries-tag.json"
@@ -152,9 +152,9 @@ class TestMergeSplitFiles:
         part2 = {"id": "test--section-2", "title": "Test", "official_doc_urls": [],
                  "index": [], "sections": {"s2": "content"}}
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
         # part3 not created
 
         classified = {
@@ -203,8 +203,9 @@ class TestMergeSplitFiles:
 
         # Verify: no merge happened
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test.json")
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json")
+        # Parts preserved in cache (not deleted)
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json")
 
         # Verify: classified.json unchanged
         updated = load_json(ctx.classified_list_path)
@@ -218,8 +219,8 @@ class TestMergeSplitFiles:
         regular = {"id": "regular", "title": "Regular", "official_doc_urls": [],
                    "index": [], "sections": {"s1": "content"}}
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/regular.json", regular)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/regular.json", regular)
 
         classified = {
             "version": "6",
@@ -264,10 +265,10 @@ class TestMergeSplitFiles:
                    "index": [{"id": "r1", "title": "R1", "hints": []}],
                    "sections": {"r1": "content"}}
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/split--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/split--section-2.json", part2)
-        write_json(f"{ctx.knowledge_dir}/component/test/regular.json", regular)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/split--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/split--section-2.json", part2)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/regular.json", regular)
 
         classified = {
             "version": "6",
@@ -310,7 +311,7 @@ class TestMergeSplitFiles:
         write_json(ctx.classified_list_path, classified)
 
         # Execute
-        MergeSplitFiles(ctx).run()
+        merged_catalog = MergeSplitFiles(ctx).run()
 
         # Verify: split files merged
         assert os.path.exists(f"{ctx.knowledge_dir}/component/test/split.json")
@@ -323,9 +324,9 @@ class TestMergeSplitFiles:
         reg = load_json(f"{ctx.knowledge_dir}/component/test/regular.json")
         assert reg["id"] == "regular"
 
-        # Verify: classified.json has both
-        updated = load_json(ctx.classified_list_path)
-        ids = [f["id"] for f in updated["files"]]
+        # Verify: merged catalog returned has both
+        assert merged_catalog is not None
+        ids = [f["id"] for f in merged_catalog["files"]]
         assert "split" in ids
         assert "regular" in ids
         assert "split--section-1" not in ids
@@ -370,9 +371,9 @@ class TestMergeSplitFiles:
             ]
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
 
         os.makedirs(f"{ctx.trace_dir}", exist_ok=True)
         write_json(f"{ctx.trace_dir}/test--section-1.json", trace1)
@@ -465,9 +466,9 @@ class TestMergeSplitFiles:
             ]
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
 
         os.makedirs(f"{ctx.trace_dir}", exist_ok=True)
         # part1のtraceは作らない（欠損）

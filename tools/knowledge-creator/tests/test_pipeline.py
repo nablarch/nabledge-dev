@@ -18,7 +18,7 @@ class TestPipelineBCD:
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
 
         knowledge_path = os.path.join(
-            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
+            ctx.knowledge_cache_dir, "component/handlers/handlers-sample-handler.json"
         )
         assert os.path.exists(knowledge_path)
         knowledge = json.load(open(knowledge_path, encoding="utf-8"))
@@ -28,7 +28,7 @@ class TestPipelineBCD:
         assert "module-list" in knowledge["sections"]
 
         # Create dummy asset files referenced in knowledge (for Phase C S15 validation)
-        assets_dir = os.path.join(ctx.knowledge_dir, "component/handlers/assets/handlers-sample-handler")
+        assets_dir = os.path.join(ctx.knowledge_cache_dir, "component/handlers/assets/handlers-sample-handler")
         os.makedirs(assets_dir, exist_ok=True)
         for section_content in knowledge.get("sections", {}).values():
             import re
@@ -66,7 +66,7 @@ class TestPipelineBCD:
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
 
         knowledge_path = os.path.join(
-            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
+            ctx.knowledge_cache_dir, "component/handlers/handlers-sample-handler.json"
         )
         assert os.path.exists(knowledge_path)
 
@@ -108,9 +108,9 @@ class TestPipelineBCD:
         PhaseBGenerate(ctx, run_claude_fn=make_mock_run_claude()).run()
 
         # Create dummy asset files for S15 validation
-        knowledge_path = os.path.join(ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
+        knowledge_path = os.path.join(ctx.knowledge_cache_dir, "component/handlers/handlers-sample-handler.json")
         knowledge = json.load(open(knowledge_path, encoding="utf-8"))
-        assets_dir = os.path.join(ctx.knowledge_dir, "component/handlers/assets/handlers-sample-handler")
+        assets_dir = os.path.join(ctx.knowledge_cache_dir, "component/handlers/assets/handlers-sample-handler")
         os.makedirs(assets_dir, exist_ok=True)
         for section_content in knowledge.get("sections", {}).values():
             import re
@@ -164,10 +164,13 @@ class TestPipelineBCD:
 
 class TestPhaseF:
     def test_finalize(self, ctx, mock_claude):
+        import shutil
         from phase_b_generate import PhaseBGenerate
         from phase_f_finalize import PhaseFFinalize
 
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
+        # Copy Phase B output from cache to knowledge_dir so Phase F can find it
+        shutil.copytree(ctx.knowledge_cache_dir, ctx.knowledge_dir, dirs_exist_ok=True)
         PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
 
         # index.toon
@@ -187,6 +190,7 @@ class TestPhaseF:
 
     def test_asset_path_conversion(self, ctx, mock_claude):
         """Verify asset paths are converted correctly in browsable docs."""
+        import shutil
         from phase_b_generate import PhaseBGenerate
         from phase_f_finalize import PhaseFFinalize
         from common import load_json
@@ -194,9 +198,9 @@ class TestPhaseF:
         # Phase B: Generate knowledge files
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
 
-        # Verify original knowledge JSON has original asset paths
+        # Verify original knowledge JSON has original asset paths (in cache dir)
         knowledge_path = os.path.join(
-            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
+            ctx.knowledge_cache_dir, "component/handlers/handlers-sample-handler.json"
         )
         assert os.path.exists(knowledge_path)
         knowledge = load_json(knowledge_path)
@@ -209,6 +213,9 @@ class TestPhaseF:
             "Knowledge JSON should keep original download paths"
         assert "assets/handlers-sample-handler/flow.png" in overview, \
             "Knowledge JSON should keep multiple asset references"
+
+        # Copy Phase B output from cache to knowledge_dir so Phase F can find it
+        shutil.copytree(ctx.knowledge_cache_dir, ctx.knowledge_dir, dirs_exist_ok=True)
 
         # Phase F: Generate browsable docs
         PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
@@ -262,8 +269,8 @@ class TestPhaseF:
         assert "../../knowledge/component/handlers/assets/handlers-sample-handler/subdir/nested.xlsx" in doc_content, \
             "Nested directory paths should be converted correctly"
 
-        # Verify knowledge JSON is unchanged after Phase F
-        knowledge_after = load_json(knowledge_path)
+        # Verify knowledge JSON in cache is unchanged after Phase F
+        knowledge_after = load_json(knowledge_path)  # knowledge_path points to cache_dir
         overview_after = knowledge_after["sections"]["overview"]
         assert overview == overview_after, \
             "Phase F should not modify original knowledge JSON files"
@@ -274,6 +281,7 @@ class TestPipelineWithPhaseG:
 
     def test_full_pipeline_with_link_resolution(self, ctx, mock_claude):
         """Test complete pipeline: generate -> resolve links -> finalize."""
+        import shutil
         from phase_b_generate import PhaseBGenerate
         from phase_g_resolve_links import PhaseGResolveLinks
         from phase_f_finalize import PhaseFFinalize
@@ -281,15 +289,22 @@ class TestPipelineWithPhaseG:
         # Phase B: Generate knowledge files with RST links
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
 
+        knowledge_cache_path = os.path.join(
+            ctx.knowledge_cache_dir, "component/handlers/handlers-sample-handler.json"
+        )
+        assert os.path.exists(knowledge_cache_path)
+
+        # Verify RST links are preserved in original
+        with open(knowledge_cache_path, encoding="utf-8") as f:
+            original = json.load(f)
+        assert ":ref:`thread_context_handler`" in original["sections"]["overview"]
+
+        # Copy Phase B output from cache to knowledge_dir so Phase G can find it
+        shutil.copytree(ctx.knowledge_cache_dir, ctx.knowledge_dir, dirs_exist_ok=True)
+
         knowledge_path = os.path.join(
             ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json"
         )
-        assert os.path.exists(knowledge_path)
-
-        # Verify RST links are preserved in original
-        with open(knowledge_path, encoding="utf-8") as f:
-            original = json.load(f)
-        assert ":ref:`thread_context_handler`" in original["sections"]["overview"]
 
         # Phase G: Resolve links
         PhaseGResolveLinks(ctx).run()

@@ -76,7 +76,7 @@ class TestVerificationLoopMultipleRounds:
                     )
             else:
                 # Phase E: fix
-                knowledge = load_json(f"{ctx.knowledge_dir}/component/handlers/test-file.json")
+                knowledge = load_json(f"{ctx.knowledge_cache_dir}/component/handlers/test-file.json")
                 return subprocess.CompletedProcess(
                     args=["claude"], returncode=0,
                     stdout=json.dumps(knowledge),
@@ -92,7 +92,7 @@ class TestVerificationLoopMultipleRounds:
             "index": [{"id": "overview", "title": "Overview", "hints": ["test"]}],
             "sections": {"overview": "This is test content with sufficient length for validation."}
         }
-        write_json(f"{ctx.knowledge_dir}/component/handlers/test-file.json", knowledge)
+        write_json(f"{ctx.knowledge_cache_dir}/component/handlers/test-file.json", knowledge)
 
         # Execute loop: C → D → E → C → D
         phase_c = PhaseCStructureCheck(ctx)
@@ -163,7 +163,7 @@ class TestVerificationLoopMultipleRounds:
                 )
             else:
                 # Phase E: fix
-                knowledge = load_json(f"{ctx.knowledge_dir}/component/handlers/test-file.json")
+                knowledge = load_json(f"{ctx.knowledge_cache_dir}/component/handlers/test-file.json")
                 return subprocess.CompletedProcess(
                     args=["claude"], returncode=0,
                     stdout=json.dumps(knowledge),
@@ -178,7 +178,7 @@ class TestVerificationLoopMultipleRounds:
             "index": [{"id": "overview", "title": "Overview", "hints": ["test"]}],
             "sections": {"overview": "This is test content with sufficient length for validation."}
         }
-        write_json(f"{ctx.knowledge_dir}/component/handlers/test-file.json", knowledge)
+        write_json(f"{ctx.knowledge_cache_dir}/component/handlers/test-file.json", knowledge)
 
         phase_c = PhaseCStructureCheck(ctx)
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_run_claude)
@@ -251,7 +251,7 @@ class TestVerificationLoopMultipleRounds:
             "index": [{"id": "overview", "title": "Overview", "hints": ["test"]}],
             "sections": {"overview": "This is test content with sufficient length for validation."}
         }
-        write_json(f"{ctx.knowledge_dir}/component/handlers/test-file.json", knowledge)
+        write_json(f"{ctx.knowledge_cache_dir}/component/handlers/test-file.json", knowledge)
 
         phase_c = PhaseCStructureCheck(ctx)
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_run_claude)
@@ -351,7 +351,7 @@ class TestVerificationLoopMultipleRounds:
                         )
             else:
                 # Phase E: fix
-                knowledge = load_json(f"{ctx.knowledge_dir}/component/handlers/{file_id}.json")
+                knowledge = load_json(f"{ctx.knowledge_cache_dir}/component/handlers/{file_id}.json")
                 return subprocess.CompletedProcess(
                     args=["claude"], returncode=0,
                     stdout=json.dumps(knowledge),
@@ -368,7 +368,7 @@ class TestVerificationLoopMultipleRounds:
                 "index": [{"id": "section1", "title": "Section", "hints": ["test"]}],
                 "sections": {"section1": "This is test content with sufficient length for validation."}
             }
-            write_json(f"{ctx.knowledge_dir}/component/handlers/{file_id}.json", knowledge)
+            write_json(f"{ctx.knowledge_cache_dir}/component/handlers/{file_id}.json", knowledge)
 
         phase_c = PhaseCStructureCheck(ctx)
         phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock_run_claude)

@@ -63,7 +63,7 @@ class PhaseEFix:
             return {"status": "skip", "id": file_id}
 
         findings = load_json(findings_path)
-        knowledge = load_json(f"{self.ctx.knowledge_dir}/{file_info['output_path']}")
+        knowledge = load_json(f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}")
         source = read_file(f"{self.ctx.repo}/{file_info['source_path']}")
 
         # For split files, extract only the section range
@@ -96,7 +96,7 @@ class PhaseEFix:
 
                 if not self.dry_run:
                     write_json(
-                        f"{self.ctx.knowledge_dir}/{file_info['output_path']}", fixed
+                        f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed
                     )
                     os.remove(findings_path)
                 return {"status": "fixed", "id": file_id}

@@ -38,8 +38,8 @@ class TestPhaseBTargetFilter:
         _make_classified_2files(ctx)
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run(target_ids=["file-a"])
 
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/file-a.json")
-        assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/file-b.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/file-a.json")
+        assert not os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/file-b.json")
 
     def test_no_target_generates_all(self, ctx, mock_claude):
         from phase_b_generate import PhaseBGenerate
@@ -47,8 +47,8 @@ class TestPhaseBTargetFilter:
         _make_classified_2files(ctx)
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run(target_ids=None)
 
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/file-a.json")
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/file-b.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/file-a.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/file-b.json")
 
     def test_existing_run_calls_still_work(self, ctx, mock_claude):
         """Backward compat: run() without args still processes all files."""
@@ -57,5 +57,5 @@ class TestPhaseBTargetFilter:
         _make_classified_2files(ctx)
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
 
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/file-a.json")
-        assert os.path.exists(f"{ctx.knowledge_dir}/component/test/file-b.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/file-a.json")
+        assert os.path.exists(f"{ctx.knowledge_cache_dir}/component/test/file-b.json")

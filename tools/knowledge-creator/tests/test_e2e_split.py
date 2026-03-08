@@ -154,11 +154,10 @@ class TestE2ESplitPipeline:
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json"), \
             "Part file test--section-1.json should be deleted after merge"
 
-        # Verify 3: classified.json updated (part replaced with merged entry)
+        # Verify 3: classified.json restored to split state after Phase M
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
-        assert "test" in ids, "Merged file ID should be in classified.json"
-        assert "test--section-1" not in ids, "Part file ID should be removed"
+        assert "test--section-1" in ids, "Split file ID should remain in classified.json"
 
         # Verify 4: Resolved version exists
         resolved_path = f"{ctx.knowledge_resolved_dir}/component/test/test.json"
@@ -271,7 +270,7 @@ class TestE2ESplitPipeline:
                     )
                 else:
                     # Phase E: fix - return fixed knowledge (add FIXED marker)
-                    knowledge = load_json(f"{ctx.knowledge_dir}/component/test/{file_id}.json")
+                    knowledge = load_json(f"{ctx.knowledge_cache_dir}/component/test/{file_id}.json")
                     # Preserve all sections and index (critical for regression prevention)
                     for section_id in knowledge["sections"]:
                         knowledge["sections"][section_id] += " FIXED"
@@ -341,7 +340,7 @@ class TestE2ESplitPipeline:
 
         # Verify: Fixed file has FIXED marker and preserves all sections
         for file_id in d_result1["issue_file_ids"]:
-            fixed = load_json(f"{ctx.knowledge_dir}/component/test/{file_id}.json")
+            fixed = load_json(f"{ctx.knowledge_cache_dir}/component/test/{file_id}.json")
 
             # Critical: both sections should still exist (regression prevention)
             assert "section1" in fixed["sections"], \
@@ -554,12 +553,11 @@ class TestE2ESplitPipeline:
         # Verify: Split part deleted
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/split--section-1.json")
 
-        # Verify: classified.json has both merged and regular
+        # Verify: classified.json restored to split state after Phase M
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
-        assert "split" in ids, "Merged split file should be in classified.json"
+        assert "split--section-1" in ids, "Split file ID should remain in classified.json"
         assert "regular" in ids, "Regular file should be in classified.json"
-        assert "split--section-1" not in ids
 
         # Verify: Both in index.toon
         with open(f"{ctx.knowledge_dir}/index.toon", "r", encoding="utf-8") as f:

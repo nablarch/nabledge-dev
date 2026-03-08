@@ -28,9 +28,9 @@ class TestPhaseM:
             "sections": {"section2": "Another section content."}
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
 
         # Create trace files with internal_labels for Phase G link resolution
         trace1 = {
@@ -108,12 +108,11 @@ class TestPhaseM:
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-1.json")
         assert not os.path.exists(f"{ctx.knowledge_dir}/component/test/test--section-2.json")
 
-        # Verify 3: classified.json updated
+        # Verify 3: classified.json restored to split state after Phase M
         updated = load_json(ctx.classified_list_path)
         ids = [f["id"] for f in updated["files"]]
-        assert "test" in ids
-        assert "test--section-1" not in ids
-        assert "test--section-2" not in ids
+        assert "test--section-1" in ids
+        assert "test--section-2" in ids
 
         # Verify 4: Resolved version exists
         resolved_path = f"{ctx.knowledge_resolved_dir}/component/test/test.json"
@@ -143,8 +142,8 @@ class TestPhaseM:
             "sections": {"section1": "Regular content with :ref:`link`."}
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/regular.json", regular)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/regular.json", regular)
 
         classified = {
             "version": "6",
@@ -200,9 +199,9 @@ class TestPhaseM:
             "sections": {"section2": "Download :download:`File <file.zip>`."}
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_dir}/component/test/test--section-2.json", part2)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
 
         # Create trace files with internal_labels for Phase G
         trace1 = {
@@ -283,12 +282,12 @@ class TestPhaseM:
             "sections": {"section1": "See image: assets/test/image.png"}
         }
 
-        os.makedirs(f"{ctx.knowledge_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_dir}/component/test/test.json", knowledge)
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/test.json", knowledge)
 
         # Create asset file
-        os.makedirs(f"{ctx.knowledge_dir}/component/test/assets/test", exist_ok=True)
-        with open(f"{ctx.knowledge_dir}/component/test/assets/test/image.png", "w") as f:
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test/assets/test", exist_ok=True)
+        with open(f"{ctx.knowledge_cache_dir}/component/test/assets/test/image.png", "w") as f:
             f.write("fake-image")
 
         classified = {

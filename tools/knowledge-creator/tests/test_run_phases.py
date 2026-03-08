@@ -205,7 +205,7 @@ class TestPhaseControl:
 
         # Phase B の成果物確認
         knowledge_path = os.path.join(
-            ctx.knowledge_dir, "component/handlers/handlers-sample-handler.json")
+            ctx.knowledge_cache_dir, "component/handlers/handlers-sample-handler.json")
         assert os.path.exists(knowledge_path), "Phase B should generate knowledge file"
 
     def test_test_mode_skips_knowledge_meta_update(self, tmp_path):
