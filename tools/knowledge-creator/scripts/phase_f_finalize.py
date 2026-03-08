@@ -59,13 +59,40 @@ class PhaseFFinalize:
         )
         # Cache compiled regex patterns per file_id (performance optimization)
         self._pattern_cache = {}
+        self._pp_cache = self._load_pp_cache()  # processing_patterns cache
+
+    def _load_pp_cache(self):
+        """Load processing_patterns from catalog.json files[]."""
+        cache = {}
+        catalog_path = self.ctx.classified_list_path
+        if os.path.exists(catalog_path):
+            catalog = load_json(catalog_path)
+            for fi in catalog.get("files", []):
+                pp = fi.get("processing_patterns")
+                if pp is not None and pp != []:
+                    cache[fi["id"]] = " ".join(pp) if isinstance(pp, list) else pp
+        return cache
+
+    def _save_pp_to_catalog(self, pp_map):
+        """Write processing_patterns back to catalog.json files[]."""
+        catalog_path = self.ctx.classified_list_path
+        if not os.path.exists(catalog_path):
+            return
+        catalog = load_json(catalog_path)
+        for fi in catalog.get("files", []):
+            fid = fi.get("id", "")
+            if fid in pp_map:
+                pp = pp_map[fid]
+                fi["processing_patterns"] = pp.split() if pp else []
+        write_json(catalog_path, catalog)
 
     def _classify_patterns(self, file_info, knowledge) -> str:
         file_id = file_info["id"]
-        log_path = f"{self.ctx.patterns_dir}/{file_id}.json"
 
-        if os.path.exists(log_path):
-            return load_json(log_path).get("patterns", "")
+        # Check catalog cache
+        cached = self._pp_cache.get(file_id)
+        if cached is not None:
+            return cached
 
         prompt = self.prompt_template
         prompt = prompt.replace("{FILE_ID}", file_id)
@@ -85,17 +112,10 @@ class PhaseFFinalize:
             if result.returncode == 0:
                 parsed = json.loads(result.stdout)
                 patterns = " ".join(parsed.get("patterns", []))
-                reasoning = parsed.get("reasoning", [])
-                if not self.dry_run:
-                    write_json(log_path, {
-                        "file_id": file_id, "patterns": patterns, "reasoning": reasoning
-                    })
                 return patterns
         except json.JSONDecodeError:
             pass
 
-        if not self.dry_run:
-            write_json(log_path, {"file_id": file_id, "patterns": "", "error": "failed"})
         return ""
 
     def _build_index_toon(self):
@@ -147,6 +167,16 @@ class PhaseFFinalize:
                         if e.get("_fi", {}).get("id") == fid:
                             e["processing_patterns"] = patterns
                             break
+
+        # Save patterns back to catalog.json
+        pp_map = {}
+        for e in entries:
+            fi = e.get("_fi")
+            if fi and e["processing_patterns"] is not None:
+                pp_map[fi["id"]] = e["processing_patterns"]
+
+        if pp_map and not self.dry_run:
+            self._save_pp_to_catalog(pp_map)
 
         # Clean up temp fields and write
         for e in entries:

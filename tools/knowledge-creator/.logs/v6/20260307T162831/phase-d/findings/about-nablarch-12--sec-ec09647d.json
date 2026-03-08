@@ -1,0 +1,34 @@
+{
+  "file_id": "about-nablarch-12--sec-ec09647d",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "section: id-token-verification (CognitoRSAKeyProvider)",
+      "description": "`CognitoRSAKeyProvider.getPrivateKey()` throws `UnsupportedOperationException` (\"公開鍵のみ取得可能であるため、秘密鍵の取得はサポートしない\") and `getPrivateKeyId()` returns `null` (\"未定義であるためインタフェースの仕様に則り null を返却する\") are both omitted. These are part of the `RSAKeyProvider` interface contract and convey that this implementation only supports public key operations.",
+      "source_evidence": "@Override\npublic RSAPrivateKey getPrivateKey() {\n    // 公開鍵のみ取得可能であるため、秘密鍵の取得はサポートしない\n    throw new UnsupportedOperationException(\"Get private key is not supported\");\n}\n\n@Override\npublic String getPrivateKeyId() {\n    // 未定義であるためインタフェースの仕様に則り null を返却する\n    return null;\n}"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "section: auth-and-login-state (verifyIdToken method)",
+      "description": "The debug logging in the catch block of `verifyIdToken` is omitted. Source logs the verification failure via `LOGGER.logDebug(...)` before throwing `HttpErrorResponse`. The knowledge file's code snippet shows only the throw statement, omitting the conditional debug log pattern.",
+      "source_evidence": "if (LOGGER.isDebugEnabled()) {\n    LOGGER.logDebug(\"ID token verification failed...\", e);\n}\n// 検証で異常を検知した場合は、ステータスコードが401(Unauthorized)のエラーレスポンスを返却する\nthrow new HttpErrorResponse(HttpResponse.Status.UNAUTHORIZED.getStatusCode());"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry: id-token-verification",
+      "description": "`RSAPublicKey` (return type of `getPublicKeyById`) and `RSAPrivateKey` (return type of `getPrivateKey`) are PascalCase class names referenced in the source but absent from hints.",
+      "source_evidence": "public RSAPublicKey getPublicKeyById(String keyId) { ... }\npublic RSAPrivateKey getPrivateKey() { ... }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry: auth-and-login-state",
+      "description": "`SystemRepository` (used in `SystemRepository.get(\"idTokenVerifier\")`), `ExecutionContext` (parameter type in `login` method), and `HttpResponse` (used in `HttpResponse.Status.UNAUTHORIZED.getStatusCode()`) are class names present in the source code for this section but missing from hints.",
+      "source_evidence": "public void login(ExecutionContext context, LoginRequestForm form) { ... }\nIdTokenVerifier idTokenVerifier = SystemRepository.get(\"idTokenVerifier\");\nthrow new HttpErrorResponse(HttpResponse.Status.UNAUTHORIZED.getStatusCode());"
+    }
+  ]
+}

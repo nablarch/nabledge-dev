@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-RequestUnitTest_real",
+  "patterns": "mom-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "StandaloneTestSupportTemplate mentions 'バッチやメッセージング処理' in passing, but there is no mention of BatchAction, DataReader, 都度起動, or 常駐型 batch-specific constructs. The content is focused on messaging reception testing, not batch processing."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder in the content."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "The content mentions 同期応答メッセージ (synchronous response messaging) but there is no mention of HTTPメッセージング, HTTP受信, or HttpMessagingRequestParsingHandler. The synchronous messaging referenced is MQ-based, not HTTP-based."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "No mention of Webアプリケーション, サーブレット, JSP, HttpRequest, or セッション管理 in the content."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": true,
+      "evidence": "Explicitly mentions MQSupport class for MQ-based messaging, 受信キュー (receive queue), 送信キュー (send queue), 要求電文/応答電文 (request/response messages), MessagingRequestTestSupport for 同期応答メッセージ受信処理, and MessagingReceiveTestSupport for 応答不要メッセージ受信処理. The entire content is about testing MOM-style message reception."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, or DatabaseRecordReader. The DbAccessTestSupport mentioned is a generic database utility, not DB-messaging-specific."
+    }
+  ]
+}

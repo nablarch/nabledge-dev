@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-real",
+  "patterns": "http-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of BatchAction, DataReader, 都度起動, 常駐型バッチ. The term 常駐プロセス appears but refers to the messaging process, not a batch process."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": true,
+      "evidence": "The title explicitly states '同期応答メッセージ受信処理' (synchronous response message receiving), which matches 'メッセージ同期応答' in the http-messaging pattern. The content uses MessagingRequestTestSupport, discusses 電文 (message telegrams) with request/response message formats (setUpMessages, expectedMessages), and describes testing of a 常駐プロセス handling message send/receive — all characteristic of HTTPメッセージング."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "No mention of Webアプリケーション, サーブレット, JSP, HttpRequest (in web context), or セッション管理."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー (message queue), or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, or DatabaseRecordReader."
+    }
+  ]
+}

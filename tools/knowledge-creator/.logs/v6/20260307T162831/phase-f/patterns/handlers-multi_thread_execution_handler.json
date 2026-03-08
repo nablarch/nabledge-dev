@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-multi_thread_execution_handler",
+  "patterns": "nablarch-batch",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "モジュールが `nablarch-fw-standalone` であり、スタンドアロン処理（Nablarchバッチ）専用。thread-countセクションで「後続のハンドラやバッチアクションはスレッドセーフな実装が必要」とバッチアクションを明示。exception-behaviorセクションで「データリーダをクローズする」とDataReaderに言及しており、Nablarchバッチのデータリーダパターンと一致。"
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "Jakarta Batch、JSR 352、Batchlet、Chunkへの言及なし。"
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "RESTful、JAX-RS、@Produces、@Consumesへの言及なし。"
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "HTTPメッセージング、HttpMessagingRequestParsingHandlerへの言及なし。"
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "Webアプリケーション、サーブレット、JSP、HttpRequestへの言及なし。"
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "MOMメッセージング、MQ、キュー、MomMessagingActionへの言及なし。"
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "DB連携メッセージング、テーブルキュー、DatabaseRecordReaderへの言及なし。"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "libraries-functional_comparison",
+  "no_knowledge_content": false,
+  "title": "データバインドと汎用データフォーマットの比較表",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/functional_comparison.html"
+  ],
+  "index": [
+    {
+      "id": "functional-comparison",
+      "title": "データバインドと汎用データフォーマットの比較表",
+      "hints": [
+        "データバインド",
+        "汎用データフォーマット",
+        "CSV入出力",
+        "固定長データ",
+        "JSON入出力",
+        "XML入出力",
+        "値変換",
+        "寄せ字",
+        "機能比較",
+        "data_bind",
+        "data_format"
+      ]
+    }
+  ],
+  "sections": {
+    "functional-comparison": "データバインド（:ref:`data_bind`）と汎用データフォーマット（:ref:`data_format`）の機能比較。\n\n| 機能 | データバインド | 汎用データフォーマット |\n|---|---|---|\n| CSVの入出力ができる | ○ :ref:`解説書へ <data_bind-csv_format>` | ○ :ref:`解説書へ <data_format-support_type>` |\n| レコード毎にフォーマットの異なるCSVの入出力ができる | × [1] | ○ :ref:`解説書へ <data_format-multi_layout_data>` |\n| CSVの定義を設定できる（カンマやクォート文字を変更することできる） | ○ :ref:`解説書へ <data_bind-csv_format>` | ○ :ref:`解説書へ <data_format-variable_data_directive>` |\n| 固定長データの入出力ができる | ○ :ref:`解説書へ <data_bind-fixed_length_format>` | ○ :ref:`解説書へ <data_format-support_type>` |\n| レコード毎にフォーマットの異なる固定長データの入出力ができる | ○ :ref:`解説書へ <data_bind-fixed_length_format-multi_layout>` | ○ :ref:`解説書へ <data_format-multi_layout_data>` |\n| JSONデータの入出力ができる | × [2] | ○ :ref:`解説書へ <data_format-support_type>` |\n| XMLデータの入出力ができる | × [3] | ○ :ref:`解説書へ <data_format-support_type>` |\n| データ入出力時に値の変換ができる（trimやパック数値やゾーン数値の変換など） | △ [4] | ○ :ref:`解説書へ <data_format-value_convertor>` |\n| データの寄せ字ができる（システムで許容可能な文字への変換などを指す） | × [5] | ○ :ref:`解説書へ <data_format-replacement>` |\n\n凡例：○：提供あり　△：一部提供あり　×：提供なし　－：対象外\n\n[1] レコード毎に異なるフォーマットのCSVを扱う場合には、:ref:`data_format` を使用すること。\n[2] JSONデータの入出力は未実装。JSONデータを扱う場合は、:ref:`data_format` やOSSを使用すること。\n[3] XMLデータの入出力は未実装。XMLデータを扱う場合は、:ref:`data_format` やJakarta XML Bindingを使用すること。\n[4] 固定長データのみtrim等のコンバータを提供している。CSVで値を変換したい場合は、出力前及び入力後に変換すること。\n[5] 入力データの寄せ字(文字変換)は、文字変換用のハンドラを作成し対応すること。"
+  }
+}

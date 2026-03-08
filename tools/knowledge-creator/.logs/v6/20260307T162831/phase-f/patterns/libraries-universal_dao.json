@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-universal_dao",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "The lazy-load section mentions 'バッチでの大量データ処理' as a use case example, but no specific nablarch-batch classes (BatchAction, DataReader, nablarch.fw.action.BatchAction) or architecture terms (都度起動, 常駐型) are mentioned. This is a generic reference and does not constitute explicit pattern matching."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mentions of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mentions of RESTful, JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder anywhere in the content."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mentions of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler anywhere in the content."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "Multiple explicit web-application indicators found: (1) optimistic-lock section uses HttpRequest and HttpResponse in method signature: 'public HttpResponse update(HttpRequest request, ExecutionContext context)', (2) JSP path explicitly referenced: 'path = \"/WEB-INF/view/common/errorPages/userError.jsp\"', (3) lazy-load section mentions 'Webでの大量データダウンロード', (4) search-with-condition uses 'context.getRequestScopedVar(\"form\")', (5) official_doc_urls includes 'nablarch.fw.web.interceptor.OnError'."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mentions of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction anywhere in the content."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mentions of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader anywhere in the content."
+    }
+  ]
+}

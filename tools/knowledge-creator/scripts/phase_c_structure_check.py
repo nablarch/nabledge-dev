@@ -139,14 +139,20 @@ class PhaseCStructureCheck:
 
         return errors
 
-    def run(self) -> dict:
+    def run(self, target_ids=None) -> dict:
         classified = load_json(self.ctx.classified_list_path)
+        files = classified["files"]
+
+        if target_ids is not None:
+            target_set = set(target_ids)
+            files = [fi for fi in files if fi["id"] in target_set]
+
         results = {
             "total": 0, "pass": 0, "error": 0,
             "error_count": 0, "errors": {}, "pass_ids": []
         }
 
-        for fi in classified["files"]:
+        for fi in files:
             json_path = f"{self.ctx.knowledge_dir}/{fi['output_path']}"
             source_path = f"{self.ctx.repo}/{fi['source_path']}"
 

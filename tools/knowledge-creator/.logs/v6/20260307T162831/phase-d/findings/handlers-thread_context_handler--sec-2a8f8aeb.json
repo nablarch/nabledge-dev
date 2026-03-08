@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-thread_context_handler--sec-2a8f8aeb",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "section: thread-context-initialization",
+      "description": "The `thread-context-initialization` section is well over 2000 characters and contains a source h3 heading `ユーザIDを設定する` (underlined with `^^`) that is folded into the same section rather than split into a separate section entry.",
+      "source_evidence": "RST source has `.. _thread_context_handler-user_id_attribute_setting:` / `ユーザIDを設定する` / `^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^` as a distinct h3 subsection under the h2 initialization section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "section: thread-context-initialization, hints array",
+      "description": "Missing hint `SessionUtil` — the class appears in two code examples (`SessionUtil.put(context, \"user.id\", userId)` and `SessionUtil.orNull(ctx, \"userContext\")`) and is an API a user might search for in this context.",
+      "source_evidence": "Source code examples: `SessionUtil.put(context, \"user.id\", userId);` and `LoginUserPrincipal userContext = SessionUtil.orNull(ctx, \"userContext\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections: language-selection, timezone-selection, hints arrays",
+      "description": "Missing hint `I18nHandler` in both the language-selection and timezone-selection sections. The class name is the concrete handler implementation shown as the primary example in both sections.",
+      "source_evidence": "Source code examples in both sections: `public class I18nHandler implements HttpRequestHandler { ... }`"
+    }
+  ]
+}

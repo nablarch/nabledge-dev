@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-service_availability",
+  "patterns": "nablarch-batch web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "Content explicitly mentions '常駐バッチ': 'ウェブ・常駐バッチの両方でリクエスト単位のサービス提供可否チェックが可能' and '処理方式（ウェブ/常駐バッチ）に非依存'. The 常駐型 (resident) batch is a Nablarchバッチ processing type."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder in the content."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler in the content."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "Content explicitly mentions ウェブ multiple times: 'ウェブ・常駐バッチの両方で', 'ウェブの登録機能（初期表示/確認/戻る/登録など複数リクエスト構成）では非常に細かいデータ設計が必要', and references to tag library for screen display control (tag-submit_display_control)."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction in the content."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader in the content. Although DB is used internally by BasicServiceAvailability, this is not the db-messaging processing pattern."
+    }
+  ]
+}

@@ -336,14 +336,14 @@ clone_or_update_repo() {
     fi
 }
 
-# Clone Nablarch official repositories from knowledge-creator.json
+# Clone Nablarch official repositories from catalog.json
 clone_repos_from_meta() {
     local version="$1"
     local target_dir="$2"
-    local meta_file=".claude/skills/nabledge-${version}/plugin/knowledge-creator.json"
+    local meta_file="tools/knowledge-creator/.cache/v${version}/catalog.json"
 
     if [ ! -f "$meta_file" ]; then
-        print_status warning "knowledge-creator.json not found: $meta_file (skip)"
+        print_status warning "catalog.json not found: $meta_file (skip)"
         return
     fi
 

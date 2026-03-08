@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-log--synchronousfilelogwriter",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "section: synchronous-file-log-writer-notes — config example, outputBufferSize property",
+      "description": "The source comment for `outputBufferSize` specifies its unit (キロバイト、1000バイトを1キロバイトと換算) and default value (指定しなければ8KB). The knowledge file includes the property in the config example but strips the comment, losing the unit and default information which are relevant to configuration decisions.",
+      "source_evidence": "# 出力バッファのサイズを指定する。(単位はキロバイト。1000バイトを1キロバイトと換算する。指定しなければ8KB)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry: synchronous-file-log-writer-notes",
+      "description": "The following identifiers appear in the section content but are absent from hints: `BasicLogFormatter`, `nablarch.core.log.basic.BasicLogFormatter`, `outputBufferSize`, `filePath`, `encoding`. These are configuration properties and a class name used in the config example.",
+      "source_evidence": "writer.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter, writer.monitorLog.filePath=..., writer.monitorLog.encoding=UTF-8, writer.monitorLog.outputBufferSize=8"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry: log-publisher-usage",
+      "description": "`BasicLogFormatter` / `nablarch.core.log.basic.BasicLogFormatter` is used in the LogPublisher config example but is absent from hints.",
+      "source_evidence": "writer.logPublisher.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    }
+  ]
+}

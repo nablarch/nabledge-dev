@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-SessionStoreHandler--sec-2a8f8aeb",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: introductory important warning (before ハンドラクラス名 section)",
+      "description": "The source contains a critical `.. important::` warning about multi-thread/multi-tab race conditions that is completely absent from the knowledge file. The warning states: when the same session is processed by multiple threads (e.g., multiple browser tabs sending simultaneous requests), last-write-wins behavior may occur depending on the store used. Users must understand the characteristics of their chosen store and select one that meets their requirements. This is key technology selection guidance and a known failure mode warning.",
+      "source_evidence": "同一セッションの処理が複数のスレッドで実行された場合(例えば、タブブラウザで複数タブから同時にリクエストが有った場合)、使用しているストアによっては後勝ちとなる。このため、使用するストアの特性をよく理解し、要件にあったストアを選択する必要がある。ストアの詳細は、 :ref:`session_store-future_of_store` を参照。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[db-managed-expiration].hints",
+      "description": "The db-managed-expiration section uses `SimpleDbTransactionManager` and `BasicApplicationInitializer` in its XML configuration examples, but neither class name appears in the hints array.",
+      "source_evidence": "<component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\"> and <component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">"
+    }
+  ]
+}

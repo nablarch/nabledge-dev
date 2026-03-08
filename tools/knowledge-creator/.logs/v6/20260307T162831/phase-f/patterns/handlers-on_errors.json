@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-on_errors",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of BatchAction, DataReader, 都度起動, 常駐型, or any batch-related content."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of JAX-RS, @Produces, @Consumes, JaxRsMethodBinder, or REST API. Although HttpRequest is used, the interceptor is in nablarch.fw.web.interceptor (not the JAX-RS layer) and references JSP paths, indicating web application context only."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "The interceptor class is nablarch.fw.web.interceptor.OnErrors, the module is nablarch-fw-web, the code example uses HttpRequest/HttpResponse, and the response paths reference JSP files (/WEB-INF/view/login/locked.jsp). The official doc URL also contains 'web_interceptor'. All indicators point to a web application component."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader."
+    }
+  ]
+}

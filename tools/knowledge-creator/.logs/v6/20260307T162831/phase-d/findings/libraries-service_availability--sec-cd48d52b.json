@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-service_availability--sec-cd48d52b",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "sections.overview",
+      "description": "The source introduction lists two specific behavioral outcomes of the feature that are omitted from the knowledge file: (1) ウェブにおいて一部機能へのアクセスを遮断し、503エラーを返す、(2) 常駐バッチにおいて、空回り（処理せずに待機する状態）を行う。These describe what actually happens when service is unavailable and are decision-necessary for correct implementation expectations.",
+      "source_evidence": "「ウェブにおいて一部機能へのアクセスを遮断し、503エラーを返す。」「常駐バッチにおいて、空回り(処理せずに待機する状態)を行う。」（機能説明の冒頭箇条書き）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[usage].hints",
+      "description": "The class `BasicApplicationInitializer` appears in the usage section's XML configuration (`nablarch.core.repository.initialization.BasicApplicationInitializer`) but is not included in the hints for the usage section.",
+      "source_evidence": "<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">"
+    }
+  ]
+}

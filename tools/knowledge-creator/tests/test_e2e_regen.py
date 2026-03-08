@@ -180,7 +180,7 @@ class TestRegenWithChanges:
     """Tests for --regen when source files have changed."""
 
     def _write_classified(self, ctx, local_repo_path, repo_name, files):
-        """Write classified.json referencing source files in the local repo."""
+        """Write classified files into catalog.json (preserving existing sources)."""
         classified_files = []
         for file_id, rel_path in files.items():
             classified_files.append({
@@ -193,11 +193,11 @@ class TestRegenWithChanges:
                 "output_path": f"component/handlers/{file_id}.json",
                 "assets_dir": f"component/handlers/assets/{file_id}/"
             })
-        write_json(ctx.classified_list_path, {
-            "version": ctx.version,
-            "generated_at": "2026-01-01T00:00:00Z",
-            "files": classified_files
-        })
+        catalog = load_json(ctx.classified_list_path)
+        catalog["version"] = ctx.version
+        catalog["generated_at"] = "2026-01-01T00:00:00Z"
+        catalog["files"] = classified_files
+        write_json(ctx.classified_list_path, catalog)
 
     def _record_commit(self, ctx, local_repos):
         """Record current HEAD commits in knowledge-creator.json (simulate Phase M)."""
@@ -340,11 +340,10 @@ class TestRegenWithChanges:
             }
         ]
         _add_file_and_commit(local_repo, source_path, "Large file content", "add large file")
-        write_json(ctx.classified_list_path, {
-            "version": ctx.version,
-            "generated_at": "2026-01-01T00:00:00Z",
-            "files": classified_files
-        })
+        catalog = load_json(ctx.classified_list_path)
+        catalog["version"] = ctx.version
+        catalog["files"] = classified_files
+        write_json(ctx.classified_list_path, catalog)
         self._record_commit(ctx, local_repos)
 
         # Modify the shared source file
@@ -406,21 +405,20 @@ class TestRegenPullAndDetect:
 
         source_path = "ja/application_framework/handlers/sample.rst"
 
-        # Simulate previous generation: write classified.json and record commit
-        write_json(ctx.classified_list_path, {
-            "version": ctx.version,
-            "generated_at": "2026-01-01T00:00:00Z",
-            "files": [{
-                "id": "handlers-sample",
-                "source_path": f".lw/nab-official/v{ctx.version}/{repo_name}/{source_path}",
-                "format": "rst",
-                "filename": "sample.rst",
-                "type": "component",
-                "category": "handlers",
-                "output_path": "component/handlers/handlers-sample.json",
-                "assets_dir": "component/handlers/assets/handlers-sample/"
-            }]
-        })
+        # Simulate previous generation: add files to catalog and record commit
+        catalog = load_json(ctx.classified_list_path)
+        catalog["version"] = ctx.version
+        catalog["files"] = [{
+            "id": "handlers-sample",
+            "source_path": f".lw/nab-official/v{ctx.version}/{repo_name}/{source_path}",
+            "format": "rst",
+            "filename": "sample.rst",
+            "type": "component",
+            "category": "handlers",
+            "output_path": "component/handlers/handlers-sample.json",
+            "assets_dir": "component/handlers/assets/handlers-sample/"
+        }]
+        write_json(ctx.classified_list_path, catalog)
         meta_path = get_meta_path(ctx)
         meta = load_json(meta_path)
         meta["generated_at"] = "2026-01-01"

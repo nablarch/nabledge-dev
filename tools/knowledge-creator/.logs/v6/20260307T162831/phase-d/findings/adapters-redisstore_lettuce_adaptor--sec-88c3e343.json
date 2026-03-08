@@ -1,0 +1,20 @@
+{
+  "file_id": "adapters-redisstore_lettuce_adaptor--sec-88c3e343",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source preamble (before first H2 section)",
+      "description": "The introductory content listing the benefits of Redis store over DB store is not captured in any knowledge file section. Source states: (1) テーブルを事前に用意する必要がない, (2) 有効期限が切れたセッション情報を削除するためのバッチを作る必要がない. This is technology-selection guidance an AI needs to answer 'why use Redis store?' or 'what are the advantages of Redis over DB store?'.",
+      "source_evidence": "セッションストアにRedisを使用すると、DBストアを選択した場合と比較して次のようなメリットが得られる。\n* セッション情報を保存するためのテーブルを事前に用意する必要がない\n* 有効期限が切れたセッション情報を削除するためのバッチを作る必要がない"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[redis-client-config].hints",
+      "description": "The redis-client-config section covers the advanced custom client class example which references Lettuce PascalCase class names, but the following are absent from hints: `ClusterTopologyRefreshOptions`, `ClusterClientOptions`, `RedisClusterClient`, `RedisClient`. These appear prominently in the protected-methods table and the CustomClusterRedisClient example within this section.",
+      "source_evidence": "protected methods table lists RedisClient and RedisClusterClient as return types; ClusterTopologyRefreshOptions and ClusterClientOptions are used in the CustomClusterRedisClient Java example"
+    }
+  ]
+}

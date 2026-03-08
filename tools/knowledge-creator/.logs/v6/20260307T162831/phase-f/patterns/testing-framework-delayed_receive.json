@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-delayed_receive",
+  "patterns": "mom-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "バッチ処理、BatchAction、DataReaderへの言及なし"
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "Jakarta Batch、JSR 352、Batchletへの言及なし"
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "REST API、JAX-RS、@Produces/@Consumesへの言及なし"
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "HTTPメッセージング、HttpMessagingRequestParsingHandlerへの言及なし"
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "Webアプリケーション、サーブレット、JSPへの言及なし"
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": true,
+      "evidence": "「応答不要メッセージ受信処理」はMOMメッセージングの非同期受信パターン。`nablarch.test.core.messaging.MessagingReceiveTestSupport`はMOMメッセージング向けテストサポートクラス。URLの`delayed_receive`もMOMメッセージングの応答不要受信を示す。電文（メッセージ）の受信・登録処理がテスト対象"
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "「電文」は登場するがDatabaseRecordReaderやテーブルキューへの言及なし。DB連携メッセージングに特有の要素が見当たらない"
+    }
+  ]
+}

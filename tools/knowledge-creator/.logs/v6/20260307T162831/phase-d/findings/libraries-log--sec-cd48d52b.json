@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-log--sec-cd48d52b",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "section: overview",
+      "description": "Source states 'なお、オープンソースで使用実績の多いロギングフレームワークは、専用のLogger/LoggerFactoryを既に用意している' (popular OSS logging frameworks already provide dedicated Logger/LoggerFactory implementations). This is decision-relevant context when a user is choosing between building a custom Logger/LoggerFactory vs using an existing adapter. Knowledge file omits this fact, only referring readers to :ref:`log_adaptor`.",
+      "source_evidence": "機能概要 > ログ出力機能の実装を差し替えることができる: 'なお、オープンソースで使用実績の多いロギングフレームワークは、専用のLogger/LoggerFactoryを既に用意している。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "section: log-configuration",
+      "description": "The source 'ログ出力の設定' section contains multiple h3 subsections (プロパティファイルの場所, LoggerFactory記述ルール, LogWriter記述ルール, ロガー設定記述ルール, プロパティファイルの記述例) with well over 2000 characters of content. The knowledge file consolidates all of this into a single section. Splitting into at least two sections (e.g., configuration rules vs full example) would improve navigability.",
+      "source_evidence": "使用方法 > ログ出力の設定 contains h3: プロパティファイルの場所, LoggerFactory, LogWriter, ロガー設定 (each with 記述ルール and 記述例 sub-blocks), and プロパティファイルの記述例."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "section: log-configuration, hints array",
+      "description": "The property name 'loggers.<名前>.writerNames' is a key ロガー設定 property defined in the source but is not listed as a hint. It should be added so the section is discoverable when users ask about configuring log output destinations per logger.",
+      "source_evidence": "ログ出力の設定 > ロガー設定 記述ルール: 'loggers.<名前>.writerNames — 出力先とするLogWriterの名前を指定する。'"
+    }
+  ]
+}

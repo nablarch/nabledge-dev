@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-tag--get",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "using-get-request (section intro)",
+      "description": "The source explains why GET requests are needed (crawler countermeasures, bookmarkable URLs) and the specific problem caused by hidden parameters (appended to URL, URL length limit may prevent correct requests). This background is completely absent from the knowledge file. An AI asked 'なぜGETリクエストを使う必要があるのか' or 'なぜhiddenパラメータが問題になるのか' would have no basis to answer.",
+      "source_evidence": "「検索エンジン等のクローラ対策、および利用者がブックマーク可能なURLとするために、GETリクエストの使用が必要となる場合がある。」「URLの長さ制限により正しくリクエストできない可能性がある。」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "using-get-request — popupButtonタグ",
+      "description": "The knowledge file states the alternative is 'HTMLのbutton(type=\"button\")'。 However, the source description text explicitly says 'HTMLのbuttonタグ(type=\"submit\")を使用し'. The source code example does show type=\"button\", creating an internal inconsistency in the source, but the knowledge file's prose description contradicts the source's prose description without noting this discrepancy.",
+      "source_evidence": "対応方法: 「HTMLのbuttonタグ(type=\"submit\")を使用し、onclick属性にJavaScriptのwindow.open()関数を指定する。」 (source description says type=\"submit\"; code example shows type=\"button\")"
+    }
+  ]
+}

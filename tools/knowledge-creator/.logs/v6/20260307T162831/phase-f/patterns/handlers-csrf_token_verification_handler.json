@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-csrf_token_verification_handler",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of BatchAction, DataReader, 都度起動, 常駐型, or any batch-related concepts."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "The handler class is `nablarch.fw.web.handler.CsrfTokenVerificationHandler` under the `/handlers/web/` path. The content explicitly shows configuration in `WebFrontController` with `handlerQueue`, references `sessionStoreHandler`, `nablarchTagHandler`, and describes HTTP request/session-based CSRF token management — all Web application concepts."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader."
+    }
+  ]
+}

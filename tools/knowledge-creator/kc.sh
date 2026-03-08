@@ -25,6 +25,7 @@ if [ -z "$COMMAND" ] || [ -z "$VERSION" ]; then
     echo "  --max-rounds N    CDEループ回数（default: 1）"
     echo "  --concurrency N   並列数（default: 4）"
     echo "  --test FILE       テストファイル指定"
+    echo "  --verbose         CC詳細ログ出力（stream-json + ツール呼び出し記録）"
     exit 1
 fi
 
@@ -60,17 +61,9 @@ done
 case "$COMMAND" in
     gen)
         if [ "$RESUME" = true ]; then
-            # UC2: Resume interrupted generation (no clean)
+            # UC2: Resume interrupted generation (no clean, new run_id)
             echo "🔄 中断再開モード"
-            LATEST_LINK="$SCRIPT_DIR/.logs/v${VERSION}/latest"
-            if [ ! -L "$LATEST_LINK" ]; then
-                echo "Error: latest リンクが見つかりません。先に ./kc.sh gen $VERSION を実行してください。"
-                exit 1
-            fi
-            EXISTING_RUN_ID=$(basename "$(readlink "$LATEST_LINK")")
-            echo "   再開する run_id: $EXISTING_RUN_ID"
-            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
-                --run-id "$EXISTING_RUN_ID" $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" $PASSTHROUGH_ARGS
         else
             # UC1: Full generation (clean first)
             echo "🚀 全件生成モード"
@@ -83,7 +76,7 @@ case "$COMMAND" in
             # UC4: Regenerate specific files
             echo "🔄 特定ファイル再生成"
             $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
-                --phase BCDEM --clean-phase BD $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
+                --phase ABCDEM --clean-phase BD $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         else
             # UC3: Detect source changes and regenerate
             echo "🔄 ソース変更検知 → 再生成"
@@ -95,7 +88,7 @@ case "$COMMAND" in
         # UC5, UC6: Quality improvement
         echo "🔧 品質改善モード"
         $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
-            --phase CDEM --clean-phase D $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
+            --phase ACDEM --clean-phase D $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         ;;
     *)
         echo "Error: Unknown command '$COMMAND'"

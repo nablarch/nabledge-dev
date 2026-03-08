@@ -77,6 +77,7 @@ FILE_ID はナレッジファイルの拡張子なしファイル名（例: `han
 | `--max-rounds N` | CDEループ回数 | `2` |
 | `--concurrency N` | 並列数 | `4` |
 | `--test FILE` | テストファイル指定 | `None` |
+| `--verbose` | CC詳細ログ出力（stream-json + ツール呼び出し記録） | `False` |
 
 ### テストモードファイル
 

@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-http_messaging_request_parsing_handler",
+  "patterns": "http-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of BatchAction, DataReader, 都度起動, 常駐型, or other batch-specific terms."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of JAX-RS, REST API, @Produces, @Consumes, or JaxRsMethodBinder."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": true,
+      "evidence": "The handler class is `HttpMessagingRequestParsingHandler` (nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler), the module is `nablarch-fw-messaging-http`, and the content describes converting HttpRequest to RequestMessage (要求電文) — all core HTTP messaging concepts. The title itself is 'HTTPメッセージングリクエスト変換ハンドラ'."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "Although HttpRequest appears, it is used solely in the context of HTTP messaging conversion. No mention of servlets, JSP, session management, or web application-specific patterns."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, or DatabaseRecordReader."
+    }
+  ]
+}

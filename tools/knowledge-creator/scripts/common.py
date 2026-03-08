@@ -62,7 +62,7 @@ def write_file(path: str, content: str):
         f.write(content)
 
 
-def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> subprocess.CompletedProcess:
+def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str, verbose: bool = False) -> subprocess.CompletedProcess:
     """Run claude -p with metrics logging.
 
     Args:
@@ -70,16 +70,26 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
         json_schema: JSON Schema for structured output
         log_dir: Directory to save execution logs (e.g., ctx.phase_b_executions_dir)
         file_id: File identifier for log filename (e.g., "libraries-tag")
+        verbose: If True, use stream-json format and record tool calls
 
     Returns:
         CompletedProcess with stdout containing structured_output JSON
     """
-    cmd = [
-        "claude", "-p",
-        "--output-format", "json",
-        "--json-schema", json.dumps(json_schema),
-        "--max-turns", "10"
-    ]
+    if verbose:
+        cmd = [
+            "claude", "-p",
+            "--output-format", "stream-json",
+            "--verbose",
+            "--json-schema", json.dumps(json_schema),
+            "--max-turns", "10"
+        ]
+    else:
+        cmd = [
+            "claude", "-p",
+            "--output-format", "json",
+            "--json-schema", json.dumps(json_schema),
+            "--max-turns", "10"
+        ]
 
     # Remove CLAUDECODE to prevent Claude CLI from detecting agent context
     # This ensures prompts run in standard mode, not code agent mode
@@ -92,7 +102,28 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
 
     if result.returncode == 0:
         try:
-            response = json.loads(result.stdout)
+            if verbose:
+                raw_output = result.stdout
+                response = None
+                ndjson_lines = []
+                for line in raw_output.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        obj = json.loads(line)
+                        ndjson_lines.append(obj)
+                        if obj.get("type") == "result":
+                            response = obj
+                    except json.JSONDecodeError:
+                        continue
+                if response is None:
+                    return subprocess.CompletedProcess(
+                        args=result.args, returncode=1,
+                        stdout="", stderr="No result line found in stream-json output"
+                    )
+            else:
+                response = json.loads(result.stdout)
 
             # Save execution log with cc_metrics
             os.makedirs(log_dir, exist_ok=True)
@@ -111,6 +142,33 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
                 "subtype":    response.get("subtype"),
                 "cc_metrics": cc_metrics,
             }
+
+            if verbose:
+                ndjson_path = os.path.join(log_dir, f"{file_id}_{timestamp}.ndjson")
+                with open(ndjson_path, 'w', encoding='utf-8') as f:
+                    f.write(raw_output)
+
+                tool_calls = []
+                for obj in ndjson_lines:
+                    content_items = []
+                    if isinstance(obj.get("message"), dict):
+                        content_items = obj["message"].get("content", [])
+                    elif isinstance(obj.get("content"), list):
+                        content_items = obj["content"]
+                    for item in content_items:
+                        if isinstance(item, dict) and item.get("type") == "tool_use":
+                            input_data = item.get("input", {})
+                            input_summary = {}
+                            for k, v in input_data.items():
+                                sv = str(v)
+                                input_summary[k] = (sv[:200] + "...") if len(sv) > 200 else sv
+                            tool_calls.append({
+                                "tool_name": item.get("name", "unknown"),
+                                "input_summary": input_summary,
+                            })
+                log_data["stop_reason"] = response.get("stop_reason")
+                log_data["tool_calls"] = tool_calls
+
             with open(log_path, 'w', encoding='utf-8') as f:
                 json.dump(log_data, f, ensure_ascii=False, indent=2)
 
