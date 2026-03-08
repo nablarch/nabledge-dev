@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-messaging_context_handler",
+  "patterns": "mom-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of BatchAction, DataReader, 都度起動, or 常駐型バッチ. Content is focused on MQ connection management."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "No mention of Webアプリケーション, サーブレット, JSP, HttpRequest, or セッション管理."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": true,
+      "evidence": "Content explicitly mentions MOMメッセージング and MQ接続管理 in the index hints. The handler class is MessagingContextHandler from nablarch-fw-messaging module, which manages MQ connections (MQ接続の取得/解放) using JmsMessagingProvider. The official doc URL also contains 'mom_messaging', confirming this is a MOM messaging handler."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader."
+    }
+  ]
+}

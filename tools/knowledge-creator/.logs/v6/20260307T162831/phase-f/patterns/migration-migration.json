@@ -1,0 +1,41 @@
+{
+  "file_id": "migration-migration",
+  "patterns": "jakarta-batch restful-web-service web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "The content mentions 'バッチプロジェクト' only to note that web-specific sections can be skipped for batch projects. No BatchAction, DataReader, nablarch.fw.action.BatchAction, 都度起動, or 常駐型 indicators are present."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": true,
+      "evidence": "Dedicated section 'jsr352-batch-migration' explicitly covers JSR352バッチアプリケーション migration, mentioning JBeret, jakarta.batch, jberet-core, jberet-se, weld-core-impl, and runtime error handling for JSR352 batch apps."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": true,
+      "evidence": "Section 'java-ee-to-jakarta-dependencies' explicitly covers JAX-RS → Jakarta RESTful Web Services (javax.ws.rs → jakarta.ws.rs). Section 'java-ee-library-update' describes updating jersey-bom to version 3.1.8 for JAX-RS. The comparison table lists JAX-RS explicitly."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler anywhere in the content."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "Sections 'waitt-to-jetty-ee10' and 'update-ntf-jetty' are explicitly described as 'ウェブプロジェクト固有の手順'. Content covers web.xml schema updates, JSP taglib namespace changes, JSTL migration, Jakarta Servlet, HttpServerFactoryJetty12, and nablarch-testing-jetty12 — all web application specifics."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "JMS → Jakarta Messaging library update is mentioned (artemis dependencies), but no MOMメッセージング, MomMessagingAction, キュー, or 非同期メッセージ processing pattern indicators are present. The JMS reference is limited to a generic library migration table."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader in the content."
+    }
+  ]
+}

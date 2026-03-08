@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-guide-development-guide-05-UnitTestGuide-03-DealUnitTest",
+  "patterns": "web-application http-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "コンテンツにNablarchバッチ、BatchAction、DataReader、都度起動、常駐型などの言及なし。"
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "Jakarta Batch、JSR 352、Batchlet、Chunkなどの言及なし。"
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "RESTful、JAX-RS、@Produces、@Consumesなどの言及なし。"
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": true,
+      "evidence": "「同期応答メッセージ送信処理を伴う場合は、モックアップクラスを使用すること」と記載があり、参照先が`:ref:`dealUnitTest_send_sync``となっている。これはHTTPメッセージング（メッセージ同期応答）に対応する。"
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "「アプリケーションサーバにデプロイ後、手動操作でテストを行う方式」とあり、エビデンスとして「画面ハードコピー」が挙げられている。画面（UI）の手動テストはWebアプリケーションを示している。"
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "MOMメッセージング、MQ、非同期メッセージ、MomMessagingActionなどの言及なし。"
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "DB連携メッセージング、テーブルキュー、電文、DatabaseRecordReaderなどの言及なし。"
+    }
+  ]
+}

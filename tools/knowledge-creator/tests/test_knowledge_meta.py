@@ -113,7 +113,7 @@ class TestDetectChangedFiles:
         )
         initial_commit = _get_head_commit(local_repo)
 
-        # Write knowledge-creator.json with this commit
+        # Write catalog.json with sources and files (unified)
         meta_path = get_meta_path(ctx)
         os.makedirs(os.path.dirname(meta_path), exist_ok=True)
         write_json(meta_path, {
@@ -122,13 +122,8 @@ class TestDetectChangedFiles:
                 "repo": f"https://github.com/nablarch/{repo_name}",
                 "branch": "main",
                 "commit": initial_commit
-            }]
-        })
-
-        # Write classified.json referencing this source
-        write_json(ctx.classified_list_path, {
+            }],
             "version": "6",
-            "generated_at": "2026-01-01T00:00:00Z",
             "files": [{
                 "id": "handlers-sample",
                 "source_path": f".lw/nab-official/v6/{repo_name}/ja/application_framework/handlers/sample.rst",
@@ -349,18 +344,15 @@ class TestEffectiveTargetIsolation:
 
             meta_path = get_meta_path(ctx)
             os.makedirs(os.path.dirname(meta_path), exist_ok=True)
+            # Write sources and files together in catalog.json
             write_json(meta_path, {
                 "generated_at": "2026-01-01",
                 "sources": [{
                     "repo": "https://github.com/nablarch/nablarch-document",
                     "branch": "main" if ver == "6" else "v5-main",
                     "commit": commit
-                }]
-            })
-
-            write_json(ctx.classified_list_path, {
+                }],
                 "version": ver,
-                "generated_at": "2026-01-01T00:00:00Z",
                 "files": [{
                     "id": f"handlers-{'a' if ver == '6' else 'b'}",
                     "source_path": f".lw/nab-official/v{ver}/nablarch-document/ja/handlers/{'a' if ver == '6' else 'b'}.rst",

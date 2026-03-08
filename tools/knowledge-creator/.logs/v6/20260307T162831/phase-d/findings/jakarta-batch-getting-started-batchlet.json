@@ -1,0 +1,20 @@
+{
+  "file_id": "jakarta-batch-getting-started-batchlet",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 作成する機能の説明 (steps 1–4)",
+      "description": "The entire '作成する機能の説明' section is omitted. This section contains the batch execution command including the Nablarch JSR352 entry point class `nablarch.fw.batch.ee.Main` and the job-name argument pattern (`-Dexec.args=zip-code-truncate-table`). An AI agent answering 'how do I run a JSR352 batch?' needs to know the main class and invocation pattern: `mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args={job-name}`.",
+      "source_evidence": "$mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^\n    -Dexec.args=zip-code-truncate-table"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.delete-table hints",
+      "description": "PascalCase class names that appear in the Java code example are missing from hints: `AppDbConnection`, `DbConnectionContext`, `SqlPStatement`.",
+      "source_evidence": "final AppDbConnection conn = DbConnectionContext.getConnection();\nfinal SqlPStatement statement = conn.prepareStatement(\"TRUNCATE TABLE \" + tableName);"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-keitai_access_handler",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "コンテンツにバッチ処理、BatchAction、DataReader、都度起動、常駐型に関する記述は一切ない。"
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "Jakarta Batch、JSR 352、Batchlet、Chunkに関する記述は一切ない。"
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "RESTful、JAX-RS、@Produces、@Consumesに関する記述は一切ない。"
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "HTTPメッセージング、HTTP受信、HttpMessagingRequestParsingHandlerに関する記述は一切ない。"
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "コンテンツは明示的にWebアプリケーション（「JavaScriptが動作しない環境でウェブアプリケーションを動作させるハンドラ」）、JSP（n:form タグ、n:script タグ等のJSPタグライブラリ）、http_response_handler・thread_context_handlerといったWebハンドラへの参照を含む。KeitaiAccessHandlerはWebアプリケーションのハンドラキューに配置されるコンポーネントである。"
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "MOMメッセージング、MQ、キュー、MomMessagingActionに関する記述は一切ない。"
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "DB連携メッセージング、テーブルキュー、DatabaseRecordReaderに関する記述は一切ない。"
+    }
+  ]
+}

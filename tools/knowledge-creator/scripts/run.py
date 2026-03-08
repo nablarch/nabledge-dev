@@ -25,6 +25,7 @@ class Context:
     test_file: str = None
     max_rounds: int = 1
     run_id: str = None
+    verbose: bool = False
 
     def __post_init__(self):
         if not os.path.isdir(self.repo):
@@ -57,13 +58,17 @@ class Context:
         return f"{self.log_dir}/phase-a/sources.json"
 
     @property
+    def cache_dir(self) -> str:
+        return f"{self.repo}/tools/knowledge-creator/.cache/v{self.version}"
+
+    @property
     def classified_list_path(self) -> str:
-        return f"{self.log_dir}/phase-a/classified.json"
+        return f"{self.cache_dir}/catalog.json"
 
     # Phase B: Generate
     @property
     def trace_dir(self) -> str:
-        return f"{self.log_dir}/phase-b/traces"
+        return f"{self.cache_dir}/traces"
 
     @property
     def phase_b_executions_dir(self) -> str:
@@ -89,10 +94,6 @@ class Context:
         return f"{self.log_dir}/phase-e/executions"
 
     # Phase F: Finalize
-    @property
-    def patterns_dir(self) -> str:
-        return f"{self.log_dir}/phase-f/patterns"
-
     @property
     def phase_f_executions_dir(self) -> str:
         return f"{self.log_dir}/phase-f/executions"
@@ -139,6 +140,8 @@ def main():
                         help="Detect source changes and regenerate affected files")
     parser.add_argument("--run-id", type=str, default=None,
                         help="Run ID (auto-generated from timestamp if omitted; pass existing ID to resume)")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Enable verbose CC logging (stream-json + tool call recording)")
 
     args = parser.parse_args()
 
@@ -192,19 +195,9 @@ def main():
         ctx = Context(
             version=v, repo=repo_root, concurrency=args.concurrency,
             test_file=args.test, max_rounds=args.max_rounds,
-            run_id=args.run_id,
+            run_id=args.run_id, verbose=args.verbose,
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
-
-        # Update latest symlink (only for new runs, not resume)
-        if args.run_id is None:
-            latest_link = os.path.join(ctx.version_log_dir, "latest")
-            try:
-                if os.path.lexists(latest_link):
-                    os.remove(latest_link)
-                os.symlink(ctx.run_id, latest_link)
-            except OSError as e:
-                logger.warning(f"latest リンクの更新に失敗しました（継続します）: {e}")
 
         # Configure logger with execution log file
         execution_log_path = f"{ctx.log_dir}/execution.log"
@@ -297,7 +290,7 @@ def main():
                 logger.info("\n✅Phase C: Structure Check")
                 logger.info("   └─ Validating JSON schema and structure...")
                 from phase_c_structure_check import PhaseCStructureCheck
-                c_result = PhaseCStructureCheck(ctx).run()
+                c_result = PhaseCStructureCheck(ctx).run(target_ids=effective_target)
                 report["phase_c"] = {
                     "total":     c_result.get("total", 0),
                     "pass":      c_result.get("pass", 0),
@@ -369,13 +362,13 @@ def main():
             logger.info("\n📦Phase M: Merge + Resolve + Finalize")
             logger.info("   └─ Merging, resolving links, generating docs...")
             from phase_m_finalize import PhaseMFinalize
-            PhaseMFinalize(ctx, dry_run=args.dry_run).run()
+            PhaseMFinalize(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
 
             from knowledge_meta import update_knowledge_meta
             if ctx.test_file:
-                logger.info("\n📝 knowledge-creator.json 更新（テストモード: スキップ）")
+                logger.info("\n📝 catalog.json 更新（テストモード: スキップ）")
             else:
-                logger.info("\n📝 knowledge-creator.json 更新")
+                logger.info("\n📝 catalog.json 更新")
                 update_knowledge_meta(ctx, dry_run=args.dry_run)
 
         # Phase G (backward compat: only when explicitly specified without M)

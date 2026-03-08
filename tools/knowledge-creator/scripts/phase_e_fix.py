@@ -79,7 +79,8 @@ class PhaseEFix:
                 prompt=prompt,
                 json_schema=KNOWLEDGE_SCHEMA,
                 log_dir=self.ctx.phase_e_executions_dir,
-                file_id=file_id
+                file_id=file_id,
+                verbose=self.ctx.verbose
             )
             if result.returncode == 0:
                 fixed = json.loads(result.stdout)

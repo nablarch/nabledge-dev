@@ -1,4 +1,4 @@
-"""Tests for run_id, latest symlink, and report.json generation."""
+"""Tests for run_id and report.json generation."""
 import json
 import os
 import subprocess
@@ -44,11 +44,15 @@ class TestContext:
         assert ctx.report_path.endswith("report.json")
 
     def test_sub_paths_use_run_id(self, tmp_path):
-        """classified_list_path 等のサブパスも run_id を含む。"""
+        """ログパスは run_id を含む。キャッシュパスは run_id を含まない。"""
         ctx = Context(version="6", repo=str(tmp_path), concurrency=4, run_id="20250304T120000")
-        assert "20250304T120000" in ctx.classified_list_path
+        # ログパスは run_id を含む
         assert "20250304T120000" in ctx.findings_dir
         assert "20250304T120000" in ctx.phase_b_executions_dir
+        # キャッシュパスは run_id を含まない
+        assert "20250304T120000" not in ctx.classified_list_path
+        assert ".cache/v6" in ctx.classified_list_path
+        assert ctx.classified_list_path.endswith("catalog.json")
 
     def test_reports_dir_production_mode(self, tmp_path):
         """本番モードの reports_dir はリポジトリ内の reports/ ディレクトリ。"""
@@ -66,50 +70,6 @@ class TestContext:
         ctx = Context(version="6", repo=str(tmp_path), concurrency=4,
                       run_id="20250304T120000", test_file="test-files-top3.json")
         assert not ctx.reports_dir.startswith(f"{tmp_path}/tools/knowledge-creator/reports")
-
-
-class TestLatestSymlink:
-    def test_latest_created_on_new_run(self, tmp_path):
-        """新規実行時に latest シンボリックリンクが作成される。"""
-        ctx = Context(version="6", repo=str(tmp_path), concurrency=4)
-        os.makedirs(ctx.log_dir, exist_ok=True)
-
-        latest_link = os.path.join(ctx.version_log_dir, "latest")
-        if os.path.lexists(latest_link):
-            os.remove(latest_link)
-        os.symlink(ctx.run_id, latest_link)
-
-        assert os.path.islink(latest_link)
-        assert os.readlink(latest_link) == ctx.run_id
-
-    def test_latest_updated_on_second_run(self, tmp_path):
-        """2回目の実行で latest が新しい run_id に更新される。"""
-        ctx1 = Context(version="6", repo=str(tmp_path), concurrency=4, run_id="20250304T100000")
-        os.makedirs(ctx1.log_dir, exist_ok=True)
-        latest_link = os.path.join(ctx1.version_log_dir, "latest")
-        os.symlink(ctx1.run_id, latest_link)
-
-        ctx2 = Context(version="6", repo=str(tmp_path), concurrency=4, run_id="20250304T110000")
-        os.makedirs(ctx2.log_dir, exist_ok=True)
-        if os.path.lexists(latest_link):
-            os.remove(latest_link)
-        os.symlink(ctx2.run_id, latest_link)
-
-        assert os.readlink(latest_link) == "20250304T110000"
-
-    def test_resume_reuses_run_id_from_latest(self, tmp_path):
-        """--resume 時は latest リンクが指す run_id を再利用できる。"""
-        original_run_id = "20250304T100000"
-        ctx = Context(version="6", repo=str(tmp_path), concurrency=4, run_id=original_run_id)
-        os.makedirs(ctx.log_dir, exist_ok=True)
-        latest_link = os.path.join(ctx.version_log_dir, "latest")
-        os.symlink(original_run_id, latest_link)
-
-        resumed_run_id = os.readlink(latest_link)
-        ctx_resumed = Context(version="6", repo=str(tmp_path), concurrency=4, run_id=resumed_run_id)
-
-        assert ctx_resumed.run_id == original_run_id
-        assert ctx_resumed.log_dir == ctx.log_dir
 
 
 class TestAggregateFindings:

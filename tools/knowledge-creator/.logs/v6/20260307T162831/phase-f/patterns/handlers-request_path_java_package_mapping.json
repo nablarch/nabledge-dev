@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-request_path_java_package_mapping",
+  "patterns": "nablarch-batch mom-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "Content uses 'BatchAction' in multiple examples: 'ExampleBatchAction', 'XxxProjectXxxxBatchAction', and classNameSuffix value='BatchAction'. Also references :ref:`main` in the context of command-line -requestPath option, which is characteristic of Nablarch batch execution."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder in the content."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler. The :ref:`messaging` reference is to general messaging, not specifically HTTP messaging."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "No mention of Webアプリケーション, サーブレット, JSP, HttpRequest, or セッション管理 in the content."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": true,
+      "evidence": "handler-class section explicitly states '主に :ref:`messaging` でアクションにディスパッチする目的で使用する' — the handler's primary stated purpose is dispatching actions in Nablarch messaging. The :ref:`messaging` cross-reference points to Nablarch's messaging feature, which is MOM messaging."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader in the content."
+    }
+  ]
+}

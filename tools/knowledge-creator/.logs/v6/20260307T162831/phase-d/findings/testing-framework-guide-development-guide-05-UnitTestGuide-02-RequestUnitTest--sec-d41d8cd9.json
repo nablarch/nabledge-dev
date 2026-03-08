@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--sec-d41d8cd9",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "test-data-writing — descriptionカラムの説明（脚注）",
+      "description": "descriptionカラムの注意事項として、ファイル名の長さ上限を超過した場合にもIOExceptionが発生することが記載されているが、knowledge fileでは「改行コードを含めると実行時にIOExceptionが発生する」と改行コードの例のみ挙げており、ファイル名長さ上限超過による例外発生が抜けている。",
+      "source_evidence": "脚注: 「OSで規定されたファイル名に使用可能な文字以外の文字の使用や、ファイル名の長さ上限を超過した場合に、IOExceptionが発生するため、ファイル名として許可された内容を入力すること。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "test-data-writing",
+      "description": "test-data-writingセクションはソースのh2「テストデータの書き方」配下に6つ以上のh3見出し（テストクラスで共通のデータベース初期値、テストケース一覧、ユーザ情報、Cookie情報、クエリパラメータ情報、リクエストパラメータ）を含み、2000文字を大幅に超えているが、これらのh3がそれぞれ個別のセクションに分割されていない。",
+      "source_evidence": "ソースのh3見出し（======区切り）: テストクラスで共通のデータベース初期値、テストケース一覧、ユーザ情報、Cookie情報、クエリパラメータ情報、リクエストパラメータ、各種期待値（後2つは一部分割済み）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "test-data-writing — hints",
+      "description": "testShotsテーブルのカラム名であるプロパティ名「context」「cookie」「isValidToken」「setUpTable」がhintsに含まれていない。これらはユーザがテストデータの各カラムについて質問する際に重要なキーワード。",
+      "source_evidence": "テストケース一覧のカラム定義: context（ユーザ情報）、cookie（Cookie情報）、isValidToken（トークン設定）、setUpTable（DB初期投入データのグループID）"
+    }
+  ]
+}

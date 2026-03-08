@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-on_double_submission",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No batch-related content. No mention of BatchAction, DataReader, 都度起動, or 常駐型."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No Jakarta Batch content. No mention of JSR 352, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No REST/JAX-RS content. No mention of JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No HTTP messaging content. No mention of HTTPメッセージング, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "Content explicitly targets web application patterns: HttpRequest/HttpResponse types in action method signatures, JSP paths (/WEB-INF/view/error/userError.jsp), and the official doc URL references web_interceptor. The interceptor is designed to prevent double form submissions in web applications."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No MOM messaging content. No mention of MQ, キュー, 非同期メッセージ, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No DB messaging content. No mention of テーブルキュー, DatabaseRecordReader, or DB連携メッセージング."
+    }
+  ]
+}

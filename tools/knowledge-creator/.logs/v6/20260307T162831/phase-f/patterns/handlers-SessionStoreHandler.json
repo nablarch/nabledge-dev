@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-SessionStoreHandler",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of Nablarchバッチ, BatchAction, DataReader, or batch-related processing. Content is entirely focused on web session management."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, or Chunk processing."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder. Session cookies and HTTPセッション are web application concerns, not REST API concerns."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "Official doc URL is under /handlers/web/. Module is nablarch-fw-web. Content explicitly mentions サーブレットフォワード, web.xml, HTTPセッション, セッションクッキー, forwarding_handler, and http_response_handler — all web application constructs. The handler manages session variables in a web request/response lifecycle."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, or DatabaseRecordReader. The DB usage in content (DbManagedExpiration, DbStore) is for storing session data, not for DB-based messaging."
+    }
+  ]
+}

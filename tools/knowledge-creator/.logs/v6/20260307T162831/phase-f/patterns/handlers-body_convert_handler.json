@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-body_convert_handler",
+  "patterns": "restful-web-service",
+  "reasoning": [
+    {
+      "pattern": "restful-web-service",
+      "matched": true,
+      "evidence": "The handler class `nablarch.fw.jaxrs.BodyConvertHandler` is in the `nablarch-fw-jaxrs` module. The content explicitly uses JAX-RS annotations (`@Consumes`, `@Produces`), `MediaType.APPLICATION_JSON`, and references `router_adaptor`. Converters like `JaxbBodyConverter` and `FormUrlEncodedConverter` are JAX-RS/REST specific. This handler is clearly for RESTful web service request/response body conversion."
+    },
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of Nablarchバッチ, BatchAction, DataReader, 都度起動, or 常駐型. This handler is specific to JAX-RS/REST processing."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler. The content is JAX-RS REST, not HTTP messaging."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "No mention of Webアプリケーション (servlet-based), JSP, HttpRequest, or セッション管理. The `nablarch.fw.jaxrs` package is distinct from the web application (servlet/JSP) pattern."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader."
+    }
+  ]
+}

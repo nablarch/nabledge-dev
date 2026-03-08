@@ -1,0 +1,20 @@
+{
+  "file_id": "blank-project-CustomizeDB--sec-d41d8cd9",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.container-production-config",
+      "description": "Knowledge file says \"Mavenプロファイルによる環境設定の切り替えは行わない\" but the source only says \"プロファイルによる環境設定の切り替えは行わない\". The word \"Maven\" was added and is not present in the source.",
+      "source_evidence": "コンテナ用のプロジェクトでは、プロファイルによる環境設定の切り替えは行わない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[container-production-config].hints",
+      "description": "The hint \"Twelve-Factor App\" is missing. The source explicitly references \"The Twelve-Factor App の III. 設定\" as the rationale for using OS environment variables instead of profiles, which is a key concept a user might search for.",
+      "source_evidence": "プロファイルではなくOS環境変数で設定を切り替えるようにしている理由については、The Twelve-Factor App の III. 設定 (外部サイト)を参照。"
+    }
+  ]
+}

@@ -70,8 +70,13 @@ class MergeSplitFiles:
             if os.path.exists(part_trace_path):
                 os.remove(part_trace_path)
 
-    def run(self):
-        """Execute merge operation."""
+    def run(self, target_ids=None):
+        """Execute merge operation.
+
+        Args:
+            target_ids: Optional list of file IDs. When specified, only merge
+                        split groups that contain at least one targeted part.
+        """
         classified = load_json(self.ctx.classified_list_path)
 
         split_groups = {}
@@ -82,6 +87,14 @@ class MergeSplitFiles:
 
         if not split_groups:
             return
+
+        # Filter by target_ids: only merge groups containing targeted parts
+        if target_ids is not None:
+            target_set = set(target_ids)
+            split_groups = {
+                oid: parts for oid, parts in split_groups.items()
+                if any(p["id"] in target_set for p in parts)
+            }
 
         self.logger.info(f"\n--- Merging Split Files ---")
         merged_groups = {}

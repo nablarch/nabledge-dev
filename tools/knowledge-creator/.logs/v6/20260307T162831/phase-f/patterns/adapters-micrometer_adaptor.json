@@ -1,0 +1,41 @@
+{
+  "file_id": "adapters-micrometer_adaptor",
+  "patterns": "nablarch-batch web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "'batch-transaction-time-metrics' section explicitly references ':ref:`nablarch_batch`' for transaction-unit processing time measurement. 'batch-processed-record-count' section also explicitly references ':ref:`nablarch_batch`'. BatchTransactionTimeMetricsLogger and BatchProcessedRecordCountMetricsLogger are described as Nablarch batch tools. 'application-type-metrics-examples' explicitly lists 'バッチアプリケーションで収集するメトリクスの例'."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of JAX-RS, @Produces, @Consumes, JaxRsMethodBinder, or REST API. HTTP requests are handled via WebFrontController which is a web application construct, not JAX-RS."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, HttpMessagingRequestParsingHandler, or メッセージ同期応答."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "'application-type-metrics-examples' section explicitly describes 'ウェブアプリケーションで収集するメトリクスの例'. The 'timer-metrics-handler' section shows usage with 'WebFrontController' and 'handlerQueue' which is the web application handler queue. 'setup-configuration' references 'web-component-configuration.xml'."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, MomMessagingAction, or 非同期メッセージ."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader."
+    }
+  ]
+}

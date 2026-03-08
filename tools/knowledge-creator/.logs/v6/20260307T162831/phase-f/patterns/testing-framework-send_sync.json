@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-send_sync",
+  "patterns": "nablarch-batch web-application mom-messaging",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "「バッチ処理」が複数箇所で明示的に言及されている。test-implementationセクションのhintsに「バッチ処理」が含まれ、request-response-preparationセクションでは「バッチ処理: :ref:`batch_test_testcases`」と参照されている。また、output-library-structureセクションでは「バッチならばファイルやDB）を読み込み」とバッチ処理のコンテキストが記載されている。"
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "Jakarta Batch、JSR 352、jBatch、Batchlet、Chunk、javax.batch といった Jakarta Batch 固有の用語は一切登場しない。"
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "RESTful、JAX-RS、@Produces、@Consumes、JaxRsMethodBinder といった REST 固有の用語は登場しない。"
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "「HTTPメッセージング」「HTTP受信」「HttpMessagingRequestParsingHandler」といった http-messaging 固有の用語は登場しない。「同期応答メッセージ送信」は本コンテンツのテスト対象機能名であり、http-messaging パターンの識別子ではない。"
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "「ウェブアプリケーション」が複数箇所で明示的に言及されている。overviewセクションでは「同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テスト」と記載され、test-implementationのhintsにも「ウェブアプリケーション」が含まれ、request-response-preparationでは「ウェブアプリケーション: :ref:`request_test_testcases`」と参照されている。"
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": true,
+      "evidence": "「キュー」「送信キュー」「受信キュー」が多数登場する（output-library-structureセクション等）。また「要求電文」「応答電文」「MockMessagingProvider」「MessagingException」「sendSync」といったメッセージキュー関連の概念・クラスが明示的に使用されており、MOMメッセージング（キュー経由の同期応答メッセージ送受信）のテストがこのコンテンツの主題である。"
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "「DB連携メッセージング」「テーブルキュー」「DatabaseRecordReader」といった db-messaging 固有の用語は登場しない。"
+    }
+  ]
+}

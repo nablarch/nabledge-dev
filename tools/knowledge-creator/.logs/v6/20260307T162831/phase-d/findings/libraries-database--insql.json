@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-database--insql",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "source: 現在のトランザクションとは異なるトランザクションでSQLを実行する → 手順2",
+      "description": "The source mentions that SimpleDbTransactionManager can also be configured and used directly (injected) instead of obtaining it from SystemRepository: \"（システムリポジトリから取得するのではなく、SimpleDbTransactionManager を設定して使用してもよい）\". The knowledge file only describes the SystemRepository approach and omits this alternative injection approach.",
+      "source_evidence": "（システムリポジトリから取得するのではなく、:java:extdoc:`SimpleDbTransactionManager <nablarch.core.db.transaction.SimpleDbTransactionManager>` を設定して使用してもよい)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry: independent-transaction",
+      "description": "The section's Java implementation example prominently uses SystemRepository (SystemRepository.get(...)), but 'SystemRepository' is missing from the hints array.",
+      "source_evidence": "SimpleDbTransactionManager dbTransactionManager = SystemRepository.get(\"update-login-failed-count-transaction\");"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entries: in-clause-variable-conditions, order-by-dynamic-sort",
+      "description": "Both sections' Java code examples use AppDbConnection, DbConnectionContext, and SqlResultSet as prominent PascalCase classes, but none of these appear in the hints arrays for those sections.",
+      "source_evidence": "AppDbConnection connection = DbConnectionContext.getConnection(); ... SqlResultSet result = statement.retrieve(condition);"
+    }
+  ]
+}

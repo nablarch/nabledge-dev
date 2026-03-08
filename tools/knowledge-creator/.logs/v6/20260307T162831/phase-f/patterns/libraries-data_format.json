@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-data_format",
+  "patterns": "web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "file_record_writer_dispose_handler is referenced, but the content never mentions Nablarchバッチ, BatchAction, DataReader, or nablarch.fw.action.BatchAction. Cannot infer this pattern per rule 4."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder in the content."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": ":ref:`messaging` is mentioned generically (it internally uses this library and cannot use alternatives), but HttpMessagingRequestParsingHandler, HTTPメッセージング, HTTP受信, or メッセージ同期応答 are not explicitly mentioned."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "The file-download section shows a web handler method using HttpRequest and HttpResponse with DataRecordResponse. The upload-file-read section uses HttpRequest#getPart and UploadHelper. These are explicit Webアプリケーション patterns."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction in the content."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader in the content."
+    }
+  ]
+}

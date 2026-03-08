@@ -48,6 +48,10 @@ def clean_version(repo_root, version):
     if remove_if_exists(docs_dir, f"nabledge-{version}/docs/"):
         removed_count += 1
 
+    cache_dir = f"{repo_root}/tools/knowledge-creator/.cache/v{version}"
+    if remove_if_exists(cache_dir, f".cache/v{version}/"):
+        removed_count += 1
+
     logger.info("\n=== Removing Intermediate Artifacts ===")
     logs_dir = f"{repo_root}/tools/knowledge-creator/.logs/v{version}"
 

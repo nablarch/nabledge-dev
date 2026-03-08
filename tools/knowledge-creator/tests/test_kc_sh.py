@@ -48,23 +48,12 @@ class TestGenCommand:
         assert "scripts/run.py" in lines[1] and "--version 6" in lines[1]
 
     def test_gen_resume_skips_clean(self, stub_env):
-        # --resume は SCRIPT_DIR/.logs/v6/latest symlink を必要とする
-        logs_dir = os.path.join(TOOL_DIR, ".logs", "v6")
-        latest_link = os.path.join(logs_dir, "latest")
-        os.makedirs(logs_dir, exist_ok=True)
-        created_link = False
-        if not os.path.lexists(latest_link):
-            os.symlink("test-run", latest_link)
-            created_link = True
-        try:
-            result = _run_nc(["gen", "6", "--resume"], stub_env)
-            lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
-            assert len(lines) == 1, f"Expected 1 command, got: {lines}"
-            assert "scripts/run.py" in lines[0]
-            assert "scripts/clean.py" not in lines[0]
-        finally:
-            if created_link and os.path.lexists(latest_link):
-                os.remove(latest_link)
+        """resume は clean なしで run.py を実行する。"""
+        result = _run_nc(["gen", "6", "--resume"], stub_env)
+        lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
+        assert len(lines) == 1, f"Expected 1 command, got: {lines}"
+        assert "scripts/run.py" in lines[0]
+        assert "scripts/clean.py" not in lines[0]
 
 
 class TestRegenCommand:
@@ -80,7 +69,7 @@ class TestRegenCommand:
         lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
         assert len(lines) == 1
         cmd = lines[0]
-        assert "--phase BCDEM" in cmd
+        assert "--phase ABCDEM" in cmd
         assert "--clean-phase BD" in cmd
         assert "--target test-id" in cmd
 
@@ -92,7 +81,7 @@ class TestFixCommand:
         lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
         assert len(lines) == 1
         cmd = lines[0]
-        assert "--phase CDEM" in cmd
+        assert "--phase ACDEM" in cmd
         assert "--clean-phase D" in cmd
 
     def test_fix_with_target_passes_target(self, stub_env):

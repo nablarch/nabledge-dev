@@ -60,19 +60,16 @@ def _setup_repo(tmp_path, run_id="test"):
     for fname in os.listdir(real_prompts):
         shutil.copy(os.path.join(real_prompts, fname), prompts_dir / fname)
 
-    # knowledge-creator.json（Phase M の update_knowledge_meta 用）
-    plugin_dir = repo / ".claude" / "skills" / "nabledge-6" / "plugin"
-    plugin_dir.mkdir(parents=True)
-    meta = {
-        "generated_at": "",
-        "sources": [
-            {"repo": "https://github.com/nablarch/nablarch-document", "branch": "main", "commit": ""},
-            {"repo": "https://github.com/nablarch/nablarch-system-development-guide", "branch": "main", "commit": ""}
-        ]
-    }
-    with open(plugin_dir / "knowledge-creator.json", "w", encoding="utf-8") as f:
-        json.dump(meta, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+    # catalog.json（Phase M の update_knowledge_meta 用）— sources を classified.json に追加
+    with open(ctx.classified_list_path, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+    catalog["sources"] = [
+        {"repo": "https://github.com/nablarch/nablarch-document", "branch": "main", "commit": ""},
+        {"repo": "https://github.com/nablarch/nablarch-system-development-guide", "branch": "main", "commit": ""}
+    ]
+    catalog["generated_at"] = ""
+    with open(ctx.classified_list_path, "w", encoding="utf-8") as f:
+        json.dump(catalog, f, ensure_ascii=False, indent=2)
 
     return str(repo), ctx
 
@@ -212,10 +209,9 @@ class TestPhaseControl:
         assert os.path.exists(knowledge_path), "Phase B should generate knowledge file"
 
     def test_test_mode_skips_knowledge_meta_update(self, tmp_path):
-        """テストモード時は knowledge-creator.json を更新しない。"""
+        """テストモード時は catalog.json を更新しない。"""
         repo, ctx = _setup_repo(tmp_path)
-        meta_path = os.path.join(
-            repo, ".claude", "skills", "nabledge-6", "plugin", "knowledge-creator.json")
+        meta_path = ctx.classified_list_path
         with open(meta_path) as f:
             before = json.load(f)
 
@@ -232,10 +228,9 @@ class TestPhaseControl:
             "テストモードでは commit を更新してはいけない"
 
     def test_production_mode_calls_knowledge_meta_update(self, tmp_path):
-        """本番モード時は knowledge-creator.json を更新する。"""
+        """本番モード時は catalog.json を更新する。"""
         repo, ctx = _setup_repo(tmp_path)
-        meta_path = os.path.join(
-            repo, ".claude", "skills", "nabledge-6", "plugin", "knowledge-creator.json")
+        meta_path = ctx.classified_list_path
 
         args = _make_args(repo, phase="M")
         args.test = None
@@ -246,6 +241,8 @@ class TestPhaseControl:
 
         assert after["generated_at"] != "", \
             "本番モードでは generated_at を更新する"
+        assert "files" in after, "update_knowledge_meta が files を消してはいけない"
+        assert len(after["files"]) > 0
 
     def test_no_report_files_leaked_to_repo(self, tmp_path):
         """テスト実行で実リポジトリの reports/ にファイルが生成されない。"""

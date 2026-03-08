@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-status_code_convert_handler",
+  "patterns": "nablarch-batch",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": true,
+      "evidence": "The handler uses the `nablarch-fw-standalone` module, which is the Nablarch standalone framework that underlies Nablarch batch processing. The concept of 'プロセス終了コード' (process exit code) is specific to standalone/batch execution. The official doc URL is under `handlers/standalone/`, and the constraint references `:ref:\\`main\\`` which is the standalone main handler entry point. All of these strongly indicate this handler belongs to the Nablarch standalone batch pattern."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": false,
+      "evidence": "No mention of RESTful, JAX-RS, @Produces, @Consumes, or JaxRsMethodBinder in the content."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler in the content."
+    },
+    {
+      "pattern": "web-application",
+      "matched": false,
+      "evidence": "No mention of Webアプリケーション, サーブレット, JSP, HttpRequest, or セッション管理 in the content. Process exit codes are not a web application concept."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction in the content."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader in the content."
+    }
+  ]
+}

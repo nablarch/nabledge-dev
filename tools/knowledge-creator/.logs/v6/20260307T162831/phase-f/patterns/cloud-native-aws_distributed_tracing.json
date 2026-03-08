@@ -1,0 +1,41 @@
+{
+  "file_id": "cloud-native-aws_distributed_tracing",
+  "patterns": "restful-web-service web-application",
+  "reasoning": [
+    {
+      "pattern": "nablarch-batch",
+      "matched": false,
+      "evidence": "No mention of BatchAction, DataReader, 都度起動, 常駐型, or nablarch.fw.action.BatchAction anywhere in the content."
+    },
+    {
+      "pattern": "jakarta-batch",
+      "matched": false,
+      "evidence": "No mention of Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, or javax.batch anywhere in the content."
+    },
+    {
+      "pattern": "restful-web-service",
+      "matched": true,
+      "evidence": "The outgoing-http-calls section explicitly registers a component in `rest-component-configuration.xml` (src/main/resources/rest-component-configuration.xml), which is the configuration file specific to the RESTful web service pattern in Nablarch. Jersey client (JAX-RS) is also used for outgoing HTTP calls."
+    },
+    {
+      "pattern": "http-messaging",
+      "matched": false,
+      "evidence": "No mention of HTTPメッセージング, HTTP受信, メッセージ同期応答, or HttpMessagingRequestParsingHandler. The HTTP references are about AWS X-Ray tracing setup, not HTTP messaging pattern."
+    },
+    {
+      "pattern": "web-application",
+      "matched": true,
+      "evidence": "The incoming-http-request section explicitly mentions configuring AWSXRayServletFilter in `web.xml` (src/main/webapp/WEB-INF/web.xml) as a サーブレットフィルタ (servlet filter), which is specific to the web application pattern."
+    },
+    {
+      "pattern": "mom-messaging",
+      "matched": false,
+      "evidence": "No mention of MOMメッセージング, MQ, キュー, 非同期メッセージ, or MomMessagingAction anywhere in the content."
+    },
+    {
+      "pattern": "db-messaging",
+      "matched": false,
+      "evidence": "No mention of DB連携メッセージング, テーブルキュー, 電文, or DatabaseRecordReader. The database references are about TracingDataSource for SQL query tracing, not the DB messaging pattern."
+    }
+  ]
+}

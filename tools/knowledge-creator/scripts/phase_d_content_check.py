@@ -87,7 +87,8 @@ class PhaseDContentCheck:
                 prompt=prompt,
                 json_schema=FINDINGS_SCHEMA,
                 log_dir=self.ctx.phase_d_executions_dir,
-                file_id=file_id
+                file_id=file_id,
+                verbose=self.ctx.verbose
             )
             if result.returncode == 0:
                 findings = json.loads(result.stdout)
