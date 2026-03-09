@@ -7,7 +7,7 @@ Pure Python, no AI needed.
 import os
 import re
 import json
-from common import load_json, write_json, read_file
+from common import load_json, write_json
 from logger import get_logger
 
 KEBAB_CASE_PATTERN = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
@@ -21,15 +21,6 @@ class PhaseCStructureCheck:
     def __init__(self, ctx):
         self.ctx = ctx
         self.logger = get_logger()
-
-    def count_source_headings(self, content, fmt):
-        if fmt == "rst":
-            return len(re.findall(r'\n[^\n]+\n-{3,}\n', content))
-        elif fmt == "md":
-            return len(re.findall(r'^## (?!#)', content, re.MULTILINE))
-        elif fmt == "xlsx":
-            return 1
-        return 0
 
     def validate_structure(self, json_path, source_path, source_format, file_info=None):
         """Perform structural validation checks (S1-S15). Returns list of error strings.
@@ -84,46 +75,15 @@ class PhaseCStructureCheck:
             if not KEBAB_CASE_PATTERN.match(entry["id"]):
                 errors.append(f"S5: Section ID '{entry['id']}' is not kebab-case")
 
-        # S6: Non-empty hints
-        for entry in knowledge.get("index", []):
-            if not entry.get("hints"):
-                errors.append(f"S6: Section '{entry['id']}' has empty hints")
-
-        # S7: Non-empty sections
-        for sid, content in knowledge.get("sections", {}).items():
-            if not content.strip():
-                errors.append(f"S7: Section '{sid}' has empty content")
-
         # S8: Filename match
         expected_id = os.path.basename(json_path).replace(".json", "")
         if knowledge.get("id") != expected_id:
             errors.append(f"S8: id '{knowledge.get('id')}' != filename '{expected_id}'")
 
-        # S9: Section count
-        if file_info and "section_range" in file_info:
-            # For split files, use section_range as expected count
-            expected = len(file_info["section_range"]["sections"])
-        elif os.path.exists(source_path):
-            # For non-split files, count headings in source
-            source_content = read_file(source_path)
-            expected = self.count_source_headings(source_content, source_format)
-        else:
-            expected = 0
-
-        actual = len(knowledge.get("sections", {}))
-        if expected > 0 and actual < expected:
-            errors.append(f"S9: Section count {actual} < source headings {expected}")
-
         # S11: URL format
         for url in knowledge.get("official_doc_urls", []):
             if not url.startswith("https://"):
                 errors.append(f"S11: URL not https: {url}")
-
-        # S13: Minimum section length
-        for sid, content in knowledge.get("sections", {}).items():
-            stripped = content.strip()
-            if len(stripped) < 20 and stripped not in ["なし。", "なし"]:
-                errors.append(f"S13: Section '{sid}' too short ({len(stripped)} chars)")
 
         # S14: Internal reference validation
         internal_ref = re.compile(r'\]\(#([a-z0-9_-]+)\)')

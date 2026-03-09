@@ -1,6 +1,7 @@
 """Common utilities for knowledge-creator steps"""
 
 import json
+import re
 import subprocess
 import os
 from typing import Any
@@ -210,6 +211,25 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str, verbo
             )
 
     return result
+
+
+def count_source_headings(content: str, fmt: str) -> int:
+    """Count split-level headings in source content.
+
+    Args:
+        content: Source file content
+        fmt: Source format ('rst', 'md', 'xlsx')
+
+    Returns:
+        Number of headings found
+    """
+    if fmt == "rst":
+        return len(re.findall(r'\n[^\n]+\n-{3,}\n', content))
+    elif fmt == "md":
+        return len(re.findall(r'^## (?!#)', content, re.MULTILINE))
+    elif fmt == "xlsx":
+        return 1
+    return 0
 
 
 def aggregate_cc_metrics(executions_dir: str) -> dict:

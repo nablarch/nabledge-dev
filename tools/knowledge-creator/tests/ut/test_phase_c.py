@@ -71,23 +71,46 @@ class TestStructureValidation:
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S5" in e for e in errors)
 
-    def test_s6_empty_hints(self, ctx):
+    def test_s6_not_checked_by_phase_c(self, ctx):
+        """S6 (empty hints) must NOT be checked by Phase C."""
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["index"][0]["hints"] = []
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
-        assert any("S6" in e for e in errors)
+        assert not any("S6" in e for e in errors)
 
-    def test_s7_empty_section(self, ctx):
+    def test_s7_not_checked_by_phase_c(self, ctx):
+        """S7 (empty section) must NOT be checked by Phase C."""
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
         k["sections"]["overview"] = ""
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
-        assert any("S7" in e for e in errors)
+        assert not any("S7" in e for e in errors)
+
+    def test_s9_not_checked_by_phase_c(self, ctx):
+        """S9 (section count) must NOT be checked by Phase C."""
+        from phase_c_structure_check import PhaseCStructureCheck
+        k = load_fixture("sample_knowledge.json")
+        del k["sections"]["module-list"]
+        k["index"] = [e for e in k["index"] if e["id"] != "module-list"]
+        jp = write_knowledge(ctx, k)
+        sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
+        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        assert not any("S9" in e for e in errors)
+
+    def test_s13_not_checked_by_phase_c(self, ctx):
+        """S13 (short section) must NOT be checked by Phase C."""
+        from phase_c_structure_check import PhaseCStructureCheck
+        k = load_fixture("sample_knowledge.json")
+        k["sections"]["overview"] = "短い"
+        jp = write_knowledge(ctx, k)
+        sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
+        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        assert not any("S13" in e for e in errors)
 
     def test_s8_id_mismatch(self, ctx):
         from phase_c_structure_check import PhaseCStructureCheck

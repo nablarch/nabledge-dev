@@ -24,6 +24,14 @@ Compare the knowledge file against the source file and report all findings.
 
 ---
 
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+{CONTENT_WARNINGS}
+
 ## Validation Checklist
 
 ### V1: Omission Check (severity: critical)

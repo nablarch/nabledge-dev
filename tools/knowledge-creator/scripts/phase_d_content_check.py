@@ -7,7 +7,7 @@ Does NOT fix anything - only reports findings.
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
+from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics, count_source_headings
 from logger import get_logger
 
 FINDINGS_SCHEMA = {
@@ -47,7 +47,39 @@ class PhaseDContentCheck:
             f"{ctx.repo}/tools/knowledge-creator/prompts/content_check.md"
         )
 
-    def _build_prompt(self, file_info, knowledge, source_content):
+    def _compute_content_warnings(self, knowledge, source_content, source_format, file_info):
+        """Run S6/S7/S9/S13 content quality checks. Returns list of warning strings."""
+        warnings = []
+
+        # S6: Non-empty hints
+        for entry in knowledge.get("index", []):
+            if not entry.get("hints"):
+                warnings.append(f"S6: Section '{entry['id']}' has empty hints")
+
+        # S7: Non-empty sections
+        for sid, content in knowledge.get("sections", {}).items():
+            if not content.strip():
+                warnings.append(f"S7: Section '{sid}' has empty content")
+
+        # S9: Section count vs source headings
+        if file_info and "section_range" in file_info:
+            expected = len(file_info["section_range"]["sections"])
+        else:
+            expected = count_source_headings(source_content, source_format)
+
+        actual = len(knowledge.get("sections", {}))
+        if expected > 0 and actual < expected:
+            warnings.append(f"S9: Section count {actual} < source headings {expected}")
+
+        # S13: Minimum section length
+        for sid, content in knowledge.get("sections", {}).items():
+            stripped = content.strip()
+            if len(stripped) < 20 and stripped not in ["なし。", "なし"]:
+                warnings.append(f"S13: Section '{sid}' too short ({len(stripped)} chars)")
+
+        return warnings
+
+    def _build_prompt(self, file_info, knowledge, source_content, warnings=None):
         prompt = self.prompt_template
         prompt = prompt.replace("{SOURCE_PATH}", file_info["source_path"])
         prompt = prompt.replace("{FORMAT}", file_info["format"])
@@ -55,6 +87,11 @@ class PhaseDContentCheck:
         prompt = prompt.replace("{FILE_ID}", file_info["id"])
         prompt = prompt.replace("{KNOWLEDGE_JSON}",
                                 json.dumps(knowledge, ensure_ascii=False, indent=2))
+        if warnings:
+            prompt = prompt.replace("{CONTENT_WARNINGS}",
+                                    "\n".join(f"- {w}" for w in warnings))
+        else:
+            prompt = prompt.replace("{CONTENT_WARNINGS}", "なし")
         return prompt
 
     def check_one(self, file_info) -> dict:
@@ -80,7 +117,8 @@ class PhaseDContentCheck:
             sr = file_info["section_range"]
             source = "\n".join(lines[sr["start_line"]:sr["end_line"]])
 
-        prompt = self._build_prompt(file_info, knowledge, source)
+        warnings = self._compute_content_warnings(knowledge, source, file_info["format"], file_info)
+        prompt = self._build_prompt(file_info, knowledge, source, warnings=warnings)
 
         try:
             result = self.run_claude(
