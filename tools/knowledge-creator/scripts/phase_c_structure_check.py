@@ -64,6 +64,11 @@ class PhaseCStructureCheck:
                 errors.append("S16: no_knowledge_content=true but sections is not empty")
             return errors
 
+        # S17: Empty knowledge guard
+        if not knowledge.get("index") and not knowledge.get("sections"):
+            errors.append("S17: no_knowledge_content=false but index and sections are both empty")
+            return errors
+
         index_ids = [entry["id"] for entry in knowledge.get("index", [])]
         index_id_set = set(index_ids)
         section_keys = set(knowledge.get("sections", {}).keys())

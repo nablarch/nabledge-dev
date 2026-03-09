@@ -97,3 +97,35 @@ class TestStructureValidation:
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S8" in e for e in errors)
+
+    def test_s17_empty_knowledge_rejected(self, ctx):
+        """S17: no_knowledge_content=False with empty index+sections must fail."""
+        from phase_c_structure_check import PhaseCStructureCheck
+        k = {
+            "id": "handlers-sample-handler",
+            "title": "サンプルハンドラ",
+            "no_knowledge_content": False,
+            "official_doc_urls": ["https://example.com"],
+            "index": [],
+            "sections": {}
+        }
+        jp = write_knowledge(ctx, k)
+        sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
+        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        assert any("S17" in e for e in errors)
+
+    def test_s17_no_knowledge_content_true_not_affected(self, ctx):
+        """S17 must not trigger when no_knowledge_content=True."""
+        from phase_c_structure_check import PhaseCStructureCheck
+        k = {
+            "id": "handlers-sample-handler",
+            "title": "サンプルハンドラ",
+            "no_knowledge_content": True,
+            "official_doc_urls": ["https://example.com"],
+            "index": [],
+            "sections": {}
+        }
+        jp = write_knowledge(ctx, k)
+        sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
+        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        assert not any("S17" in e for e in errors)
