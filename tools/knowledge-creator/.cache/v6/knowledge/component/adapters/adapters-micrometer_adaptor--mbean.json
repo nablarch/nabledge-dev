@@ -1,0 +1,61 @@
+{
+  "id": "adapters-micrometer_adaptor--mbean",
+  "title": "Micrometerアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/ComponentFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/logging/LoggingMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/DefaultMeterBinderListProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/disposal/BasicApplicationDisposer.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/simple/SimpleMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/cloudwatch/CloudWatchMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/datadog/DatadogMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/statsd/StatsdMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/otlp/OtlpMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/MeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/jvm/NablarchGcCountMetrics.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/cloudwatch/CloudWatchAsyncClientProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/GlobalMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/handler/TimerMetricsHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/handler/HandlerMetricsMetaDataBuilder.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/http/HttpRequestTimeMetricsMetaDataBuilder.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/batch/BatchTransactionTimeMetricsLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/CompositeCommitLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/BasicCommitLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/CommitLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/batch/BatchProcessedRecordCountMetricsLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/logging/LogCountMetrics.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/MetricsMetaData.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogPublisher.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/LoggerManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogLevel.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/dao/SqlTimeMetricsDaoContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/dao/SqlTimeMetricsDaoContextFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/DaoContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/jmx/JmxGaugeMetrics.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/jmx/MBeanAttributeCondition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/initialization/Initializable.html"
+  ],
+  "index": [
+    {
+      "id": "mbean-gauge-metrics",
+      "title": "任意のMBeanから取得した値をメトリクスとして計測する",
+      "hints": [
+        "JmxGaugeMetrics",
+        "DefaultMeterBinderListProvider",
+        "MetricsMetaData",
+        "MBeanAttributeCondition",
+        "LoggingMeterRegistry",
+        "HikariDataSource",
+        "MBean計測",
+        "コネクションプール監視",
+        "スレッドプール監視",
+        "メトリクス収集",
+        "registerMbeans"
+      ]
+    }
+  ],
+  "sections": {
+    "mbean-gauge-metrics": "**クラス**: :java:extdoc:`JmxGaugeMetrics <nablarch.integration.micrometer.instrument.binder.jmx.JmxGaugeMetrics>`\n\n`JmxGaugeMetrics`はGaugeを使ってMBeanから取得した値をメトリクスとして計測する。`MeterBinder`の実装クラスとして提供されている。\n\n:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>`を継承したクラスを作り、`JmxGaugeMetrics`を含む`MeterBinder`リストを返すように実装する。詳細は:ref:`micrometer_adaptor_declare_default_meter_binder_list_provider_as_component`を参照。\n\n**コンストラクタ引数:**\n\n| クラス | 役割 |\n|---|---|\n| :java:extdoc:`MetricsMetaData <nablarch.integration.micrometer.instrument.binder.MetricsMetaData>` | メトリクスの名前・説明・タグなどのメタ情報 |\n| :java:extdoc:`MBeanAttributeCondition <nablarch.integration.micrometer.instrument.binder.jmx.MBeanAttributeCondition>` | 収集するMBeanのオブジェクト名と属性名 |\n\n**Tomcatスレッドプール計測例:**\n\n```java\nmeterBinderList.add(new JmxGaugeMetrics(\n    new MetricsMetaData(\"thread.count.current\", \"Current thread count.\"),\n    new MBeanAttributeCondition(\"Catalina:type=ThreadPool,name=\\\"http-nio-8080\\\"\", \"currentThreadCount\")\n));\n```\n\n> **ヒント**: TomcatのMBeanのオブジェクト名・属性名は、JDKに付属のJConsoleで確認できる。JConsoleでTomcatを実行しているJVMに接続し「MBeans」タブを開くと、接続しているJVMで取得可能なMBeanの一覧が表示される。詳細は[モニタリングおよび管理ガイド](https://docs.oracle.com/javase/jp/17/management/using-jconsole.html#GUID-77416B38-7F15-4E35-B3D1-34BFD88350B5)を参照。\n\n以上の設定で`LoggingMeterRegistry`を使用した場合、以下のようにメトリクスが出力されることが確認できる。\n\n```\n24-Dec-2020 16:20:24.467 情報 [logging-metrics-publisher] io.micrometer.core.instrument.logging.LoggingMeterRegistry.lambda$publish$3 thread.count.current{} value=10\n```\n\n**HikariCPコネクションプール計測:**\n\nHikariCPのMBeanを有効にするには、`HikariDataSource`の`registerMbeans`プロパティに`true`を設定する。\n\n```xml\n<component name=\"dataSource\" class=\"com.zaxxer.hikari.HikariDataSource\" autowireType=\"None\">\n  <property name=\"driverClassName\" value=\"${nablarch.db.jdbcDriver}\"/>\n  <property name=\"jdbcUrl\"         value=\"${nablarch.db.url}\"/>\n  <property name=\"username\"        value=\"${nablarch.db.user}\"/>\n  <property name=\"password\"        value=\"${nablarch.db.password}\"/>\n  <property name=\"maximumPoolSize\" value=\"${nablarch.db.maxPoolSize}\"/>\n  <property name=\"registerMbeans\"  value=\"true\"/>\n</component>\n```\n\nコネクションプールの最大数とアクティブ数の計測例（オブジェクト名・属性名の仕様は[MBean (JMX) Monitoring and Management](https://github.com/brettwooldridge/HikariCP/wiki/MBean-(JMX)-Monitoring-and-Management)参照）:\n\n```java\n// 最大数\nmeterBinderList.add(new JmxGaugeMetrics(\n    new MetricsMetaData(\"db.pool.total\", \"Total DB pool count.\"),\n    new MBeanAttributeCondition(\"com.zaxxer.hikari:type=Pool (HikariPool-1)\", \"TotalConnections\")\n));\n// アクティブ数\nmeterBinderList.add(new JmxGaugeMetrics(\n    new MetricsMetaData(\"db.pool.active\", \"Active DB pool count.\"),\n    new MBeanAttributeCondition(\"com.zaxxer.hikari:type=Pool (HikariPool-1)\", \"ActiveConnections\")\n));\n```\n\n以上の設定で`LoggingMeterRegistry`を使用した場合、以下のようにメトリクスが出力されることが確認できる。\n\n```\n2020-12-24 16:37:57.143 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: db.pool.active{} value=0\n2020-12-24 16:37:57.143 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: db.pool.total{} value=5\n```"
+  }
+}

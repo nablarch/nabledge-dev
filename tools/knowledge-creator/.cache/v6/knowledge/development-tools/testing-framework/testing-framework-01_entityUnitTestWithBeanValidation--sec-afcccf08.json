@@ -1,0 +1,95 @@
+{
+  "id": "testing-framework-01_entityUnitTestWithBeanValidation--sec-afcccf08",
+  "title": "Bean Validationに対応したForm/Entityのクラス単体テスト",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/jakarta/validation/constraints/AssertTrue.html"
+  ],
+  "index": [
+    {
+      "id": "test-case-table",
+      "title": "テストケース表の作成（項目間精査）",
+      "hints": [
+        "AssertTrue",
+        "testShots",
+        "params",
+        "項目間精査",
+        "テストケース表",
+        "入力パラメータ表",
+        "埋め込み文字",
+        "special_notation_in_cell",
+        "interpolateKey",
+        "interpolateValue",
+        "expectedMessageId",
+        "propertyName"
+      ]
+    },
+    {
+      "id": "test-method-whole-form-validation",
+      "title": "テストメソッドの作成方法（項目間精査）",
+      "hints": [
+        "EntityTestSupport",
+        "testBeanValidation",
+        "testWholeFormValidation",
+        "項目間精査テスト",
+        "テストメソッド作成"
+      ]
+    },
+    {
+      "id": "excel-definition",
+      "title": "Excelへの定義（setter/getter）",
+      "hints": [
+        "testSetterAndGetter",
+        "getParamMap",
+        "getListParamMap",
+        "EntityTestSupport",
+        "setter/getterテスト",
+        "Entity単体テスト",
+        "型制限",
+        "BigDecimal",
+        "java.util.Date",
+        "valueOf",
+        "Integer",
+        "Long",
+        "java.sql.Date",
+        "java.sql.Timestamp"
+      ]
+    },
+    {
+      "id": "configuration-items",
+      "title": "設定項目一覧",
+      "hints": [
+        "EntityTestConfiguration",
+        "BasicJapaneseCharacterGenerator",
+        "BeanValidationTestStrategy",
+        "CharacterGenerator",
+        "maxMessageId",
+        "maxAndMinMessageId",
+        "underLimitMessageId",
+        "fixLengthMessageId",
+        "minMessageId",
+        "emptyInputMessageId",
+        "validationTestStrategy",
+        "characterGenerator"
+      ]
+    },
+    {
+      "id": "component-config-example",
+      "title": "コンポーネント設定ファイルの記述例",
+      "hints": [
+        "EntityTestConfiguration",
+        "BasicJapaneseCharacterGenerator",
+        "BeanValidationTestStrategy",
+        "nablarch.test.core.entity.EntityTestConfiguration",
+        "XML設定例"
+      ]
+    }
+  ],
+  "sections": {
+    "test-case-table": "単項目精査でテストできない :java:extdoc:`@AssertTrue <jakarta.validation.constraints.AssertTrue>` を指定した項目間精査などは、別途テストを作成する必要がある。\n\n**テストケース表**（ID: `testShots` 固定）:\n\n| カラム名 | 記載内容 |\n|---|---|\n| title | テストケースのタイトル |\n| description | テストケースの簡単な説明 |\n| group | Bean Validationのグループ（省略可） |\n| expectedMessageId[n] | 期待するメッセージ（nは1からの連番） |\n| propertyName[n] | 期待するプロパティ（nは1からの連番） |\n| interpolateKey[n]_[k] | 埋め込み文字のキー名（nはexpectedMessageIdのnに対応、kは1からの連番。省略可） |\n| interpolateValue[n]_[k] | 埋め込み文字の値（nはexpectedMessageIdのnに対応、kは1からの連番。省略可） |\n\n精査エラーが発生するプロパティ名とエラーメッセージのみ記載する（精査エラーが発生しないプロパティは記載しない）。複数メッセージを期待する場合は`expectedMessageId2`, `propertyName2`のように連番を増やす。複数メッセージの埋め込み文字は`interpolateKey2_1`, `interpolateValue2_1`のように連番を増やす。\n\n**入力パラメータ表**（ID: `params` 固定）:\n- テストケース表に対応する入力パラメータを1行ずつ記載する\n- 項目間精査で検証するプロパティの値を記載する。入力必須のプロパティが他に存在する場合も記載が必要\n\n> **補足**: :ref:`special_notation_in_cell` の記法を使用することで、効率的に入力値を作成できる。\n\n> **補足**: Form単体テストで別のFormのプロパティを指定する場合の記法:\n> - `sampleForm.systemUser.userId`（Formのプロパティを指定する場合）\n> - `sampleForm.userTelArray[0].telNoArea`（Form配列の先頭要素のプロパティを指定する場合）\n\n![項目間精査テストデータ例](assets/testing-framework-01_entityUnitTestWithBeanValidation--sec-afcccf08/entityUnitTest_validationTestData_BeanValidation.png)",
+    "test-method-whole-form-validation": "**メソッドシグネチャ**: `void testBeanValidation(Class entityClass, String sheetName)`\n\n```java\npublic class UserRegistrationFormTest extends EntityTestSupport {\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    @Test\n    public void testWholeFormValidation() {\n        String sheetName = \"testWholeFormValidation\";\n        testBeanValidation(TARGET_CLASS, sheetName);\n    }\n}\n```",
+    "excel-definition": "setter、getterテストの対象は**Formに定義されている全プロパティ**。setterで設定した値とgetterで取得した値が期待通りであることを確認する。\n\n> **補足**: Entityは自動生成されるため、アプリケーションで使用されないsetter/getterが生成される可能性がある。そのため、Entity単体テストでsetter/getterのテストを**必ず行うこと**。一般的なFormはリクエスト単体テストでsetter/getterのテストができるため、クラス単体テストでのテストは不要。\n\n![setter/getter Excelデータ定義](assets/testing-framework-01_entityUnitTestWithBeanValidation--sec-afcccf08/entityUnitTest_SetterAndGetter.png)\n\n**テストメソッド**: `testSetterAndGetter(Class entityClass, String sheetName, String id)` を呼び出す。\n\n```java\npublic class UserRegistrationFormTest extends EntityTestSupport {\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    @Test\n    public void testSetterAndGetter() {\n        String sheetName = \"testSetterAndGetter\";\n        String id = \"setterAndGetter\";\n        testSetterAndGetter(TARGET_CLASS, sheetName, id);\n    }\n}\n```\n\n> **補足**: `testSetterAndGetter`でテスト可能な型には制限がある。対象外の型は個別にsetterとgetterを呼び出してテストする必要がある。テスト可能な型:\n> - `String`およびその配列\n> - `BigDecimal`およびその配列\n> - `java.util.Date`およびその配列（Excelへはyyyy-MM-dd形式またはyyyy-MM-dd HH:mm:ss形式で記述）\n> - `valueOf(String)`メソッドを持つクラスおよびその配列（例: `Integer`, `Long`, `java.sql.Date`, `java.sql.Timestamp`）\n>\n> 非対応型（例: `List<String>`）は`getParamMap(sheetName, id)`でテストデータを取得し、個別にsetter/getterを呼び出してテストする（複数プロパティの場合は`getListParamMap`を使用）。\n\n![非対応型のExcelデータ定義例](assets/testing-framework-01_entityUnitTestWithBeanValidation--sec-afcccf08/entityUnitTest_SetterAndGetterOther.png)\n\n```java\n// 非対応型(List<String>)の個別テスト例\nMap<String, String[]> data = getParamMap(sheetName, \"setterAndGetterOther\");\nList<String> users = Arrays.asList(data.get(\"set\"));\nUserRegistrationForm form = new UserRegistrationForm();\nform.setUsers(users);\nassertEquals(form.getUsers(), Arrays.asList(data.get(\"get\")));\n```\n\n> **補足**: setterやgetterにロジックを記述した場合（例: setterは郵便番号上3桁と下4桁で受け取り、getterはまとめて7桁で返す）は、そのロジックを確認するテストケースを作成すること。\n\n![setter/getterロジックのExcelデータ定義例](assets/testing-framework-01_entityUnitTestWithBeanValidation--sec-afcccf08/entityUnitTest_SetterAndGetter_PostNo.png)",
+    "configuration-items": "**クラス**: `nablarch.test.core.entity.EntityTestConfiguration`\n\nコンポーネント設定ファイルで以下の値を設定する:\n\n| 設定項目名 | 説明 |\n|---|---|\n| maxMessageId | 最大文字列長超過時のメッセージのデフォルト値 |\n| maxAndMinMessageId | 最長最小文字列長範囲外のメッセージのデフォルト値（可変長、超過時） |\n| underLimitMessageId | 最長最小文字列長範囲外のメッセージのデフォルト値（可変長、不足時） |\n| fixLengthMessageId | 最長最小文字列長範囲外のメッセージのデフォルト値（固定長） |\n| minMessageId | 文字列長不足時のメッセージのデフォルト値（maxを省略したテストケースを作成する場合は**必須**） |\n| emptyInputMessageId | 未入力時のメッセージのデフォルト値 |\n| characterGenerator | 文字列生成クラス（`nablarch.test.core.util.generator.CharacterGenerator`の実装クラスを指定。通常は`nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator`を使用） |\n| validationTestStrategy | テスト用バリデーションストラテジ（Bean Validationを使用する場合は`nablarch.test.core.entity.BeanValidationTestStrategy`を**固定で指定**） |",
+    "component-config-example": "```xml\n<component name=\"entityTestConfiguration\" class=\"nablarch.test.core.entity.EntityTestConfiguration\">\n  <property name=\"maxMessageId\"        value=\"{nablarch.core.validation.ee.Length.max.message}\"/>\n  <property name=\"maxAndMinMessageId\"  value=\"{nablarch.core.validation.ee.Length.min.max.message}\"/>\n  <property name=\"fixLengthMessageId\"  value=\"{nablarch.core.validation.ee.Length.fixed.message}\"/>\n  <property name=\"underLimitMessageId\" value=\"{nablarch.core.validation.ee.Length.min.max.message}\"/>\n  <property name=\"minMessageId\"        value=\"{nablarch.core.validation.ee.Length.min.message}\"/>\n  <property name=\"emptyInputMessageId\" value=\"{nablarch.core.validation.ee.Required.message}\"/>\n  <property name=\"characterGenerator\">\n    <component name=\"characterGenerator\"\n               class=\"nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator\"/>\n  </property>\n  <property name=\"validationTestStrategy\">\n    <component class=\"nablarch.test.core.entity.BeanValidationTestStrategy\"/>\n  </property>\n</component>\n```"
+  }
+}

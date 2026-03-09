@@ -1,0 +1,52 @@
+{
+  "id": "about-nablarch-12--sec-d41d8cd9",
+  "title": "OIDCのIDトークンを用いた認証サンプル",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/12/index.html"
+  ],
+  "index": [
+    {
+      "id": "providing-package",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.common.oidc.verification",
+        "OIDCサンプルパッケージ",
+        "ソースコード"
+      ]
+    },
+    {
+      "id": "overview",
+      "title": "概要",
+      "hints": [
+        "OIDC認証",
+        "IDトークン検証",
+        "Amazon Cognito",
+        "Azure Active Directory B2C",
+        "RESTfulウェブサービス認証",
+        "ステートフルセッション管理",
+        "please.change.me.common.oidc.verification.cognito",
+        "please.change.me.common.oidc.verification.adb2c"
+      ]
+    },
+    {
+      "id": "configuration",
+      "title": "構成",
+      "hints": [
+        "IdTokenVerifier",
+        "SignatureAlgorithmProvider",
+        "CognitoIdTokenVerifier",
+        "CognitoSignatureAlgorithmProvider",
+        "CognitoRSAKeyProvider",
+        "LoginAction",
+        "LoginRequestForm",
+        "クラス構成",
+        "IDトークン検証クラス"
+      ]
+    }
+  ],
+  "sections": {
+    "providing-package": "[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-oidc)\n\n**パッケージ**: `please.change.me.common.oidc.verification`",
+    "overview": "OIDCで発行されるIDトークンを用いて認証を行うサンプル。\n\n想定構成:\n1. NablarchのRESTfulウェブサービスをバックエンドとして稼働\n2. IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信\n3. 認証成功時にログインセッションを確立し、認証後はステートフルなセッション管理\n4. 認証処理は業務アクションで実装\n\n対応サービス別パッケージ:\n- [Amazon Cognito ユーザープール](https://aws.amazon.com/jp/cognito/): `please.change.me.common.oidc.verification.cognito`\n- [Azure Active Directory B2C](https://learn.microsoft.com/ja-jp/azure/active-directory-b2c/): `please.change.me.common.oidc.verification.adb2c`\n\nadb2cパッケージ使用時は、対応するコンポーネントに読み替えること。\n\n> **補足**: 本サンプルは2024年9月時点のユーザープール・ADB2Cの仕様に合わせて実装。利用するサービスの最新仕様を必ず確認し、適宜カスタマイズすること。\n\n本サンプルの対象範囲はNablarchバックエンドアプリケーションのみ。フロントエンドでのIDトークン取得方法は対象外。\n\n![処理フロー全体像](assets/about-nablarch-12--sec-d41d8cd9/nablarch-example-oidc-scope.drawio.png)",
+    "configuration": "![クラス図](assets/about-nablarch-12--sec-d41d8cd9/nablarch-example-oidc-class.drawio.png)\n\n**インタフェース**:\n\n| インタフェース名 | 概要 |\n|---|---|\n| `IdTokenVerifier` | IDトークンが有効であるか検証する |\n| `SignatureAlgorithmProvider` | トークンの署名検証に使用するアルゴリズムを提供する |\n\n**クラス（コンポーネント）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `CognitoIdTokenVerifier` | CognitoのIDトークンが有効であるか検証する |\n| `CognitoSignatureAlgorithmProvider` | Cognitoのトークン署名検証に使用するアルゴリズムを提供する |\n| `CognitoRSAKeyProvider` | Cognitoのトークン検証に使用するRSA公開鍵を提供する |\n\n**クラス（業務アクション）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `LoginAction` | 認証処理の業務アクション |\n| `LoginRequestForm` | 認証のリクエスト情報を格納するフォーム |"
+  }
+}

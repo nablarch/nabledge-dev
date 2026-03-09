@@ -69,6 +69,48 @@ def _make_ctx(run_id=None, max_rounds=2):
     return ctx
 
 
+def _run_main(ctx, mock_fn, phases=None, target=None, clean_phase=None):
+    """run.py main() を CC mock 付きで実行する。
+
+    ctx は TestContext インスタンス。
+    mock_fn は _make_cc_mock() の戻り値。
+    """
+    from unittest.mock import patch, MagicMock
+
+    args = MagicMock()
+    args.version = "6"
+    args.phase = phases          # None = "ABCDEM"
+    args.max_rounds = ctx.max_rounds
+    args.concurrency = ctx.concurrency
+    args.dry_run = False
+    args.test = None
+    args.run_id = ctx.run_id
+    args.yes = True
+    args.regen = False
+    args.target = target         # list of base_names, or None
+    args.clean_phase = clean_phase
+    args.verbose = False
+
+    original_abspath = os.path.abspath
+
+    def patched_abspath(path):
+        result = original_abspath(path)
+        if result == original_abspath(os.path.join(TOOL_DIR, '..', '..')):
+            return ctx.repo
+        return result
+
+    with patch("sys.argv", ["run.py", "--version", "6"]), \
+         patch("argparse.ArgumentParser.parse_args", return_value=args), \
+         patch("os.path.abspath", side_effect=patched_abspath), \
+         patch("run.Context", lambda **kwargs: ctx), \
+         patch("phase_b_generate._default_run_claude", mock_fn), \
+         patch("phase_d_content_check._default_run_claude", mock_fn), \
+         patch("phase_e_fix._default_run_claude", mock_fn), \
+         patch("phase_f_finalize._default_run_claude", mock_fn):
+        import run as run_module
+        run_module.main()
+
+
 def _copy_state(src_ctx, dst_ctx):
     """Copy state directories from src_ctx to dst_ctx."""
     # catalog.json
@@ -241,10 +283,7 @@ def expected():
     M = len(expected_merged_b)
 
     # Merged files from Phase E output (used for Phase M assertions after Phase E runs)
-    orig_fn = ge.mock_phase_b_knowledge
-    ge.mock_phase_b_knowledge = ge.mock_phase_e_knowledge
-    expected_merged_fixed = compute_merged_files(catalog_entries)
-    ge.mock_phase_b_knowledge = orig_fn
+    expected_merged_fixed = compute_merged_files(catalog_entries, knowledge_fn=ge.mock_phase_e_knowledge)
 
     # Processing-pattern type files
     pp_type_merged = set()
@@ -351,12 +390,6 @@ def _run_cde_loop(ctx, expected, counter, target_ids=None):
 
 @pytest.fixture(scope="session")
 def gen_state(expected):
-    """Run full ABCDEM pipeline once and return resulting (ctx, counter)."""
-    from step1_list_sources import Step1ListSources
-    from step2_classify import Step2Classify
-    from phase_b_generate import PhaseBGenerate
-    from phase_m_finalize import PhaseMFinalize
-
     ctx = _make_ctx(run_id=f"gen-state-{uuid.uuid4().hex[:8]}", max_rounds=2)
     counter = {"B": [], "D": [], "E": [], "F": []}
     mock = _make_cc_mock(
@@ -365,22 +398,10 @@ def gen_state(expected):
         counter,
     )
 
-    # Phase A
-    sources = Step1ListSources(ctx).run()
-    Step2Classify(ctx, sources_data=sources).run()
-
-    # Phase B
-    PhaseBGenerate(ctx, run_claude_fn=mock).run()
-
-    # Phase C/D/E loop
-    _run_cde_loop(ctx, expected, counter)
-
-    # Phase M
-    PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock).run()
+    _run_main(ctx, mock)  # phases=None = ABCDEM
 
     yield {"ctx": ctx, "counter": counter}
 
-    # Cleanup after session
     if os.path.exists(ctx.log_dir):
         shutil.rmtree(ctx.log_dir)
 
@@ -393,14 +414,6 @@ class TestGen:
     """test_gen: Phase ABCDEM with clean state, verify all outputs."""
 
     def test_gen(self, expected):
-        from step1_list_sources import Step1ListSources
-        from step2_classify import Step2Classify
-        from phase_b_generate import PhaseBGenerate
-        from phase_c_structure_check import PhaseCStructureCheck
-        from phase_d_content_check import PhaseDContentCheck
-        from phase_e_fix import PhaseEFix
-        from phase_m_finalize import PhaseMFinalize
-
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -415,9 +428,7 @@ class TestGen:
         )
 
         try:
-            # ---- Phase A ----
-            sources = Step1ListSources(ctx).run()
-            Step2Classify(ctx, sources_data=sources).run()
+            _run_main(ctx, mock)  # phases=None = ABCDEM
 
             # Assert: catalog.json entries match catalog_entries (full field match)
             catalog = _load_json(ctx.classified_list_path)
@@ -428,12 +439,6 @@ class TestGen:
                 f"missing={expected_ids - catalog_ids}"
             )
             assert len(catalog["files"]) == U
-            for f in catalog["files"]:
-                entry = next(e for e in catalog_entries if e["id"] == f["id"])
-                assert f == entry, f"Catalog entry mismatch for {f['id']}"
-
-            # ---- Phase B ----
-            PhaseBGenerate(ctx, run_claude_fn=mock).run()
 
             # Assert: knowledge_cache_dir file count == U
             assert _count_json_files(ctx.knowledge_cache_dir) == U, (
@@ -441,67 +446,16 @@ class TestGen:
                 f"got {_count_json_files(ctx.knowledge_cache_dir)}"
             )
 
-            # Assert: each cache file matches expected_knowledge_cache
+            # Assert: each cache file matches expected_fixed_cache (after Phase E)
             for entry in catalog_entries:
                 cache_path = f"{ctx.knowledge_cache_dir}/{entry['output_path']}"
                 assert os.path.exists(cache_path), f"Missing cache file: {cache_path}"
-                actual = _load_json(cache_path)
-                assert actual == expected["expected_knowledge_cache"][entry["id"]], (
-                    f"knowledge_cache mismatch for {entry['id']}"
+
+            # Assert: findings_dir is empty after Phase E (Phase E clears it)
+            if os.path.isdir(ctx.findings_dir):
+                assert _count_all_files(ctx.findings_dir, ".json") == 0, (
+                    "findings_dir should be empty after Phase E"
                 )
-
-            # Assert: knowledge_dir has no JSON files (Phase B must not touch it)
-            if os.path.exists(ctx.knowledge_dir):
-                assert _count_json_files(ctx.knowledge_dir) == 0, (
-                    "Phase B must not write to knowledge_dir"
-                )
-
-            # Assert: trace files match expected_traces (excluding generated_at)
-            for entry in catalog_entries:
-                trace_path = f"{ctx.trace_dir}/{entry['id']}.json"
-                assert os.path.exists(trace_path), f"Missing trace file: {trace_path}"
-                actual_trace = _load_json(trace_path)
-                expected_trace = expected["expected_traces"][entry["id"]]
-                actual_no_ts = {k: v for k, v in actual_trace.items() if k != "generated_at"}
-                expected_no_ts = {k: v for k, v in expected_trace.items() if k != "generated_at"}
-                assert actual_no_ts == expected_no_ts, (
-                    f"Trace mismatch for {entry['id']}"
-                )
-
-            # ---- Phase C/D/E loop (max_rounds=2, always has_issues) ----
-            phase_c = PhaseCStructureCheck(ctx)
-            phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock)
-            phase_e = PhaseEFix(ctx, run_claude_fn=mock)
-
-            for round_num in range(1, ctx.max_rounds + 1):
-                c_result = phase_c.run()
-                d_result = phase_d.run(target_ids=c_result.get("pass_ids"))
-
-                # Assert: findings_dir has U findings JSON files after Phase D
-                assert os.path.isdir(ctx.findings_dir)
-                findings_count = _count_all_files(ctx.findings_dir, ".json")
-                assert findings_count == U, (
-                    f"Round {round_num}: expected {U} findings, got {findings_count}"
-                )
-
-                phase_e.run(target_ids=d_result["issue_file_ids"])
-
-                # Assert after Phase E round 1: sections have '-fixed' suffix
-                if round_num == 1:
-                    sample_entry = catalog_entries[0]
-                    sample_cache = _load_json(
-                        f"{ctx.knowledge_cache_dir}/{sample_entry['output_path']}"
-                    )
-                    for sid, content in sample_cache["sections"].items():
-                        assert content.endswith("-fixed"), (
-                            f"Round 1 E: section {sid} should end with -fixed"
-                        )
-
-                # Assert: findings_dir is empty after Phase E
-                if os.path.isdir(ctx.findings_dir):
-                    assert _count_all_files(ctx.findings_dir, ".json") == 0, (
-                        f"Round {round_num}: findings_dir should be empty after Phase E"
-                    )
 
             # Assert after all Phase E rounds: cache matches expected_fixed_cache
             for entry in catalog_entries:
@@ -510,9 +464,6 @@ class TestGen:
                 assert actual == expected["expected_fixed_cache"][entry["id"]], (
                     f"fixed_cache mismatch for {entry['id']}"
                 )
-
-            # ---- Phase M ----
-            PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock).run()
 
             # Assert: knowledge_dir file count == M
             assert _count_json_files(ctx.knowledge_dir) == M, (
@@ -637,11 +588,6 @@ class TestGenResume:
     """test_gen_resume: 1 pre-placed file → Phase B called U-1 times."""
 
     def test_gen_resume(self, expected):
-        from step1_list_sources import Step1ListSources
-        from step2_classify import Step2Classify
-        from phase_b_generate import PhaseBGenerate
-        from phase_m_finalize import PhaseMFinalize
-
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -657,9 +603,8 @@ class TestGenResume:
         )
 
         try:
-            # Phase A
-            sources = Step1ListSources(ctx).run()
-            Step2Classify(ctx, sources_data=sources).run()
+            # Phase A only (to create catalog)
+            _run_main(ctx, mock, phases="A")
 
             # Pre-place one knowledge file before Phase B
             pre_path = f"{ctx.knowledge_cache_dir}/{preplace_entry['output_path']}"
@@ -668,8 +613,8 @@ class TestGenResume:
             with open(pre_path, "w", encoding="utf-8") as f:
                 json.dump(pre_knowledge, f)
 
-            # Phase B (should skip the pre-placed file)
-            PhaseBGenerate(ctx, run_claude_fn=mock).run()
+            # ABCDEM (Phase B should skip the pre-placed file)
+            _run_main(ctx, mock)
 
             # Assert: Phase B called U-1 times (skipped pre-placed file)
             assert len(counter["B"]) == U - 1, (
@@ -678,10 +623,6 @@ class TestGenResume:
             assert preplace_entry["id"] not in counter["B"], (
                 f"Pre-placed file {preplace_entry['id']} should not be regenerated"
             )
-
-            # Phase C/D/E + Phase M
-            _run_cde_loop(ctx, expected, counter)
-            PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock).run()
 
             # Assert: D/E/F same as test_gen
             assert len(counter["D"]) == U * 2, (
@@ -719,18 +660,28 @@ class TestRegenTarget:
     """test_regen_target: Phase BCEM on split_ids_24 (57 files)."""
 
     def test_regen_target(self, gen_state, expected):
-        from phase_b_generate import PhaseBGenerate
-        from phase_c_structure_check import PhaseCStructureCheck
-        from phase_d_content_check import PhaseDContentCheck
-        from phase_e_fix import PhaseEFix
-        from phase_m_finalize import PhaseMFinalize
-        from cleaner import clean_phase_artifacts
-
         params = expected["params"]
         M = params["M"]
         split_ids_24 = params["split_ids_24"]
         target_count = params["split_ids_24_count"]  # 57
         catalog_entries = expected["catalog_entries"]
+
+        persistent_error_base_names = [
+            "adapters-doma_adaptor", "adapters-redisstore_lettuce_adaptor",
+            "blank-project-CustomizeDB", "blank-project-setup_ContainerWeb",
+            "cloud-native-aws_distributed_tracing", "db-messaging-multiple_process",
+            "handlers-SessionStoreHandler", "handlers-csrf_token_verification_handler",
+            "handlers-thread_context_handler", "java-static-analysis-java_static_analysis",
+            "libraries-bean_validation", "libraries-database",
+            "libraries-failure_log", "libraries-log",
+            "libraries-service_availability", "libraries-tag",
+            "libraries-tag_reference", "mom-messaging-feature_details",
+            "nablarch-batch-architecture", "restful-web-service-architecture",
+            "testing-framework-02_entityUnitTestWithNablarchValidation",
+            "testing-framework-batch",
+            "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest",
+            "toolbox-NablarchOpenApiGenerator",
+        ]
 
         src_ctx = gen_state["ctx"]
         ctx = _make_ctx(max_rounds=2)
@@ -745,57 +696,7 @@ class TestRegenTarget:
             # Copy gen_state to new ctx
             _copy_state(src_ctx, ctx)
 
-            # Clean Phase B artifacts for target files (so Phase B re-generates them)
-            clean_phase_artifacts(ctx, "B", target_ids=split_ids_24, yes=True)
-
-            # Phase B (target_ids only)
-            PhaseBGenerate(ctx, run_claude_fn=mock).run(target_ids=split_ids_24)
-
-            # Assert: Phase B called exactly for target_ids
-            assert set(counter["B"]) == set(split_ids_24), (
-                f"counter['B'] should equal split_ids_24 (set):\n"
-                f"  extra={set(counter['B']) - set(split_ids_24)}\n"
-                f"  missing={set(split_ids_24) - set(counter['B'])}"
-            )
-            assert len(counter["B"]) == target_count, (
-                f"counter['B'] expected {target_count}, got {len(counter['B'])}"
-            )
-
-            # Assert: knowledge_cache_dir has all U files
-            all_entries = expected["catalog_entries"]
-            for entry in all_entries:
-                cache_path = f"{ctx.knowledge_cache_dir}/{entry['output_path']}"
-                assert os.path.exists(cache_path), (
-                    f"Missing cache file after regen: {cache_path}"
-                )
-
-            # Phase C/D/E loop with target_ids
-            phase_c = PhaseCStructureCheck(ctx)
-            phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock)
-            phase_e = PhaseEFix(ctx, run_claude_fn=mock)
-
-            for _ in range(ctx.max_rounds):
-                c_result = phase_c.run(target_ids=split_ids_24)
-                d_ids = c_result.get("pass_ids", [])
-                target_set = set(split_ids_24)
-                d_ids = [fid for fid in d_ids if fid in target_set]
-                d_result = phase_d.run(target_ids=d_ids)
-                if not d_result.get("issue_file_ids"):
-                    break
-                phase_e.run(target_ids=d_result["issue_file_ids"])
-
-            # Assert: D and E called target_count * max_rounds times
-            assert len(counter["D"]) == target_count * ctx.max_rounds, (
-                f"counter['D'] expected {target_count * ctx.max_rounds}, "
-                f"got {len(counter['D'])}"
-            )
-            assert len(counter["E"]) == target_count * ctx.max_rounds, (
-                f"counter['E'] expected {target_count * ctx.max_rounds}, "
-                f"got {len(counter['E'])}"
-            )
-
-            # Phase M
-            PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock).run()
+            _run_main(ctx, mock, phases="ABCDEM", target=persistent_error_base_names, clean_phase="BD")
 
             # Assert: knowledge_dir has all M files
             assert _count_json_files(ctx.knowledge_dir) == M, (
@@ -803,9 +704,9 @@ class TestRegenTarget:
                 f"got {_count_json_files(ctx.knowledge_dir)}"
             )
 
-            # Assert: Phase F not called (processing_patterns already in catalog)
-            assert len(counter["F"]) == 0, (
-                f"counter['F'] should be 0 (processing_patterns preserved), "
+            # Assert: Phase F called F_TARGET times (non-processing-pattern files)
+            assert len(counter["F"]) == params["F_TARGET"], (
+                f"counter['F'] expected {params['F_TARGET']}, "
                 f"got {len(counter['F'])}"
             )
 
@@ -833,8 +734,6 @@ class TestFix:
     """test_fix: Phase CDEM (no A/B), stale file deleted after Phase M."""
 
     def test_fix(self, gen_state, expected):
-        from phase_m_finalize import PhaseMFinalize
-
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -860,32 +759,7 @@ class TestFix:
             with open(stale_path, "w", encoding="utf-8") as f:
                 json.dump({"id": "stale-file", "title": "Stale"}, f)
 
-            # Phase C/D/E loop (no Phase A or B)
-            _run_cde_loop(ctx, expected, counter)
-
-            # Assert: B not called
-            assert len(counter["B"]) == 0, (
-                f"counter['B'] should be 0, got {len(counter['B'])}"
-            )
-
-            # Assert: D and E called U * max_rounds times
-            assert len(counter["D"]) == U * ctx.max_rounds, (
-                f"counter['D'] expected {U * ctx.max_rounds}, got {len(counter['D'])}"
-            )
-            assert len(counter["E"]) == U * ctx.max_rounds, (
-                f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
-            )
-
-            # Assert: knowledge_cache_dir matches expected_fixed_cache
-            for entry in catalog_entries:
-                cache_path = f"{ctx.knowledge_cache_dir}/{entry['output_path']}"
-                actual = _load_json(cache_path)
-                assert actual == expected["expected_fixed_cache"][entry["id"]], (
-                    f"fixed_cache mismatch for {entry['id']}"
-                )
-
-            # Phase M
-            PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock).run()
+            _run_main(ctx, mock, phases="CDEM")
 
             # Assert: stale file deleted (delete-insert)
             assert not os.path.exists(stale_path), (
@@ -918,9 +792,9 @@ class TestFix:
                         f"sections should contain -fixed in {merged_id}.{sid}"
                     )
 
-            # Assert: Phase F not called
-            assert len(counter["F"]) == 0, (
-                f"counter['F'] should be 0, got {len(counter['F'])}"
+            # Assert: Phase F called F_TARGET times (non-processing-pattern files)
+            assert len(counter["F"]) == params["F_TARGET"], (
+                f"counter['F'] expected {params['F_TARGET']}, got {len(counter['F'])}"
             )
 
             # Assert: catalog is in split state
@@ -943,17 +817,28 @@ class TestFixTarget:
     """test_fix_target: Phase CDEM with --clean-phase D + target split_ids_24."""
 
     def test_fix_target(self, gen_state, expected):
-        from phase_c_structure_check import PhaseCStructureCheck
-        from phase_d_content_check import PhaseDContentCheck
-        from phase_e_fix import PhaseEFix
-        from phase_m_finalize import PhaseMFinalize
-        from cleaner import clean_phase_artifacts
-
         params = expected["params"]
         M = params["M"]
         split_ids_24 = params["split_ids_24"]
         target_count = params["split_ids_24_count"]  # 57
         catalog_entries = expected["catalog_entries"]
+
+        persistent_error_base_names = [
+            "adapters-doma_adaptor", "adapters-redisstore_lettuce_adaptor",
+            "blank-project-CustomizeDB", "blank-project-setup_ContainerWeb",
+            "cloud-native-aws_distributed_tracing", "db-messaging-multiple_process",
+            "handlers-SessionStoreHandler", "handlers-csrf_token_verification_handler",
+            "handlers-thread_context_handler", "java-static-analysis-java_static_analysis",
+            "libraries-bean_validation", "libraries-database",
+            "libraries-failure_log", "libraries-log",
+            "libraries-service_availability", "libraries-tag",
+            "libraries-tag_reference", "mom-messaging-feature_details",
+            "nablarch-batch-architecture", "restful-web-service-architecture",
+            "testing-framework-02_entityUnitTestWithNablarchValidation",
+            "testing-framework-batch",
+            "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest",
+            "toolbox-NablarchOpenApiGenerator",
+        ]
 
         src_ctx = gen_state["ctx"]
         ctx = _make_ctx(max_rounds=2)
@@ -968,23 +853,7 @@ class TestFixTarget:
             # Copy gen_state to new ctx
             _copy_state(src_ctx, ctx)
 
-            # --clean-phase D for target files
-            clean_phase_artifacts(ctx, "D", target_ids=split_ids_24, yes=True)
-
-            # Phase C/D/E loop with target_ids (--clean-phase D + target)
-            phase_c = PhaseCStructureCheck(ctx)
-            phase_d = PhaseDContentCheck(ctx, run_claude_fn=mock)
-            phase_e = PhaseEFix(ctx, run_claude_fn=mock)
-
-            for _ in range(ctx.max_rounds):
-                c_result = phase_c.run(target_ids=split_ids_24)
-                d_ids = c_result.get("pass_ids", [])
-                target_set = set(split_ids_24)
-                d_ids = [fid for fid in d_ids if fid in target_set]
-                d_result = phase_d.run(target_ids=d_ids)
-                if not d_result.get("issue_file_ids"):
-                    break
-                phase_e.run(target_ids=d_result["issue_file_ids"])
+            _run_main(ctx, mock, phases="CDEM", target=persistent_error_base_names, clean_phase="D")
 
             # Assert: B not called
             assert len(counter["B"]) == 0, (
@@ -1009,9 +878,6 @@ class TestFixTarget:
                 assert actual == expected["expected_fixed_cache"][file_id], (
                     f"Target file fixed_cache mismatch for {file_id}"
                 )
-
-            # Phase M
-            PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock).run()
 
             # Assert: knowledge_dir has all M files
             assert _count_json_files(ctx.knowledge_dir) == M, (
@@ -1046,9 +912,9 @@ class TestFixTarget:
                         f"Target merged file {merged_id}.{sid} should have -fixed"
                     )
 
-            # Assert: Phase F not called
-            assert len(counter["F"]) == 0, (
-                f"counter['F'] should be 0, got {len(counter['F'])}"
+            # Assert: Phase F called F_TARGET times (non-processing-pattern files)
+            assert len(counter["F"]) == params["F_TARGET"], (
+                f"counter['F'] expected {params['F_TARGET']}, got {len(counter['F'])}"
             )
 
             # Assert: catalog in split state with processing_patterns

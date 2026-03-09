@@ -1,0 +1,90 @@
+{
+  "id": "libraries-universal_dao--sec-90be4121",
+  "title": "ユニバーサルDAO",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/database/universal_dao.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/BasicDaoContextFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/DeferredEntityList.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/Pagination.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/EntityList.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/dialect/Dialect.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/interceptor/OnError.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/transaction/SimpleDbTransactionManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/connection/ConnectionFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/transaction/TransactionFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.Transaction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/sql/DatabaseMetaData.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/DatabaseMetaDataExtractor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/dialect/H2Dialect.html"
+  ],
+  "index": [
+    {
+      "id": "binary-data-registration",
+      "title": "データサイズの大きいバイナリデータを登録（更新）する",
+      "hints": [
+        "BLOBデータ登録",
+        "バイナリデータ",
+        "大容量バイナリデータ",
+        "Oracle BLOB",
+        "database-binary_column"
+      ]
+    },
+    {
+      "id": "text-data-registration",
+      "title": "データサイズの大きいテキストデータを登録（更新）する",
+      "hints": [
+        "CLOBデータ登録",
+        "テキストデータ",
+        "大容量テキストデータ",
+        "Oracle CLOB",
+        "database-clob_column"
+      ]
+    },
+    {
+      "id": "independent-transaction",
+      "title": "現在のトランザクションとは異なるトランザクションで実行する",
+      "hints": [
+        "SimpleDbTransactionManager",
+        "UniversalDao.Transaction",
+        "個別トランザクション",
+        "別トランザクション実行",
+        "connectionFactory",
+        "transactionFactory",
+        "dbTransactionName",
+        "ConnectionFactory",
+        "TransactionFactory"
+      ]
+    },
+    {
+      "id": "jakarta-persistence-annotations",
+      "title": "Entityに使用できるJakarta Persistenceアノテーション",
+      "hints": [
+        "@Entity",
+        "@Table",
+        "@Access",
+        "@Column",
+        "@Id",
+        "@Version",
+        "@Temporal",
+        "@GeneratedValue",
+        "@SequenceGenerator",
+        "@TableGenerator",
+        "楽観ロック",
+        "自動採番",
+        "シーケンス採番",
+        "テーブル採番",
+        "sequenceName",
+        "pkColumnValue",
+        "generator",
+        "strategy"
+      ]
+    }
+  ],
+  "sections": {
+    "binary-data-registration": "データサイズの大きいバイナリデータ（例：OracleのBLOB）は、ユニバーサルDAOではデータをすべてメモリに展開しないと登録・更新できない。データベースが提供する機能を使ってファイルなどから直接登録・更新すること。\n\n詳細: :ref:`database-binary_column`",
+    "text-data-registration": "データサイズの大きいテキストデータ（例：OracleのCLOB）は、ユニバーサルDAOではデータをすべてメモリに展開しないと登録・更新できない。データベースが提供する機能を使ってファイルなどから直接登録・更新すること。\n\n詳細: :ref:`database-clob_column`",
+    "independent-transaction": "現在のトランザクションとは異なるトランザクションでユニバーサルDAOを実行する手順:\n\n1. コンポーネント設定ファイルに :java:extdoc:`SimpleDbTransactionManager <nablarch.core.db.transaction.SimpleDbTransactionManager>` を定義する\n2. :java:extdoc:`UniversalDao.Transaction <nablarch.common.dao.UniversalDao.Transaction>` を継承したクラスを作成し、`execute()` メソッドに処理を実装して呼び出す\n\n> **重要**: :java:extdoc:`SimpleDbTransactionManager <nablarch.core.db.transaction.SimpleDbTransactionManager>` を直接使わず、 :java:extdoc:`UniversalDao.Transaction <nablarch.common.dao.UniversalDao.Transaction>` でトランザクション制御を行うこと。\n\n## コンポーネント設定\n\n| プロパティ名 | 型 | 必須 | 説明 |\n|---|---|---|---|\n| connectionFactory | ConnectionFactory | ○ | :ref:`database-connect` 参照 |\n| transactionFactory | TransactionFactory | ○ | :ref:`transaction-database` 参照 |\n| dbTransactionName | String | | トランザクション識別名 |\n\n```xml\n<component name=\"find-persons-transaction\"\n    class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n  <property name=\"connectionFactory\" ref=\"connectionFactory\" />\n  <property name=\"transactionFactory\" ref=\"transactionFactory\" />\n  <property name=\"dbTransactionName\" value=\"update-login-failed-count-transaction\" />\n</component>\n```\n\n## 実装例\n\n:java:extdoc:`UniversalDao.Transaction <nablarch.common.dao.UniversalDao.Transaction>` を継承し `execute()` に処理を実装する。`super()` にコンポーネント定義名またはSimpleDbTransactionManagerオブジェクトを指定する。正常終了でコミット、例外・エラーでロールバック。\n\n```java\nprivate static final class FindPersonsTransaction extends UniversalDao.Transaction {\n    private EntityList<Person> persons;\n\n    FindPersonsTransaction() {\n        super(\"find-persons-transaction\");\n    }\n\n    @Override\n    protected void execute() {\n        persons = UniversalDao.findAllBySqlFile(Person.class, \"FIND_PERSONS\");\n    }\n\n    public EntityList<Person> getPersons() {\n        return persons;\n    }\n}\n\n// 生成すると別のトランザクションで実行される。\nFindPersonsTransaction findPersonsTransaction = new FindPersonsTransaction();\n\n// 結果を取得する。\nEntityList<Person> persons = findPersonsTransaction.getPersons();\n```",
+    "jakarta-persistence-annotations": "> **重要**: ここに記載のないアノテーション及び属性を使用しても機能しない。\n\nフィールドにアノテーションを設定する場合の制約:\n- `@Access` で明示的にフィールド指定した場合のみフィールドのアノテーションを参照する\n- UniversalDaoでは値の取得・設定はプロパティ経由のため、getterとsetterは必ず作成すること\n- フィールド名とプロパティ名（get○○/set○○の○○部分）を必ず同じにすること\n\n> **補足**: LombokなどのBoilerplate生成ライブラリを使う場合、フィールドにアノテーションを設定することでgetterの自作が不要になる。\n\n## クラスに設定するアノテーション\n\n**アノテーション**: `@Entity` (`jakarta.persistence.Entity`)\n\nテーブルに対応したEntityクラスに設定。クラス名（パスカルケース）をスネークケース（全て大文字）に変換したものがテーブル名（`Book` → `BOOK`、`BookAuthor` → `BOOK_AUTHOR`）。テーブル名を導出できない場合は `@Table` で明示指定すること。\n\n**アノテーション**: `@Table` (`jakarta.persistence.Table`)\n\n- `name` 属性: テーブル名を明示指定\n- `schema` 属性: スキーマ名を修飾子として指定（例: `schema=\"work\"`、テーブル名 `users_work` → `work.users_work` にアクセス）\n\n**アノテーション**: `@Access` (`jakarta.persistence.Access`)\n\n明示的にフィールド指定した場合のみフィールドのアノテーションを参照する。\n\n## getterまたはフィールドに設定するアノテーション\n\n**アノテーション**: `@Column` (`jakarta.persistence.Column`)\n\n- `name` 属性: カラム名を明示指定。未設定時はプロパティ名から `@Entity` と同様の変換（パスカルケース→スネークケース大文字）でカラム名を導出\n\n**アノテーション**: `@Id` (`jakarta.persistence.Id`)\n\n主キーに設定。複合主キーの場合は複数のgetter/フィールドに設定。\n\n**アノテーション**: `@Version` (`jakarta.persistence.Version`)\n\n楽観ロック用バージョンカラムに設定。数値型のプロパティのみ指定可（文字列型では正しく動作しない）。更新処理時にバージョンカラムが条件に自動追加され楽観ロックが実行される。Entity内に1つのみ指定可。\n\n**アノテーション**: `@Temporal` (`jakarta.persistence.Temporal`)\n\n`java.util.Date` および `java.util.Calendar` 型をDBにマッピングする方法を指定。`value` 属性に指定されたDB型にJavaオブジェクトを変換してDBに登録。\n\n**アノテーション**: `@GeneratedValue` (`jakarta.persistence.GeneratedValue`)\n\n自動採番値を登録。`strategy` 属性に採番方法を設定する。`AUTO` の採番方法選択ルール:\n1. `generator` 属性に対応するGenerator設定がある場合、そのGeneratorを使用\n2. `generator` 未設定または対応Generator設定なしの場合、Dialectを元にIDENTITY→SEQUENCE→TABLEの順で選択\n\n`generator` 属性に任意の名前を設定する。シーケンスオブジェクト名やテーブル採番レコード識別値を取得できない場合、テーブル名と採番カラム名から導出（例: テーブル `USER`、カラム `ID` → `USER_ID`）。\n\n**アノテーション**: `@SequenceGenerator` (`jakarta.persistence.SequenceGenerator`)\n\nシーケンス採番を使用する場合に設定。\n- `name` 属性: `@GeneratedValue` の `generator` 属性と同じ値を設定\n- `sequenceName` 属性: DBに作成されているシーケンスオブジェクト名を設定\n- 別途 :ref:`採番用の設定 <generator_dao_setting>` が必要\n\n**アノテーション**: `@TableGenerator` (`jakarta.persistence.TableGenerator`)\n\nテーブル採番を使用する場合に設定。\n- `name` 属性: `@GeneratedValue` の `generator` 属性と同じ値を設定\n- `pkColumnValue` 属性: 採番テーブルのレコードを識別するための値を設定\n- 別途 :ref:`採番用の設定 <generator_dao_setting>` が必要"
+  }
+}

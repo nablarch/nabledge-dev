@@ -1,0 +1,126 @@
+{
+  "id": "blank-project-MavenModuleStructures--sec-63b744b8",
+  "title": "Mavenアーキタイプの構成",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/blank_project/MavenModuleStructures/index.html"
+  ],
+  "index": [
+    {
+      "id": "release-to-production",
+      "title": "本番環境へのリリースについて",
+      "hints": [
+        "バッチアプリケーション",
+        "本番リリース",
+        "zipファイル",
+        "実行可能jar",
+        "依存ライブラリ",
+        "targetディレクトリ"
+      ]
+    },
+    {
+      "id": "container-batch-dbless-project-structure",
+      "title": "pj-container-batch-dblessプロジェクト構成",
+      "hints": [
+        "pj-container-batch-dbless",
+        "DBなし",
+        "バッチ",
+        "Dockerイメージ",
+        "DB接続なし"
+      ]
+    },
+    {
+      "id": "profile-list",
+      "title": "プロファイル一覧",
+      "hints": [
+        "プロファイル",
+        "dev",
+        "prod",
+        "mvn package",
+        "activeByDefault",
+        "コンテナ環境変数",
+        "本番用WAR",
+        "-P prod",
+        "-DskipTests"
+      ]
+    },
+    {
+      "id": "build-phase-goals",
+      "title": "ビルドフェーズに追加されているゴール一覧",
+      "hints": [
+        "JaCoCo",
+        "jacoco:prepare-agent",
+        "jacoco:prepare-agent-integration",
+        "ビルドフェーズ",
+        "gsp-dba-maven-plugin",
+        "カバレッジ",
+        "initialize",
+        "pre-integration-test"
+      ]
+    },
+    {
+      "id": "compile-settings",
+      "title": "コンパイルに関する設定",
+      "hints": [
+        "コンパイル設定",
+        "pom.xml",
+        "Javaバージョン",
+        "エンコーディング",
+        "JDBCドライバ"
+      ]
+    },
+    {
+      "id": "tools-settings",
+      "title": "ツールの設定（各プロジェクト共通）",
+      "hints": [
+        "ツール設定",
+        "pom.xml",
+        "gsp-dba-maven-plugin",
+        "カバレッジ設定",
+        "firstStepBuiltInTools"
+      ]
+    },
+    {
+      "id": "nablarch-version-change",
+      "title": "使用するNablarchのバージョンを変更する場合の例",
+      "hints": [
+        "nablarch-bom",
+        "Nablarchバージョン変更",
+        "dependencyManagement",
+        "6u2",
+        "com.nablarch.profile"
+      ]
+    },
+    {
+      "id": "dependency-add",
+      "title": "依存ライブラリ追加の例",
+      "hints": [
+        "依存ライブラリ追加",
+        "nablarch-common-encryption",
+        "scope",
+        "Maven依存性",
+        "com.nablarch.framework"
+      ]
+    },
+    {
+      "id": "project-division-problems",
+      "title": "【参考】プロジェクト分割方針",
+      "hints": [
+        "プロジェクト過度分割",
+        "ビルド手順複雑化",
+        "結合テスト管理",
+        "プロジェクト分割問題点"
+      ]
+    }
+  ],
+  "sections": {
+    "release-to-production": "バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルには、実行可能jarと依存ライブラリが格納されている。\n\n本番環境へのリリース手順:\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n```bash\njava -jar <実行可能jarファイル名> ^\n    -diConfig <コンポーネント設定ファイル> ^\n    -requestPath <リクエストパス> ^\n    -userId <ユーザID>\n```",
+    "container-batch-dbless-project-structure": "`pj-container-batch-dbless` はDBに接続しないNablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。\n\n:ref:`firstStepContainerBatchProjectStructure` からDB関連のディレクトリ及びファイルを除いただけであるため省略。",
+    "profile-list": "各Mavenプロジェクトで定義されているプロファイル:\n\n| プロファイル名 | 概要 |\n|---|---|\n| dev | 開発環境用及びユニットテスト実行用。`src/env/dev/resources` ディレクトリのリソースを使用する。 |\n| prod | 本番環境用。`src/env/prod/resources` ディレクトリのリソースを使用する。 |\n\n> **補足**: `pom.xml` 中のdevプロファイルに `activeByDefault` 要素が記述されており、デフォルトでdevプロファイルが使用される。\n\n> **注意**: コンテナ用プロジェクトでは、環境ごとの違いはプロファイルではなくOS環境変数を使って切り替える。コンテナ用プロジェクトにはプロファイルが定義されていない。詳細は :ref:`container_production_config` を参照。\n\n本番環境用WARファイルを作成する場合、`pj-web` モジュール配下で本番環境用プロファイルを指定して実行する:\n\n```bash\nmvn package -P prod -DskipTests=true\n```\n\n> **補足**: 本番環境用プロファイルではユニットテストの実行に失敗するため、`-DskipTests=true` でスキップを指定する。",
+    "build-phase-goals": "Mavenのデフォルトビルドフェーズに加えて設定されているゴール:\n\n| ビルドフェーズ | ゴール | 概要 |\n|---|---|---|\n| initialize | jacoco:prepare-agent | JaCoCoの実行時エージェントを準備する |\n| pre-integration-test | jacoco:prepare-agent-integration | 結合試験用にJaCoCoの実行時エージェントを準備する |\n\n設定の詳細は各プロジェクトの `pom.xml` 及び :ref:`about_maven_parent_module` の `pom.xml` を参照。\n\n> **補足**: gsp-dba-maven-pluginの実行はMavenのビルドフェーズに紐づかない。エンティティの自動生成などgsp-dba-maven-pluginのゴールを実行する場合は手動でゴールを実行すること。",
+    "compile-settings": "コンパイルに関する設定（Javaバージョン、ファイルエンコーディング、JDBCドライバ等）は、各プロジェクトの `pom.xml` 及び :ref:`about_maven_parent_module` の `pom.xml` を参照。",
+    "tools-settings": "ツールの設定は `pom.xml`（各プロジェクト及び :ref:`about_maven_parent_module`）に記載されている。親プロジェクトに記載されているツールについては :ref:`firstStepBuiltInTools` を参照。",
+    "nablarch-version-change": "各モジュールの `pom.xml` でNablarchのバージョンを変更する場合の設定例（Nablarch6u2を使用する場合）:\n\n```xml\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>com.nablarch.profile</groupId>\n      <artifactId>nablarch-bom</artifactId>\n      <!--\n      使用するNablarchのバージョンと対応したバージョンを指定する。\n      この例は6u2を指定している。\n      -->\n      <version>6u2</version>\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n  </dependencies>\n</dependencyManagement>\n```",
+    "dependency-add": "`pj-web` モジュールで `nablarch-common-encryption` への依存を追加する場合の例:\n\n```xml\n<dependencies>\n  <dependency>\n    <groupId>com.nablarch.framework</groupId>\n    <artifactId>nablarch-common-encryption</artifactId>\n  </dependency>\n</dependencies>\n```\n\nNablarchのライブラリは `pom.xml` にバージョン番号を指定しなくても良い（`nablarch-bom` のバージョン指定により個々のライブラリのバージョンが決定するため）。\n\n> **警告**: 依存を追加する場合はscopeの設定を適切に行うこと。scopeの設定を怠ると、ユニットテストでのみ使用するはずのモジュールが本番でも使用されるといった問題が起きる可能性がある。",
+    "project-division-problems": "プロジェクトを過度に分割した場合の問題点:\n\n- ビルド及びデプロイの手順が複雑になる。\n- 結合テスト以降で、どのモジュールを組み合わせてテストしたか管理が複雑になる。\n\n一般的には、Mavenプロジェクトは少ないほうが開発をスムーズに進めることができる。"
+  }
+}

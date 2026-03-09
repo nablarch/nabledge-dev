@@ -443,7 +443,7 @@ def mock_phase_b_knowledge(file_id: str, entry: dict) -> dict:
     """Generate expected Phase B knowledge output for a file."""
     if 'section_range' in entry:
         sections = entry['section_range'].get('sections', [])
-        n_sections = len([s for s in sections if s])  # non-empty
+        n_sections = len(sections)  # all sections (including empty strings)
         if n_sections == 0:
             n_sections = 5
     else:
@@ -495,12 +495,14 @@ def mock_phase_e_knowledge(file_id: str, entry: dict) -> dict:
 # Merge logic (expected merge output)
 # ============================================================
 
-def compute_merged_files(catalog_entries: list) -> dict:
+def compute_merged_files(catalog_entries: list, knowledge_fn=None) -> dict:
     """Compute expected merged knowledge files.
 
     Returns:
         {merged_id: merged_knowledge_dict}
     """
+    if knowledge_fn is None:
+        knowledge_fn = mock_phase_b_knowledge
     # Group split entries
     split_groups = {}
     non_split = []
@@ -516,7 +518,7 @@ def compute_merged_files(catalog_entries: list) -> dict:
     # Split groups
     for oid, parts in split_groups.items():
         parts.sort(key=lambda p: p['split_info']['part'])
-        first_knowledge = mock_phase_b_knowledge(parts[0]['id'], parts[0])
+        first_knowledge = knowledge_fn(parts[0]['id'], parts[0])
 
         merged_knowledge = {
             "id": oid,
@@ -528,7 +530,7 @@ def compute_merged_files(catalog_entries: list) -> dict:
         seen_urls = set()
         urls = []
         for p in parts:
-            pk = mock_phase_b_knowledge(p['id'], p)
+            pk = knowledge_fn(p['id'], p)
             for url in pk.get("official_doc_urls", []):
                 if url not in seen_urls:
                     seen_urls.add(url)
@@ -538,7 +540,7 @@ def compute_merged_files(catalog_entries: list) -> dict:
         # Merge index (dedup by id)
         index_map = {}
         for p in parts:
-            pk = mock_phase_b_knowledge(p['id'], p)
+            pk = knowledge_fn(p['id'], p)
             for entry in pk.get("index", []):
                 sid = entry["id"]
                 if sid not in index_map:
@@ -555,7 +557,7 @@ def compute_merged_files(catalog_entries: list) -> dict:
         # Merge sections
         merged_sections = {}
         for p in parts:
-            pk = mock_phase_b_knowledge(p['id'], p)
+            pk = knowledge_fn(p['id'], p)
             for sid, content in pk.get("sections", {}).items():
                 content = content.replace(f"assets/{p['id']}/", f"assets/{oid}/")
                 if sid not in merged_sections:
@@ -568,7 +570,7 @@ def compute_merged_files(catalog_entries: list) -> dict:
 
     # Non-split
     for e in non_split:
-        k = mock_phase_b_knowledge(e['id'], e)
+        k = knowledge_fn(e['id'], e)
         merged[e['id']] = k
 
     return merged

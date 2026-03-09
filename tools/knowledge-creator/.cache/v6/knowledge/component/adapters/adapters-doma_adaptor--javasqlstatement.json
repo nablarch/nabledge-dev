@@ -1,0 +1,50 @@
+{
+  "id": "adapters-doma_adaptor--javasqlstatement",
+  "title": "Domaアダプタ",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/doma_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/Transactional.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaDaoRepository.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/batch/ee/listener/DomaTransactionStepListener.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/batch/ee/listener/DomaTransactionItemWriteListener.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaTransactionNotSupportedConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/ConnectionFactoryFromDomaConnection.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/NablarchJdbcLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaStatementProperties.html"
+  ],
+  "index": [
+    {
+      "id": "java-sql-statement-settings",
+      "title": "java.sql.Statementに関する設定を行う",
+      "hints": [
+        "DomaStatementProperties",
+        "domaStatementProperties",
+        "maxRows",
+        "fetchSize",
+        "queryTimeout",
+        "batchSize",
+        "java.sql.Statement設定",
+        "フェッチサイズ設定",
+        "クエリタイムアウト設定",
+        "バッチサイズ設定",
+        "最大行数制限"
+      ]
+    },
+    {
+      "id": "migration-from-doma-2-44-0",
+      "title": "Doma 2.44.0までの実装方法から移行する",
+      "hints": [
+        "Doma移行",
+        "config属性 非推奨",
+        "SingletonConfig非推奨",
+        "Doma 2.44.0",
+        "DaoアノテーションのconfigAttribute"
+      ]
+    }
+  ],
+  "sections": {
+    "java-sql-statement-settings": "**クラス**: `nablarch.integration.doma.DomaStatementProperties`\n\n`java.sql.Statement` に関する項目（最大行数の制限値、フェッチサイズ、クエリタイムアウト（秒）、バッチサイズ）をプロジェクト全体に設定する場合、コンポーネント設定ファイルに :java:extdoc:`DomaStatementProperties<nablarch.integration.doma.DomaStatementProperties>` を設定する。\n\n> **補足**: コンポーネント名は `domaStatementProperties` とすること\n\n```xml\n<component class=\"nablarch.integration.doma.DomaStatementProperties\" name=\"domaStatementProperties\">\n  <property name=\"maxRows\" value=\"1000\" />\n  <property name=\"fetchSize\" value=\"200\" />\n  <property name=\"queryTimeout\" value=\"30\" />\n  <property name=\"batchSize\" value=\"400\" />\n</component>\n```",
+    "migration-from-doma-2-44-0": "[Doma 2.44.0](https://github.com/domaframework/doma/releases/tag/2.44.0)より、Daoアノテーションのconfig属性およびSingletonConfigアノテーションが非推奨となった。NablarchでもAPIを追加し、案内していた内容から実装方法を変更している。引き続き動作するが、Domaの変更に合わせて実装方法を移行することを推奨する。\n\n移行パターンは以下の3つ:\n- **DomaConfigを使った基本的な実装** → `migration-domaconfig-basic` 参照\n- **DomaTransactionNotSupportedConfigを使用した遅延ロード** → `migration-domatransaction-not-supported-config` 参照\n- **独自Configクラスを作成している場合** → `migration-custom-config-class` 参照"
+  }
+}

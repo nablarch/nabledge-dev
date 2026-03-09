@@ -1,0 +1,69 @@
+{
+  "id": "web-application-getting-started-project-upload--sec-68cf7d73",
+  "title": "アップロードを用いた一括登録機能の作成",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/project_upload/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpRequest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/upload/PartInfo.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/upload/util/UploadHelper.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/Csv.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/CsvFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Required.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Domain.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/LineNumber.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/ObjectMapper.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/ValidatorUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/jakarta/validation/Validator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/Message.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html"
+  ],
+  "index": [
+    {
+      "id": "action-method-overview",
+      "title": "作成する業務アクションメソッドの全体像",
+      "hints": [
+        "ProjectUploadAction",
+        "@OnDoubleSubmission",
+        "@OnError",
+        "ApplicationException",
+        "PartInfo",
+        "LoginUserPrincipal",
+        "SessionUtil",
+        "MessageUtil",
+        "MessageLevel",
+        "HttpResponse",
+        "ExecutionContext",
+        "CSVファイルアップロード",
+        "一括登録",
+        "業務アクションメソッド",
+        "ファイルアップロード処理フロー"
+      ]
+    },
+    {
+      "id": "file-upload-implementation",
+      "title": "ファイルアップロード機能の実装",
+      "hints": [
+        "HttpRequest",
+        "PartInfo",
+        "UploadHelper",
+        "filePathSetting",
+        "FilePathSetting",
+        "n:form",
+        "n:file",
+        "n:message",
+        "n:errors",
+        "multipart/form-data",
+        "ファイルアップロード画面",
+        "UploadHelper#moveFileTo",
+        "ファイル保存",
+        "マルチパートリクエストハンドラ",
+        "ファイルパス管理"
+      ]
+    }
+  ],
+  "sections": {
+    "action-method-overview": "**アノテーション**: `@OnDoubleSubmission`, `@OnError`\n\n```java\n@OnDoubleSubmission\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/projectUpload/create.jsp\")\npublic HttpResponse upload(HttpRequest request, ExecutionContext context) {\n    List<PartInfo> partInfoList = request.getPart(\"uploadFile\");\n    if (partInfoList.isEmpty()) {\n        throw new ApplicationException(\n                MessageUtil.createMessage(MessageLevel.ERROR, \"errors.upload\"));\n    }\n    PartInfo partInfo = partInfoList.get(0);\n    LoginUserPrincipal userContext = SessionUtil.get(context, \"userContext\");\n    List<Project> projects = readFileAndValidate(partInfo, userContext);\n    insertProjects(projects);\n    context.setRequestScopedVar(\"uploadProjectSize\", projects.size());\n    saveFile(partInfo);\n    return new HttpResponse(\"/WEB-INF/view/projectUpload/create.jsp\");\n}\n```\n\n処理の流れ：\n\n1. :ref:`ファイルを取得する<project_upload-file_upload_action>`\n2. :ref:`CSVファイルの内容をBeanにバインドしてバリデーションする<project_upload-validation>`\n3. :ref:`DBへ一括登録する<project_upload-bulk_insert>`\n4. :ref:`ファイルを保存する<project_upload-file_upload_action>`",
+    "file-upload-implementation": "## ファイルアップロード画面の作成\n\n- :ref:`tag-form_tag` の `enctype` 属性を `multipart/form-data` に指定（マルチパートファイル送信に必須）\n- :ref:`tag-file_tag` の `name` 属性に指定した値が、業務アクションで :java:extdoc:`HttpRequest#getPart<nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` に渡す登録名となる\n- :ref:`tag-message_tag` で完了メッセージを表示。`option0` 属性にリクエストスコープのアップロード件数を指定\n- :ref:`tag-errors_tag` でバリデーションエラーメッセージを一覧表示（:ref:`エラーメッセージの一覧表示 <tag-write_error_errors_tag>` 参照）\n\n```jsp\n<n:form useToken=\"true\" enctype=\"multipart/form-data\">\n    <c:if test=\"${not empty uploadProjectSize}\">\n        <ul><li class=\"message-info\"><n:message messageId=\"success.upload.project\" option0=\"${uploadProjectSize}\" /></li></ul>\n    </c:if>\n    <n:errors errorCss=\"message-error\"/>\n    <n:file name=\"uploadFile\" id=\"uploadFile\"/>\n    <n:button uri=\"/action/projectUpload/upload\" allowDoubleSubmission=\"false\" cssClass=\"btn btn-lg btn-light\">登録</n:button>\n</n:form>\n```\n\n## ファイルの取得と保存を行う業務アクションメソッドの作成\n\n- :java:extdoc:`HttpRequest#getPart<nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` でファイルを取得\n- ファイルが未アップロードの場合、:java:extdoc:`PartInfo<nablarch.fw.web.upload.PartInfo>` リストのサイズは0となる。この値で業務例外を送出するなどの制御を行う\n- アップロードファイルは :ref:`マルチパートリクエストハンドラ<multipart_handler>` によって一時領域に保存され、自動削除される。永続化が必要な場合はファイルを任意のディレクトリへ移送する\n- ファイルの移送は :ref:`ファイルパス管理<file_path_management>` を使用している場合のみ可能\n- :java:extdoc:`UploadHelper#moveFileTo<nablarch.fw.web.upload.util.UploadHelper.moveFileTo(java.lang.String,java.lang.String)>` の第一引数には、設定ファイルに登録されたファイル格納ディレクトリのキー名を指定\n\n```java\npublic HttpResponse upload(HttpRequest request, ExecutionContext context)\n        throws IOException {\n    List<PartInfo> partInfoList = request.getPart(\"uploadFile\");\n    if (partInfoList.isEmpty()) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"errors.upload\"));\n    }\n    PartInfo partInfo = partInfoList.get(0);\n    saveFile(partInfo);\n}\n\nprivate void saveFile(final PartInfo partInfo) {\n    String fileName = generateUniqueFileName(partInfo.getFileName());\n    UploadHelper helper = new UploadHelper(partInfo);\n    helper.moveFileTo(\"uploadFiles\", fileName);\n}\n```\n\n```xml\n<!-- filepath-for-webui.xml -->\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"uploadFiles\" value=\"file:./work/input\" />\n    </map>\n  </property>\n</component>\n```"
+  }
+}

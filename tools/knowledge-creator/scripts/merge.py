@@ -208,7 +208,9 @@ class MergeSplitFiles:
             for p in parts:
                 part_ids.add(p["id"])
 
-        new_files = [fi for fi in classified["files"] if fi["id"] not in part_ids]
+        # Also exclude non-split entries whose ID collides with a merged entry ID
+        merged_oids = set(merged_groups.keys())
+        new_files = [fi for fi in classified["files"] if fi["id"] not in part_ids and fi["id"] not in merged_oids]
         for oid, parts in merged_groups.items():
             base = parts[0].copy()
             base["id"] = oid

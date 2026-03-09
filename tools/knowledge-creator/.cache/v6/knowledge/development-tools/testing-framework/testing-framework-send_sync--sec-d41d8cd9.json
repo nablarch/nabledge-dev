@@ -1,0 +1,25 @@
+{
+  "id": "testing-framework-send_sync--sec-d41d8cd9",
+  "title": "リクエスト単体テストの実施方法(同期応答メッセージ送信処理)",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.html",
+    "https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java",
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/03_DealUnitTest/send_sync.html"
+  ],
+  "index": [
+    {
+      "id": "mockup-class-unit-test",
+      "title": "モックアップクラスを使用した取引単体テストの実施方法",
+      "hints": [
+        "Excelファイル設定",
+        "応答電文フォーマット",
+        "リクエストID",
+        "message シート",
+        "send_sync_test_data_path"
+      ]
+    }
+  ],
+  "sections": {
+    "mockup-class-unit-test": "応答電文のフォーマット・データ、要求電文のフォーマットをExcelファイルに定義する。ExcelファイルはリクエストIDごとに用意し、ファイル名はリクエストIDと一致させる（例: リクエストID「RM21AA0101」→ファイル名「RM21AA0101.xlsx」）。ファイルの配置ディレクトリは設定ファイルに定義する（:ref:`send_sync_test_data_path` 参照）。\n\n> **注意**: ここでのリクエストIDは送信先システムの機能を一意に識別するID。ウェブアプリケーション/バッチのリクエストIDとは意味が異なる。このIDに基づき、電文フォーマットおよびキュー名が決定する。\n\n## Excelファイルの書き方\n\n- シート名は「message」固定\n- 返却する応答電文のFW制御ヘッダ・本文のフォーマットを定義する\n- 返却する応答電文のFW制御ヘッダ・本文のデータを定義する\n- 要求電文のFW制御ヘッダ・本文のフォーマットのみ定義する（データは不要）\n\nExcelファイルに定義した応答電文のフォーマットおよびデータは、モックアップクラスが返却する応答電文を生成するために使用される。また要求電文のフォーマットは、モックアップクラスが要求電文のログを出力するために使用される。\n\n![Excelファイルの記載例](assets/testing-framework-send_sync--sec-d41d8cd9/send_sync_test_data.jpg)"
+  }
+}
