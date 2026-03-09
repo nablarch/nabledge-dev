@@ -438,6 +438,73 @@ class TestMergeSplitFiles:
         assert not os.path.exists(f"{ctx.trace_dir}/test--section-1.json")
         assert not os.path.exists(f"{ctx.trace_dir}/test--section-2.json")
 
+    def test_merge_index_order_is_part_sequential(self, ctx):
+        """Merged index must follow part1 all sections -> part2 new sections order."""
+        from merge import MergeSplitFiles
+
+        part1 = {
+            "id": "libraries-tag--p1",
+            "title": "タグ",
+            "official_doc_urls": ["https://example.com"],
+            "processing_patterns": [],
+            "index": [
+                {"id": "section-a", "title": "A", "hints": ["a"]},
+                {"id": "section-b", "title": "B", "hints": ["b"]}
+            ],
+            "sections": {"section-a": "content A", "section-b": "content B"}
+        }
+        part2 = {
+            "id": "libraries-tag--p2",
+            "title": "タグ",
+            "official_doc_urls": ["https://example.com"],
+            "processing_patterns": [],
+            "index": [
+                {"id": "section-b", "title": "B", "hints": ["b", "extra"]},
+                {"id": "section-c", "title": "C", "hints": ["c"]},
+                {"id": "section-d", "title": "D", "hints": ["d"]}
+            ],
+            "sections": {
+                "section-b": "content B moved",
+                "section-c": "content C",
+                "section-d": "content D"
+            }
+        }
+
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--p1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libraries-tag--p2.json", part2)
+
+        catalog = load_json(ctx.classified_list_path)
+        catalog["files"] = [
+            {
+                "source_path": "tests/fixtures/sample_source.rst", "format": "rst",
+                "type": "component", "category": "libraries",
+                "id": "libraries-tag--p1",
+                "output_path": "component/libraries/libraries-tag--p1.json",
+                "assets_dir": "component/libraries/assets/libraries-tag--p1/",
+                "split_info": {"is_split": True, "original_id": "libraries-tag", "part": 1, "total": 2}
+            },
+            {
+                "source_path": "tests/fixtures/sample_source.rst", "format": "rst",
+                "type": "component", "category": "libraries",
+                "id": "libraries-tag--p2",
+                "output_path": "component/libraries/libraries-tag--p2.json",
+                "assets_dir": "component/libraries/assets/libraries-tag--p2/",
+                "split_info": {"is_split": True, "original_id": "libraries-tag", "part": 2, "total": 2}
+            }
+        ]
+        write_json(ctx.classified_list_path, catalog)
+
+        MergeSplitFiles(ctx).run()
+
+        merged = load_json(f"{ctx.knowledge_dir}/component/libraries/libraries-tag.json")
+        index_ids = [e["id"] for e in merged["index"]]
+        assert index_ids == ["section-a", "section-b", "section-c", "section-d"]
+
+        section_b_entry = [e for e in merged["index"] if e["id"] == "section-b"][0]
+        assert "b" in section_b_entry["hints"]
+        assert "extra" in section_b_entry["hints"]
+
     def test_merge_trace_with_partial_missing(self, ctx):
         """片方のパートにだけtraceがある場合、存在するtraceのみで統合する。"""
         from merge import MergeSplitFiles

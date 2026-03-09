@@ -138,23 +138,27 @@ class MergeSplitFiles:
                         pp_list.append(pp)
             merged["processing_patterns"] = pp_list
 
-            # Merge index
-            index_map = {}
+            # Merge index: part-sequential order, dedup by id, merge hints
+            merged_index = []
+            seen_ids = {}  # id -> position in merged_index
             for pj in part_jsons:
                 for entry in pj.get("index", []):
                     sid = entry["id"]
-                    if sid not in index_map:
-                        index_map[sid] = {
+                    if sid not in seen_ids:
+                        new_entry = {
                             "id": sid, "title": entry["title"],
                             "hints": list(entry.get("hints", []))
                         }
+                        seen_ids[sid] = len(merged_index)
+                        merged_index.append(new_entry)
                     else:
-                        existing = set(index_map[sid]["hints"])
+                        existing_entry = merged_index[seen_ids[sid]]
+                        existing_hints = set(existing_entry["hints"])
                         for h in entry.get("hints", []):
-                            if h not in existing:
-                                index_map[sid]["hints"].append(h)
-                                existing.add(h)
-            merged["index"] = list(index_map.values())
+                            if h not in existing_hints:
+                                existing_entry["hints"].append(h)
+                                existing_hints.add(h)
+            merged["index"] = merged_index
 
             # Merge sections
             merged["sections"] = {}

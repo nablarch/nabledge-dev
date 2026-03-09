@@ -549,22 +549,25 @@ def compute_merged_files(catalog_entries: list, knowledge_fn=None) -> dict:
                     pp_list.append(pp)
         merged_knowledge["processing_patterns"] = pp_list
 
-        # Merge index (dedup by id)
-        index_map = {}
+        # Merge index: part-sequential order, dedup by id, merge hints
+        merged_index = []
+        seen_ids = {}
         for p in parts:
             pk = knowledge_fn(p['id'], p)
             for entry in pk.get("index", []):
                 sid = entry["id"]
-                if sid not in index_map:
-                    index_map[sid] = {"id": sid, "title": entry["title"],
-                                      "hints": list(entry.get("hints", []))}
+                if sid not in seen_ids:
+                    seen_ids[sid] = len(merged_index)
+                    merged_index.append({"id": sid, "title": entry["title"],
+                                         "hints": list(entry.get("hints", []))})
                 else:
-                    existing = set(index_map[sid]["hints"])
+                    existing_entry = merged_index[seen_ids[sid]]
+                    existing_hints = set(existing_entry["hints"])
                     for h in entry.get("hints", []):
-                        if h not in existing:
-                            index_map[sid]["hints"].append(h)
-                            existing.add(h)
-        merged_knowledge["index"] = list(index_map.values())
+                        if h not in existing_hints:
+                            existing_entry["hints"].append(h)
+                            existing_hints.add(h)
+        merged_knowledge["index"] = merged_index
 
         # Merge sections
         merged_sections = {}
