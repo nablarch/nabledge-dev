@@ -455,6 +455,7 @@ def mock_phase_b_knowledge(file_id: str, entry: dict) -> dict:
         "title": f"Title for {file_id}",
         "no_knowledge_content": False,
         "official_doc_urls": [f"https://nablarch.github.io/docs/LATEST/doc/{file_id}"],
+        "processing_patterns": [],
         "index": [
             {"id": sid, "title": f"Section {i}", "hints": [f"hint-{file_id}-{i}"]}
             for i, sid in enumerate(sec_ids)
@@ -536,6 +537,17 @@ def compute_merged_files(catalog_entries: list, knowledge_fn=None) -> dict:
                     seen_urls.add(url)
                     urls.append(url)
         merged_knowledge["official_doc_urls"] = urls
+
+        # Merge processing_patterns (union, dedup, preserve order)
+        seen_pp = set()
+        pp_list = []
+        for p in parts:
+            pk = knowledge_fn(p['id'], p)
+            for pp in pk.get("processing_patterns", []):
+                if pp not in seen_pp:
+                    seen_pp.add(pp)
+                    pp_list.append(pp)
+        merged_knowledge["processing_patterns"] = pp_list
 
         # Merge index (dedup by id)
         index_map = {}

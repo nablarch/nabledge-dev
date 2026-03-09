@@ -34,11 +34,11 @@ flowchart TD
 | フェーズ | 処理内容 | 種別 | 並列 |
 |----------|----------|------|------|
 | **A: Preparation** | ソースファイルの一覧・分類・分割 | Python | No |
-| **B: Generation** | Claude APIによるナレッジJSON生成 | AI | Yes |
+| **B: Generation** | ソース → knowledge JSON 生成（processing_patterns 分類含む） | AI | Yes |
 | **C: Structure Check** | JSON構造バリデーション（S1-S16） | Python | No |
 | **D: Content Check** | Claude APIによるコンテンツ検証 | AI | Yes |
 | **E: Fix** | Phase Dで検出した問題の自動修正 | AI | Yes |
-| **M: Finalization** | 分割ファイル統合 → RSTリンク解決 → インデックス・ドキュメント生成 | Hybrid | No |
+| **M: Finalization** | 分割ファイル統合 → RSTリンク解決 → インデックス・ドキュメント生成 | Script | No |
 
 Phase C→D→Eは `--max-rounds` 回（デフォルト: 2、最大: 10）まで繰り返す。
 

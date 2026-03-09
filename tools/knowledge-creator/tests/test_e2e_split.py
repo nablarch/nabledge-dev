@@ -27,6 +27,7 @@ class TestE2ESplitPipeline:
                     "no_knowledge_content": False,
                     "title": "Test Title",
                     "official_doc_urls": ["https://example.com/test.html"],
+                    "processing_patterns": ["nablarch-batch"],
                     "index": [
                         {"id": "section1", "title": "Section 1",
                          "hints": ["hint1", "test"]},
@@ -68,16 +69,6 @@ class TestE2ESplitPipeline:
                         "file_id": file_id,
                         "status": "clean",
                         "findings": []
-                    }),
-                    stderr=""
-                )
-            elif "patterns" in schema_str:
-                # Phase F: pattern classification
-                return subprocess.CompletedProcess(
-                    args=["claude"], returncode=0,
-                    stdout=json.dumps({
-                        "patterns": ["nablarch-batch"],
-                        "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
                     }),
                     stderr=""
                 )
@@ -225,6 +216,7 @@ class TestE2ESplitPipeline:
                         "no_knowledge_content": False,
                         "title": "Test Title",
                         "official_doc_urls": ["https://example.com/test.html"],
+                        "processing_patterns": [],
                         "index": [
                             {"id": "section1", "title": "Section 1",
                              "hints": ["hint1", "test"]},
@@ -255,16 +247,6 @@ class TestE2ESplitPipeline:
                                      "h3_split_reason": "Small"}
                                 ]
                             }
-                        }),
-                        stderr=""
-                    )
-                elif "patterns" in schema_str:
-                    # Phase F: pattern classification
-                    return subprocess.CompletedProcess(
-                        args=["claude"], returncode=0,
-                        stdout=json.dumps({
-                            "patterns": ["nablarch-batch"],
-                            "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
                         }),
                         stderr=""
                     )

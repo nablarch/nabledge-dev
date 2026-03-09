@@ -65,17 +65,11 @@ class PhaseMFinalize:
         PhaseFFinalize(self.ctx, dry_run=self.dry_run,
                        run_claude_fn=self.run_claude_fn).run()
 
-        # Step 7: Transplant processing_patterns from merged catalog back to
-        # split catalog, then restore split catalog
+        # Step 7: Restore split catalog with processing_patterns from knowledge cache
         if not self.dry_run:
-            merged_data = load_json(self.ctx.classified_list_path)
-            merged_pp = {}
-            for fi in merged_data.get("files", []):
-                pp = fi.get("processing_patterns")
-                if pp is not None:
-                    merged_pp[fi["id"]] = pp
             for fi in split_catalog.get("files", []):
-                base = fi.get("base_name", fi["id"])
-                if base in merged_pp:
-                    fi["processing_patterns"] = merged_pp[base]
+                cache_path = f"{self.ctx.knowledge_cache_dir}/{fi['output_path']}"
+                if os.path.exists(cache_path):
+                    knowledge = load_json(cache_path)
+                    fi["processing_patterns"] = knowledge.get("processing_patterns", [])
             write_json(self.ctx.classified_list_path, split_catalog)

@@ -296,27 +296,13 @@ def expected():
 
     F_TARGET = M - len(pp_type_merged)
 
-    # Persistent-error base_names → split IDs (24 base names, 57 IDs)
-    persistent_error_base_names = [
-        "adapters-doma_adaptor", "adapters-redisstore_lettuce_adaptor",
-        "blank-project-CustomizeDB", "blank-project-setup_ContainerWeb",
-        "cloud-native-aws_distributed_tracing", "db-messaging-multiple_process",
-        "handlers-SessionStoreHandler", "handlers-csrf_token_verification_handler",
-        "handlers-thread_context_handler", "java-static-analysis-java_static_analysis",
-        "libraries-bean_validation", "libraries-database",
-        "libraries-failure_log", "libraries-log",
-        "libraries-service_availability", "libraries-tag",
-        "libraries-tag_reference", "mom-messaging-feature_details",
-        "nablarch-batch-architecture", "restful-web-service-architecture",
-        "testing-framework-02_entityUnitTestWithNablarchValidation",
-        "testing-framework-batch",
-        "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest",
-        "toolbox-NablarchOpenApiGenerator",
-    ]
-    split_ids_24 = []
-    for bn in persistent_error_base_names:
+    # 1/3 target: sorted base_names の先頭 1/3
+    all_base_names = sorted(set(e.get('base_name', e['id']) for e in catalog_entries))
+    target_base_names = all_base_names[:len(all_base_names) // 3]
+    target_split_ids = []
+    for bn in target_base_names:
         matched = [e["id"] for e in catalog_entries if e.get("base_name") == bn]
-        split_ids_24.extend(matched)
+        target_split_ids.extend(matched)
 
     # Per-file expected outputs
     expected_knowledge_cache = {
@@ -345,8 +331,9 @@ def expected():
             "non_split_entries": len(non_split_entries),
             "split_groups": len(split_groups),
             "pp_type_merged": len(pp_type_merged),
-            "split_ids_24": split_ids_24,
-            "split_ids_24_count": len(split_ids_24),
+            "target_base_names": target_base_names,
+            "target_split_ids": target_split_ids,
+            "target_split_ids_count": len(target_split_ids),
         },
         "catalog_entries": catalog_entries,
         "expected_knowledge_cache": expected_knowledge_cache,
@@ -571,8 +558,8 @@ class TestGen:
             assert len(counter["E"]) == U * 2, (
                 f"counter['E'] expected {U * 2}, got {len(counter['E'])}"
             )
-            assert len(counter["F"]) == params["F_TARGET"], (
-                f"counter['F'] expected {params['F_TARGET']}, got {len(counter['F'])}"
+            assert len(counter["F"]) == 0, (
+                f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
             )
 
         finally:
@@ -631,8 +618,8 @@ class TestGenResume:
             assert len(counter["E"]) == U * 2, (
                 f"counter['E'] expected {U * 2}, got {len(counter['E'])}"
             )
-            assert len(counter["F"]) == params["F_TARGET"], (
-                f"counter['F'] expected {params['F_TARGET']}, got {len(counter['F'])}"
+            assert len(counter["F"]) == 0, (
+                f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
             )
 
             # Assert: knowledge_dir has M files
@@ -657,31 +644,16 @@ class TestGenResume:
 # ============================================================
 
 class TestRegenTarget:
-    """test_regen_target: Phase BCEM on split_ids_24 (57 files)."""
+    """test_regen_target: Phase BCEM on 1/3 of base_names."""
 
     def test_regen_target(self, gen_state, expected):
         params = expected["params"]
         M = params["M"]
-        split_ids_24 = params["split_ids_24"]
-        target_count = params["split_ids_24_count"]  # 57
+        target_split_ids = params["target_split_ids"]
+        target_count = params["target_split_ids_count"]
         catalog_entries = expected["catalog_entries"]
 
-        persistent_error_base_names = [
-            "adapters-doma_adaptor", "adapters-redisstore_lettuce_adaptor",
-            "blank-project-CustomizeDB", "blank-project-setup_ContainerWeb",
-            "cloud-native-aws_distributed_tracing", "db-messaging-multiple_process",
-            "handlers-SessionStoreHandler", "handlers-csrf_token_verification_handler",
-            "handlers-thread_context_handler", "java-static-analysis-java_static_analysis",
-            "libraries-bean_validation", "libraries-database",
-            "libraries-failure_log", "libraries-log",
-            "libraries-service_availability", "libraries-tag",
-            "libraries-tag_reference", "mom-messaging-feature_details",
-            "nablarch-batch-architecture", "restful-web-service-architecture",
-            "testing-framework-02_entityUnitTestWithNablarchValidation",
-            "testing-framework-batch",
-            "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest",
-            "toolbox-NablarchOpenApiGenerator",
-        ]
+        target_base_names = params["target_base_names"]
 
         src_ctx = gen_state["ctx"]
         ctx = _make_ctx(max_rounds=2)
@@ -696,7 +668,7 @@ class TestRegenTarget:
             # Copy gen_state to new ctx
             _copy_state(src_ctx, ctx)
 
-            _run_main(ctx, mock, phases="ABCDEM", target=persistent_error_base_names, clean_phase="BD")
+            _run_main(ctx, mock, phases="ABCDEM", target=target_base_names, clean_phase="BD")
 
             # Assert: knowledge_dir has all M files
             assert _count_json_files(ctx.knowledge_dir) == M, (
@@ -704,10 +676,8 @@ class TestRegenTarget:
                 f"got {_count_json_files(ctx.knowledge_dir)}"
             )
 
-            # Assert: Phase F called F_TARGET times (non-processing-pattern files)
-            assert len(counter["F"]) == params["F_TARGET"], (
-                f"counter['F'] expected {params['F_TARGET']}, "
-                f"got {len(counter['F'])}"
+            assert len(counter["F"]) == 0, (
+                f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
             )
 
             # Assert: catalog is in split state with processing_patterns
@@ -792,9 +762,8 @@ class TestFix:
                         f"sections should contain -fixed in {merged_id}.{sid}"
                     )
 
-            # Assert: Phase F called F_TARGET times (non-processing-pattern files)
-            assert len(counter["F"]) == params["F_TARGET"], (
-                f"counter['F'] expected {params['F_TARGET']}, got {len(counter['F'])}"
+            assert len(counter["F"]) == 0, (
+                f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
             )
 
             # Assert: catalog is in split state
@@ -814,31 +783,16 @@ class TestFix:
 # ============================================================
 
 class TestFixTarget:
-    """test_fix_target: Phase CDEM with --clean-phase D + target split_ids_24."""
+    """test_fix_target: Phase CDEM with --clean-phase D + target 1/3 of base_names."""
 
     def test_fix_target(self, gen_state, expected):
         params = expected["params"]
         M = params["M"]
-        split_ids_24 = params["split_ids_24"]
-        target_count = params["split_ids_24_count"]  # 57
+        target_split_ids = params["target_split_ids"]
+        target_count = params["target_split_ids_count"]
         catalog_entries = expected["catalog_entries"]
 
-        persistent_error_base_names = [
-            "adapters-doma_adaptor", "adapters-redisstore_lettuce_adaptor",
-            "blank-project-CustomizeDB", "blank-project-setup_ContainerWeb",
-            "cloud-native-aws_distributed_tracing", "db-messaging-multiple_process",
-            "handlers-SessionStoreHandler", "handlers-csrf_token_verification_handler",
-            "handlers-thread_context_handler", "java-static-analysis-java_static_analysis",
-            "libraries-bean_validation", "libraries-database",
-            "libraries-failure_log", "libraries-log",
-            "libraries-service_availability", "libraries-tag",
-            "libraries-tag_reference", "mom-messaging-feature_details",
-            "nablarch-batch-architecture", "restful-web-service-architecture",
-            "testing-framework-02_entityUnitTestWithNablarchValidation",
-            "testing-framework-batch",
-            "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest",
-            "toolbox-NablarchOpenApiGenerator",
-        ]
+        target_base_names = params["target_base_names"]
 
         src_ctx = gen_state["ctx"]
         ctx = _make_ctx(max_rounds=2)
@@ -853,7 +807,7 @@ class TestFixTarget:
             # Copy gen_state to new ctx
             _copy_state(src_ctx, ctx)
 
-            _run_main(ctx, mock, phases="CDEM", target=persistent_error_base_names, clean_phase="D")
+            _run_main(ctx, mock, phases="CDEM", target=target_base_names, clean_phase="D")
 
             # Assert: B not called
             assert len(counter["B"]) == 0, (
@@ -871,7 +825,7 @@ class TestFixTarget:
             )
 
             # Assert: target files in knowledge_cache_dir match expected_fixed_cache
-            for file_id in split_ids_24:
+            for file_id in target_split_ids:
                 entry = next(e for e in catalog_entries if e["id"] == file_id)
                 cache_path = f"{ctx.knowledge_cache_dir}/{entry['output_path']}"
                 actual = _load_json(cache_path)
@@ -886,14 +840,14 @@ class TestFixTarget:
             )
 
             # Assert: target merged files have -fixed in sections
-            target_base_names = set()
-            for fid in split_ids_24:
+            target_merged_ids = set()
+            for fid in target_split_ids:
                 entry = next(e for e in catalog_entries if e["id"] == fid)
                 base = entry.get("base_name", fid)
                 oid = entry.get("split_info", {}).get("original_id", base)
-                target_base_names.add(oid)
+                target_merged_ids.add(oid)
 
-            for merged_id in target_base_names:
+            for merged_id in target_merged_ids:
                 entry = None
                 for e in catalog_entries:
                     if e.get("base_name") == merged_id or e["id"] == merged_id:
@@ -912,9 +866,8 @@ class TestFixTarget:
                         f"Target merged file {merged_id}.{sid} should have -fixed"
                     )
 
-            # Assert: Phase F called F_TARGET times (non-processing-pattern files)
-            assert len(counter["F"]) == params["F_TARGET"], (
-                f"counter['F'] expected {params['F_TARGET']}, got {len(counter['F'])}"
+            assert len(counter["F"]) == 0, (
+                f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
             )
 
             # Assert: catalog in split state with processing_patterns

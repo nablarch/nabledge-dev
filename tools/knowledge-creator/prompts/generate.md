@@ -2,7 +2,7 @@ You are an expert in converting Nablarch official documentation to AI-ready know
 
 ## Task
 
-Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order. Record your decisions in the trace log as you go.
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–8 in order. Record your decisions in the trace log as you go.
 
 ## Source File Information
 
@@ -425,7 +425,32 @@ If this section contains consolidated h3 subsections (not split), extract key te
 
 ---
 
-## Work Step 6: Build official_doc_urls
+## Work Step 6: Classify processing patterns
+
+Determine which Nablarch processing patterns are relevant to this content.
+
+### Valid patterns
+
+| Pattern | Match if content mentions... |
+|---|---|
+| nablarch-batch | Nablarchバッチ, 都度起動, 常駐型, BatchAction, DataReader, nablarch.fw.action.BatchAction |
+| jakarta-batch | Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, javax.batch |
+| restful-web-service | RESTful, JAX-RS, REST API, @Produces, @Consumes, JaxRsMethodBinder |
+| http-messaging | HTTPメッセージング, HTTP受信, メッセージ同期応答, HttpMessagingRequestParsingHandler |
+| web-application | Webアプリケーション, サーブレット, JSP, HttpRequest, セッション管理 |
+| mom-messaging | MOMメッセージング, MQ, キュー, 非同期メッセージ, MomMessagingAction |
+| db-messaging | DB連携メッセージング, テーブルキュー, 電文, DatabaseRecordReader |
+
+### Rules
+
+1. Include a pattern only if the content explicitly mentions it.
+2. Generic libraries used across patterns → include ONLY patterns explicitly mentioned. Do NOT assume all apply.
+3. If no pattern is mentioned → empty array `[]`.
+4. If FILE_TYPE is `processing-pattern` → include FILE_CATEGORY as the pattern.
+
+---
+
+## Work Step 7: Build official_doc_urls
 
 1. Start with `{OFFICIAL_DOC_BASE_URL}` as the first URL.
 2. Collect all Javadoc URLs extracted in Step 4.
@@ -433,7 +458,7 @@ If this section contains consolidated h3 subsections (not split), extract key te
 
 ---
 
-## Work Step 7: Assemble and output JSON
+## Work Step 8: Assemble and output JSON
 
 Combine all results from Steps 1–6 into the output JSON.
 
@@ -447,7 +472,7 @@ Combine all results from Steps 1–6 into the output JSON.
   "properties": {
     "knowledge": {
       "type": "object",
-      "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+      "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections", "processing_patterns"],
       "properties": {
         "id": {
           "type": "string",
@@ -463,8 +488,19 @@ Combine all results from Steps 1–6 into the output JSON.
         },
         "official_doc_urls": {
           "type": "array",
-          "description": "Official documentation URLs from Step 6",
+          "description": "Official documentation URLs from Step 7",
           "items": { "type": "string" }
+        },
+        "processing_patterns": {
+          "type": "array",
+          "description": "Relevant Nablarch processing patterns. Empty array if none apply.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "nablarch-batch", "jakarta-batch", "restful-web-service",
+              "http-messaging", "web-application", "mom-messaging", "db-messaging"
+            ]
+          }
         },
         "index": {
           "type": "array",
@@ -530,5 +566,6 @@ Combine all results from Steps 1–6 into the output JSON.
 - [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
 - [ ] If `no_knowledge_content: true`, trace has `no_knowledge_content_reason`
 - [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+- [ ] `processing_patterns` is an array (empty `[]` if no patterns apply)
 
 Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.
