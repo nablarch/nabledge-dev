@@ -1,135 +1,20 @@
-"""E2E tests for kc commands (gen / gen --resume / regen --target / fix / fix --target).
+# 作業指示: E2Eテスト アサート漏れ修正
 
-Tests call run.py facade functions (kc_gen, kc_fix, etc.) with mocked CC.
-CCの出力は決定的なので、最終出力の完全一致・ファイル数・CC呼び出し回数でアサートする。
-Expected values are computed by generate_expected.py independently from kc source code.
-"""
-import json
-import os
-import shutil
-import subprocess
-import sys
-import uuid
+## 対象ファイル
 
-import pytest
+`tools/knowledge-creator/tests/e2e/test_e2e.py`
 
-TOOL_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+## 作業ルール
 
-from run import Context, kc_gen, kc_regen_target, kc_fix, kc_fix_target, _run_pipeline, _make_args
+- 以下の「完成形コード」をそのまま使う。エージェントが独自にアサートを考えて書かない
+- 変更後 `cd tools/knowledge-creator && python -m pytest tests/e2e/ -x -v` を実行し全件passを確認する
+- failしたらcounterの実測値をprint出力して報告する。独自判断で期待値を変えない
 
+## 変更1: _assert_full_output ヘルパー追加
 
-# ============================================================
-# TestContext: redirects all permanent outputs to log_dir
-# ============================================================
+`_load_json` 関数の直後、`# CC Mock factory` コメントの直前に以下の関数をそのまま追加する:
 
-class TestContext(Context):
-    """Context that redirects all permanent outputs to log_dir.
-
-    Prevents E2E tests from modifying production files.
-    All paths are rooted under {repo}/tools/knowledge-creator/.logs/v{version}/{run_id}/
-    which is gitignored.
-    """
-
-    @property
-    def classified_list_path(self) -> str:
-        return f"{self.log_dir}/catalog.json"
-
-    @property
-    def trace_dir(self) -> str:
-        return f"{self.log_dir}/traces"
-
-    @property
-    def knowledge_cache_dir(self) -> str:
-        return f"{self.log_dir}/knowledge-cache"
-
-    @property
-    def knowledge_dir(self) -> str:
-        return f"{self.log_dir}/knowledge"
-
-    @property
-    def docs_dir(self) -> str:
-        return f"{self.log_dir}/docs"
-
-    @property
-    def reports_dir(self) -> str:
-        return f"{self.log_dir}/reports"
-
-
-def _make_ctx(run_id=None, max_rounds=2):
-    if run_id is None:
-        run_id = f"e2e-{uuid.uuid4().hex[:8]}"
-    ctx = TestContext(version="6", repo=REPO, concurrency=4, run_id=run_id)
-    ctx.max_rounds = max_rounds
-    return ctx
-
-
-def _run_with_mock(facade_fn, ctx, mock_fn, **kwargs):
-    """ファサード関数をCCモック付きで呼ぶ。"""
-    from unittest.mock import patch
-    with patch("phase_b_generate._default_run_claude", mock_fn), \
-         patch("phase_d_content_check._default_run_claude", mock_fn), \
-         patch("phase_e_fix._default_run_claude", mock_fn):
-        facade_fn(ctx, **kwargs)
-
-
-def _run_phase_a_only(ctx, mock_fn):
-    """テストセットアップ用: Phase Aのみ実行。"""
-    args = _make_args(ctx, phase="A")
-    from unittest.mock import patch
-    with patch("phase_b_generate._default_run_claude", mock_fn), \
-         patch("phase_d_content_check._default_run_claude", mock_fn), \
-         patch("phase_e_fix._default_run_claude", mock_fn):
-        _run_pipeline(ctx, args)
-
-
-def _copy_state(src_ctx, dst_ctx):
-    """Copy state directories from src_ctx to dst_ctx."""
-    # catalog.json
-    os.makedirs(os.path.dirname(dst_ctx.classified_list_path), exist_ok=True)
-    shutil.copy2(src_ctx.classified_list_path, dst_ctx.classified_list_path)
-
-    # knowledge_cache_dir
-    if os.path.exists(src_ctx.knowledge_cache_dir):
-        shutil.copytree(src_ctx.knowledge_cache_dir, dst_ctx.knowledge_cache_dir)
-
-    # trace_dir
-    if os.path.exists(src_ctx.trace_dir):
-        shutil.copytree(src_ctx.trace_dir, dst_ctx.trace_dir)
-
-    # knowledge_dir
-    if os.path.exists(src_ctx.knowledge_dir):
-        shutil.copytree(src_ctx.knowledge_dir, dst_ctx.knowledge_dir)
-
-    # docs_dir
-    if os.path.exists(src_ctx.docs_dir):
-        shutil.copytree(src_ctx.docs_dir, dst_ctx.docs_dir)
-
-
-def _count_json_files(directory):
-    """Count all .json files recursively in a directory."""
-    count = 0
-    for root, _, files in os.walk(directory):
-        count += sum(1 for f in files if f.endswith(".json"))
-    return count
-
-
-def _count_all_files(directory, ext=None):
-    """Count all files (optionally with extension) recursively."""
-    count = 0
-    for root, _, files in os.walk(directory):
-        if ext:
-            count += sum(1 for f in files if f.endswith(ext))
-        else:
-            count += len(files)
-    return count
-
-
-def _load_json(path):
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
-
-
+```python
 def _assert_full_output(ctx, expected, catalog_entries, U, M):
     """全kcコマンド共通の出力検証。
 
@@ -261,218 +146,13 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
         assert "processing_patterns" in f, (
             f"processing_patterns missing for {f['id']}"
         )
+```
 
+## 変更2: TestGen 完成形
 
-# ============================================================
-# CC Mock factory
-# ============================================================
+TestGenクラス全体を以下に置き換える:
 
-def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
-    """Create CC mock for E2E tests.
-
-    Phase B ("trace" in schema): returns expected_knowledge_cache[file_id]
-    Phase D ("findings" in schema): always returns has_issues
-    Phase F ("patterns" in schema): returns empty patterns
-    Phase E (fallback): returns expected_fixed_cache[file_id]
-    """
-    def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
-        schema_str = json.dumps(json_schema) if json_schema else ""
-
-        if "trace" in schema_str:
-            # Phase B: generate knowledge + trace
-            counter["B"].append(file_id)
-            knowledge = expected_knowledge_cache[file_id]
-            trace = {
-                "file_id": file_id,
-                "generated_at": "2026-01-01T00:00:00Z",
-                "sections": [
-                    {
-                        "section_id": e["id"],
-                        "source_heading": e["title"],
-                        "heading_level": "h2",
-                        "h3_split": False,
-                        "h3_split_reason": "mock",
-                    }
-                    for e in knowledge["index"]
-                ],
-            }
-            return subprocess.CompletedProcess(
-                args=["claude"],
-                returncode=0,
-                stdout=json.dumps({"knowledge": knowledge, "trace": trace}),
-                stderr="",
-            )
-
-        elif "findings" in schema_str:
-            # Phase D: always has_issues
-            counter["D"].append(file_id)
-            return subprocess.CompletedProcess(
-                args=["claude"],
-                returncode=0,
-                stdout=json.dumps({
-                    "file_id": file_id,
-                    "status": "has_issues",
-                    "findings": [{
-                        "category": "omission",
-                        "severity": "minor",
-                        "location": "sec-0",
-                        "description": "Missing detail",
-                    }],
-                }),
-                stderr="",
-            )
-
-        elif "patterns" in schema_str:
-            # Phase F: classify processing patterns
-            counter["F"].append(file_id)
-            return subprocess.CompletedProcess(
-                args=["claude"],
-                returncode=0,
-                stdout=json.dumps({
-                    "patterns": [],
-                    "reasoning": [
-                        {"pattern": "nablarch-batch", "matched": False, "evidence": "N/A"}
-                    ],
-                }),
-                stderr="",
-            )
-
-        else:
-            # Phase E: fix
-            counter["E"].append(file_id)
-            fixed = expected_fixed_cache[file_id]
-            return subprocess.CompletedProcess(
-                args=["claude"],
-                returncode=0,
-                stdout=json.dumps(fixed),
-                stderr="",
-            )
-
-    return mock_fn
-
-
-# ============================================================
-# Session fixtures
-# ============================================================
-
-@pytest.fixture(scope="session")
-def expected():
-    """Generate all expected values from generate_expected.py."""
-    from generate_expected import (
-        list_sources,
-        classify_all,
-        mock_phase_b_knowledge,
-        mock_phase_b_trace,
-        mock_phase_e_knowledge,
-        compute_merged_files,
-    )
-    import generate_expected as ge
-
-    sources = list_sources(REPO, "6")
-    catalog_entries = classify_all(sources, REPO)
-
-    ids = [e["id"] for e in catalog_entries]
-    N = len(catalog_entries)
-    U = len(set(ids))
-    assert N == U, f"Duplicate IDs found: {N} entries, {U} unique"
-
-    split_entries = [e for e in catalog_entries if "split_info" in e]
-    non_split_entries = [e for e in catalog_entries if "split_info" not in e]
-    split_groups = {}
-    for e in split_entries:
-        oid = e["split_info"]["original_id"]
-        split_groups.setdefault(oid, []).append(e)
-
-    # Merged files from Phase B output
-    expected_merged_b = compute_merged_files(catalog_entries)
-    M = len(expected_merged_b)
-
-    # Merged files from Phase E output (used for Phase M assertions after Phase E runs)
-    expected_merged_fixed = compute_merged_files(catalog_entries, knowledge_fn=ge.mock_phase_e_knowledge)
-
-    # Processing-pattern type files
-    pp_type_merged = set()
-    for e in catalog_entries:
-        if e["type"] == "processing-pattern":
-            if "split_info" in e:
-                pp_type_merged.add(e["split_info"]["original_id"])
-            else:
-                pp_type_merged.add(e["id"])
-
-    F_TARGET = M - len(pp_type_merged)
-
-    # 1/3 target: sorted base_names の先頭 1/3
-    all_base_names = sorted(set(e.get('base_name', e['id']) for e in catalog_entries))
-    target_base_names = all_base_names[:len(all_base_names) // 3]
-    target_split_ids = []
-    for bn in target_base_names:
-        matched = [e["id"] for e in catalog_entries if e.get("base_name") == bn]
-        target_split_ids.extend(matched)
-
-    # Per-file expected outputs
-    expected_knowledge_cache = {
-        e["id"]: mock_phase_b_knowledge(e["id"], e) for e in catalog_entries
-    }
-    expected_traces = {
-        e["id"]: mock_phase_b_trace(e["id"], e) for e in catalog_entries
-    }
-    expected_fixed_cache = {
-        e["id"]: mock_phase_e_knowledge(e["id"], e) for e in catalog_entries
-    }
-
-    # index.toon expected header
-    expected_index_toon_header = (
-        f"# Nabledge-6 Knowledge Index\n\n"
-        f"files[{M},]{{title,type,category,processing_patterns,path}}:"
-    )
-
-    return {
-        "params": {
-            "N": N,
-            "U": U,
-            "M": M,
-            "F_TARGET": F_TARGET,
-            "split_entries": len(split_entries),
-            "non_split_entries": len(non_split_entries),
-            "split_groups": len(split_groups),
-            "pp_type_merged": len(pp_type_merged),
-            "target_base_names": target_base_names,
-            "target_split_ids": target_split_ids,
-            "target_split_ids_count": len(target_split_ids),
-        },
-        "catalog_entries": catalog_entries,
-        "expected_knowledge_cache": expected_knowledge_cache,
-        "expected_traces": expected_traces,
-        "expected_fixed_cache": expected_fixed_cache,
-        "expected_merged_knowledge": expected_merged_b,
-        "expected_merged_fixed": expected_merged_fixed,
-        "expected_index_toon_header": expected_index_toon_header,
-        "expected_index_toon_entry_count": M,
-    }
-
-
-@pytest.fixture(scope="session")
-def gen_state(expected):
-    ctx = _make_ctx(run_id=f"gen-state-{uuid.uuid4().hex[:8]}", max_rounds=2)
-    counter = {"B": [], "D": [], "E": [], "F": []}
-    mock = _make_cc_mock(
-        expected["expected_knowledge_cache"],
-        expected["expected_fixed_cache"],
-        counter,
-    )
-
-    _run_with_mock(kc_gen, ctx, mock)
-
-    yield {"ctx": ctx, "counter": counter}
-
-    if os.path.exists(ctx.log_dir):
-        shutil.rmtree(ctx.log_dir)
-
-
-# ============================================================
-# TestGen: full pipeline ABCDEM
-# ============================================================
-
+```python
 class TestGen:
     """test_gen: kc gen — Phase ABCDEM with clean state, verify all outputs."""
 
@@ -512,12 +192,13 @@ class TestGen:
         finally:
             if os.path.exists(ctx.log_dir):
                 shutil.rmtree(ctx.log_dir)
+```
 
+## 変更3: TestGenResume 完成形
 
-# ============================================================
-# TestGenResume: pre-place 1 file, Phase B skips it
-# ============================================================
+TestGenResumeクラス全体を以下に置き換える:
 
+```python
 class TestGenResume:
     """test_gen_resume: kc gen --resume — 1 pre-placed file, Phase B skips it."""
 
@@ -579,12 +260,13 @@ class TestGenResume:
         finally:
             if os.path.exists(ctx.log_dir):
                 shutil.rmtree(ctx.log_dir)
+```
 
+## 変更4: TestRegenTarget 完成形
 
-# ============================================================
-# TestRegenTarget: regenerate specific target files
-# ============================================================
+TestRegenTargetクラス全体を以下に置き換える:
 
+```python
 class TestRegenTarget:
     """test_regen_target: kc regen --target — Phase ABCDEM on 1/3 of base_names."""
 
@@ -634,12 +316,13 @@ class TestRegenTarget:
         finally:
             if os.path.exists(ctx.log_dir):
                 shutil.rmtree(ctx.log_dir)
+```
 
+## 変更5: TestFix 完成形
 
-# ============================================================
-# TestFix: full quality improvement + stale file deletion
-# ============================================================
+TestFixクラス全体を以下に置き換える:
 
+```python
 class TestFix:
     """test_fix: kc fix — Phase ACDEM (no B), stale file deleted after Phase M."""
 
@@ -695,12 +378,13 @@ class TestFix:
         finally:
             if os.path.exists(ctx.log_dir):
                 shutil.rmtree(ctx.log_dir)
+```
 
+## 変更6: TestFixTarget 完成形
 
-# ============================================================
-# TestFixTarget: targeted quality improvement
-# ============================================================
+TestFixTargetクラス全体を以下に置き換える:
 
+```python
 class TestFixTarget:
     """test_fix_target: kc fix --target — Phase ACDEM with target 1/3 of base_names."""
 
@@ -750,3 +434,27 @@ class TestFixTarget:
         finally:
             if os.path.exists(ctx.log_dir):
                 shutil.rmtree(ctx.log_dir)
+```
+
+## 変更7: 不要コードの削除
+
+`_run_cde_loop` 関数はどのテストからも呼ばれていないので削除する。
+
+## テスト実行
+
+```bash
+cd tools/knowledge-creator && python -m pytest tests/e2e/ -x -v
+```
+
+## コミット
+
+```bash
+git add tools/knowledge-creator/tests/e2e/test_e2e.py
+git commit -m "test: add _assert_full_output helper, fix assertion gaps in all E2E tests
+
+- Extract common output assertions into _assert_full_output()
+- All 5 tests now verify: catalog, cache, knowledge, traces, resolved,
+  index.toon, docs, final catalog state, and CC call counts
+- Remove _run_cde_loop (unused)
+- Fix TestFix docstring: Phase ACDEM, not CDEM"
+```
