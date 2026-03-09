@@ -438,6 +438,64 @@ class TestMergeSplitFiles:
         assert not os.path.exists(f"{ctx.trace_dir}/test--section-1.json")
         assert not os.path.exists(f"{ctx.trace_dir}/test--section-2.json")
 
+    def test_merge_warns_on_index_section_mismatch(self, ctx, caplog):
+        """Merge must log warning when merged result has index-section mismatch."""
+        import logging
+        from merge import MergeSplitFiles
+
+        part1 = {
+            "id": "libs-bind--p1",
+            "title": "Data Bind",
+            "official_doc_urls": ["https://example.com"],
+            "processing_patterns": [],
+            "index": [
+                {"id": "ext", "title": "拡張", "hints": ["extension"]}
+            ],
+            "sections": {"section-ext": "拡張の内容"}
+        }
+        part2 = {
+            "id": "libs-bind--p2",
+            "title": "Data Bind",
+            "official_doc_urls": ["https://example.com"],
+            "processing_patterns": [],
+            "index": [
+                {"id": "csv", "title": "CSV", "hints": ["csv"]}
+            ],
+            "sections": {"csv": "CSV content"}
+        }
+
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libs-bind--p1.json", part1)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libs-bind--p2.json", part2)
+
+        catalog = load_json(ctx.classified_list_path)
+        catalog["files"] = [
+            {
+                "source_path": "tests/fixtures/sample_source.rst", "format": "rst",
+                "type": "component", "category": "libraries",
+                "id": "libs-bind--p1",
+                "output_path": "component/libraries/libs-bind--p1.json",
+                "assets_dir": "component/libraries/assets/libs-bind--p1/",
+                "split_info": {"is_split": True, "original_id": "libs-bind", "part": 1, "total": 2}
+            },
+            {
+                "source_path": "tests/fixtures/sample_source.rst", "format": "rst",
+                "type": "component", "category": "libraries",
+                "id": "libs-bind--p2",
+                "output_path": "component/libraries/libs-bind--p2.json",
+                "assets_dir": "component/libraries/assets/libs-bind--p2/",
+                "split_info": {"is_split": True, "original_id": "libs-bind", "part": 2, "total": 2}
+            }
+        ]
+        write_json(ctx.classified_list_path, catalog)
+
+        with caplog.at_level(logging.WARNING, logger="knowledge_creator"):
+            MergeSplitFiles(ctx).run()
+
+        warning_messages = [r.message for r in caplog.records if "index-section mismatch" in r.message]
+        assert len(warning_messages) > 0, "No index-section mismatch warning logged"
+        assert any("libs-bind" in msg for msg in warning_messages)
+
     def test_merge_index_order_is_part_sequential(self, ctx):
         """Merged index must follow part1 all sections -> part2 new sections order."""
         from merge import MergeSplitFiles

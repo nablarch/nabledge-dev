@@ -178,6 +178,22 @@ class MergeSplitFiles:
             try:
                 write_json(merged_path, merged)
 
+                # Validate merged index-section consistency
+                merged_idx_ids = set(e["id"] for e in merged["index"])
+                merged_sec_ids = set(merged["sections"].keys())
+                idx_only = merged_idx_ids - merged_sec_ids
+                sec_only = merged_sec_ids - merged_idx_ids
+                if idx_only or sec_only:
+                    warn_parts = []
+                    if idx_only:
+                        warn_parts.append(f"index only: {sorted(idx_only)}")
+                    if sec_only:
+                        warn_parts.append(f"sections only: {sorted(sec_only)}")
+                    self.logger.warning(
+                        f"    ⚠️ {original_id}: index-section mismatch after merge: "
+                        + ", ".join(warn_parts)
+                    )
+
                 # Consolidate assets: copy from cache to knowledge_dir (preserve cache)
                 merged_assets = f"{self.ctx.knowledge_dir}/{type_}/{category}/assets/{original_id}/"
                 for part in parts:
