@@ -171,7 +171,7 @@ class TestPhaseF:
         PhaseBGenerate(ctx, run_claude_fn=mock_claude).run()
         # Copy Phase B output from cache to knowledge_dir so Phase F can find it
         shutil.copytree(ctx.knowledge_cache_dir, ctx.knowledge_dir, dirs_exist_ok=True)
-        PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
+        PhaseFFinalize(ctx).run()
 
         # index.toon
         assert os.path.exists(ctx.index_path)
@@ -218,7 +218,7 @@ class TestPhaseF:
         shutil.copytree(ctx.knowledge_cache_dir, ctx.knowledge_dir, dirs_exist_ok=True)
 
         # Phase F: Generate browsable docs
-        PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
+        PhaseFFinalize(ctx).run()
 
         # Verify browsable MD has converted asset paths
         doc_path = os.path.join(
@@ -328,7 +328,7 @@ class TestPipelineWithPhaseG:
             ":java:extdoc: should be converted or preserved"
 
         # Phase F: Generate docs from resolved files
-        PhaseFFinalize(ctx, run_claude_fn=mock_claude).run()
+        PhaseFFinalize(ctx).run()
 
         # Verify Phase F reads from resolved directory
         doc_path = os.path.join(

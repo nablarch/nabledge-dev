@@ -122,8 +122,7 @@ def _run_main(repo, args):
          patch("os.path.abspath", side_effect=patched_abspath), \
          patch("phase_b_generate._default_run_claude", mock_claude), \
          patch("phase_d_content_check._default_run_claude", mock_claude), \
-         patch("phase_e_fix._default_run_claude", mock_claude), \
-         patch("phase_f_finalize._default_run_claude", mock_claude):
+         patch("phase_e_fix._default_run_claude", mock_claude):
         import run as run_module
         run_module.main()
 

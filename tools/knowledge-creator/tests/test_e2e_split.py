@@ -446,16 +446,6 @@ class TestE2ESplitPipeline:
                     }),
                     stderr=""
                 )
-            elif "patterns" in schema_str:
-                # Phase F: pattern classification
-                return subprocess.CompletedProcess(
-                    args=["claude"], returncode=0,
-                    stdout=json.dumps({
-                        "patterns": ["nablarch-batch"],
-                        "reasoning": [{"pattern": "nablarch-batch", "matched": True, "evidence": "test"}]
-                    }),
-                    stderr=""
-                )
             else:
                 raise ValueError(f"Unexpected schema: {schema_str}")
 

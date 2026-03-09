@@ -62,8 +62,7 @@ class PhaseMFinalize:
         PhaseGResolveLinks(self.ctx).run()
 
         # Step 6: Generate browsable docs and index (always full)
-        PhaseFFinalize(self.ctx, dry_run=self.dry_run,
-                       run_claude_fn=self.run_claude_fn).run()
+        PhaseFFinalize(self.ctx, dry_run=self.dry_run).run()
 
         # Step 7: Restore split catalog with processing_patterns from knowledge cache
         if not self.dry_run:

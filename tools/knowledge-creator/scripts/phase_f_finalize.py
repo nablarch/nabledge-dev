@@ -8,7 +8,7 @@ import re
 import json
 from glob import glob
 from datetime import datetime, timezone
-from common import load_json, write_json, read_file, write_file, run_claude as _default_run_claude
+from common import load_json, write_json, read_file, write_file
 from logger import get_logger
 
 VALID_PROCESSING_PATTERNS = {
@@ -18,10 +18,9 @@ VALID_PROCESSING_PATTERNS = {
 
 
 class PhaseFFinalize:
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, dry_run=False):
         self.ctx = ctx
         self.dry_run = dry_run
-        self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
         # Cache compiled regex patterns per file_id (performance optimization)
         self._pattern_cache = {}

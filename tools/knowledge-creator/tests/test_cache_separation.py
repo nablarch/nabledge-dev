@@ -105,8 +105,7 @@ def _run_main(ctx, mock_fn, phases=None, target=None, clean_phase=None):
          patch("run.Context", lambda **kwargs: ctx), \
          patch("phase_b_generate._default_run_claude", mock_fn), \
          patch("phase_d_content_check._default_run_claude", mock_fn), \
-         patch("phase_e_fix._default_run_claude", mock_fn), \
-         patch("phase_f_finalize._default_run_claude", mock_fn):
+         patch("phase_e_fix._default_run_claude", mock_fn):
         import run as run_module
         run_module.main()
 
