@@ -5,68 +5,75 @@
   "official_doc_urls": [
     "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.html"
   ],
+  "processing_patterns": [
+    "db-messaging"
+  ],
   "index": [
     {
       "id": "overview",
       "title": "概要",
       "hints": [
-        "応答不要メッセージ送信",
-        "リクエスト単体テスト",
-        "テスト対象成果物",
+        "応答不要メッセージ送信処理",
         "フォーマット定義ファイル",
-        "条件網羅不要"
+        "SQL文テスト",
+        "条件網羅不要",
+        "限界値テスト不要",
+        "電文送信テーブル"
       ]
     },
     {
-      "id": "test-class",
+      "id": "test-class-structure",
       "title": "テストクラスの書き方",
       "hints": [
         "BatchRequestTestSupport",
+        "nablarch.test.core.batch.BatchRequestTestSupport",
         "テストクラス命名規則",
-        "リクエストID",
-        "テストクラス作成",
-        "nablarch.test.core.batch.BatchRequestTestSupport"
+        "RequestTest",
+        "電文リクエストID"
       ]
     },
     {
-      "id": "test-data",
+      "id": "test-data-structure",
       "title": "テストデータの書き方",
       "hints": [
         "responseMessage",
         "RESPONSE_HEADER_MESSAGES",
         "RESPONSE_BODY_MESSAGES",
-        "testShots",
-        "応答電文不要"
+        "応答電文不要",
+        "message_sendSyncMessage_test",
+        "testShots"
       ]
     },
     {
-      "id": "normal-test",
+      "id": "normal-case-test",
       "title": "正常系のテスト",
       "hints": [
         "messageRequestId",
         "testShots",
         "正常系テスト",
-        "送信電文確認",
-        "ステータス更新"
+        "電文送信確認",
+        "ステータス更新確認"
       ]
     },
     {
-      "id": "error-test",
+      "id": "error-case-test",
       "title": "異常系のテスト(障害系のテスト)",
       "hints": [
         "errorCase",
-        "AsyncMessageSendActionForUt",
         "AsyncMessageSendAction",
+        "AsyncMessageSendActionForUt",
+        "nablarch.fw.messaging.action.AsyncMessageSendAction",
+        "nablarch.test.core.messaging.AsyncMessageSendActionForUt",
         "異常系テスト",
-        "エラーステータス更新"
+        "requestPathJavaPackageMapping"
       ]
     }
   ],
   "sections": {
-    "overview": "> **重要**: アクションクラスに対する条件網羅や限界値テストは実施不要。\n\n**テスト対象の成果物:**\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- 電文送信テーブルから未送信データを取得するSELECT文\n- 電文送信後に該当データのステータスを処理済みに更新するUPDATE文\n- 電文送信失敗時に該当データのステータスをエラーに更新するUPDATE文",
-    "test-class": "テストクラス作成ルール:\n1. テスト対象機能と同一パッケージ\n2. クラス名は`<電文のリクエストID>RequestTest`\n3. **クラス**: `nablarch.test.core.batch.BatchRequestTestSupport` を継承",
-    "test-data": "応答不要メッセージ送信処理では応答電文が存在しないため、:ref:`message_sendSyncMessage_test` と比較して以下の設定は不要:\n\n- testShots内の `responseMessage` 定義\n- `RESPONSE_HEADER_MESSAGES` テーブル定義\n- `RESPONSE_BODY_MESSAGES` テーブル定義",
-    "normal-test": "testShotsの定義に `KEY=messageRequestId`、`VALUE=メッセージのリクエストID` を追加する必要がある。\n\n![正常系テストのtestShots設定](assets/testing-framework-delayed_send--sec-d41d8cd9/delayed_send.png)",
-    "error-test": "testShotsの定義に `KEY=errorCase`、`VALUE=true` を設定する。異常系ケースでは電文が送信されないため送信電文の期待値設定は不要。\n\n> **補足**: 異常系テストを実施する場合、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。\n\n本番設定:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.fw.messaging.action.AsyncMessageSendAction\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```\n\nテスト設定:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.test.core.messaging.AsyncMessageSendActionForUt\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```"
+    "overview": "テスト対象の成果物:\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- 3種類のSQL文:\n  1. 電文送信テーブルから未送信データを取得するSELECT文\n  2. 送信後にステータスを処理済みに更新するUPDATE文\n  3. 送信失敗時にステータスをエラーに更新するUPDATE文\n\n> **重要**: アクションクラスに対する条件網羅や限界値テストは実施不要。",
+    "test-class-structure": "テストクラス作成ルール: (1) テスト対象機能と同一パッケージ (2) クラス名は`{電文のリクエストID}RequestTest` (3) `nablarch.test.core.batch.BatchRequestTestSupport`を継承\n\n**クラス**: `nablarch.test.core.batch.BatchRequestTestSupport`",
+    "test-data-structure": "テストデータの記述方法は :ref:`message_sendSyncMessage_test` を参照。以下は応答不要メッセージ送信処理で不要な設定（応答電文が存在しないため）:\n\n- testShotsの`responseMessage`\n- `RESPONSE_HEADER_MESSAGES`\n- `RESPONSE_BODY_MESSAGES`",
+    "normal-case-test": "testShotsの定義に`KEY=messageRequestId`、`VALUE=メッセージのリクエストID`を追加する必要がある。\n\n![正常系テスト設定（testShots messageRequestId設定例）](assets/testing-framework-delayed_send--sec-d41d8cd9/delayed_send.png)",
+    "error-case-test": "testShotsの定義に`KEY=errorCase`、`VALUE=true`を設定。異常系ではメッセージが送信されないため、送信電文の期待値設定は不要。\n\n![異常系テスト設定（testShots errorCase設定例）](assets/testing-framework-delayed_send--sec-d41d8cd9/delayed_send_error.png)\n\n> **補足**: 異常系テストケースを実施する場合、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。\n\n本番用設定:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.fw.messaging.action.AsyncMessageSendAction\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```\n\nテスト用設定（本番設定をテスト用アクションクラスで上書き）:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.test.core.messaging.AsyncMessageSendActionForUt\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```"
   }
 }

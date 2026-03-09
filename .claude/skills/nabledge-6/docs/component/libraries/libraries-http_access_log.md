@@ -2,17 +2,21 @@
 
 ## HTTPアクセスログの出力方針
 
-HTTPアクセスログ出力に必要なハンドラ:
+HTTPアクセスログの出力に必要なハンドラ:
+- :ref:`http_access_log_handler`: リクエスト処理開始時と終了時のログ出力
+- :ref:`nablarch_tag_handler`: hiddenパラメータ復号後のログ出力（:ref:`hidden暗号化<tag-hidden_encryption>` 参照）
+- :ref:`http_request_java_package_mapping`: ディスパッチ先クラス決定後のログ出力
 
-1. :ref:`http_access_log_handler` - リクエスト処理開始時と終了時のログ出力
-2. :ref:`nablarch_tag_handler` - hiddenパラメータ復号後のログ出力（hiddenパラメータについては :ref:`hidden暗号化<tag-hidden_encryption>` 参照）
-3. :ref:`http_request_java_package_mapping` - ディスパッチ先クラス決定後のログ出力
+リクエストパラメータを含むリクエスト情報を出力することで証跡ログの要件を満たせる場合は、HTTPアクセスログと証跡ログを兼用できる。
 
-リクエストパラメータを含むリクエスト情報を出力することで証跡ログ要件を満たせる場合は、HTTPアクセスログと証跡ログを兼用できる。
+**出力方針**:
 
-**出力方針**: ログレベル `INFO`、ロガー名 `HTTP_ACCESS`（アプリケーションログに出力）
+| ログレベル | ロガー名 |
+|---|---|
+| INFO | HTTP_ACCESS |
 
-**log.propertiesの設定例**:
+**log.properties 設定例**:
+
 ```properties
 writerNames=appLog
 
@@ -34,8 +38,10 @@ loggers.ACC.level=INFO
 loggers.ACC.writerNames=appLog
 ```
 
-**app-log.propertiesの設定例**（`HttpAccessLogFormatter`設定プロパティ）:
+**app-log.properties 設定例**:
+
 ```properties
+# HttpAccessLogFormatter
 #httpAccessLogFormatter.className=
 #httpAccessLogFormatter.datePattern=
 #httpAccessLogFormatter.maskingChar=
@@ -66,26 +72,28 @@ httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userI
 
 設定は :ref:`log-app_log_setting` で説明したプロパティファイルに行う。
 
-| プロパティ名 | デフォルト値 | 説明 |
-|---|---|---|
-| httpAccessLogFormatter.className | | `HttpAccessLogFormatter` を実装したクラス。差し替える場合に指定する。 |
-| httpAccessLogFormatter.beginFormat | 下記参照 | リクエスト処理開始時のログ出力フォーマット |
-| httpAccessLogFormatter.parametersFormat | 下記参照 | hiddenパラメータ復号後のログ出力フォーマット |
-| httpAccessLogFormatter.dispatchingClassFormat | 下記参照 | ディスパッチ先クラス決定後のログ出力フォーマット |
-| httpAccessLogFormatter.endFormat | 下記参照 | リクエスト処理終了時のログ出力フォーマット |
-| httpAccessLogFormatter.datePattern | `yyyy-MM-dd HH:mm:ss.SSS` | 日時パターン（SimpleDateFormat構文） |
-| httpAccessLogFormatter.maskingPatterns | | マスク対象パラメータ名/変数名（正規表現、カンマ区切り、大文字小文字区別なし） |
-| httpAccessLogFormatter.maskingChar | `*` | マスク文字 |
-| httpAccessLogFormatter.parametersSeparator | `\n\t\t` | リクエストパラメータのセパレータ |
-| httpAccessLogFormatter.sessionScopeSeparator | `\n\t\t` | セッションスコープ情報のセパレータ |
-| httpAccessLogFormatter.beginOutputEnabled | `true` | リクエスト処理開始時の出力有効/無効 |
-| httpAccessLogFormatter.parametersOutputEnabled | `true` | hiddenパラメータ復号後の出力有効/無効 |
-| httpAccessLogFormatter.dispatchingClassOutputEnabled | `true` | ディスパッチ先クラス決定後の出力有効/無効 |
-| httpAccessLogFormatter.endOutputEnabled | `true` | リクエスト処理終了時の出力有効/無効 |
+**クラス**: `HttpAccessLogFormatter`
+
+| プロパティ名 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|
+| httpAccessLogFormatter.className | | | HttpAccessLogFormatterを実装したクラス（差し替え時に指定） |
+| httpAccessLogFormatter.beginFormat | | 下記参照 | リクエスト処理開始時のログフォーマット |
+| httpAccessLogFormatter.parametersFormat | | 下記参照 | hiddenパラメータ復号後のログフォーマット |
+| httpAccessLogFormatter.dispatchingClassFormat | | 下記参照 | ディスパッチ先クラス決定後のログフォーマット |
+| httpAccessLogFormatter.endFormat | | 下記参照 | リクエスト処理終了時のログフォーマット |
+| httpAccessLogFormatter.datePattern | | `yyyy-MM-dd HH:mm:ss.SSS` | 開始日時・終了日時のパターン（SimpleDateFormat構文） |
+| httpAccessLogFormatter.maskingPatterns | | | マスク対象パラメータ名・変数名の正規表現（カンマ区切り、大文字小文字区別なし）。リクエストパラメータとセッションスコープ情報の両方に適用。例: `password` と指定すると `password`, `newPassword`, `password2` 等にマッチする |
+| httpAccessLogFormatter.maskingChar | | `*` | マスクに使用する文字 |
+| httpAccessLogFormatter.parametersSeparator | | `\n\t\t` | リクエストパラメータのセパレータ |
+| httpAccessLogFormatter.sessionScopeSeparator | | `\n\t\t` | セッションスコープ情報のセパレータ |
+| httpAccessLogFormatter.beginOutputEnabled | | `true` | リクエスト処理開始時の出力有効/無効 |
+| httpAccessLogFormatter.parametersOutputEnabled | | `true` | hiddenパラメータ復号後の出力有効/無効 |
+| httpAccessLogFormatter.dispatchingClassOutputEnabled | | `true` | ディスパッチ先クラス決定後の出力有効/無効 |
+| httpAccessLogFormatter.endOutputEnabled | | `true` | リクエスト処理終了時の出力有効/無効 |
 
 **beginFormatのプレースホルダ**: `$requestId$`, `$userId$`, `$url$`, `$query$`, `$port$`, `$method$`, `$sessionId$`, `$sessionStoreId$`, `$parameters$`, `$sessionScope$`, `$clientIpAddress$`, `$clientHost$`, `$clientUserAgent$`
 
-デフォルトフォーマット（beginFormat）:
+beginFormatデフォルト値:
 ```bash
 @@@@ BEGIN @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$]
     \n\turl         = [$url$]
@@ -97,9 +105,9 @@ httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userI
 
 > **補足**: リクエストパラメータは :ref:`hidden暗号化<tag-hidden_encryption>` の復号前の状態となる。
 
-> **重要**: リクエストID・ユーザIDを出力する場合、取得元が `ThreadContext` のためハンドラ構成に :ref:`thread_context_handler` が必要。ユーザIDは :ref:`thread_context_handler-user_id_attribute_setting` を参照してセッションに値を設定すること。
+> **重要**: リクエストIDとユーザIDは、`BasicLogFormatter` が出力する項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために設けている。リクエストID、ユーザIDの取得元は `ThreadContext` のため、ハンドラ構成に :ref:`thread_context_handler` が含まれている必要がある。ユーザIDは :ref:`thread_context_handler-user_id_attribute_setting` を参照してセッションに値を設定すること。
 
-デフォルトフォーマット（parametersFormat）:
+**parametersFormatのデフォルト値**:
 ```bash
 @@@@ PARAMETERS @@@@
     \n\tparameters  = [$parameters$]
@@ -107,11 +115,14 @@ httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userI
 
 **dispatchingClassFormatのプレースホルダ**: `$dispatchingClass$`, `$sessionStoreId$`
 
-デフォルトフォーマット（dispatchingClassFormat）: `@@@@ DISPATCHING CLASS @@@@ class = [$dispatchingClass$]`
+dispatchingClassFormatデフォルト値:
+```bash
+@@@@ DISPATCHING CLASS @@@@ class = [$dispatchingClass$]
+```
 
 **endFormatのプレースホルダ**: `$dispatchingClass$`, `$statusCode$`, `$responseStatusCode$`, `$contentPath$`, `$startTime$`, `$endTime$`, `$executionTime$`, `$maxMemory$`, `$freeMemory$`, `$sessionStoreId$`
 
-デフォルトフォーマット（endFormat）:
+endFormatデフォルト値:
 ```bash
 @@@@ END @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$] url = [$url$] status_code = [$statusCode$] content_path = [$contentPath$]
     \n\tstart_time     = [$startTime$]
@@ -121,11 +132,11 @@ httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userI
     \n\tfree_memory    = [$freeMemory$]
 ```
 
-> **補足**: ステータスコード(内部)は :ref:`http_access_log_handler` の復路時点のコード。ステータスコード(クライアント)は :ref:`http_response_handler` でクライアントに返却するコード（変換ルールは :ref:`http_response_handler-convert_status_code` 参照）。本ログ出力時点では確定していないが同じ機能で導出する。
+> **補足**: ステータスコード(内部)は :ref:`http_access_log_handler` の復路時点のコード。ステータスコード(クライアント)は :ref:`http_response_handler` でクライアントに返却するコード。ステータスコード(クライアント)はログ出力時点では未確定だが :ref:`http_response_handler` と同じ機能で導出する。変換ルールは :ref:`http_response_handler-convert_status_code` 参照。
 
-> **重要**: `ステータスコード(クライアント)` はHTTPアクセスログハンドラ後にシステムエラー（JSPエラー等）が発生した場合、実際の内部コードと異なることがある。障害監視ログが発生した際はこの値が正しくない可能性を考慮すること。
+> **重要**: ステータスコード(クライアント)は、HTTPアクセスログハンドラ処理後にJSPエラー等のシステムエラーが発生した場合、実際の内部コードと異なることがある。障害監視ログが発生した際はこの値が正しくない可能性を考慮してログを検証すること。
 
-設定例:
+記述例:
 ```properties
 httpAccessLogFormatter.className=nablarch.fw.web.handler.HttpAccessLogFormatter
 httpAccessLogFormatter.beginFormat=> sid = [$sessionId$] @@@@ BEGIN @@@@\n\turl = [$url$]\n\tmethod = [$method$]
@@ -145,37 +156,38 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 ## JSON形式の構造化ログとして出力する
 
-デフォルトの `HttpAccessLogFormatter` では各項目はmessageの値に文字列として出力される。各項目もJSONの値として出力するには `HttpAccessJsonLogFormatter` を使用する。設定は :ref:`log-app_log_setting` のプロパティファイルに行う。
+:ref:`log-json_log_setting` でJSON形式のログ出力が可能だが、`HttpAccessLogFormatter` ではHTTPアクセスログ各項目はmessageに文字列として出力される。各項目もJSONの値として出力するには `HttpAccessJsonLogFormatter` を使用する。設定は :ref:`log-app_log_setting` で説明したプロパティファイルに行う。
 
 | プロパティ名 | 必須 | デフォルト値 | 説明 |
 |---|---|---|---|
 | httpAccessLogFormatter.className | ○ | | `nablarch.fw.web.handler.HttpAccessJsonLogFormatter` を指定 |
-| httpAccessLogFormatter.beginTargets | | label,requestId,userId,sessionId,url,port,method,clientIpAddress,clientHost | リクエスト処理開始時のログ出力項目（カンマ区切り） |
-| httpAccessLogFormatter.parametersTargets | | label,parameters | hiddenパラメータ復号後のログ出力項目（カンマ区切り） |
-| httpAccessLogFormatter.dispatchingClassTargets | | label,dispatchingClass | ディスパッチ先クラス決定後のログ出力項目（カンマ区切り） |
-| httpAccessLogFormatter.endTargets | | label,requestId,userId,sessionId,url,statusCode,contentPath,startTime,endTime,executionTime,maxMemory,freeMemory | リクエスト処理終了時のログ出力項目（カンマ区切り） |
-| httpAccessLogFormatter.datePattern | | `yyyy-MM-dd HH:mm:ss.SSS` | 日時パターン（SimpleDateFormat構文） |
-| httpAccessLogFormatter.maskingPatterns | | | マスク対象パラメータ名/変数名（正規表現、カンマ区切り、大文字小文字区別なし、部分一致） |
-| httpAccessLogFormatter.maskingChar | | `*` | マスク文字 |
-| httpAccessLogFormatter.beginOutputEnabled | | `true` | 開始時出力有効/無効 |
-| httpAccessLogFormatter.parametersOutputEnabled | | `true` | パラメータ出力有効/無効 |
-| httpAccessLogFormatter.dispatchingClassOutputEnabled | | `true` | ディスパッチ後出力有効/無効 |
-| httpAccessLogFormatter.endOutputEnabled | | `true` | 終了時出力有効/無効 |
-| httpAccessLogFormatter.beginLabel | | `"HTTP ACCESS BEGIN"` | 開始時ログのlabel値 |
-| httpAccessLogFormatter.parametersLabel | | `"PARAMETERS"` | パラメータログのlabel値 |
-| httpAccessLogFormatter.dispatchingClassLabel | | `"DISPATCHING CLASS"` | ディスパッチ後ログのlabel値 |
-| httpAccessLogFormatter.endLabel | | `"HTTP ACCESS END"` | 終了時ログのlabel値 |
-| httpAccessLogFormatter.structuredMessagePrefix | | `"$JSON$"` | JSONデータ識別マーカー。メッセージ先頭に付与する。 |
+| httpAccessLogFormatter.beginTargets | | 下記参照 | リクエスト処理開始時の出力項目（カンマ区切り） |
+| httpAccessLogFormatter.parametersTargets | | `label,parameters` | hiddenパラメータ復号後の出力項目（カンマ区切り） |
+| httpAccessLogFormatter.dispatchingClassTargets | | 下記参照 | ディスパッチ先クラス決定後の出力項目（カンマ区切り） |
+| httpAccessLogFormatter.endTargets | | 下記参照 | リクエスト処理終了時の出力項目（カンマ区切り） |
+| httpAccessLogFormatter.datePattern | | `yyyy-MM-dd HH:mm:ss.SSS` | 開始日時・終了日時のパターン（SimpleDateFormat構文） |
+| httpAccessLogFormatter.maskingPatterns | | | マスク対象パラメータ名・変数名の正規表現（カンマ区切り、大文字小文字区別なし） |
+| httpAccessLogFormatter.maskingChar | | `*` | マスクに使用する文字 |
+| httpAccessLogFormatter.beginOutputEnabled | | `true` | リクエスト処理開始時の出力有効/無効 |
+| httpAccessLogFormatter.parametersOutputEnabled | | `true` | hiddenパラメータ復号後の出力有効/無効 |
+| httpAccessLogFormatter.dispatchingClassOutputEnabled | | `true` | ディスパッチ先クラス決定後の出力有効/無効 |
+| httpAccessLogFormatter.endOutputEnabled | | `true` | リクエスト処理終了時の出力有効/無効 |
+| httpAccessLogFormatter.beginLabel | | `"HTTP ACCESS BEGIN"` | リクエスト処理開始時ログのlabel値 |
+| httpAccessLogFormatter.parametersLabel | | `"PARAMETERS"` | hiddenパラメータ復号後ログのlabel値 |
+| httpAccessLogFormatter.dispatchingClassLabel | | `"DISPATCHING CLASS"` | ディスパッチ先クラス決定後ログのlabel値 |
+| httpAccessLogFormatter.endLabel | | `"HTTP ACCESS END"` | リクエスト処理終了時ログのlabel値 |
+| httpAccessLogFormatter.structuredMessagePrefix | | `"$JSON$"` | JSON形式であることを識別するメッセージ先頭マーカー。変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して `JsonLogFormatter` にも同じ値を設定すること（LogWriterのプロパティについては :ref:`log-basic_setting` を参照） |
 
-> **重要**: `structuredMessagePrefix` を変更する場合は、LogWriterの `structuredMessagePrefix` プロパティで `JsonLogFormatter` にも同じ値を設定すること（ :ref:`log-basic_setting` 参照）。
+**beginTargetsの指定可能項目**（デフォルト: `label`, `requestId`, `userId`, `sessionId`, `url`, `port`, `method`, `clientIpAddress`, `clientHost`）:
+`label`, `requestId`, `userId`, `sessionId`, `sessionStoreId`, `url`, `port`, `method`, `queryString`, `parameters`, `sessionScope`, `clientIpAddress`, `clientHost`, `clientUserAgent`
 
-**beginTargetsの指定可能項目**: label, requestId, userId, sessionId, sessionStoreId, url, port, method, queryString, parameters, sessionScope, clientIpAddress, clientHost, clientUserAgent
+**dispatchingClassTargetsの指定可能項目**（デフォルト: `label`, `dispatchingClass`）:
+`label`, `sessionId`, `sessionStoreId`, `dispatchingClass`
 
-**endTargetsの指定可能項目**: label, requestId, userId, sessionId, sessionStoreId, url, dispatchingClass, statusCode, responseStatusCode, contentPath, startTime, endTime, executionTime, maxMemory, freeMemory
+**endTargetsの指定可能項目**（デフォルト: `label`, `requestId`, `userId`, `sessionId`, `url`, `statusCode`, `contentPath`, `startTime`, `endTime`, `executionTime`, `maxMemory`, `freeMemory`）:
+`label`, `requestId`, `userId`, `sessionId`, `sessionStoreId`, `url`, `dispatchingClass`, `statusCode`, `responseStatusCode`, `contentPath`, `startTime`, `endTime`, `executionTime`, `maxMemory`, `freeMemory`
 
-**dispatchingClassTargetsの指定可能項目**: label, sessionId, sessionStoreId, dispatchingClass
-
-設定例:
+記述例:
 ```properties
 httpAccessLogFormatter.className=nablarch.fw.web.handler.HttpAccessJsonLogFormatter
 httpAccessLogFormatter.structuredMessagePrefix=$JSON$
@@ -191,10 +203,11 @@ httpAccessLogFormatter.endLabel=HTTP ACCESS END
 
 ## セッションストアIDについて
 
-セッションストアIDを出力に含めた場合、 :ref:`session_store` が発行するセッション識別IDが出力される。
+セッションストアIDを出力に含めた場合、:ref:`session_store` が発行するセッション識別IDが出力される。この値は :ref:`session_store_handler` の往路で記録されたものが使用される。
 
-> **重要**: セッションストアIDをログに出力する場合、 :ref:`http_access_log_handler` は :ref:`session_store_handler` より後に配置しなければならない（ :ref:`session_store_handler` の往路で記録された値を使用するため）。
+> **重要**: セッションストアIDをログに出力する場合、:ref:`http_access_log_handler` は :ref:`session_store_handler` より後に配置しなければならない。
 
-セッションストアIDはリクエスト処理開始時の状態で固定されるため、以下の仕様となる:
-- セッションストアIDが発行されていないリクエストでは、途中でIDが発行されたとしても、同一リクエスト内で出力されるセッションストアIDは全て空になる
-- 途中で `セッションを破棄` したり `IDを変更` しても、ログに出力される値はリクエスト処理開始時のものから変化しない
+セッションストアIDはリクエスト処理開始時の状態で固定されるため、以下の仕様になる:
+
+- セッションストアIDが発行されていないリクエストでは、途中でIDが発行されても、同一リクエスト内で出力されるセッションストアIDは全て空になる
+- `セッションを破棄` したり `IDを変更` しても、ログに出力される値はリクエスト処理開始時から変化しない
