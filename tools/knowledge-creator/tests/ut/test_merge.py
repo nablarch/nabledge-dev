@@ -563,6 +563,49 @@ class TestMergeSplitFiles:
         assert "b" in section_b_entry["hints"]
         assert "extra" in section_b_entry["hints"]
 
+    def test_merge_skips_group_when_cache_missing(self, ctx, caplog):
+        """If any split part's cache file is missing, skip that group entirely."""
+        import logging
+        from merge import MergeSplitFiles
+
+        part1 = {
+            "id": "libs-comp--p1", "title": "Comparison",
+            "official_doc_urls": [], "processing_patterns": [],
+            "index": [{"id": "overview", "title": "概要", "hints": ["x"]}],
+            "sections": {"overview": "content for overview section here"}
+        }
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/libraries", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/libraries/libs-comp--p1.json", part1)
+        # Part 2 does NOT exist in cache
+
+        catalog = load_json(ctx.classified_list_path)
+        catalog["files"] = [
+            {
+                "source_path": "tests/fixtures/sample_source.rst", "format": "rst",
+                "type": "component", "category": "libraries",
+                "id": "libs-comp--p1",
+                "output_path": "component/libraries/libs-comp--p1.json",
+                "assets_dir": "component/libraries/assets/libs-comp--p1/",
+                "split_info": {"is_split": True, "original_id": "libs-comp", "part": 1, "total": 2}
+            },
+            {
+                "source_path": "tests/fixtures/sample_source.rst", "format": "rst",
+                "type": "component", "category": "libraries",
+                "id": "libs-comp--p2",
+                "output_path": "component/libraries/libs-comp--p2.json",
+                "assets_dir": "component/libraries/assets/libs-comp--p2/",
+                "split_info": {"is_split": True, "original_id": "libs-comp", "part": 2, "total": 2}
+            }
+        ]
+        write_json(ctx.classified_list_path, catalog)
+
+        with caplog.at_level(logging.INFO, logger="knowledge_creator"):
+            MergeSplitFiles(ctx).run()
+
+        merged_path = f"{ctx.knowledge_dir}/component/libraries/libs-comp.json"
+        assert not os.path.exists(merged_path), "Merged file must not exist when cache is incomplete"
+        assert any("SKIP" in r.message and "libs-comp" in r.message for r in caplog.records)
+
     def test_merge_trace_with_partial_missing(self, ctx):
         """片方のパートにだけtraceがある場合、存在するtraceのみで統合する。"""
         from merge import MergeSplitFiles
