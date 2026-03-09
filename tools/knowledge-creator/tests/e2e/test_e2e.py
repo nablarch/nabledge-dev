@@ -1,10 +1,8 @@
-"""E2E tests verifying cache separation between knowledge_cache_dir and knowledge_dir.
+"""E2E tests for kc commands (gen / gen --resume / regen --target / fix / fix --target).
 
-Key invariants:
-- Phase B writes to knowledge_cache_dir, NOT knowledge_dir
-- Phase C/D/E read from knowledge_cache_dir
-- Phase M reads from knowledge_cache_dir, writes to knowledge_dir (delete-insert)
-- After Phase M, catalog.json is restored to split state
+Tests call run.py facade functions (kc_gen, kc_fix, etc.) with mocked CC.
+CCの出力は決定的なので、最終出力の完全一致・ファイル数・CC呼び出し回数でアサートする。
+Expected values are computed by generate_expected.py independently from kc source code.
 """
 import json
 import os
@@ -15,13 +13,10 @@ import uuid
 
 import pytest
 
-TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(TOOL_DIR, "scripts"))
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+TOOL_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-
-from run import Context
+from run import Context, kc_gen, kc_regen_target, kc_fix, kc_fix_target, _run_pipeline, _make_args
 
 
 # ============================================================
@@ -69,45 +64,23 @@ def _make_ctx(run_id=None, max_rounds=2):
     return ctx
 
 
-def _run_main(ctx, mock_fn, phases=None, target=None, clean_phase=None):
-    """run.py main() を CC mock 付きで実行する。
-
-    ctx は TestContext インスタンス。
-    mock_fn は _make_cc_mock() の戻り値。
-    """
-    from unittest.mock import patch, MagicMock
-
-    args = MagicMock()
-    args.version = "6"
-    args.phase = phases          # None = "ABCDEM"
-    args.max_rounds = ctx.max_rounds
-    args.concurrency = ctx.concurrency
-    args.dry_run = False
-    args.test = None
-    args.run_id = ctx.run_id
-    args.yes = True
-    args.regen = False
-    args.target = target         # list of base_names, or None
-    args.clean_phase = clean_phase
-    args.verbose = False
-
-    original_abspath = os.path.abspath
-
-    def patched_abspath(path):
-        result = original_abspath(path)
-        if result == original_abspath(os.path.join(TOOL_DIR, '..', '..')):
-            return ctx.repo
-        return result
-
-    with patch("sys.argv", ["run.py", "--version", "6"]), \
-         patch("argparse.ArgumentParser.parse_args", return_value=args), \
-         patch("os.path.abspath", side_effect=patched_abspath), \
-         patch("run.Context", lambda **kwargs: ctx), \
-         patch("phase_b_generate._default_run_claude", mock_fn), \
+def _run_with_mock(facade_fn, ctx, mock_fn, **kwargs):
+    """ファサード関数をCCモック付きで呼ぶ。"""
+    from unittest.mock import patch
+    with patch("phase_b_generate._default_run_claude", mock_fn), \
          patch("phase_d_content_check._default_run_claude", mock_fn), \
          patch("phase_e_fix._default_run_claude", mock_fn):
-        import run as run_module
-        run_module.main()
+        facade_fn(ctx, **kwargs)
+
+
+def _run_phase_a_only(ctx, mock_fn):
+    """テストセットアップ用: Phase Aのみ実行。"""
+    args = _make_args(ctx, phase="A")
+    from unittest.mock import patch
+    with patch("phase_b_generate._default_run_claude", mock_fn), \
+         patch("phase_d_content_check._default_run_claude", mock_fn), \
+         patch("phase_e_fix._default_run_claude", mock_fn):
+        _run_pipeline(ctx, args)
 
 
 def _copy_state(src_ctx, dst_ctx):
@@ -384,7 +357,7 @@ def gen_state(expected):
         counter,
     )
 
-    _run_main(ctx, mock)  # phases=None = ABCDEM
+    _run_with_mock(kc_gen, ctx, mock)
 
     yield {"ctx": ctx, "counter": counter}
 
@@ -414,7 +387,7 @@ class TestGen:
         )
 
         try:
-            _run_main(ctx, mock)  # phases=None = ABCDEM
+            _run_with_mock(kc_gen, ctx, mock)
 
             # Assert: catalog.json entries match catalog_entries (full field match)
             catalog = _load_json(ctx.classified_list_path)
@@ -590,7 +563,7 @@ class TestGenResume:
 
         try:
             # Phase A only (to create catalog)
-            _run_main(ctx, mock, phases="A")
+            _run_phase_a_only(ctx, mock)
 
             # Pre-place one knowledge file before Phase B
             pre_path = f"{ctx.knowledge_cache_dir}/{preplace_entry['output_path']}"
@@ -600,7 +573,7 @@ class TestGenResume:
                 json.dump(pre_knowledge, f)
 
             # ABCDEM (Phase B should skip the pre-placed file)
-            _run_main(ctx, mock)
+            _run_with_mock(kc_gen, ctx, mock)
 
             # Assert: Phase B called U-1 times (skipped pre-placed file)
             assert len(counter["B"]) == U - 1, (
@@ -667,7 +640,7 @@ class TestRegenTarget:
             # Copy gen_state to new ctx
             _copy_state(src_ctx, ctx)
 
-            _run_main(ctx, mock, phases="ABCDEM", target=target_base_names, clean_phase="BD")
+            _run_with_mock(kc_regen_target, ctx, mock, targets=target_base_names)
 
             # Assert: knowledge_dir has all M files
             assert _count_json_files(ctx.knowledge_dir) == M, (
@@ -728,7 +701,7 @@ class TestFix:
             with open(stale_path, "w", encoding="utf-8") as f:
                 json.dump({"id": "stale-file", "title": "Stale"}, f)
 
-            _run_main(ctx, mock, phases="CDEM")
+            _run_with_mock(kc_fix, ctx, mock)
 
             # Assert: stale file deleted (delete-insert)
             assert not os.path.exists(stale_path), (
@@ -806,7 +779,7 @@ class TestFixTarget:
             # Copy gen_state to new ctx
             _copy_state(src_ctx, ctx)
 
-            _run_main(ctx, mock, phases="CDEM", target=target_base_names, clean_phase="D")
+            _run_with_mock(kc_fix_target, ctx, mock, targets=target_base_names)
 
             # Assert: B not called
             assert len(counter["B"]) == 0, (

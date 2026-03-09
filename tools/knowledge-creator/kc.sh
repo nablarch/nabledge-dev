@@ -63,32 +63,32 @@ case "$COMMAND" in
         if [ "$RESUME" = true ]; then
             # UC2: Resume interrupted generation (no clean, new run_id)
             echo "🔄 中断再開モード"
-            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/run.py" --command gen --version "$VERSION" $PASSTHROUGH_ARGS
         else
             # UC1: Full generation (clean first)
             echo "🚀 全件生成モード"
             $PYTHON "$TOOL_DIR/scripts/clean.py" --version "$VERSION" ${YES_FLAG:---yes}
-            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/run.py" --command gen --version "$VERSION" $PASSTHROUGH_ARGS
         fi
         ;;
     regen)
         if [ -n "$TARGET_ARGS" ]; then
             # UC4: Regenerate specific files
             echo "🔄 特定ファイル再生成"
-            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
-                --phase ABCDEM --clean-phase BD $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/run.py" --command regen --version "$VERSION" \
+                $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         else
             # UC3: Detect source changes and regenerate
             echo "🔄 ソース変更検知 → 再生成"
-            $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
-                --regen ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/run.py" --command regen --version "$VERSION" \
+                ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         fi
         ;;
     fix)
         # UC5, UC6: Quality improvement
         echo "🔧 品質改善モード"
-        $PYTHON "$TOOL_DIR/scripts/run.py" --version "$VERSION" \
-            --phase ACDEM --clean-phase D $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
+        $PYTHON "$TOOL_DIR/scripts/run.py" --command fix --version "$VERSION" \
+            $TARGET_ARGS ${YES_FLAG:---yes} $PASSTHROUGH_ARGS
         ;;
     *)
         echo "Error: Unknown command '$COMMAND'"

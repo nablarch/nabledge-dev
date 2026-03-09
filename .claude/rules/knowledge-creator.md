@@ -59,3 +59,38 @@ Each Phase B/D/E/F execution saves metrics to `executions/` directory:
   - `structured_output` - Generated knowledge file content
 
 **Purpose**: Performance analysis, cost tracking, and debugging.
+
+## Test Policy
+
+### Principles
+
+- Write only the minimum tests that improve quality
+- E2E tests cover the main flows; unit tests cover only complex logic not covered by E2E
+
+### Test Structure
+
+    tests/
+    ├── e2e/                     # E2E tests
+    │   ├── test_e2e.py          # kc command tests by use case (single file)
+    │   ├── conftest.py          # TestContext, _make_cc_mock, etc.
+    │   └── generate_expected.py # Independent expected value generation
+    └── ut/                      # Unit tests
+        ├── conftest.py          # Shared fixtures (ctx, mock_claude, load_fixture)
+        ├── fixtures/            # Test data
+        ├── mode/                # --test mode files
+        └── test_<module>.py
+
+### E2E Tests (tests/e2e/test_e2e.py)
+
+- One test per kc command use case: gen / gen --resume / regen --target / fix / fix --target
+- Call run.py facade functions (kc_gen / kc_fix, etc.); do not hardcode phase strings
+- CC is mocked so all output is deterministic; assert with exact equality
+- Assert file counts and other quantities
+- Assert CC call counts (cost-critical)
+- Use TestContext to redirect all outputs under log_dir
+
+### Unit Tests (tests/ut/)
+
+- Test only complex logic that is hard to verify through E2E
+- Write for: split criteria, merge edge cases, validation rules, link resolution, boundary values, error cases not reachable via E2E
+- Skip: Context properties, simple delegation, E2E happy path coverage

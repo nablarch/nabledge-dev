@@ -9,7 +9,7 @@ import pytest
 import tempfile
 import stat
 
-TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOOL_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 KC_SH = os.path.join(TOOL_DIR, "kc.sh")
 
 
@@ -58,31 +58,29 @@ class TestGenCommand:
 
 class TestRegenCommand:
 
-    def test_regen_without_target_uses_regen_flag(self, stub_env):
+    def test_regen_without_target_uses_command_regen(self, stub_env):
         result = _run_nc(["regen", "6"], stub_env)
         lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
         assert len(lines) == 1
-        assert "--regen" in lines[0]
+        assert "--command regen" in lines[0]
 
-    def test_regen_with_target_uses_phase_and_clean(self, stub_env):
+    def test_regen_with_target_uses_command_regen(self, stub_env):
         result = _run_nc(["regen", "6", "--target", "test-id"], stub_env)
         lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
         assert len(lines) == 1
         cmd = lines[0]
-        assert "--phase ABCDEM" in cmd
-        assert "--clean-phase BD" in cmd
+        assert "--command regen" in cmd
         assert "--target test-id" in cmd
 
 
 class TestFixCommand:
 
-    def test_fix_uses_phase_cdem_and_clean_d(self, stub_env):
+    def test_fix_uses_command_fix(self, stub_env):
         result = _run_nc(["fix", "6"], stub_env)
         lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
         assert len(lines) == 1
         cmd = lines[0]
-        assert "--phase ACDEM" in cmd
-        assert "--clean-phase D" in cmd
+        assert "--command fix" in cmd
 
     def test_fix_with_target_passes_target(self, stub_env):
         result = _run_nc(["fix", "6", "--target", "test-id"], stub_env)
