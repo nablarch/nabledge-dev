@@ -75,20 +75,24 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str, verbo
     Returns:
         CompletedProcess with stdout containing structured_output JSON
     """
+    disallowed = "Read,Edit,Write,Glob,Grep,LS,ToolSearch"
+
     if verbose:
         cmd = [
             "claude", "-p",
             "--output-format", "stream-json",
             "--verbose",
             "--json-schema", json.dumps(json_schema),
-            "--max-turns", "10"
+            "--max-turns", "10",
+            "--disallowedTools", disallowed
         ]
     else:
         cmd = [
             "claude", "-p",
             "--output-format", "json",
             "--json-schema", json.dumps(json_schema),
-            "--max-turns", "10"
+            "--max-turns", "10",
+            "--disallowedTools", disallowed
         ]
 
     # Remove CLAUDECODE to prevent Claude CLI from detecting agent context
