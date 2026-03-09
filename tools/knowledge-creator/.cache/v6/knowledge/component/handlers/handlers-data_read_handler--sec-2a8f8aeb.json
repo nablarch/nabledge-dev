@@ -1,6 +1,7 @@
 {
   "id": "handlers-data_read_handler--sec-2a8f8aeb",
   "title": "データリードハンドラ",
+  "no_knowledge_content": false,
   "official_doc_urls": [
     "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/standalone/data_read_handler.html",
     "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DataReadHandler.html",
@@ -72,10 +73,10 @@
     }
   ],
   "sections": {
-    "overview": "実行コンテキスト上の `DataReader` を使用し、業務処理に対する入力データを1件ずつ読み込み、それを引数として後続ハンドラに処理を委譲する。`DataReader` の終端に達した場合は、**後続のハンドラを実行せずに**、データの終端に達したことを示す `NoMoreRecord` を返却する。\n\n本ハンドラでは以下の処理を行う。\n\n- データリーダを使用して入力データの読み込み\n- 実行時IDの採番",
     "handler-class-name": "ハンドラキューにデータリードハンドラを組み込む際に指定するクラス名は以下のとおり。\n\n**クラス名**: `nablarch.fw.handler.DataReadHandler`",
     "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-standalone</artifactId>\n</dependency>\n```",
     "constraints": "本ハンドラより手前のハンドラにて、`ExecutionContext` に `DataReader` を設定する必要がある。本ハンドラ呼び出し時に `DataReader` が未設定の場合、処理対象データ無しとして `NoMoreRecord` を返却して処理を終了する。",
-    "max-count-configuration": "`maxCount` プロパティで最大処理件数を設定できる。設定件数分のデータを処理し終わると `NoMoreRecord` を返却する。大量データを複数日に分割処理するバッチなどに使用する（例: 100万件のバッチを日次10万件ずつ10日で処理）。\n\n```xml\n<component class=\"nablarch.fw.handler.DataReadHandler\">\n  <!-- 処理する件数は、最大1万レコード -->\n  <property name=\"maxCount\" value=\"10000\" />\n</component>\n```"
+    "max-count-configuration": "`maxCount` プロパティで最大処理件数を設定できる。設定件数分のデータを処理し終わると `NoMoreRecord` を返却する。大量データを複数日に分割処理するバッチなどに使用する（例: 100万件のバッチを日次10万件ずつ10日で処理）。\n\n```xml\n<component class=\"nablarch.fw.handler.DataReadHandler\">\n  <!-- 処理する件数は、最大1万レコード -->\n  <property name=\"maxCount\" value=\"10000\" />\n</component>\n```",
+    "overview": "実行コンテキスト上の `DataReader` を使用し、業務処理に対する入力データを1件ずつ読み込み、それを引数として後続ハンドラに処理を委譲する。`DataReader` の終端に達した場合は、**後続のハンドラを実行せずに**、データの終端に達したことを示す `NoMoreRecord` を返却する。\n\n本ハンドラでは以下の処理を行う。\n\n- データリーダを使用して入力データの読み込み\n- 実行時IDの採番"
   }
 }

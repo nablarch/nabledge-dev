@@ -30,6 +30,10 @@ def real_ctx(tmp_path):
         def log_dir(self):
             return str(log_base / f"v{self.version}")
 
+        @property
+        def classified_list_path(self):
+            return os.path.join(self.log_dir, 'catalog.json')
+
     ctx = RealContext(version="6", repo=REPO_ROOT, concurrency=1)
     os.makedirs(ctx.log_dir, exist_ok=True)
     return ctx

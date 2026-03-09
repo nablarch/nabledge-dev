@@ -1,6 +1,7 @@
 {
   "id": "testing-framework-send_sync--sec-5ac81584",
   "title": "リクエスト単体テストの実施方法(同期応答メッセージ送信処理)",
+  "no_knowledge_content": false,
   "official_doc_urls": [
     "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.html",
     "https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java",
@@ -121,17 +122,78 @@
         "要求電文",
         "応答電文"
       ]
+    },
+    {
+      "id": "excel-file-format",
+      "title": "電文のフォーマットおよびデータの記載方法",
+      "hints": [
+        "BasicDataTypeMapping",
+        "識別子",
+        "EXPECTED_REQUEST_HEADER_MESSAGES",
+        "EXPECTED_REQUEST_BODY_MESSAGES",
+        "RESPONSE_HEADER_MESSAGES",
+        "RESPONSE_BODY_MESSAGES",
+        "ディレクティブ行",
+        "フィールド名称",
+        "データ型",
+        "フィールド長"
+      ]
+    },
+    {
+      "id": "excel-file-reload",
+      "title": "Excelファイルの再読み込み",
+      "hints": [
+        "タイムスタンプ",
+        "再読み込み",
+        "noインクリメント",
+        "サーバ起動中"
+      ]
+    },
+    {
+      "id": "request-message-log",
+      "title": "要求電文のログ出力",
+      "hints": [
+        "FileLogWriter",
+        "BasicLogFormatter",
+        "MESSAGING_SEND_MAP",
+        "MESSAGING_SEND_CSV",
+        "Map形式",
+        "CSV形式",
+        "log.properties",
+        "messaging-evidence.log"
+      ]
+    },
+    {
+      "id": "framework-class-settings",
+      "title": "フレームワークで使用するクラスの設定",
+      "hints": [
+        "MockMessagingProvider",
+        "BasicTestDataParser",
+        "PoiXlsReader",
+        "FilePathSetting",
+        "NullInterpreter",
+        "QuotationTrimmer",
+        "CompositeInterpreter",
+        "BasicJapaneseCharacterInterpreter",
+        "nablarch-testing",
+        "テスト用プロファイル",
+        "how_to_change_componet_define"
+      ]
     }
   ],
   "sections": {
     "output-library-structure": "同期応答メッセージ送信処理のリクエスト単体テストは、リクエストID単位で行う。\n\n> **補足**: ここで扱うリクエストIDは、メッセージ送信先の外部システム機能を一意に識別するIDであり、ウェブアプリケーションやバッチ処理で使用するリクエストIDとは意味が異なる。このリクエストIDにより、要求電文・応答電文のフォーマット、送信キュー名、受信キュー名が決まる。\n\n用語:\n- 要求電文: Actionがキューへ送信するメッセージ\n- 応答電文: Actionがキューから受信するメッセージ\n\nテスト実行時の動作:\n1. 自動テストフレームワークがNablarch Application Frameworkを起動する\n2. Nablarch Application FrameworkがActionの入力パラメータ（画面ならばリクエスト、バッチならばファイルやDB）を読み込み、Actionを起動する\n3. ActionがNablarchのメッセージ同期送信処理を実行し、NablarchがActionから受け取ったパラメータを要求電文に変換する\n4. 自動テストフレームワークがテストデータをもとに要求電文をアサートする（キューへはPUTしない）\n5. 自動テストフレームワークがテストデータをもとに応答電文を生成し、Actionへ返却する（キューからはGETしない）\n\n> **補足**: フレームワークは「送信キュー」「受信キュー」を使用せず、キューの手前で要求電文アサートと応答電文生成を行う。特別なミドルウェアのインストールや環境設定は不要。\n\n特徴:\n1. テストデータをExcelに記載でき、外部インターフェース設計書のフォーマット定義に沿って記述できる。同期応答メッセージ送信処理用のテストデータ書式が提供されている。\n2. メッセージ同期送信処理のテストコードを記述する必要がない。要求電文の期待値と応答電文をExcelに記載すると、フレームワークが自動的にアサートと応答電文返却を行う。テスト準備・実行・結果確認が可能なスーパークラスが提供されており、コーディングほぼ不要でテスト実行可能。",
     "test-implementation": "同期応答メッセージ送信処理のテストは、ウェブアプリケーションやバッチ処理などのテスト方式を踏襲して行われる。テストクラスの書き方や各種準備データの準備方法については、これらのテストの実施方法を参照すること。\n\n本項では、同期応答メッセージ送信処理固有の実施方法についてのみ解説する。",
+    "overview": "同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テストには、Nablarchが提供するモックアップクラスを使用する。\n\nなお、キューへ送信するメッセージのことを「要求電文」、キューから受信するメッセージのことを「応答電文」と称す。\n\nモックアップクラスが提供する機能:\n\n1. **任意の応答電文返却**: 送信キュー・受信キューへの接続なしに、テスト用の応答電文を返却できる。\n2. **要求電文のログ出力**: 同期送信された要求電文をMap形式・CSV形式でログ出力できる。エビデンスとして使用可能。\n3. **障害系テスト**: タイムアウトエラー（`sendSync`メソッドがnullを返却）やメッセージ送受信エラー（`MessagingException`をスロー）を発生させることができる。\n\nモックアップクラスを使用することでキューの準備が不要になり、特別なミドルウェアのインストールや環境設定なしに取引単体テストを実施できる。",
     "test-data-writing": "テストデータを記載したExcelファイルは、クラス単体テストと同様に、テストソースコードと同じディレクトリに同じ名前（拡張子のみ異なる）で格納する。\n\nテストデータの記述方法詳細は :ref:`how_to_write_excel` を参照。",
-    "request-response-preparation": "同期応答メッセージ送信処理のテストでは、リクエストIDごとに要求電文および応答電文のヘッダ部・ボディ部のフォーマットとデータを定義する。\n\nテストケースとの対応付けはグループIDで行う。テストケースの `expectedMessage` フィールドと `responseMessage` フィールドに記載したグループIDが、対応する識別子を持つ電文表と紐付く。\n\n> **重要**:\n> - テストケース一覧に `expectedMessage` および `responseMessage` の欄がない場合、検証は行われない\n> - 欄が空欄でメッセージ同期送信処理が実行された場合、テストが失敗する\n> - メッセージ同期送信処理を行う場合は必ず `expectedMessage` と `responseMessage` を記載すること\n\n1テストケースで同一グループID・同一リクエストIDの電文が複数件送信される場合は、その件数分のデータ行を記載する。`no` 列の順番（連番）は送信順に対応する。\n\nテストケースの書き方:\n- ウェブアプリケーション: :ref:`request_test_testcases`\n- バッチ処理: :ref:`batch_test_testcases`\n\n![テストデータ（グループIDの関連）](assets/testing-framework-send_sync--sec-5ac81584/send_sync.png)\n\n> **補足**: Nablarch標準の同期応答メッセージ送信機能では、要求電文と応答電文のヘッダ部は共通フォーマットを使用するため、テストデータのヘッダ部フォーマット定義はリクエスト単位で統一すること。ボディ部は要求電文と応答電文で異なるフォーマットを定義できる。",
-    "message-table-format": "要求電文・応答電文の電文表の識別子形式:\n\n| 識別子 | 形式 |\n|---|---|\n| 要求電文ヘッダの期待値 | `EXPECTED_REQUEST_HEADER_MESSAGES[グループID]=リクエストID` |\n| 要求電文本文の期待値 | `EXPECTED_REQUEST_BODY_MESSAGES[グループID]=リクエストID` |\n| 応答電文ヘッダ | `RESPONSE_HEADER_MESSAGES[グループID]=リクエストID` |\n| 応答電文本文 | `RESPONSE_BODY_MESSAGES[グループID]=リクエストID` |\n\n電文表の構造（行の構成）:\n1. 識別子行\n2. ディレクティブ行（ディレクティブ名と設定値を記載; 複数行可）\n3. `no` 行（ディレクティブ行の直下に必ず `no` を記載）\n4. フィールド名称行（フィールド数分）\n5. データ型行（フィールド数分）: 日本語名称で記述（例: 「半角英字」）。マッピングは [BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java) の `DEFAULT_TABLE` を参照\n6. フィールド長行（フィールド数分）\n7. データ行（複数レコードは次の行に続けて記載）\n\nディレクティブの以下は記述不要:\n\n| 項目 | 理由 |\n|---|---|\n| `file-type` | テスティングフレームワークが固定長のみ対応のため |\n| `record-length` | フィールド長に記載したサイズでパディングされるため |\n\n> **重要**: フィールド名称に重複した名称は許容されない（例: 「氏名」フィールドが2つ以上あってはならない）。\n\n> **補足**: フィールド名称・データ型・フィールド長は外部インタフェース設計書からコピー＆ペーストで効率よく作成できる（ペースト時は「行列を入れ替える」オプションを使用すること）。\n\n要求電文本文の記載例:\n![要求電文本文の記載例](assets/testing-framework-send_sync--sec-5ac81584/send_sync_example.png)\n\n> **補足**: 要求電文のヘッダの期待値および応答電文の本文・ヘッダについても、識別子を除く部分については要求電文の本文の期待値と同様の記載方法となる。",
+    "test-result-verification": "要求電文の期待値を定義した場合、フレームワークが以下を自動検証する:\n- 要求電文の内容の検証\n- 要求電文の送信件数の検証",
+    "excel-file-reload": "モックアップクラスは、Excelファイルを手動で編集してテストをやり直すケースや、同じデータで繰り返しテストを行うケースを想定し、Excelファイルのタイムスタンプが更新された場合にファイルを再読み込みする機能を提供している。\n\n通常、応答電文を返却するたびにnoのインクリメントが行われ、アプリケーションサーバが起動している間はnoの値が初期化されることはない。Excelファイルの編集や上書きによりタイムスタンプを更新することで、アプリケーションサーバ起動中にExcelファイルの再読み込みを行うことができる。",
     "multiple-messages-test": "要求電文に複数レコードが存在する場合、ヘッダとレコードを交互に記載する必要がある。\n\n> **重要**: ヘッダ1つに複数の業務データを続けて記載してはならない。ヘッダと業務データの数が一致しないためアサーションエラーが発生する。\n>\n> 誤: ヘッダ → 業務データ(1レコード目) → 業務データ(2レコード目) → 業務データ(3レコード目)\n>\n> 正: ヘッダ → 業務データ(1レコード目) → ヘッダ → 業務データ(2レコード目) → ヘッダ → 業務データ(3レコード目)\n\n複数回電文を送信するテストの作成時の注意:\n- 同一データタイプ（例: `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES`）はそれぞれまとめて記述する。詳細は :ref:`tips_groupId` および :ref:`auto-test-framework_multi-datatype` を参照。\n- 同一リクエストIDの電文は、`no` の値を変えてまとめて記述する。\n\n複数回送信テストの記載例:\n![複数回送信テストの記載例](assets/testing-framework-send_sync--sec-5ac81584/send_sync_ok_pattern_expected.png)\n\n> **補足**: 送信対象のリクエストIDが複数存在する場合、送信順のテストは不可能。異なるリクエストIDの電文がどの順番で送信されてもテストは成功する。",
     "failure-test": "応答電文表のヘッダおよび本文の `no` を除く最初のフィールドに以下の値を設定することで障害系テストが可能。\n\n| 設定値 | 障害内容 | フレームワークの動作 |\n|---|---|---|\n| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生するケースのテスト | **`MessageSendSyncTimeoutException`**（`MessagingException` のサブクラス）をスローする |\n| `errorMode:msgException` | メッセージ送受信エラーが発生するケースのテスト | **`MessagingException`** をスローする |\n\nこの値は、応答電文表の**ヘッダおよび本文両方**の `no` を除く最初のフィールドに記載する。\n\n![障害系テスト設定例](assets/testing-framework-send_sync--sec-5ac81584/send_sync_error.png)\n\n> **補足**: 業務アクション内で `MessagingException` を明示的に制御していない場合、個別のリクエスト単体テストで障害系テストを行う必要はない。\n\n応答電文本文の最初のフィールドに以下の値を設定することで障害系テストを実施できる:\n\n| 設定値 | 障害内容 | フレームワークの動作 |\n|---|---|---|\n| `errorMode:timeout` | タイムアウトエラー | `sendSync`メソッドの戻り値としてnullを返却 |\n| `errorMode:msgException` | メッセージ送受信エラー | `MessagingException`をスロー |",
-    "test-result-verification": "要求電文の期待値を定義した場合、フレームワークが以下を自動検証する:\n- 要求電文の内容の検証\n- 要求電文の送信件数の検証",
-    "overview": "同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テストには、Nablarchが提供するモックアップクラスを使用する。\n\nなお、キューへ送信するメッセージのことを「要求電文」、キューから受信するメッセージのことを「応答電文」と称す。\n\nモックアップクラスが提供する機能:\n\n1. **任意の応答電文返却**: 送信キュー・受信キューへの接続なしに、テスト用の応答電文を返却できる。\n2. **要求電文のログ出力**: 同期送信された要求電文をMap形式・CSV形式でログ出力できる。エビデンスとして使用可能。\n3. **障害系テスト**: タイムアウトエラー（`sendSync`メソッドがnullを返却）やメッセージ送受信エラー（`MessagingException`をスロー）を発生させることができる。\n\nモックアップクラスを使用することでキューの準備が不要になり、特別なミドルウェアのインストールや環境設定なしに取引単体テストを実施できる。"
+    "framework-class-settings": "これらの設定は取引単体テストでのみ必要な設定である。テスト用のプロファイルにこれらを設定すること（:ref:`how_to_change_componet_define` 参照）。通常、これらの設定はアーキテクトが行うものであり、アプリケーションプログラマが設定する必要はない。\n\n**モックアップクラスの設定**\n\n**クラス**: `nablarch.test.core.messaging.MockMessagingProvider`\n\n```xml\n<component name=\"messagingProvider\"\n           class=\"nablarch.test.core.messaging.MockMessagingProvider\">\n</component>\n```\n\n**Excelファイルの配置場所の設定** (:ref:`send_sync_test_data_path`)\n\n**クラス**: `nablarch.core.util.FilePathSetting`\n\n```xml\n<component name=\"filePathSetting\"\n         class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n   <property name=\"basePathSettings\">\n     <map>\n       <entry key=\"sendSyncTestData\" value=\"file:///C:/nablarch/workspace/Nablarch_sample/test/message\" />\n       <entry key=\"format\" value=\"classpath:web/format\" />\n     </map>\n   </property>\n   <property name=\"fileExtensions\">\n     <map>\n       <entry key=\"sendSyncTestData\" value=\"xlsx\" />\n       <entry key=\"format\" value=\"fmt\" />\n     </map>\n   </property>\n</component>\n```\n\n> **補足**: 配置ディレクトリのパスはclasspath:ではなくfile:（ファイルシステムのパス）で指定することを推奨。サーバ起動中に直接Excelファイルを編集してテストすることが可能になる。\n\n**テストデータ解析クラスの設定**\n\n**クラス**: `nablarch.test.core.reader.BasicTestDataParser`, `nablarch.test.core.reader.PoiXlsReader`\n\n```xml\n<component name=\"messagingTestDataParser\" class=\"nablarch.test.core.reader.BasicTestDataParser\">\n  <property name=\"testDataReader\">\n    <component name=\"xlsReaderForPoi\" class=\"nablarch.test.core.reader.PoiXlsReader\"/>\n  </property>\n  <property name=\"interpreters\" ref=\"messagingTestInterpreters\" />\n</component>\n<list name=\"messagingTestInterpreters\">\n  <component class=\"nablarch.test.core.util.interpreter.NullInterpreter\"/>\n  <component class=\"nablarch.test.core.util.interpreter.QuotationTrimmer\"/>\n  <component class=\"nablarch.test.core.util.interpreter.CompositeInterpreter\">\n    <property name=\"interpreters\">\n      <list>\n        <component class=\"nablarch.test.core.util.interpreter.BasicJapaneseCharacterInterpreter\"/>\n      </list>\n    </property>\n  </component>\n</list>\n```\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-testing</artifactId>\n  <exclusions>\n    <exclusion>\n      <groupId>org.mortbay.jetty</groupId>\n      <artifactId>*</artifactId>\n    </exclusion>\n    <exclusion>\n      <groupId>com.google.code.findbugs</groupId>\n      <artifactId>*</artifactId>\n    </exclusion>\n  </exclusions>\n</dependency>\n```",
+    "request-response-preparation": "同期応答メッセージ送信処理のテストでは、リクエストIDごとに要求電文および応答電文のヘッダ部・ボディ部のフォーマットとデータを定義する。\n\nテストケースとの対応付けはグループIDで行う。テストケースの `expectedMessage` フィールドと `responseMessage` フィールドに記載したグループIDが、対応する識別子を持つ電文表と紐付く。\n\n> **重要**:\n> - テストケース一覧に `expectedMessage` および `responseMessage` の欄がない場合、検証は行われない\n> - 欄が空欄でメッセージ同期送信処理が実行された場合、テストが失敗する\n> - メッセージ同期送信処理を行う場合は必ず `expectedMessage` と `responseMessage` を記載すること\n\n1テストケースで同一グループID・同一リクエストIDの電文が複数件送信される場合は、その件数分のデータ行を記載する。`no` 列の順番（連番）は送信順に対応する。\n\nテストケースの書き方:\n- ウェブアプリケーション: :ref:`request_test_testcases`\n- バッチ処理: :ref:`batch_test_testcases`\n\n![テストデータ（グループIDの関連）](assets/testing-framework-send_sync--sec-5ac81584/send_sync.png)\n\n> **補足**: Nablarch標準の同期応答メッセージ送信機能では、要求電文と応答電文のヘッダ部は共通フォーマットを使用するため、テストデータのヘッダ部フォーマット定義はリクエスト単位で統一すること。ボディ部は要求電文と応答電文で異なるフォーマットを定義できる。",
+    "message-table-format": "要求電文・応答電文の電文表の識別子形式:\n\n| 識別子 | 形式 |\n|---|---|\n| 要求電文ヘッダの期待値 | `EXPECTED_REQUEST_HEADER_MESSAGES[グループID]=リクエストID` |\n| 要求電文本文の期待値 | `EXPECTED_REQUEST_BODY_MESSAGES[グループID]=リクエストID` |\n| 応答電文ヘッダ | `RESPONSE_HEADER_MESSAGES[グループID]=リクエストID` |\n| 応答電文本文 | `RESPONSE_BODY_MESSAGES[グループID]=リクエストID` |\n\n電文表の構造（行の構成）:\n1. 識別子行\n2. ディレクティブ行（ディレクティブ名と設定値を記載; 複数行可）\n3. `no` 行（ディレクティブ行の直下に必ず `no` を記載）\n4. フィールド名称行（フィールド数分）\n5. データ型行（フィールド数分）: 日本語名称で記述（例: 「半角英字」）。マッピングは [BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java) の `DEFAULT_TABLE` を参照\n6. フィールド長行（フィールド数分）\n7. データ行（複数レコードは次の行に続けて記載）\n\nディレクティブの以下は記述不要:\n\n| 項目 | 理由 |\n|---|---|\n| `file-type` | テスティングフレームワークが固定長のみ対応のため |\n| `record-length` | フィールド長に記載したサイズでパディングされるため |\n\n> **重要**: フィールド名称に重複した名称は許容されない（例: 「氏名」フィールドが2つ以上あってはならない）。\n\n> **補足**: フィールド名称・データ型・フィールド長は外部インタフェース設計書からコピー＆ペーストで効率よく作成できる（ペースト時は「行列を入れ替える」オプションを使用すること）。\n\n要求電文本文の記載例:\n![要求電文本文の記載例](assets/testing-framework-send_sync--sec-5ac81584/send_sync_example.png)\n\n> **補足**: 要求電文のヘッダの期待値および応答電文の本文・ヘッダについても、識別子を除く部分については要求電文の本文の期待値と同様の記載方法となる。",
+    "request-message-log": "要求電文はMap形式（デバッグ用）とCSV形式（エビデンス用）でログ出力される。\n\nサンプルでは、Map形式のログは標準出力とアプリケーションログファイルに、CSV形式のログは専用のログファイルに出力する仕様となっているが、ログの設定を修正することで出力先の切り替えが可能である。\n\n```bash\n# Map形式\n2011-10-26 13:16:10.958 MESSAGING_SEND_MAP request id=[RM11AD0101]. following message has been sent:\n  message fw header = {requestId=RM11AD0101, testCount=, resendFlag=0, reserved=}\n  message body      = {authors=test3, title=test1, publisher=test2}\n```\n\n```bash\n# CSV形式\n2011-10-26 13:16:10.958 MESSAGING_SEND_CSV request id=[RM11AD0102]. following message has been sent:\nheader:\n\"requestId\",\"testCount\",\"resendFlag\",\"reserved\"\n\"RM11AD0102\",\"\",\"0\",\"\"\nbody:\n\"authors\",\"title\",\"publisher\"\n\"test3\",\"test1\",\"test2\"\n```\n\nlog.propertiesの設定例:\n\n```bash\n# CSV形式のメッセージログのライタ（./messaging-evidence.logに出力する）\nwriter.MESSAGING_CSV.className=nablarch.core.log.basic.FileLogWriter\nwriter.MESSAGING_CSV.filePath=./messaging-evidence.log\nwriter.MESSAGING_CSV.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.MESSAGING_CSV.formatter.format=$message$\n\n# CSV形式のメッセージログのロガー\nloggers.MESSAGING_CSV.nameRegex=MESSAGING_CSV\nloggers.MESSAGING_CSV.level=DEBUG\nloggers.MESSAGING_CSV.writerNames=MESSAGING_CSV\n\n# Map形式のメッセージログのロガー\nloggers.MESSAGING_MAP.nameRegex=MESSAGING_MAP\nloggers.MESSAGING_MAP.level=DEBUG\nloggers.MESSAGING_MAP.writerNames=stdout,appFile\n```",
+    "excel-file-format": "電文のフォーマットおよびデータは以下の書式で記載する。\n\n識別子の書式:\n\n- 要求電文ヘッダ: `EXPECTED_REQUEST_HEADER_MESSAGES=リクエストID`\n- 要求電文本文: `EXPECTED_REQUEST_BODY_MESSAGES=リクエストID`\n- 応答電文ヘッダ: `RESPONSE_HEADER_MESSAGES=リクエストID`\n- 応答電文本文: `RESPONSE_BODY_MESSAGES=リクエストID`\n\n| 項目 | 説明 |\n|---|---|\n| 識別子 | 電文種類を示すID。テストケース一覧のexpectedMessageおよびresponseMessageのグループIDと紐付く。 |\n| ディレクティブ行 | ディレクティブ名セルの右セルに設定値を記載（複数行可）。`file-type`（固定長のみ対応のため）と`record-length`（フィールド長でパディングするため）は記述不要。 |\n| no | ディレクティブ行の下に必ず記載。 |\n| フィールド名称 | フィールドの数だけ記載。 |\n| データ型 | 日本語名称で記述（例: 「半角英字」）。マッピングは[BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java)のDEFAULT_TABLEを参照。 |\n| フィールド長 | フィールドの数だけ記載。「-」を記載した場合はデータ欄の内容からサイズを自動計算。 |\n| データ | 応答電文の場合のみ記載。複数件の場合は次の行に続けて記載。 |\n\n> **補足**: フィールド名称・データ型・フィールド長は外部インタフェース設計書からコピー＆ペーストで効率よく作成できる（ペースト時に「行列を入れ替える」オプションを使用）。"
   }
 }

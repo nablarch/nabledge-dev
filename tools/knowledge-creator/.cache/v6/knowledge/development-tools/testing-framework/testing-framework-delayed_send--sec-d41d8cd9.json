@@ -1,6 +1,7 @@
 {
   "id": "testing-framework-delayed_send--sec-d41d8cd9",
   "title": "リクエスト単体テストの実施方法（応答不要メッセージ送信処理）",
+  "no_knowledge_content": false,
   "official_doc_urls": [
     "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_send.html"
   ],
@@ -65,7 +66,7 @@
     "overview": "> **重要**: アクションクラスに対する条件網羅や限界値テストは実施不要。\n\n**テスト対象の成果物:**\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- 電文送信テーブルから未送信データを取得するSELECT文\n- 電文送信後に該当データのステータスを処理済みに更新するUPDATE文\n- 電文送信失敗時に該当データのステータスをエラーに更新するUPDATE文",
     "test-class": "テストクラス作成ルール:\n1. テスト対象機能と同一パッケージ\n2. クラス名は`<電文のリクエストID>RequestTest`\n3. **クラス**: `nablarch.test.core.batch.BatchRequestTestSupport` を継承",
     "test-data": "応答不要メッセージ送信処理では応答電文が存在しないため、:ref:`message_sendSyncMessage_test` と比較して以下の設定は不要:\n\n- testShots内の `responseMessage` 定義\n- `RESPONSE_HEADER_MESSAGES` テーブル定義\n- `RESPONSE_BODY_MESSAGES` テーブル定義",
-    "normal-test": "testShotsの定義に `KEY=messageRequestId`、`VALUE=メッセージのリクエストID` を追加する必要がある。\n\n![正常系テストのtestShots設定](assets/testing-framework-delayed_send/delayed_send.png)",
+    "normal-test": "testShotsの定義に `KEY=messageRequestId`、`VALUE=メッセージのリクエストID` を追加する必要がある。\n\n![正常系テストのtestShots設定](assets/testing-framework-delayed_send--sec-d41d8cd9/delayed_send.png)",
     "error-test": "testShotsの定義に `KEY=errorCase`、`VALUE=true` を設定する。異常系ケースでは電文が送信されないため送信電文の期待値設定は不要。\n\n> **補足**: 異常系テストを実施する場合、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。\n\n本番設定:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.fw.messaging.action.AsyncMessageSendAction\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```\n\nテスト設定:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.test.core.messaging.AsyncMessageSendActionForUt\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```"
   }
 }

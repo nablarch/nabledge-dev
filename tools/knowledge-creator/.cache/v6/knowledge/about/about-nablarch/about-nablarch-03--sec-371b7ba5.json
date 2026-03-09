@@ -1,6 +1,7 @@
 {
   "id": "about-nablarch-03--sec-371b7ba5",
   "title": "検索結果の一覧表示",
+  "no_knowledge_content": false,
   "official_doc_urls": [
     "https://nablarch.github.io/docs/LATEST/doc/biz_samples/03/index.html",
     "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html",
@@ -8,37 +9,6 @@
     "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/EntityList.html"
   ],
   "index": [
-    {
-      "id": "result-count",
-      "title": "検索結果件数",
-      "hints": [
-        "useResultCount",
-        "検索結果件数表示",
-        "デフォルトtrue",
-        "resultCountCss",
-        "resultCountFragment",
-        "resultCountプロパティ"
-      ]
-    },
-    {
-      "id": "paging",
-      "title": "ページング",
-      "hints": [
-        "usePaging",
-        "searchUri",
-        "ページング表示",
-        "サブミット要素URI",
-        "pagingPosition",
-        "pagingCss",
-        "pageNumber",
-        "ページング",
-        "ページネーション",
-        "検索条件URI",
-        "前へ",
-        "次へ",
-        "ページ切り替え"
-      ]
-    },
     {
       "id": "customize",
       "title": "業務アプリケーションへのサンプル実装(タグファイル)の取り込み方法",
@@ -58,16 +28,6 @@
         "タグリファレンス",
         "検索結果一覧表示",
         "属性一覧"
-      ]
-    },
-    {
-      "id": "overall",
-      "title": "全体",
-      "hints": [
-        "listSearchResultWrapperCss",
-        "searchFormName",
-        "全体属性",
-        "ラッパーCSS"
       ]
     },
     {
@@ -131,14 +91,11 @@
     }
   ],
   "sections": {
-    "result-count": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |\n\n検索結果件数はuseResultCount=true（デフォルト）かつリクエストスコープに検索結果が存在する場合に表示される。\n\nデフォルト書式: `検索結果 <paginationのresultCountプロパティ>件`\n\nデフォルト書式を変更する場合はresultCountFragment属性にJSPフラグメントを指定する：\n\n```jsp\n<app:listSearchResult resultSetName=\"searchResult\" useResultCount=\"true\">\n    <jsp:attribute name=\"resultCountFragment\">\n      [サーチ結果 <n:write name=\"searchResult.pagination.resultCount\" />件]\n    </jsp:attribute>\n</app:listSearchResult>\n```\n\n上記指定後の書式: `[サーチ結果 <paginationのresultCountプロパティ>件]`\n\n属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |\n| resultCountCss | \"nablarch_resultCount\" | 検索結果件数をラップするdivタグのclass属性 |\n| resultCountFragment | | 検索結果件数を出力するJSPフラグメント |",
-    "paging": "| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePaging |  | true | ページングを表示するか否か |\n| searchUri | ○ |  | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること。 |\n\nページングはusePaging=true（デフォルト）の場合に表示される。\n\nsearchFormNameで指定するフォームは `pageNumber` という名前でページ番号を受け取るよう実装すること：\n\n```java\npublic class ProjectSearchForm {\n    @Required\n    @Domain(\"pageNumber\")\n    private String pageNumber;\n    public String getPageNumber(){ return this.pageNumber; }\n    public void setPageNumber(String pageNumber){ this.pageNumber = pageNumber; }\n}\n```\n\nページング全体は検索結果件数が1件以上の場合に表示される。ページングの画面要素：\n\n| 画面要素 | 表示条件 |\n|---|---|\n| 現在のページ番号 | useCurrentPageNumber=trueの場合 |\n| 最初・前へ・次へ・最後 | 遷移可能な場合はサブミット、不可の場合はラベルで表示 |\n| ページ番号（1..n） | 総ページ数が2以上の場合のみ表示 |\n\n**ページング時の検索条件**: 検索条件をパラメータにセットしたURIをsearchUri属性に渡す：\n\n```jsp\n<%@ taglib prefix=\"c\" uri=\"jakarta.tags.core\" %>\n<%@ taglib prefix=\"app\" tagdir=\"/WEB-INF/tags/listSearchResult\" %>\n<c:url value=\"/action/project/list\" var=\"uri\" context=\"/\">\n    <c:param name=\"searchForm.projectName\" value=\"${searchForm.projectName}\"/>\n</c:url>\n<app:listSearchResult resultSetName=\"searchResult\" searchUri=\"${uri}\" ...>\n```\n\n**ページング中に検索結果が減少した場合**: 指定されたページ番号に基づき検索を実施し各画面要素を表示する。現在のページ番号とサブミット要素の対応が取れており操作不能な状態にならない。\n\n属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| usePaging | true | ページングを表示するか否か |\n| pagingPosition | top | ページングの表示位置。top（上側のみ）/ bottom（下側のみ）/ both（両方）/ none（表示なし） |\n| pagingCss | \"nablarch_paging\" | ページングのサブミット要素全体をラップするdivタグのclass属性 |\n| searchUri | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること |",
+    "search-result": "検索結果表示の属性:\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| showResult | | true | 検索結果を表示するか否か |\n| resultSetName | ○ | | :java:extdoc:`ユニバーサルDAOの検索結果 <nablarch.common.dao.EntityList>` をリクエストスコープから取得する際に使用する名前。ページネーション情報（ページ数・検索件数）も含む |\n| resultSetCss | | \"nablarch_resultSet\" | 検索結果テーブルのclass属性 |\n| headerRowFragment | | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | | | ボディ行のJSPフラグメント |\n| varRowName | | \"row\" | ボディ行のフラグメントで行データ（c:forEachのvar属性）を参照する変数名 |\n| varStatusName | | \"status\" | ボディ行のフラグメントでステータス（c:forEachのstatus属性）を参照する変数名 |\n| varCountName | | \"count\" | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | | \"rowCount\" | 検索結果のカウント（取得開始位置＋ステータスのカウント）を参照する変数名 |\n| varOddEvenName | | \"oddEvenCss\" | ボディ行のclass属性を参照する変数名（1行おきにclass属性を変更する際に使用） |\n| oddValue | | \"nablarch_odd\" | ボディ行の奇数行に使用するclass属性 |\n| evenValue | | \"nablarch_even\" | ボディ行の偶数行に使用するclass属性 |\n\n> **補足**: `varStatusName`で指定した変数にn:writeタグでアクセスすると、n:writeタグとEL式でアクセス方法が異なるためエラーが発生し値を取得できない。n:setタグを使用してステータスにアクセスすること。使用例：\n> ```jsp\n> <n:set var=\"rowCount\" value=\"${status.count}\" />\n> <n:write name=\"rowCount\" />\n> ```\n\n![ListSearchResult属性一覧（ページング・検索結果）](assets/about-nablarch-03--sec-371b7ba5/ListSearchResult_PagingTableFull.jpg)",
     "customize": "listSearchResultパッケージを業務アプリケーションに配置する：\n\n- コピー元: `META-INF/tags/listSearchResult`\n- コピー先: 業務アプリケーションの `/WEB-INF/tags` ディレクトリ",
     "tag-reference": "listSearchResultタグは検索結果の一覧表示（検索結果件数、ページング、検索結果テーブル）を行う。\n\n![ページング＋テーブル全体構成](assets/about-nablarch-03--sec-371b7ba5/ListSearchResult_PagingTableFull.jpg)",
-    "overall": "全体に関する属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| listSearchResultWrapperCss | \"nablarch_listSearchResultWrapper\" | ページング付きテーブル全体（検索結果件数・ページング・検索結果）をラップするdivタグのclass属性 |\n| searchFormName | | リクエストスコープから検索フォームを取得する名前。検索条件とページ番号を保持する。一括削除確認など一覧表示のみの場合は指定不要 |",
     "current-page-number": "| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| useCurrentPageNumber | true | 現在のページ番号を使用するか否か |\n| currentPageNumberCss | \"nablarch_currentPageNumber\" | 現在のページ番号をラップするdivタグのclass属性 |\n| currentPageNumberFragment | | 現在のページ番号を出力するJSPフラグメント。デフォルト: \"[paginationのpageNumberプロパティ/paginationのpageCountプロパティ ページ]\" |",
     "first-submit": "| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| useFirstSubmit | false | 最初のページに遷移するサブミットを使用するか否か |\n| firstSubmitCss | \"nablarch_firstSubmit\" | 最初のページに遷移するサブミットをラップするdivタグのclass属性 |\n| firstSubmitLabel | \"最初\" | 最初のページに遷移するサブミットのラベル |\n| firstSubmitName | \"firstSubmit\" | 最初のページに遷移するサブミットのname属性。表示位置サフィックス（上側は\"_top\"、下側は\"_bottom\"）が付与される。例: デフォルトかつ上側の場合は\"firstSubmit_top\" |",
-    "prev-submit": "| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| usePrevSubmit | true | 前のページに遷移するサブミットを使用するか否か |\n| prevSubmitCss | \"nablarch_prevSubmit\" | 前のページに遷移するサブミットをラップするdivタグのclass属性 |\n| prevSubmitLabel | \"前へ\" | 前のページに遷移するサブミットのラベル |\n| prevSubmitName | \"prevSubmit\" | 前のページに遷移するサブミットのname属性。表示位置サフィックス（上側は\"_top\"、下側は\"_bottom\"）が付与される。例: デフォルトかつ上側の場合は\"prevSubmit_top\" |",
-    "search-result": "検索結果表示の属性:\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| showResult | | true | 検索結果を表示するか否か |\n| resultSetName | ○ | | :java:extdoc:`ユニバーサルDAOの検索結果 <nablarch.common.dao.EntityList>` をリクエストスコープから取得する際に使用する名前。ページネーション情報（ページ数・検索件数）も含む |\n| resultSetCss | | \"nablarch_resultSet\" | 検索結果テーブルのclass属性 |\n| headerRowFragment | | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | | | ボディ行のJSPフラグメント |\n| varRowName | | \"row\" | ボディ行のフラグメントで行データ（c:forEachのvar属性）を参照する変数名 |\n| varStatusName | | \"status\" | ボディ行のフラグメントでステータス（c:forEachのstatus属性）を参照する変数名 |\n| varCountName | | \"count\" | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | | \"rowCount\" | 検索結果のカウント（取得開始位置＋ステータスのカウント）を参照する変数名 |\n| varOddEvenName | | \"oddEvenCss\" | ボディ行のclass属性を参照する変数名（1行おきにclass属性を変更する際に使用） |\n| oddValue | | \"nablarch_odd\" | ボディ行の奇数行に使用するclass属性 |\n| evenValue | | \"nablarch_even\" | ボディ行の偶数行に使用するclass属性 |\n\n> **補足**: `varStatusName`で指定した変数にn:writeタグでアクセスすると、n:writeタグとEL式でアクセス方法が異なるためエラーが発生し値を取得できない。n:setタグを使用してステータスにアクセスすること。使用例：\n> ```jsp\n> <n:set var=\"rowCount\" value=\"${status.count}\" />\n> <n:write name=\"rowCount\" />\n> ```\n\n![ListSearchResult属性一覧（ページング・検索結果）](assets/about-nablarch-03--sec-371b7ba5/ListSearchResult_PagingTableFull.jpg)"
+    "prev-submit": "| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| usePrevSubmit | true | 前のページに遷移するサブミットを使用するか否か |\n| prevSubmitCss | \"nablarch_prevSubmit\" | 前のページに遷移するサブミットをラップするdivタグのclass属性 |\n| prevSubmitLabel | \"前へ\" | 前のページに遷移するサブミットのラベル |\n| prevSubmitName | \"prevSubmit\" | 前のページに遷移するサブミットのname属性。表示位置サフィックス（上側は\"_top\"、下側は\"_bottom\"）が付与される。例: デフォルトかつ上側の場合は\"prevSubmit_top\" |"
   }
 }
