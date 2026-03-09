@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: sync-to-nabledge
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -23,42 +27,21 @@ jobs:
           token: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
           path: nabledge-repo
 
-      - name: Clean nabledge repository
-        run: .github/scripts/clean-repository.sh nabledge-repo
-
-      - name: Clean up development infrastructure files
-        run: |
-          echo "Removing development infrastructure files from nabledge repository..."
-          # Issue #112: Exclude development infrastructure from plugin distribution
-          # Remove .github/workflows and .github/scripts if they exist
-          if [ -d "nabledge-repo/plugins/nabledge-6/.github/workflows" ]; then
-            echo "Removing plugins/nabledge-6/.github/workflows"
-            rm -rf "nabledge-repo/plugins/nabledge-6/.github/workflows"
-          fi
-          if [ -d "nabledge-repo/plugins/nabledge-6/.github/scripts" ]; then
-            echo "Removing plugins/nabledge-6/.github/scripts"
-            rm -rf "nabledge-repo/plugins/nabledge-6/.github/scripts"
-          fi
-          echo "Cleanup complete"
-
-      - name: Transform to plugin structure
-        run: |
-          # Use transform script
-          .github/scripts/transform-to-plugin.sh . nabledge-repo
-
-      - name: Validate marketplace structure
-        run: .github/scripts/validate-marketplace.sh nabledge-repo
+      - name: Sync plugin files
+        run: .github/workflows/sync-to-nabledge/sync.sh . nabledge-repo .github/workflows/sync-to-nabledge/sync-manifest.txt
 
       - name: Capture and transform commit message
         id: commit_message
+        env:
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          .github/scripts/capture-commit-message.sh \
+          .github/workflows/sync-to-nabledge/capture-commit-message.sh \
             "${{ github.sha }}" \
-            "${{ github.event.head_commit.message }}"
+            "$HEAD_COMMIT_MESSAGE"
 
       - name: Build commit body with trigger information
         run: |
-          .github/scripts/build-commit-body.sh \
+          .github/workflows/sync-to-nabledge/build-commit-body.sh \
             "${{ github.repository }}" \
             "${{ github.sha }}" \
             "$COMMIT_BODY"
@@ -72,7 +55,7 @@ jobs:
       - name: Commit and Push to nabledge
         working-directory: nabledge-repo
         run: |
-          ../.github/scripts/commit-and-push.sh \
+          ../.github/workflows/sync-to-nabledge/commit-and-push.sh \
             "$COMMIT_SUBJECT" \
             "$FULL_COMMIT_BODY" \
             "develop"
