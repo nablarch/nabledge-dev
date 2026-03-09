@@ -1,0 +1,58 @@
+{
+  "id": "testing-framework-delayed_receive",
+  "title": "リクエスト単体テストの実施方法（応答不要メッセージ受信処理）",
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ受信処理",
+        "リクエスト単体テスト",
+        "テスト対象成果物",
+        "フォーマット定義ファイル",
+        "Formクラス",
+        "INSERT文"
+      ]
+    },
+    {
+      "id": "test-class",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingReceiveTestSupport",
+        "nablarch.test.core.messaging.MessagingReceiveTestSupport",
+        "テストクラス命名規則",
+        "リクエストIDRequestTest",
+        "応答不要メッセージテスト"
+      ]
+    },
+    {
+      "id": "test-data",
+      "title": "テストデータの書き方",
+      "hints": [
+        "テストデータ記述方法",
+        "応答不要メッセージ受信処理テストデータ",
+        "real_request_testとの差分"
+      ]
+    },
+    {
+      "id": "response-message",
+      "title": "レスポンスメッセージ",
+      "hints": [
+        "レスポンスメッセージ不要",
+        "MESSAGE=expectedMessages",
+        "応答電文なし",
+        "データベース状態確認",
+        "期待値設定"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": "> **重要**: アクションクラスに対する条件網羅・限界値テストなどは実施不要。\n\n**テスト対象の成果物**:\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- データベースへ電文を登録する際に使用するFormクラス\n- データベースへ電文を登録するためのINSERT文",
+    "test-class": "テストクラス作成ルール: (1) テスト対象機能と同一パッケージ (2) クラス名は`{電文のリクエストID}RequestTest` (3) `nablarch.test.core.messaging.MessagingReceiveTestSupport`を継承",
+    "test-data": "テストデータの記述方法は :ref:`real_request_test` を参照。本項では :ref:`real_request_test` と記述方法が異なる箇所のみを解説する。",
+    "response-message": "応答不要メッセージ受信処理では応答電文が存在しないため、レスポンスメッセージ(`MESSAGE=expectedMessages`)の記述は不要。期待するデータベースの状態のみ確認する。"
+  }
+}

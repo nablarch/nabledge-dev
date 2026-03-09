@@ -188,96 +188,6 @@ OS環境変数での命名規則は :ref:`OS環境変数の名前について <r
 
 `xmlConfigPath` で指定したXMLファイルにコンポーネント設定ファイルと同じ書式で設定ファイルのパスを記述する（例: `<config-file file="config/metrics.properties" />`）。このXMLでコンポーネントを定義してもシステムリポジトリから参照取得はできない。
 
-## DefaultMeterBinderListProviderで収集されるメトリクス
-
-`DefaultMeterBinderListProvider` が生成するMeterBinderリストに含まれるクラス:
-
-- `JvmMemoryMetrics`
-- `JvmGcMetrics`
-- `JvmThreadMetrics`
-- `ClassLoaderMetrics`
-- `ProcessorMetrics`
-- `FileDescriptorMetrics`
-- `UptimeMetrics`
-- `NablarchGcCountMetrics`
-
-収集されるメトリクス:
-
-| メトリクス名 | 説明 |
-|---|---|
-| `jvm.buffer.count` | バッファプール内のバッファの数 |
-| `jvm.buffer.memory.used` | バッファプールの使用量 |
-| `jvm.buffer.total.capacity` | バッファプールの合計容量 |
-| `jvm.memory.used` | メモリプールのメモリ使用量 |
-| `jvm.memory.committed` | メモリプールのコミットされたメモリ量 |
-| `jvm.memory.max` | メモリプールの最大メモリ量 |
-| `jvm.gc.max.data.size` | OLD領域の最大メモリ量 |
-| `jvm.gc.live.data.size` | Full GC後のOLD領域のメモリ使用量 |
-| `jvm.gc.memory.promoted` | GC前後で増加したOLD領域のメモリ使用量の増分 |
-| `jvm.gc.memory.allocated` | 前回のGC後から今回のGCまでのYoung領域のメモリ使用量の増分 |
-| `jvm.gc.concurrent.phase.time` | コンカレントフェーズの処理時間 |
-| `jvm.gc.pause` | GCの一時停止に費やされた時間 |
-| `jvm.threads.peak` | スレッド数のピーク数 |
-| `jvm.threads.daemon` | 現在のデーモンスレッドの数 |
-| `jvm.threads.live` | 現在の非デーモンスレッドの数 |
-| `jvm.threads.states` | 現在のスレッドの状態ごとの数 |
-| `jvm.classes.loaded` | 現在ロードされているクラスの数 |
-| `jvm.classes.unloaded` | JVM起動からアンロードされたクラスの数 |
-| `system.cpu.count` | JVMで使用できるプロセッサーの数 |
-| `system.load.average.1m` | 最後の1分のシステム負荷平均（参考: [OperatingSystemMXBean](https://docs.oracle.com/javase/jp/17/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage())） |
-| `system.cpu.usage` | システム全体の直近のCPU使用率 |
-| `process.cpu.usage` | JVMの直近のCPU使用率 |
-| `process.files.open` | 開いているファイルディスクリプタの数 |
-| `process.files.max` | ファイルディスクリプタの最大数 |
-| `process.uptime` | JVMの稼働時間 |
-| `process.start.time` | JVMの起動時刻（UNIX時間） |
-| `jvm.gc.count` | GCの回数 |
-| `jvm.threads.started` | JVMで起動したスレッド数 |
-| `process.cpu.time` | Java仮想マシン・プロセスによって使用されるCPU時間 |
-
-## 共通のタグを設定する
-
-`tags` プロパティで、全メトリクスに共通するタグを設定できる。ホスト、インスタンス、リージョンなどの識別情報の設定に使用できる。
-
-| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
-|---|---|---|---|---|
-| tags | `Map<String, String>` | | | 全メトリクスに共通するタグ。マップのキー=タグ名、マップの値=タグ値 |
-
-```xml
-<component name="meterRegistry" class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
-  <property name="meterBinderListProvider" ref="meterBinderListProvider" />
-  <property name="applicationDisposer" ref="disposer" />
-  <property name="tags">
-    <map>
-      <entry key="foo" value="FOO" />
-      <entry key="bar" value="BAR" />
-    </map>
-  </property>
-</component>
-```
-
-上記設定の場合、収集されるメトリクスは次のようになる。
-
-```text
-（省略）
-2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s
-2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.uptime{bar=BAR,foo=FOO} value=27.849s
-2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.count{bar=BAR,foo=FOO} value=8
-2020-09-04 17:30:06.657 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.usage{bar=BAR,foo=FOO} value=0.475654
-```
-
-全てのメトリクスに、 `foo=FOO`、`bar=BAR` のタグが設定されていることが確認できる。
-
-## 監視サービスと連携する（概要）
-
-監視サービスと連携するためには、大きく次のとおり設定する必要がある。
-
-1. 監視サービスや連携方法ごとに用意された Micrometer のモジュールを依存関係に追加する
-2. 使用するレジストリファクトリをコンポーネントとして定義する
-3. その他、監視サービスごとに独自に設定する
-
-対応している監視サービス: Datadog、CloudWatch、Azure（Java 3.0 エージェント経由）、StatsD、OpenTelemetry Protocol (OTLP)
-
 ## Datadog と連携する
 
 ## 依存関係を追加する
@@ -511,6 +421,168 @@ nablarch.micrometer.statsd.enabled=false
 - 送信先URL: `nablarch.micrometer.otlp.url=http://localhost:9090/api/v1/otlp/v1/metrics`
 - ヘッダ情報（認証APIキー等）: `nablarch.micrometer.otlp.headers=key1=value1,key2=value2`
 - 連携無効化: `nablarch.micrometer.otlp.enabled=false`（環境変数で上書き可能）
+
+## サーバ起動時に出力される警告ログについて
+
+**サーバ起動時に出力される警告ログについて**
+
+Micrometerが監視サービスにメトリクスを連携する方法には、大きく次の２つの方法がある。
+
+| 方式 | 説明 | 代表例 |
+|---|---|---|
+| Client pushes | 一定間隔でアプリケーションが監視サービスにメトリクスを送信する | Datadog, CloudWatch など |
+| Server polls | 一定間隔で監視サービスがアプリケーションにメトリクスを問い合わせに来る | Prometheus など |
+
+**警告ログが発生する条件:**
+
+Client pushes型の場合、`MeterRegistry`はコンポーネント生成後すぐに一定間隔でメトリクスの送信を開始する。一方、HikariCPのコネクションプールは最初のDBアクセス時に初めて生成される仕様となっている。
+
+このため、最初のDBアクセスが発生する前にメトリクスの送信が実行されると、`JmxGaugeMetrics`は存在しないコネクションプールのMBeanを参照することになり、Micrometerが警告ログを出力する。
+
+> **注意**: Server polls型（Prometheusなど）の場合は監視サービス側がアプリケーションに問い合わせに来るため、この問題は発生しない。
+
+プール未生成時のメトリクス値は`NaN`となる。
+
+```
+24-Dec-2020 17:01:31.443 情報 [logging-metrics-publisher] io.micrometer.core.instrument.logging.LoggingMeterRegistry.lambda$publish$3 db.pool.active{} value=NaN
+24-Dec-2020 17:01:31.443 情報 [logging-metrics-publisher] io.micrometer.core.instrument.logging.LoggingMeterRegistry.lambda$publish$3 db.pool.total{} value=NaN
+```
+
+この警告ログは最初の一度だけ出力され、2回目以降は抑制される。実害はないため無視して問題ない。
+
+**警告ログを抑制する方法:**
+
+警告ログを抑制したい場合は、`DefaultMeterBinderListProvider`に`Initializable`を実装し、`initialize()`メソッド内でDBに接続する。
+
+```java
+public class CustomMeterBinderListProvider extends DefaultMeterBinderListProvider implements Initializable {
+    private static final Logger LOGGER = LoggerManager.get(CustomMeterBinderListProvider.class);
+    private DataSource dataSource;
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    @Override
+    public void initialize() {
+        try (Connection con = dataSource.getConnection()) {
+            // 初期化時にコネクションを確立してMBeanが取れないことによる警告ログ出力を抑制
+        } catch (SQLException e) {
+            LOGGER.logWarn("Failed initial connection.", e);
+        }
+    }
+}
+```
+
+コンポーネント定義で`DataSource`をプロパティで渡し、初期化対象コンポーネント一覧に追加する:
+
+```xml
+<component name="meterBinderListProvider"
+           class="example.micrometer.CustomMeterBinderListProvider">
+  <property name="dataSource" ref="dataSource" />
+</component>
+
+<component name="initializer"
+           class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+  <property name="initializeList">
+    <list>
+      <component-ref name="meterBinderListProvider" />
+    </list>
+  </property>
+</component>
+```
+
+> **注意**: メトリクスの送信間隔はデフォルト1分。送信間隔を非常に短く設定した場合、システムリポジトリ初期化前にメトリクスが送信されて警告ログが出力される可能性がある。
+
+## DefaultMeterBinderListProviderで収集されるメトリクス
+
+`DefaultMeterBinderListProvider` が生成するMeterBinderリストに含まれるクラス:
+
+- `JvmMemoryMetrics`
+- `JvmGcMetrics`
+- `JvmThreadMetrics`
+- `ClassLoaderMetrics`
+- `ProcessorMetrics`
+- `FileDescriptorMetrics`
+- `UptimeMetrics`
+- `NablarchGcCountMetrics`
+
+収集されるメトリクス:
+
+| メトリクス名 | 説明 |
+|---|---|
+| `jvm.buffer.count` | バッファプール内のバッファの数 |
+| `jvm.buffer.memory.used` | バッファプールの使用量 |
+| `jvm.buffer.total.capacity` | バッファプールの合計容量 |
+| `jvm.memory.used` | メモリプールのメモリ使用量 |
+| `jvm.memory.committed` | メモリプールのコミットされたメモリ量 |
+| `jvm.memory.max` | メモリプールの最大メモリ量 |
+| `jvm.gc.max.data.size` | OLD領域の最大メモリ量 |
+| `jvm.gc.live.data.size` | Full GC後のOLD領域のメモリ使用量 |
+| `jvm.gc.memory.promoted` | GC前後で増加したOLD領域のメモリ使用量の増分 |
+| `jvm.gc.memory.allocated` | 前回のGC後から今回のGCまでのYoung領域のメモリ使用量の増分 |
+| `jvm.gc.concurrent.phase.time` | コンカレントフェーズの処理時間 |
+| `jvm.gc.pause` | GCの一時停止に費やされた時間 |
+| `jvm.threads.peak` | スレッド数のピーク数 |
+| `jvm.threads.daemon` | 現在のデーモンスレッドの数 |
+| `jvm.threads.live` | 現在の非デーモンスレッドの数 |
+| `jvm.threads.states` | 現在のスレッドの状態ごとの数 |
+| `jvm.classes.loaded` | 現在ロードされているクラスの数 |
+| `jvm.classes.unloaded` | JVM起動からアンロードされたクラスの数 |
+| `system.cpu.count` | JVMで使用できるプロセッサーの数 |
+| `system.load.average.1m` | 最後の1分のシステム負荷平均（参考: [OperatingSystemMXBean](https://docs.oracle.com/javase/jp/17/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage())） |
+| `system.cpu.usage` | システム全体の直近のCPU使用率 |
+| `process.cpu.usage` | JVMの直近のCPU使用率 |
+| `process.files.open` | 開いているファイルディスクリプタの数 |
+| `process.files.max` | ファイルディスクリプタの最大数 |
+| `process.uptime` | JVMの稼働時間 |
+| `process.start.time` | JVMの起動時刻（UNIX時間） |
+| `jvm.gc.count` | GCの回数 |
+| `jvm.threads.started` | JVMで起動したスレッド数 |
+| `process.cpu.time` | Java仮想マシン・プロセスによって使用されるCPU時間 |
+
+## 共通のタグを設定する
+
+`tags` プロパティで、全メトリクスに共通するタグを設定できる。ホスト、インスタンス、リージョンなどの識別情報の設定に使用できる。
+
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| tags | `Map<String, String>` | | | 全メトリクスに共通するタグ。マップのキー=タグ名、マップの値=タグ値 |
+
+```xml
+<component name="meterRegistry" class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
+  <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+  <property name="applicationDisposer" ref="disposer" />
+  <property name="tags">
+    <map>
+      <entry key="foo" value="FOO" />
+      <entry key="bar" value="BAR" />
+    </map>
+  </property>
+</component>
+```
+
+上記設定の場合、収集されるメトリクスは次のようになる。
+
+```text
+（省略）
+2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s
+2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.uptime{bar=BAR,foo=FOO} value=27.849s
+2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.count{bar=BAR,foo=FOO} value=8
+2020-09-04 17:30:06.657 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.usage{bar=BAR,foo=FOO} value=0.475654
+```
+
+全てのメトリクスに、 `foo=FOO`、`bar=BAR` のタグが設定されていることが確認できる。
+
+## 監視サービスと連携する（概要）
+
+監視サービスと連携するためには、大きく次のとおり設定する必要がある。
+
+1. 監視サービスや連携方法ごとに用意された Micrometer のモジュールを依存関係に追加する
+2. 使用するレジストリファクトリをコンポーネントとして定義する
+3. その他、監視サービスごとに独自に設定する
+
+対応している監視サービス: Datadog、CloudWatch、Azure（Java 3.0 エージェント経由）、StatsD、OpenTelemetry Protocol (OTLP)
 
 ## アプリケーションの形式ごとに収集するメトリクスの例
 
@@ -916,75 +988,3 @@ meterBinderList.add(new JmxGaugeMetrics(
 2020-12-24 16:37:57.143 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: db.pool.active{} value=0
 2020-12-24 16:37:57.143 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: db.pool.total{} value=5
 ```
-
-## サーバ起動時に出力される警告ログについて
-
-**サーバ起動時に出力される警告ログについて**
-
-Micrometerが監視サービスにメトリクスを連携する方法には、大きく次の２つの方法がある。
-
-| 方式 | 説明 | 代表例 |
-|---|---|---|
-| Client pushes | 一定間隔でアプリケーションが監視サービスにメトリクスを送信する | Datadog, CloudWatch など |
-| Server polls | 一定間隔で監視サービスがアプリケーションにメトリクスを問い合わせに来る | Prometheus など |
-
-**警告ログが発生する条件:**
-
-Client pushes型の場合、`MeterRegistry`はコンポーネント生成後すぐに一定間隔でメトリクスの送信を開始する。一方、HikariCPのコネクションプールは最初のDBアクセス時に初めて生成される仕様となっている。
-
-このため、最初のDBアクセスが発生する前にメトリクスの送信が実行されると、`JmxGaugeMetrics`は存在しないコネクションプールのMBeanを参照することになり、Micrometerが警告ログを出力する。
-
-> **注意**: Server polls型（Prometheusなど）の場合は監視サービス側がアプリケーションに問い合わせに来るため、この問題は発生しない。
-
-プール未生成時のメトリクス値は`NaN`となる。
-
-```
-24-Dec-2020 17:01:31.443 情報 [logging-metrics-publisher] io.micrometer.core.instrument.logging.LoggingMeterRegistry.lambda$publish$3 db.pool.active{} value=NaN
-24-Dec-2020 17:01:31.443 情報 [logging-metrics-publisher] io.micrometer.core.instrument.logging.LoggingMeterRegistry.lambda$publish$3 db.pool.total{} value=NaN
-```
-
-この警告ログは最初の一度だけ出力され、2回目以降は抑制される。実害はないため無視して問題ない。
-
-**警告ログを抑制する方法:**
-
-警告ログを抑制したい場合は、`DefaultMeterBinderListProvider`に`Initializable`を実装し、`initialize()`メソッド内でDBに接続する。
-
-```java
-public class CustomMeterBinderListProvider extends DefaultMeterBinderListProvider implements Initializable {
-    private static final Logger LOGGER = LoggerManager.get(CustomMeterBinderListProvider.class);
-    private DataSource dataSource;
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    @Override
-    public void initialize() {
-        try (Connection con = dataSource.getConnection()) {
-            // 初期化時にコネクションを確立してMBeanが取れないことによる警告ログ出力を抑制
-        } catch (SQLException e) {
-            LOGGER.logWarn("Failed initial connection.", e);
-        }
-    }
-}
-```
-
-コンポーネント定義で`DataSource`をプロパティで渡し、初期化対象コンポーネント一覧に追加する:
-
-```xml
-<component name="meterBinderListProvider"
-           class="example.micrometer.CustomMeterBinderListProvider">
-  <property name="dataSource" ref="dataSource" />
-</component>
-
-<component name="initializer"
-           class="nablarch.core.repository.initialization.BasicApplicationInitializer">
-  <property name="initializeList">
-    <list>
-      <component-ref name="meterBinderListProvider" />
-    </list>
-  </property>
-</component>
-```
-
-> **注意**: メトリクスの送信間隔はデフォルト1分。送信間隔を非常に短く設定した場合、システムリポジトリ初期化前にメトリクスが送信されて警告ログが出力される可能性がある。

@@ -2,6 +2,11 @@
 
 ## モジュール一覧
 
+Doma2を使用したデータベースアクセスを行うためのアダプタ。データベースアクセスにDomaを使用することで以下のメリットが得られる:
+- Nablarchと同じように、実行時に動的にSQL文を構築できる
+- 2waySQLなので、NablarchのようにSQL文を書き換える必要がなく、SQLツール等でそのまま実行できる
+- `Transactional` インターセプタで指定したアクションのみトランザクション管理対象にできるため、不要なトランザクション制御処理を削減でき、パフォーマンスの向上が期待できる
+
 **モジュール**:
 ```xml
 <dependency>
@@ -254,9 +259,13 @@ DomaとNablarchのデータベースアクセスを併用する場合（例: :re
 
 ```xml
 <component class="nablarch.integration.doma.DomaStatementProperties" name="domaStatementProperties">
+  <!-- 最大行数の制限値を1000行に設定する -->
   <property name="maxRows" value="1000" />
+  <!-- フェッチサイズを200行に設定する -->
   <property name="fetchSize" value="200" />
+  <!-- クエリタイムアウトを30秒に設定する -->
   <property name="queryTimeout" value="30" />
+  <!-- バッチサイズを400に設定する -->
   <property name="batchSize" value="400" />
 </component>
 ```
@@ -265,88 +274,192 @@ DomaとNablarchのデータベースアクセスを併用する場合（例: :re
 
 [Doma 2.44.0](https://github.com/domaframework/doma/releases/tag/2.44.0)より、Daoアノテーションのconfig属性およびSingletonConfigアノテーションが非推奨となった。NablarchでもAPIを追加し、案内していた内容から実装方法を変更している。引き続き動作するが、Domaの変更に合わせて実装方法を移行することを推奨する。
 
-移行パターンは以下の3つ:
-- **DomaConfigを使った基本的な実装** → `migration-domaconfig-basic` 参照
-- **DomaTransactionNotSupportedConfigを使用した遅延ロード** → `migration-domatransaction-not-supported-config` 参照
-- **独自Configクラスを作成している場合** → `migration-custom-config-class` 参照
+なお、Doma 2.44.0以前に案内していた実装方法でも引き続き同じ動作を行う。
 
-## DomaConfigを使った基本的な実装をしている場合の移行
+## 移行パターン1: DomaConfigを使った基本的な実装からの移行
 
-Daoアノテーションのconfig属性に `DomaConfig` を使用した実装の移行方法。
+Daoアノテーションのconfig属性に `DomaConfig` を使用した実装は、config属性を削除することで移行できる。
 
-**移行前（非推奨）:**
+**移行前:**
+
 ```java
-@Dao(config = DomaConfig.class)
-public interface ProjectDao { ... }
+// Daoの定義
+@Dao(config = DomaConfig.class)  /* config属性を指定 */
+public interface ProjectDao {
+    // 省略
+}
+
+// Daoを使用する実装例
+@Transactional
+public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
+    final Project project = SessionUtil.delete(context, "project");
+
+    DomaDaoRepository.get(ProjectDao.class).insert(project);
+
+    return new HttpResponse("redirect://complete");
+}
 ```
 
 **移行後:**
+
 ```java
+// Daoの定義
 @Dao  /* config属性の指定を削除 */
-public interface ProjectDao { ... }
+public interface ProjectDao {
+    // 省略
+}
+
+// Daoを使用する実装例
+@Transactional
+public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
+    final Project project = SessionUtil.delete(context, "project");
+
+    DomaDaoRepository.get(ProjectDao.class).insert(project);  /* 変更なし */
+
+    return new HttpResponse("redirect://complete");
+}
 ```
 
-config属性を指定しないDaoで `DomaDaoRepository#get` を使用した場合、`DomaConfig` でDaoの実装クラスが構築される。Daoを使用する実装側のコードは変更不要。
+Daoアノテーションのconfig属性を指定しないDaoを使用して `DomaDaoRepository#get` を使ってDaoの実装クラスを取得した場合、`DomaConfig` を使用してDaoの実装クラスが構築される。
 
-## DomaTransactionNotSupportedConfigを使用して遅延ロードに対応している場合の移行
+## 移行パターン2: DomaTransactionNotSupportedConfigを使用した遅延ロードからの移行
 
-Jakarta Batchに準拠したバッチアプリケーションで遅延ロードに対応するため、`DomaTransactionNotSupportedConfig` を使用している場合の移行方法。
+Jakarta Batchに準拠したバッチアプリケーションで遅延ロードに対応するため `DomaTransactionNotSupportedConfig` を使用した実装は、config属性を削除し `DomaDaoRepository#get` の第2引数に `DomaTransactionNotSupportedConfig.class` を指定することで移行できる。
 
-**移行前（非推奨）:**
+**移行前:**
+
 ```java
-@Dao(config = DomaTransactionNotSupportedConfig.class)
+// Daoの定義
+@Dao(config = DomaTransactionNotSupportedConfig.class)  /* config属性を指定 */
 public interface ProjectDao {
+
     @Select(strategy = SelectType.RETURN)
     Stream<Project> search();
 }
 
-// 取得:
-final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class);
+// Daoを使用する実装例
+@Dependent
+@Named
+public class ProjectReader extends AbstractItemReader {
+
+    private Iterator<Project> iterator;
+    private Stream<Project> stream;
+
+    @Override
+    public void open(Serializable checkpoint) throws Exception {
+        /* DomaDaoRepository#getにはDaoのインターフェースのみを指定 */
+        final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class);
+        stream = dao.search();
+        iterator = stream.iterator();
+    }
+
+    // 省略
+}
 ```
 
 **移行後:**
+
 ```java
+// Daoの定義
 @Dao  /* config属性の指定を削除 */
 public interface ProjectDao {
+
     @Select(strategy = SelectType.RETURN)
     Stream<Project> search();
 }
 
-// 取得: 第2引数にDomaTransactionNotSupportedConfig.classを指定
-final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class, DomaTransactionNotSupportedConfig.class);
+// Daoを使用する実装例
+@Dependent
+@Named
+public class ProjectReader extends AbstractItemReader {
+
+    private Iterator<Project> iterator;
+    private Stream<Project> stream;
+
+    @Override
+    public void open(Serializable checkpoint) throws Exception {
+        /* DomaDaoRepository#getの第2引数にDomaTransactionNotSupportedConfig.classを指定 */
+        final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class, DomaTransactionNotSupportedConfig.class);
+        stream = dao.search();
+        iterator = stream.iterator();
+    }
+
+    // 省略
+}
 ```
 
-config属性を指定せず `DomaDaoRepository#get(java.lang.Class,java.lang.Class)` の第2引数にConfigを指定した場合、そのConfigでDaoの実装クラスが構築される。
+Daoアノテーションにconfig属性を指定しないDaoを使用して `DomaDaoRepository#get(java.lang.Class, java.lang.Class)` を呼び出した場合、第2引数に指定したConfigを使用してDaoの実装クラスが構築される。
 
-## 独自にConfigクラスを作成している場合の移行
+## 移行パターン3: 独自Configクラスを作成している場合の移行
 
-複数のデータベースにアクセスする等の理由で独自にConfigクラスを作成している場合の移行方法。
+複数のデータベースにアクセスする等の理由で独自にConfigクラスを作成している場合、`@SingletonConfig` アノテーションを削除してpublicな引数なしコンストラクタに変更し、`DomaDaoRepository#get` の第2引数にConfigクラスを渡すことで移行できる。
 
-**移行前（非推奨）:**
+**移行前:**
+
 ```java
+// Configクラスの定義
 @SingletonConfig  /* SingletonConfigアノテーションを付与 */
 public final class CustomConfig implements Config {
-    private CustomConfig() { ... }  /* コンストラクタはprivate */
+
+    private CustomConfig() {  /* コンストラクタはprivate */
+        // 省略
+    }
+
+    // 省略
 }
 
-@Dao(config = CustomConfig.class)
-public interface ProjectDao { ... }
+// Daoの定義
+@Dao(config = CustomConfig.class)  /* config属性に作成したConfigクラスを指定 */
+public interface ProjectDao {
+    // 省略
+}
 
-// 取得: DomaDaoRepository.get(ProjectDao.class)
+// Daoを使用する実装例
+public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
+    final Project project = SessionUtil.delete(context, "project");
+
+    CustomConfig.singleton()
+            .getTransactionManager()
+            .requiresNew(() ->
+                    /* DomaDaoRepository#getにはDaoのインターフェースのみを指定 */
+                    DomaDaoRepository.get(ProjectDao.class);
+
+    return new HttpResponse("redirect://complete");
+}
 ```
 
 **移行後:**
+
 ```java
-/* @SingletonConfigを削除、publicな引数なしのコンストラクタに変更 */
+// Configクラスの定義
+/* SingletonConfigアノテーションを削除 */
 public final class CustomConfig implements Config {
-    public CustomConfig() { ... }
+
+    public CustomConfig() {  /* publicな引数なしのコンストラクタに変更 */
+        // 省略
+    }
+
+    // 省略
 }
 
+// Daoの定義
 @Dao  /* config属性の指定を削除 */
-public interface ProjectDao { ... }
+public interface ProjectDao {
+    // 省略
+}
 
-// 取得: 第2引数にCustomConfig.classを指定
-DomaDaoRepository.get(ProjectDao.class, CustomConfig.class);
+// Daoを使用する実装例
+public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
+    final Project project = SessionUtil.delete(context, "project");
+
+    CustomConfig.singleton()
+            .getTransactionManager()
+            .requiresNew(() ->
+                    /* DomaDaoRepository#getの第2引数に作成したConfigのClassクラスを指定 */
+                    DomaDaoRepository.get(ProjectDao.class, CustomConfig.class);
+
+    return new HttpResponse("redirect://complete");
+}
 ```
 
-config属性を指定せず `DomaDaoRepository#get(java.lang.Class,java.lang.Class)` の第2引数にConfigクラスを指定した場合、そのConfigでDaoの実装クラスが構築される。
+Daoアノテーションにconfig属性を指定しないDaoを使用して `DomaDaoRepository#get(java.lang.Class, java.lang.Class)` を呼び出した場合、第2引数に指定したConfigを使用してDaoの実装クラスが構築される。

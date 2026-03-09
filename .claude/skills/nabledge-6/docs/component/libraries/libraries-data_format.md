@@ -187,6 +187,83 @@ public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
 }
 ```
 
+## フィールドタイプを追加する
+
+## フィールドタイプを追加する
+
+:ref:`data_format-field_type_list` の標準データタイプで要件を満たせない場合（例：文字列タイプのパディング文字がバイナリ）は、プロジェクト固有のフィールドタイプを定義する。
+
+手順:
+1. `DataType` 実装クラスを作成する
+2. フォーマットに応じたファクトリの継承クラスを作成する
+3. 作成したファクトリクラスをフォーマットに応じた設定クラスのプロパティに設定する
+
+> **補足**: 標準のフィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。実装追加の際は参考にすること。
+
+フォーマット別ファクトリクラス:
+
+| フォーマット | ファクトリクラス |
+|---|---|
+| Fixed(固定長) | `FixedLengthConvertorFactory` |
+| Variable(可変長) | `VariableLengthConvertorFactory` |
+| JSON | `JsonDataConvertorFactory` |
+| XML | `XmlDataConvertorFactory` |
+
+Fixed(固定長)の継承クラス実装例:
+
+```java
+public class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
+    @Override
+    protected Map<String, Class<?>> getDefaultConvertorTable() {
+        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(
+                new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
+        defaultConvertorTable.put("custom", CustomType.class);
+        return Collections.unmodifiableMap(defaultConvertorTable);
+    }
+}
+```
+
+フォーマット別設定クラスとプロパティ:
+
+| フォーマット | 設定クラス(コンポーネント名) | プロパティ名 |
+|---|---|---|
+| Fixed(固定長) | `FixedLengthConvertorSetting` (fixedLengthConvertorSetting) | fixedLengthConvertorFactory |
+| Variable(可変長) | `VariableLengthConvertorSetting` (variableLengthConvertorSetting) | variableLengthConvertorFactory |
+| JSON | `JsonDataConvertorSetting` (jsonDataConvertorSetting) | jsonDataConvertorFactory |
+| XML | `XmlDataConvertorSetting` (xmlDataConvertorSetting) | xmlDataConvertorFactory |
+
+Fixed(固定長)の設定例:
+
+```xml
+<component name="fixedLengthConvertorSetting"
+    class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
+  <property name="fixedLengthConvertorFactory">
+    <component class="com.sample.CustomFixedLengthConvertorFactory" />
+  </property>
+</component>
+```
+
+> **重要**: 設定クラスの `convertorTable` プロパティによるフィールドタイプ追加は推奨しない。理由: (1) 追加したいタイプだけでなくデフォルトタイプも全て設定し直す必要があり、バージョンアップ時にデフォルトが変更されても自動適用されず手動修正が必要になる。(2) デフォルト定義はファクトリクラスに実装されており、ソースコードを参照しながらコンポーネント設定ファイルに追加するため設定ミスを起こしやすい。
+
+## XMLで属性を持つ要素のコンテンツ名を変更する
+
+## XMLで属性を持つ要素のコンテンツ名を変更する
+
+属性を持つ要素のコンテンツ名を変更するには、以下のクラスをコンポーネント設定ファイルに設定し `contentName` プロパティに変更後のコンテンツ名を設定する。
+
+- `XmlDataParser`（コンポーネント名: `XmlDataParser`）
+- `XmlDataBuilder`（コンポーネント名: `XmlDataBuilder`）
+
+```xml
+<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+  <property name="contentName" value="change" />
+</component>
+
+<component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
+  <property name="contentName" value="change" />
+</component>
+```
+
 ## JSONやXMLの階層構造のデータを読み書きする
 
 JSONやXMLの階層構造データを読み込んだ場合、Mapのキー値は各階層の要素名をドット(`.`)で連結した値になる。
@@ -409,80 +486,3 @@ data.put("child.body", "value2");
 ## 出力するデータの表示形式をフォーマットする
 
 データを出力する際に:ref:`format`コンバータを使用することで、日付や数値などのデータの表示形式をフォーマットできる。詳細は:ref:`format`を参照。
-
-## フィールドタイプを追加する
-
-## フィールドタイプを追加する
-
-:ref:`data_format-field_type_list` の標準データタイプで要件を満たせない場合（例：文字列タイプのパディング文字がバイナリ）は、プロジェクト固有のフィールドタイプを定義する。
-
-手順:
-1. `DataType` 実装クラスを作成する
-2. フォーマットに応じたファクトリの継承クラスを作成する
-3. 作成したファクトリクラスをフォーマットに応じた設定クラスのプロパティに設定する
-
-> **補足**: 標準のフィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。実装追加の際は参考にすること。
-
-フォーマット別ファクトリクラス:
-
-| フォーマット | ファクトリクラス |
-|---|---|
-| Fixed(固定長) | `FixedLengthConvertorFactory` |
-| Variable(可変長) | `VariableLengthConvertorFactory` |
-| JSON | `JsonDataConvertorFactory` |
-| XML | `XmlDataConvertorFactory` |
-
-Fixed(固定長)の継承クラス実装例:
-
-```java
-public class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
-    @Override
-    protected Map<String, Class<?>> getDefaultConvertorTable() {
-        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(
-                new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
-        defaultConvertorTable.put("custom", CustomType.class);
-        return Collections.unmodifiableMap(defaultConvertorTable);
-    }
-}
-```
-
-フォーマット別設定クラスとプロパティ:
-
-| フォーマット | 設定クラス(コンポーネント名) | プロパティ名 |
-|---|---|---|
-| Fixed(固定長) | `FixedLengthConvertorSetting` (fixedLengthConvertorSetting) | fixedLengthConvertorFactory |
-| Variable(可変長) | `VariableLengthConvertorSetting` (variableLengthConvertorSetting) | variableLengthConvertorFactory |
-| JSON | `JsonDataConvertorSetting` (jsonDataConvertorSetting) | jsonDataConvertorFactory |
-| XML | `XmlDataConvertorSetting` (xmlDataConvertorSetting) | xmlDataConvertorFactory |
-
-Fixed(固定長)の設定例:
-
-```xml
-<component name="fixedLengthConvertorSetting"
-    class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
-  <property name="fixedLengthConvertorFactory">
-    <component class="com.sample.CustomFixedLengthConvertorFactory" />
-  </property>
-</component>
-```
-
-> **重要**: 設定クラスの `convertorTable` プロパティによるフィールドタイプ追加は推奨しない。理由: (1) 追加したいタイプだけでなくデフォルトタイプも全て設定し直す必要があり、バージョンアップ時にデフォルトが変更されても自動適用されず手動修正が必要になる。(2) デフォルト定義はファクトリクラスに実装されており、ソースコードを参照しながらコンポーネント設定ファイルに追加するため設定ミスを起こしやすい。
-
-## XMLで属性を持つ要素のコンテンツ名を変更する
-
-## XMLで属性を持つ要素のコンテンツ名を変更する
-
-属性を持つ要素のコンテンツ名を変更するには、以下のクラスをコンポーネント設定ファイルに設定し `contentName` プロパティに変更後のコンテンツ名を設定する。
-
-- `XmlDataParser`（コンポーネント名: `XmlDataParser`）
-- `XmlDataBuilder`（コンポーネント名: `XmlDataBuilder`）
-
-```xml
-<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
-  <property name="contentName" value="change" />
-</component>
-
-<component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
-  <property name="contentName" value="change" />
-</component>
-```

@@ -120,6 +120,41 @@
       ]
     },
     {
+      "id": "add-field-type",
+      "title": "フィールドタイプを追加する",
+      "hints": [
+        "DataType",
+        "FixedLengthConvertorFactory",
+        "VariableLengthConvertorFactory",
+        "JsonDataConvertorFactory",
+        "XmlDataConvertorFactory",
+        "FixedLengthConvertorSetting",
+        "VariableLengthConvertorSetting",
+        "JsonDataConvertorSetting",
+        "XmlDataConvertorSetting",
+        "fixedLengthConvertorFactory",
+        "variableLengthConvertorFactory",
+        "jsonDataConvertorFactory",
+        "xmlDataConvertorFactory",
+        "convertorTable",
+        "CustomFixedLengthConvertorFactory",
+        "CaseInsensitiveMap",
+        "フィールドタイプ追加",
+        "カスタムデータタイプ",
+        "ファクトリクラス拡張"
+      ]
+    },
+    {
+      "id": "xml-content-name-change",
+      "title": "XMLで属性を持つ要素のコンテンツ名を変更する",
+      "hints": [
+        "XmlDataParser",
+        "XmlDataBuilder",
+        "contentName",
+        "XMLコンテンツ名変更"
+      ]
+    },
+    {
       "id": "json-xml-hierarchical-read-write",
       "title": "JSONやXMLの階層構造のデータを読み書きする",
       "hints": [
@@ -184,41 +219,6 @@
         "数値フォーマット",
         "formatコンバータ"
       ]
-    },
-    {
-      "id": "add-field-type",
-      "title": "フィールドタイプを追加する",
-      "hints": [
-        "DataType",
-        "FixedLengthConvertorFactory",
-        "VariableLengthConvertorFactory",
-        "JsonDataConvertorFactory",
-        "XmlDataConvertorFactory",
-        "FixedLengthConvertorSetting",
-        "VariableLengthConvertorSetting",
-        "JsonDataConvertorSetting",
-        "XmlDataConvertorSetting",
-        "fixedLengthConvertorFactory",
-        "variableLengthConvertorFactory",
-        "jsonDataConvertorFactory",
-        "xmlDataConvertorFactory",
-        "convertorTable",
-        "CustomFixedLengthConvertorFactory",
-        "CaseInsensitiveMap",
-        "フィールドタイプ追加",
-        "カスタムデータタイプ",
-        "ファクトリクラス拡張"
-      ]
-    },
-    {
-      "id": "xml-content-name-change",
-      "title": "XMLで属性を持つ要素のコンテンツ名を変更する",
-      "hints": [
-        "XmlDataParser",
-        "XmlDataBuilder",
-        "contentName",
-        "XMLコンテンツ名変更"
-      ]
     }
   ],
   "sections": {
@@ -228,13 +228,13 @@
     "file-output": ":java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用してファイルへデータを出力する。\n\n- 書き込みデータは :java:extdoc:`Map <java.util.Map>` として準備し、キーはフォーマット定義ファイルで定義したフィールド名（大文字小文字区別なし）を指定\n- `open` メソッドでファイルリソースを書き込み可能状態にしてから `write` メソッドで書き込む\n\n```java\nMap<String, Object> user = new HashMap<>();\nuser.put(\"name\", \"名前\");\nuser.put(\"age\", 20);\nFileRecordWriterHolder.open(\"users.csv\", \"user_csv_format\");\nFileRecordWriterHolder.write(user, \"user.csv\");\n```\n\n> **重要**: :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` で開いたファイルリソースは :ref:`file_record_writer_dispose_handler` で自動開放される。必ず :ref:`file_record_writer_dispose_handler` をハンドラキュー上に設定すること。\n\n> **重要**: 出力するデータに不正な値が設定されていた場合に正しく処理できない可能性があるため、事前にアプリケーション側で不正な値でないかをチェックすること。\n\n> **重要**: デフォルトでは1レコード毎にファイルへ書き込む。大量データ出力時に性能要件を満たせない場合は、バッファサイズ単位での書き込みに変更すること。`DataFormatConfig` コンポーネントに `flushEachRecordInWriting=false` を設定し、バッファサイズは `open` メソッドで指定する。\n\n```xml\n<component name=\"dataFormatConfig\" class=\"nablarch.core.dataformat.DataFormatConfig\">\n  <property name=\"flushEachRecordInWriting\" value=\"false\" />\n</component>\n```\n\n> **補足**: :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用するには、フォーマット定義ファイルの配置ディレクトリと出力先ディレクトリを :ref:`file_path_management` に設定すること。",
     "file-download": ":java:extdoc:`DataRecordResponse <nablarch.common.web.download.DataRecordResponse>` を使用してファイルダウンロード形式でクライアントに応答する。\n\n- `DataRecordResponse` 生成時にフォーマット定義ファイルの論理パス名とファイル名を指定\n- :java:extdoc:`DataRecordResponse#write <nablarch.common.web.download.DataRecordResponse.write(java.util.Map)>` でデータ出力（複数レコードは繰り返し呼び出し）\n- `Content-Type` と `Content-Disposition` を設定して `DataRecordResponse` を返却\n\n```java\npublic HttpResponse download(HttpRequest request, ExecutionContext context) {\n    Map<String, Object> user = new hashMap<>()\n    user.put(\"name\", \"なまえ\");\n    user.put(\"age\", 30);\n\n    DataRecordResponse response = new DataRecordResponse(\"format\", \"users_csv\");\n    response.write(user);\n    response.setContentType(\"text/csv; charset=Shift_JIS\");\n    response.setContentDisposition(\"メッセージ一覧.csv\");\n    return response;\n}\n```\n\n> **補足**: フォーマット定義ファイルの格納パスは :ref:`file_path_management` に設定すること。",
     "upload-file-read": "アップロードファイルの読み込み方法は2種類ある。アップロードヘルパーには制限があるため、**汎用データフォーマットのみを使った方法を推奨**する。\n\n#### 汎用データフォーマットのみを使った読み込み（推奨）\n\n- :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` でアップロードファイルを取得（引数はパラメータ名）\n- :java:extdoc:`FilePathSetting <nablarch.core.util.FilePathSetting>` からフォーマット定義ファイルの `File` オブジェクトを取得\n- :java:extdoc:`FormatterFactory <nablarch.core.dataformat.FormatterFactory>` から :java:extdoc:`DataRecordFormatter <nablarch.core.dataformat.DataRecordFormatter>` を生成\n- `DataRecordFormatter` に設定する :java:extdoc:`InputStream <java.io.InputStream>` は mark/reset がサポートされている必要があるため `BufferedInputStream` でラップすること\n\n```java\npublic HttpResponse upload(HttpRequest req, ExecutionContext ctx) {\n    final List<PartInfo> partInfoList = request.getPart(\"users\");\n    final File format = FilePathSetting.getInstance().getFile(\"format\", \"users-layout\");\n\n    try (final DataRecordFormatter formatter = FormatterFactory.getInstance().createFormatter(format)) {\n        formatter.setInputStream(new BufferedInputStream(partInfoList.get(0).getInputStream()))\n                 .initialize();\n\n        while (formatter.hasNext()) {\n            final DataRecord record = formatter.readRecord();\n            final Users users = BeanUtil.createAndCopy(Users.class, record);\n        }\n    } catch (IOException e) {\n        throw new RuntimeException(e);\n    }\n}\n```\n\n#### アップロードヘルパーを使った読み込み（非推奨）\n\n> **重要**: 以下の制限があるため非推奨。汎用データフォーマットのみを使った方法を使用すること。\n> - 入力値チェックが :ref:`nablarch_validation` に限定され、推奨される :ref:`bean_validation` が使用不可\n> - 拡張が難しく、要件を満たす実装が容易でない\n\n:java:extdoc:`UploadHelper <nablarch.fw.web.upload.util.UploadHelper>` でファイル読み込み・バリデーション・DB保存を簡易実行できる。\n\n- :java:extdoc:`UploadHelper#applyFormat <nablarch.fw.web.upload.util.UploadHelper.applyFormat(java.lang.String)>` でフォーマット定義ファイルを設定\n- :java:extdoc:`setUpMessageIdOnError <nablarch.fw.web.upload.util.BulkValidator.setUpMessageIdOnError(java.lang.String,java.lang.String,java.lang.String)>` でバリデーションエラー用メッセージIDを設定\n- :java:extdoc:`validateWith <nablarch.fw.web.upload.util.BulkValidator.ErrorHandlingBulkValidator.validateWith(java.lang.Class,java.lang.String)>` でバリデーションを実行するBeanクラスとメソッドを設定\n- :java:extdoc:`importWith <nablarch.fw.web.upload.util.BulkValidationResult.importWith(nablarch.core.db.support.DbAccessSupport,java.lang.String)>` でDB登録\n\n```java\npublic HttpResponse upload(HttpRequest req, ExecutionContext ctx) {\n    PartInfo partInfo = req.getPart(\"fileToSave\").get(0);\n\n    UploadHelper helper = new UploadHelper(partInfo);\n    int cnt = helper\n        .applyFormat(\"N11AC002\")\n        .setUpMessageIdOnError(\"format.error\", \"validation.error\", \"file.empty.error\")\n        .validateWith(UserInfoTempEntity.class, \"validateRegister\")\n        .importWith(this, \"INSERT_SQL\");\n}\n```",
+    "xml-content-name-change": "## XMLで属性を持つ要素のコンテンツ名を変更する\n\n属性を持つ要素のコンテンツ名を変更するには、以下のクラスをコンポーネント設定ファイルに設定し `contentName` プロパティに変更後のコンテンツ名を設定する。\n\n- :java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>`（コンポーネント名: `XmlDataParser`）\n- :java:extdoc:`XmlDataBuilder<nablarch.core.dataformat.XmlDataBuilder>`（コンポーネント名: `XmlDataBuilder`）\n\n```xml\n<component name=\"XmlDataParser\" class=\"nablarch.core.dataformat.XmlDataParser\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n\n<component name=\"XmlDataBuilder\" class=\"nablarch.core.dataformat.XmlDataBuilder\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n```",
+    "add-field-type": "## フィールドタイプを追加する\n\n:ref:`data_format-field_type_list` の標準データタイプで要件を満たせない場合（例：文字列タイプのパディング文字がバイナリ）は、プロジェクト固有のフィールドタイプを定義する。\n\n手順:\n1. :java:extdoc:`DataType<nablarch.core.dataformat.convertor.datatype.DataType>` 実装クラスを作成する\n2. フォーマットに応じたファクトリの継承クラスを作成する\n3. 作成したファクトリクラスをフォーマットに応じた設定クラスのプロパティに設定する\n\n> **補足**: 標準のフィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。実装追加の際は参考にすること。\n\nフォーマット別ファクトリクラス:\n\n| フォーマット | ファクトリクラス |\n|---|---|\n| Fixed(固定長) | :java:extdoc:`FixedLengthConvertorFactory<nablarch.core.dataformat.convertor.FixedLengthConvertorFactory>` |\n| Variable(可変長) | :java:extdoc:`VariableLengthConvertorFactory<nablarch.core.dataformat.convertor.VariableLengthConvertorFactory>` |\n| JSON | :java:extdoc:`JsonDataConvertorFactory<nablarch.core.dataformat.convertor.JsonDataConvertorFactory>` |\n| XML | :java:extdoc:`XmlDataConvertorFactory<nablarch.core.dataformat.convertor.XmlDataConvertorFactory>` |\n\nFixed(固定長)の継承クラス実装例:\n\n```java\npublic class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {\n    @Override\n    protected Map<String, Class<?>> getDefaultConvertorTable() {\n        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(\n                new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));\n        defaultConvertorTable.put(\"custom\", CustomType.class);\n        return Collections.unmodifiableMap(defaultConvertorTable);\n    }\n}\n```\n\nフォーマット別設定クラスとプロパティ:\n\n| フォーマット | 設定クラス(コンポーネント名) | プロパティ名 |\n|---|---|---|\n| Fixed(固定長) | :java:extdoc:`FixedLengthConvertorSetting<nablarch.core.dataformat.convertor.FixedLengthConvertorSetting>` (fixedLengthConvertorSetting) | fixedLengthConvertorFactory |\n| Variable(可変長) | :java:extdoc:`VariableLengthConvertorSetting<nablarch.core.dataformat.convertor.VariableLengthConvertorSetting>` (variableLengthConvertorSetting) | variableLengthConvertorFactory |\n| JSON | :java:extdoc:`JsonDataConvertorSetting<nablarch.core.dataformat.convertor.JsonDataConvertorSetting>` (jsonDataConvertorSetting) | jsonDataConvertorFactory |\n| XML | :java:extdoc:`XmlDataConvertorSetting<nablarch.core.dataformat.convertor.XmlDataConvertorSetting>` (xmlDataConvertorSetting) | xmlDataConvertorFactory |\n\nFixed(固定長)の設定例:\n\n```xml\n<component name=\"fixedLengthConvertorSetting\"\n    class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">\n  <property name=\"fixedLengthConvertorFactory\">\n    <component class=\"com.sample.CustomFixedLengthConvertorFactory\" />\n  </property>\n</component>\n```\n\n> **重要**: 設定クラスの `convertorTable` プロパティによるフィールドタイプ追加は推奨しない。理由: (1) 追加したいタイプだけでなくデフォルトタイプも全て設定し直す必要があり、バージョンアップ時にデフォルトが変更されても自動適用されず手動修正が必要になる。(2) デフォルト定義はファクトリクラスに実装されており、ソースコードを参照しながらコンポーネント設定ファイルに追加するため設定ミスを起こしやすい。",
     "json-xml-hierarchical-read-write": "JSONやXMLの階層構造データを読み込んだ場合、Mapのキー値は各階層の要素名をドット(`.`)で連結した値になる。\n\nポイント:\n- 「親要素名.子要素名」形式でMapに値を設定\n- 階層が深い場合はさらに`.`で連結\n- 最上位の要素名はキーに含めない\n- 配列要素の場合は添字(0始まり)を設定: `user[0].name`\n\n> **重要**: 親要素が任意であり、親要素が存在する場合のみ子要素を必須、といった設定には対応していない。階層構造のデータをフォーマット定義ファイルに定義する際は、全て任意項目として定義することを推奨する。\n\nフォーマット定義ファイル（JSONの場合は`file-type`を`JSON`に変更。階層構造の定義方法は:ref:`data_format-nest_object`参照）:\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n\n[users]              # ルート要素\n1 user    [0..*] OB\n\n[user]               # ネストした要素\n1 name    [0..1] N\n2 age     [0..1] X9\n3 address [0..1] N\n```\n\nMapの設定例:\n\n```java\nMap<String, Object> data = new HashMap<String, Object>();\ndata.put(\"user[0].name\", \"なまえ1\");\ndata.put(\"user[0].address\", \"住所1\");\ndata.put(\"user[0].age\", 30);\ndata.put(\"user[1].name\", \"なまえ2\");\ndata.put(\"user[1].address\", \"住所2\");\ndata.put(\"user[1].age\", 31);\n```\n\n出力XML:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<users>\n  <user>\n    <name>なまえ1</name>\n    <address>住所1</address>\n    <age>30</age>\n  </user>\n  <user>\n    <name>なまえ2</name>\n    <address>住所2</address>\n    <age>31</age>\n  </user>\n</users>\n```\n\n出力JSON:\n\n```json\n{\n  \"user\": [\n    {\"name\": \"なまえ1\", \"address\": \"住所1\", \"age\": 30},\n    {\"name\": \"ななえ2\", \"address\": \"住所2\", \"age\": 31}\n  ]\n}\n```",
     "xml-dtd": "> **重要**: XMLを入力する場合、DTDはデフォルトで使用不可。DTDを含むXMLを読み込もうとすると例外が発生する。これは[XML外部実体参照(XXE)](https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing)を防止するための措置。\n\n信頼できるXMLのみDTDを許可する場合は、:java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>`の`allowDTD`プロパティを`true`に設定する。コンポーネント名は`XmlDataParser`で明示的に定義すること。\n\n```xml\n<component name=\"XmlDataParser\" class=\"nablarch.core.dataformat.XmlDataParser\">\n  <!--\n      DTDの使用を許可する。\n      XXE攻撃の危険性があるため、信頼できるXML以外には使用してはならない。\n   -->\n  <property name=\"allowDTD\" value=\"true\" />\n</component>\n```",
     "xml-namespace": "接続先システムとの要件で名前空間を使用する場合、フォーマット定義ファイルで名前空間を定義する。\n\nポイント:\n- 名前空間は使用する要素に`?@xmlns:名前空間`として定義。タイプは`X`、フィールドコンバータ部にURIを指定\n- 名前空間の表記: 「名前空間:要素名」形式\n- MapのキーはJ「名前空間＋要素名（先頭大文字）」となる\n\nフォーマット定義ファイル:\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n\n[testns:data]\n1 ?@xmlns:testns X \"http://testns.hoge.jp/apply\"\n2 testns:key1 X\n```\n\n対応XMLデータ:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testns:data xmlns:testns=\"http://testns.hoge.jp/apply\">\n  <testns:key1>value1</testns:key1>\n</testns:data>\n```\n\nMapデータ（キーは「名前空間＋要素名先頭大文字」形式）:\n\n```java\nMap<String, Object> data = new HashMap<String, Object>();\ndata.put(\"testnsKey1\", \"value1\");\n```",
     "xml-element-with-attribute-content": "XMLで属性を持つ要素にコンテンツを定義する場合、フォーマット定義ファイルにコンテンツを表すフィールドを定義する。\n\nポイント:\n- コンテンツを表すフィールド名には`body`を指定する\n- デフォルトのフィールド名を変更する場合は:ref:`data_format-xml_content_name_change`を参照\n\nフォーマット定義ファイル:\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n\n[parent]\n1 child   OB\n\n[child]\n1 @attr   X\n2 body    X\n```\n\n対応XMLデータ:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<parent>\n  <child attr=\"value1\">value2</child>\n</parent>\n```\n\nMapデータ:\n\n```java\nMap<String, Object> data = new HashMap<String, Object>();\ndata.put(\"child.attr\", \"value1\");\ndata.put(\"child.body\", \"value2\");\n```",
     "character-replacement": "寄せ字機能を使うことで、外部からデータを読み込む際にシステムで使用可能な文字に置き換えられる。\n\n**置き換えルール**:\n- propertiesファイルに「置き換え前の文字=置き換え後の文字」形式で定義\n- 置き換え前・後ともに1文字のみ（サロゲートペア非対応）\n- 接続先ごとに複数のpropertiesファイルを作成可能\n\n```properties\n髙=高\n﨑=崎\n唖=■\n```\n\n:java:extdoc:`CharacterReplacementManager<nablarch.core.dataformat.CharacterReplacementManager>`をコンポーネント名`characterReplacementManager`で設定し、:java:extdoc:`CharacterReplacementConfig<nablarch.core.dataformat.CharacterReplacementConfig>`をリスト形式で指定する。複数propertiesファイルを定義する場合は`typeName`に異なる名前を設定する。\n\n```xml\n<component name=\"characterReplacementManager\"\n    class=\"nablarch.core.dataformat.CharacterReplacementManager\">\n  <property name=\"configList\">\n    <list>\n      <component class=\"nablarch.core.dataformat.CharacterReplacementConfig\">\n        <property name=\"typeName\" value=\"a_system\"/>\n        <property name=\"filePath\" value=\"classpath:a-system.properties\"/>\n        <property name=\"encoding\" value=\"UTF-8\"/>\n      </component>\n      <component class=\"nablarch.core.dataformat.CharacterReplacementConfig\">\n        <property name=\"typeName\" value=\"b_system\"/>\n        <property name=\"filePath\" value=\"classpath:b-system.properties\"/>\n        <property name=\"encoding\" value=\"UTF-8\"/>\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n初期化対象リストへの設定:\n\n```xml\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"characterReplacementManager\" />\n    </list>\n  </property>\n</component>\n```\n\nフォーマット定義ファイルで:ref:`data_format-replacement_convertor`コンバータを使用:\n\n```bash\n# Aシステムとの置き換えルールを適用\n1 name N(100) replacement(\"a_system\")\n\n# Bシステムとの置き換えルールを適用\n1 name N(100) replacement(\"b_system\")\n```",
-    "data-format-output": "データを出力する際に:ref:`format`コンバータを使用することで、日付や数値などのデータの表示形式をフォーマットできる。詳細は:ref:`format`を参照。",
-    "add-field-type": "## フィールドタイプを追加する\n\n:ref:`data_format-field_type_list` の標準データタイプで要件を満たせない場合（例：文字列タイプのパディング文字がバイナリ）は、プロジェクト固有のフィールドタイプを定義する。\n\n手順:\n1. :java:extdoc:`DataType<nablarch.core.dataformat.convertor.datatype.DataType>` 実装クラスを作成する\n2. フォーマットに応じたファクトリの継承クラスを作成する\n3. 作成したファクトリクラスをフォーマットに応じた設定クラスのプロパティに設定する\n\n> **補足**: 標準のフィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。実装追加の際は参考にすること。\n\nフォーマット別ファクトリクラス:\n\n| フォーマット | ファクトリクラス |\n|---|---|\n| Fixed(固定長) | :java:extdoc:`FixedLengthConvertorFactory<nablarch.core.dataformat.convertor.FixedLengthConvertorFactory>` |\n| Variable(可変長) | :java:extdoc:`VariableLengthConvertorFactory<nablarch.core.dataformat.convertor.VariableLengthConvertorFactory>` |\n| JSON | :java:extdoc:`JsonDataConvertorFactory<nablarch.core.dataformat.convertor.JsonDataConvertorFactory>` |\n| XML | :java:extdoc:`XmlDataConvertorFactory<nablarch.core.dataformat.convertor.XmlDataConvertorFactory>` |\n\nFixed(固定長)の継承クラス実装例:\n\n```java\npublic class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {\n    @Override\n    protected Map<String, Class<?>> getDefaultConvertorTable() {\n        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(\n                new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));\n        defaultConvertorTable.put(\"custom\", CustomType.class);\n        return Collections.unmodifiableMap(defaultConvertorTable);\n    }\n}\n```\n\nフォーマット別設定クラスとプロパティ:\n\n| フォーマット | 設定クラス(コンポーネント名) | プロパティ名 |\n|---|---|---|\n| Fixed(固定長) | :java:extdoc:`FixedLengthConvertorSetting<nablarch.core.dataformat.convertor.FixedLengthConvertorSetting>` (fixedLengthConvertorSetting) | fixedLengthConvertorFactory |\n| Variable(可変長) | :java:extdoc:`VariableLengthConvertorSetting<nablarch.core.dataformat.convertor.VariableLengthConvertorSetting>` (variableLengthConvertorSetting) | variableLengthConvertorFactory |\n| JSON | :java:extdoc:`JsonDataConvertorSetting<nablarch.core.dataformat.convertor.JsonDataConvertorSetting>` (jsonDataConvertorSetting) | jsonDataConvertorFactory |\n| XML | :java:extdoc:`XmlDataConvertorSetting<nablarch.core.dataformat.convertor.XmlDataConvertorSetting>` (xmlDataConvertorSetting) | xmlDataConvertorFactory |\n\nFixed(固定長)の設定例:\n\n```xml\n<component name=\"fixedLengthConvertorSetting\"\n    class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">\n  <property name=\"fixedLengthConvertorFactory\">\n    <component class=\"com.sample.CustomFixedLengthConvertorFactory\" />\n  </property>\n</component>\n```\n\n> **重要**: 設定クラスの `convertorTable` プロパティによるフィールドタイプ追加は推奨しない。理由: (1) 追加したいタイプだけでなくデフォルトタイプも全て設定し直す必要があり、バージョンアップ時にデフォルトが変更されても自動適用されず手動修正が必要になる。(2) デフォルト定義はファクトリクラスに実装されており、ソースコードを参照しながらコンポーネント設定ファイルに追加するため設定ミスを起こしやすい。",
-    "xml-content-name-change": "## XMLで属性を持つ要素のコンテンツ名を変更する\n\n属性を持つ要素のコンテンツ名を変更するには、以下のクラスをコンポーネント設定ファイルに設定し `contentName` プロパティに変更後のコンテンツ名を設定する。\n\n- :java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>`（コンポーネント名: `XmlDataParser`）\n- :java:extdoc:`XmlDataBuilder<nablarch.core.dataformat.XmlDataBuilder>`（コンポーネント名: `XmlDataBuilder`）\n\n```xml\n<component name=\"XmlDataParser\" class=\"nablarch.core.dataformat.XmlDataParser\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n\n<component name=\"XmlDataBuilder\" class=\"nablarch.core.dataformat.XmlDataBuilder\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n```"
+    "data-format-output": "データを出力する際に:ref:`format`コンバータを使用することで、日付や数値などのデータの表示形式をフォーマットできる。詳細は:ref:`format`を参照。"
   }
 }

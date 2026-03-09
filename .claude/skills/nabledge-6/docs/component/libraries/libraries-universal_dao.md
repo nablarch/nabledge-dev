@@ -225,6 +225,51 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 
 バージョン番号を持つテーブルは排他制御の単位ごとに定義し、競合が許容される最大の単位で定義する。例えば「ユーザ」単位でのロックが業務的に許容されるならユーザテーブルにバージョン番号を定義する。単位を大きくすると競合の可能性が高くなり、更新失敗（楽観的ロックの場合）や処理遅延（悲観的ロックの場合）を招く点に注意すること。
 
+## DatabaseMetaDataから情報を取得できない場合に対応する
+
+シノニム使用時や権限問題で `DatabaseMetaData` から主キー情報を取得できない場合、主キー指定の検索が正しく動作しない。対応: `DatabaseMetaDataExtractor` を継承したクラスを作成し、コンポーネント名 `databaseMetaDataExtractor` で設定する。主キー情報の取得方法はデータベース依存のため、製品のマニュアルを参照すること。
+
+```xml
+<component name="databaseMetaDataExtractor" class="sample.dao.CustomDatabaseMetaDataExtractor" />
+```
+
+## ページング処理の件数取得用SQLを変更する
+
+ページング処理では実際のレコード取得前に件数取得SQLが発行される。デフォルトは元のSQLを `SELECT COUNT(*) FROM` で包んだSQL。ORDER BY句など処理負荷が大きいSQLで件数取得SQLを変更したい場合、ダイアレクトをカスタマイズして `Dialect#convertCountSql(String, Object, StatementFactory)` の実装を変更する。
+
+> **重要**: 件数取得SQLは元のSQLと同一の検索条件を持つ必要がある。件数取得SQLを用意する場合は、両者の検索条件に差分が発生しないよう注意すること。
+
+> **補足**: プロジェクトごとに適切な件数取得SQLのマッピングルールを検討すること。
+
+```java
+public class CustomH2Dialect extends H2Dialect {
+    private Map<String, String> sqlMap;
+
+    @Override
+    public String convertCountSql(String sqlId, Object params, StatementFactory statementFactory) {
+        if (sqlMap.containsKey(sqlId)) {
+            return statementFactory.getVariableConditionSqlBySqlId(sqlMap.get(sqlId), params);
+        }
+        return convertCountSql(statementFactory.getVariableConditionSqlBySqlId(sqlId, params));
+    }
+
+    public void setSqlMap(Map<String, String> sqlMap) {
+        this.sqlMap = sqlMap;
+    }
+}
+```
+
+```xml
+<component name="dialect" class="com.nablarch.example.app.db.dialect.CustomH2Dialect">
+  <property name="sqlMap">
+    <map>
+      <entry key="com.nablarch.example.app.entity.Project#SEARCH_PROJECT"
+             value="com.nablarch.example.app.entity.Project#SEARCH_PROJECT_FORCOUNT"/>
+    </map>
+  </property>
+</component>
+```
+
 ## データサイズの大きいバイナリデータを登録（更新）する
 
 データサイズの大きいバイナリデータ（例：OracleのBLOB）は、ユニバーサルDAOではデータをすべてメモリに展開しないと登録・更新できない。データベースが提供する機能を使ってファイルなどから直接登録・更新すること。
@@ -290,51 +335,6 @@ FindPersonsTransaction findPersonsTransaction = new FindPersonsTransaction();
 
 // 結果を取得する。
 EntityList<Person> persons = findPersonsTransaction.getPersons();
-```
-
-## DatabaseMetaDataから情報を取得できない場合に対応する
-
-シノニム使用時や権限問題で `DatabaseMetaData` から主キー情報を取得できない場合、主キー指定の検索が正しく動作しない。対応: `DatabaseMetaDataExtractor` を継承したクラスを作成し、コンポーネント名 `databaseMetaDataExtractor` で設定する。主キー情報の取得方法はデータベース依存のため、製品のマニュアルを参照すること。
-
-```xml
-<component name="databaseMetaDataExtractor" class="sample.dao.CustomDatabaseMetaDataExtractor" />
-```
-
-## ページング処理の件数取得用SQLを変更する
-
-ページング処理では実際のレコード取得前に件数取得SQLが発行される。デフォルトは元のSQLを `SELECT COUNT(*) FROM` で包んだSQL。ORDER BY句など処理負荷が大きいSQLで件数取得SQLを変更したい場合、ダイアレクトをカスタマイズして `Dialect#convertCountSql(String, Object, StatementFactory)` の実装を変更する。
-
-> **重要**: 件数取得SQLは元のSQLと同一の検索条件を持つ必要がある。件数取得SQLを用意する場合は、両者の検索条件に差分が発生しないよう注意すること。
-
-> **補足**: プロジェクトごとに適切な件数取得SQLのマッピングルールを検討すること。
-
-```java
-public class CustomH2Dialect extends H2Dialect {
-    private Map<String, String> sqlMap;
-
-    @Override
-    public String convertCountSql(String sqlId, Object params, StatementFactory statementFactory) {
-        if (sqlMap.containsKey(sqlId)) {
-            return statementFactory.getVariableConditionSqlBySqlId(sqlMap.get(sqlId), params);
-        }
-        return convertCountSql(statementFactory.getVariableConditionSqlBySqlId(sqlId, params));
-    }
-
-    public void setSqlMap(Map<String, String> sqlMap) {
-        this.sqlMap = sqlMap;
-    }
-}
-```
-
-```xml
-<component name="dialect" class="com.nablarch.example.app.db.dialect.CustomH2Dialect">
-  <property name="sqlMap">
-    <map>
-      <entry key="com.nablarch.example.app.entity.Project#SEARCH_PROJECT"
-             value="com.nablarch.example.app.entity.Project#SEARCH_PROJECT_FORCOUNT"/>
-    </map>
-  </property>
-</component>
 ```
 
 ## Entityに使用できるJakarta Persistenceアノテーション

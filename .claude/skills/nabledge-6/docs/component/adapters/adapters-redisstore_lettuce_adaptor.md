@@ -2,6 +2,10 @@
 
 ## 最小構成で動かす
 
+セッションストアにRedisを使用すると、DBストアと比較して次のメリットが得られる:
+- セッション情報を保存するためのテーブルを事前に用意する必要がない
+- 有効期限が切れたセッション情報を削除するためのバッチを作る必要がない
+
 > **補足**: ローカルで試す場合、Dockerを使って `docker run --name redis -d -p 6379:6379 redis:5.0.9` でRedisインスタンスを構築できる。停止: `docker stop redis`
 
 ## コンポーネント設定ファイルの修正
@@ -207,7 +211,7 @@ public class CustomClusterRedisClient extends LettuceClusterRedisClient {
 
 各クライアントクラスは `Disposable` を実装しており、`dispose()` でRedisへの接続を閉じることができる。
 
-`BasicApplicationDisposer` の `disposableList` プロパティに使用するクライアントクラスのコンポーネントを設定することで、アプリケーション終了時にRedisとの接続を自動で閉じることができる。
+`BasicApplicationDisposer` の `disposableList` プロパティに使用するクライアントクラスのコンポーネントを設定することで、アプリケーション終了時にRedisとの接続を閉じることができる。
 
 ```xml
 <component name="disposer"
@@ -237,7 +241,7 @@ Redisに保存されたセッション情報のキー形式: `nablarch.session.<
 
 ## 有効期限の管理方法
 
-本アダプタはセッションの有効期限管理にRedisのTTL（有効期限）機能を使用している。有効期限が切れたセッション情報は自動的に削除されるため、ゴミデータを削除するバッチを用意する必要はない。
+本アダプタはセッションの有効期限管理にRedisの有効期限の仕組みを使用している。有効期限が切れたセッション情報は自動的に削除されるため、ゴミデータを削除するバッチを用意する必要はない。
 
 有効期限の確認は [pttl コマンド（外部サイト、英語）](https://redis.io/docs/latest/commands/pttl/) で行える。
 

@@ -154,6 +154,22 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 }
 ```
 
+## テストメソッドの作成方法（項目間精査）
+
+**メソッドシグネチャ**: `void testBeanValidation(Class entityClass, String sheetName)`
+
+```java
+public class UserRegistrationFormTest extends EntityTestSupport {
+    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;
+
+    @Test
+    public void testWholeFormValidation() {
+        String sheetName = "testWholeFormValidation";
+        testBeanValidation(TARGET_CLASS, sheetName);
+    }
+}
+```
+
 ## テストケース表の作成（項目間精査）
 
 単項目精査でテストできない `@AssertTrue` を指定した項目間精査などは、別途テストを作成する必要がある。
@@ -183,22 +199,6 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 > - `sampleForm.userTelArray[0].telNoArea`（Form配列の先頭要素のプロパティを指定する場合）
 
 ![項目間精査テストデータ例](../../knowledge/development-tools/testing-framework/assets/testing-framework-01_entityUnitTestWithBeanValidation/entityUnitTest_validationTestData_BeanValidation.png)
-
-## テストメソッドの作成方法（項目間精査）
-
-**メソッドシグネチャ**: `void testBeanValidation(Class entityClass, String sheetName)`
-
-```java
-public class UserRegistrationFormTest extends EntityTestSupport {
-    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;
-
-    @Test
-    public void testWholeFormValidation() {
-        String sheetName = "testWholeFormValidation";
-        testBeanValidation(TARGET_CLASS, sheetName);
-    }
-}
-```
 
 ## Excelへの定義（setter/getter）
 

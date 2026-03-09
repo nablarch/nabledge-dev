@@ -121,6 +121,22 @@ testSingleValidation(ENTITY_CLASS, sheetName, id);
 
 上記の単項目精査テストでは、エンティティのセッターメソッドに付与されたアノテーションのみが検証され、**アノテーション**: `@ValidateFor` を付与したstaticバリデーションメソッドは実行されない。独自のバリデーションメソッドをエンティティに実装した場合は、別途テストを作成する必要がある。
 
+## テストメソッドの作成方法
+
+変数内容を変更するだけで異なるEntityの精査テストに対応できる。
+
+```java
+/** テスト対象エンティティクラス */
+private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;
+
+@Test
+public void testValidateForRegisterUser() {
+    String sheetName = "testValidateForRegisterUser";
+    String validateFor = "registerUser";
+    testValidateAndConvert(ENTITY_CLASS, sheetName, validateFor);
+}
+```
+
 ## テストケース表の作成
 
 テストケース表（ID: `testShots` 固定）:
@@ -172,22 +188,6 @@ testSingleValidation(ENTITY_CLASS, sheetName, id);
 :ref:`entityUnitTest_ValidationMethodSpecifyNormal` で行った精査対象指定以外の動作確認（項目間精査など）を行うケースを作成する。
 
 ![項目間精査テストケース](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_entityUnitTestWithNablarchValidation/entityUnitTest_RelationalValidation.png)
-
-## テストメソッドの作成方法
-
-変数内容を変更するだけで異なるEntityの精査テストに対応できる。
-
-```java
-/** テスト対象エンティティクラス */
-private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;
-
-@Test
-public void testValidateForRegisterUser() {
-    String sheetName = "testValidateForRegisterUser";
-    String validateFor = "registerUser";
-    testValidateAndConvert(ENTITY_CLASS, sheetName, validateFor);
-}
-```
 
 ## Excelへの定義
 
