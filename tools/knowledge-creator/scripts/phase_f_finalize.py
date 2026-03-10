@@ -137,6 +137,17 @@ class PhaseFFinalize:
             if knowledge.get("no_knowledge_content") is True:
                 continue
             md_lines = [f"# {knowledge['title']}", ""]
+
+            # Add official doc URLs
+            urls = knowledge.get("official_doc_urls", [])
+            if urls:
+                if len(urls) == 1:
+                    link = f"[{knowledge['title']}]({urls[0]})"
+                else:
+                    link = " ".join(f"[{i + 1}]({u})" for i, u in enumerate(urls))
+                md_lines.append(f"**公式ドキュメント**: {link}")
+                md_lines.append("")
+
             for entry in knowledge.get("index", []):
                 sid = entry["id"]
                 md_lines.append(f"## {entry['title']}")
@@ -147,6 +158,17 @@ class PhaseFFinalize:
                 section_content = self._convert_asset_paths(section_content, fi)
                 md_lines.append(section_content)
                 md_lines.append("")
+
+                # Add hints as keywords in a collapsible details block
+                hints = entry.get("hints", [])
+                if hints:
+                    md_lines.append("<details>")
+                    md_lines.append("<summary>keywords</summary>")
+                    md_lines.append("")
+                    md_lines.append(f"{', '.join(hints)}")
+                    md_lines.append("")
+                    md_lines.append("</details>")
+                    md_lines.append("")
 
             md_path = f"{self.ctx.docs_dir}/{fi['type']}/{fi['category']}/{fi['id']}.md"
             if not self.dry_run:

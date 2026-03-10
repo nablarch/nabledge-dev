@@ -122,9 +122,16 @@ class TestPhaseM:
         # RST link should be converted to markdown
         assert ":ref:" not in resolved["sections"]["section1"]
 
-        # Verify 5: Browsable MD exists
+        # Verify 5: Browsable MD exists and includes official URL and hints
         md_path = f"{ctx.docs_dir}/component/test/test.md"
         assert os.path.exists(md_path)
+        with open(md_path, encoding="utf-8") as f:
+            md_content = f.read()
+        assert "**公式ドキュメント**: [Test](https://example.com)" in md_content
+        assert "<details>" in md_content
+        assert "<summary>keywords</summary>" in md_content
+        assert "s1" in md_content
+        assert "s2" in md_content
 
         # Verify 6: index.toon exists
         assert os.path.exists(f"{ctx.knowledge_dir}/index.toon")
@@ -321,3 +328,91 @@ class TestPhaseM:
         # From knowledge: assets/test/image.png
         # In MD: should point to knowledge_dir from docs_dir
         assert "image.png" in md_content
+
+    def test_docs_multiple_official_urls(self, ctx, mock_claude):
+        """Multiple official_doc_urls are rendered as numbered links."""
+        from phase_m_finalize import PhaseMFinalize
+
+        knowledge = {
+            "id": "multi",
+            "title": "Multi URL",
+            "official_doc_urls": ["https://example.com/a", "https://example.com/b"],
+            "index": [{"id": "s1", "title": "Section 1", "hints": ["hint1", "hint2"]}],
+            "sections": {"s1": "Content here."}
+        }
+
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/multi.json", knowledge)
+
+        classified = {
+            "version": "6",
+            "generated_at": "2026-01-01T00:00:00Z",
+            "files": [
+                {
+                    "id": "multi",
+                    "source_path": "test/multi.rst",
+                    "format": "rst",
+                    "filename": "multi.rst",
+                    "type": "component",
+                    "category": "test",
+                    "output_path": "component/test/multi.json",
+                    "assets_dir": "component/test/assets/multi/"
+                }
+            ]
+        }
+        write_json(ctx.classified_list_path, classified)
+
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m.run()
+
+        md_path = f"{ctx.docs_dir}/component/test/multi.md"
+        with open(md_path, encoding="utf-8") as f:
+            md_content = f.read()
+
+        assert "**公式ドキュメント**: [1](https://example.com/a) [2](https://example.com/b)" in md_content
+        assert "<details>" in md_content
+        assert "<summary>keywords</summary>" in md_content
+        assert "hint1, hint2" in md_content
+
+    def test_docs_empty_official_urls_and_hints(self, ctx, mock_claude):
+        """Empty official_doc_urls and hints produce no URL line or keyword line."""
+        from phase_m_finalize import PhaseMFinalize
+
+        knowledge = {
+            "id": "empty-meta",
+            "title": "Empty Meta",
+            "official_doc_urls": [],
+            "index": [{"id": "s1", "title": "Section 1", "hints": []}],
+            "sections": {"s1": "Section content."}
+        }
+
+        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/component/test/empty-meta.json", knowledge)
+
+        classified = {
+            "version": "6",
+            "generated_at": "2026-01-01T00:00:00Z",
+            "files": [
+                {
+                    "id": "empty-meta",
+                    "source_path": "test/empty-meta.rst",
+                    "format": "rst",
+                    "filename": "empty-meta.rst",
+                    "type": "component",
+                    "category": "test",
+                    "output_path": "component/test/empty-meta.json",
+                    "assets_dir": "component/test/assets/empty-meta/"
+                }
+            ]
+        }
+        write_json(ctx.classified_list_path, classified)
+
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m.run()
+
+        md_path = f"{ctx.docs_dir}/component/test/empty-meta.md"
+        with open(md_path, encoding="utf-8") as f:
+            md_content = f.read()
+
+        assert "**公式ドキュメント**" not in md_content
+        assert "キーワード" not in md_content
