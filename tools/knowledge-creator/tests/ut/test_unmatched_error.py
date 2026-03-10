@@ -52,3 +52,17 @@ class TestUnmatchedError:
         sources = Step1ListSources(ctx, dry_run=True).run()
         result = Step2Classify(ctx, dry_run=True, sources_data=sources).run()
         assert len(result["files"]) == 1
+
+    def test_v5_extension_components_matched(self, tmp_path):
+        repo = tmp_path / "repo"
+        _copy_mappings(repo)
+        rst_base = repo / ".lw/nab-official/v5/nablarch-document/ja/extension_components/etl"
+        rst_base.mkdir(parents=True, exist_ok=True)
+        (rst_base / "etl.rst").write_text("ETL\n===\n\nContent")
+        ctx = Context(version="5", repo=str(repo), concurrency=1)
+        os.makedirs(ctx.log_dir, exist_ok=True)
+        sources = Step1ListSources(ctx, dry_run=True).run()
+        result = Step2Classify(ctx, dry_run=True, sources_data=sources).run()
+        assert len(result["files"]) == 1
+        assert result["files"][0]["type"] == "extension"
+        assert result["files"][0]["category"] == "etl"

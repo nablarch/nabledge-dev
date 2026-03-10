@@ -16,6 +16,7 @@ def _load_mappings(repo: str, version: str) -> dict:
     """Load RST/MD/XLSX mappings from version-specific JSON file.
 
     Each version has its own complete mapping file (vN.json).
+    Keep in sync with load_mappings() in tests/e2e/generate_expected.py.
 
     Returns:
         dict with keys: rst, md, xlsx, xlsx_patterns
@@ -24,7 +25,10 @@ def _load_mappings(repo: str, version: str) -> dict:
     mapping_path = os.path.join(mappings_dir, f"v{version}.json")
 
     if not os.path.exists(mapping_path):
-        return {"rst": [], "md": {}, "xlsx": {}, "xlsx_patterns": []}
+        raise FileNotFoundError(
+            f"Mapping file not found: {mapping_path}\n"
+            f"Create tools/knowledge-creator/mappings/v{version}.json to support this version."
+        )
 
     with open(mapping_path, "r", encoding="utf-8") as f:
         data = json.load(f)

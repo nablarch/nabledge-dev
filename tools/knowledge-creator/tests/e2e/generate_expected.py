@@ -28,12 +28,16 @@ def load_mappings(repo: str, version: str) -> dict:
     """Load RST/MD/XLSX mappings from version-specific JSON file.
 
     Each version has its own complete mapping file (vN.json).
+    Keep in sync with _load_mappings() in scripts/step2_classify.py.
     """
     mappings_dir = os.path.join(repo, "tools/knowledge-creator/mappings")
     mapping_path = os.path.join(mappings_dir, f"v{version}.json")
 
     if not os.path.exists(mapping_path):
-        return {"rst": [], "md": {}, "xlsx": {}, "xlsx_patterns": []}
+        raise FileNotFoundError(
+            f"Mapping file not found: {mapping_path}\n"
+            f"Create tools/knowledge-creator/mappings/v{version}.json to support this version."
+        )
 
     with open(mapping_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -69,7 +73,7 @@ def list_sources(repo: str, version: str) -> list:
 
     # MD
     pattern_dir = os.path.join(
-        repo, ".lw/nab-official/v6/nablarch-system-development-guide/"
+        repo, f".lw/nab-official/v{version}/nablarch-system-development-guide/"
         "Nablarchシステム開発ガイド/docs/nablarch-patterns/")
     for f in ["Nablarchバッチ処理パターン.md", "Nablarchでの非同期処理.md", "Nablarchアンチパターン.md"]:
         fp = os.path.join(pattern_dir, f)
@@ -78,7 +82,7 @@ def list_sources(repo: str, version: str) -> list:
 
     # Security Excel
     xlsx_path = os.path.join(
-        repo, ".lw/nab-official/v6/nablarch-system-development-guide/"
+        repo, f".lw/nab-official/v{version}/nablarch-system-development-guide/"
         "Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx")
     if os.path.exists(xlsx_path):
         sources.append({"path": os.path.relpath(xlsx_path, repo),
@@ -575,19 +579,20 @@ def compute_merged_files(catalog_entries: list, knowledge_fn=None) -> dict:
 # ============================================================
 
 def main():
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <repo_root> <output_path>")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print(f"Usage: {sys.argv[0]} <repo_root> <output_path> [version]")
         sys.exit(1)
 
     repo = os.path.abspath(sys.argv[1])
     output_path = sys.argv[2]
+    version = sys.argv[3] if len(sys.argv) == 4 else "6"
 
     # Step 1: List sources
-    sources = list_sources(repo, "6")
+    sources = list_sources(repo, version)
     print(f"Sources: {len(sources)}")
 
     # Step 2: Classify + split + dedup
-    catalog_entries = classify_all(sources, repo, "6")
+    catalog_entries = classify_all(sources, repo, version)
     print(f"Catalog entries: {len(catalog_entries)}")
 
     ids = [e['id'] for e in catalog_entries]

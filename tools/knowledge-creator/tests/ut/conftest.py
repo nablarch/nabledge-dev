@@ -126,6 +126,12 @@ def test_repo(tmp_path):
         for f in os.listdir(real_prompts):
             shutil.copy(os.path.join(real_prompts, f), prompts_dir / f)
 
+    # mappings directory - copy real mappings
+    mappings_dir = repo / "tools" / "knowledge-creator" / "mappings"
+    real_mappings = os.path.join(TOOL_DIR, "mappings")
+    if os.path.exists(real_mappings):
+        shutil.copytree(real_mappings, str(mappings_dir))
+
     return str(repo)
 
 
