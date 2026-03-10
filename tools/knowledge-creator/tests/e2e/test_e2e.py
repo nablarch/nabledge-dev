@@ -492,6 +492,14 @@ def gen_state_v5(expected_v5):
         shutil.rmtree(ctx.log_dir)
 
 
+@pytest.fixture(scope="session", params=["6", "5"])
+def version_fixture(request, expected, expected_v5, gen_state, gen_state_v5):
+    """Parametrized fixture providing version, expected values, and gen_state for v6 and v5."""
+    if request.param == "6":
+        return {"version": "6", "expected": expected, "gen_state": gen_state}
+    return {"version": "5", "expected": expected_v5, "gen_state": gen_state_v5}
+
+
 # ============================================================
 # TestGen: full pipeline ABCDEM
 # ============================================================
@@ -499,13 +507,15 @@ def gen_state_v5(expected_v5):
 class TestGen:
     """test_gen: kc gen — Phase ABCDEM with clean state, verify all outputs."""
 
-    def test_gen(self, expected):
+    def test_gen(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
         catalog_entries = expected["catalog_entries"]
 
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -544,14 +554,16 @@ class TestGen:
 class TestGenResume:
     """test_gen_resume: kc gen --resume — 1 pre-placed file, Phase B skips it."""
 
-    def test_gen_resume(self, expected):
+    def test_gen_resume(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
         catalog_entries = expected["catalog_entries"]
         preplace_entry = catalog_entries[0]
 
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -611,7 +623,10 @@ class TestGenResume:
 class TestRegenTarget:
     """test_regen_target: kc regen --target — Phase ABCDEM on 1/3 of base_names."""
 
-    def test_regen_target(self, gen_state, expected):
+    def test_regen_target(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -622,7 +637,7 @@ class TestRegenTarget:
         target_base_names = params["target_base_names"]
 
         src_ctx = gen_state["ctx"]
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -666,14 +681,17 @@ class TestRegenTarget:
 class TestFix:
     """test_fix: kc fix — Phase ACDEM (no B), stale file deleted after Phase M."""
 
-    def test_fix(self, gen_state, expected):
+    def test_fix(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
         catalog_entries = expected["catalog_entries"]
 
         src_ctx = gen_state["ctx"]
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -727,7 +745,10 @@ class TestFix:
 class TestFixTarget:
     """test_fix_target: kc fix --target — Phase ACDEM with target 1/3 of base_names."""
 
-    def test_fix_target(self, gen_state, expected):
+    def test_fix_target(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -738,7 +759,7 @@ class TestFixTarget:
         target_base_names = params["target_base_names"]
 
         src_ctx = gen_state["ctx"]
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -770,187 +791,6 @@ class TestFixTarget:
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
             )
 
-        finally:
-            if os.path.exists(ctx.log_dir):
-                shutil.rmtree(ctx.log_dir)
-
-
-# ============================================================
-# V5 tests
-# ============================================================
-
-class TestGenV5:
-    """test_gen v5: kc gen — Phase ABCDEM with clean state, verify all outputs."""
-
-    def test_gen(self, expected_v5):
-        params = expected_v5["params"]
-        U = params["U"]
-        M = params["M"]
-        catalog_entries = expected_v5["catalog_entries"]
-
-        ctx = _make_ctx(version="5", max_rounds=2)
-        counter = {"B": [], "D": [], "E": [], "F": []}
-        mock = _make_cc_mock(
-            expected_v5["expected_knowledge_cache"],
-            expected_v5["expected_fixed_cache"],
-            counter,
-        )
-
-        try:
-            _run_with_mock(kc_gen, ctx, mock)
-            _assert_full_output(ctx, expected_v5, catalog_entries, U, M)
-            assert len(counter["B"]) == U
-            assert len(counter["D"]) == U * 2
-            assert len(counter["E"]) == U * 2
-            assert len(counter["F"]) == 0
-        finally:
-            if os.path.exists(ctx.log_dir):
-                shutil.rmtree(ctx.log_dir)
-
-
-class TestGenResumeV5:
-    """test_gen_resume v5: kc gen --resume — 1 pre-placed file, Phase B skips it."""
-
-    def test_gen_resume(self, expected_v5):
-        params = expected_v5["params"]
-        U = params["U"]
-        M = params["M"]
-        catalog_entries = expected_v5["catalog_entries"]
-        preplace_entry = catalog_entries[0]
-
-        ctx = _make_ctx(version="5", max_rounds=2)
-        counter = {"B": [], "D": [], "E": [], "F": []}
-        mock = _make_cc_mock(
-            expected_v5["expected_knowledge_cache"],
-            expected_v5["expected_fixed_cache"],
-            counter,
-        )
-
-        try:
-            _run_phase_a_only(ctx, mock)
-
-            pre_path = f"{ctx.knowledge_cache_dir}/{preplace_entry['output_path']}"
-            os.makedirs(os.path.dirname(pre_path), exist_ok=True)
-            with open(pre_path, "w", encoding="utf-8") as f:
-                json.dump(expected_v5["expected_knowledge_cache"][preplace_entry["id"]], f)
-
-            pre_trace = expected_v5["expected_traces"][preplace_entry["id"]]
-            trace_path = f"{ctx.trace_dir}/{preplace_entry['id']}.json"
-            os.makedirs(os.path.dirname(trace_path), exist_ok=True)
-            with open(trace_path, "w", encoding="utf-8") as f:
-                json.dump(pre_trace, f)
-
-            _run_with_mock(kc_gen, ctx, mock)
-            _assert_full_output(ctx, expected_v5, catalog_entries, U, M)
-            assert len(counter["B"]) == U - 1
-            assert preplace_entry["id"] not in counter["B"]
-            assert len(counter["D"]) == U * 2
-            assert len(counter["E"]) == U * 2
-            assert len(counter["F"]) == 0
-        finally:
-            if os.path.exists(ctx.log_dir):
-                shutil.rmtree(ctx.log_dir)
-
-
-class TestRegenTargetV5:
-    """test_regen_target v5: kc regen --target — Phase ABCDEM on 1/3 of base_names."""
-
-    def test_regen_target(self, gen_state_v5, expected_v5):
-        params = expected_v5["params"]
-        U = params["U"]
-        M = params["M"]
-        target_count = params["target_split_ids_count"]
-        target_base_names = params["target_base_names"]
-        catalog_entries = expected_v5["catalog_entries"]
-
-        src_ctx = gen_state_v5["ctx"]
-        ctx = _make_ctx(version="5", max_rounds=2)
-        counter = {"B": [], "D": [], "E": [], "F": []}
-        mock = _make_cc_mock(
-            expected_v5["expected_knowledge_cache"],
-            expected_v5["expected_fixed_cache"],
-            counter,
-        )
-
-        try:
-            _copy_state(src_ctx, ctx)
-            _run_with_mock(kc_regen_target, ctx, mock, targets=target_base_names)
-            _assert_full_output(ctx, expected_v5, catalog_entries, U, M)
-            assert len(counter["B"]) == target_count
-            assert len(counter["D"]) == target_count * ctx.max_rounds
-            assert len(counter["E"]) == target_count * ctx.max_rounds
-            assert len(counter["F"]) == 0
-        finally:
-            if os.path.exists(ctx.log_dir):
-                shutil.rmtree(ctx.log_dir)
-
-
-class TestFixV5:
-    """test_fix v5: kc fix — Phase ACDEM (no B), stale file deleted after Phase M."""
-
-    def test_fix(self, gen_state_v5, expected_v5):
-        params = expected_v5["params"]
-        U = params["U"]
-        M = params["M"]
-        catalog_entries = expected_v5["catalog_entries"]
-
-        src_ctx = gen_state_v5["ctx"]
-        ctx = _make_ctx(version="5", max_rounds=2)
-        counter = {"B": [], "D": [], "E": [], "F": []}
-        mock = _make_cc_mock(
-            expected_v5["expected_knowledge_cache"],
-            expected_v5["expected_fixed_cache"],
-            counter,
-        )
-
-        try:
-            _copy_state(src_ctx, ctx)
-            stale_dir = f"{ctx.knowledge_dir}/stale"
-            os.makedirs(stale_dir, exist_ok=True)
-            stale_path = f"{stale_dir}/stale-file.json"
-            with open(stale_path, "w", encoding="utf-8") as f:
-                json.dump({"id": "stale-file", "title": "Stale"}, f)
-
-            _run_with_mock(kc_fix, ctx, mock)
-            assert not os.path.exists(stale_path)
-            _assert_full_output(ctx, expected_v5, catalog_entries, U, M)
-            assert len(counter["B"]) == 0
-            assert len(counter["D"]) == U * ctx.max_rounds
-            assert len(counter["E"]) == U * ctx.max_rounds
-            assert len(counter["F"]) == 0
-        finally:
-            if os.path.exists(ctx.log_dir):
-                shutil.rmtree(ctx.log_dir)
-
-
-class TestFixTargetV5:
-    """test_fix_target v5: kc fix --target — Phase ACDEM with target 1/3 of base_names."""
-
-    def test_fix_target(self, gen_state_v5, expected_v5):
-        params = expected_v5["params"]
-        U = params["U"]
-        M = params["M"]
-        target_count = params["target_split_ids_count"]
-        target_base_names = params["target_base_names"]
-        catalog_entries = expected_v5["catalog_entries"]
-
-        src_ctx = gen_state_v5["ctx"]
-        ctx = _make_ctx(version="5", max_rounds=2)
-        counter = {"B": [], "D": [], "E": [], "F": []}
-        mock = _make_cc_mock(
-            expected_v5["expected_knowledge_cache"],
-            expected_v5["expected_fixed_cache"],
-            counter,
-        )
-
-        try:
-            _copy_state(src_ctx, ctx)
-            _run_with_mock(kc_fix_target, ctx, mock, targets=target_base_names)
-            _assert_full_output(ctx, expected_v5, catalog_entries, U, M)
-            assert len(counter["B"]) == 0
-            assert len(counter["D"]) == target_count * ctx.max_rounds
-            assert len(counter["E"]) == target_count * ctx.max_rounds
-            assert len(counter["F"]) == 0
         finally:
             if os.path.exists(ctx.log_dir):
                 shutil.rmtree(ctx.log_dir)
