@@ -11,12 +11,6 @@ from datetime import datetime, timezone
 from common import load_json, write_json, read_file, write_file
 from logger import get_logger
 
-VALID_PROCESSING_PATTERNS = {
-    "nablarch-batch", "jakarta-batch", "restful-web-service",
-    "http-messaging", "web-application", "mom-messaging", "db-messaging"
-}
-
-
 class PhaseFFinalize:
     def __init__(self, ctx, dry_run=False):
         self.ctx = ctx
@@ -37,7 +31,7 @@ class PhaseFFinalize:
             if not os.path.exists(json_path):
                 entries.append({
                     "title": fi["id"], "type": fi["type"], "category": fi["category"],
-                    "processing_patterns": "", "path": "not yet created"
+                    "path": "not yet created"
                 })
                 continue
 
@@ -46,22 +40,16 @@ class PhaseFFinalize:
                 continue
             title = knowledge.get("title", fi["id"])
 
-            if fi["type"] == "processing-pattern":
-                patterns = fi["category"]
-            else:
-                pp = knowledge.get("processing_patterns", [])
-                patterns = " ".join(pp) if isinstance(pp, list) else (pp or "")
-
             entries.append({
                 "title": title, "type": fi["type"], "category": fi["category"],
-                "processing_patterns": patterns, "path": fi["output_path"],
+                "path": fi["output_path"],
             })
 
         lines = [f"# Nabledge-{self.ctx.version} Knowledge Index", ""]
-        lines.append(f"files[{len(entries)},]{{title,type,category,processing_patterns,path}}:")
+        lines.append(f"files[{len(entries)},]{{title,type,category,path}}:")
         for e in entries:
             title = e["title"].replace(",", "、")
-            fields = [title, e["type"], e["category"], e["processing_patterns"], e["path"]]
+            fields = [title, e["type"], e["category"], e["path"]]
             lines.append(f"  {', '.join(fields)}")
         lines.append("")
 

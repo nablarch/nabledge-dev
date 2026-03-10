@@ -447,7 +447,7 @@ class TestMergeSplitFiles:
             "id": "libs-bind--p1",
             "title": "Data Bind",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
+
             "index": [
                 {"id": "ext", "title": "拡張", "hints": ["extension"]}
             ],
@@ -457,7 +457,7 @@ class TestMergeSplitFiles:
             "id": "libs-bind--p2",
             "title": "Data Bind",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
+
             "index": [
                 {"id": "csv", "title": "CSV", "hints": ["csv"]}
             ],
@@ -504,7 +504,7 @@ class TestMergeSplitFiles:
             "id": "libraries-tag--p1",
             "title": "タグ",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
+
             "index": [
                 {"id": "section-a", "title": "A", "hints": ["a"]},
                 {"id": "section-b", "title": "B", "hints": ["b"]}
@@ -515,7 +515,7 @@ class TestMergeSplitFiles:
             "id": "libraries-tag--p2",
             "title": "タグ",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
+
             "index": [
                 {"id": "section-b", "title": "B", "hints": ["b", "extra"]},
                 {"id": "section-c", "title": "C", "hints": ["c"]},

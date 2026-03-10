@@ -59,12 +59,6 @@ Read knowledge/index.toon
 | 「プロジェクトの作り方」 | setup/blank-project |
 | 「セキュリティチェック」 | check/security-check |
 
-**軸3: processing_patternsによる絞り込み**
-
-検索クエリに処理パターンの文脈が含まれる場合、該当するprocessing_patternsを持つファイルを候補とする。
-- 例: 「バッチでのDB接続」→ `nablarch-batch` を含むファイル
-- 例: 「RESTのバリデーション」→ `restful-web-service` を含むファイル
-
 **選定ルール**:
 - 最大ファイル数: **10件**
 - `not yet created` のファイルは**除外**

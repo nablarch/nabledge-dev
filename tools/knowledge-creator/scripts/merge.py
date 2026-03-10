@@ -128,16 +128,6 @@ class MergeSplitFiles:
                         urls.append(url)
             merged["official_doc_urls"] = urls
 
-            # Merge processing_patterns (union, dedup, preserve order)
-            seen_pp = set()
-            pp_list = []
-            for pj in part_jsons:
-                for pp in pj.get("processing_patterns", []):
-                    if pp not in seen_pp:
-                        seen_pp.add(pp)
-                        pp_list.append(pp)
-            merged["processing_patterns"] = pp_list
-
             # Merge index: part-sequential order, dedup by id, merge hints
             merged_index = []
             seen_ids = {}  # id -> position in merged_index

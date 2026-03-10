@@ -140,33 +140,6 @@ class PhaseBGenerate:
             raise ValueError("No 'knowledge' field in output")
         return knowledge, trace
 
-    def _post_process_knowledge(self, knowledge, file_info):
-        """Post-process AI-generated knowledge to fix processing_patterns issues."""
-        sections = knowledge.get("sections", {})
-        index = knowledge.get("index", [])
-
-        # Move 'processing-patterns' from sections to top-level processing_patterns
-        pp_in_sections = sections.pop("processing-patterns", None)
-
-        # Also remove from index if present
-        knowledge["index"] = [e for e in index if e["id"] != "processing-patterns"]
-
-        # Determine processing_patterns value
-        if file_info.get("type") == "processing-pattern":
-            # Always use category for processing-pattern type
-            knowledge["processing_patterns"] = [file_info["category"]]
-        elif "processing_patterns" not in knowledge:
-            # Use value from sections if found, else empty
-            if pp_in_sections and isinstance(pp_in_sections, str):
-                knowledge["processing_patterns"] = [pp_in_sections]
-            elif pp_in_sections and isinstance(pp_in_sections, list):
-                knowledge["processing_patterns"] = pp_in_sections
-            else:
-                knowledge["processing_patterns"] = []
-        # else: keep AI's value as-is
-
-        return knowledge
-
     def _extract_section_range(self, content, section_range):
         lines = content.splitlines()
         return '\n'.join(lines[section_range['start_line']:section_range['end_line']])
@@ -218,8 +191,6 @@ class PhaseBGenerate:
             if not self.dry_run:
                 write_json(log_path, {"file_id": file_id, "status": "error", "error": str(e)})
             return {"status": "error", "id": file_id, "error": str(e)}
-
-        knowledge_json = self._post_process_knowledge(knowledge_json, file_info)
 
         if not self.dry_run:
             write_json(output_path, knowledge_json)

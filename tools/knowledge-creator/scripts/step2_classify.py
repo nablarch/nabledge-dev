@@ -611,23 +611,13 @@ class Step2Classify:
                 for mid in sorted(missing):
                     self.logger.warning(f"      - {mid}")
 
-        # Generate output — preserve sources and processing_patterns from existing catalog
+        # Generate output — preserve sources from existing catalog
         existing = {}
         if os.path.exists(self.ctx.classified_list_path):
             try:
                 existing = load_json(self.ctx.classified_list_path)
             except (json.JSONDecodeError, OSError):
                 pass
-
-        # Preserve processing_patterns from existing files
-        existing_pp = {}
-        for fi in existing.get("files", []):
-            pp = fi.get("processing_patterns")
-            if pp is not None:
-                existing_pp[fi["id"]] = pp
-        for fi in classified:
-            if fi["id"] in existing_pp:
-                fi["processing_patterns"] = existing_pp[fi["id"]]
 
         output = {
             "version": self.ctx.version,

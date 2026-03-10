@@ -245,7 +245,7 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
         f"Expected {M} doc files, got {docs_count}"
     )
 
-    # final catalog: split state + processing_patterns
+    # final catalog: split state
     final_catalog = _load_json(ctx.classified_list_path)
     final_ids = {f["id"] for f in final_catalog["files"]}
     assert final_ids == {e["id"] for e in catalog_entries}, (
@@ -254,13 +254,8 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
     assert len(final_catalog["files"]) == U
     for f in final_catalog["files"]:
         entry = next(e for e in catalog_entries if e["id"] == f["id"])
-        f_no_pp = {k: v for k, v in f.items() if k != "processing_patterns"}
-        assert f_no_pp == entry, (
-            f"Split catalog entry mismatch for {f['id']} "
-            f"(excluding processing_patterns)"
-        )
-        assert "processing_patterns" in f, (
-            f"processing_patterns missing for {f['id']}"
+        assert f == entry, (
+            f"Split catalog entry mismatch for {f['id']}"
         )
 
 
@@ -416,7 +411,7 @@ def _build_expected(repo, version):
 
     expected_index_toon_header = (
         f"# Nabledge-{version} Knowledge Index\n\n"
-        f"files[{M},]{{title,type,category,processing_patterns,path}}:"
+        f"files[{M},]{{title,type,category,path}}:"
     )
 
     return {

@@ -34,7 +34,7 @@ class PhaseMFinalize:
         4. Temporarily switch catalog to merged state
         5. Run Phase G (link resolution)
         6. Run Phase F (docs generation)
-        7. Restore split catalog with processing_patterns transplanted
+        7. Restore split catalog
         """
         from merge import MergeSplitFiles
         from phase_g_resolve_links import PhaseGResolveLinks
@@ -64,14 +64,6 @@ class PhaseMFinalize:
         # Step 6: Generate browsable docs and index (always full)
         PhaseFFinalize(self.ctx, dry_run=self.dry_run).run()
 
-        # Step 7: Restore split catalog with processing_patterns
+        # Step 7: Restore split catalog
         if not self.dry_run:
-            for fi in split_catalog.get("files", []):
-                if fi.get("type") == "processing-pattern":
-                    fi["processing_patterns"] = [fi["category"]]
-                else:
-                    cache_path = f"{self.ctx.knowledge_cache_dir}/{fi['output_path']}"
-                    if os.path.exists(cache_path):
-                        knowledge = load_json(cache_path)
-                        fi["processing_patterns"] = knowledge.get("processing_patterns", [])
             write_json(self.ctx.classified_list_path, split_catalog)
