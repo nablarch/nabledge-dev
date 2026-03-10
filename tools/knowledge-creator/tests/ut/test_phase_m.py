@@ -269,6 +269,48 @@ class TestPhaseM:
         # :doc: may not resolve if target file doesn't exist in classified.json
         # (Phase G keeps unresolvable links as-is)
 
+    def test_phase_m_processing_patterns_rule_based(self, ctx, mock_claude):
+        """processing-pattern type: processing_patterns computed from category, not from knowledge file."""
+        from phase_m_finalize import PhaseMFinalize
+
+        # processing-pattern file with no processing_patterns field in cache
+        knowledge = {
+            "id": "nablarch-batch",
+            "title": "Nablarchバッチ",
+            "official_doc_urls": ["https://example.com"],
+            "index": [{"id": "overview", "title": "概要", "hints": ["batch"]}],
+            "sections": {"overview": "Nablarchバッチの概要。"}
+        }
+
+        os.makedirs(f"{ctx.knowledge_cache_dir}/processing-pattern/nablarch-batch", exist_ok=True)
+        write_json(f"{ctx.knowledge_cache_dir}/processing-pattern/nablarch-batch/nablarch-batch.json", knowledge)
+
+        classified = {
+            "version": "6",
+            "generated_at": "2026-01-01T00:00:00Z",
+            "files": [
+                {
+                    "id": "nablarch-batch",
+                    "source_path": "batch/nablarch-batch.rst",
+                    "format": "rst",
+                    "filename": "nablarch-batch.rst",
+                    "type": "processing-pattern",
+                    "category": "nablarch-batch",
+                    "output_path": "processing-pattern/nablarch-batch/nablarch-batch.json",
+                    "assets_dir": "processing-pattern/nablarch-batch/assets/nablarch-batch/",
+                    "processing_patterns": []
+                }
+            ]
+        }
+        write_json(ctx.classified_list_path, classified)
+
+        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m.run()
+
+        updated = load_json(ctx.classified_list_path)
+        fi = updated["files"][0]
+        assert fi["processing_patterns"] == ["nablarch-batch"]
+
     def test_phase_m_asset_paths_in_docs(self, ctx, mock_claude):
         """Asset paths in browsable MD are correct relative paths."""
         from phase_m_finalize import PhaseMFinalize
