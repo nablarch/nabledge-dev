@@ -5,10 +5,20 @@ Does NOT fix anything - only reports findings.
 """
 
 import os
+import re
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics, count_source_headings
 from logger import get_logger
+
+_GENERIC_TERMS = frozenset([
+    "String", "Object", "List", "Map", "Set", "Integer", "Long", "Boolean",
+    "Double", "Float", "Short", "Byte", "Char", "Number", "Class", "Type",
+    "Array", "Collection", "Iterator", "Optional", "Stream", "Void",
+    "Override", "SuppressWarnings", "Deprecated", "FunctionalInterface",
+    "Java", "Excel", "XML", "SQL", "HTTP", "HTTPS",
+    "Returns", "Throws", "Since", "Note", "See", "True", "False", "None",
+])
 
 FINDINGS_SCHEMA = {
     "type": "object",
@@ -47,14 +57,38 @@ class PhaseDContentCheck:
             f"{ctx.repo}/tools/knowledge-creator/prompts/content_check.md"
         )
 
+    def _extract_important_terms(self, content):
+        """Extract PascalCase class names, @Annotations, and XxxException names from section content."""
+        content_no_urls = re.sub(r'https?://\S+', '', content)
+        terms = set()
+        for m in re.finditer(r'@[A-Z][a-zA-Z0-9]+', content_no_urls):
+            terms.add(m.group())
+        # Require 4+ chars to avoid short acronyms/abbreviations being flagged.
+        # Skip if @-prefixed form was already captured (avoids double-listing same concept).
+        for m in re.finditer(r'\b[A-Z][a-zA-Z0-9]{3,}\b', content_no_urls):
+            name = m.group()
+            if name not in _GENERIC_TERMS and f'@{name}' not in terms:
+                terms.add(name)
+        return terms
+
     def _compute_content_warnings(self, knowledge, source_content, source_format, file_info):
         """Run S6/S7/S9/S13 content quality checks. Returns list of warning strings."""
         warnings = []
 
-        # S6: Non-empty hints
+        # S6: Non-empty hints and complete hints
         for entry in knowledge.get("index", []):
-            if not entry.get("hints"):
-                warnings.append(f"S6: Section '{entry['id']}' has empty hints")
+            section_id = entry["id"]
+            hints = entry.get("hints", [])
+            if not hints:
+                warnings.append(f"S6: Section '{section_id}' has empty hints")
+                continue
+            section_content = knowledge.get("sections", {}).get(section_id, "")
+            if section_content:
+                important_terms = self._extract_important_terms(section_content)
+                hint_base_names = {h.lstrip('@') for h in hints}
+                missing = sorted(t for t in important_terms if t.lstrip('@') not in hint_base_names)
+                if missing:
+                    warnings.append(f"S6: Section '{section_id}' hints missing terms: {missing}")
 
         # S7: Non-empty sections
         for sid, content in knowledge.get("sections", {}).items():
