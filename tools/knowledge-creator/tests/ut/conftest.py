@@ -1,0 +1,141 @@
+import os
+import sys
+import json
+import shutil
+import pytest
+import subprocess
+import logging
+
+TOOL_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(TOOL_DIR, "scripts"))
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+
+
+@pytest.fixture(autouse=True)
+def configure_logger_for_tests():
+    """Configure logger for pytest caplog compatibility."""
+    logger = logging.getLogger("knowledge_creator")
+    # Enable propagation so pytest's caplog can capture logs
+    logger.propagate = True
+    yield
+    # Restore original setting after test
+    logger.propagate = False
+
+
+def load_fixture(name):
+    path = os.path.join(FIXTURES_DIR, name)
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f) if name.endswith(".json") else f.read()
+
+
+def make_mock_run_claude(generate_output=None, findings_output=None,
+                         fix_output=None, classify_output=None):
+    """Generate a mock run_claude function.
+
+    Determines which Phase is calling by inspecting json_schema content.
+    Returns the corresponding mock output.
+    """
+    default_knowledge = load_fixture("sample_knowledge.json")
+
+    _generate = generate_output or {
+        "knowledge": default_knowledge,
+        "trace": {
+            "sections": [
+                {"section_id": "overview", "source_heading": "概要",
+                 "heading_level": "h2", "h3_split": False,
+                 "h3_split_reason": "800 chars < 2000"},
+                {"section_id": "module-list", "source_heading": "モジュール一覧",
+                 "heading_level": "h2", "h3_split": False,
+                 "h3_split_reason": "600 chars < 2000"}
+            ]
+        }
+    }
+    _findings = findings_output or {
+        "file_id": "handlers-sample-handler",
+        "status": "clean",
+        "findings": []
+    }
+    _fix = fix_output or default_knowledge
+    _classify = classify_output or {
+        "patterns": [],
+        "reasoning": [
+            {"pattern": "nablarch-batch", "matched": False,
+             "evidence": "No batch content"}
+        ]
+    }
+
+    def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+        schema_str = json.dumps(json_schema) if json_schema else ""
+        if "trace" in schema_str:
+            output = _generate
+        elif "findings" in schema_str:
+            output = _findings
+        elif "patterns" in schema_str:
+            output = _classify
+        else:
+            output = _fix
+
+        return subprocess.CompletedProcess(
+            args=["claude", "-p"], returncode=0,
+            stdout=json.dumps(output, ensure_ascii=False), stderr=""
+        )
+
+    return mock_fn
+
+
+@pytest.fixture
+def test_repo(tmp_path):
+    """Build a temporary repo with classified.json and source file."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    # Source file
+    src_dir = repo / "tests" / "fixtures"
+    src_dir.mkdir(parents=True)
+    shutil.copy(os.path.join(FIXTURES_DIR, "sample_source.rst"), src_dir / "sample_source.rst")
+
+    # classified.json (required by Phase G for doc index building)
+    # Use Context with run_id="test" to get the correct path
+    from pathlib import Path as _Path
+    sys.path.insert(0, TOOL_DIR)
+    from run import Context as _Context
+    _ctx = _Context(version="6", repo=str(repo), concurrency=1, run_id="test")
+
+    phase_a_dir = _Path(_ctx.classified_list_path).parent
+    phase_a_dir.mkdir(parents=True, exist_ok=True)
+    classified = load_fixture("sample_classified.json")
+    with open(_ctx.classified_list_path, "w", encoding="utf-8") as f:
+        json.dump(classified, f, ensure_ascii=False, indent=2)
+
+    # trace directory (required by Phase G for label index building)
+    trace_dir = _Path(_ctx.trace_dir)
+    trace_dir.mkdir(parents=True, exist_ok=True)
+
+    # knowledge directory
+    (repo / ".claude" / "skills" / "nabledge-6" / "knowledge" / "component" / "handlers").mkdir(parents=True)
+
+    # knowledge_cache_dir
+    (repo / "tools" / "knowledge-creator" / ".cache" / "v6" / "knowledge" / "component" / "handlers").mkdir(parents=True)
+
+    # prompts directory - copy real prompts
+    prompts_dir = repo / "tools" / "knowledge-creator" / "prompts"
+    prompts_dir.mkdir(parents=True)
+    real_prompts = os.path.join(TOOL_DIR, "prompts")
+    if os.path.exists(real_prompts):
+        for f in os.listdir(real_prompts):
+            shutil.copy(os.path.join(real_prompts, f), prompts_dir / f)
+
+    return str(repo)
+
+
+@pytest.fixture
+def ctx(test_repo):
+    sys.path.insert(0, TOOL_DIR)
+    from run import Context
+    return Context(version="6", repo=test_repo, concurrency=1, run_id="test")
+
+
+@pytest.fixture
+def mock_claude():
+    return make_mock_run_claude()

@@ -1,0 +1,87 @@
+{
+  "id": "testing-framework-01_entityUnitTestWithBeanValidation--sec-d41d8cd9",
+  "title": "Bean Validationに対応したForm/Entityのクラス単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.html"
+  ],
+  "index": [
+    {
+      "id": "overview",
+      "title": "Bean Validationに対応したForm/Entityのクラス単体テスト",
+      "hints": [
+        "Bean Validation",
+        "Form単体テスト",
+        "Entity単体テスト",
+        "単体テスト",
+        "EntityTestSupport"
+      ]
+    },
+    {
+      "id": "form-entity-unit-test",
+      "title": "Form/Entity単体テストの書き方",
+      "hints": [
+        "EntityTestSupport",
+        "nablarch.test.core.db.EntityTestSupport",
+        "テストデータExcel",
+        "テストクラス作成",
+        "Form単体テスト",
+        "Entity単体テスト",
+        "単項目精査テスト"
+      ]
+    },
+    {
+      "id": "test-case-table-charset-length",
+      "title": "テストケース表の作成方法（文字種・文字列長）",
+      "hints": [
+        "propertyName",
+        "allowEmpty",
+        "group",
+        "min",
+        "max",
+        "messageIdWhenEmptyInput",
+        "messageIdWhenInvalidLength",
+        "messageIdWhenNotApplicable",
+        "interpolateKey_n",
+        "interpolateValue_n",
+        "文字種テスト",
+        "文字列長テスト",
+        "単項目精査"
+      ]
+    },
+    {
+      "id": "test-method-creation",
+      "title": "テストメソッドの作成方法",
+      "hints": [
+        "testValidateCharsetAndLength",
+        "EntityTestSupport",
+        "文字種テスト実行",
+        "文字列長テスト実行",
+        "単項目精査テスト"
+      ]
+    },
+    {
+      "id": "test-case-table-other-validation",
+      "title": "テストケース表の作成方法（その他の単項目精査）",
+      "hints": [
+        "propertyName",
+        "case",
+        "group",
+        "messageId",
+        "その他単項目精査",
+        "日付フォーマット精査",
+        "input1",
+        "interpolateKey_n",
+        "interpolateValue_n",
+        "special_notation_in_cell"
+      ]
+    }
+  ],
+  "sections": {
+    "overview": "Bean ValidationによるForm/Entity単体テストの書き方を説明する。Form単体テストとEntity単体テストはほぼ同じ方法で行え、共通内容はForm単体テストをベースに説明する。",
+    "form-entity-unit-test": "## テストデータの作成\n\nテストデータExcelファイルはテストソースコードと同じディレクトリに同じ名前（拡張子のみ.xlsx）で格納する。\n\n精査テストケース用シートと、setter/getterテストケース用シートでそれぞれ1シートを使用する前提。\n\nメッセージデータ・コードマスタ等の静的マスタデータはプロジェクト管理データが事前投入済みの前提（個別テストデータとして作成しない）。\n\nサンプルファイル（右クリック→保存でダウンロード）:\n- :download:`テストクラス(UserRegistrationFormTest.java)<../_download/UserRegistrationFormTest.java>`\n- :download:`テストデータ(UserRegistrationFormTest.xlsx)<../_download/UserRegistrationFormTest.xlsx>`\n- :download:`テスト対象クラス(UserRegistrationForm.java)<../_download/UserRegistrationForm.java>`\n\n## テストクラスの作成\n\nテストクラス作成ルール:\n1. テスト対象のForm/Entityと同一パッケージ\n2. クラス名は `{Form/Entity名}Test`\n3. `nablarch.test.core.db.EntityTestSupport` を継承\n\n```java\npackage com.nablarch.example.app.web.form;\nimport nablarch.test.core.db.EntityTestSupport;\npublic class UserRegistrationFormTest extends EntityTestSupport {\n```\n\n## 文字種と文字列長の単項目精査テストケース\n\n文字種・文字列長の単項目精査テスト専用テスト方法を提供する（単項目精査テストケース作成が容易になり、保守性の高いテストデータが作成できる）。\n\n> **補足**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする親Form）には使用不可。その場合は独自に精査処理のテストを実装すること。\n\n## その他の単項目精査テストケース\n\n文字種・文字列長テスト方法でカバーできない精査（例：日付入力項目のフォーマット精査）に対して使用する。各プロパティに1つの入力値と期待するメッセージIDのペアを記述することで任意の値で単項目精査テストができる。\n\n> **補足**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする親Form）には使用不可。その場合は独自に精査処理のテストを実装すること。",
+    "test-case-table-charset-length": "テストケース表で用意するカラム:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| allowEmpty | そのプロパティが未入力を許容するか |\n| group | Bean Validationのグループ（省略可）。FQCNで指定。内部クラスは `$` で区切る。 |\n| min | 入力値として許容する最小文字列長（省略可） |\n| max | 入力値として許容する最大文字列長（省略可） |\n| messageIdWhenEmptyInput | 未入力時に期待するメッセージ（省略可）。省略時は :ref:`entityUnitTest_EntityTestConfiguration_BeanValidation` のemptyInputMessageIdを使用。 |\n| messageIdWhenInvalidLength | 文字列長不適合時に期待するメッセージ（省略可）。省略時は :ref:`entityUnitTest_EntityTestConfiguration_BeanValidation` で設定したデフォルト値が使用される。省略時にどのデフォルト値が使用されるかはmax欄・min欄の記載により決まる（下表参照）。 |\n| messageIdWhenNotApplicable | 文字種不適合時に期待するメッセージ |\n| interpolateKey_n | 埋め込み文字のキー名（nは1からの連番、省略可） |\n| interpolateValue_n | 埋め込み文字の値（nは1からの連番、省略可） |\n| 半角英字 | 半角英字を許容するか |\n| 半角数字 | 半角数字を許容するか |\n| 半角記号 | 半角記号を許容するか |\n| 半角カナ | 半角カナを許容するか |\n| 全角英字 | 全角英字を許容するか |\n| 全角数字 | 全角数字を許容するか |\n| 全角ひらがな | 全角ひらがなを許容するか |\n| 全角カタカナ | 全角カタカナを許容するか |\n| 全角漢字 | 全角漢字を許容するか |\n| 全角記号その他 | 全角記号その他を許容するか |\n| 外字 | 外字を許容するか |\n\n文字種許容カラムの設定値: `o`（許容する、半角英小文字のオー）、`x`（許容しない、半角英小文字のエックス）\n\nmessageIdWhenInvalidLength省略時のデフォルト値:\n\n| max欄 | min欄 | maxとminの比較 | 使用されるデフォルト値 |\n|---|---|---|---|\n| あり | なし | — | maxMessageId |\n| あり | あり | max > min | maxAndMinMessageId（超過時）、underLimitMessageId（不足時） |\n| あり | あり | max = min | fixLengthMessageId |\n| なし | あり | — | minMessageId |\n\nメッセージ指定方法:\n- メッセージをそのまま記載: `入力必須です。`\n- 埋め込み文字あり: `{min}文字以上{max}文字以下で入力してください。`\n- メッセージIDとして記載（メッセージ全体を `{}` で囲む）: `{nablarch.core.validation.ee.SystemChar.message}`\n- `{}` で囲まれた部分は :ref:`message-format-spec` の埋め込み文字として扱われる\n\n![文字種・文字列長テストケース例](assets/testing-framework-01_entityUnitTestWithBeanValidation--sec-d41d8cd9/entityUnitTest_CharsetAndLengthExample_BeanValidation.png)",
+    "test-method-creation": "**クラス**: `nablarch.test.core.db.EntityTestSupport`\n\nスーパークラスの以下のメソッドを使用する:\n\n```java\nvoid testValidateCharsetAndLength(Class entityClass, String sheetName, String id)\n```\n\n```java\n@Test\npublic void testCharsetAndLength() {\n    String sheetName = \"testCharsetAndLength\";\n    String id = \"charsetAndLength\";\n    testValidateCharsetAndLength(TARGET_CLASS, sheetName, id);\n}\n```\n\nこのメソッドを実行すると、テストデータの各行ごとに以下の観点でテストが実行される:\n\n| 観点 | 入力値 | 備考 |\n|---|---|---|\n| 文字種 | 各文字種（半角英字〜外字） | max欄記載の長さの文字列で構成。max省略時はmin欄の長さ、両方省略時は長さ1 |\n| 未入力 | 空文字（長さ0） | — |\n| 最小文字列 | 最小文字列長の文字列 | 入力値はo印を付けた文字種で構成される。max省略時は最長文字列・文字列長超過のテストは実行されない。min省略時は文字列長不足のテストは実行されない。 |\n| 最長文字列 | 最大文字列長の文字列 | 入力値はo印を付けた文字種で構成される。max省略時は本テストは実行されない。 |\n| 文字列長不足 | 最小文字列長－1の文字列 | 入力値はo印を付けた文字種で構成される。min省略時は本テストは実行されない。 |\n| 文字列長超過 | 最大文字列長＋1の文字列 | 入力値はo印を付けた文字種で構成される。max省略時は本テストは実行されない。 |",
+    "test-case-table-other-validation": "テストケース表で用意するカラム:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| case | テストケースの簡単な説明 |\n| group | Bean Validationのグループ（省略可）。指定方法は文字種・文字列長テストと同じ。 |\n| input1 | 入力値。複数パラメータがある場合はinput2, input3とカラムを増やす。:ref:`special_notation_in_cell` の記法使用可。 |\n| messageId | 上記入力値で単項目精査した場合に期待するメッセージ。精査エラーにならないことを期待する場合は空欄。指定方法は文字種・文字列長テストと同じ。 |\n| interpolateKey_n | 埋め込み文字のキー名（nは1からの連番、省略可） |\n| interpolateValue_n | 埋め込み文字の値（nは1からの連番、省略可） |\n\n![その他単項目精査テストデータ例](assets/testing-framework-01_entityUnitTestWithBeanValidation--sec-d41d8cd9/entityUnitTest_singleValidationDataExample_BeanValidation.png)"
+  }
+}

@@ -141,7 +141,7 @@ class PhaseBGenerate:
     def generate_one(self, file_info):
         file_id = file_info["id"]
         source_path = f"{self.ctx.repo}/{file_info['source_path']}"
-        output_path = f"{self.ctx.knowledge_dir}/{file_info['output_path']}"
+        output_path = f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}"
         log_path = f"{self.ctx.log_dir}/generate/{file_id}.json"
 
         if os.path.exists(output_path):
@@ -155,7 +155,7 @@ class PhaseBGenerate:
             source_content = self._extract_section_range(source_content, file_info['section_range'])
 
         assets_dir_rel_full = file_info['assets_dir']
-        assets_dir_abs = f"{self.ctx.knowledge_dir}/{assets_dir_rel_full}"
+        assets_dir_abs = f"{self.ctx.knowledge_cache_dir}/{assets_dir_rel_full}"
         json_dir = os.path.dirname(file_info['output_path'])
         assets_dir_rel = os.path.relpath(assets_dir_rel_full, json_dir) + "/"
 
@@ -170,7 +170,8 @@ class PhaseBGenerate:
             prompt=prompt,
             json_schema=self.json_schema,
             log_dir=self.ctx.phase_b_executions_dir,
-            file_id=file_id
+            file_id=file_id,
+            verbose=self.ctx.verbose
         )
 
         if result.returncode != 0:

@@ -1,7 +1,7 @@
 """Knowledge meta file manager.
 
 Manages plugin/knowledge-creator.json which records:
-- generated_at: ISO date when generation completed
+- generated_at: ISO datetime when generation completed
 - sources: list of {repo, branch, commit} for each official doc repository
 
 Provides source change detection by comparing recorded commits
@@ -10,23 +10,17 @@ with current HEAD of local clones.
 
 import os
 import subprocess
-from datetime import date
+from datetime import datetime, timezone, timedelta
 from common import load_json, write_json
 
 
-KNOWLEDGE_META_RELATIVE = ".claude/skills/nabledge-{version}/plugin/knowledge-creator.json"
-
-
 def get_meta_path(ctx) -> str:
-    """Return absolute path to knowledge-creator.json for the given context."""
-    return os.path.join(
-        ctx.repo,
-        KNOWLEDGE_META_RELATIVE.format(version=ctx.version)
-    )
+    """Return absolute path to catalog.json."""
+    return ctx.classified_list_path
 
 
 def load_meta(ctx) -> dict:
-    """Load knowledge-creator.json. Returns empty dict if not found."""
+    """Load catalog.json. Returns empty dict if not found."""
     path = get_meta_path(ctx)
     if not os.path.exists(path):
         return {}
@@ -122,8 +116,8 @@ def detect_changed_files(ctx) -> list:
         list of changed file_ids, or None if commit is empty (= first generation).
     """
     meta = load_meta(ctx)
-    if not meta:
-        print("   ⚠️ knowledge-creator.json が見つかりません")
+    if not meta or not meta.get("sources"):
+        print("   ⚠️ catalog.json が見つかりません（またはソース情報がありません）")
         return None
 
     # Collect changed file paths from all source repos
@@ -163,16 +157,15 @@ def detect_changed_files(ctx) -> list:
     if not changed_paths:
         return []
 
-    # Map changed paths to file_ids using classified.json
-    classified_path = ctx.classified_list_path
-    if not os.path.exists(classified_path):
-        print("   ⚠️ classified.json が見つかりません。先に Phase A を実行してください")
+    # Map changed paths to file_ids using classified files in catalog.json
+    # meta is already loaded; "files" key is added by Phase A
+    if "files" not in meta:
+        print("   ⚠️ catalog.json に files がありません。先に Phase A を実行してください")
         return None
 
-    classified = load_json(classified_path)
     changed_ids = []
 
-    for fi in classified.get("files", []):
+    for fi in meta["files"]:
         source_path = fi.get("source_path", "")
         # source_path is relative to repo root, e.g.:
         #   .lw/nab-official/v6/nablarch-document/ja/application_framework/...
@@ -207,13 +200,13 @@ def update_knowledge_meta(ctx, dry_run: bool = False):
         dry_run: If True, print what would be written but do not write.
     """
     if getattr(ctx, "test_file", None):
-        print(f"   ⏭️ テストモードのため knowledge-creator.json の更新をスキップ")
+        print(f"   ⏭️ テストモードのため catalog.json の更新をスキップ")
         return
 
     meta_path = get_meta_path(ctx)
 
     if not os.path.exists(meta_path):
-        print(f"   ⚠️ knowledge-creator.json が見つかりません: {meta_path}")
+        print(f"   ⚠️ catalog.json が見つかりません: {meta_path}")
         return
 
     meta = load_json(meta_path)
@@ -232,19 +225,17 @@ def update_knowledge_meta(ctx, dry_run: bool = False):
             "commit": commit
         })
 
-    updated_meta = {
-        "generated_at": date.today().isoformat(),
-        "sources": updated_sources
-    }
+    meta["generated_at"] = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y-%m-%dT%H:%M:%S+09:00")
+    meta["sources"] = updated_sources
 
     if dry_run:
         import json
-        print(f"   [dry-run] knowledge-creator.json を更新予定:")
-        print(f"   {json.dumps(updated_meta, ensure_ascii=False, indent=2)}")
+        print(f"   [dry-run] catalog.json sources を更新予定:")
+        print(f"   {json.dumps({'generated_at': meta['generated_at'], 'sources': updated_sources}, ensure_ascii=False, indent=2)}")
         return
 
-    write_json(meta_path, updated_meta)
-    print(f"   💾 knowledge-creator.json 更新完了: {meta_path}")
+    write_json(meta_path, meta)
+    print(f"   💾 catalog.json 更新完了: {meta_path}")
     for s in updated_sources:
         commit_short = s['commit'][:7] if s['commit'] else '(取得失敗)'
         print(f"     {s['repo']} @ {commit_short}")

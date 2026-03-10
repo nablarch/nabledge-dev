@@ -460,6 +460,7 @@ class Step2Classify:
             result.append({
                 **base_entry,
                 'id': split_id,
+                'base_name': base_id,
                 'output_path': f"{type_}/{category}/{split_id}.json",
                 'assets_dir': f"{type_}/{category}/assets/{split_id}/",
                 'section_range': {
@@ -556,6 +557,7 @@ class Step2Classify:
                 "type": type_,
                 "category": category,
                 "id": file_id,
+                "base_name": file_id,
                 "output_path": output_path,
                 "assets_dir": assets_dir
             })
@@ -584,6 +586,66 @@ class Step2Classify:
 
         classified = final_classified
 
+        # Deduplicate IDs by adding ancestor directory names
+        from collections import Counter
+        id_counts = Counter(e['id'] for e in classified)
+        dup_ids = {k for k, v in id_counts.items() if v > 1}
+
+        if dup_ids:
+            self.logger.info(f"\n   🔧Deduplicating {len(dup_ids)} duplicate IDs...")
+            for dup_id in dup_ids:
+                group = [e for e in classified if e['id'] == dup_id]
+
+                # Find minimum depth where ancestor dirs are all unique
+                resolved_depth = None
+                for depth in range(1, 6):
+                    suffixes = []
+                    for e in group:
+                        d = os.path.dirname(os.path.join(self.ctx.repo, e['source_path']))
+                        for _ in range(depth - 1):
+                            d = os.path.dirname(d)
+                        suffixes.append(os.path.basename(d))
+                    if len(set(suffixes)) == len(group):
+                        resolved_depth = depth
+                        break
+
+                if resolved_depth is None:
+                    self.logger.error(f"   ❌ID dedup failed for {dup_id}")
+                    raise SystemExit(1)
+
+                for e in group:
+                    d = os.path.dirname(os.path.join(self.ctx.repo, e['source_path']))
+                    for _ in range(resolved_depth - 1):
+                        d = os.path.dirname(d)
+                    suffix = os.path.basename(d)
+                    old_id = e['id']
+
+                    if '--' in old_id and 'split_info' in e:
+                        base, split_sfx = old_id.split('--', 1)
+                        new_id = f"{base}-{suffix}--{split_sfx}"
+                    else:
+                        new_id = f"{old_id}-{suffix}"
+
+                    e['id'] = new_id
+                    e['base_name'] = new_id.split('--')[0] if 'split_info' in e else new_id
+                    e['output_path'] = e['output_path'].replace(
+                        f"{old_id}.json", f"{new_id}.json")
+                    e['assets_dir'] = e['assets_dir'].replace(
+                        f"assets/{old_id}/", f"assets/{new_id}/")
+
+                    if 'split_info' in e:
+                        old_oid = e['split_info']['original_id']
+                        e['split_info']['original_id'] = f"{old_oid}-{suffix}"
+
+                    self.logger.info(f"   🔧Dedup: {old_id} -> {new_id}")
+
+            # Verify all duplicates resolved
+            id_counts2 = Counter(e['id'] for e in classified)
+            still_dup = {k for k, v in id_counts2.items() if v > 1}
+            if still_dup:
+                self.logger.error(f"   ❌ID dedup failed: {still_dup}")
+                raise SystemExit(1)
+
         # Apply test mode filter if enabled
         if self.ctx.test_file:
             test_file_ids = load_test_file_ids(self.ctx.repo, self.ctx.test_file)
@@ -602,10 +664,28 @@ class Step2Classify:
                 for mid in sorted(missing):
                     self.logger.warning(f"      - {mid}")
 
-        # Generate output
+        # Generate output — preserve sources and processing_patterns from existing catalog
+        existing = {}
+        if os.path.exists(self.ctx.classified_list_path):
+            try:
+                existing = load_json(self.ctx.classified_list_path)
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        # Preserve processing_patterns from existing files
+        existing_pp = {}
+        for fi in existing.get("files", []):
+            pp = fi.get("processing_patterns")
+            if pp is not None:
+                existing_pp[fi["id"]] = pp
+        for fi in classified:
+            if fi["id"] in existing_pp:
+                fi["processing_patterns"] = existing_pp[fi["id"]]
+
         output = {
             "version": self.ctx.version,
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": existing.get("generated_at", datetime.utcnow().isoformat() + "Z"),
+            "sources": existing.get("sources", []),
             "files": classified
         }
 

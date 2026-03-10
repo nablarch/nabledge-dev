@@ -1,0 +1,63 @@
+{
+  "id": "libraries-nablarch_validation--sec-fbc14d00",
+  "title": "Nablarch Validation",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation/nablarch_validation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/date/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/validator/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/domain/DomainValidationHelper.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/domain/DomainValidator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/PropertyName.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/Digits.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/NumberRange.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidateFor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/DirectCallableValidator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/SystemChar.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/SystemCharValidator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationTarget.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/WebUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/Validation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/Validator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/Convertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/FormCreator.html"
+  ],
+  "index": [
+    {
+      "id": "extension-examples",
+      "title": "拡張例",
+      "hints": [
+        "Validator",
+        "Convertor",
+        "FormCreator",
+        "ValidationManager",
+        "ValidationContext",
+        "NumberFormatException",
+        "@Validation",
+        "@Target",
+        "@Retention",
+        "SampleValidator",
+        "SampleConvertor",
+        "ElementType",
+        "RetentionPolicy",
+        "nablarch.core.validation.Validator",
+        "nablarch.core.validation.Convertor",
+        "nablarch.core.validation.FormCreator",
+        "nablarch.core.validation.ValidationManager",
+        "nablarch.core.validation.ValidationContext",
+        "カスタムバリデータ追加",
+        "カスタムコンバータ追加",
+        "Bean生成方法変更",
+        "プロジェクト固有バリデーション拡張"
+      ]
+    }
+  ],
+  "sections": {
+    "extension-examples": "### プロジェクト固有のバリデータを追加したい\n\nバリデータ追加手順:\n1. アノテーションの作成\n2. バリデータの作成\n3. 設定ファイルにバリデータの登録（:ref:`nablarch_validation-definition_validator_convertor` 参照）\n\nアノテーション作成条件:\n- :java:extdoc:`@Validation <nablarch.core.validation.Validation>` を設定すること\n- :java:extdoc:`@Target <java.lang.annotation.Target>` に `ElementType.METHOD` を設定すること\n- :java:extdoc:`@Retention <java.lang.annotation.Retention>` に `RetentionPolicy.RUNTIME` を設定すること\n\n```java\n@Validation\n@Target(ElementType.METHOD)\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface Sample {\n}\n```\n\nバリデータは :java:extdoc:`Validator <nablarch.core.validation.Validator>` インタフェースを実装する:\n\n```java\npublic class SampleValidator implements Validator {\n    public Class<? extends Annotation> getAnnotationClass() {\n        return Sample.class;\n    }\n    public <T> boolean validate(ValidationContext<T> context, ...) { ... }\n}\n```\n\n### プロジェクト固有のコンバータを追加したい\n\nコンバータ追加手順:\n1. コンバータの作成\n2. 設定ファイルにコンバータの登録（:ref:`nablarch_validation-definition_validator_convertor` 参照）\n\nコンバータは :java:extdoc:`Convertor <nablarch.core.validation.Convertor>` インタフェースを実装する:\n\n```java\npublic class SampleConvertor implements Convertor {\n    @Override\n    public Class<?> getTargetClass() { return Short.class; }\n\n    @Override\n    public <T> boolean isConvertible(ValidationContext<T> context, String propertyName,\n            Object propertyDisplayName, Object value, Annotation format) {\n        boolean convertible = true;\n        if (value instanceof String) {\n            try { Short.valueOf((String) value); }\n            catch (NumberFormatException e) { convertible = false; }\n        } else {\n            convertible = false;\n        }\n        if (!convertible) {\n            context.addResultMessage(propertyName, \"sampleconvertor.message\", propertyDisplayName);\n        }\n        return convertible;\n    }\n\n    @Override\n    public <T> Object convert(ValidationContext<T> context, String propertyName,\n            Object value, Annotation format) {\n        return Short.valueOf((String) value);\n    }\n}\n```\n\n### バリデーション対象のBeanオブジェクトの生成方法を変更したい\n\n変更手順:\n1. :java:extdoc:`FormCreator <nablarch.core.validation.FormCreator>` の実装クラスを作成\n2. :java:extdoc:`ValidationManager.formCreator <nablarch.core.validation.ValidationManager.setFormCreator(nablarch.core.validation.FormCreator)>` に作成したクラスのコンポーネント定義を追加"
+  }
+}

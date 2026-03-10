@@ -6,41 +6,10 @@ Build index.toon, generate browsable docs, create summary.
 import os
 import re
 import json
-import subprocess
 from glob import glob
 from datetime import datetime, timezone
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from common import load_json, write_json, read_file, write_file, run_claude as _default_run_claude
+from common import load_json, write_json, read_file, write_file
 from logger import get_logger
-
-CLASSIFY_PATTERNS_SCHEMA = {
-    "type": "object",
-    "required": ["patterns", "reasoning"],
-    "properties": {
-        "patterns": {
-            "type": "array",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "nablarch-batch", "jakarta-batch", "restful-web-service",
-                    "http-messaging", "web-application", "mom-messaging", "db-messaging"
-                ]
-            }
-        },
-        "reasoning": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["pattern", "matched", "evidence"],
-                "properties": {
-                    "pattern": {"type": "string"},
-                    "matched": {"type": "boolean"},
-                    "evidence": {"type": "string"}
-                }
-            }
-        }
-    }
-}
 
 VALID_PROCESSING_PATTERNS = {
     "nablarch-batch", "jakarta-batch", "restful-web-service",
@@ -49,59 +18,16 @@ VALID_PROCESSING_PATTERNS = {
 
 
 class PhaseFFinalize:
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, dry_run=False):
         self.ctx = ctx
         self.dry_run = dry_run
-        self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
-        self.prompt_template = read_file(
-            f"{ctx.repo}/tools/knowledge-creator/prompts/classify_patterns.md"
-        )
         # Cache compiled regex patterns per file_id (performance optimization)
         self._pattern_cache = {}
-
-    def _classify_patterns(self, file_info, knowledge) -> str:
-        file_id = file_info["id"]
-        log_path = f"{self.ctx.patterns_dir}/{file_id}.json"
-
-        if os.path.exists(log_path):
-            return load_json(log_path).get("patterns", "")
-
-        prompt = self.prompt_template
-        prompt = prompt.replace("{FILE_ID}", file_id)
-        prompt = prompt.replace("{TITLE}", knowledge.get("title", ""))
-        prompt = prompt.replace("{TYPE}", file_info["type"])
-        prompt = prompt.replace("{CATEGORY}", file_info["category"])
-        prompt = prompt.replace("{KNOWLEDGE_JSON}",
-                                json.dumps(knowledge, ensure_ascii=False, indent=2))
-
-        try:
-            result = self.run_claude(
-                prompt=prompt,
-                json_schema=CLASSIFY_PATTERNS_SCHEMA,
-                log_dir=self.ctx.phase_f_executions_dir,
-                file_id=file_id
-            )
-            if result.returncode == 0:
-                parsed = json.loads(result.stdout)
-                patterns = " ".join(parsed.get("patterns", []))
-                reasoning = parsed.get("reasoning", [])
-                if not self.dry_run:
-                    write_json(log_path, {
-                        "file_id": file_id, "patterns": patterns, "reasoning": reasoning
-                    })
-                return patterns
-        except json.JSONDecodeError:
-            pass
-
-        if not self.dry_run:
-            write_json(log_path, {"file_id": file_id, "patterns": "", "error": "failed"})
-        return ""
 
     def _build_index_toon(self):
         classified = load_json(self.ctx.classified_list_path)
         entries = []
-        to_classify = []
 
         # Use resolved knowledge directory if Phase G has run
         knowledge_dir = self.ctx.knowledge_resolved_dir if os.path.exists(self.ctx.knowledge_resolved_dir) else self.ctx.knowledge_dir
@@ -123,37 +49,13 @@ class PhaseFFinalize:
             if fi["type"] == "processing-pattern":
                 patterns = fi["category"]
             else:
-                to_classify.append((fi, knowledge))
-                patterns = None
+                pp = knowledge.get("processing_patterns", [])
+                patterns = " ".join(pp) if isinstance(pp, list) else (pp or "")
 
             entries.append({
                 "title": title, "type": fi["type"], "category": fi["category"],
                 "processing_patterns": patterns, "path": fi["output_path"],
-                "_fi": fi, "_knowledge": knowledge
             })
-
-        if to_classify and not self.dry_run:
-            self.logger.info(f"  Classifying {len(to_classify)} files...")
-            with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
-                futures = {}
-                for fi, knowledge in to_classify:
-                    future = executor.submit(self._classify_patterns, fi, knowledge)
-                    futures[future] = fi["id"]
-
-                for future in as_completed(futures):
-                    fid = futures[future]
-                    patterns = future.result()
-                    for e in entries:
-                        if e.get("_fi", {}).get("id") == fid:
-                            e["processing_patterns"] = patterns
-                            break
-
-        # Clean up temp fields and write
-        for e in entries:
-            e.pop("_fi", None)
-            e.pop("_knowledge", None)
-            if e["processing_patterns"] is None:
-                e["processing_patterns"] = ""
 
         lines = [f"# Nabledge-{self.ctx.version} Knowledge Index", ""]
         lines.append(f"files[{len(entries)},]{{title,type,category,processing_patterns,path}}:")

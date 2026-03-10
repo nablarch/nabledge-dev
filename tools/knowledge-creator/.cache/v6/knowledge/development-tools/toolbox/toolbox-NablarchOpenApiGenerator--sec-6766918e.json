@@ -1,0 +1,182 @@
+{
+  "id": "toolbox-NablarchOpenApiGenerator--sec-6766918e",
+  "title": "ソースコード生成仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/JaxRsHttpRequest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/ExecutionContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/EntityResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Required.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/NumberRange.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/DecimalRange.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Length.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Size.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Domain.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/beans/BeanUtil.html"
+  ],
+  "index": [
+    {
+      "id": "source-code-generation-spec",
+      "title": "ソースコード生成仕様",
+      "hints": [
+        "ソースコード生成",
+        "OpenAPIジェネレーター",
+        "NablarchOpenApiGenerator",
+        "restful_web_service_architecture",
+        "router_adaptor_path_annotation"
+      ]
+    },
+    {
+      "id": "resource-interface-generation-spec",
+      "title": "リソース(アクション)インターフェース生成仕様",
+      "hints": [
+        "JaxRsHttpRequest",
+        "ExecutionContext",
+        "EntityResponse",
+        "HttpResponse",
+        "nablarch.fw.jaxrs.JaxRsHttpRequest",
+        "nablarch.fw.ExecutionContext",
+        "nablarch.fw.jaxrs.EntityResponse",
+        "nablarch.fw.web.HttpResponse",
+        "@GET",
+        "@POST",
+        "@PUT",
+        "@DELETE",
+        "@PATCH",
+        "@HEAD",
+        "@OPTIONS",
+        "@Consumes",
+        "@Produces",
+        "@Valid",
+        "@Path",
+        "@Generated",
+        "リソースインターフェース生成",
+        "operationId",
+        "useTags",
+        "useBeanValidation"
+      ]
+    },
+    {
+      "id": "model-generation-spec",
+      "title": "モデル生成仕様",
+      "hints": [
+        "@JsonTypeName",
+        "@JsonProperty",
+        "モデル生成",
+        "Bean Validation対応",
+        "useBeanValidation",
+        "nablarch.core.validation.ee.Required",
+        "nablarch.core.validation.ee.NumberRange",
+        "nablarch.core.validation.ee.DecimalRange",
+        "nablarch.core.validation.ee.Length",
+        "nablarch.core.validation.ee.Size",
+        "nablarch.core.validation.ee.Domain",
+        "@Required",
+        "@NumberRange",
+        "@DecimalRange",
+        "@Length",
+        "@Size",
+        "@Domain",
+        "@Pattern",
+        "jakarta.validation.constraints"
+      ]
+    },
+    {
+      "id": "required-modules",
+      "title": "生成されるソースコードが依存するモジュール",
+      "hints": [
+        "nablarch-fw-jaxrs",
+        "nablarch-core-validation-ee",
+        "jackson-annotations",
+        "jakarta.ws.rs-api",
+        "jakarta.annotation-api"
+      ]
+    },
+    {
+      "id": "openapi-datatype-mapping",
+      "title": "OpenAPIデータ型・フォーマットとJavaデータ型の対応仕様",
+      "hints": [
+        "データ型対応表",
+        "OpenAPIデータ型",
+        "type",
+        "format",
+        "integer",
+        "number",
+        "boolean",
+        "string",
+        "array",
+        "object",
+        "java.lang.Integer",
+        "java.lang.Long",
+        "java.math.BigDecimal",
+        "java.lang.Float",
+        "java.lang.Double",
+        "java.lang.Boolean",
+        "java.lang.String",
+        "byte[]",
+        "java.time.LocalDate",
+        "java.time.OffsetDateTime",
+        "java.util.UUID",
+        "java.net.URI",
+        "java.util.List",
+        "java.util.Set",
+        "uniqueItems",
+        "multipart/form-data",
+        "binary"
+      ]
+    },
+    {
+      "id": "openapi-validation-mapping",
+      "title": "OpenAPIバリデーション定義とBean Validationの対応仕様",
+      "hints": [
+        "Bean Validation対応",
+        "ドメインバリデーション",
+        "useBeanValidation",
+        "x-nablarch-domain",
+        "@Required",
+        "@NumberRange",
+        "@DecimalRange",
+        "@Length",
+        "@Size",
+        "@Domain",
+        "@Pattern",
+        "required",
+        "minimum",
+        "maximum",
+        "minLength",
+        "maxLength",
+        "minItems",
+        "maxItems",
+        "pattern",
+        "Domain",
+        "nablarch.core.validation.ee.Domain"
+      ]
+    },
+    {
+      "id": "validation-operation-notes",
+      "title": "バリデーションに関する運用上の注意点",
+      "hints": [
+        "バリデーション運用上の注意点",
+        "BeanUtil",
+        "ValidatorUtil",
+        "nablarch.core.beans.BeanUtil",
+        "bean_validation-execute_explicitly",
+        "ApplicationException",
+        "相関バリデーション",
+        "ドメインバリデーション",
+        "ProjectValidatorUtil"
+      ]
+    }
+  ],
+  "sections": {
+    "source-code-generation-spec": "> **重要**: NablarchのRESTfulウェブサービスはJakarta RESTful Web Servicesのすべてのアノテーションをサポートしているわけではないため、ここで記載する内容以外のOpenAPIドキュメントの内容は生成されるソースコードに反映されない。サポートしているアノテーションは :ref:`restful_web_service_architecture` および :ref:`router_adaptor_path_annotation` を参照。",
+    "resource-interface-generation-spec": ":ref:`rest_feature_details-method_signature` に則った形で生成する。\n\n**生成単位・型定義**:\n- OpenAPIドキュメントのパスおよびオペレーション情報を元にJavaインターフェースとして生成\n- 生成単位: デフォルトはパスの第一階層でまとめたもの。`useTags: true` の場合はオペレーションのタグ単位\n- インターフェース宣言に `Path`、`Generated` アノテーションを注釈\n\n**メソッド宣言に注釈するアノテーション**:\n\n| アノテーション | 条件 |\n|---|---|\n| `GET` | HTTPメソッドがGETのオペレーション |\n| `POST` | HTTPメソッドがPOSTのオペレーション |\n| `PUT` | HTTPメソッドがPUTのオペレーション |\n| `DELETE` | HTTPメソッドがDELETEのオペレーション |\n| `PATCH` | HTTPメソッドがPATCHのオペレーション |\n| `HEAD` | HTTPメソッドがHEADのオペレーション |\n| `OPTIONS` | HTTPメソッドがOPTIONSのオペレーション |\n| `Consumes` | リクエストのコンテンツタイプがある場合 |\n| `Produces` | レスポンスのコンテンツタイプがあり、`type: string` かつ `format: binary` 以外の場合 |\n| `Valid` | リクエストボディがあり、`useBeanValidation: true` の場合 |\n\n> **補足**: `type: string` かつ `format: binary` はファイルダウンロードを意味する。この場合のコンテンツタイプは :java:extdoc:`HttpResponse#setContentType<nablarch.fw.web.HttpResponse.setContentType(java.lang.String)>` で設定する。\n\n**メソッド名の生成仕様**:\n- `operationId` の値をメソッド名として使用\n- `operationId` が未指定の場合はパス値とHTTPメソッド名を組み合わせて生成\n\n**メソッド引数の生成仕様**:\n\n| 引数の型 | 条件 |\n|---|---|\n| リクエストモデルの型 | リクエストボディあり、かつコンテンツタイプがマルチパート以外の場合 |\n| :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` | 常に生成 |\n| :java:extdoc:`ExecutionContext <nablarch.fw.ExecutionContext>` | 常に生成 |\n\n> **補足**: `PathParam`、`QueryParam` 等には対応していないため、`parameters` 定義はメソッド引数に反映されない。これらは :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得すること。コンテンツタイプが `multipart/form-data` の場合はリクエストモデル引数は生成されない。アップロードされたファイルも :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得する。\n\n**メソッド戻り値の生成仕様**:\n\n| 戻り値の型 | 条件 |\n|---|---|\n| :java:extdoc:`EntityResponse <nablarch.fw.jaxrs.EntityResponse>` | レスポンスがモデルの場合。型パラメータにモデルの型を反映 |\n| :java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>` | レスポンスがモデルでない場合、またはHTTPステータスコードが `200` 以外の場合 |",
+    "model-generation-spec": "**生成単位・型定義**:\n- スキーマとして定義しているモデルに対してJavaクラスとして生成\n- `JsonTypeName`、`Generated` アノテーションを注釈\n\n**プロパティ生成仕様**:\n- スキーマに定義されたフィールドに対応するプロパティを生成\n- getter/setterを生成し、`JsonProperty` アノテーションを注釈\n- メソッドチェイン可能なセッターメソッドを生成（モデル自身の型を返す）\n- `useBeanValidation: true` かつOpenAPIドキュメントにバリデーション定義がある場合、 :ref:`bean_validation` を使用したバリデーションを有効化\n- バリデーションアノテーションはNablarch固有の :ref:`bean_validation` アノテーションと `jakarta.validation.constraints` パッケージのものを使用\n\n**その他の生成仕様**:\n- `hashCode`、`equals`、`toString` メソッドを生成",
+    "required-modules": "本ツールで生成されるソースコードをビルドするには、依存関係に以下のモジュールが必要になる。\n\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-validation-ee</artifactId>\n</dependency>\n<dependency>\n  <groupId>jakarta.ws.rs</groupId>\n  <artifactId>jakarta.ws.rs-api</artifactId>\n</dependency>\n<dependency>\n  <groupId>jakarta.annotation</groupId>\n  <artifactId>jakarta.annotation-api</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.fasterxml.jackson.core</groupId>\n  <artifactId>jackson-annotations</artifactId>\n  <version>2.17.1</version>\n</dependency>\n```\n\nRESTfulウェブサービスのブランクプロジェクトの依存関係にはこれらがすべて含まれている。",
+    "openapi-datatype-mapping": "OpenAPIドキュメント上で定義されたデータ型とフォーマットに対して、本ツールによるJavaのデータ型の対応表を以下に示す。\n\n| OpenAPIのtype | OpenAPIのformat | Javaのデータ型 |\n|---|---|---|\n| `integer` | (なし) | `java.lang.Integer` |\n| `integer` | `int32` | `java.lang.Integer` |\n| `integer` | `int64` | `java.lang.Long` |\n| `number` | (なし) | `java.math.BigDecimal` |\n| `number` | `float` | `java.lang.Float` |\n| `number` | `double` | `java.lang.Double` |\n| `boolean` | (なし) | `java.lang.Boolean` |\n| `string` | (なし) | `java.lang.String` |\n| `string` | `byte` | `byte[]` |\n| `string` | `date` | `java.time.LocalDate` |\n| `string` | `date-time` | `java.time.OffsetDateTime` |\n| `string` | `number` | `java.math.BigDecimal` |\n| `string` | `uuid` | `java.util.UUID` |\n| `string` | `uri` | `java.net.URI` |\n| `string` | (`enum` 指定時) | 対応するEnum型を生成 |\n| `array` | (なし) | `java.util.List` |\n| `array` | (`uniqueItems: true`) | `java.util.Set` |\n| `object` | (なし) | 対応するモデルの型 |\n| `object` | (対応する型がない場合) | `java.lang.Object` |\n\n> **補足**: `type: string` かつ `format: binary` はリクエストのコンテンツタイプが `multipart/form-data` の場合のみ利用可能。それ以外のコンテンツタイプやレスポンスのモデル定義内で使用した場合はモデルの生成を中止する。上記表以外の `type: string` フォーマットはすべて `java.lang.String` として生成する。",
+    "openapi-validation-mapping": "`useBeanValidation` のデフォルト値は `false`。`true` に設定した場合、以下の2方針でプロパティにアノテーションを注釈する。\n\n## OpenAPI仕様プロパティによるバリデーション\n\n[OpenAPI仕様のプロパティ(外部サイト、英語)](https://spec.openapis.org/oas/v3.0.3.html#properties) を使用したバリデーション定義の対応表:\n\n| OpenAPIのtype | OpenAPIのformat | 使用プロパティ | 注釈するアノテーション |\n|---|---|---|---|\n| `integer` | (フォーマット問わない) | `required` | :java:extdoc:`Required <nablarch.core.validation.ee.Required>` |\n| `integer` | (なし/`int32`/`int64`) | `minimum`/`maximum` | :java:extdoc:`NumberRange(min, max) <nablarch.core.validation.ee.NumberRange>` |\n| `number` | (フォーマット問わない) | `required` | :java:extdoc:`Required <nablarch.core.validation.ee.Required>` |\n| `number` | (なし/`float`/`double`) | `minimum`/`maximum` | :java:extdoc:`DecimalRange(min, max) <nablarch.core.validation.ee.DecimalRange>` |\n| `boolean` | (なし) | `required` | :java:extdoc:`Required <nablarch.core.validation.ee.Required>` |\n| `string` | (フォーマット問わない) | `required` | :java:extdoc:`Required <nablarch.core.validation.ee.Required>` |\n| `string` | (なし) | `minLength`/`maxLength` | :java:extdoc:`Length(min, max) <nablarch.core.validation.ee.Length>` |\n| `string` | (なし) | `pattern` | :java:extdoc:`Pattern(regexp) <jakarta.validation.constraints.Pattern>` |\n| `array` | (なし) | `required` | :java:extdoc:`Required <nablarch.core.validation.ee.Required>` |\n| `array` | (なし) | `minItems`/`maxItems` | :java:extdoc:`Size(min, max) <nablarch.core.validation.ee.Size>` |\n\n> **補足**: `multipleOf`、`exclusiveMinimum`、`exclusiveMaximum`、`minProperties`、`maxProperties` には対応していない。`minimum`/`maximum`、`minLength`/`maxLength`、`minItems`/`maxItems` はどちらか片方のみでも指定可能。Javaのデータ型が `java.math.BigDecimal`、`java.util.List`、`java.util.Set`、またはモデルの場合は `Valid` アノテーションを注釈する。`Pattern` のみJakarta Bean Validation標準のアノテーションで、それ以外はNablarch固有のアノテーション。\n\n## ドメインバリデーション\n\n[OpenAPI仕様の拡張プロパティ(外部サイト、英語)](https://spec.openapis.org/oas/v3.0.3.html#specification-extensions) `x-nablarch-domain` を使用して :ref:`bean_validation-domain_validation` をサポートする。値にはドメイン名を指定する。\n\n```yaml\npropertyName:\n  type: string\n  x-nablarch-domain: \"domainName\"\n```\n\n`useBeanValidation: true` でソースコードを生成すると、対象プロパティに :java:extdoc:`Domain(\"{domainName}\") <nablarch.core.validation.ee.Domain>` が注釈される。\n\n> **重要**: ドメインバリデーションと競合する可能性があるバリデーション定義を検出した場合はソースコードの生成を中止する。`x-nablarch-domain` を指定したプロパティに `minimum`、`maximum`、`minLength`、`maxLength`、`minItems`、`maxItems`、`pattern` のいずれかが指定されている場合は生成を中止する。`required` のみ併用可能。",
+    "validation-operation-notes": "本ツールを使用して、バリデーション定義を含めたソースコードを生成する場合の運用上の注意点を記載する。\n\n## OpenAPI仕様の規定範囲でバリデーション要件を満たせない場合\n\nOpenAPI仕様で規定されているバリデーションは必須定義・長さチェック・正規表現のみのため、業務アプリケーションが求めるものとして不足することがある。自動生成されたソースコードを直接修正することは望ましくないため、ドメインバリデーションを使用しても生成されたモデルに相関バリデーションを実装できない。\n\n> **重要**: バリデーション定義が自動生成モデルと手動実装フォーム等に分散されやすい状況になる点に注意すること。本ツールがデフォルトでバリデーションアノテーションを注釈しないのは、この分散が望ましくないと考えているためである。\n\n:ref:`bean_validation-execute_explicitly` と同様のアプローチで実装する。自動生成モデルと同じプロパティ定義のフォームを作成し、 :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` でプロパティ値をコピー後、バリデーションを実施する:\n\n```java\npublic class ProjectAction implements ProjectsApi {\n    @Override\n    public EntityResponse<ProjectResponse> createProject(ProjectCreateRequest projectCreateRequest, JaxRsHttpRequest jaxRsHttpRequest, ExecutionContext context) {\n        ProjectCreateForm form;\n        try {\n            form = ProjectValidatorUtil.validate(ProjectCreateForm.class, projectCreateRequest);\n        } catch (ApplicationException e) {\n            throw e;\n        }\n        return response;\n    }\n}\n\npublic final class ProjectValidatorUtil {\n    public static <T> T validate(Class<T> beanClass, Object src) {\n        T bean = BeanUtil.createAndCopy(beanClass, src);\n        ValidatorUtil.validate(bean);\n        return bean;\n    }\n}\n```\n\n## ドメインバリデーション使用時の注意点\n\n> **重要**: ドメインバリデーションを使用すると、バリデーション仕様がドメイン側に隠蔽されやすくなり、OpenAPIドキュメントからバリデーション仕様が見えなくなる可能性がある点に注意すること。"
+  }
+}

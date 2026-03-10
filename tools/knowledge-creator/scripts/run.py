@@ -25,6 +25,7 @@ class Context:
     test_file: str = None
     max_rounds: int = 1
     run_id: str = None
+    verbose: bool = False
 
     def __post_init__(self):
         if not os.path.isdir(self.repo):
@@ -57,13 +58,21 @@ class Context:
         return f"{self.log_dir}/phase-a/sources.json"
 
     @property
+    def cache_dir(self) -> str:
+        return f"{self.repo}/tools/knowledge-creator/.cache/v{self.version}"
+
+    @property
     def classified_list_path(self) -> str:
-        return f"{self.log_dir}/phase-a/classified.json"
+        return f"{self.cache_dir}/catalog.json"
+
+    @property
+    def knowledge_cache_dir(self) -> str:
+        return f"{self.cache_dir}/knowledge"
 
     # Phase B: Generate
     @property
     def trace_dir(self) -> str:
-        return f"{self.log_dir}/phase-b/traces"
+        return f"{self.cache_dir}/traces"
 
     @property
     def phase_b_executions_dir(self) -> str:
@@ -89,10 +98,6 @@ class Context:
         return f"{self.log_dir}/phase-e/executions"
 
     # Phase F: Finalize
-    @property
-    def patterns_dir(self) -> str:
-        return f"{self.log_dir}/phase-f/patterns"
-
     @property
     def phase_f_executions_dir(self) -> str:
         return f"{self.log_dir}/phase-f/executions"
@@ -139,6 +144,11 @@ def main():
                         help="Detect source changes and regenerate affected files")
     parser.add_argument("--run-id", type=str, default=None,
                         help="Run ID (auto-generated from timestamp if omitted; pass existing ID to resume)")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Enable verbose CC logging (stream-json + tool call recording)")
+    parser.add_argument("--command", type=str, default=None,
+                        choices=["gen", "regen", "fix"],
+                        help="kc command (used by kc.sh)")
 
     args = parser.parse_args()
 
@@ -192,219 +202,287 @@ def main():
         ctx = Context(
             version=v, repo=repo_root, concurrency=args.concurrency,
             test_file=args.test, max_rounds=args.max_rounds,
-            run_id=args.run_id,
+            run_id=args.run_id, verbose=args.verbose,
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
-
-        # Update latest symlink (only for new runs, not resume)
-        if args.run_id is None:
-            latest_link = os.path.join(ctx.version_log_dir, "latest")
-            try:
-                if os.path.lexists(latest_link):
-                    os.remove(latest_link)
-                os.symlink(ctx.run_id, latest_link)
-            except OSError as e:
-                logger.warning(f"latest リンクの更新に失敗しました（継続します）: {e}")
 
         # Configure logger with execution log file
         execution_log_path = f"{ctx.log_dir}/execution.log"
         setup_logger(log_file_path=execution_log_path)
         logger.info(f"Logging to: {execution_log_path}")
 
-        # Initialize report data
-        started_at = datetime.now(timezone.utc).isoformat()
-        phases = args.phase or "ABCDEM"
-        report = {
-            "meta": {
-                "run_id":      ctx.run_id,
-                "version":     v,
-                "started_at":  started_at,
-                "phases":      phases,
-                "max_rounds":  args.max_rounds,
-                "concurrency": args.concurrency,
-                "test_mode":   args.test is not None,
-            },
-            "phase_b":        None,
-            "phase_c":        None,
-            "phase_d_rounds": [],
-            "phase_e_rounds": [],
-            "totals":         None,
-        }
-
-        # effective_target: per-version target list
-        # --target from CLI is the default; --regen may override per version
-        effective_target = args.target
-
-        # --clean-phase: remove artifacts before run
-        if args.clean_phase:
-            from cleaner import clean_phase_artifacts
-            clean_phase_artifacts(ctx, args.clean_phase,
-                                  target_ids=effective_target, yes=args.yes)
-
-        # --regen: pull official repos, detect source changes, clean affected
-        # Note: This runs BEFORE Phase A. detect_changed_files reads the
-        # PREVIOUS run's classified.json (from .logs/) to map git diff paths
-        # to file_ids. If classified.json does not exist (first run), it
-        # returns None → all files will be generated (same as UC1).
-        if args.regen:
-            from knowledge_meta import pull_official_repos, detect_changed_files
-            logger.info("\n📥 公式リポジトリを更新中...")
-            pull_official_repos(ctx)
-
-            logger.info("\n🔍 ソース変更を検知中...")
-            changed = detect_changed_files(ctx)
-
-            if changed is not None and len(changed) == 0:
-                logger.info("   ✨ ソース変更なし")
-                # Phase M の update_knowledge_meta を通らずに終了する（意図通り）
-                continue
-
-            if changed is not None:
-                logger.info(f"   🔄 変更検知: {len(changed)} ファイル")
-                for fid in changed[:10]:
-                    logger.info(f"     - {fid}")
-                if len(changed) > 10:
-                    logger.info(f"     ... 他 {len(changed) - 10} ファイル")
-                from cleaner import clean_phase_artifacts
-                clean_phase_artifacts(ctx, "BD", target_ids=changed, yes=args.yes)
-                effective_target = changed
-            # changed is None → 初回生成扱い、effective_target = None のまま全件実行
-
-        # Phase A
-        if "A" in phases:
-            logger.info("\n📋Phase A: Prepare")
-            logger.info("   └─ Scanning documentation sources...")
-            from step1_list_sources import Step1ListSources
-            from step2_classify import Step2Classify
-            sources = Step1ListSources(ctx, dry_run=args.dry_run).run()
-            Step2Classify(ctx, dry_run=args.dry_run, sources_data=sources).run()
-
-        # Phase B
-        if "B" in phases:
-            logger.info("\n🤖Phase B: Generate")
-            logger.info("   └─ Converting documentation to knowledge files...")
-            from phase_b_generate import PhaseBGenerate
-            b_result = PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
-            if b_result:
-                report["phase_b"] = b_result
-
-        # Phase C/D/E loop
-        for round_num in range(1, ctx.max_rounds + 1):
-            logger.info(f"\n🔄Round {round_num}/{ctx.max_rounds}")
-
-            c_result = None
-            if "C" in phases:
-                logger.info("\n✅Phase C: Structure Check")
-                logger.info("   └─ Validating JSON schema and structure...")
-                from phase_c_structure_check import PhaseCStructureCheck
-                c_result = PhaseCStructureCheck(ctx).run()
-                report["phase_c"] = {
-                    "total":     c_result.get("total", 0),
-                    "pass":      c_result.get("pass", 0),
-                    "fail":      c_result.get("error_count", 0),
-                    "pass_rate": round(c_result["pass"] / c_result["total"], 3)
-                                 if c_result.get("total", 0) > 0 else 0,
-                }
-                if c_result["error_count"] > 0:
-                    rel_path = os.path.relpath(f"{ctx.log_dir}/structure-check.json", ctx.repo)
-                    logger.warning(f"   ⚠️Structure errors: {c_result['error_count']} found")
-                    logger.info(f"   📄Details: {rel_path}")
-
-            if "D" in phases:
-                logger.info("\n🔍Phase D: Content Check")
-                logger.info("   └─ Comparing knowledge files with source docs...")
-                from phase_d_content_check import PhaseDContentCheck
-                pass_ids = c_result.get("pass_ids") if c_result else None
-                # Intersect with effective_target if specified
-                if effective_target and pass_ids is not None:
-                    target_set = set(effective_target)
-                    effective_ids = [fid for fid in pass_ids if fid in target_set]
-                elif effective_target:
-                    effective_ids = effective_target
+        if args.command:
+            # kc.sh 経由: ファサード関数にディスパッチ
+            if args.command == "gen":
+                kc_gen(ctx)
+            elif args.command == "regen":
+                if args.target:
+                    kc_regen_target(ctx, args.target)
                 else:
-                    effective_ids = pass_ids
-                d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
-                    target_ids=effective_ids
-                )
-                findings_summary = _aggregate_findings(ctx)
-                d_round = {
-                    "round":      round_num,
-                    "total":      d_result.get("clean", 0) + len(d_result.get("issue_file_ids", [])),
-                    "clean":      d_result.get("clean", 0),
-                    "has_issues": len(d_result.get("issue_file_ids", [])),
-                    "clean_rate": round(
-                        d_result.get("clean", 0) /
-                        (d_result.get("clean", 0) + len(d_result.get("issue_file_ids", []))), 3
-                    ) if (d_result.get("clean", 0) + len(d_result.get("issue_file_ids", []))) > 0 else 0,
-                    "findings": findings_summary,
-                    "metrics":  d_result.get("metrics"),
-                }
-                report["phase_d_rounds"].append(d_round)
-
-                if d_result["issues_count"] == 0:
-                    logger.info(f"   ✨Round {round_num}: All checks passed!")
-                    break
-
-                if "E" in phases:
-                    logger.info("\n🔧Phase E: Fix")
-                    logger.info("   └─ Applying fixes to knowledge files...")
-                    from phase_e_fix import PhaseEFix
-                    e_result = PhaseEFix(ctx, dry_run=args.dry_run).run(
-                        target_ids=d_result["issue_file_ids"]
-                    )
-                    if e_result:
-                        report["phase_e_rounds"].append({
-                            "round":   round_num,
-                            "fixed":   e_result.get("fixed", 0),
-                            "error":   e_result.get("error", 0),
-                            "metrics": e_result.get("metrics"),
-                        })
+                    # regen without target uses --regen flag (git pull flow)
+                    args.regen = True
+                    _run_pipeline(ctx, args)
+            elif args.command == "fix":
+                if args.target:
+                    kc_fix_target(ctx, args.target)
                 else:
-                    break
-            else:
-                break
-
-        # Phase M (replaces G+F in default flow)
-        if "M" in phases:
-            logger.info("\n📦Phase M: Merge + Resolve + Finalize")
-            logger.info("   └─ Merging, resolving links, generating docs...")
-            from phase_m_finalize import PhaseMFinalize
-            PhaseMFinalize(ctx, dry_run=args.dry_run).run()
-
-            from knowledge_meta import update_knowledge_meta
-            if ctx.test_file:
-                logger.info("\n📝 knowledge-creator.json 更新（テストモード: スキップ）")
-            else:
-                logger.info("\n📝 knowledge-creator.json 更新")
-                update_knowledge_meta(ctx, dry_run=args.dry_run)
-
-        # Phase G (backward compat: only when explicitly specified without M)
-        if "G" in phases and "M" not in phases:
-            logger.info("\n🔗Phase G: Resolve Links")
-            logger.info("   └─ Resolving RST cross-references...")
-            from phase_g_resolve_links import PhaseGResolveLinks
-            PhaseGResolveLinks(ctx).run()
-
-        # Phase F (backward compat: only when explicitly specified without M)
-        if "F" in phases and "M" not in phases:
-            logger.info("\n📦Phase F: Finalize")
-            logger.info("   └─ Generating browsable docs and index...")
-            from phase_f_finalize import PhaseFFinalize
-            PhaseFFinalize(ctx, dry_run=args.dry_run).run()
-
-        finished_at = datetime.now(timezone.utc).isoformat()
-        report["meta"]["finished_at"] = finished_at
-        report["meta"]["duration_sec"] = int(
-            (datetime.fromisoformat(finished_at) - datetime.fromisoformat(started_at)).total_seconds()
-        )
-        report["totals"] = _compute_totals(report)
-        _write_report(ctx, report)
-        _publish_reports(ctx, report)
-        logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
+                    kc_fix(ctx)
+        else:
+            # 直接実行: 従来通り
+            _run_pipeline(ctx, args)
 
         logger.info(f"\n{'='*60}")
         logger.info(f"✨Completed version {v}")
         logger.info(f"{'='*60}\n")
+
+
+def kc_gen(ctx):
+    """kc gen: 全件生成（Phase ABCDEM）。"""
+    _run_pipeline(ctx, _make_args(ctx))
+
+
+def kc_regen_target(ctx, targets):
+    """kc regen --target: 指定ファイル再生成。"""
+    _run_pipeline(ctx, _make_args(ctx, phase="ABCDEM", clean_phase="BD", target=targets))
+
+
+def kc_fix(ctx):
+    """kc fix: 品質改善。"""
+    _run_pipeline(ctx, _make_args(ctx, phase="ACDEM", clean_phase="D"))
+
+
+def kc_fix_target(ctx, targets):
+    """kc fix --target: 指定ファイル品質改善。"""
+    _run_pipeline(ctx, _make_args(ctx, phase="ACDEM", clean_phase="D", target=targets))
+
+
+def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False):
+    """ファサード用のargs構築。"""
+    import argparse
+    return argparse.Namespace(
+        version=ctx.version,
+        phase=phase,
+        concurrency=ctx.concurrency,
+        dry_run=False,
+        test=ctx.test_file,
+        max_rounds=ctx.max_rounds,
+        clean_phase=clean_phase,
+        target=target,
+        yes=True,
+        regen=regen,
+        run_id=ctx.run_id,
+        verbose=ctx.verbose,
+    )
+
+
+def _run_pipeline(ctx, args):
+    """Run the full pipeline for a single version context."""
+    logger = get_logger()
+
+    phases = args.phase or "ABCDEM"
+
+    # Initialize report data
+    started_at = datetime.now(timezone.utc).isoformat()
+    report = {
+        "meta": {
+            "run_id":      ctx.run_id,
+            "version":     ctx.version,
+            "started_at":  started_at,
+            "phases":      phases,
+            "max_rounds":  args.max_rounds,
+            "concurrency": args.concurrency,
+            "test_mode":   args.test is not None,
+        },
+        "phase_b":        None,
+        "phase_c":        None,
+        "phase_d_rounds": [],
+        "phase_e_rounds": [],
+        "totals":         None,
+    }
+
+    # effective_target: per-version target list
+    # --target from CLI is the default; --regen may override per version
+    effective_target = args.target
+
+    # Resolve --target base_name to split IDs
+    if effective_target and os.path.exists(ctx.classified_list_path):
+        from common import load_json
+        catalog = load_json(ctx.classified_list_path)
+        resolved = []
+        for t in effective_target:
+            matched = [f["id"] for f in catalog["files"] if f.get("base_name") == t]
+            if matched:
+                resolved.extend(matched)
+            else:
+                resolved.append(t)
+        effective_target = resolved
+
+    # --clean-phase: remove artifacts before run
+    if args.clean_phase:
+        from cleaner import clean_phase_artifacts
+        clean_phase_artifacts(ctx, args.clean_phase,
+                              target_ids=effective_target, yes=args.yes)
+
+    # --regen: pull official repos, detect source changes, clean affected
+    # Note: This runs BEFORE Phase A. detect_changed_files reads the
+    # PREVIOUS run's classified.json (from .logs/) to map git diff paths
+    # to file_ids. If classified.json does not exist (first run), it
+    # returns None → all files will be generated (same as UC1).
+    if args.regen:
+        from knowledge_meta import pull_official_repos, detect_changed_files
+        logger.info("\n📥 公式リポジトリを更新中...")
+        pull_official_repos(ctx)
+
+        logger.info("\n🔍 ソース変更を検知中...")
+        changed = detect_changed_files(ctx)
+
+        if changed is not None and len(changed) == 0:
+            logger.info("   ✨ ソース変更なし")
+            # Phase M の update_knowledge_meta を通らずに終了する（意図通り）
+            return
+
+        if changed is not None:
+            logger.info(f"   🔄 変更検知: {len(changed)} ファイル")
+            for fid in changed[:10]:
+                logger.info(f"     - {fid}")
+            if len(changed) > 10:
+                logger.info(f"     ... 他 {len(changed) - 10} ファイル")
+            from cleaner import clean_phase_artifacts
+            clean_phase_artifacts(ctx, "BD", target_ids=changed, yes=args.yes)
+            effective_target = changed
+        # changed is None → 初回生成扱い、effective_target = None のまま全件実行
+
+    # Phase A
+    if "A" in phases:
+        logger.info("\n📋Phase A: Prepare")
+        logger.info("   └─ Scanning documentation sources...")
+        from step1_list_sources import Step1ListSources
+        from step2_classify import Step2Classify
+        sources = Step1ListSources(ctx, dry_run=args.dry_run).run()
+        Step2Classify(ctx, dry_run=args.dry_run, sources_data=sources).run()
+
+    # Phase B
+    if "B" in phases:
+        logger.info("\n🤖Phase B: Generate")
+        logger.info("   └─ Converting documentation to knowledge files...")
+        from phase_b_generate import PhaseBGenerate
+        b_result = PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
+        if b_result:
+            report["phase_b"] = b_result
+
+    # Phase C/D/E loop
+    for round_num in range(1, ctx.max_rounds + 1):
+        logger.info(f"\n🔄Round {round_num}/{ctx.max_rounds}")
+
+        c_result = None
+        if "C" in phases:
+            logger.info("\n✅Phase C: Structure Check")
+            logger.info("   └─ Validating JSON schema and structure...")
+            from phase_c_structure_check import PhaseCStructureCheck
+            c_result = PhaseCStructureCheck(ctx).run(target_ids=effective_target)
+            report["phase_c"] = {
+                "total":     c_result.get("total", 0),
+                "pass":      c_result.get("pass", 0),
+                "fail":      c_result.get("error_count", 0),
+                "pass_rate": round(c_result["pass"] / c_result["total"], 3)
+                             if c_result.get("total", 0) > 0 else 0,
+            }
+            if c_result["error_count"] > 0:
+                rel_path = os.path.relpath(f"{ctx.log_dir}/structure-check.json", ctx.repo)
+                logger.warning(f"   ⚠️Structure errors: {c_result['error_count']} found")
+                logger.info(f"   📄Details: {rel_path}")
+
+        if "D" in phases:
+            logger.info("\n🔍Phase D: Content Check")
+            logger.info("   └─ Comparing knowledge files with source docs...")
+            from phase_d_content_check import PhaseDContentCheck
+            pass_ids = c_result.get("pass_ids") if c_result else None
+            # Intersect with effective_target if specified
+            if effective_target and pass_ids is not None:
+                target_set = set(effective_target)
+                effective_ids = [fid for fid in pass_ids if fid in target_set]
+            elif effective_target:
+                effective_ids = effective_target
+            else:
+                effective_ids = pass_ids
+            d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
+                target_ids=effective_ids
+            )
+            findings_summary = _aggregate_findings(ctx)
+            d_round = {
+                "round":      round_num,
+                "total":      d_result.get("clean", 0) + len(d_result.get("issue_file_ids", [])),
+                "clean":      d_result.get("clean", 0),
+                "has_issues": len(d_result.get("issue_file_ids", [])),
+                "clean_rate": round(
+                    d_result.get("clean", 0) /
+                    (d_result.get("clean", 0) + len(d_result.get("issue_file_ids", []))), 3
+                ) if (d_result.get("clean", 0) + len(d_result.get("issue_file_ids", []))) > 0 else 0,
+                "findings": findings_summary,
+                "metrics":  d_result.get("metrics"),
+            }
+            report["phase_d_rounds"].append(d_round)
+
+            if d_result["issues_count"] == 0:
+                logger.info(f"   ✨Round {round_num}: All checks passed!")
+                break
+
+            if "E" in phases:
+                logger.info("\n🔧Phase E: Fix")
+                logger.info("   └─ Applying fixes to knowledge files...")
+                from phase_e_fix import PhaseEFix
+                e_result = PhaseEFix(ctx, dry_run=args.dry_run).run(
+                    target_ids=d_result["issue_file_ids"]
+                )
+                if e_result:
+                    report["phase_e_rounds"].append({
+                        "round":   round_num,
+                        "fixed":   e_result.get("fixed", 0),
+                        "error":   e_result.get("error", 0),
+                        "metrics": e_result.get("metrics"),
+                    })
+            else:
+                break
+        else:
+            break
+
+    # Phase M (replaces G+F in default flow)
+    if "M" in phases:
+        logger.info("\n📦Phase M: Merge + Resolve + Finalize")
+        logger.info("   └─ Merging, resolving links, generating docs...")
+        from phase_m_finalize import PhaseMFinalize
+        PhaseMFinalize(ctx, dry_run=args.dry_run).run()
+
+        from knowledge_meta import update_knowledge_meta
+        if ctx.test_file:
+            logger.info("\n📝 catalog.json 更新（テストモード: スキップ）")
+        else:
+            logger.info("\n📝 catalog.json 更新")
+            update_knowledge_meta(ctx, dry_run=args.dry_run)
+
+    # Phase G (backward compat: only when explicitly specified without M)
+    if "G" in phases and "M" not in phases:
+        logger.info("\n🔗Phase G: Resolve Links")
+        logger.info("   └─ Resolving RST cross-references...")
+        from phase_g_resolve_links import PhaseGResolveLinks
+        PhaseGResolveLinks(ctx).run()
+
+    # Phase F (backward compat: only when explicitly specified without M)
+    if "F" in phases and "M" not in phases:
+        logger.info("\n📦Phase F: Finalize")
+        logger.info("   └─ Generating browsable docs and index...")
+        from phase_f_finalize import PhaseFFinalize
+        PhaseFFinalize(ctx, dry_run=args.dry_run).run()
+
+    finished_at = datetime.now(timezone.utc).isoformat()
+    report["meta"]["finished_at"] = finished_at
+    report["meta"]["duration_sec"] = int(
+        (datetime.fromisoformat(finished_at) - datetime.fromisoformat(started_at)).total_seconds()
+    )
+    report["totals"] = _compute_totals(report)
+    _write_report(ctx, report)
+    _publish_reports(ctx, report)
+    logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
 
 
 def _aggregate_findings(ctx) -> dict:
@@ -534,7 +612,7 @@ def _collect_file_details(ctx) -> list:
         json_bytes = 0
         out = cf.get('output_path', '')
         if out:
-            full_out = os.path.join(ctx.knowledge_dir, out)
+            full_out = os.path.join(ctx.knowledge_cache_dir, out)
             if os.path.exists(full_out):
                 json_bytes = os.path.getsize(full_out)
 

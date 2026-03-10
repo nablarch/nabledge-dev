@@ -59,7 +59,7 @@ def _list_phase_b_artifacts(ctx, target_ids):
     paths = []
     if target_ids:
         for file_id in target_ids:
-            pattern = f"{ctx.knowledge_dir}/**/{file_id}.json"
+            pattern = f"{ctx.knowledge_cache_dir}/**/{file_id}.json"
             paths.extend(glob.glob(pattern, recursive=True))
             trace = f"{ctx.trace_dir}/{file_id}.json"
             if os.path.exists(trace):
@@ -68,7 +68,7 @@ def _list_phase_b_artifacts(ctx, target_ids):
         if os.path.exists(ctx.classified_list_path):
             classified = load_json(ctx.classified_list_path)
             for f in classified["files"]:
-                p = f"{ctx.knowledge_dir}/{f['output_path']}"
+                p = f"{ctx.knowledge_cache_dir}/{f['output_path']}"
                 if os.path.exists(p):
                     paths.append(p)
         if os.path.isdir(ctx.trace_dir):

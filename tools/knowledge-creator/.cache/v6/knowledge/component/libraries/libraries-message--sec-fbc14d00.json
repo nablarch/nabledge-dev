@@ -1,0 +1,45 @@
+{
+  "id": "libraries-message--sec-fbc14d00",
+  "title": "メッセージ管理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/message.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/text/MessageFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Properties.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/PropertiesStringResourceLoader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Locale.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/MessageUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/Message.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Map.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/MessageLevel.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/WebUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/BasicStringResourceLoader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/MessageFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/BasicMessageFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/JavaMessageFormatBaseMessageFormatter.html"
+  ],
+  "index": [
+    {
+      "id": "extension-examples",
+      "title": "拡張例",
+      "hints": [
+        "PropertiesStringResourceLoader",
+        "BasicStringResourceLoader",
+        "BasicStaticDataCache",
+        "StringResourceHolder",
+        "MessageFormatter",
+        "BasicMessageFormatter",
+        "JavaMessageFormatBaseMessageFormatter",
+        "MessageFormat",
+        "プロパティファイル設定変更",
+        "データベースメッセージ管理",
+        "メッセージフォーマット変更"
+      ]
+    }
+  ],
+  "sections": {
+    "extension-examples": "## プロパティファイル名や格納場所を変更する\n\n:java:extdoc:`PropertiesStringResourceLoader <nablarch.core.message.PropertiesStringResourceLoader>` にはファイル名やディレクトリのパスを変更するためのプロパティが用意されている。デフォルト構成を変更したい場合はこれらのプロパティを使用すること。\n\n## メッセージをデータベースで管理する\n\nメッセージをデータベースで管理するには :java:extdoc:`BasicStringResourceLoader <nablarch.core.message.BasicStringResourceLoader>` を使用する。\n\n```xml\n<component name=\"stringResourceLoader\" class=\"nablarch.core.message.BasicStringResourceLoader\">\n  <property name=\"dbManager\" ref=\"defaultDbManager\"/>\n  <property name=\"tableName\" value=\"MESSAGE\"/>\n  <property name=\"idColumnName\" value=\"ID\"/>\n  <property name=\"langColumnName\" value=\"LANG\"/>\n  <property name=\"valueColumnName\" value=\"MESSAGE\"/>\n</component>\n\n<component name=\"stringResourceCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n  <property name=\"loader\" ref=\"stringResourceLoader\"/>\n  <property name=\"loadOnStartup\" value=\"true\"/>\n</component>\n\n<!-- コンポーネント名はstringResourceHolderとすること -->\n<component name=\"stringResourceHolder\" class=\"nablarch.core.message.StringResourceHolder\">\n  <property name=\"stringResourceCache\" ref=\"stringResourceCache\"/>\n</component>\n```\n\n## メッセージのフォーマット方法を変更する\n\n:java:extdoc:`MessageFormatter <nablarch.core.message.MessageFormatter>` の実装クラスを作成しコンポーネント名 `messageFormatter` でコンポーネント定義することでフォーマット方法を変更できる。実装クラスが未定義の場合は :java:extdoc:`BasicMessageFormatter <nablarch.core.message.BasicMessageFormatter>` が使用される。\n\n```java\npublic class SampleMessageFormatter implements MessageFormatter {\n    @Override\n    public String format(final String template, final Object[] options) {\n        return String.format(template, options);\n    }\n}\n```\n\n```xml\n<component name=\"messageFormatter\" class=\"sample.SampleMessageFormatter\" />\n```\n\n提供されている実装クラス:\n\n- :java:extdoc:`BasicMessageFormatter <nablarch.core.message.BasicMessageFormatter>`: :ref:`埋め込み文字の仕様 <message-format-spec>` に従いフォーマット。実装クラスが未定義の場合はこのクラスが使用される。\n- :java:extdoc:`JavaMessageFormatBaseMessageFormatter <nablarch.core.message.JavaMessageFormatBaseMessageFormatter>`: :java:extdoc:`MessageFormat <java.text.MessageFormat>` を使用してフォーマット。"
+  }
+}

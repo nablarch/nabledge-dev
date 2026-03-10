@@ -1,0 +1,144 @@
+{
+  "id": "libraries-log--sec-7521ea21",
+  "title": "ログ出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/BasicLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/FileSizeRotatePolicy.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/RotatePolicy.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/DateRotatePolicy.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogWriter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogWriterSupport.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/Logger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogLevelLabelProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/LogItem.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/FileLogWriter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/util/FileUtil.html"
+  ],
+  "index": [
+    {
+      "id": "override-log-settings",
+      "title": "ログ出力の設定を上書く",
+      "hints": [
+        "システムプロパティ",
+        "ログ設定上書き",
+        "プロセス毎設定変更",
+        "loggers.root.level"
+      ]
+    },
+    {
+      "id": "log-format",
+      "title": "ログのフォーマットを指定する",
+      "hints": [
+        "BasicLogFormatter",
+        "LogFormatter",
+        "ThreadContext",
+        "起動プロセス",
+        "処理方式",
+        "実行時ID",
+        "thread_context_handler",
+        "nablarch.bootProcess",
+        "nablarch.processingSystem",
+        "プレースホルダ",
+        "datePattern",
+        "ログフォーマット"
+      ]
+    },
+    {
+      "id": "app-log-settings",
+      "title": "各種ログの設定",
+      "hints": [
+        "app-log.properties",
+        "nablarch.appLog.filePath",
+        "FileUtil",
+        "各種ログ設定",
+        "failure_log",
+        "sql_log",
+        "performance_log",
+        "http_access_log",
+        "jaxrs_access_log",
+        "messaging_log"
+      ]
+    },
+    {
+      "id": "log-rotation",
+      "title": "ログファイルのローテーションを行う",
+      "hints": [
+        "FileSizeRotatePolicy",
+        "DateRotatePolicy",
+        "RotatePolicy",
+        "FileLogWriter",
+        "ログローテーション",
+        "rotatePolicy",
+        "rotateTime"
+      ]
+    },
+    {
+      "id": "add-log-writer",
+      "title": "LogWriterを追加する",
+      "hints": [
+        "LogWriter",
+        "LogWriterSupport",
+        "LogFormatter",
+        "LogWriter拡張",
+        "LogWriter追加"
+      ]
+    },
+    {
+      "id": "add-log-formatter",
+      "title": "LogFormatterを追加する",
+      "hints": [
+        "LogFormatter",
+        "LogLevelLabelProvider",
+        "Logger",
+        "LogFormatter拡張",
+        "LogFormatter追加",
+        "options引数",
+        "可変長引数",
+        "logInfo"
+      ]
+    },
+    {
+      "id": "add-log-placeholder",
+      "title": "ログの出力項目（プレースホルダ）を追加する",
+      "hints": [
+        "BasicLogFormatter",
+        "LogItem",
+        "ObjectSettings",
+        "LogContext",
+        "プレースホルダ追加",
+        "getLogItems",
+        "CustomBootProcessItem",
+        "CustomLogFormatter"
+      ]
+    },
+    {
+      "id": "suppress-init-message",
+      "title": "ログの初期化メッセージを出力しないようにする",
+      "hints": [
+        "FileLogWriter",
+        "LogWriterSupport",
+        "needsToWrite",
+        "初期化メッセージ抑制",
+        "suppressionWriting",
+        "log_adaptor",
+        "初期化メッセージ",
+        "StringUtil",
+        "initializeWriter"
+      ]
+    }
+  ],
+  "sections": {
+    "override-log-settings": "システムプロパティを使用して、プロパティファイルと同じキー名で値を指定することにより設定を上書きできる。共通プロパティファイルを用意しておき、プロセス毎にログ出力設定を変更できる。\n\nロガー設定 `root` のログレベルをINFOに変更する例:\n\n```bash\njava -Dloggers.root.level=INFO ...\n```",
+    "log-format": "汎用的な :java:extdoc:`LogFormatter <nablarch.core.log.basic.LogFormatter>` 実装として :java:extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` が提供されている。プレースホルダを使用してフォーマットを指定する（使用できるプレースホルダは `BasicLogFormatter` のJavadocを参照）。\n\nフォーマットはLogWriterのプロパティに指定する:\n\n```properties\n# フォーマットを指定する場合はBasicLogFormatterを明示的に指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n# プレースホルダを使ってフォーマットを指定する。\nwriter.appLog.formatter.format=$date$ -$logLevel$- $loggerName$ $message$\n# 日時のフォーマットに使用するパターン（未指定時: \"yyyy-MM-dd HH:mm:ss.SSS\"）\nwriter.appLog.formatter.datePattern=yyyy/MM/dd HH:mm:ss[SSS]\n# ログレベルの文言（未指定時はLogLevel列挙型の名前: FATAL、INFO など）\nwriter.appLog.formatter.label.fatal=F\nwriter.appLog.formatter.label.error=E\nwriter.appLog.formatter.label.warn=W\nwriter.appLog.formatter.label.info=I\nwriter.appLog.formatter.label.debug=D\nwriter.appLog.formatter.label.trace=T\n```\n\n`BasicLogFormatter` では以下の出力項目を使用できる:\n\n**起動プロセス** (`$bootProcess$`): アプリケーションを起動した実行環境を特定する名前。システムプロパティ `nablarch.bootProcess` で指定。未指定の場合はブランク。\n\n**処理方式**: ウェブ、バッチなどを示す識別値。プロパティファイルに `nablarch.processingSystem` キーで指定。未指定の場合はブランク。\n\n**実行時ID**: リクエストIDに対するアプリケーションの個々の実行を識別するID（リクエストIDと1対多の関係）。複数ログの紐付けに使用する。各処理方式の :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` 初期化時に発行・設定される。\n\nID体系:\n\n```\n起動プロセス（指定時のみ付加）＋システム日時(yyyyMMddHHmmssSSS)＋連番(4桁)\n```\n\n> **重要**: リクエストID、実行時ID、ユーザIDを出力する場合、取得元が :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` のため、ハンドラ構成に :ref:`thread_context_handler` が含まれている必要がある。ユーザIDについては :ref:`thread_context_handler-user_id_attribute_setting` を参照しセッションへの値設定が必要。\n\n**改行コード・タブ文字**: フォーマットに含める場合は `\\n`（改行）、`\\t`（タブ）をJavaと同様に記述する。改行コードはシステムプロパティ `line.separator` から取得（変更しなければOSの改行コード）。\n\n> **補足**: `BasicLogFormatter` では `\\n` と `\\t` という文字列は出力できない。",
+    "app-log-settings": "各種ログの出力機能（:ref:`failure_log-setting`、:ref:`sql_log-setting` など）を使用するには、:ref:`log-basic_setting` に加えて各種ログの設定が必要。設定はプロパティファイルに記述する。\n\n**プロパティファイルの場所**: クラスパス直下の `app-log.properties` を使用。場所を変更する場合はシステムプロパティ `nablarch.appLog.filePath` でファイルパスを指定する（ファイルパスの指定方法は :java:extdoc:`FileUtil#getResource <nablarch.core.util.FileUtil.getResource(java.lang.String)>` を参照）。\n\n```bash\njava -Dnablarch.appLog.filePath=file:/var/log/app/app-log.properties ...\n```\n\n各種ログの設定は各ドキュメントを参照:\n- :ref:`failure_log-setting`\n- :ref:`sql_log-setting`\n- :ref:`performance_log-setting`\n- :ref:`http_access_log-setting`\n- :ref:`jaxrs_access_log-setting`\n- :ref:`messaging_log-setting`",
+    "log-rotation": "`FileLogWriter` は設定したポリシーに従ってログファイルのローテーションを行う。\n\nデフォルトのローテーションポリシーは :java:extdoc:`FileSizeRotatePolicy <nablarch.core.log.basic.FileSizeRotatePolicy>`（ファイルサイズによるローテーション）。:java:extdoc:`RotatePolicy <nablarch.core.log.basic.RotatePolicy>` の実装クラスを作成することでポリシーを変更できる。\n\n提供されている `RotatePolicy` 実装クラス（各設定はJavadocを参照）:\n- :java:extdoc:`FileSizeRotatePolicy <nablarch.core.log.basic.FileSizeRotatePolicy>`\n- :java:extdoc:`DateRotatePolicy <nablarch.core.log.basic.DateRotatePolicy>`\n\nローテーションポリシーはLogWriterのプロパティに指定する:\n\n```properties\nwriterNames=sample\n\n# writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する\nwriter.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy\n# 更新時刻（オプション）\nwriter.sample.rotateTime=12:00\n```",
+    "add-log-writer": "新しいLogWriterを追加する場合は :java:extdoc:`LogWriter <nablarch.core.log.basic.LogWriter>` インタフェースを実装したクラスを作成する。:java:extdoc:`LogFormatter <nablarch.core.log.basic.LogFormatter>` を使用するLogWriterを作成する場合は、共通処理を提供する :java:extdoc:`LogWriterSupport <nablarch.core.log.basic.LogWriterSupport>` を継承して作成する。",
+    "add-log-formatter": "新しいLogFormatterを追加する場合は :java:extdoc:`LogFormatter <nablarch.core.log.basic.LogFormatter>` インタフェースを実装したクラスを作成する。ログレベルの文言を設定で変更可能にしたい場合は :java:extdoc:`LogLevelLabelProvider <nablarch.core.log.basic.LogLevelLabelProvider>` を使用する。\n\nログ出力時のパラメータを増やしたい場合は :java:extdoc:`Logger <nablarch.core.log.Logger>` インタフェースのログ出力メソッドの `options` 引数（`Object...`）を使用する:\n\n```java\npublic void logInfo(String message, Object... options)\npublic void logInfo(String message, Throwable cause, Object... options)\n```",
+    "add-log-placeholder": ":java:extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` は :java:extdoc:`LogItem <nablarch.core.log.LogItem>` インタフェースで各プレースホルダに対応する出力項目を取得する。新規プレースホルダを追加する場合:\n\n1. :java:extdoc:`LogItem <nablarch.core.log.LogItem>` を実装したクラスを作成する\n2. :java:extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` を継承したクラスを作成し、`getLogItems(ObjectSettings settings)` をオーバーライドしてプレースホルダを追加する\n\nカスタム起動プロセスプレースホルダ `$bootProcess$` の追加例:\n\n```properties\nwriter.appLog.formatter.className=nablarch.core.log.basic.CustomLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $loggerName$ [$bootProcess$] $message$\nwriter.appLog.formatter.bootProcess=CUSTOM_PROCESS\n```\n\n```java\npublic class CustomBootProcessItem implements LogItem<LogContext> {\n    private String bootProcess;\n    public CustomBootProcessItem(ObjectSettings settings) {\n        bootProcess = settings.getProp(\"bootProcess\");\n    }\n    @Override\n    public String get(LogContext context) {\n        return bootProcess;\n    }\n}\n\npublic class CustomLogFormatter extends BasicLogFormatter {\n    @Override\n    protected Map<String, LogItem<LogContext>> getLogItems(ObjectSettings settings) {\n        Map<String, LogItem<LogContext>> logItems = super.getLogItems(settings);\n        logItems.put(\"$bootProcess$\", new CustomBootProcessItem(settings));\n        return logItems;\n    }\n}\n```",
+    "suppress-init-message": "初期化メッセージが不要な場合は、提供するWriterを元に初期化メッセージを出力しないWriterを作成して対応する。:ref:`log_adaptor` を使用した場合は初期化メッセージが出力されないため本対応は不要。\n\n対応手順:\n1. ベースWriterクラスのソースをプロジェクト側にコピーする（例: :java:extdoc:`FileLogWriter <nablarch.core.log.basic.FileLogWriter>`）\n2. 初期化ログを出力している箇所を削除する（:java:extdoc:`FileLogWriter <nablarch.core.log.basic.FileLogWriter>` の `initializeWriter()` 内の初期化メッセージ出力処理を削除する）\n3. :java:extdoc:`LogWriterSupport.needsToWrite <nablarch.core.log.basic.LogWriterSupport.needsToWrite(nablarch.core.log.basic.LogContext)>` をオーバーライドして初回の初期化メッセージを出力しないよう変更する:\n\n```java\nprivate boolean suppressionWriting = true;\n\n@Override\npublic boolean needsToWrite(final LogContext context) {\n    final String message = context.getMessage();\n    if (suppressionWriting) {\n        if (StringUtil.hasValue(message) && message.startsWith(\"initialized.\")) {\n            suppressionWriting = false;\n            return false;\n        }\n    }\n    return super.needsToWrite(context);\n}\n```\n\n4. 作成したクラスを `log.properties` に設定する:\n\n```properties\nwriterNames=sample\nwriter.sample.className = sample.CustomFileLogWriter\n```"
+  }
+}
