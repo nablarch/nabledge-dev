@@ -13,36 +13,28 @@ from logger import get_logger
 
 
 def _load_mappings(repo: str, version: str) -> dict:
-    """Load RST/MD/XLSX mappings from JSON files.
+    """Load RST/MD/XLSX mappings from version-specific JSON file.
 
-    Merges common.json with version-specific vN.json.
-    Version-specific entries take priority (prepended for rst, override for md/xlsx).
+    Each version has its own complete mapping file (vN.json).
 
     Returns:
         dict with keys: rst, md, xlsx, xlsx_patterns
     """
     mappings_dir = os.path.join(repo, "tools/knowledge-creator/mappings")
+    mapping_path = os.path.join(mappings_dir, f"v{version}.json")
 
-    def load_json_file(path):
-        if not os.path.exists(path):
-            return {}
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+    if not os.path.exists(mapping_path):
+        return {"rst": [], "md": {}, "xlsx": {}, "xlsx_patterns": []}
 
-    common = load_json_file(os.path.join(mappings_dir, "common.json"))
-    version_specific = load_json_file(os.path.join(mappings_dir, f"v{version}.json"))
+    with open(mapping_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-    # rst: version-specific prepended (first match wins)
-    rst = version_specific.get("rst", []) + common.get("rst", [])
-
-    # md/xlsx: version-specific overrides common
-    md = {**common.get("md", {}), **version_specific.get("md", {})}
-    xlsx = {**common.get("xlsx", {}), **version_specific.get("xlsx", {})}
-
-    # xlsx_patterns: version-specific prepended
-    xlsx_patterns = version_specific.get("xlsx_patterns", []) + common.get("xlsx_patterns", [])
-
-    return {"rst": rst, "md": md, "xlsx": xlsx, "xlsx_patterns": xlsx_patterns}
+    return {
+        "rst": data.get("rst", []),
+        "md": data.get("md", {}),
+        "xlsx": data.get("xlsx", {}),
+        "xlsx_patterns": data.get("xlsx_patterns", []),
+    }
 
 
 def load_test_file_ids(repo_path: str, test_file_name: str) -> set:

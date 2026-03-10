@@ -25,30 +25,27 @@ LINE_GROUP_THRESHOLD = 400
 
 
 def load_mappings(repo: str, version: str) -> dict:
-    """Load RST/MD/XLSX mappings from JSON files.
+    """Load RST/MD/XLSX mappings from version-specific JSON file.
 
-    Merges common.json with version-specific vN.json.
-    Version-specific entries take priority (prepended for rst, override for md/xlsx).
+    Each version has its own complete mapping file (vN.json).
     """
     mappings_dir = os.path.join(repo, "tools/knowledge-creator/mappings")
+    mapping_path = os.path.join(mappings_dir, f"v{version}.json")
 
-    def _load(path):
-        if not os.path.exists(path):
-            return {}
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
+    if not os.path.exists(mapping_path):
+        return {"rst": [], "md": {}, "xlsx": {}, "xlsx_patterns": []}
 
-    common = _load(os.path.join(mappings_dir, "common.json"))
-    version_specific = _load(os.path.join(mappings_dir, f"v{version}.json"))
+    with open(mapping_path, encoding="utf-8") as f:
+        data = json.load(f)
 
     rst = [(e["pattern"], e["type"], e["category"])
-           for e in version_specific.get("rst", []) + common.get("rst", [])]
+           for e in data.get("rst", [])]
     md = {k: (v["type"], v["category"])
-          for k, v in {**common.get("md", {}), **version_specific.get("md", {})}.items()}
+          for k, v in data.get("md", {}).items()}
     xlsx = {k: (v["type"], v["category"])
-            for k, v in {**common.get("xlsx", {}), **version_specific.get("xlsx", {})}.items()}
+            for k, v in data.get("xlsx", {}).items()}
     xlsx_patterns = [(e["endswith"], e["type"], e["category"])
-                     for e in version_specific.get("xlsx_patterns", []) + common.get("xlsx_patterns", [])]
+                     for e in data.get("xlsx_patterns", [])]
 
     return {"rst": rst, "md": md, "xlsx": xlsx, "xlsx_patterns": xlsx_patterns}
 
