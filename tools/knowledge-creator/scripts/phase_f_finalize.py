@@ -159,10 +159,15 @@ class PhaseFFinalize:
                 md_lines.append(section_content)
                 md_lines.append("")
 
-                # Add hints as keywords
+                # Add hints as keywords in a collapsible details block
                 hints = entry.get("hints", [])
                 if hints:
-                    md_lines.append(f"*キーワード: {', '.join(hints)}*")
+                    md_lines.append("<details>")
+                    md_lines.append("<summary>keywords</summary>")
+                    md_lines.append("")
+                    md_lines.append(f"{', '.join(hints)}")
+                    md_lines.append("")
+                    md_lines.append("</details>")
                     md_lines.append("")
 
             md_path = f"{self.ctx.docs_dir}/{fi['type']}/{fi['category']}/{fi['id']}.md"
