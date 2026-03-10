@@ -1,13 +1,13 @@
 # nabledge-dev
 
-[Nabledge](https://github.com/nablarch/nabledge) ナレッジ開発リポジトリ
+[Nabledge](https://github.com/nablarch/nabledge) の開発リポジトリ
 
 ## ドキュメント
 
 - 📊 [開発状況](docs/development-status.md) - 現在の進捗とロードマップ
 - 📐 [設計ドキュメント](docs/nabledge-design.md) - アーキテクチャと設計の詳細
-- 🎯 [アクティビティマッピング](docs/activity-mapping.md) - Nabledge とのワークフローと役割分担
-- 🚀 [グランドデザイン](docs/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3製品戦略 ⚠️ **ドラフト - 未承認、変更の可能性あり**
+- 🎯 [アクティビティマッピング](docs/activity-mapping.md) - Nabledge とのワークフローおよび役割分担
+- 🚀 [グランドデザイン](docs/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3製品戦略 ⚠️ **ドラフト - 未承認・変更の可能性あり**
 
 ## 前提条件
 
@@ -31,7 +31,7 @@ cp .env.example .env
 # .env を編集して認証情報を設定する
 ```
 
-## はじめ方
+## 使い方
 
 ```bash
 source .env
@@ -40,16 +40,12 @@ claude
 
 ## ブランチ戦略
 
-このリポジトリはシングルブランチの開発ワークフローを採用しています：
-
-| ブランチ | 目的 | ワークフロー |
-|--------|------|------------|
-| **main** | 開発ブランチ | すべての開発作業はプルリクエスト経由でここにマージされます。変更は [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) に自動同期されます |
+このリポジトリはシングルブランチの開発ワークフローを採用しています。すべての開発作業はプルリクエスト経由で **main** ブランチにマージされ、変更は [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) に自動同期されます。
 
 ### 開発フロー
 
 ```mermaid
-flowchart TD
+flowchart LR
     MAIN["nabledge-dev<br/>main"]
     WB["nabledge-dev<br/>ワーキングブランチ"]
     GHA["GitHub Actions<br/>（自動同期）"]
@@ -60,42 +56,52 @@ flowchart TD
     WB -->|"PR マージ"| MAIN
     MAIN -->|"push"| GHA
     GHA -->|"自動同期"| DEV
-    DEV -->|"develop → main PR をマージ"| RELEASE
+    DEV -->|"main に追い付きマージ"| RELEASE
 ```
 
 ### 開発バージョンのテスト
 
 `nablarch/nabledge:develop` の最新開発バージョンをテストするには：
 
-1. **セットアップスクリプトをダウンロード：**
+**Claude Code の場合：**
+
+1. セットアップスクリプトをダウンロードして実行：
    ```bash
    curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-cc.sh > /tmp/setup-6-cc.sh
-   ```
-
-2. **develop ブランチからインストール：**
-   ```bash
    NABLEDGE_BRANCH=develop bash /tmp/setup-6-cc.sh
    ```
 
-3. **インストールを確認：**
+2. インストールを確認：
    ```bash
-   claude-code
+   claude
    # Claude Code セッション内で：
    /nabledge-6
    ```
 
+**GitHub Copilot の場合：**
+
+1. セットアップスクリプトをダウンロードして実行：
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-ghc.sh > /tmp/setup-6-ghc.sh
+   NABLEDGE_BRANCH=develop bash /tmp/setup-6-ghc.sh
+   ```
+
+2. インストールを確認：
+   ```bash
+   # VS Code でリポジトリを開き、GitHub Copilot Chat で：
+   @workspace /nabledge-6
+   ```
+
 ### リリース手順
 
-リリースは**このリポジトリではなく** **[nablarch/nabledge](https://github.com/nablarch/nabledge)** リポジトリで管理されます。
+バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリでリリース作業を行います。
 
 > nablarch/nabledge:develop での動作確認手順は「[開発バージョンのテスト](#開発バージョンのテスト)」を参照してください。
 
 **nablarch/nabledge リポジトリでの手順：**
 
-1. **リリース準備** - develop ブランチのバージョンファイルと CHANGELOG を更新
-2. **リリース PR の作成** - `develop` から `main` ブランチへ PR を作成
-3. **マージとタグ付け** - レビュー後、PR をマージしてバージョンタグを作成
-4. **リリースの公開** - リリースノートとともに GitHub Release を作成
+1. **差分確認用 PR を作成** - `main` から `develop` へ PR を作成し、変更内容をレビュー
+2. **develop に追い付きマージ** - リリース OK になったら `main` を `develop` に追い付かせるようにマージ（PR はコミットが作られるため PR 経由ではなく直接マージ）
 
 詳細なリリースワークフローは `.claude/rules/release.md` を参照してください。
 
@@ -103,60 +109,41 @@ flowchart TD
 
 ### カスタムスラッシュコマンド
 
-このリポジトリは開発ワークフローを効率化するカスタムスラッシュコマンドを提供しています：
+このリポジトリには開発ワークフローを効率化するカスタムスラッシュコマンドが用意されています：
 
 #### /hi - フル開発ワークフロー
-イシュー/PR からレビュー依頼までの完全なワークフローを実行：
+イシュー起票から PR レビュー依頼まで一通りのワークフローを実行します：
 ```
 /hi 123        # イシュー #123 の作業を開始
 /hi 456        # イシュー/PR #456 の作業を再開
 /hi            # インタラクティブ選択
 ```
-ブランチの作成、変更の実装、テストの実行、PR の作成を行います。
+ブランチの作成・変更の実装・テストの実行・PR の作成まで自動で行います。
 
 #### /fb - レビューフィードバック対応
-PR レビューフィードバックに対応：
+PR レビューのフィードバックに対応します：
 ```
 /fb 456        # PR #456 のレビューに対応
 /fb            # 現在のブランチから自動検出
 ```
-コメントを取得し、修正を実装、コミット、レビュアーに返信します。
+コメントを取得し、修正を実装してコミット後、レビュアーに返信します。
 
 #### /bb - マージとクリーンアップ
-PR の承認・マージとブランチのクリーンアップ：
+PR の承認・マージとブランチの後片付けを行います：
 ```
 /bb 456        # PR #456 をマージしてブランチを削除
 /bb            # 現在のブランチから自動検出
 ```
-PR を承認、マージし、HEAD を main にデタッチしてブランチを削除します。
+PR を承認してマージし、HEAD を main に切り替えてブランチを削除します。
 
 ### nabledge スキルのテスト
 
-`nabledge-test` スキルを使用して nabledge-6 の機能を検証します：
-
-```
-# 単一テストシナリオを実行
-/nabledge-test 6 handlers-001
-
-# 全テストシナリオを実行
-/nabledge-test 6 --all
-
-# 特定カテゴリのテストを実行
-/nabledge-test 6 --category handlers
-```
-
-テストシナリオは `.claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json` で定義されています。結果は `.pr/xxxxx/test-<id>-<timestamp>.md` に保存されます。
-
-nabledge-test スキルは skill-creator の評価手順を使用して以下を検証します：
-- 正しいワークフロー実行（keyword-search、section-judgement）
-- 期待するキーワードがレスポンスに含まれているか
-- ナレッジファイルから適切なセクションが特定されているか
-- LLM の学習データではなくナレッジファイルのコンテンツが使用されているか
+nabledge スキルの性能を改善した場合、`nabledge-test` スキルでベースラインと比較して改善効果を確認します。
 
 ## フィードバック
 
 ### 公開済みの nabledge スキルについて
-[nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) でイシューを報告するか機能リクエストを送ってください。ユーザーが検索・解決策を見つけやすくなります。
+[nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) にイシューを登録するか、機能リクエストをお送りください。他のユーザーも検索・参照しやすくなります。
 
 ### 未リリースの開発作業について
-[nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues) でイシューを報告するか変更について議論してください。
+[nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues) にイシューを登録するか、変更内容について議論してください。
