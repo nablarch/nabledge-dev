@@ -157,6 +157,5 @@
     "public-api-usage": "Nablarchでは公開APIに :java:extdoc:`Published<nablarch.core.util.annotation.Published>` アノテーションが付与されており、どのクラスやメソッドが公開APIかわかるようになっている。\n\n公開APIはバージョンアップ時に後方互換を維持する。ただし、致命的な不具合と脆弱性の対応時には後方互換を維持できない場合もある。",
     "bigdecimal-heap-issue": "文字列からBigDecimalへの変換時に指数表現（例: `9e100000`）を指定すると、:java:extdoc:`BigDecimal#toPlainString() <java.math.BigDecimal.toPlainString()>` の呼び出しや :java:extdoc:`DecimalFormat <java.text.DecimalFormat>` でのフォーマット時に非常に大きい文字列が生成されヒープが圧迫される。\n\nNablarchでは :java:extdoc:`BigDecimal#scale <java.math.BigDecimal.scale()>` を使用して桁数チェックを行い、許容するscaleの範囲（デフォルト: `-9999` 〜 `9999`）を超える指数表現の値を変換しようとした場合に例外を送出してヒープ圧迫を防止する。\n\n許容するscaleの範囲は設定で変更可能。設定は :ref:`repository-environment_configuration` の環境設定ファイルに指定する。\n\n```properties\nnablarch.max_scale=10\n```\n\n（上記は許容範囲を `-10` 〜 `10` に設定する例）",
     "deprecated-api": "以下に該当するAPIには :java:extdoc:`@Deprecated <java.lang.Deprecated>` アノテーションを付与し非推奨とする。\n\n1. **他パッケージに移動したクラス**: 移動前クラスは非推奨とし、移動後クラスに全処理を委譲するため動作は保証される。ただしメソッド追加などは行われないため、移動先クラスを使用することが好ましい。\n2. **不具合やセキュリティ面で問題のあるクラスやメソッド**: Javadocに理由および代わりに使用すべきAPIや実装方法が記載されている。\n\n> **重要**: 不具合や脆弱性については基本的に問題を解消するよう修正する。しかし、クラス構造的な制約や後方互換の維持を目的として問題のあるAPIを非推奨として残す場合がある。非推奨APIとして残した場合は、新たな不具合などが見つかっても対応は行わない。問題が解消された新しいAPIを使用するようアプリケーション側は必ず対応する必要がある。\n\n> **補足**: 本ドキュメントで代替機能の使用を推奨しているものについては、非推奨API（`@Deprecated` の付与）とはしていない。これらのAPIは使用すること自体は問題なく、不具合があった場合もバージョンアップ時に対応するためである。"
-  },
-  "processing_patterns": []
+  }
 }

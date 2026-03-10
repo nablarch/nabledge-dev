@@ -188,6 +188,5 @@
     "optimistic-lock": ":ref:`@Version <universal_dao_jpa_version>` が付いているEntityを更新すると自動で楽観的ロックを行う。排他エラー発生時は `jakarta.persistence.OptimisticLockException` を送出する。\n\n> **重要**: :ref:`@Version <universal_dao_jpa_version>` は数値型のプロパティのみに指定可能。文字列型では正しく動作しない。\n\n排他エラー時の画面遷移は :java:extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` を使用:\n\n```java\n@OnError(type = OptimisticLockException.class,\n         path = \"/WEB-INF/view/common/errorPages/userError.jsp\")\npublic HttpResponse update(HttpRequest request, ExecutionContext context) {\n    UniversalDao.update(user);\n}\n```\n\n> **重要**: :ref:`universal_dao-batch_execute` に記載の通り、一括更新処理（`batchUpdate`）では楽観的ロックは使用できない。",
     "pessimistic-lock": "ユニバーサルDAOでは悲観的ロックの機能を特に提供していない。\n\n悲観的ロックはDBの行ロック（`SELECT FOR UPDATE`）を使用する。行ロックのSQLは :java:extdoc:`UniversalDao#findBySqlFile <nablarch.common.dao.UniversalDao.findBySqlFile(java.lang.Class,java.lang.String,java.lang.Object)>` メソッドを使って実行する。",
     "exclusive-control-concept": "バージョンカラムをどのテーブルに定義するかは業務的な観点で決める必要がある。\n\nバージョン番号を持つテーブルは排他制御の単位ごとに定義し、競合が許容される最大の単位で定義する。例えば「ユーザ」単位でのロックが業務的に許容されるならユーザテーブルにバージョン番号を定義する。単位を大きくすると競合の可能性が高くなり、更新失敗（楽観的ロックの場合）や処理遅延（悲観的ロックの場合）を招く点に注意すること。"
-  },
-  "processing_patterns": []
+  }
 }

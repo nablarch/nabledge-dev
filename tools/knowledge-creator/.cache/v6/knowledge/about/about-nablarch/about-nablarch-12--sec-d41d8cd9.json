@@ -51,6 +51,5 @@
     "provided-package": "[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-oidc)\n\n**パッケージ**: `please.change.me.common.oidc.verification`",
     "overview": "OIDCで発行されるIDトークンを用いた認証サンプル。以下の構成を想定。\n\n- NablarchのRESTfulウェブサービスをバックエンドとして使用\n- IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得しバックエンドに送信\n- 認証成功時にログインセッションを確立し、認証後はステートフルなセッション管理を行う\n- 認証処理は業務アクションで実装\n\n**本サンプルの対象範囲**: Nablarchを使用するバックエンドアプリケーションのみ。フロントエンドアプリケーション（Web、モバイルアプリ等）で行うIDトークンの取得方法は本サンプルの対象外。\n\n対応サービス：\n- [Amazon Cognitoユーザープール](https://aws.amazon.com/jp/cognito/)（以下ユーザープール）→ パッケージ: `please.change.me.common.oidc.verification.cognito`\n- [Azure Active Directory B2C](https://learn.microsoft.com/ja-jp/azure/active-directory-b2c/)（以下ADB2C）→ パッケージ: `please.change.me.common.oidc.verification.adb2c`\n\n本ページはcognitoパッケージをベースとして説明。adb2cパッケージを使用する場合は対応するコンポーネントに読み替えること。\n\n> **補足**: 本サンプルは2024年9月時点のユーザープール・ADB2Cの仕様に合わせて実装。利用するサービスの最新仕様を確認し、適宜カスタマイズすること。",
     "structure": "**インタフェース**:\n\n| インタフェース名 | 概要 |\n|---|---|\n| `IdTokenVerifier` | IDトークンが有効であるか検証する機能を提供 |\n| `SignatureAlgorithmProvider` | トークンの署名検証に使用するアルゴリズムを提供 |\n\n**クラス（コンポーネント）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `CognitoIdTokenVerifier` | CognitoのIDトークンが有効か検証する機能を提供 |\n| `CognitoSignatureAlgorithmProvider` | Cognitoのトークン署名検証に使用するアルゴリズムを提供 |\n| `CognitoRSAKeyProvider` | Cognitoのトークン検証に使用するRSA公開鍵を提供 |\n\n**クラス（業務アクション）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `LoginAction` | 認証処理の業務アクション |\n| `LoginRequestForm` | 認証のリクエスト情報を格納するフォーム |"
-  },
-  "processing_patterns": []
+  }
 }

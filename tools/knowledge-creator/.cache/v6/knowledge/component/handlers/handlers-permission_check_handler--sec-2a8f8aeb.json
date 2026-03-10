@@ -90,6 +90,5 @@
     "request-permission-check": "ログイン中のユーザが現在のリクエスト（リクエストID）に対して権限を持っているかをチェックする（詳細は :ref:`permission_check` 参照）。\n\n- **権限がある場合**: :java:extdoc:`Permission <nablarch.common.permission.Permission>` をスレッドローカルに設定し、後続ハンドラを呼び出す。:ref:`permission_check-server_side_check` や :ref:`permission_check-view_control` で参照可能。\n- **権限がない場合**: :java:extdoc:`Forbidden(403) <nablarch.fw.results.Forbidden>` を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更する場合は、:java:extdoc:`PermissionCheckHandler.setUsesInternalRequestId <nablarch.common.permission.PermissionCheckHandler.setUsesInternalRequestId(boolean)>` で `true` を指定する（デフォルト: `false`）。",
     "error-page-for-forbidden": "権限がない場合に表示するエラーページは、:ref:`http_error_handler` （HTTPエラー制御ハンドラ）で指定する。指定方法は :ref:`HttpErrorHandler_DefaultPage` 参照。",
     "exclude-from-permission-check": "認可チェックを除外したいリクエスト（ログイン前のリクエストなど）は、:java:extdoc:`PermissionCheckHandler.setIgnoreRequestIds <nablarch.common.permission.PermissionCheckHandler.setIgnoreRequestIds(java.lang.String...)>` で指定する。\n\n```xml\n<component name=\"permissionCheckHandler\"\n           class=\"nablarch.common.permission.PermissionCheckHandler\">\n  <property name=\"permissionFactory\" ref=\"permissionFactory\"/>\n  <!-- 認可チェックを除外するリクエストIDをカンマ区切りで指定する -->\n  <property name=\"ignoreRequestIds\" value=\"/action/login,/action/logout\" />\n</component>\n```"
-  },
-  "processing_patterns": []
+  }
 }

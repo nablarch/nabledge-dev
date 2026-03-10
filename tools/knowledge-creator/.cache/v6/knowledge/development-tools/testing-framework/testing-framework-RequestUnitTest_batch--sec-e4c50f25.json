@@ -165,6 +165,5 @@
     "variable-length-file": "可変長ファイルのテストデータの基本的な記述方法は :ref:`batch_request_test` を参照。",
     "resident-batch-handler-config": "> **重要**: 常駐バッチのテスト時は、プロダクション用ハンドラ構成をテスト用に変更すること。変更しないとバッチ実行が終わらず、テストコードに制御が戻らなくなる。\n\n| 変更対象ハンドラ | 変更後ハンドラ | 変更理由 |\n|---|---|---|\n| `RequestThreadLoopHandler` | `OneShotLoopHandler` | RequestThreadLoopHandlerではバッチ実行が終わらないため。OneShotLoopHandlerに差し替えることで、セットアップした要求データを全件処理後にバッチが終了しテストコードに制御が戻る |\n\nプロダクション用設定:\n```xml\n<component name=\"requestThreadLoopHandler\" class=\"nablarch.fw.handler.RequestThreadLoopHandler\">\n  <!-- プロパティへの値設定は省略 -->\n</component>\n```\n\nテスト用設定（プロダクション用と同名コンポーネントで上書き）:\n```xml\n<component name=\"requestThreadLoopHandler\" class=\"nablarch.test.OneShotLoopHandler\" />\n```",
     "directive-defaults": "ファイルのディレクティブがシステム内で統一されている場合、コンポーネント設定ファイルにmap形式でデフォルト値を設定することで、個々のテストデータでのディレクティブ記述を省略できる。\n\n| 対象ファイル種別 | name属性 |\n|---|---|\n| 共通 | `defaultDirectives` |\n| 固定長ファイル | `fixedLengthDirectives` |\n| 可変長ファイル | `variableLengthDirectives` |\n\n```xml\n<!-- ディレクティブ（共通） -->\n<map name=\"defaultDirectives\">\n  <entry key=\"text-encoding\" value=\"Windows-31J\" />\n</map>\n\n<!-- ディレクティブ（固定長） -->\n<map name=\"variableLengthDirectives\">\n  <entry key=\"record-separator\" value=\"NONE\"/>\n</map>\n\n<!-- ディレクティブ（可変長） -->\n<map name=\"variableLengthDirectives\">\n  <entry key=\"quoting-delimiter\" value=\"\" />\n  <entry key=\"record-separator\" value=\"CRLF\"/>\n</map>\n```"
-  },
-  "processing_patterns": []
+  }
 }

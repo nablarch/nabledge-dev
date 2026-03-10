@@ -67,6 +67,5 @@
     "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```",
     "constraints": "- :ref:`multipart_handler` より後ろに設定すること。リクエストパラメータにアクセスするため。\n- :ref:`hidden暗号化<tag-hidden_encryption>` 使用時は、:ref:`thread_context_handler` より後ろに設定すること。スレッドコンテキストからリクエストIDを取得するため。",
     "decryption-error-page": ":ref:`hidden暗号化<tag-hidden_encryption>` の復号処理は以下2ケースで失敗する:\n\n- 暗号化データが改竄された場合（改竄エラー）\n- セッションから復号に使う鍵を取得できない場合（セッション無効化エラー）\n\n:java:extdoc:`NablarchTagHandler<nablarch.common.web.handler.NablarchTagHandler>` の設定でエラーページとステータスコードを指定できる。`sessionExpirePath` を省略した場合は改竄エラー時の設定が使用される。\n\n```xml\n<component name=\"nablarchTagHandler\"\n           class=\"nablarch.common.web.handler.NablarchTagHandler\">\n  <!-- 改竄エラー発生時 -->\n  <property name=\"path\" value=\"/TAMPERING-DETECTED.jsp\" />\n  <property name=\"statusCode\" value=\"400\" />\n  <!-- セッション無効化エラー発生時（省略時は改竄エラー設定が使用される） -->\n  <property name=\"sessionExpirePath\" value=\"/SESSION-EXPIRED.jsp\" />\n  <property name=\"sessionExpireStatusCode\" value=\"400\" />\n</component>\n```"
-  },
-  "processing_patterns": []
+  }
 }

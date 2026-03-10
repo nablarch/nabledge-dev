@@ -87,6 +87,5 @@
     "converter-configuration": "`bodyConverters` プロパティに、プロジェクトで使用するMIMEに対応した `BodyConverter` の実装クラスを設定する。\n\n> **補足**: 設定されたコンバータで変換できないMIMEが使用された場合、ステータスコード `415` を返却する。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.BodyConvertHandler\">\n  <property name=\"bodyConverters\">\n    <list>\n      <!-- application/xmlに対応したリクエスト・レスポンスのコンバータ -->\n      <component class=\"nablarch.fw.jaxrs.JaxbBodyConverter\" />\n      <!-- application/x-www-form-urlencodedに対応したリクエスト・レスポンスのコンバータ -->\n      <component class=\"nablarch.fw.jaxrs.FormUrlEncodedConverter\" />\n    </list>\n  </property>\n</component>\n```",
     "convert-request": "リクエストボディの変換フォーマットはメソッドの `Consumes` アノテーションで決まる。リクエストヘッダの `Content-Type` が `Consumes` のMIMEと異なる場合、ステータスコード `415` を返却する。\n\nこの例では、`MediaType.APPLICATION_JSON` が示す `application/json` に対応した `BodyConverter` でリクエストボディが `Person` に変換される。\n\n```java\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse saveJson(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```",
     "convert-response": "レスポンスボディへの変換フォーマットはメソッドの `Produces` アノテーションで決まる。\n\nこの例では、`MediaType.APPLICATION_JSON` が示す `application/json` に対応した `BodyConverter` でリクエストボディが `Person` に変換される。\n\n```java\nGET\n@Produces(MediaType.APPLICATION_JSON)\npublic List<Person> findJson() {\n    return UniversalDao.findAll(Person.class);\n}\n```"
-  },
-  "processing_patterns": []
+  }
 }

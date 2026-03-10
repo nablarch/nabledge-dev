@@ -76,6 +76,5 @@
     "constraints": ":ref:`body_convert_handler` よりも後ろに設定すること。このハンドラは :ref:`body_convert_handler` がリクエストボディから変換したForm(Bean)に対してバリデーションを行うため。",
     "perform-validation": "バリデーション対象のForm(Bean)を受け取るメソッドに :java:extdoc:`Valid <jakarta.validation.Valid>` アノテーションを設定する。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```",
     "validation-groups": ":java:extdoc:`Valid <jakarta.validation.Valid>` アノテーションを設定したメソッドに :java:extdoc:`ConvertGroup <jakarta.validation.groups.ConvertGroup>` アノテーションを設定することで、Bean Validationのグループを指定できる。:java:extdoc:`ConvertGroup <jakarta.validation.groups.ConvertGroup>` の `from` 属性と `to` 属性の指定は必須。\n\n- `from` 属性: :java:extdoc:`Default.class <jakarta.validation.groups.Default>` 固定（:java:extdoc:`Valid <jakarta.validation.Valid>` アノテーション設定時はDefaultグループとして実行されるため）\n- `to` 属性: 使用するBean Validationグループを指定する\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\n@ConvertGroup(from = Default.class, to = Create.class)\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```"
-  },
-  "processing_patterns": []
+  }
 }

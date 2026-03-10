@@ -206,6 +206,5 @@
     "properties-sqlserver": "```text\nnablarch.db.jdbcDriver=com.microsoft.sqlserver.jdbc.SQLServerDriver\n# jdbc:sqlserver://ホスト名:ポート番号;instanceName=インスタンス名\nnablarch.db.url=jdbc:sqlserver://localhost:1433;instanceName=SQLEXPRESS\nnablarch.db.user=SAMPLE\nnablarch.db.password=SAMPLE\nnablarch.db.schema=SAMPLE\n```",
     "container-production-config": "コンテナ用プロジェクトでは、プロファイルによる環境設定の切り替えは行わない。代わりに、アプリケーションを動かす環境のOS環境変数を使って `env.properties` に宣言した設定値を上書きする。\n\n- OS環境変数未設定の環境では `src/main/resources/env.properties` の設定がそのまま使用される\n- 本番等のコンテナ環境では、OS環境変数を使って `nablarch.db.url` 等の環境依存値を適切に上書きする必要がある\n\nOS環境変数による設定上書き方法: `repository-overwrite_environment_configuration_by_os_env_var` を参照。\n\nプロファイルではなくOS環境変数で設定を切り替えるようにしている理由については、[The Twelve-Factor App の III. 設定](https://12factor.net/ja/config)（外部サイト）を参照。",
     "pom-xml-modification": "pom.xmlの依存関係を修正してRDBMS対応を行うセクション（`customizeDB_pom_dependencies`）。ソースドキュメントでは `customizeDBProfiles` アンカーが定義されており、他のドキュメントから参照される。"
-  },
-  "processing_patterns": []
+  }
 }

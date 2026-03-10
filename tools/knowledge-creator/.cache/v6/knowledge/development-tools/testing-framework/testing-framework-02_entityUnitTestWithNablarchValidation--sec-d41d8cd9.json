@@ -99,6 +99,5 @@
     "single-validation-test-case-table": "文字種・文字列長のテストでカバーできない精査（例: 数値の範囲精査）向けのテスト方法。各プロパティについて入力値と期待するメッセージIDのペアを記述することで任意の値で単項目精査のテストができる。\n\n> **補足**: 本テスト方法は、プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でプロパティにアクセスする親Form）に対しては使用できない。その場合、独自に精査処理のテストを実装すること。\n\nExcelシートに以下のカラムを用意する:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| case | テストケースの簡単な説明 |\n| input1 | 入力値（:ref:`special_notation_in_cell` の記法を使用することで効率的に入力値を作成できる） |\n| messageId | 期待するメッセージID（精査エラーにならない場合は空欄） |\n\n1つのキーに対して複数パラメータを指定する場合は、input2、input3 というようにカラムを追加する。\n\n![テストケース表の例](assets/testing-framework-02_entityUnitTestWithNablarchValidation--sec-d41d8cd9/entityUnitTest_singleValidationDataExample.png)",
     "single-validation-test-method": "スーパークラスの以下のメソッドを呼び出す:\n\n```java\nvoid testSingleValidation(Class entityClass, String sheetName, String id)\n```\n\n使用例:\n\n```java\ntestSingleValidation(ENTITY_CLASS, sheetName, id);\n```",
     "validation-method-test-case": "上記の単項目精査テストでは、エンティティのセッターメソッドに付与されたアノテーションのみが検証され、**アノテーション**: `@ValidateFor` を付与したstaticバリデーションメソッドは実行されない。独自のバリデーションメソッドをエンティティに実装した場合は、別途テストを作成する必要がある。"
-  },
-  "processing_patterns": []
+  }
 }

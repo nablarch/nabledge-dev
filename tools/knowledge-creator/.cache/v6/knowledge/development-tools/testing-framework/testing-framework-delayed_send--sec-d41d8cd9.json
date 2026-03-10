@@ -72,6 +72,5 @@
     "test-data-structure": "テストデータの記述方法は :ref:`message_sendSyncMessage_test` を参照。以下は応答不要メッセージ送信処理で不要な設定（応答電文が存在しないため）:\n\n- testShotsの`responseMessage`\n- `RESPONSE_HEADER_MESSAGES`\n- `RESPONSE_BODY_MESSAGES`",
     "normal-case-test": "応答不要メッセージ送信処理用のアクションクラスは、起動パラメータとしてメッセージのリクエストIDを要求する。このため、testShotsの定義に`KEY=messageRequestId`、`VALUE=メッセージのリクエストID`を追加する必要がある。\n\n![正常系テスト設定（testShots messageRequestId設定例）](assets/testing-framework-delayed_send--sec-d41d8cd9/delayed_send.png)",
     "error-case-test": "testShotsの定義に`KEY=errorCase`、`VALUE=true`を設定。異常系ではメッセージが送信されないため、送信電文の期待値設定は不要。\n\n![異常系テスト設定（testShots errorCase設定例）](assets/testing-framework-delayed_send--sec-d41d8cd9/delayed_send_error.png)\n\n> **補足**: 異常系テストケースを実施する場合、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。\n\n本番用設定:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.fw.messaging.action.AsyncMessageSendAction\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```\n\nテスト用設定（本番設定をテスト用アクションクラスで上書き）:\n```xml\n<component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.test.core.messaging.AsyncMessageSendActionForUt\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```"
-  },
-  "processing_patterns": []
+  }
 }

@@ -86,6 +86,5 @@
     "response-message-storage": "後続ハンドラで作成された応答電文はDBテーブルに格納する。予め応答電文の保存用テーブルを作成しておく必要がある。\n\n| カラム名 | 制約等 | 格納する値 |\n|---|---|---|\n| リクエストID | 主キー / 文字列型 | 要求電文のリクエストID |\n| メッセージID | 主キー / 文字列型 | 要求電文のメッセージID。再送電文の場合はメッセージIDではなく相関メッセージIDを使用する |\n| 宛先キューの論理名 | 文字列型 | 応答電文送信先キューの論理名 (`InterSystemMessage#getDestination()`) |\n| 処理結果コード | 文字列型 | 応答電文の処理結果コード (`ResponseMessage#getStatusCode()`) |\n| 応答電文 | バイナリ型 | 応答電文の内容 (`ResponseMessage#getBodyBytes()`) |\n\nデフォルトのテーブル名・カラム名は `SentMessageTableSchema` を参照。変更する場合は `sentMessageTableSchemaプロパティ` で設定可能。",
     "resent-message-detection": "以下の条件を両方満たす場合、再送電文（処理済み）と判定し、保存済み応答電文を返却する:\n- フレームワーク制御ヘッダの再送要求フラグに値が設定されている\n- 受信した要求電文のリクエストIDとメッセージIDに紐づくデータが応答電文保存テーブルに存在している\n\nフレームワーク制御ヘッダの詳細は :ref:`フレームワーク制御ヘッダ <mom_system_messaging-fw_header>` を参照。\n\n> **重要**: 相手先システムが要求電文を再送する際は以下の制約を満たす必要がある。満たせない場合は本ハンドラを使用できないため、プロジェクト側で再送制御ハンドラを新規作成すること。\n> - 再送電文の相関メッセージIDには、初回送信時の要求電文のメッセージIDを設定すること\n> - フレームワーク制御ヘッダの再送要求フラグに値を設定すること",
     "fw-header-configuration": "応答電文内のフレームワーク制御ヘッダ定義を変更する場合、プロジェクトで拡張したフレームワーク制御ヘッダ定義を設定する。未設定の場合はデフォルトの `StandardFwHeaderDefinition` が使用される。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageResendHandler\">\n  <property name=\"fwHeaderDefinition\">\n    <component class=\"sample.SampleFwHeaderDefinition\" />\n  </property>\n</component>\n```"
-  },
-  "processing_patterns": []
+  }
 }

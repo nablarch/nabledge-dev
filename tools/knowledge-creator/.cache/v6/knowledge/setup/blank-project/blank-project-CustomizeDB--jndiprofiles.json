@@ -108,6 +108,5 @@
     "unit-test-xml": "`src/test/resources/unit-test.xml`にテスティングフレームワークが使用するデータベースの設定が記述されている。デフォルトは汎用のDB設定。Oracleを使用する場合は記述を修正する。\n\n```xml\n<!-- TODO: 使用するDBに合せて設定してください。 -->\n<!-- Oracle用の設定 -->\n<!--\n  <import file=\"nablarch/test/test-db-info-oracle.xml\"/>\n-->\n<!-- 汎用のDB設定 -->\n<component name=\"dbInfo\" class=\"nablarch.test.core.db.GenericJdbcDbInfo\">\n  <property name=\"dataSource\" ref=\"dataSource\"/>\n  <property name=\"schema\" value=\"${nablarch.db.schema}\"/>\n</component>\n```",
     "table-creation": "各プロジェクトの`db/ddl/`ディレクトリにRDBMS別のDDLが用意されている。このDDLを実行してNablarchが使用するテーブルを作成する。\n\n> **補足**: DB2の場合、`create.sql`の先頭に接続先データベースと使用スキーマが記述されているので書き換えてからDDLを実行する。実行は「DB2 コマンド・ウィンドウ」で行う。\n> ```\n> db2 -tvf \"C:\\develop\\myapp-web\\db\\ddl\\db2\\create.sql\"\n> ```\n\n> **補足**: gsp-dba-maven-plugin使用時は以下のコマンドでテーブルを作成できる（別途設定が必要。設定は :doc:`addin_gsp` 参照）。\n> ```bash\n> mvn -P gsp clean generate-resources\n> ```",
     "data-insertion": "各プロジェクトの`db/data/`ディレクトリにInsert文が用意されている。このInsert文を実行してNablarchが使用するデータをInsertする。\n\n> **補足**: DB2の場合、`data.sql`の先頭に接続先データベースと使用スキーマを記述してからSQLを実行する。\n> ```\n> CONNECT TO SAMPLE2;\n> SET SCHEMA sample;\n> ```\n> 実行は「DB2 コマンド・ウィンドウ」で行う。\n> ```\n> db2 -tvf \"C:\\develop\\myapp-web\\db\\data\\data.sql\"\n> ```"
-  },
-  "processing_patterns": []
+  }
 }
