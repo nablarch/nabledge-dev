@@ -65,5 +65,6 @@
     "single-component-property": "単一のコンポーネント内でのみ使用される設定項目の命名ルール:\n\n```\nnablarch.<コンポーネント名>.<プロパティ名>\n```\n\n**例**:\n\n```bash\n# コードを起動時に読み込むかどうか\nnablarch.codeCache.loadOnStartUp=true\n```\n\nこの設定項目は、実際は以下のコンポーネント定義で使用される。\n\n```xml\n<!-- コンポーネント名は 'codeCache' -->\n<component name=\"codeCache\"\n           class=\"nablarch.core.cache.BasicStaticDataCache\">\n\n  <!-- プロパティ名は 'loadOnStartUp' -->\n  <property name=\"loadOnStartup\" value=\"${nablarch.codeCache.loadOnStartUp}\"/>\n\n  <!-- 中略 -->\n</component>\n```\n\nこの場合、`codeCache`がコンポーネント名、`loadOnStartUp`がそのコンポーネントのプロパティ名であり、共通プレフィックス`nablarch.`が付与されるので、`nablarch.codeCache.loadOnStartUp`となる。このルールにより、ある項目がどのコンポーネントで使用されるものかを調査しやすくなる。",
     "multi-component-property": "複数のコンポーネント定義に跨る設定項目の命名ルール:\n\n```\nnablarch.commonProperty.<項目名>\n```",
     "db-table-schema": "Nablarch Application Frameworkが使用するテーブルのスキーマ情報の命名ルール:\n\n```\nnablarch.<Nablarchデフォルトのテーブル名>Table.<各種設定値>\n```\n\n**例**（メッセージ機能のデフォルトテーブル名`MESSAGE`の場合）:\n\n```bash\n# メッセージテーブルのテーブル物理名\nnablarch.messageTable.tableName=MESSAGE\n# メッセージテーブルのIDカラム物理名\nnablarch.messageTable.idColumnName=MESSAGE_ID\n# メッセージテーブルの言語カラム物理名\nnablarch.messageTable.langColumnName=LANG\n# メッセージテーブルのメッセージカラム物理名\nnablarch.messageTable.valueColumnName=MESSAGE\n```\n\n> **補足**: Nablarch Application Frameworkが使用するテーブルをデフォルト値のまま使用する場合は、この設定値を意識する必要はない。"
-  }
+  },
+  "processing_patterns": []
 }

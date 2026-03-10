@@ -59,5 +59,6 @@
     "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n```",
     "constraints": "- :ref:`messaging_context_handler` より後ろに設定すること。本ハンドラはMQへ応答電文を送信するため、MQ接続を確立する :ref:`messaging_context_handler` より後ろに配置する必要がある。\n- :ref:`transaction_management_handler` との位置関係は2相コミットの使用有無で異なる。\n  - **2相コミットを使用する場合**: DBトランザクションとMQ（Jakarta Messaging）トランザクションをトランザクションマネージャでまとめてコミットするため、トランザクション制御前に応答電文を送信する必要がある。:ref:`transaction_management_handler` より後ろに本ハンドラを設定すること。\n  - **2相コミットを使用しない場合**: 本ハンドラが応答を送信する前に業務処理の結果を確定させる必要がある。:ref:`transaction_management_handler` は本ハンドラより後ろに設定すること。",
     "fw-header-configuration": "応答電文内のフレームワーク制御ヘッダ定義を変更する場合、プロジェクトで拡張したフレームワーク制御ヘッダ定義を設定する。未設定の場合は :java:extdoc:`StandardFwHeaderDefinition <nablarch.fw.messaging.StandardFwHeaderDefinition>` が使用される。\n\nフレームワーク制御ヘッダの詳細は :ref:`フレームワーク制御ヘッダ <mom_system_messaging-fw_header>` を参照。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageReplyHandler\">\n  <property name=\"fwHeaderDefinition\">\n    <component class=\"sample.SampleFwHeaderDefinition\" />\n  </property>\n</component>\n```"
-  }
+  },
+  "processing_patterns": []
 }

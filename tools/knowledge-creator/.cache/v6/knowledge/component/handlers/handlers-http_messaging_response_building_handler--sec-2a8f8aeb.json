@@ -95,5 +95,6 @@
     "constraints": "- :ref:`http_response_handler` よりも後ろに設定すること。:ref:`http_response_handler` がこのハンドラで生成した :java:extdoc:`HTTPレスポンスオブジェクト <nablarch.fw.web.HttpResponse>` をクライアントに返却するため。",
     "response-headers": "後続ハンドラで作成された応答電文オブジェクトをもとに以下のレスポンスヘッダを設定する。\n\n| ヘッダ名 | 設定値 |\n|---|---|\n| Status-Code | 応答電文オブジェクトのステータスコード |\n| Content-Type | フォーマッタのMIMEとcharsetを組み合わせた値（例: `application/json;charset=utf-8`） |\n| X-Correlation-Id | 応答電文オブジェクトのヘッダに設定された `CorrelationId` の値 |\n\nContent-TypeはフォーマッタのMIME（:java:extdoc:`DataRecordFormatterSupport#getMimeType() <nablarch.core.dataformat.DataRecordFormatterSupport.getMimeType()>`）とcharset（:java:extdoc:`DataRecordFormatterSupport#getDefaultEncoding() <nablarch.core.dataformat.DataRecordFormatterSupport.getDefaultEncoding()>`）から生成される。取得元は :java:extdoc:`InterSystemMessage.getFormatter() <nablarch.fw.messaging.InterSystemMessage.getFormatter()>`。\n\n> **重要**: このハンドラでは上記に記載のないレスポンスヘッダを設定できない。上記以外のレスポンスヘッダが必要な場合はプロジェクトでハンドラを作成すること。",
     "fw-header-layout": "応答電文内のフレームワーク制御ヘッダの定義を変更する場合、`fwHeaderDefinition` プロパティにプロジェクトで拡張したフレームワーク制御ヘッダ定義を設定する。未設定時はデフォルトの :java:extdoc:`StructuredFwHeaderDefinition <nablarch.fw.messaging.reader.StructuredFwHeaderDefinition>` が使用される。\n\nフレームワーク制御ヘッダの詳細は :ref:`フレームワーク制御ヘッダ <http_system_messaging-fw_header>` を参照。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler\">\n  <property name=\"fwHeaderDefinition\">\n    <component class=\"sample.SampleFwHeaderDefinition\" />\n  </property>\n</component>\n```"
-  }
+  },
+  "processing_patterns": []
 }

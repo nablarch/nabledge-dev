@@ -33,5 +33,6 @@
   "sections": {
     "test-data-directory-change": "テストデータはデフォルトで `test/java` 配下から読み込まれる。コンポーネント設定ファイルに以下のキーを追加することで変更できる。\n\n| キー | 値 |\n|---|---|\n| nablarch.test.resource-root | テスト実行時のカレントディレクトリからの相対パス。セミコロン(;)区切りで複数指定可 |\n\n```bash\nnablarch.test.resource-root=path/to/test-data-dir\n```\n\n複数ディレクトリ指定例:\n\n```text\nnablarch.test.resource-root=test/online;test/batch\n```\n\n- 一時的な変更はVM引数で代替可能: `-Dnablarch.test.resource-root=path/to/test-data-dir`\n- 複数ディレクトリで同名テストデータが存在する場合、最初に発見されたテストデータが読み込まれる",
     "messaging-test-data-converter": "**インタフェース**: `nablarch.test.core.file.TestDataConverter`\n\n上記インタフェースを実装しシステムリポジトリに登録することで、URLエンコーディング等の定型変換処理を追加できる。\n\n| キー | 値 |\n|---|---|\n| TestDataConverter_<データ種別> | TestDataConverterを実装したクラスのクラス名。データ種別はテストデータのfile-typeに指定した値 |\n\n```xml\n<component name=\"TestDataConverter_FormUrlEncoded\"\n           class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>\n```\n\n![URLエンコーディング変換前のExcelファイル記述例](assets/testing-framework-03_Tips--sec-e1e08057/data_convert_example.png)\n\n![URLエンコーディング変換後（テストフレームワーク内部での扱い）](assets/testing-framework-03_Tips--sec-e1e08057/data_convert_internal.png)"
-  }
+  },
+  "processing_patterns": []
 }

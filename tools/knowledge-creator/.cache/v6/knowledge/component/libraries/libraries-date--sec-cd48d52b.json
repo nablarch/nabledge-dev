@@ -118,5 +118,6 @@
     "business-date-overwrite": "バッチ処理の障害再実行時など、再実行するプロセスのみ任意の日付を業務日付として実行できる。`repository-overwrite_environment_configuration` を使用してシステムプロパティで指定する。\n\n> **補足**: ウェブアプリケーションのように全機能が1プロセス内で実行される場合は、単純にデータベースで管理されている日付を変更すればよい。\n\nシステムプロパティ形式: `BasicBusinessDateProvider.<区分>=日付`（日付はyyyyMMdd形式）\n\n例: 区分`batch`の日付を`20160317`に設定する場合: `-DBasicBusinessDateProvider.batch=20160317`",
     "business-date-update": "**クラス**: `nablarch.core.date.BasicBusinessDateProvider`\n\n`SystemRepository` からプロバイダを取得し、`setDate` メソッドで更新する。\n\n```java\n// システムリポジトリからBasicBusinessDateProviderを取得する\nBusinessDateProvider provider = SystemRepository.get(\"businessDateProvider\");\n\n// setDateメソッドを呼び出し、更新する\nprovider.setDate(segment, date);\n```",
     "extensions": "## システム日時の切り替え\n\nユニットテストなどでシステム日時を切り替える手順:\n\n1. `SystemTimeProvider` (`nablarch.core.date.SystemTimeProvider`) を実装したクラスを作成する。\n2. 「システム日時の管理機能を使うための設定」に従い設定する。\n\n## 業務日付の切り替え\n\nユニットテストなどで業務日付を切り替える手順:\n\n1. `BusinessDateProvider` (`nablarch.core.date.BusinessDateProvider`) を実装したクラスを作成する。\n2. 「業務日付管理機能を使うための設定」に従い設定する。"
-  }
+  },
+  "processing_patterns": []
 }

@@ -66,5 +66,6 @@
     "input-to-confirm-screen": "リクエストスコープから入力情報を取得し、FormからEntityへ変換してセッションストアに保存する。\n\n```java\nProjectForm form = context.getRequestScopedVar(\"form\");\nProject project = BeanUtil.createAndCopy(Project.class, form);\nSessionUtil.put(ctx, \"project\", project);\n```",
     "confirm-to-input-screen": "セッションストアから入力情報を取得し、EntityからFormへ変換してリクエストスコープに設定後、セッションストアから削除する。\n\n```java\nProject project = SessionUtil.get(ctx, \"project\");\nProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);\ncontext.setRequestScopedVar(\"form\", form);\nSessionUtil.delete(ctx, \"project\");\n```",
     "registration-execution": "セッションストアから入力情報を取得し、登録処理後にセッションストアから削除する。\n\n```java\nProject project = SessionUtil.get(ctx, \"project\");\n// 登録処理は省略\nSessionUtil.delete(ctx, \"project\");\n```"
-  }
+  },
+  "processing_patterns": []
 }

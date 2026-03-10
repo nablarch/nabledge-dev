@@ -61,5 +61,6 @@
     "transition-to-confirmation": "```java\n// リクエストスコープから入力情報を取得\nProjectForm form = context.getRequestScopedVar(\"form\");\n\n// 更新対象データをセッションストアから取得\nProject project = SessionUtil.get(context, \"project\");\n\n// 入力情報を更新対象データに上書き\nBeanUtil.copy(form, project);\n```",
     "return-to-input": "```java\n// セッションストアから更新対象データを取得\nProject project = SessionUtil.get(ctx, \"project\");\n\n// EntityからFormへ変換\nProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);\n\n// 更新対象データをリクエストスコープに設定\ncontext.setRequestScopedVar(\"form\", form);\n```",
     "execute-update": "```java\n// セッションストアから更新対象データを取得\nProject project = SessionUtil.get(ctx, \"project\");\n\n// 更新処理は省略\n\n// セッションストアから更新対象データを削除\nSessionUtil.delete(ctx, \"project\");\n```"
-  }
+  },
+  "processing_patterns": []
 }

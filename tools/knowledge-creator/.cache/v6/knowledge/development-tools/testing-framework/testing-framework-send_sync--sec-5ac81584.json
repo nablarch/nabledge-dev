@@ -119,5 +119,6 @@
     "multiple-messages-test": "要求電文に複数レコードが存在する場合、ヘッダとレコードを交互に記載する必要がある。\n\n> **重要**: ヘッダ1つに複数の業務データを続けて記載してはならない。ヘッダと業務データの数が一致しないためアサーションエラーが発生する。\n>\n> 誤: ヘッダ → 業務データ(1レコード目) → 業務データ(2レコード目) → 業務データ(3レコード目)\n>\n> 正: ヘッダ → 業務データ(1レコード目) → ヘッダ → 業務データ(2レコード目) → ヘッダ → 業務データ(3レコード目)\n\n複数回電文を送信するテストの作成時の注意:\n- 同一データタイプ（例: `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES`）はそれぞれまとめて記述する。詳細は :ref:`tips_groupId` および :ref:`auto-test-framework_multi-datatype` を参照。\n- 同一リクエストIDの電文は、`no` の値を変えてまとめて記述する。\n\n複数回送信テストの記載例:\n![複数回送信テストの記載例](assets/testing-framework-send_sync--sec-5ac81584/send_sync_ok_pattern_expected.png)\n\n> **補足**: 送信対象のリクエストIDが複数存在する場合、送信順のテストは不可能。異なるリクエストIDの電文がどの順番で送信されてもテストは成功する。",
     "failure-test": "応答電文表のヘッダおよび本文の `no` を除く最初のフィールドに以下の値を設定することで障害系テストが可能。\n\n| 設定値 | 障害内容 | フレームワークの動作 |\n|---|---|---|\n| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生するケースのテスト | **`MessageSendSyncTimeoutException`**（`MessagingException` のサブクラス）を送出する |\n| `errorMode:msgException` | メッセージ送受信エラーが発生するケースのテスト | **`MessagingException`** をスローする |\n\nこの値は、応答電文表の**ヘッダおよび本文両方**の `no` を除く最初のフィールドに記載する。\n\n![障害系テスト設定例](assets/testing-framework-send_sync--sec-5ac81584/send_sync_error.png)\n\n> **補足**: 業務アクション内で `MessagingException` を明示的に制御していない場合、個別のリクエスト単体テストで障害系テストを行う必要はない。",
     "test-result-verification": "要求電文の期待値を定義した場合、フレームワークが以下を自動検証する:\n- 要求電文の内容の検証\n- 要求電文の送信件数の検証"
-  }
+  },
+  "processing_patterns": []
 }

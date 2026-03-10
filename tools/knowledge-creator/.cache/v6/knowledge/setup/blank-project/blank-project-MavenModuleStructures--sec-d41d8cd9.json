@@ -181,5 +181,6 @@
     "pj-batch-structure": "Nablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。\n\npj-webに存在しない追加要素:\n\n```\nmyapp-batch\n|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル\n|\n+---src\n|   +---main\n|   |   +---resources\n|   |   |   |   batch-boot.xml          … 都度起動バッチ起動時の設定ファイル\n|   |   |   |   mail-sender-boot.xml    … メール送信バッチ起動時の設定ファイル\n|   |   |   |   resident-batch-boot.xml … テーブルをキューとして使ったメッセージング起動時の設定ファイル\n|   |   |   |\n|   |   |   \\---entity\n|   |   |\n|   |   \\---scripts                     … バッチ起動用シェルスクリプト（使用は任意）\n```",
     "pj-batch-release": "pj-batchのビルド時に `target` 配下に生成されるzipファイルには、実行可能jarと依存ライブラリが格納される。\n\nリリース手順:\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n```bash\njava -jar <実行可能jarファイル名> ^\n    -diConfig <コンポーネント設定ファイル> ^\n    -requestPath <リクエストパス> ^\n    -userId <ユーザID>\n```",
     "pj-batch-dbless-structure": "DBに接続しないNablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。プロジェクト構成は :ref:`pj-batchプロジェクトの構成 <firstStepBatchProjectStructure>` からDB関連のディレクトリ・ファイルを除いたもの。"
-  }
+  },
+  "processing_patterns": []
 }

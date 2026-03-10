@@ -308,5 +308,6 @@
     "execute-explicitly": "バリデーションを明示的に実行するには `ValidatorUtil#validate` を使用する。バリデーションエラーが発生した場合は `ApplicationException` がスローされる。\n\n```java\nValidatorUtil.validate(form); // エラー時はApplicationExceptionをスロー\n```\n\n> **重要**: `HttpRequest#getParamMap` はアーキテクト向けAPIであり、Actionクラスでの使用は禁止されている。Actionクラスで明示的なバリデーションが必要な場合は、`BeanUtil.createAndCopy` と `ValidatorUtil.validate` をラップしたユーティリティクラスを作成して使用すること。",
     "execute-on-error": "バリデーションエラー発生時に任意の処理を行うには、`ValidatorUtil.validate` が投げる `ApplicationException` をcatchして処理を行い、再スローする。\n\n```java\ntry {\n    form = ProjectValidatorUtil.validate(ProjectForm.class, request);\n} catch (ApplicationException e) {\n    // バリデーションエラー時のカスタム処理\n    // （ログ出力や追加情報の設定など）\n    throw e;\n}\n```",
     "use-groups": "グループを指定してバリデーションを実行するには `ValidatorUtil#validateWithGroup` を使用する。\n\n```java\nValidatorUtil.validateWithGroup(form, SampleForm.Test1.class);\n```\n\n> **重要**: Nablarchでは、グループ機能を使って1つのFormクラスを複数の画面やAPIで共有することは推奨しない。HTMLフォームごと、またはAPIごとにFormクラスを作成すること。"
-  }
+  },
+  "processing_patterns": []
 }

@@ -158,5 +158,6 @@
     "test-case-example": "テストケース: 「有効期限」を過ぎたレコードは「削除フラグ」が1に更新されること（テスト実施日: 2011/01/01）。\n\n使用テーブル（SAMPLE_TABLE）:\n\n| カラム名 | 説明 |\n|---|---|\n| PK1 | 主キー |\n| PK2 | 主キー |\n| COL_A | テスト対象機能では使用しないカラム |\n| COL_B | テスト対象機能では使用しないカラム |\n| COL_C | テスト対象機能では使用しないカラム |\n| COL_D | テスト対象機能では使用しないカラム |\n| 有効期限 | 有効期限を過ぎたデータが処理対象 |\n| 削除フラグ | 有効期限超過レコードの値を'1'に変更 |",
     "full-columns-bad-example": "全カラムを省略せずに記載した場合（悪い例）: COL_A〜COL_Dはテストに無関係だが全て記載されており可読性に劣る。テーブル定義変更時に無関係なカラムも修正が必要になる。\n\n準備データ（悪い例）:\n```\nSETUP_TABLE=SAMPLE_TABLE\nPK_1 | PK_2 | COL_A | COL_B | COL_C | COL_D | 有効期限  | 削除フラグ\n01   | 0001 | 1a    | 1b    | 1c    | 1d    | 20101231 | 0\n02   | 0002 | 2a    | 2b    | 2c    | 2d    | 20110101 | 0\n```\n\n期待値（悪い例）:\n```\nEXPECTED_TABLE=SAMPLE_TABLE\nPK_1 | PK_2 | COL_A | COL_B | COL_C | COL_D | 有効期限  | 削除フラグ\n01   | 0001 | 1a    | 1b    | 1c    | 1d    | 20101231 | 1\n02   | 0002 | 2a    | 2b    | 2c    | 2d    | 20110101 | 0\n```",
     "omitted-columns-good-example": "関係のあるカラムのみを記載した場合（良い例）: テストに無関係なCOL_A〜COL_Dを省略することで可読性が向上し、テーブル定義変更の影響も受けにくくなる。\n\n準備データ（良い例）: 主キー（PK_1, PK_2）とテスト対象カラム（有効期限, 削除フラグ）のみ記載する。テストに無関係なCOL_A〜COL_Dは省略する。省略されたカラムには :ref:`default_values_when_column_omitted` が設定されているものとして扱われる。\n\n期待値（良い例）: `EXPECTED_COMPLETE_TABLE` を使用し、関係のあるカラム（PK_1, PK_2, 有効期限, 削除フラグ）のみ記載する。省略したCOL_A〜COL_Dは :ref:`デフォルト値<default_values_when_column_omitted>` と比較され、更新されていないことを確認できる。`EXPECTED_TABLE` を使用した場合は省略カラムが比較対象外となるのに対し、`EXPECTED_COMPLETE_TABLE` を使用することで省略カラムも含めて確認できる。"
-  }
+  },
+  "processing_patterns": []
 }
