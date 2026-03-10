@@ -171,7 +171,6 @@ class PhaseBGenerate:
             json_schema=self.json_schema,
             log_dir=self.ctx.phase_b_executions_dir,
             file_id=file_id,
-            verbose=self.ctx.verbose
         )
 
         if result.returncode != 0:

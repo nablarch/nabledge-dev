@@ -25,7 +25,6 @@ class Context:
     test_file: str = None
     max_rounds: int = 1
     run_id: str = None
-    verbose: bool = False
 
     def __post_init__(self):
         if not os.path.isdir(self.repo):
@@ -144,8 +143,6 @@ def main():
                         help="Detect source changes and regenerate affected files")
     parser.add_argument("--run-id", type=str, default=None,
                         help="Run ID (auto-generated from timestamp if omitted; pass existing ID to resume)")
-    parser.add_argument("--verbose", action="store_true",
-                        help="Enable verbose CC logging (stream-json + tool call recording)")
     parser.add_argument("--command", type=str, default=None,
                         choices=["gen", "regen", "fix"],
                         help="kc command (used by kc.sh)")
@@ -202,7 +199,7 @@ def main():
         ctx = Context(
             version=v, repo=repo_root, concurrency=args.concurrency,
             test_file=args.test, max_rounds=args.max_rounds,
-            run_id=args.run_id, verbose=args.verbose,
+            run_id=args.run_id,
         )
         os.makedirs(ctx.log_dir, exist_ok=True)
 
@@ -271,7 +268,6 @@ def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False):
         yes=True,
         regen=regen,
         run_id=ctx.run_id,
-        verbose=ctx.verbose,
     )
 
 
@@ -584,7 +580,7 @@ def _collect_file_details(ctx) -> list:
     def load_exec_rounds(executions_dir, file_id):
         """指定ファイルのexecution logsをタイムスタンプ順に返す（ラウンド順）。"""
         pattern = os.path.join(executions_dir, f'{file_id}_*.json')
-        paths = sorted(_glob.glob(pattern))
+        paths = sorted(p for p in _glob.glob(pattern) if not p.endswith('.out.json'))
         rounds = []
         for p in paths:
             try:
