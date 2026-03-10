@@ -123,7 +123,8 @@ gsp-dba-maven-pluginの依存関係をH2 JDBCドライバから使用するRDBMS
 mvn -P gsp clean generate-resources
 ```
 
-以下のゴールが順に実行される:
+以下のゴールが実行されるように、各アーキタイプから生成したプロジェクトのpom.xmlに記述されている。
+
 - `generate-ddl`
 - `execute-ddl`
 - `generate-entity`
@@ -132,7 +133,7 @@ mvn -P gsp clean generate-resources
 
 成功すると`gsp-target/output/`ディレクトリにダンプファイルを含むjarファイルが生成される。
 
-> **ヒント**: 実行に失敗する場合は、RDBMS固有の制限事項に抵触していないか確認する。
+> **ヒント**: 実行に失敗する場合は、RDBMS固有の制限事項に抵触していないか確認する。RDBMS固有の制限事項については、[https://github.com/coastland/gsp-dba-maven-plugin (外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin)の「ゴール共通のパラメータ」を参照。
 
 **2. 以下のコマンドを実行して、ダンプファイルをローカルリポジトリへインストールする。**
 

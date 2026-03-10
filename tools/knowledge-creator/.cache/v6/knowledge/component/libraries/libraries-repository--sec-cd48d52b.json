@@ -33,7 +33,11 @@
         "setterインジェクション",
         "オブジェクト初期化",
         "システムリポジトリ",
-        "DIコンテナ機能"
+        "DIコンテナ機能",
+        "オブジェクト管理",
+        "設定値管理",
+        "外部ファイル",
+        "環境依存"
       ]
     },
     {
@@ -114,7 +118,7 @@
     }
   ],
   "sections": {
-    "overview": "DIコンテナ機能により、XML（:ref:`repository-root_node` 参照）または :ref:`アノテーションを付与したクラス <repository-inject-annotation-component>` を元にオブジェクトを構築できる。構築されるオブジェクトは**シングルトン**となる。\n\nDIコンテナ機能でできること:\n- :ref:`setterインジェクション <repository-definition_bean>`\n- :ref:`文字列・数値・真偽値の使用 <repository-property_type>`\n- :ref:`ListやMapのインジェクション <repository-map_list>`\n- :ref:`型や名前が一致するsetterへの自動インジェクション <repository-autowired>`\n- :ref:`ファクトリインジェクション <repository-factory_injection>`\n- :ref:`アノテーション付与クラスのオブジェクト構築 <repository-inject-annotation-component>`\n- :ref:`環境依存値の管理 <repository-environment_configuration>`\n\nアプリケーションからはDIコンテナに直接アクセスせず、システムリポジトリ経由でアクセスする（:ref:`repository-use_system_repository` 参照）。\n\nオブジェクト構築後に任意の初期化処理を実行でき、オブジェクトの依存関係に基づく初期化順を指定できる（:ref:`repository-initialize_object` 参照）。",
+    "overview": "システムリポジトリは、アプリケーションを実装する際に様々な箇所で使用されるオブジェクトや、設定値などを管理する機能を提供する。\n\nこの機能では、以下のことができる。\n- 環境毎に異なる可能性のあるロジック（生成されるクラスやプロパティの値）を、外部ファイルに定義できる。\n- 外部ファイルの定義を元に、オブジェクト間の関連を構築できる。（DIコンテナ機能を持つ）\n\nDIコンテナ機能により、XML（:ref:`repository-root_node` 参照）または :ref:`アノテーションを付与したクラス <repository-inject-annotation-component>` を元にオブジェクトを構築できる。構築されるオブジェクトは**シングルトン**となる。\n\nDIコンテナ機能でできること:\n- :ref:`setterインジェクション <repository-definition_bean>`\n- :ref:`文字列・数値・真偽値の使用 <repository-property_type>`\n- :ref:`ListやMapのインジェクション <repository-map_list>`\n- :ref:`型や名前が一致するsetterへの自動インジェクション <repository-autowired>`\n- :ref:`ファクトリインジェクション <repository-factory_injection>`\n- :ref:`アノテーション付与クラスのオブジェクト構築 <repository-inject-annotation-component>`\n- :ref:`環境依存値の管理 <repository-environment_configuration>`\n\nアプリケーションからはDIコンテナに直接アクセスせず、システムリポジトリ経由でアクセスする（:ref:`repository-use_system_repository` 参照）。\n\nオブジェクト構築後に任意の初期化処理を実行でき、オブジェクトの依存関係に基づく初期化順を指定できる（:ref:`repository-initialize_object` 参照）。",
     "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-repository</artifactId>\n</dependency>\n```",
     "root-node-definition": "コンポーネント設定ファイル(XML)のルートノードは `component-configuration` とする。`schemaLocation` を正しく設定するとIDEで各要素や属性のドキュメント参照や補完機能が使用できる。\n\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration /component-configuration.xsd\">\n</component-configuration>\n```",
     "definition-bean": "`component` 要素でJava Beansオブジェクトを定義する。\n\n- `class` 属性: DIコンテナで管理するクラスのFQCN\n- `name` 属性: 任意の名前\n- `property` 子要素: setterインジェクション（`ref` 属性で他のcomponentを参照、`value` 属性でリテラル値設定、子要素に `component` を定義することも可能）\n\n```xml\n<component name=\"sample\" class=\"sample.SampleBean\" />\n\n<component name=\"component\" class=\"sample.SampleComponent\">\n  <property name=\"sample\" ref=\"sample\" />\n  <property name=\"obj\">\n    <component class=\"sample.SampleObject\" />\n  </property>\n  <property name=\"limit\" value=\"100\" />\n</component>\n```\n\n> **重要**: 生成されるインスタンスはシングルトンとなる（プロトタイプでない）。アプリケーション終了まで破棄されない。プロトタイプと勘違いした場合、あるリクエストでユーザAの入力値をコンポーネントに設定し、別ユーザBのリクエストでその値を使用してしまう重大な不具合が発生しうる。コンポーネントの状態を変更・共有する場合はスレッドセーフでなければならない。\n\n> **補足**: `component` 要素単位でインスタンスが生成される。同じクラスを複数の `component` 要素で定義すると、それぞれ別のインスタンスが生成される。\n\n> **補足**: ネストして定義したcomponentもリポジトリのグローバル領域に保持されるため、名前を指定してオブジェクトを取得できる（:ref:`repository-get_object` 参照）。\n\n> **補足**: staticなプロパティ（staticなsetterメソッド）へのインジェクションは行われない。インジェクション対象がstaticの場合、DIコンテナ構築時に例外が送出される。",

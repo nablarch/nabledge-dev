@@ -166,7 +166,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 | httpAccessLogFormatter.dispatchingClassTargets | | 下記参照 | ディスパッチ先クラス決定後の出力項目（カンマ区切り） |
 | httpAccessLogFormatter.endTargets | | 下記参照 | リクエスト処理終了時の出力項目（カンマ区切り） |
 | httpAccessLogFormatter.datePattern | | `yyyy-MM-dd HH:mm:ss.SSS` | 開始日時・終了日時のパターン（SimpleDateFormat構文） |
-| httpAccessLogFormatter.maskingPatterns | | | マスク対象パラメータ名・変数名の正規表現（カンマ区切り、大文字小文字区別なし） |
+| httpAccessLogFormatter.maskingPatterns | | | マスク対象パラメータ名・変数名の正規表現（カンマ区切り、大文字小文字区別なし、部分一致）。リクエストパラメータとセッションスコープ情報の両方に適用。例: `password` と指定すると `password`, `newPassword`, `password2` 等にマッチする |
 | httpAccessLogFormatter.maskingChar | | `*` | マスクに使用する文字 |
 | httpAccessLogFormatter.beginOutputEnabled | | `true` | リクエスト処理開始時の出力有効/無効 |
 | httpAccessLogFormatter.parametersOutputEnabled | | `true` | hiddenパラメータ復号後の出力有効/無効 |

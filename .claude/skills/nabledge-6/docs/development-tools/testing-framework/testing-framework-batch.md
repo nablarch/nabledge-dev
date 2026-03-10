@@ -102,60 +102,137 @@
 </component>
 ```
 
-## テストクラスの作成ルールと分割方針
+**具体例**: 以下のレコード構成のファイル（文字コード`Windows-31J`、レコード区切り`CRLF`）の場合
+- ヘッダレコード1件
+- データレコード2件
+- トレーラレコード1件
+- エンドレコード1件
 
-テストクラス作成ルール: (1) パッケージはテスト対象取引のパッケージ (2) クラス名は`{取引ID}Test` (3) `BatchRequestTestSupport`を継承
+`SETUP_FIXED=work/members.txt`
 
-テストケース分割の基本方針: 1シートにつき1テストケース
+| ディレクティブ | 値 |
+|---|---|
+| text-encoding | Windows-31J |
+| record-separator | CRLF |
 
-**クラス**: `nablarch.test.core.batch.BatchRequestTestSupport`
+| レコード種別 | フィールド名称 | データ型 | フィールド長 | データ |
+|---|---|---|---|---|
+| ヘッダ | レコード区分 | 半角数字 | 1 | 0 |
+| ヘッダ | FILLER | 半角 | 10 | |
+| データ | レコード区分 | 半角数字 | 1 | 1 |
+| データ | 会員番号 | 半角数字 | 10 | 0000000001 |
+| データ | 入会日 | 半角数字 | 8 | 20100101 |
+| データ | レコード区分 | | | 1 |
+| データ | 会員番号 | | | 0000000002 |
+| データ | 入会日 | | | 20100102 |
+| トレーラ | レコード区分 | 半角数字 | 1 | 8 |
+| トレーラ | レコード件数 | 数値 | 5 | 2 |
+| トレーラ | FILLER | 半角 | 4 | |
+| エンド | レコード区分 | 半角数字 | 1 | 9 |
+| エンド | FILLER | 半角 | 10 | |
+
+> **補足**: 同一レコード種別に複数のデータレコードがある場合、フィールド定義（データ型・フィールド長）は最初の行にのみ記載し、2件目以降の行は値のみを記載する。
+
+## テストクラスの作成要件
+
+バッチ処理の取引単体テストは、自動テストフレームワークを使用してリクエスト単体テストを連続実行することにより、取引単位でのテストを行う。
+
+テストクラスは以下の条件を満たすように作成する。
+
+- テストクラスのパッケージはテスト対象取引のパッケージとする。
+- `<取引ID>Test` というクラス名でテストクラスを作成する。
+- `BatchRequestTestSupport` を継承する。
+
+例: テスト対象取引の取引IDが `B21AC01` の場合
 
 ```java
-package nablarch.sample.ss21AC01;
+package nablarch.sample.ss21AC01
+
 import nablarch.test.core.batch.BatchRequestTestSupport;
 
 public class B21AC01Test extends BatchRequestTestSupport {
 ```
 
+## テストケース分割方針
+
+基本的には、**1シートにつき1テストケース**とする。以下、例外事項を示す。
+
+**複雑なテストケースの場合**: テストデータが大量であったり、1取引に含まれる処理が多い場合に、1つのシートに全てのテストデータを詰め込むとシート内にデータが多くなり過ぎて、テストデータの可読性が落ちる場合がある。このような場合は、1ケースを複数シートに分割して記述してもよい。
+
+**非常に簡単なテストケースの場合**: 非常に簡単なテストケースで、テストデータ量が少ない場合、1シートに全テストケースを含めてもよい。
+
 ## 基本的な記述方法
 
-`execute()` でテストを実行する。シートは `LIST_MAP=testShots` 形式で記述する。
+基本的には、1テストケースを1シートにまとめて記述する。1シート内に複数のバッチ実行を記述することにより、取引単位のテストとなる。
+
+以下の例では、3つのバッチ（ファイル入力バッチ、ユーザ削除バッチ、ファイル出力バッチ）で構成される取引を処理している。
 
 ```java
+/** 正常終了するケース */
 @Test
 public void testSuccess() {
     execute();
 }
 ```
 
-testShotsの列: `no`, `description`, `expectedStatusCode`, `setUpTable`, `setUpFile`, `expectedTable`, `expectedFile`, `requestPath`
+**【testSuccessシート】**
+
+`LIST_MAP=testShots` で以下の列を定義する。
+
+| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath |
+|----|-------------|-------------------|------------|-----------|---------------|--------------|-------------|
+| 1 | ファイル入力 | 100 | default | default | default | | fileInputBatch |
+| 2 | ユーザ削除 | 100 | default | | default | | userDeleteBatch |
+| 3 | ファイル出力 | 100 | default | | fileInputBatch | default | fileOutputBatch |
 
 ## 1テストケースを複数シートに分割する場合
 
-`execute("シート名")` でシートを指定してバッチを実行できる。各シートは独立した `LIST_MAP=testShots` を持つ。
+1テストケースを複数シートに分割する場合、`execute("シート名")` でシート名を指定して実行する。
 
 ```java
 @Test
 public void testSuccess() {
+    // 入力ファイルをテンポラリテーブルに登録
     execute("testSuccess_fileInput");
+
+    // テンポラリテーブルの情報をユーザ関連テーブルを削除
     execute("testSuccess_userDelete");
+
+    // 結果をファイル出力
     execute("testSuccess_fileOutput");
 }
 ```
 
+各シートは独立した `LIST_MAP=testShots` テーブルを持つ。例:
+
+**【testSuccess_fileInputシート】**: no, case, expectedStatusCode, setUpTable, setUpFile, requestPath
+
+**【testSuccess_userDeleteシート】**: no, case, expectedStatusCode, setUpTable, expectedTable, requestPath
+
+**【testSuccess_fileOutputシート】**: no, case, expectedStatusCode, setUpTable, outFile, requestPath
+
 ## 1シートに複数ケースを含める場合
 
-noを`1-1`,`1-2`,`2-1`,`2-2`のように番号でグループ化することで、1シートに複数テストケースのデータを記述できる。
+非常に簡単なテストケースの場合は、複数ケースを1シートにまとめてもよい。グループIDを使用することで1シートに複数ケースのテストデータを記述できる。
 
-> **補足**: グループIDを使用することで1シートに複数ケースのテストデータを記述できる。詳細は :ref:`tips_groupId` を参照。
+```java
+/** 正常終了するケース */
+@Test
+public void testSuccess() {
+    execute();
+}
+```
 
-## 複雑なテストケースの場合
+**【testSuccessシート】** — noの形式は「グループID-連番」(例: 1-1, 1-2, 2-1, 2-2)
 
-テストデータが大量または1取引に含まれる処理が多い場合、1シートに全テストデータを詰め込むと可読性が低下する。このような場合は1ケースを複数シートに分割して記述してもよい。
+| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath |
+|-----|-------------|-------------------|------------|-----------|---------------|--------------|-------------|
+| 1-1 | ファイル入力 | 100 | shot1 | shot1 | | | fileInputBatch |
+| 1-2 | ユーザ削除 | 100 | | | shot1 | | userDeleteBatch |
+| 2-1 | ファイル入力（0件） | 100 | shot2 | shot2 | | | fileInputBatch |
+| 2-2 | ユーザ削除（0件） | 100 | | | shot2 | | userDeleteBatch |
 
-## 非常に簡単なテストケースの場合
-
-非常に簡単なテストケースでテストデータ量が少ない場合、1シートに全テストケースを含めてもよい。
+グループIDの詳細は `tips_groupId` を参照。
 
 ## 可変長ファイル（CSVファイル）の準備
 
@@ -228,7 +305,7 @@ public void testResigster() {
 
 ## テスト起動方法
 
-クラス単体テストと同様に、通常のJUnitテストと同じように実行する。
+クラス単体テストと同様。通常のJUnitテストと同じように実行する。
 
 ## テスト結果検証
 
@@ -257,5 +334,16 @@ public void testResigster() {
 | message**N**（Nは1以上の整数） | 期待するログに含まれる文言（複数指定可、連続した値であること） |
 
 > **補足**: logLevel と全messageN の条件は**AND**条件。logLevelが不一致の場合、または期待する文言が1つでもログ出力されていない場合、期待ログとは見なされない。
+
+具体例（２種類のログ出力を期待する場合）:
+
+`LIST_MAP=expectedLogMessages`
+
+| logLevel | message1 | message2 | message3 |
+|---|---|---|---|
+| INFO | NB11AA0101 | 処理を開始します。 | 会員ID=[0001] |
+| FATAL | NB11AA0109 | エラーが発生しました。 | |
+
+messageカラムは空でも可（FATALの例ではmessage3が空）。
 
 > **重要**: `expectedLog` 欄にグループIDを記載した場合、必ず期待するメッセージを1行以上設定すること。メッセージが0行の場合、またはグループIDに紐付くLIST_MAP要素が存在しない場合、フレームワークは例外を送出する。

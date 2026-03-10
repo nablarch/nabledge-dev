@@ -361,7 +361,7 @@ writerNames=sample
 writer.sample.className = sample.CustomFileLogWriter
 ```
 
-## JSON形式の構造化ログとして出力する
+## LogWriterでのJsonLogFormatter設定
 
 LogWriterのフォーマッタを `JsonLogFormatter` に変更することでJSON形式ログを出力できる。
 
@@ -430,9 +430,9 @@ LOGGER.logInfo("addition fields", structuredArgs);
 {"date":"2021-02-04 12:34:56.789","logLevel":"INFO","message":"addition fields","key1":"value1","key2":123,"key3":true,"key5":"2021-02-04 12:34:56.789"}
 ```
 
-### 各種ログのJSON版フォーマッタ
+## 各種ログのJSON版フォーマッタ
 
-各種ログのフォーマッタをJSON用に差し替えることで各種ログもJSON形式で出力できる。
+各種ログのフォーマッタをJSON用に差し替えることで各種ログもJSON形式で出力できる。それぞれのフォーマッタの具体的な設定方法は各ログのリンク先を参照のこと。
 
 | ログの種類 | フォーマッタ |
 |---|---|
@@ -443,11 +443,11 @@ LOGGER.logInfo("addition fields", structuredArgs);
 | :ref:`HTTPアクセスログ（RESTfulウェブサービス用） <jaxrs_access_log-json_setting>` | `JaxRsAccessJsonLogFormatter` |
 | :ref:`メッセージングログ <messaging_log-json_setting>` | `MessagingJsonLogFormatter` |
 
-### NablarchバッチのJSON出力設定
+## NablarchバッチのJSON出力設定
 
-Nablarchバッチでは上記フォーマッタ設定に加えて以下の3つの設定が必要。
+Nablarchバッチでは上述のフォーマッタ設定に加えて以下の3つの設定が必要。
 
-#### ApplicationSettingJsonLogFormatter
+### ApplicationSettingJsonLogFormatter
 
 `ApplicationSettingLogFormatter` をJSON形式で出力するには `ApplicationSettingJsonLogFormatter` に切り替える。
 
@@ -467,7 +467,7 @@ applicationSettingLogFormatter.appSettingWithDateTargets=systemSettings,business
 applicationSettingLogFormatter.systemSettingItems=dbUser,dbUrl,threadCount
 ```
 
-#### LauncherJsonLogFormatter
+### LauncherJsonLogFormatter
 
 `LauncherLogFormatter` をJSON形式で出力するには `LauncherJsonLogFormatter` に切り替える。
 
@@ -489,7 +489,7 @@ launcherLogFormatter.startLogMsgLabel=BATCH BEGIN
 launcherLogFormatter.endLogMsgLabel=BATCH END
 ```
 
-#### JsonCommitLogger
+### JsonCommitLogger
 
 コミット件数をJSON形式でログ出力するには `JsonCommitLogger` をコンポーネントとして定義する（デフォルトは `BasicCommitLogger`）。コンポーネント名は `commitLogger` で定義すること。
 
@@ -515,12 +515,12 @@ launcherLogFormatter.endLogMsgLabel=BATCH END
 
 障害が発生した場合、強制出力したログに加えて同一ログファイルに障害ログを出力する。障害コードを設定することで障害通知ログのフォーマット（障害コードを含む）で出力可能。障害コードの設定を推奨する。
 
-| プロパティ名 | 障害の内容 | ログレベル | デフォルトメッセージ |
-|---|---|---|---|
-| failureCodeCreateLockFile | ロックファイルが生成できない | FATAL | failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}]. |
-| failureCodeReleaseLockFile | 生成したロックファイルを解放(削除)できない | FATAL | failed to delete lock file. lock file path=[{0}]. |
-| failureCodeForceDeleteLockFile | 解放されないロックファイルを強制削除できない | FATAL | failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}]. |
-| failureCodeInterruptLockWait | ロック取得待ちでスレッドをスリープしている際に割り込みが発生 | FATAL | interrupted while waiting for lock retry. |
+| プロパティ名 | 障害の内容 | ログレベル | メッセージの設定例 | デフォルトメッセージ |
+|---|---|---|---|---|
+| failureCodeCreateLockFile | ロックファイルが生成できない | FATAL | ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。({0}にはロックファイルのパスが設定される) | failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}]. |
+| failureCodeReleaseLockFile | 生成したロックファイルを解放(削除)できない | FATAL | ロックファイルの削除に失敗しました。ロックファイルパス=[{0}]。({0}にはロックファイルのパスが設定される) | failed to delete lock file. lock file path=[{0}]. |
+| failureCodeForceDeleteLockFile | 解放されないロックファイルを強制削除できない | FATAL | ロックファイルの強制削除に失敗しました。ロックファイルが不正に開かれています。ロックファイルパス=[{0}]。({0}にはロックファイルのパスが設定される) | failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}]. |
+| failureCodeInterruptLockWait | ロック取得待ちでスレッドをスリープしている際に割り込みが発生 | FATAL | ロック取得中に割り込みが発生しました。 | interrupted while waiting for lock retry. |
 
 > **重要**: 障害コードを設定した場合、障害通知ログのフォーマットで同一ログファイルにログが出力されるが、障害解析ログは出力されない。
 

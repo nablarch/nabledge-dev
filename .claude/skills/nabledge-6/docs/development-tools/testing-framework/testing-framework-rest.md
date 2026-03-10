@@ -87,18 +87,19 @@ public void プロジェクト更新取引() {
 }
 ```
 
-## Cookieなど前のレスポンスの情報を引き継ぐ方法
+## RequestResponseProcessorの実装クラスを作成する
 
-取引単体テストで前のレスポンス値（セッションID、CSRFトークン等）を次のリクエストに引き継ぐには `RequestResponseProcessor` を実装する。
+取引単体テストで前のレスポンス値（セッションID、CSRFトークン等）を次のリクエストに引き継ぐには `RequestResponseProcessor` インターフェースの実装クラスを作成する。
 
 **提供実装クラス**:
 - `RequestResponseCookieManager`: `Set-Cookie`ヘッダからプロパティで指定した名前のクッキーを抽出し、`Cookie`ヘッダに引き継ぐ
 - `NablarchSIDManager`: :ref:`session_store_handler` のデフォルトクッキー名 `NABLARCH_SID` でセッションIDを抽出。クッキー名をデフォルトから変更した場合は `RequestResponseCookieManager` を使用してクッキー名を明示する
-- `ComplexRequestResponseProcessor`: 複数の `RequestResponseProcessor` を組み合わせる場合に使用
 
-> **重要**: NablarchのDIコンテナではインスタンスはシングルトンになるため、明示的に状態を初期化しないと複数テストケース間で状態が引き継がれる。フレームワークはテストケースごとに `RequestResponseProcessor#reset` を呼び出す。複数テストケース間で状態を引き継ぎたくない場合は `reset()` に初期化処理を実装する。内部状態を持たない場合や複数テストケース間で状態を共有したい場合は、`reset()` を何もしないメソッドにしてよい。
+> **重要**: NablarchのDIコンテナではインスタンスはシングルトンになるため、明示的に状態を初期化しないと複数テストケース間で状態が引き継がれる。フレームワークはテストケースごとに `RequestResponseProcessor#reset` を呼び出す。複数テストケース間で状態を引き継ぎたくない場合は `reset()` に初期化処理を実装する。内部状態を持たない場合や複数のテストケース間で状態を共有したい場合は、`reset()` を何もしないメソッドにしてよい。
 
-`defaultProcessor` という名前で設定された `RequestResponseProcessor` は、内蔵サーバへのリクエスト送信前に `RequestResponseProcessor#processRequest` が、レスポンス受信後に `RequestResponseProcessor#processResponse` が実行される。
+## コンポーネント設定ファイルのdefaultProcessor設定
+
+実装クラスをコンポーネント設定ファイルに `defaultProcessor` という名前で設定する。
 
 単一プロセッサの設定例:
 ```xml
@@ -107,7 +108,7 @@ public void プロジェクト更新取引() {
 </component>
 ```
 
-複数プロセッサの設定例:
+複数の `RequestResponseProcessor` を設定したい場合は `ComplexRequestResponseProcessor` を使用する:
 ```xml
 <component name="defaultProcessor" class="nablarch.test.core.http.ComplexRequestResponseProcessor">
   <property name="processors">
@@ -121,3 +122,5 @@ public void プロジェクト更新取引() {
   </property>
 </component>
 ```
+
+`defaultProcessor` という名前で設定された `RequestResponseProcessor` は、内蔵サーバへのリクエスト送信前に `RequestResponseProcessor#processRequest` が、レスポンス受信後に `RequestResponseProcessor#processResponse` が実行される。

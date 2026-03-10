@@ -19,7 +19,7 @@ SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further detail
 
 ## SLF4Jアダプタを使用する
 
-SLF4JはランタイムでSLF4Jアダプタを自動検出するため、依存モジュールに追加するだけで使用可能。
+SLF4Jが実行時に必要なクラスを自動で検出するため、依存モジュールに追加するだけで使用可能。
 
 **モジュール**:
 ```xml

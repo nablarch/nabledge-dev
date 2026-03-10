@@ -24,8 +24,6 @@ mvn compile
 mvn dependency:copy-dependencies -DoutputDirectory=lib
 ```
 
-上記コマンドはツール実行前にも毎回実行すること。
-
 続いて `master-data-setup-tool.zip` をダウンロードし、プロジェクトのディレクトリ（pom.xmlが存在するディレクトリ）にディレクトリ付きで展開する。
 
 ## プロパティファイルの書き換え
@@ -39,6 +37,13 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 | tool/db/data/master_data-log.properties | ログ出力プロパティファイル |
 | tool/db/data/master_data-app-log.properties | ログ出力プロパティファイル |
 | tool/db/data/MASTER_DATA.xlsx | マスタデータファイル |
+
+本ツールを実行する前に以下のコマンドを実行する。
+
+```text
+mvn compile
+mvn dependency:copy-dependencies -DoutputDirectory=lib
+```
 
 `master_data-build.properties` にマスタデータ自動復旧機能が使用するバックアップスキーマ名を設定する:
 

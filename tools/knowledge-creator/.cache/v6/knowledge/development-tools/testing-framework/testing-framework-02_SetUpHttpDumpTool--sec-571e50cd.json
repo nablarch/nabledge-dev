@@ -72,11 +72,11 @@
     }
   ],
   "sections": {
+    "prerequisites": "本ツールの使用前提:\n- Java・Mavenがインストール済みであること\n- プロジェクトがMavenで管理されていること\n- htmlファイルがブラウザに関連付けされていること\n- ブラウザのプロキシ設定で、localhostが除外されていること",
+    "provision-method": "提供JAR: `nablarch-testing-XXX.jar`、`nablarch-testing-jetty12-XXX.jar`\n\npom.xmlのdependencies要素以下の記述があることを確認する:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-testing</artifactId>\n  <scope>test</scope>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-testing-jetty12</artifactId>\n  <scope>test</scope>\n</dependency>\n```\n\nJAR取得コマンド:\n```text\nmvn dependency:copy-dependencies -DoutputDirectory=lib\n```\n\n`httpDump.bat` をpom.xmlと同じディレクトリに配置する。",
     "preference-screen": "EclipseにhttpDumpをHTMLファイルの外部エディタとして登録する: ウィンドウ(Window) → 設定(Preference) → 一般(General) → エディタ(Editors) → ファイルの関連付け(File Associations) → *.html を選択 → 追加(Add)ボタン押下。",
     "external-program-selection": "エディタ種別として「外部プログラム(External program)」ラジオボタンを選択し、参照(Browse)ボタンを押下する。",
     "batch-file-selection": "OSに応じてファイルを選択:\n- Windows: `httpDump.bat`\n- Linux: `httpDump.sh`",
-    "launch-from-html": "Eclipseのパッケージエクスプローラ等でHTMLファイルを右クリック → 「httpDumpで開く」でツールを起動する。",
-    "prerequisites": "本ツールの使用前提:\n- Java・Mavenがインストール済みであること\n- プロジェクトがMavenで管理されていること\n- htmlファイルがブラウザに関連付けされていること\n- ブラウザのプロキシ設定で、localhostが除外されていること",
-    "provision-method": "提供JAR: `nablarch-testing-XXX.jar`、`nablarch-testing-jetty12-XXX.jar`\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-testing</artifactId>\n  <scope>test</scope>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-testing-jetty12</artifactId>\n  <scope>test</scope>\n</dependency>\n```\n\nJAR取得コマンド:\n```text\nmvn dependency:copy-dependencies -DoutputDirectory=lib\n```\n\n:download:`httpDump.bat <download/httpDump.bat>` をpom.xmlと同じディレクトリに配置する。"
+    "launch-from-html": "Eclipseのパッケージエクスプローラ等でHTMLファイルを右クリック → 「httpDumpで開く」でツールを起動する。"
   }
 }

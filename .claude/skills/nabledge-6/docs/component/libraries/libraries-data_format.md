@@ -183,6 +183,340 @@ int cnt = helper
 
 ## JSONやXMLの階層構造のデータを読み書きする
 
+JSONやXMLの階層構造（ネスト）データを扱う場合、Mapのキーにドット区切り記法を使用する。
+
+**Mapキーの記法**:
+- 階層構造: ドット区切り `parent.child`（例: `"user.name"`）
+- 配列要素: `parent[インデックス].child`（0始まりのインデックス、例: `"user[0].name"`）
+
+```java
+Map<String, Object> data = new HashMap<>();
+data.put("user[0].name", "なまえ1");
+data.put("user[0].age", 20);
+data.put("user[1].name", "なまえ2");
+```
+
+フォーマット定義ファイルにはネスト構造を対応する形式で定義する。XMLおよびJSONで出力する場合、上記のMapキー形式に従ったデータを準備することで階層構造として出力される。
+
+> **重要**: 親要素が任意（`?`）の場合は、子要素も全て任意項目として定義することを推奨する。必須の子要素を持つ任意の親要素はサポートされていない。
+
+## XMLでDTDを使う
+
+デフォルトではDTDは無効化されている（XXE攻撃を防ぐため）。信頼できるXMLに対してDTDを有効にするには、`XmlDataParser` コンポーネントの `allowDTD` プロパティを `true` に設定する。
+
+```xml
+<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+  <property name="allowDTD" value="true" />
+</component>
+```
+
+> **重要**: XXE攻撃の危険性があるため、信頼できるXML以外には使用してはならない。
+
+> **重要**: XMLを入力する場合、DTDはデフォルトで使用不可。DTDを使用したXMLを読み込もうとすると例外が発生する。これは[XML外部実体参照(XXE)](https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing)を防止するための措置。
+
+読み込み対象XMLが信頼できる場合のみ、`XmlDataParser` の `allowDTD` プロパティを`true`に設定してDTDの使用を許可できる。コンポーネント名は`XmlDataParser`で明示的に設定する。
+
+```xml
+<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+  <!-- DTDの使用を許可する。XXE攻撃の危険性があるため、信頼できるXML以外には使用してはならない。 -->
+  <property name="allowDTD" value="true" />
+</component>
+```
+
+## XMLで名前空間を使う
+
+XMLの名前空間を使用するには、フォーマット定義ファイルで `?@xmlns:プレフィックス` フィールドタイプにURIを定義する。
+
+**フォーマット定義例**:
+
+```
+1 ?@xmlns:testns X "http://testns.hoge.jp/apply"
+```
+
+**Mapキーの命名規則**: 名前空間プレフィックス + 要素名（先頭大文字）
+- 例: プレフィックス `testns`、要素名 `key1` → Mapキーは `testnsKey1`
+
+```java
+data.put("testnsKey1", "value1");
+```
+
+フォーマット定義ファイルでの要素名は `ns:elementName`（プレフィックス:要素名）の形式で記述する。
+
+接続先システムとの要件で名前空間が必要な場合、フォーマット定義ファイルで名前空間を定義する。
+
+**ポイント**:
+- 名前空間は `?@xmlns:名前空間` としてタイプ`X`、フィールドコンバータにURIを指定
+- 要素名は `名前空間:要素名` 形式で表す
+- MapのキーはMapのキー値は `名前空間+要素名(先頭大文字)` 形式 (例: `testnsKey1`)
+
+**フォーマット定義ファイル例**:
+```bash
+file-type:        "XML"
+text-encoding:    "UTF-8"
+
+[testns:data]
+1 ?@xmlns:testns X "http://testns.hoge.jp/apply"
+2 testns:key1 X
+```
+
+**XMLデータ例**:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<testns:data xmlns:testns="http://testns.hoge.jp/apply">
+  <testns:key1>value1</testns:key1>
+</testns:data>
+```
+
+**Mapデータ例**:
+```java
+Map<String, Object> data = new HashMap<String, Object>();
+data.put("testnsKey1", "value1");
+```
+
+## XMLで属性を持つ要素にコンテンツを定義する
+
+属性を持つXML要素にコンテンツ（テキスト内容）を定義するには、フォーマット定義ファイルで予約フィールド名 `body` を使用する。
+
+**フォーマット定義例**（`child` 要素が属性とコンテンツを持つ場合）:
+
+```
+1 attr X
+2 body X
+```
+
+上記の定義で `<child attr="value1">value2</child>` を扱う場合のMapキー:
+
+```java
+data.put("child.attr", "value1");
+data.put("child.body", "value2");
+```
+
+コンテンツ名 `body` を変更したい場合は :ref:`data_format-xml_content_name_change` を参照。
+
+## 文字の置き換え(寄せ字)を行う
+
+文字の置き換え（寄せ字）機能を使用するには以下の設定を行う。
+
+**1. 置き換えプロパティファイルの作成**:
+
+```properties
+置き換え前文字=置き換え後文字
+```
+
+**2. コンポーネント定義**:
+
+`CharacterReplacementManager` のコンポーネント名は必ず `characterReplacementManager` にする。`CharacterReplacementConfig` には `typeName`（種別名）、`filePath`（プロパティファイルパス）、`encoding`（エンコーディング）を設定する。
+
+```xml
+<component name="characterReplacementManager"
+           class="nablarch.core.dataformat.CharacterReplacementManager">
+  <property name="configList">
+    <list>
+      <component class="nablarch.core.dataformat.CharacterReplacementConfig">
+        <property name="typeName" value="a_system"/>
+        <property name="filePath" value="classpath:charset/a_system.properties"/>
+        <property name="encoding" value="UTF-8"/>
+      </component>
+    </list>
+  </property>
+</component>
+```
+
+`characterReplacementManager` をイニシャライザに登録すること。
+
+**3. フォーマット定義ファイルでの使用**:
+
+フィールドのコンバータに `replacement("typeName")` を指定する。
+
+```
+1 name N(100) replacement("a_system")
+```
+
+寄せ字機能により、外部データ読み込み時にシステムで使用可能な文字に置き換えられる。
+
+**置き換えルール (propertiesファイル)**:
+- `置き換え前の文字=置き換え後の文字` 形式
+- 置き換え前・後はともに1文字のみ (サロゲートペア非対応)
+- 記述ルール: `Properties` 参照
+
+```properties
+髙=高
+﨑=崎
+唖=■
+```
+
+> **補足**: 接続先ごとに置き換えルールを定義する場合は、複数のpropertiesファイルを作成する。
+
+**コンポーネント設定**: `CharacterReplacementManager` をコンポーネント名 `characterReplacementManager` で設定。`configList` プロパティに `CharacterReplacementConfig` のリストを設定。複数のpropertiesファイルを定義する場合は `typeName` プロパティに異なる名前を設定。
+
+```xml
+<component name="characterReplacementManager"
+    class="nablarch.core.dataformat.CharacterReplacementManager">
+  <property name="configList">
+    <list>
+      <component class="nablarch.core.dataformat.CharacterReplacementConfig">
+        <property name="typeName" value="a_system"/>
+        <property name="filePath" value="classpath:a-system.properties"/>
+        <property name="encoding" value="UTF-8"/>
+      </component>
+      <component class="nablarch.core.dataformat.CharacterReplacementConfig">
+        <property name="typeName" value="b_system"/>
+        <property name="filePath" value="classpath:b-system.properties"/>
+        <property name="encoding" value="UTF-8"/>
+      </component>
+    </list>
+  </property>
+</component>
+```
+
+**初期化コンポーネント設定**:
+```xml
+<component name="initializer"
+    class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+  <property name="initializeList">
+    <list>
+      <component-ref name="characterReplacementManager" />
+    </list>
+  </property>
+</component>
+```
+
+**フォーマット定義での使用**: :ref:`replacement <data_format-replacement_convertor>` を使用し、引数に `typeName` を指定する。
+
+```bash
+# Aシステムとの置き換えルールを適用
+1 name N(100) replacement("a_system")
+
+# Bシステムとの置き換えルールを適用
+1 name N(100) replacement("b_system")
+```
+
+## フィールドタイプを追加する
+
+カスタムフィールドタイプを追加するには `DataType` インターフェースを実装し、各フォーマット用のファクトリクラスを拡張して設定クラスに登録する。
+
+**ファクトリクラス（拡張対象）**:
+
+| フォーマット | ファクトリクラス |
+|---|---|
+| 固定長 | `FixedLengthConvertorFactory` |
+| 可変長 | `VariableLengthConvertorFactory` |
+| JSON | `JsonDataConvertorFactory` |
+| XML | `XmlDataConvertorFactory` |
+
+**実装例**（固定長の場合）:
+
+```java
+public class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
+    // カスタムフィールドタイプを追加するメソッドをオーバーライド
+}
+```
+
+**設定クラスへの登録**:
+
+| フォーマット | 設定クラス | プロパティ名 |
+|---|---|---|
+| 固定長 | `FixedLengthConvertorSetting` | （設定クラスのプロパティ） |
+| 可変長 | `VariableLengthConvertorSetting` | （設定クラスのプロパティ） |
+| JSON | `JsonDataConvertorSetting` | （設定クラスのプロパティ） |
+| XML | `XmlDataConvertorSetting` | （設定クラスのプロパティ） |
+
+> **重要**: `convertorTable` プロパティを直接設定することは推奨しない。この方法ではデフォルトの全フィールドタイプを再定義する必要があるため、ファクトリクラスを継承する方式を使用すること。
+
+## フィールドタイプを追加する
+
+:ref:`data_format-field_type_list` で要件を満たせない場合（例: 文字列タイプのパディング文字がバイナリの場合）、プロジェクト固有のフィールドタイプを定義して対応する。
+
+**手順:**
+1. `DataType` を実装したクラスを作成する
+2. フォーマットに応じたファクトリの継承クラスを作成する
+3. 作成したファクトリクラスを設定クラスのプロパティに設定する
+
+> **補足**: 標準のフィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。
+
+**フォーマット毎のファクトリクラス:**
+
+| フォーマット | ファクトリクラス |
+|---|---|
+| Fixed(固定長) | `FixedLengthConvertorFactory` |
+| Variable(可変長) | `VariableLengthConvertorFactory` |
+| JSON | `JsonDataConvertorFactory` |
+| XML | `XmlDataConvertorFactory` |
+
+Fixed(固定長)の実装例:
+
+```java
+public class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
+    @Override
+    protected Map<String, Class<?>> getDefaultConvertorTable() {
+        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
+        defaultConvertorTable.put("custom", CustomType.class);
+        return Collections.unmodifiableMap(defaultConvertorTable);
+    }
+}
+```
+
+**フォーマット毎の設定クラスとプロパティ:**
+
+| フォーマット | 設定クラス名(コンポーネント名) | プロパティ名 |
+|---|---|---|
+| Fixed(固定長) | `FixedLengthConvertorSetting` (fixedLengthConvertorSetting) | `fixedLengthConvertorFactory` |
+| Variable(可変長) | `VariableLengthConvertorSetting` (variableLengthConvertorSetting) | `variableLengthConvertorFactory` |
+| JSON | `JsonDataConvertorSetting` (jsonDataConvertorSetting) | `jsonDataConvertorFactory` |
+| XML | `XmlDataConvertorSetting` (xmlDataConvertorSetting) | `xmlDataConvertorFactory` |
+
+Fixed(固定長)の設定例:
+
+```xml
+<component name="fixedLengthConvertorSetting"
+    class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
+  <property name="fixedLengthConvertorFactory">
+    <component class="com.sample.CustomFixedLengthConvertorFactory" />
+  </property>
+</component>
+```
+
+> **重要**: `convertorTable` プロパティでのフィールドタイプ追加は非推奨。理由: (1) 追加したいフィールドタイプだけでなく、デフォルトのフィールドタイプも全て設定が必要で、バージョンアップ時に自動適用されず手動修正が必要になる。(2) デフォルト定義はファクトリクラスに実装されており、設定ミスを起こしやすい。
+
+## XMLで属性を持つ要素のコンテンツ名を変更する
+
+属性を持つXML要素のコンテンツフィールドのデフォルト名（`body`）を変更するには、`XmlDataParser` と `XmlDataBuilder` の `contentName` プロパティを設定する。コンポーネント名はそれぞれ必ず `XmlDataParser`、`XmlDataBuilder` にすること。
+
+```xml
+<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+  <property name="contentName" value="change" />
+</component>
+
+<component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
+  <property name="contentName" value="change" />
+</component>
+```
+
+設定後はフォーマット定義ファイルで `body` の代わりに指定した名前（例: `change`）を使用する。
+
+## XMLで属性を持つ要素のコンテンツ名を変更する
+
+属性を持つ要素のコンテンツ名を変更するには、以下のクラスの `contentName` プロパティに変更後のコンテンツ名を設定する。
+
+- `XmlDataParser`
+- `XmlDataBuilder`
+
+**ポイント:**
+- `XmlDataParser` のコンポーネント名は `XmlDataParser` とすること
+- `XmlDataBuilder` のコンポーネント名は `XmlDataBuilder` とすること
+
+```xml
+<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+  <property name="contentName" value="change" />
+</component>
+
+<component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
+  <property name="contentName" value="change" />
+</component>
+```
+
+## JSONやXMLの階層構造のデータを読み書きする
+
 JSONやXMLの階層構造データをMapで読み書きする際、各階層の要素名をドット(`.`)で連結したキー値を使用する。
 
 **Mapのキー規則**:
@@ -245,52 +579,6 @@ data.put("user[1].age", 31);
 }
 ```
 
-## XMLでDTDを使う
-
-> **重要**: XMLを入力する場合、DTDはデフォルトで使用不可。DTDを使用したXMLを読み込もうとすると例外が発生する。これは[XML外部実体参照(XXE)](https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing)を防止するための措置。
-
-読み込み対象XMLが信頼できる場合のみ、`XmlDataParser` の `allowDTD` プロパティを`true`に設定してDTDの使用を許可できる。コンポーネント名は`XmlDataParser`で明示的に設定する。
-
-```xml
-<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
-  <!-- DTDの使用を許可する。XXE攻撃の危険性があるため、信頼できるXML以外には使用してはならない。 -->
-  <property name="allowDTD" value="true" />
-</component>
-```
-
-## XMLで名前空間を使う
-
-接続先システムとの要件で名前空間が必要な場合、フォーマット定義ファイルで名前空間を定義する。
-
-**ポイント**:
-- 名前空間は `?@xmlns:名前空間` としてタイプ`X`、フィールドコンバータにURIを指定
-- 要素名は `名前空間:要素名` 形式で表す
-- MapのキーはキャメルケースHandに変換: `名前空間+要素名(先頭大文字)` 形式 (例: `testnsKey1`)
-
-**フォーマット定義ファイル例**:
-```bash
-file-type:        "XML"
-text-encoding:    "UTF-8"
-
-[testns:data]
-1 ?@xmlns:testns X "http://testns.hoge.jp/apply"
-2 testns:key1 X
-```
-
-**XMLデータ例**:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<testns:data xmlns:testns="http://testns.hoge.jp/apply">
-  <testns:key1>value1</testns:key1>
-</testns:data>
-```
-
-**Mapデータ例**:
-```java
-Map<String, Object> data = new HashMap<String, Object>();
-data.put("testnsKey1", "value1");
-```
-
 ## XMLで属性を持つ要素にコンテンツを定義する
 
 XMLで属性を持つ要素にコンテンツを定義するには、フォーマット定義ファイルにコンテンツを表すフィールド名 `body` を使用する。デフォルトのフィールド名を変更する場合は :ref:`data_format-xml_content_name_change` を参照。
@@ -323,145 +611,6 @@ data.put("child.attr", "value1");
 data.put("child.body", "value2");
 ```
 
-## 文字の置き換え（寄せ字）を行う
-
-寄せ字機能により、外部データ読み込み時にシステムで使用可能な文字に置き換えられる。
-
-**置き換えルール (propertiesファイル)**:
-- `置き換え前の文字=置き換え後の文字` 形式
-- 置き換え前・後はともに1文字のみ (サロゲートペア非対応)
-- 記述ルール: `Properties` 参照
-
-```properties
-髙=高
-﨑=崎
-唖=■
-```
-
-> **補足**: 接続先ごとに置き換えルールを定義する場合は、複数のpropertiesファイルを作成する。
-
-**コンポーネント設定**: `CharacterReplacementManager` をコンポーネント名 `characterReplacementManager` で設定。`configList` プロパティに `CharacterReplacementConfig` のリストを設定。複数のpropertiesファイルを定義する場合は `typeName` プロパティに異なる名前を設定。
-
-```xml
-<component name="characterReplacementManager"
-    class="nablarch.core.dataformat.CharacterReplacementManager">
-  <property name="configList">
-    <list>
-      <component class="nablarch.core.dataformat.CharacterReplacementConfig">
-        <property name="typeName" value="a_system"/>
-        <property name="filePath" value="classpath:a-system.properties"/>
-        <property name="encoding" value="UTF-8"/>
-      </component>
-      <component class="nablarch.core.dataformat.CharacterReplacementConfig">
-        <property name="typeName" value="b_system"/>
-        <property name="filePath" value="classpath:b-system.properties"/>
-        <property name="encoding" value="UTF-8"/>
-      </component>
-    </list>
-  </property>
-</component>
-```
-
-**初期化コンポーネント設定**:
-```xml
-<component name="initializer"
-    class="nablarch.core.repository.initialization.BasicApplicationInitializer">
-  <property name="initializeList">
-    <list>
-      <component-ref name="characterReplacementManager" />
-    </list>
-  </property>
-</component>
-```
-
-**フォーマット定義での使用**: :ref:`replacement <data_format-replacement_convertor>` を使用し、引数に `typeName` を指定する。
-
-```bash
-# Aシステムとの置き換えルールを適用
-1 name N(100) replacement("a_system")
-
-# Bシステムとの置き換えルールを適用
-1 name N(100) replacement("b_system")
-```
-
 ## 出力するデータの表示形式をフォーマットする
 
 データ出力時に日付・数値などの表示形式をフォーマットするには :ref:`format` を使用する。詳細は :ref:`format` を参照。
-
-## 拡張例
-
-## フィールドタイプを追加する
-
-:ref:`data_format-field_type_list` で要件を満たせない場合（例: 文字列タイプのパディング文字がバイナリの場合）、プロジェクト固有のフィールドタイプを定義して対応する。
-
-**手順:**
-1. `DataType` を実装したクラスを作成する
-2. フォーマットに応じたファクトリの継承クラスを作成する
-3. 作成したファクトリクラスを設定クラスのプロパティに設定する
-
-> **補足**: 標準のフィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。
-
-**フォーマット毎のファクトリクラス:**
-
-| フォーマット | ファクトリクラス |
-|---|---|
-| Fixed(固定長) | `FixedLengthConvertorFactory` |
-| Variable(可変長) | `VariableLengthConvertorFactory` |
-| JSON | `JsonDataConvertorFactory` |
-| XML | `XmlDataConvertorFactory` |
-
-Fixed(固定長)の実装例:
-
-```java
-public class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
-    @Override
-    protected Map<String, Class<?>> getDefaultConvertorTable() {
-        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
-        defaultConvertorTable.put("custom", CustomType.class);
-        return Collections.unmodifiableMap(defaultConvertorTable);
-    }
-}
-```
-
-**フォーマット毎の設定クラスとプロパティ:**
-
-| フォーマット | 設定クラス名(コンポーネント名) | プロパティ名 |
-|---|---|---|
-| Fixed(固定長) | `FixedLengthConvertorSetting` (fixedLengthConvertorSetting) | `fixedLengthConvertorFactory` |
-| Variable(可変長) | `VariableLengthConvertorSetting` (variableLengthConvertorSetting) | `variableLengthConvertorFactory` |
-| JSON | `JsonDataConvertorSetting` (jsonDataConvertorSetting) | `jsonDataConvertorFactory` |
-| XML | `XmlDataConvertorSetting` (xmlDataConvertorSetting) | `xmlDataConvertorFactory` |
-
-Fixed(固定長)の設定例:
-
-```xml
-<component name="fixedLengthConvertorSetting"
-    class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
-  <property name="fixedLengthConvertorFactory">
-    <component class="com.sample.CustomFixedLengthConvertorFactory" />
-  </property>
-</component>
-```
-
-> **重要**: `convertorTable` プロパティでのフィールドタイプ追加は非推奨。理由: (1) 追加したいフィールドタイプだけでなく、デフォルトのフィールドタイプも全て設定が必要で、バージョンアップ時に自動適用されず手動修正が必要になる。(2) デフォルト定義はファクトリクラスに実装されており、設定ミスを起こしやすい。
-
-## XMLで属性を持つ要素のコンテンツ名を変更する
-
-属性を持つ要素のコンテンツ名を変更するには、以下のクラスの `contentName` プロパティに変更後のコンテンツ名を設定する。
-
-- `XmlDataParser`
-- `XmlDataBuilder`
-
-**ポイント:**
-- `XmlDataParser` のコンポーネント名は `XmlDataParser` とすること
-- `XmlDataBuilder` のコンポーネント名は `XmlDataBuilder` とすること
-
-```xml
-<component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
-  <property name="contentName" value="change" />
-</component>
-
-<component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
-  <property name="contentName" value="change" />
-</component>
-```

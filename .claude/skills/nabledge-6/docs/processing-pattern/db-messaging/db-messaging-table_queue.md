@@ -125,11 +125,11 @@ public static final class StatusUpdateDto {
     // プロパティ及びアクセッサ、Javadocは省略
 
     private static StatusUpdateDto createNormalEnd(String id) {
-        return new StatusUpdateDto(id, "1");  // ステータス "1": 正常終了
+        return new StatusUpdateDto(id, "1");
     }
 
     private static StatusUpdateDto createAbnormalEnd(String id) {
-        return new StatusUpdateDto(id, "2");  // ステータス "2": 異常終了
+        return new StatusUpdateDto(id, "2");
     }
 }
 ```

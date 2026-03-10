@@ -74,6 +74,8 @@ UniversalDao.findAllBySqlFile(GoldUser.class, "sample.entity.Member#FIND_BY_NAME
 
 大量の検索結果を扱う場合（Webでの大量データダウンロード、バッチでの大量データ処理など）は遅延ロードを使用する。
 
+遅延ロードを使用すると、ユニバーサルDAOとしては1件ずつロードするが、JDBCのフェッチサイズによってメモリの使用量が変わる。フェッチサイズの詳細はデータベースベンダー提供のマニュアルを参照。
+
 遅延ロードは `UniversalDao#defer` メソッドを先に呼び出すことで使用可能。内部でサーバサイドカーソルを使用するため、 `DeferredEntityList#close` の呼び出しが必要。
 
 ```java
@@ -225,51 +227,6 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 
 バージョン番号を持つテーブルは排他制御の単位ごとに定義し、競合が許容される最大の単位で定義する。例えば「ユーザ」単位でのロックが業務的に許容されるならユーザテーブルにバージョン番号を定義する。単位を大きくすると競合の可能性が高くなり、更新失敗（楽観的ロックの場合）や処理遅延（悲観的ロックの場合）を招く点に注意すること。
 
-## DatabaseMetaDataから情報を取得できない場合に対応する
-
-シノニム使用時や権限問題で `DatabaseMetaData` から主キー情報を取得できない場合、主キー指定の検索が正しく動作しない。対応: `DatabaseMetaDataExtractor` を継承したクラスを作成し、コンポーネント名 `databaseMetaDataExtractor` で設定する。主キー情報の取得方法はデータベース依存のため、製品のマニュアルを参照すること。
-
-```xml
-<component name="databaseMetaDataExtractor" class="sample.dao.CustomDatabaseMetaDataExtractor" />
-```
-
-## ページング処理の件数取得用SQLを変更する
-
-ページング処理では実際のレコード取得前に件数取得SQLが発行される。デフォルトは元のSQLを `SELECT COUNT(*) FROM` で包んだSQL。ORDER BY句など処理負荷が大きいSQLで件数取得SQLを変更したい場合、ダイアレクトをカスタマイズして `Dialect#convertCountSql(String, Object, StatementFactory)` の実装を変更する。
-
-> **重要**: 件数取得SQLは元のSQLと同一の検索条件を持つ必要がある。件数取得SQLを用意する場合は、両者の検索条件に差分が発生しないよう注意すること。
-
-> **補足**: プロジェクトごとに適切な件数取得SQLのマッピングルールを検討すること。
-
-```java
-public class CustomH2Dialect extends H2Dialect {
-    private Map<String, String> sqlMap;
-
-    @Override
-    public String convertCountSql(String sqlId, Object params, StatementFactory statementFactory) {
-        if (sqlMap.containsKey(sqlId)) {
-            return statementFactory.getVariableConditionSqlBySqlId(sqlMap.get(sqlId), params);
-        }
-        return convertCountSql(statementFactory.getVariableConditionSqlBySqlId(sqlId, params));
-    }
-
-    public void setSqlMap(Map<String, String> sqlMap) {
-        this.sqlMap = sqlMap;
-    }
-}
-```
-
-```xml
-<component name="dialect" class="com.nablarch.example.app.db.dialect.CustomH2Dialect">
-  <property name="sqlMap">
-    <map>
-      <entry key="com.nablarch.example.app.entity.Project#SEARCH_PROJECT"
-             value="com.nablarch.example.app.entity.Project#SEARCH_PROJECT_FORCOUNT"/>
-    </map>
-  </property>
-</component>
-```
-
 ## データサイズの大きいバイナリデータを登録（更新）する
 
 データサイズの大きいバイナリデータ（例：OracleのBLOB）は、ユニバーサルDAOではデータをすべてメモリに展開しないと登録・更新できない。データベースが提供する機能を使ってファイルなどから直接登録・更新すること。
@@ -293,17 +250,16 @@ public class CustomH2Dialect extends H2Dialect {
 
 ## コンポーネント設定
 
-| プロパティ名 | 型 | 必須 | 説明 |
-|---|---|---|---|
-| connectionFactory | ConnectionFactory | ○ | :ref:`database-connect` 参照 |
-| transactionFactory | TransactionFactory | ○ | :ref:`transaction-database` 参照 |
-| dbTransactionName | String | | トランザクション識別名 |
+`connectionFactory` プロパティに `ConnectionFactory` 実装クラスを設定する（詳細は :ref:`database-connect` 参照）。`transactionFactory` プロパティに `TransactionFactory` 実装クラスを設定する（詳細は :ref:`transaction-database` 参照）。`dbTransactionName` プロパティにはトランザクションを識別するための名前を設定する。
 
 ```xml
 <component name="find-persons-transaction"
     class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+  <!-- connectionFactoryプロパティにConnectionFactory実装クラスを設定する -->
   <property name="connectionFactory" ref="connectionFactory" />
+  <!-- transactionFactoryプロパティにTransactionFactory実装クラスを設定する -->
   <property name="transactionFactory" ref="transactionFactory" />
+  <!-- トランザクションを識別するための名前を設定する -->
   <property name="dbTransactionName" value="update-login-failed-count-transaction" />
 </component>
 ```
@@ -335,6 +291,73 @@ FindPersonsTransaction findPersonsTransaction = new FindPersonsTransaction();
 
 // 結果を取得する。
 EntityList<Person> persons = findPersonsTransaction.getPersons();
+```
+
+## DatabaseMetaDataから情報を取得できない場合に対応する
+
+データベースによっては、シノニムを使用している場合や権限の問題で、 `java.sql.DatabaseMetaData` から主キー情報を取得できない場合がある。主キー情報を取得できなくなると、主キーを指定した検索が正しく動作しない。
+
+そのような場合は、 `DatabaseMetaDataExtractor` を継承したクラスを作成して対応する。主キー情報をどのように取得するかはデータベース依存のため、製品のマニュアルを参照すること。
+
+作成したクラスを使用するには、コンポーネント設定ファイルへの登録が必要。コンポーネント名は **`databaseMetaDataExtractor`** で設定すること。
+
+```xml
+<!--
+sample.dao.CustomDatabaseMetaDataExtractorを作成した場合の設定例
+コンポーネント名は"databaseMetaDataExtractor"で設定する。
+-->
+<component name="databaseMetaDataExtractor" class="sample.dao.CustomDatabaseMetaDataExtractor" />
+```
+
+## ページング処理の件数取得用SQLを変更する
+
+:ref:`ページング <universal_dao-paging>` 処理では、実際の範囲指定レコードの取得処理の前に、件数取得SQLが発行される。件数取得SQLは、デフォルトでは元のSQLを `SELECT COUNT(*) FROM` で包んだSQLとなる。元のSQLが `ORDER BY` 句を含むなど処理負荷が大きいSQLで、負荷軽減のために `ORDER BY` 句を外したい場合などに、使用しているダイアレクトをカスタマイズして件数取得SQLを変更できる。
+
+> **重要**: 件数取得SQLは、元のSQLと同一の検索条件を持つ必要がある。件数取得SQLを用意する場合は、両者の検索条件に差分が発生しないよう注意すること。
+
+件数取得SQLを変更する場合は、プロジェクトで使用しているダイアレクトを継承した上で、 `Dialect#convertCountSql(String, Object, StatementFactory)` の実装を変更する。
+
+## 実装例
+
+以下に `H2Dialect` をカスタマイズする例を示す。元のSQLと件数取得SQLのマッピングをコンポーネントに設定し、件数取得SQLを変更している。プロジェクトごとに適切なマッピングルールを検討すること。
+
+```java
+public class CustomH2Dialect extends H2Dialect {
+
+    /**
+     * 件数取得SQLのマッピング
+     */
+    private Map<String, String> sqlMap;
+
+    /**
+     * 件数取得SQLのマッピング内に{@code sqlId}に対応するSQLIDが存在すれば、
+     * それを件数取得SQLとして返却する。
+     */
+    @Override
+    public String convertCountSql(String sqlId, Object params, StatementFactory statementFactory) {
+        if (sqlMap.containsKey(sqlId)) {
+            return statementFactory.getVariableConditionSqlBySqlId(sqlMap.get(sqlId), params);
+        }
+        return convertCountSql(statementFactory.getVariableConditionSqlBySqlId(sqlId, params));
+    }
+
+    public void setSqlMap(Map<String, String> sqlMap) {
+        this.sqlMap = sqlMap;
+    }
+}
+```
+
+カスタマイズしたダイアレクトはコンポーネント設定ファイルで設定する。`sqlMap` プロパティで元のSQLIDと件数取得SQLIDのマッピングを設定する。
+
+```xml
+<component name="dialect" class="com.nablarch.example.app.db.dialect.CustomH2Dialect">
+  <property name="sqlMap">
+    <map>
+      <entry key="com.nablarch.example.app.entity.Project#SEARCH_PROJECT"
+             value="com.nablarch.example.app.entity.Project#SEARCH_PROJECT_FORCOUNT"/>
+    </map>
+  </property>
+</component>
 ```
 
 ## Entityに使用できるJakarta Persistenceアノテーション
@@ -385,7 +408,7 @@ EntityList<Person> persons = findPersonsTransaction.getPersons();
 
 自動採番値を登録。`strategy` 属性に採番方法を設定する。`AUTO` の採番方法選択ルール:
 1. `generator` 属性に対応するGenerator設定がある場合、そのGeneratorを使用
-2. `generator` 未設定または対応Generator設定なしの場合、Dialectを元にIDENTITY→SEQUENCE→TABLEの順で選択
+2. `generator` 未設定または対応Generator設定なしの場合、データベース機能に設定された `Dialect` を元にIDENTITY→SEQUENCE→TABLEの順で選択
 
 `generator` 属性に任意の名前を設定する。シーケンスオブジェクト名やテーブル採番レコード識別値を取得できない場合、テーブル名と採番カラム名から導出（例: テーブル `USER`、カラム `ID` → `USER_ID`）。
 
@@ -415,9 +438,9 @@ EntityList<Person> persons = findPersonsTransaction.getPersons();
 | `java.lang.Long` | プリミティブ型も可。`null`は`0`として扱う。 |
 | `java.math.BigDecimal` | |
 | `java.lang.Boolean` | プリミティブ型も可。`null`は`false`として扱う。ラッパー型（Boolean）はリードメソッド名がgetから始まる必要あり。プリミティブ型はisでも可。 |
-| `java.util.Date` | :ref:`@Temporal <universal_dao_jpa_temporal>` でDB上のデータ型を指定する必要あり。 |
+| `java.util.Date` | `@Temporal` でDB上のデータ型を指定する必要あり。 |
 | `java.sql.Date` | |
 | `java.sql.Timestamp` | |
 | `java.time.LocalDate` | |
 | `java.time.LocalDateTime` | |
-| `byte[]` | BLOBなど非常に大きいサイズのデータはヒープ上に展開しないよう注意。大きいバイナリデータはデータベースアクセスを直接使用してStream経由で参照すること。詳細は :ref:`database-binary_column` を参照。 |
+| `byte[]` | BLOBなど非常に大きいサイズのデータはヒープ上に展開しないよう注意。大きいバイナリデータはデータベースアクセスを直接使用してStream経由で参照すること。詳細は `database-binary_column` を参照。 |

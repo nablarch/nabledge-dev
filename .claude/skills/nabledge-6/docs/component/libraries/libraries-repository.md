@@ -2,6 +2,12 @@
 
 ## 機能概要
 
+システムリポジトリは、アプリケーションを実装する際に様々な箇所で使用されるオブジェクトや、設定値などを管理する機能を提供する。
+
+この機能では、以下のことができる。
+- 環境毎に異なる可能性のあるロジック（生成されるクラスやプロパティの値）を、外部ファイルに定義できる。
+- 外部ファイルの定義を元に、オブジェクト間の関連を構築できる。（DIコンテナ機能を持つ）
+
 DIコンテナ機能により、XML（:ref:`repository-root_node` 参照）または :ref:`アノテーションを付与したクラス <repository-inject-annotation-component>` を元にオブジェクトを構築できる。構築されるオブジェクトは**シングルトン**となる。
 
 DIコンテナ機能でできること:
@@ -428,7 +434,7 @@ public class ExampleAction {
   - 型に一致するコンポーネントがDIコンテナ上に1つ: 自動インジェクション
   - 0個または複数: 何もインジェクションしない
 
-**設定値のインジェクション**: `@ConfigValue` の `value` に設定したキー値がインジェクションされる。環境依存値のキーは `${` と `}` で囲む。使用可能な型は :ref:`repository-property_type` に準ずる。
+**設定値のインジェクション**: `@ConfigValue` の `value` に設定した値がインジェクションされる。環境依存値のキーは `${` と `}` で囲む。使用可能な型は :ref:`repository-property_type` に準ずる。
 
 ```java
 @SystemRepositoryComponent
@@ -554,7 +560,7 @@ public class SampleComponent implements Disposable {
 </component>
 ```
 
-`addDisposable` メソッドでコンポーネント生成後に `Disposable` を追加できる。追加されたものはインスタンス生成順の逆順で廃棄される。
+`addDisposable` メソッドでコンポーネント生成後に `Disposable` を追加できる。このメソッドで追加される `Disposable` はインスタンスが生成された順番で追加されることが予想される。その場合、`BasicApplicationDisposer` は `disposableList` に設定されている順序とは逆の順序で廃棄処理を呼ぶため、廃棄処理はインスタンス生成とは逆の順序で行われることが望ましい（例：JDBCの `Connection`、`Statement`、`ResultSet`）。
 
 **`java.io.Closeable` 実装コンポーネントの廃棄設定**: `DisposableAdaptor` を使用することで廃棄対象リストに設定できる。
 

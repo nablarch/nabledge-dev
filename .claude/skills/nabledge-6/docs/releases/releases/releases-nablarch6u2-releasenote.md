@@ -65,6 +65,14 @@
 - Nablarch 6で開発したアプリケーションのテストに対応（Jetty 12使用）
 - JUnit 5を5.11.0に更新: nablarch-testing-junit5 2.1.0
 
+## Example
+
+| No. | 分類 | 概要 | 修正後バージョン |
+|---|---|---|---|
+| 30 | 全般 | Nablarch 6を使用するように修正 | ※モジュールバージョン一覧（Example）参照 |
+| 31 | RESTfulウェブサービス | Jerseyを3.1.8に、Jacksonを2.17.1に更新 | nablarch-example-rest 6u2 |
+| 32 | MOMによるメッセージング | ActiveMQ Artemisを2.37.0に更新。nablarch-example-mom-testing-commonで使用していた非推奨APIを代替APIに変更。対象: nablarch-example-mom-testing-common, nablarch-example-mom-delayed-send, nablarch-example-mom-sync-send-batch, nablarch-example-mom-delayed-receive, nablarch-example-mom-sync-receive | nablarch-example-mom-testing-common 6u2, nablarch-example-mom-delayed-send 6u2, nablarch-example-mom-sync-send-batch 6u2, nablarch-example-mom-delayed-receive 6u2, nablarch-example-mom-sync-receive 6u2 |
+
 ## 実装サンプル集
 
 - Nablarch 6対応（nablarch-biz-sample-all 3.0.0）。ソースコードをnablarch-biz-sample-allリポジトリに集約（[参照](https://nablarch.github.io/docs/6u2/doc/examples/index.html)）
@@ -126,6 +134,14 @@
 - Java EEの仕様名等をJakarta EEに変更: nablarch-testing 2.2.0
 - Jetty 12を12.0.12に更新、不要なecjライブラリを削除: nablarch-testing 2.2.0, nablarch-testing-jetty12 1.1.0
 - JUnit 5を5.11.0に更新: nablarch-testing-junit5 2.1.0
+
+## Example
+
+| No. | 分類 | 概要 | 修正後バージョン |
+|---|---|---|---|
+| 26 | ウェブアプリケーション | No.4のCSP対応を取り込み、script-srcでnonceを使用する例に変更 | nablarch-example-web 6u2 |
+| 27 | RESTfulウェブサービス | Jerseyを3.1.8に、Jacksonを2.17.1に更新 | nablarch-example-rest 6u2 |
+| 28 | MOMによるメッセージング | ActiveMQ Artemisを2.37.0に更新。nablarch-example-mom-testing-commonで使用していた非推奨APIを代替APIに変更。対象: nablarch-example-mom-testing-common, nablarch-example-mom-delayed-send, nablarch-example-mom-sync-send-batch, nablarch-example-mom-delayed-receive, nablarch-example-mom-sync-receive | nablarch-example-mom-testing-common 6u2, nablarch-example-mom-delayed-send 6u2, nablarch-example-mom-sync-send-batch 6u2, nablarch-example-mom-delayed-receive 6u2, nablarch-example-mom-sync-receive 6u2 |
 
 ## 実装サンプル集
 

@@ -25,6 +25,8 @@ Nablarchが提供するアーキタイプを使用してブランクプロジェ
 
 **Mavenコマンド**:
 
+まず、ブランクプロジェクトを作成したいディレクトリ（任意のディレクトリで可）にカレントディレクトリを変更する。その後、以下のコマンドを実行する。
+
 ```bat
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-web-archetype -DarchetypeVersion={nablarch_version}
 ```

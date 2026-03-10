@@ -13,7 +13,7 @@
 テスト実行時の動作:
 1. 自動テストフレームワークがNablarch Application Frameworkを起動する
 2. Nablarch Application FrameworkがActionの入力パラメータ（画面ならばリクエスト、バッチならばファイルやDB）を読み込み、Actionを起動する
-3. ActionがNablarchのメッセージ同期送信処理を実行し、NablarchがActionから受け取ったパラメータを要求電文に変換する
+3. ActionはNablarch Application Frameworkのメッセージ同期送信処理を実行する。Nablarch Application FrameworkはActionから受け取ったパラメータを要求電文に変換する
 4. 自動テストフレームワークがテストデータをもとに要求電文をアサートする（キューへはPUTしない）
 5. 自動テストフレームワークがテストデータをもとに応答電文を生成し、Actionへ返却する（キューからはGETしない）
 
@@ -117,7 +117,7 @@
 
 | 設定値 | 障害内容 | フレームワークの動作 |
 |---|---|---|
-| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生するケースのテスト | **`MessageSendSyncTimeoutException`**（`MessagingException` のサブクラス）をスローする |
+| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生するケースのテスト | **`MessageSendSyncTimeoutException`**（`MessagingException` のサブクラス）を送出する |
 | `errorMode:msgException` | メッセージ送受信エラーが発生するケースのテスト | **`MessagingException`** をスローする |
 
 この値は、応答電文表の**ヘッダおよび本文両方**の `no` を除く最初のフィールドに記載する。
@@ -126,89 +126,94 @@
 
 > **補足**: 業務アクション内で `MessagingException` を明示的に制御していない場合、個別のリクエスト単体テストで障害系テストを行う必要はない。
 
-応答電文本文の最初のフィールドに以下の値を設定することで障害系テストを実施できる:
-
-| 設定値 | 障害内容 | フレームワークの動作 |
-|---|---|---|
-| `errorMode:timeout` | タイムアウトエラー | `sendSync`メソッドの戻り値としてnullを返却 |
-| `errorMode:msgException` | メッセージ送受信エラー | `MessagingException`をスロー |
-
 ## テスト結果検証
 
 要求電文の期待値を定義した場合、フレームワークが以下を自動検証する:
 - 要求電文の内容の検証
 - 要求電文の送信件数の検証
 
-## 概要
+## モックアップクラスを使用した取引単体テストの実施方法
 
-同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テストには、Nablarchが提供するモックアップクラスを使用する。
+同期応答メッセージ送信処理を伴うウェブアプリケーションで取引単体テストを行う場合は、Nablarchが提供するモックアップクラスを使用する。
 
-なお、キューへ送信するメッセージのことを「要求電文」、キューから受信するメッセージのことを「応答電文」と称す。
+モックアップクラスは以下の機能を提供する。
 
-モックアップクラスが提供する機能:
+- **任意の応答電文を返却する機能**: 送信キューおよび受信キューに接続することなく、取引単体テストに必要な応答電文を返却できる
+- **要求電文をログに出力する機能**: 同期送信された要求電文をログに出力し、正常性の確認やエビデンスとして使用できる
+- **障害系のテストを行う機能**: タイムアウトエラーやメッセージ送受信エラーを発生させ、障害系のテストができる
 
-1. **任意の応答電文返却**: 送信キュー・受信キューへの接続なしに、テスト用の応答電文を返却できる。
-2. **要求電文のログ出力**: 同期送信された要求電文をMap形式・CSV形式でログ出力できる。エビデンスとして使用可能。
-3. **障害系テスト**: タイムアウトエラー（`sendSync`メソッドがnullを返却）やメッセージ送受信エラー（`MessagingException`をスロー）を発生させることができる。
+モックアップクラスを使用すればキューを用意する必要がなく、特別なミドルウェアのインストールや環境設定なしに取引単体テストを行える。
 
-モックアップクラスを使用することでキューの準備が不要になり、特別なミドルウェアのインストールや環境設定なしに取引単体テストを実施できる。
+応答電文のフォーマット・データ、要求電文のフォーマットをExcelファイルに定義する。ExcelファイルはリクエストIDごとに用意し、ファイル名はリクエストIDと一致させる（例: リクエストID「RM21AA0101」→ファイル名「RM21AA0101.xlsx」）。ファイルの配置ディレクトリは設定ファイルに定義する（`send_sync_test_data_path` 参照）。
+
+> **注意**: ここでのリクエストIDは送信先システムの機能を一意に識別するID。ウェブアプリケーション/バッチのリクエストIDとは意味が異なる。このIDに基づき、電文フォーマットおよびキュー名が決定する。
+
+## Excelファイルの書き方
+
+- シート名は「message」固定
+- 返却する応答電文のFW制御ヘッダ・本文のフォーマットを定義する
+- 返却する応答電文のFW制御ヘッダ・本文のデータを定義する
+- 要求電文のFW制御ヘッダ・本文のフォーマットのみ定義する（データは不要）
+
+Excelファイルに定義した応答電文のフォーマットおよびデータは、モックアップクラスが返却する応答電文を生成するために使用される。また要求電文のフォーマットは、モックアップクラスが要求電文のログを出力するために使用される。
+
+![Excelファイルの記載例](../../knowledge/development-tools/testing-framework/assets/testing-framework-send_sync/send_sync_test_data.jpg)
 
 ## 電文のフォーマットおよびデータの記載方法
 
-電文のフォーマットおよびデータは以下の書式で記載する。
+電文のフォーマットおよびデータは「識別子行・ディレクティブ行（複数可）・no行」の構造で記載し、no行にはフィールド名称・データ型・フィールド長・データを縦に並べる。
 
-識別子の書式:
+| 名称 | 説明 |
+|------|------|
+| 識別子 | 電文の種類を示すID。書式: 要求電文ヘッダ=`EXPECTED_REQUEST_HEADER_MESSAGES=リクエストID`、要求電文本文=`EXPECTED_REQUEST_BODY_MESSAGES=リクエストID`、応答電文ヘッダ=`RESPONSE_HEADER_MESSAGES=リクエストID`、応答電文本文=`RESPONSE_BODY_MESSAGES=リクエストID` |
+| ディレクティブ行 | ディレクティブを記載。`file-type`（固定長のみ対応のため不要）と`record-length`（フィールド長でパディングするため不要）は記述不要 |
+| no | ディレクティブ行の下の行に必ず「no」を記載する |
+| フィールド名称 | フィールド名称をフィールドの数だけ記載する |
+| データ型 | 「半角英字」のように日本語名称で記述する。マッピングは`BasicDataTypeMapping`のメンバ変数`DEFAULT_TABLE`参照 |
+| フィールド長 | フィールド長をフィールドの数だけ記載する。「-」を記載した場合はデータの記載内容を元にサイズを自動計算する |
+| データ | 応答電文の場合のみ記載する。複数件の応答電文を返却する場合は次の行に続けてデータを記載する |
 
-- 要求電文ヘッダ: `EXPECTED_REQUEST_HEADER_MESSAGES=リクエストID`
-- 要求電文本文: `EXPECTED_REQUEST_BODY_MESSAGES=リクエストID`
-- 応答電文ヘッダ: `RESPONSE_HEADER_MESSAGES=リクエストID`
-- 応答電文本文: `RESPONSE_BODY_MESSAGES=リクエストID`
-
-| 項目 | 説明 |
-|---|---|
-| 識別子 | 電文種類を示すID。テストケース一覧のexpectedMessageおよびresponseMessageのグループIDと紐付く。 |
-| ディレクティブ行 | ディレクティブ名セルの右セルに設定値を記載（複数行可）。`file-type`（固定長のみ対応のため）と`record-length`（フィールド長でパディングするため）は記述不要。 |
-| no | ディレクティブ行の下に必ず記載。 |
-| フィールド名称 | フィールドの数だけ記載。 |
-| データ型 | 日本語名称で記述（例: 「半角英字」）。マッピングは[BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java)のDEFAULT_TABLEを参照。 |
-| フィールド長 | フィールドの数だけ記載。「-」を記載した場合はデータ欄の内容からサイズを自動計算。 |
-| データ | 応答電文の場合のみ記載。複数件の場合は次の行に続けて記載。 |
-
-> **補足**: フィールド名称・データ型・フィールド長は外部インタフェース設計書からコピー＆ペーストで効率よく作成できる（ペースト時に「行列を入れ替える」オプションを使用）。
+> **ヒント**: フィールド名称・データ型・フィールド長は外部インタフェース設計書からコピー＆ペーストして効率良く作成できる。ペースト時に「**行列を入れ替える**」オプションにチェックすること。
 
 ## Excelファイルの再読み込み
 
-モックアップクラスは、Excelファイルを手動で編集してテストをやり直すケースや、同じデータで繰り返しテストを行うケースを想定し、Excelファイルのタイムスタンプが更新された場合にファイルを再読み込みする機能を提供している。
+モックアップクラスは、Excelファイルのタイムスタンプが更新された場合にファイルを再読み込みする機能を提供する。
 
-通常、応答電文を返却するたびにnoのインクリメントが行われ、アプリケーションサーバが起動している間はnoの値が初期化されることはない。Excelファイルの編集や上書きによりタイムスタンプを更新することで、アプリケーションサーバ起動中にExcelファイルの再読み込みを行うことができる。
+通常、応答電文を返却するたびにnoのインクリメントが行われ、アプリケーションサーバが起動している間はnoの値が初期化されない。Excelファイルの編集や上書きによりタイムスタンプを更新することで、サーバ起動中にExcelファイルの再読み込みができる。これにより手動でファイルを編集してテストをやり直すケースや、同じデータで繰り返しテストを行うケースに対応できる。
+
+## 障害系のテスト
+
+応答電文の本文の表の最初のフィールドに「errorMode:」から始まる特定の値を設定することで、障害系のテストを行える。
+
+| 最初のフィールドに設定する値 | 障害内容 | フレームワークの動作 |
+|------------------------------|----------|---------------------|
+| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生する場合のテスト | sendSyncメソッドの戻り値としてnullを返却する |
+| `errorMode:msgException` | メッセージ送受信エラーが発生する場合のテスト | MessagingExceptionをスローする |
 
 ## 要求電文のログ出力
 
-要求電文はMap形式（デバッグ用）とCSV形式（エビデンス用）でログ出力される。
+要求電文のログはMap形式とCSV形式で出力される。Map形式はデバッグ用、CSV形式はエビデンス取得用。
 
-サンプルでは、Map形式のログは標準出力とアプリケーションログファイルに、CSV形式のログは専用のログファイルに出力する仕様となっているが、ログの設定を修正することで出力先の切り替えが可能である。
-
-```bash
-# Map形式
-2011-10-26 13:16:10.958 MESSAGING_SEND_MAP request id=[RM11AD0101]. following message has been sent:
+Map形式ログ例:
+```
+2011-10-26 13:16:10.958 MESSAGING_SEND_MAP request id=[RM11AD0101]. following message has been sent: 
   message fw header = {requestId=RM11AD0101, testCount=, resendFlag=0, reserved=}
   message body      = {authors=test3, title=test1, publisher=test2}
 ```
 
-```bash
-# CSV形式
-2011-10-26 13:16:10.958 MESSAGING_SEND_CSV request id=[RM11AD0102]. following message has been sent:
-header:
+CSV形式ログ例:
+```
+2011-10-26 13:16:10.958 MESSAGING_SEND_CSV request id=[RM11AD0102]. following message has been sent: 
+header: 
 "requestId","testCount","resendFlag","reserved"
 "RM11AD0102","","0",""
-body:
+body: 
 "authors","title","publisher"
 "test3","test1","test2"
 ```
 
-log.propertiesの設定例:
-
-```bash
+log.properties設定例:
+```properties
 # CSV形式のメッセージログのライタ（./messaging-evidence.logに出力する）
 writer.MESSAGING_CSV.className=nablarch.core.log.basic.FileLogWriter
 writer.MESSAGING_CSV.filePath=./messaging-evidence.log
@@ -228,33 +233,36 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
 
 ## フレームワークで使用するクラスの設定
 
-これらの設定は取引単体テストでのみ必要な設定である。テスト用のプロファイルにこれらを設定すること（:ref:`how_to_change_componet_define` 参照）。通常、これらの設定はアーキテクトが行うものであり、アプリケーションプログラマが設定する必要はない。
+フレームワークで使用するクラスの設定は取引単体テストでのみ必要であり、テスト用プロファイルに設定する。通常はアーキテクトが設定し、アプリケーションプログラマが設定する必要はない。
 
-**モックアップクラスの設定**
+## モックアップクラスの設定
 
-**クラス**: `nablarch.test.core.messaging.MockMessagingProvider`
+コンポーネント設定ファイルに`MockMessagingProvider`を設定する。
 
 ```xml
+<!-- モックのメッセージングプロバイダ -->
 <component name="messagingProvider"
            class="nablarch.test.core.messaging.MockMessagingProvider">
 </component>
 ```
 
-**Excelファイルの配置場所の設定** (:ref:`send_sync_test_data_path`)
+## Excelファイルの配置場所の設定
 
-**クラス**: `nablarch.core.util.FilePathSetting`
+コンポーネント設定ファイルで`sendSyncTestData`キーを使いExcelファイルの配置場所のパスを設定する（アンカー: `send_sync_test_data_path`）。
 
 ```xml
 <component name="filePathSetting"
          class="nablarch.core.util.FilePathSetting" autowireType="None">
    <property name="basePathSettings">
      <map>
+       <!-- Excelファイルの配置場所のパスを指定する -->
        <entry key="sendSyncTestData" value="file:///C:/nablarch/workspace/Nablarch_sample/test/message" />
-       <entry key="format" value="classpath:web/format" />
+       <entry key="format" value="classpath:web/format" /> 
      </map>
    </property>
    <property name="fileExtensions">
      <map>
+       <!-- Excelファイルの拡張子（xlsx）を定義する -->
        <entry key="sendSyncTestData" value="xlsx" />
        <entry key="format" value="fmt" />
      </map>
@@ -262,19 +270,21 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
 </component>
 ```
 
-> **補足**: 配置ディレクトリのパスはclasspath:ではなくfile:（ファイルシステムのパス）で指定することを推奨。サーバ起動中に直接Excelファイルを編集してテストすることが可能になる。
+> **推奨**: 配置ディレクトリのパスはクラスパス（`classpath:`）ではなくファイルシステムのパス（`file:`）で指定することを推奨する。ファイルシステムのパスを指定することで、サーバ起動中に直接Excelファイルを編集してテストできる。
 
-**テストデータ解析クラスの設定**
+## テストデータ解析クラスの設定
 
-**クラス**: `nablarch.test.core.reader.BasicTestDataParser`, `nablarch.test.core.reader.PoiXlsReader`
+コンポーネント設定ファイルに`BasicTestDataParser`と`PoiXlsReader`を設定する。`messagingTestInterpreters`リストには`NullInterpreter`、`QuotationTrimmer`、`CompositeInterpreter`（内部に`BasicJapaneseCharacterInterpreter`を含む）を設定する。
 
 ```xml
+<!-- TestDataParser -->
 <component name="messagingTestDataParser" class="nablarch.test.core.reader.BasicTestDataParser">
   <property name="testDataReader">
     <component name="xlsReaderForPoi" class="nablarch.test.core.reader.PoiXlsReader"/>
   </property>
   <property name="interpreters" ref="messagingTestInterpreters" />
 </component>
+<!-- テストデータ記法の解釈を行うクラス群 -->
 <list name="messagingTestInterpreters">
   <component class="nablarch.test.core.util.interpreter.NullInterpreter"/>
   <component class="nablarch.test.core.util.interpreter.QuotationTrimmer"/>
@@ -288,7 +298,10 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
 </list>
 ```
 
-**モジュール**:
+## pom.xmlへの依存追加
+
+以下のdependencyをpom.xmlへ追加する。
+
 ```xml
 <dependency>
   <groupId>com.nablarch.framework</groupId>
@@ -305,20 +318,3 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
   </exclusions>
 </dependency>
 ```
-
-## モックアップクラスを使用した取引単体テストの実施方法
-
-応答電文のフォーマット・データ、要求電文のフォーマットをExcelファイルに定義する。ExcelファイルはリクエストIDごとに用意し、ファイル名はリクエストIDと一致させる（例: リクエストID「RM21AA0101」→ファイル名「RM21AA0101.xlsx」）。ファイルの配置ディレクトリは設定ファイルに定義する（:ref:`send_sync_test_data_path` 参照）。
-
-> **注意**: ここでのリクエストIDは送信先システムの機能を一意に識別するID。ウェブアプリケーション/バッチのリクエストIDとは意味が異なる。このIDに基づき、電文フォーマットおよびキュー名が決定する。
-
-## Excelファイルの書き方
-
-- シート名は「message」固定
-- 返却する応答電文のFW制御ヘッダ・本文のフォーマットを定義する
-- 返却する応答電文のFW制御ヘッダ・本文のデータを定義する
-- 要求電文のFW制御ヘッダ・本文のフォーマットのみ定義する（データは不要）
-
-Excelファイルに定義した応答電文のフォーマットおよびデータは、モックアップクラスが返却する応答電文を生成するために使用される。また要求電文のフォーマットは、モックアップクラスが要求電文のログを出力するために使用される。
-
-![Excelファイルの記載例](../../knowledge/development-tools/testing-framework/assets/testing-framework-send_sync/send_sync_test_data.jpg)

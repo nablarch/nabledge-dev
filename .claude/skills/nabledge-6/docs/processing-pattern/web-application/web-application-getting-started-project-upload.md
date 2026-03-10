@@ -25,19 +25,19 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) {
 
 処理の流れ：
 
-1. :ref:`ファイルを取得する<project_upload-file_upload_action>`
-2. :ref:`CSVファイルの内容をBeanにバインドしてバリデーションする<project_upload-validation>`
-3. :ref:`DBへ一括登録する<project_upload-bulk_insert>`
-4. :ref:`ファイルを保存する<project_upload-file_upload_action>`
+1. ファイルを取得する
+2. CSVファイルの内容をBeanにバインドしてバリデーションする
+3. DBへ一括登録する
+4. ファイルを保存する
 
 ## ファイルアップロード機能の実装
 
 ## ファイルアップロード画面の作成
 
-- :ref:`tag-form_tag` の `enctype` 属性を `multipart/form-data` に指定（マルチパートファイル送信に必須）
-- :ref:`tag-file_tag` の `name` 属性に指定した値が、業務アクションで `HttpRequest#getPart` に渡す登録名となる
-- :ref:`tag-message_tag` で完了メッセージを表示。`option0` 属性にリクエストスコープのアップロード件数を指定
-- :ref:`tag-errors_tag` でバリデーションエラーメッセージを一覧表示（:ref:`エラーメッセージの一覧表示 <tag-write_error_errors_tag>` 参照）
+- `n:form` の `enctype` 属性を `multipart/form-data` に指定（マルチパートファイル送信に必須）
+- `n:file` の `name` 属性に指定した値が、業務アクションで `HttpRequest#getPart` に渡す登録名となる
+- `n:message` で完了メッセージを表示。`option0` 属性にリクエストスコープのアップロード件数を指定
+- `n:errors` でバリデーションエラーメッセージを一覧表示
 
 ```jsp
 <n:form useToken="true" enctype="multipart/form-data">
@@ -53,9 +53,9 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) {
 ## ファイルの取得と保存を行う業務アクションメソッドの作成
 
 - `HttpRequest#getPart` でファイルを取得
-- ファイルが未アップロードの場合、`PartInfo` リストのサイズは0となる。この値で業務例外を送出するなどの制御を行う
-- アップロードファイルは :ref:`マルチパートリクエストハンドラ<multipart_handler>` によって一時領域に保存され、自動削除される。永続化が必要な場合はファイルを任意のディレクトリへ移送する
-- ファイルの移送は :ref:`ファイルパス管理<file_path_management>` を使用している場合のみ可能
+- ファイルが未アップロードの場合、`PartInfo` リストのサイズは0となる。この値で業務例外（`ApplicationException`）を送出するなどの制御を行う
+- アップロードファイルはマルチパートリクエストハンドラによって一時領域に保存され、自動削除される。永続化が必要な場合はファイルを任意のディレクトリへ移送する
+- ファイルの移送はファイルパス管理を使用している場合のみ可能
 - `UploadHelper#moveFileTo` の第一引数には、設定ファイルに登録されたファイル格納ディレクトリのキー名を指定
 
 ```java
@@ -93,7 +93,8 @@ private void saveFile(final PartInfo partInfo) {
 
 CSVファイルとBeanプロパティの紐付けは `@Csv` で設定する。CSVフォーマット指定は `@CsvFormat` を使用する（:ref:`デフォルトのフォーマットの指定<data_bind-csv_format_set>` を使用する場合は不要）。詳細は :ref:`CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法 <data_bind-csv_format-beans>` を参照。
 
-- ファイル入力値を受け付けるプロパティは :ref:`String型で定義<bean_validation-form_property>` し、:ref:`Bean Validation<bean_validation>` を実行する
+- ファイルからの入力値を受け付けるため、プロパティは :ref:`String型で定義<bean_validation-form_property>` する。適切な型への変換はバリデーションを通過した安全な値に対して行う
+- `@Required` や `@Domain` などのバリデーション用アノテーションを付与して :ref:`Bean Validation<bean_validation>` を実行する
 - 行数プロパティのゲッタに `LineNumber` を付与することで、対象データの行番号が自動設定される
 
 > **補足**: 入力必須項目のバリデーションエラーメッセージをファイルアップロード向けのメッセージに変更する場合は :ref:`入力値のチェックルールを設定する<client_create_validation_rule>` を参照。

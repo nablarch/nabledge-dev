@@ -84,7 +84,7 @@ jaxRsAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$user
 
 > **補足**: `$parameters$` で出力されるリクエストパラメータにはリクエストボディが含まれない。リクエストボディを出力する場合は `$requestBody$` を使用する。
 
-> **重要**: リクエストIDとユーザIDを出力する場合、取得元が `ThreadContext` なので、ハンドラ構成に :ref:`thread_context_handler` が含まれている必要がある。ユーザIDについては :ref:`thread_context_handler-user_id_attribute_setting` を参照してアプリケーションでセッションに値を設定する必要がある。
+> **重要**: リクエストIDとユーザIDは `BasicLogFormatter` が出力する項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために設けている。リクエストID、ユーザIDを出力する場合、取得元が `ThreadContext` なので、ハンドラ構成に :ref:`thread_context_handler` が含まれている必要がある。ユーザIDについては :ref:`thread_context_handler-user_id_attribute_setting` を参照してアプリケーションでセッションに値を設定する必要がある。
 
 > **重要**: デフォルトの `JaxRsBodyMaskingFilter` はJSON形式のみサポートしている。
 
@@ -117,7 +117,7 @@ HTTPアクセスログの各項目をJSON値として出力するには `JaxRsAc
 | jaxRsAccessLogFormatter.beginTargets | | （後述のデフォルト参照） | リクエスト処理開始時のログ出力項目（カンマ区切り） |
 | jaxRsAccessLogFormatter.endTargets | | （後述のデフォルト参照） | リクエスト処理終了時のログ出力項目（カンマ区切り） |
 | jaxRsAccessLogFormatter.datePattern | | `yyyy-MM-dd HH:mm:ss.SSS` | 開始日時・終了日時の日時パターン（`SimpleDateFormat` 構文） |
-| jaxRsAccessLogFormatter.maskingPatterns | | — | マスク対象パラメータ名・変数名（正規表現、カンマ区切り複数可、大文字小文字区別なし） |
+| jaxRsAccessLogFormatter.maskingPatterns | | — | マスク対象パラメータ名・変数名を正規表現で指定する（部分一致）。カンマ区切り複数可、大文字小文字区別なし |
 | jaxRsAccessLogFormatter.maskingChar | | `*` | マスクに使用する文字 |
 | jaxRsAccessLogFormatter.beginOutputEnabled | | `true` | `false` を指定するとリクエスト処理開始時に出力しない |
 | jaxRsAccessLogFormatter.endOutputEnabled | | `true` | `false` を指定するとリクエスト処理終了時に出力しない |

@@ -38,6 +38,7 @@ SELECT * FROM ZIP_CODE_DATA;
 **アノテーション**: `Csv`, `CsvFormat`, `LineNumber`
 
 - :ref:`data_bind` でCSVをバインドするフォームに `@Csv` と `@CsvFormat` を付与する
+- `@Csv` の `type` 属性に `CsvType.CUSTOM` を指定し、`@CsvFormat` の `quoteMode` 属性に `QuoteMode.NORMAL` を指定する
 - :ref:`bean_validation` 実施のためバリデーションアノテーション（`@Domain`, `@Required`）を付与する
 - 行数プロパティのゲッタに `@LineNumber` を付与すると対象データの行番号が自動設定される
 
@@ -59,7 +60,7 @@ SELECT * FROM ZIP_CODE_DATA;
 
 **クラス**: `ImportZipCodeFileAction`（`BatchAction` 継承）
 
-- `handle`: データリーダから渡された一行分のデータに対する処理を実装する。`BeanUtil.createAndCopy(ZipCodeData.class, inputData)` でフォームをエンティティ（`ZipCodeData`）に変換し、`UniversalDao.insert` でDBに登録する
+- `handle`: データリーダから渡された一行分のデータに対する処理を実装する。`BeanUtil.createAndCopy(ZipCodeData.class, inputData)` でフォームをエンティティ（`ZipCodeData`）に変換し、`UniversalDao.insert` でDBに登録する。処理成功時は `return new Result.Success();` を返す
 - `createReader`: 使用するデータリーダクラス（`ZipCodeFileReader`）のインスタンスを返す
 - `@ValidateData` インターセプタにより、`handle` メソッドには常にバリデーション済みの入力データが引き渡される
 

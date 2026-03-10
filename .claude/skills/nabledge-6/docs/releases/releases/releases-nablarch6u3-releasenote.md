@@ -89,13 +89,13 @@ JSON値（`""` で囲われた項目）がJSON構文の区切り文字（`:`, `[
 
 **No.20 jQuery・Bootstrapバージョンアップ及びMaterial Design for Bootstrap廃止**
 
-Bootstrapのバージョンアップ（Bootstrap 5.3.3）に伴って、Material Design for Bootstrap（MDB）の使用を廃止し、画面デザインを調整。Exampleをベースに画面開発しているシステムは画面デザインへの影響に注意すること。
+Bootstrapのバージョンアップ（Bootstrap 5.3.3）に伴って、Material Design for Bootstrap（MDB）の使用を廃止し、画面デザインを調整。
 
 参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web/index.html
 
 **No.11 Base64Utilの位置づけ**
 
-`Base64Util`はJava8以降の標準APIで代替可能。後方互換のために存在する。現在`Base64Util`を使用している箇所を標準APIに置換する必要はない。
+`Base64Util`はRFC4648の「4. Base 64 Encoding」に準拠している。Java8以降の標準APIで代替可能であり、後方互換のために存在する。現在`Base64Util`を使用している箇所を標準APIに置換する必要はない。
 
 参照: https://nablarch.github.io/docs/6u3/javadoc/nablarch/core/util/Base64Util.html, https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/utility.html
 

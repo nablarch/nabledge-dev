@@ -77,6 +77,8 @@ try {
 }
 ```
 
+> **補足**: 上記例のように、障害ログの出力ではログから障害内容を特定するために障害コードを指定する。障害コードのコード体系は、プロジェクト毎に規定すること。
+
 **障害ログに出力されるメッセージ**: :ref:`message` を使用して障害コードに対応するメッセージを取得する。メッセージが見つからない場合は例外が発生し、その例外をWARNレベルでログ出力した上で、障害ログには以下を出力する:
 ```
 failed to get the message to output the failure log. failureCode = [<障害コード>]
@@ -233,7 +235,7 @@ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nInput 
 2. `FailureLogFormatter` を継承し、`getLogItems(Map<String, String>)` をオーバーライドして`$data$`に対してカスタムクラスを設定
 3. `app-log.properties`の`failureLogFormatter.className`に継承クラスを指定
 
-フレームワーク提供の `DataItem` を継承して拡張可能。`FailureLogContext.getData()` で処理対象データを取得し、カスタム処理（マスク等）を適用する。
+フレームワーク提供の `DataItem` を継承して拡張可能。`FailureLogContext.getData()` で処理対象データを取得し、カスタム処理（マスク等）を適用する。`MaskingMapValueEditor` はフレームワークが提供するMap編集用のユーティリティで、マスク文字とマスク対象パターンを指定してMap値をマスクできる。
 
 **FailureLogFormatter継承クラスの実装例**:
 ```java
@@ -262,8 +264,8 @@ failureLogFormatter.className=nablarch.core.log.app.CustomDataFailureLogFormatte
 | failureLogFormatter.defaultFailureCode | ○ | デフォルトの障害コード（障害コード指定なしの場合に使用） |
 | failureLogFormatter.defaultMessage | ○ | デフォルトのメッセージ |
 | failureLogFormatter.language | | 障害コードからメッセージ取得時の言語。未指定時は `ThreadContext` の言語を使用 |
-| failureLogFormatter.notificationTargets | | 障害通知ログの出力項目（カンマ区切り）。デフォルト: `failureCode,message` |
-| failureLogFormatter.analysisTargets | | 障害解析ログの出力項目（カンマ区切り）。デフォルト: `failureCode,message` |
+| failureLogFormatter.notificationTargets | | 障害通知ログの出力項目（カンマ区切り） |
+| failureLogFormatter.analysisTargets | | 障害解析ログの出力項目（カンマ区切り）。指定可能な出力項目とデフォルト設定は障害通知ログと同じ |
 | failureLogFormatter.contactFilePath | | 連絡先情報プロパティファイルのパス（:ref:`failure_log-add_contact` 参照） |
 | failureLogFormatter.fwFailureCodeFilePath | | フレームワーク障害コード変更情報プロパティファイルのパス（:ref:`failure_log-change_fw_failure_code` 参照） |
 | failureLogFormatter.structuredMessagePrefix | | JSONマーカー文字列。デフォルト: `"$JSON$"` |

@@ -545,6 +545,8 @@ String mailBody = row.getString("mailBody");
 | `SqlStatementException` | SQL実行失敗 | |
 | `DuplicateStatementException` | SQL実行時の一意制約違反 | ハンドリング方法は :ref:`database-duplicated_error` 参照。一意制約違反判定に :ref:`ダイアレクト <database-dialect>` を使用。 |
 
+> **補足**: データベースアクセスエラー発生時の例外を変更したい場合（より細かく分けたい場合）などは、:ref:`database-change_exception` を参照すること。
+
 ## 一意制約違反をハンドリングして処理を行う
 
 `DuplicateStatementException` を `try-catch` で補足して処理する。一意制約違反の判定には :ref:`ダイアレクト <database-dialect>` が使用される。
@@ -561,13 +563,13 @@ String mailBody = row.getString("mailBody");
 
 **手順**:
 1. コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義する
-2. システムリポジトリから `SimpleDbTransactionManager` を取得し、`SimpleDbTransactionExecutor` を使用してSQLを実行する（`SimpleDbTransactionManager` を直接使わないこと）
+2. `SimpleDbTransactionManager` をシステムリポジトリから取得するか、またはDIで直接注入して使用する。`SimpleDbTransactionExecutor` を使用してSQLを実行すること（`SimpleDbTransactionManager` を直接使わないこと）
 
-| プロパティ名 | 型 | 必須 | 説明 |
-|---|---|---|---|
-| connectionFactory | ConnectionFactory | ○ | 詳細は :ref:`database-connect` 参照 |
-| transactionFactory | TransactionFactory | ○ | 詳細は :ref:`transaction-database` 参照 |
-| dbTransactionName | String | | トランザクションを識別するための名前 |
+| プロパティ名 | 型 | 説明 |
+|---|---|---|
+| connectionFactory | ConnectionFactory | 詳細は :ref:`database-connect` 参照 |
+| transactionFactory | TransactionFactory | 詳細は :ref:`transaction-database` 参照 |
+| dbTransactionName | String | トランザクションを識別するための名前 |
 
 **コンポーネント設定例**:
 ```xml
@@ -578,7 +580,7 @@ String mailBody = row.getString("mailBody");
 </component>
 ```
 
-**Java実装例**:
+**Java実装例**（システムリポジトリから取得する場合）:
 ```java
 SimpleDbTransactionManager dbTransactionManager =
     SystemRepository.get("update-login-failed-count-transaction");

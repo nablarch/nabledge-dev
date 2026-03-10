@@ -89,7 +89,7 @@ nablarch.suppress-table-sort=true
 sqlLogFormatter.className=nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter
 ```
 
-**log.properties** — SQLログをDEBUGレベル以上で出力する設定：
+**log.properties** — SQLログをDEBUGレベル以上で出力する設定をする。以下の例では、SQLログを標準出力に表示させないよう専用のロガー（何もしないロガー: `NopLogWriter`）を設定している：
 
 ```none
 loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory

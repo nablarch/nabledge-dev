@@ -51,8 +51,8 @@
 
 ## バッチ実行中の状態の保持
 
-:ref:`nablarch_batch_retention_state`
+- :ref:`nablarch_batch_retention_state`
 
 ## 常駐バッチのマルチプロセス化
 
-:ref:`nablarch_batch_multiple_process`
+- :ref:`nablarch_batch_multiple_process`

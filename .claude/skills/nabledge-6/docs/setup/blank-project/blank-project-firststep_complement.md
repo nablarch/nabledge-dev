@@ -40,8 +40,8 @@ H2コンソールの起動手順:
 
 | ツール | Mavenフェーズ | 補足 |
 |---|---|---|
-| [/development_tools/toolbox/JspStaticAnalysis/index](toolbox-JspStaticAnalysis.md) | verify | |
-| カバレッジ取得 | test | jacoco.execが生成される。SonarQube及びJenkinsのプラグインで使用可能。 |
+| JspStaticAnalysis | verify | |
+| カバレッジ取得 | test | jacoco.execが生成されるところまで設定済み。SonarQube及びJenkinsのプラグインで使用可能。 |
 | [gsp-dba-maven-plugin](https://github.com/coastland/gsp-dba-maven-plugin) | － | 起動: `mvn -P gsp gsp-dba:<ゴール名>`（例: `mvn -P gsp gsp-dba:generate-ddl`）。`mvn -P gsp generate-resources` で generate-ddl・execute-ddl・generate-entity・load-data・export-schema を順に実行可能。 |
 
-> **重要**: ツールの設定を変更する際は、:ref:`about_maven_parent_module` のpom.xmlを必ず理解した上で行うこと。pom.xmlを理解することで、多くの設定項目について**容易**に設定変更が可能になる。
+> **重要**: ツールの設定を変更する際は、親モジュールのpom.xmlを必ず理解した上で行うこと。pom.xmlを理解することで、多くの設定項目について**容易**に設定変更が可能になる。

@@ -43,7 +43,7 @@
 
 | プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
 |---|---|---|---|---|
-| transactionFactory | TransactionFactory | ○ | | トランザクション制御対象を取得するファクトリクラス |
+| transactionFactory | TransactionFactory | | | トランザクション制御対象を取得するファクトリクラス |
 | transactionName | String | | transaction | スレッド上でトランザクションを識別する名前 |
 
 - 複数トランザクション使用時は `transactionName` への設定が必須（:ref:`transaction_management_handler-multi_transaction` 参照）

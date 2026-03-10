@@ -269,14 +269,14 @@ java nablarch.fw.launcher.Main \
 
 ## メール送信時のエラー処理
 
-`MailSender` は例外の種類に応じて以下の処理を行う。外部入力データ（アドレスやヘッダ）に起因する例外やメール送信失敗例外が発生した場合は、対象のメール送信要求のステータスを送信失敗にして次のメール送信処理を行う。上記以外の例外はリトライする。
+`MailSender` は例外の種類に応じて以下の処理を行う。外部入力データ（アドレスやヘッダ）に起因する例外やメール送信失敗例外が発生した場合は、対象のメール送信要求のステータスを送信失敗にして次のメール送信処理を行う。上記以外の例外が発生した場合は、メール送信要求のステータスを送信失敗にしてリトライする。
 
 | 例外 | 処理 |
 |---|---|
 | `AddressException` (送信要求のアドレス変換時) | 変換失敗アドレスをログ出力(ERROR)し、次のメール送信処理に進む |
 | `InvalidCharacterException` (:ref:`mail-mail_header_injection`) | ヘッダ文字列をログ出力(ERROR)し、次のメール送信処理に進む |
 | `SendFailedException` (メール送信失敗時) | 送信済み/未送信/不正アドレスをログ出力(ERROR)し、次のメール送信処理に進む |
-| 上記以外の `Exception` | リトライ例外を送出 |
+| 上記以外の `Exception` | メール送信要求のステータスを送信失敗にしてリトライ例外を送出 |
 
 ステータスの送信失敗への更新に失敗した場合、またはリトライ上限に達した場合、メール送信バッチは異常終了する。
 
@@ -305,7 +305,7 @@ java nablarch.fw.launcher.Main \
 
 固定値にできない場合は、プロジェクトで改行コードを変換または除去する対応を行う。
 
-保険的対策として、以下の項目に改行コードが含まれている場合はメール送信を実施しないチェック機能を設けている。改行コードが含まれていた場合は `InvalidCharacterException` を送出してログ出力(ERROR)し、該当メールは送信失敗として扱う。
+ただし、JavaMailを使用しても、一部のメールヘッダの項目に改行コードが含まれていてもメール送信可能な項目がある。そのため、保険的対策として、これらの項目に対して改行コードが含まれている場合はメール送信を実施しないチェック機能を設けている。改行コードが含まれていた場合は `InvalidCharacterException` を送出してログ出力(ERROR)し、該当メールは送信失敗として扱う。
 
 対象項目:
 - 件名
@@ -346,6 +346,7 @@ java nablarch.fw.launcher.Main \
     class="nablarch.core.repository.initialization.BasicApplicationInitializer">
   <property name="initializeList">
     <list>
+      <!-- TableIdGeneratorは初期化が必要 -->
       <component-ref name="mailRequestIdGenerator" />
     </list>
   </property>

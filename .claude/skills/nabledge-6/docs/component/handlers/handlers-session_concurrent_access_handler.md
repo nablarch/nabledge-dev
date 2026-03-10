@@ -22,3 +22,7 @@
   <artifactId>nablarch-fw-web</artifactId>
 </dependency>
 ```
+
+## 制約
+
+なし。

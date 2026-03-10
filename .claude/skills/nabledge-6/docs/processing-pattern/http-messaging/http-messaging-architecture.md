@@ -2,6 +2,8 @@
 
 ## HTTPメッセージングの構成
 
+HTTPメッセージングでは、外部(ブラウザや外部システムなど)から送信されたhttpメッセージを処理するウェブサービスを構築するための機能を提供している。
+
 > **重要**: 本機能ではなく、:ref:`RESTfulウェブサービス <restful_web_service>` の使用を推奨する。詳細は、:ref:`RESTfulウェブサービスを推奨する理由 <web_service-recommended_jaxrs>` を参照。
 
 Nablarchウェブアプリケーションと同じ構成となる。詳細は、:ref:`web_application-structure` を参照。

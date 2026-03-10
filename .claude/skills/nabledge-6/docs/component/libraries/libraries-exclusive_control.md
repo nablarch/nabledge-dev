@@ -38,20 +38,19 @@
 </dependency>
 ```
 
-## 使用方法
-
-### 排他制御を使うために準備する
+## 排他制御を使うために準備する
 
 コンポーネント名 `exclusiveControlManager` で `BasicExclusiveControlManager` をコンポーネント定義に設定する。排他制御用テーブルごとに `ExclusiveControlContext` を継承したクラスを作成し、排他制御API呼び出しで使用する。
 
 ```xml
 <component name="exclusiveControlManager"
            class="nablarch.common.exclusivecontrol.BasicExclusiveControlManager">
+    <!-- 楽観ロックで排他エラーが発生した際に使用するメッセージID -->
     <property name="optimisticLockErrorMessageId" value="CUST0001" />
 </component>
 ```
 
-コンストラクタで `setTableName`、`setVersionColumnName`、`setPrimaryKeyColumnNames`、`appendCondition` を設定する。
+排他制御用テーブルごとに `ExclusiveControlContext` を継承したクラスを作成する。コンストラクタで `setTableName`、`setVersionColumnName`、`setPrimaryKeyColumnNames`、`appendCondition` を設定する。
 
 ```java
 public class UsersExclusiveControl extends ExclusiveControlContext {
@@ -65,9 +64,11 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
 }
 ```
 
-### 楽観的ロックを行う
+## 楽観的ロックを行う
 
 `HttpExclusiveControlUtil` を使用する。更新対象データ取得時にバージョン番号を取得し、更新時にバージョン番号が変更されていないかチェックすることで実現する。
+
+入力→確認→完了がある更新機能を例に、楽観的ロックの実装例を示す。
 
 | 画面操作 | API | 説明 |
 |---|---|---|
@@ -82,31 +83,37 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
     @OnError(type = ApplicationException.class, path = "/input.jsp"),
     @OnError(type = OptimisticLockException.class, path = "/error.jsp")
 })
-public HttpResponse confirm(HttpRequest request, ExecutionContext context) { ... }
+public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
+    HttpExclusiveControlUtil.checkVersions(request, context);
+    // ...
+}
 ```
 
 > **重要**: `HttpExclusiveControlUtil.checkVersions` を呼び出さないと、画面間でバージョン番号が引き継がれない。
 
-### 一括更新で楽観的ロックを行う
+## 一括更新で楽観的ロックを行う
 
-主キーが **複合主キーでない場合** と **複合主キーの場合** で実装方法が異なる。どちらの場合も、バージョン番号の準備には `HttpExclusiveControlUtil#prepareVersions` を呼び出す。
+複数のレコードに対し特定のプロパティを一括更新するような処理で、選択されたレコードのみに楽観的ロックのチェックを行いたい場合に使用する。バージョン番号の準備には `HttpExclusiveControlUtil#prepareVersions` を呼び出す。
 
-**複合主キーでない場合**: チェック対象パラメータ名を指定して呼び出す。
+排他制御用テーブルの主キーが **複合主キーでない場合** と **複合主キーの場合** で実装方法が異なる。
+
+**複合主キーでない場合**: チェック対象リクエストパラメータ名を指定して呼び出す。
 
 ```java
+// チェックのみ
 HttpExclusiveControlUtil.checkVersions(request, context, "user.deactivate");
+// チェックと更新
 HttpExclusiveControlUtil.updateVersionsWithCheck(request, "user.deactivate");
 ```
 
-**複合主キーの場合**: リクエストパラメータで複合主キーを送る際は、区切り文字（任意だが、**主キーの値にはなり得ない文字**を使用すること）で結合した文字列を指定する。例えば `,` を区切り文字として `USER_ID,PK2,PK3` の順に結合して送る。
+**複合主キーの場合**: リクエストパラメータで複合主キーを送る際は、区切り文字（**主キーの値にはなり得ない文字**）で結合した文字列を指定する。
 
 ```html
-<!-- 複合主キーは区切り文字で結合した文字列として送る（例: カンマ区切り） -->
 <input type="checkbox" name="user.userCompositeKeys" value="user001,pk2001,pk3001" />
 <input type="checkbox" name="user.userCompositeKeys" value="user002,pk2002,pk3002" />
 ```
 
-Form側では区切り文字を考慮してリクエストパラメータから主キーを取り出す処理を実装し、レコードごとに `checkVersion` / `updateVersionWithCheck` を呼び出す。
+Form側では区切り文字を考慮してリクエストパラメータから主キーを取り出し、レコードごとに `checkVersion` / `updateVersionWithCheck` を呼び出す。
 
 ```java
 // チェックのみ
@@ -125,7 +132,7 @@ for(User deletedUser : deletedUsers) {
 
 > **補足**: `CompositeKey` と複合主キー対応カスタムタグを使うと複合主キーをより簡単に扱える。詳細は :ref:`tag-composite_key` を参照。
 
-### 悲観的ロックを行う
+## 悲観的ロックを行う
 
 `ExclusiveControlUtil.updateVersion` で排他制御用テーブルのバージョン番号を更新し、トランザクションがコミット/ロールバックされるまで対象行をロックする。他のトランザクションはロック解除まで待機する。
 

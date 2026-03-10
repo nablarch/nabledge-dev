@@ -74,6 +74,8 @@
 public class SampleTransaction implements Transaction {
   private final String resourceName;
 
+  // トランザクション制御対象のリソースを識別するためのリソース名を受け取る。
+  // トランザクション制御時に、このリソース名からトランザクション制御対象のリソースを取得する必要がある。
   public SampleTransaction(String resourceName) {
     this.resourceName = resourceName;
   }

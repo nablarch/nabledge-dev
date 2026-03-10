@@ -14,6 +14,28 @@
 
 `BeanUtil` のAPIを使用して、任意のJava Beansに対する操作を行う。
 
+**Bean定義例**:
+```java
+public class User {
+    private Long id;
+    private String name;
+    private Date birthDay;
+    private Address address;
+    // getter & setterは省略
+}
+
+public class Address {
+    private String postNo;
+    // getter & setterは省略
+}
+
+public class UserDto {
+    private String name;
+    private String birthDay;
+    // getter & setterは省略
+}
+```
+
 ```java
 // プロパティ値取得（getter経由）
 final Long id = (Long) BeanUtil.getProperty(user, "id");
@@ -40,6 +62,20 @@ final User user = BeanUtil.createAndCopy(User.class, userMap);
 > **重要**: BeanUtilはList型の型パラメータに対応していない。List型の型パラメータを使う場合は、具象クラスでgetterをオーバーライドすること。オーバーライドしない場合、`BeanUtil.createAndCopy` 呼び出し時に実行時例外が発生する。
 >
 > ```java
+> public class ItemsForm<D extends Serializable> {
+>     private List<D> items;
+>     public List<D> getItems() {
+>         return items;
+>     }
+>     public void setItems(List<D> items) {
+>         this.items = items;
+>     }
+> }
+>
+> public class Item implements Serializable {
+>     // プロパティは省略
+> }
+>
 > // NG: オーバーライドなし → 実行時例外
 > public class BadSampleForm extends ItemsForm<Item> {}
 >
@@ -114,7 +150,15 @@ public class SampleConversionManager implements ConversionManager {
 2. :ref:`bean_util-format_property_setting` - プロパティ単位にアノテーションで設定
 3. :ref:`bean_util-format_default_setting` - デフォルト設定（システム共通）
 
-**デフォルト（システム共通）設定**: コンポーネント名 **conversionManager** で `BasicConversionManager` を定義する。`datePatterns` に許容する日付・日時フォーマット、`numberPatterns` に許容する数値フォーマットを設定する。複数フォーマットを許容する場合は複数設定する。
+## デフォルト(システム共通)の許容するフォーマットを設定する
+
+フォーマットのデフォルト設定は、コンポーネント設定ファイルに設定する。例えば、画面上で入力される数値についてはカンマ編集されているものも許容する場合に、デフォルト設定しておくことで個別指定が不要となる。
+
+ポイント:
+- コンポーネント名を **conversionManager** で `BasicConversionManager` を定義する
+- `datePatterns` プロパティに許容する日付・日時フォーマットを設定する
+- `numberPatterns` プロパティに許容する数値フォーマットを設定する
+- 複数のフォーマットを許容する場合は複数設定する
 
 ```xml
 <component name="conversionManager" class="nablarch.core.beans.BasicConversionManager">
@@ -134,19 +178,34 @@ public class SampleConversionManager implements ConversionManager {
 
 > **重要**: `yyyy/MM/dd` と `yyyy/MM/dd HH:mm:ss` のように日付と日時のフォーマットを両方デフォルト指定した場合、日時形式の値も `yyyy/MM/dd` でパースされ時間情報が欠落するケースがある。デフォルトには日付フォーマットのみ指定し、日時形式の項目は :ref:`bean_util-format_property_setting` でオーバーライドすること。
 
-**プロパティ単位の設定**: コピー元またはコピー先のフィールドに `CopyOption` アノテーションを指定する。コピー元・コピー先どちらに指定しても動作するが、String型プロパティのフィールドへの指定が推奨。コピー元とコピー先の両方に指定されている場合はコピー元の設定を使用する。
+## コピー対象のプロパティに対して許容するフォーマットを設定する
+
+特定機能だけ :ref:`bean_util-format_default_setting` を適用せずに異なるフォーマットを指定したい場合、コピー元またはコピー先のフィールドに `CopyOption` アノテーションを指定して許容するフォーマットを上書きする。
+
+アノテーションはコピー元・コピー先どちらに指定しても動作するが、フォーマットした値を持つString型プロパティのフィールドへの指定が推奨。コピー元とコピー先の両方に指定されている場合はコピー元の設定を使用する。
+
+ポイント:
+- コピー元（コピー先）のプロパティに対応したフィールドに `CopyOption` アノテーションを設定する
+- `CopyOption` の `datePattern` に許容する日付・日時フォーマットを指定する
+- `CopyOption` の `numberPattern` に許容する数値フォーマットを指定する
 
 ```java
 public class Bean {
+    // 許容する日時フォーマットを指定する
     @CopyOption(datePattern = "yyyy/MM/dd HH:mm:ss")
     private String timestamp;
 
+    // 許容する数値フォーマットを指定する
     @CopyOption(numberPattern = "#,###")
     private String number;
+
+    // setter及びgetterは省略
 }
 ```
 
-**BeanUtil呼び出し時の設定**: OSSなどでBeanを自動生成しているためアノテーション付与が不可能な場合、または特定プロパティのみ異なる型変換ルールを適用したい場合に使用する。`CopyOptions` を使用してプロパティに対して設定し（構築方法は `CopyOptions.Builder` 参照）、`BeanUtil` 呼び出し時に渡す。
+## BeanUtil呼び出し時に許容するフォーマットを設定する
+
+OSSなどを用いてBeanを自動生成しているためアノテーション付与が不可能な場合、または特定プロパティのみ異なる型変換ルールを適用したい場合に使用する。`CopyOptions` を使用してプロパティに対して設定し（構築方法は `CopyOptions.Builder` 参照）、`BeanUtil` 呼び出し時に渡す。
 
 ```java
 final CopyOptions copyOptions = CopyOptions.options()
@@ -156,6 +215,7 @@ final CopyOptions copyOptions = CopyOptions.options()
     .converterByName("custom", Date.class, new CustomDateConverter())
     .build();
 
+// CopyOptionsを指定してBeanUtilを呼び出す
 final DestBean copy = BeanUtil.createAndCopy(DestBean.class, bean, copyOptions);
 ```
 

@@ -6,6 +6,8 @@
 
 ## 変更方法
 
+以下は、Nablarchが提供する各アーキタイプから生成したブランクプロジェクトで、Nablarchフレームワークが使用するテーブル名を一律「T_テーブル名」に変更する場合の例である。
+
 `src/main/resources/common.properties` に各機能のテーブル設定を追加する。
 
 ```properties

@@ -224,7 +224,7 @@ public class CustomClusterRedisClient extends LettuceClusterRedisClient {
 </component>
 ```
 
-`disposableList` に `LettuceRedisClientProvider` コンポーネントを指定することで、実際に使用されるクライアントクラスの廃棄処理が実行される。
+`BasicApplicationInitializer` の `initializeList` と同様で、`disposableList` プロパティに `LettuceRedisClientProvider` コンポーネントを指定することで、実際に使用されるクライアントクラスの廃棄処理が実行される。
 
 ## セッション情報の保存方法
 

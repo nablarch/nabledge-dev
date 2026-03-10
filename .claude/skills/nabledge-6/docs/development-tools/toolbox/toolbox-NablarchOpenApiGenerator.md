@@ -4,6 +4,8 @@
 
 [OpenAPI](https://www.openapis.org/) ドキュメントからソースコードを生成する [OpenAPI Generator](https://openapi-generator.tech/) のGenerator実装。Nablarch RESTfulウェブサービス用のGeneratorを提供し、[OpenAPI GeneratorのMavenプラグイン](https://openapi-generator.tech/docs/plugins)に組み込んで実行することでソースコードを生成する。
 
+生成されたソースコードを使用することで、OpenAPIドキュメントで定義したREST APIのインターフェースに従ったアクションクラスの実装が容易となる。
+
 生成物:
 - パス・オペレーション定義 → リソース(アクション)インターフェース
 - スキーマ定義 → リクエスト/レスポンス対応モデル
@@ -587,9 +589,13 @@ ProjectCreateRequest:
 生成されるモデル例:
 
 ```java
-@JsonProperty("projectName")
-@Required @Domain("projectName")
-public String getProjectName() { ... }
+@JsonTypeName("ProjectCreateRequest")
+@jakarta.annotation.Generated(value = "nablarch.tool.openapi.codegen.JavaNablarchJaxrsServerCodegen", ...)
+public class ProjectCreateRequest {
+    @JsonProperty("projectName")
+    @Required @Domain("projectName")
+    public String getProjectName() { ... }
+}
 ```
 
 ## ファイルアップロードの定義例

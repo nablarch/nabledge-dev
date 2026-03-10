@@ -73,7 +73,7 @@
     }
   ],
   "sections": {
-    "handler-class-name": "ハンドラキューにデータリードハンドラを組み込む際に指定するクラス名は以下のとおり。\n\n**クラス名**: `nablarch.fw.handler.DataReadHandler`",
+    "handler-class-name": "**クラス名**: `nablarch.fw.handler.DataReadHandler`\n\nデータリーダを使用して入力データの順次読み込みを行うスタンドアロンバッチ向けハンドラ。",
     "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-standalone</artifactId>\n</dependency>\n```",
     "constraints": "本ハンドラより手前のハンドラにて、`ExecutionContext` に `DataReader` を設定する必要がある。本ハンドラ呼び出し時に `DataReader` が未設定の場合、処理対象データ無しとして `NoMoreRecord` を返却して処理を終了する。",
     "max-count-configuration": "`maxCount` プロパティで最大処理件数を設定できる。設定件数分のデータを処理し終わると `NoMoreRecord` を返却する。大量データを複数日に分割処理するバッチなどに使用する（例: 100万件のバッチを日次10万件ずつ10日で処理）。\n\n```xml\n<component class=\"nablarch.fw.handler.DataReadHandler\">\n  <!-- 処理する件数は、最大1万レコード -->\n  <property name=\"maxCount\" value=\"10000\" />\n</component>\n```",

@@ -89,7 +89,7 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 DomaConfig.singleton()
         .getTransactionManager()
         .requiresNew(() ->
-                DomaDaoRepository.get(ProjectDao.class).insert(project));
+                DomaDaoRepository.get(ProjectDao.class).insert(project);
 ```
 
 ## Jakarta Batchに準拠したバッチアプリケーションで使用する

@@ -1,5 +1,9 @@
 # リクエスト単体テスト（バッチ処理）
 
+## 概要
+
+リクエスト単体テスト（バッチ処理）では、実際にバッチをコマンドラインから起動したときの動作を擬似的に再現し、テストを行う。
+
 ## 全体像
 
 ![バッチリクエスト単体テストクラス構成図](../../knowledge/development-tools/testing-framework/assets/testing-framework-RequestUnitTest_batch/batch_request_test_class.png)
@@ -51,6 +55,8 @@
 | 準備処理 | 結果確認 |
 |---|---|
 | 入力ファイルの作成 | 出力ファイルの内容確認 |
+
+本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、テストソース記述量を大きく削減できる。
 
 具体的な使用方法は [../05_UnitTestGuide/02_RequestUnitTest/batch](testing-framework-batch.md) を参照。
 

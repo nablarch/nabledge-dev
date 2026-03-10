@@ -77,9 +77,9 @@
 
 巨大なリクエストボディによるディスクリソース枯渇を防ぐため、サイズ上限超過時はINFOログを出力し `413` を返す。
 
-| プロパティ名 | 型 | デフォルト値 | 説明 |
-|---|---|---|---|
-| bodyLengthLimit | int | `Integer#MAX_VALUE` | リクエストボディのサイズ上限（バイト） |
+| プロパティ名 | デフォルト値 | 説明 |
+|---|---|---|
+| bodyLengthLimit | `Integer#MAX_VALUE` | リクエストボディのサイズ上限（バイト） |
 
 ```xml
 <component class="nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler">

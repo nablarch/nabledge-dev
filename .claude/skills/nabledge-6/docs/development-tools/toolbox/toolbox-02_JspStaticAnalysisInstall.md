@@ -2,8 +2,6 @@
 
 ## 前提条件
 
-Jakarta Server Pages静的解析ツールの設定変更を行う前に、以下の前提条件を満たしていること。
-
 - アーキタイプからブランクプロジェクトの生成が完了していること。
 
 ## 設定ファイル構成
@@ -11,7 +9,7 @@ Jakarta Server Pages静的解析ツールの設定変更を行う前に、以下
 | ファイル名 | 説明 |
 |---|---|
 | pom.xml | 起動に必要な設定と、jspanalysis.excludePatternsを設定する。 |
-| tools/nablarch-tools.xml | Antタスクの定義ファイル。利用者はMaven経由で実行するため通常意識することはない。 |
+| tools/nablarch-tools.xml | Antタスクの定義ファイル。内部でAntを使用しているため存在する。利用者はMaven経由で実行するため通常意識することはない。 |
 | tools/static-analysis/jspanalysis/config.txt | Jakarta Server Pages静的解析ツール設定ファイル。記述方法は、:ref:`01_customJspAnalysis` を参照。 |
 | tools/static-analysis/jspanalysis/transform-to-html.xsl | 解析結果のXMLをHTMLに変換する際の定義ファイル。記述方法は、:ref:`01_outputJspAnalysis` の「JSP解析(XMLレポート出力)」を参照。 |
 | nablarch-archetype-parentのpom.xml | jspanalysis.excludePatterns以外を設定する。 |

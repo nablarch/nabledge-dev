@@ -63,7 +63,7 @@ SETUP_TABLE[case_002]=EMPLOYEE_TABLE
 EXPECTED_TABLE[case_002]=EMPLOYEE_TABLE
 ```
 
-> **注意**: 複数グループIDのデータを記述する際は、:ref:`auto-test-framework_multi-datatype` のようにグループIDごとにまとめて記述すること。まとめて記述しないとデータ読み込みが途中で終了しテストが正しく実行されない。
+> **注意**: 複数グループIDのデータを記述する際は、グループIDごとにまとめて記述すること。まとめて記述しないとデータ読み込みが途中で終了しテストが正しく実行されない。
 
 ## システム日時を任意の値に固定したい
 
@@ -87,15 +87,140 @@ SystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject("s
 Date now = provider.getDate();
 ```
 
+## 採番をテストしたい
+
+シーケンス採番のテストでは、採番結果が実行タイミングに依存するため、テスト用に採番値を固定する必要がある。
+
+Nablarchテスティングフレームワークでは、採番処理をテスト用の実装に差し替えることで、任意の採番値を返すようにできる。テスト用コンポーネント設定ファイルで、IdGeneratorインタフェースの実装クラスをモック実装に差し替えて使用する。
+
+## ThreadContextを使用したい
+
+ThreadContextはリクエストスコープの情報（ユーザID、リクエストIDなど）を保持する。テストでThreadContextの値を設定する場合は、テスト用コンポーネント設定でスレッドコンテキスト変数定義を設定するか、テストコード内で直接`ThreadContext.setObject(String key, Object value)`を使用する。
+
+テスト実行後はThreadContextの値がクリアされることを確認すること。
+
+## TestDataParserを使用したい
+
+TestDataParserはExcelなどのテストデータファイルを解析するクラス。直接インスタンス化して使用することで、テストデータをプログラムから柔軟に読み取れる。
+
+TestDataParserを直接使用する場合は、データファイルのパスとシート名を指定してデータを取得する。通常はDbAccessTestSupportやTestSupportのメソッド経由で間接的に使用する。
+
+## JUnitのアノテーションを使用したい
+
+NablarchテスティングフレームワークはJUnitの標準アノテーションと組み合わせて使用できる。
+
+- `@Test`: テストメソッドのマーク（標準JUnit）
+- `@Rule` / `@ClassRule`: JUnit Ruleの適用
+- `@Before` / `@After`: テスト前後の処理
+
+DbAccessTestSupportなどの基底クラスはJUnit 4の`TestCase`を継承しているため、JUnit 4のアノテーションが使用可能。
+
+## トランザクションを使用したい
+
+テストコードからトランザクションを制御する場合は、SimpleDbTransactionManagerなどのトランザクションマネージャを使用する。
+
+DbAccessTestSupportを継承したテストでは、テストフレームワークが自動的にトランザクション管理を行う。各テストメソッド終了後にロールバックされるため、テスト間でデータが干渉しない。
+
+手動でコミットが必要な場合は、トランザクションマネージャを取得してコミット操作を行う。
+
+## その他のクラスを使用したい
+
+テスティングフレームワークが提供するその他のユーティリティクラスを使用することで、テスト実装を簡素化できる。
+
+システムリポジトリからコンポーネントを取得する場合は`SystemRepository.getObject(String name)`を使用する。テスト用のコンポーネント設定ファイルをシステムリポジトリにロードした後、各コンポーネントを取得してテストに使用する。
+
+## Excelのデータを使ってBeanのプロパティをアサートしたい
+
+ExcelファイルのデータをBeanのプロパティ検証に使用する場合、`assertProperties`メソッドが利用できる。
+
+ExcelシートにBeanのプロパティ名と期待値を記載し、`assertProperties(String sheetName, String id, Object bean)`を呼び出すことで、Beanの各プロパティ値とExcelの期待値を一括比較できる。
+
+これにより、多数のプロパティを持つBeanのアサーションを簡潔に記述できる。
+
+クラスのプロパティ検証にはExcelファイルのデータと照合する以下のメソッドを使用する。引数: 第1引数=エラー時メッセージ、第2引数=シート名、第3引数=ID、第4引数=検証対象（Object/Object[]/List<?>）。
+
+- `HttpRequestTestSupport#assertObjectPropertyEquals(String message, String sheetName, String id, Object actual)`
+- `HttpRequestTestSupport#assertObjectArrayPropertyEquals(String message, String sheetName, String id, Object[] actual)`
+- `HttpRequestTestSupport#assertObjectListPropertyEquals(String message, String sheetName, String id, List<?> actual)`
+
+テストデータの記述方法は :ref:`how_to_get_data_from_excel` と同様。2行目がプロパティ名、3行目以降が検証値。
+
+**テストコード例**:
+
+```java
+assertObjectPropertyEquals(message, sheetName, "expectedUsers", users);
+```
+
+**Excelデータ記述例**（`LIST_MAP=expectedUsers`）:
+
+| kanjiName | kanaName | mailAddress |
+|-----------|----------|-------------|
+| 漢字氏名 | カナシメイ | test@anydomain.com |
+
+## テストデータに関するヒント
+
+テストデータ記述に関するヒント:
+
+- **NULL値**: Excelセルを空欄にするとNULLとして扱われる
+- **空文字**: 空文字を明示的に指定する場合は特殊な記法を使用する
+- **コメント行**: `//`で始まる行はコメントとして無視される
+- **型指定**: 1行目（ヘッダ行の次）に型を指定できる（例: `// CHAR(5)`）
+- **数値**: 数値データはそのまま記載可能
+
+## 空行を表現したい
+
+Excelテストデータで空行（改行のみの文字列）を表現する場合、通常の空セルはNULLとして扱われるため区別が必要。
+
+空文字（長さ0の文字列）を表現するには、テスティングフレームワークが定義する特殊な記法（空文字リテラル）を使用する。具体的な記法はフレームワークのバージョンに依存するため、公式ドキュメントを確認すること。
+
+## マスタデータを変更したい
+
+テスト実行前にマスタデータを投入・変更する場合は、`SETUP_TABLE`データタイプを使用してExcelシートにマスタデータを定義する。
+
+```
+SETUP_TABLE=CODE_MASTER
+```
+
+システム全体で共有するマスタデータはテストクラスの`setUpClass`相当の処理で投入し、テスト個別のマスタデータは各テストメソッドの`setUpDb`で投入する。
+
+## テストデータのディレクトリを変更したい
+
+テストデータファイルのデフォルト配置ディレクトリを変更する場合は、コンポーネント設定ファイルでテストサポートクラスの`basePath`プロパティを設定する。
+
+デフォルトではテストクラスと同一パッケージのリソースディレクトリにExcelファイルを配置するが、プロジェクト構成に合わせてディレクトリを変更できる。
+
+:ref:`how_to_change_test_data_dir` を参照。テストデータの配置ディレクトリを変更する方法については、ソースドキュメントの当該セクションを確認すること。
+
+## テストデータを変換したい
+
+テストデータの型変換が必要な場合は、TestDataConverterインタフェースを実装したクラスを使用する。
+
+Excelから読み取った文字列データをJavaの特定の型（Date、BigDecimalなど）に変換する際に使用する。カスタムコンバータを実装することで、プロジェクト固有の型変換ルールを適用できる。
+
 ## シーケンスオブジェクトを使った採番のテストをしたい
 
 シーケンスオブジェクト採番は次に採番される値が予測不可なため、テスト用設定ファイルでテーブル採番（`nablarch.common.idgenerator.FastTableIdGenerator`）に置き換えることで期待値を設定できる。
 
 手順:
 1. 採番テーブルに準備データをセットアップ
-2. 期待値は「準備データの値 + 採番回数」で設定
+2. 期待値はテーブルに設定した値を元に設定する
 
-**テスト用設定（本番の`idGenerator`コンポーネントを上書き）**:
+**本番用設定（シーケンスオブジェクトを使用した採番設定）**:
+
+```xml
+<component name="idGenerator" class="nablarch.common.idgenerator.OracleSequenceIdGenerator">
+    <property name="idTable">
+        <map>
+            <entry key="1101" value="SEQ_1"/> <!-- ID1採番用 -->
+            <entry key="1102" value="SEQ_2"/> <!-- ID2採番用 -->
+            <entry key="1103" value="SEQ_3"/> <!-- ID3採番用 -->
+            <entry key="1104" value="SEQ_4"/> <!-- ID4採番用 -->
+        </map>
+    </property>
+</component>
+```
+
+**テスト用設定（本番の`idGenerator`コンポーネントをテーブル採番用設定で上書き）**:
 
 ```xml
 <component name="idGenerator" class="nablarch.common.idgenerator.FastTableIdGenerator">
@@ -130,7 +255,7 @@ Date now = provider.getDate();
 |------------|------------|----------|
 | 0000000101 | 漢字名 | ｶﾅﾒｲ |
 
-> **補足**: 1度のみ採番処理が行われる場合、期待値は「準備データの値 + 1」となる。
+> **補足**: 本記述例では、テスト内で1度のみ採番処理が行われていることを想定している。このため、期待値は「準備データの値 + 1」となっている。
 
 ## ThreadContextにユーザID、リクエストIDなどを設定したい
 
@@ -155,7 +280,7 @@ setThreadContextValues("testSelect", "threadContext");
 
 ## 任意のディレクトリのExcelファイルを読み込みたい
 
-別ディレクトリのExcelファイルを読み込む場合は、`TestDataParser`実装クラスを直接使用する。
+テストソースコードと同じディレクトリに存在するExcelファイルであれば、シート名を指定するだけで読み込み可能である。別のディレクトリに存在するファイルを読み込みたい場合は、`TestDataParser`実装クラスを直接使用することで取得できる。
 
 ```java
 TestDataParser parser = (TestDataParser) SystemRepository.getObject("testDataParser");
@@ -191,7 +316,7 @@ public class TestSub extends TestSuper {
 }
 ```
 
-上記TestSubを実行した場合、「test」のみ表示される。
+上記TestSubを実行した場合、「test」と表示される。
 
 ## デフォルト以外のトランザクションを使用したい
 
@@ -227,28 +352,6 @@ public class SampleTest extends AnotherSuperClass {
     }
 }
 ```
-
-## クラスのプロパティを検証したい
-
-クラスのプロパティ検証にはExcelファイルのデータと照合する以下のメソッドを使用する。引数: 第1引数=エラー時メッセージ、第2引数=シート名、第3引数=ID、第4引数=検証対象（Object/Object[]/List<?>）。
-
-- `HttpRequestTestSupport#assertObjectPropertyEquals(String message, String sheetName, String id, Object actual)`
-- `HttpRequestTestSupport#assertObjectArrayPropertyEquals(String message, String sheetName, String id, Object[] actual)`
-- `HttpRequestTestSupport#assertObjectListPropertyEquals(String message, String sheetName, String id, List<?> actual)`
-
-テストデータの記述方法は :ref:`how_to_get_data_from_excel` と同様。2行目がプロパティ名、3行目以降が検証値。
-
-**テストコード例**:
-
-```java
-assertObjectPropertyEquals(message, sheetName, "expectedUsers", users);
-```
-
-**Excelデータ記述例**（`LIST_MAP=expectedUsers`）:
-
-| kanjiName | kanaName | mailAddress |
-|-----------|----------|-------------|
-| 漢字氏名 | カナシメイ | test@anydomain.com |
 
 ## テストデータに空白、空文字、改行やnullを記述したい
 

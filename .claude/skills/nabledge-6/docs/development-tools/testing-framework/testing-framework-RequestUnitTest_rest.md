@@ -149,7 +149,26 @@ HttpResponse sendRequest(HttpRequest request)
   <property name="webBaseDir" value="/path/to/web-a/,/path/to/web-common"/>
 ```
 
-**webFrontControllerKey**: ウェブアプリ実行基盤とウェブサービス実行基盤を同一WARで実行する場合など、Webフロントコントローラーをデフォルト以外の名前でコンポーネント登録する場合に指定。デフォルトでは`webFrontController`（ウェブアプリ用）が使用される。ウェブサービス専用のWebフロントコントローラーを使用する場合は以下のように設定を上書き:
+**webFrontControllerKey**: ウェブアプリ実行基盤とウェブサービス実行基盤を同一WARで実行する場合など、`WebFrontController`（`nablarch.fw.web.servlet.WebFrontController`）をデフォルト以外の名前でコンポーネント登録する場合に指定。デフォルトでは`webFrontController`（ウェブアプリ用）が使用される。ウェブサービス専用のWebフロントコントローラーを使用する場合は以下のように設定を上書き:
+
+```xml
+<!-- ハンドラキュー構成 -->
+<component name="webFrontController" class="nablarch.fw.web.servlet.WebFrontController">
+  <property name="handlerQueue">
+    <list>
+      <!-- ウェブアプリ用ハンドラ -->
+    </list>
+  </property>
+</component>
+
+<component name="jaxrsController" class="nablarch.fw.web.servlet.WebFrontController">
+  <property name="handlerQueue">
+    <list>
+      <!-- ウェブサービス用ハンドラ -->
+    </list>
+  </property>
+</component>
+```
 
 ```xml
 <import file="nablarch/test/rest-request-test.xml"/>

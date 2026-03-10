@@ -1,5 +1,18 @@
 # 対象テーブルのデータを削除するバッチの作成(Batchletステップ)
 
+## バッチの実行方法
+
+JSR-352バッチジョブは `nablarch.fw.batch.ee.Main` をメインクラスとして起動し、ジョブ名を引数として渡す。
+
+```
+$mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
+    -Dexec.args=zip-code-truncate-table
+```
+
+実行ポイント:
+- **メインクラス**: `nablarch.fw.batch.ee.Main` がNablarchのJSR-352バッチ起動クラスである。
+- **ジョブ名**: `-Dexec.args` にジョブ定義ファイルの `job` 要素 `id` 属性で指定したジョブ名（例: `zip-code-truncate-table`）を渡す。
+
 ## 対象テーブルのデータを削除する
 
 **Batchletクラスの作成**

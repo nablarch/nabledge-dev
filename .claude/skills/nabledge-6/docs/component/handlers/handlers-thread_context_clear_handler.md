@@ -20,4 +20,4 @@
 
 ## スレッドコンテキストの削除処理
 
-ThreadContextHandler でスレッドローカル上に設定した値を全て削除する。本ハンドラはThreadContextHandlerと組み合わせて使用し、リクエスト処理後にスレッドローカル変数をクリアすることでメモリリークを防ぐ。
+`ThreadContextHandler` でスレッドローカル上に設定した値を全て削除する。

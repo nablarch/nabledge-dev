@@ -11,8 +11,8 @@
 | 3 | BeanUtil | 変更 | Java 16以降のレコードに対応。レコードオブジェクトの生成・値コピーが可能になった | nablarch-core-beans 2.1.0 | なし |
 | 4 | 汎用データフォーマット | 不具合 | JSON読み込み時に値の最後がエスケープ文字（`\`）だとエラーが発生する問題を修正。`\u005C`をエスケープ開始文字として誤解析する問題も修正。不具合の起因バージョン: モジュール（nablarch-core-dataformat）1.0.0、Nablarch 1.4.0 | nablarch-core-dataformat 2.0.1 | なし |
 | 5 | ユニバーサルDAO | 変更 | ページング処理で使用する件数取得SQLをカスタマイズできるよう`Dialect`インターフェースを拡張 | nablarch-core-jdbc 2.1.0 | **あり** |
-| 6 | HTTPリクエスト | 変更 | HTTPリクエストからリクエストパラメータを取得するAPIをアーキテクト向け公開APIに変更。ActionクラスからはInjectFormを経由する従来の方式を使用すること | nablarch-fw-web 2.1.0 | なし |
-| 7 | RESTfulウェブサービス | 変更 | クエリパラメータ・パスパラメータ取得用の専用HTTPリクエストクラスを追加。Actionから利用可能な公開APIとして提供（バリデーションは別途実施すること） | nablarch-fw-jaxrs 2.1.0 | なし |
+| 6 | HTTPリクエスト | 変更 | HTTPリクエストからリクエストパラメータを取得するAPIをアーキテクト向け公開APIに変更（アーキテクトが基盤部品を作る場合に限定）。`InjectForm`を使わずActionクラスでバリデーションエラーをハンドリングする場合は、このAPIを使ってリクエストパラメータを取り出す時に**必ずバリデーションが実行されるよう共通部品を作成**すること。ActionクラスからこのAPIを直接利用することは想定していない。共通部品の実装例はNo.16のExampleを参照 | nablarch-fw-web 2.1.0 | なし |
+| 7 | RESTfulウェブサービス | 変更 | クエリパラメータ・パスパラメータ取得用の専用HTTPリクエストクラスを追加。Actionから利用可能な公開APIとして提供。取得したパラメータは必要に応じてバリデーションを実施すること。なお、従来通り`@Consumes`アノテーションと`@Valid`アノテーションを使ってパラメータをFormにバインドする場合は、バインド時に自動でバリデーションが実行される | nablarch-fw-jaxrs 2.1.0 | なし |
 | 8 | AWSにおける分散トレーシング | 変更 | Jakarta EE未対応だった依存ライブラリをJakarta EE対応バージョンに更新（AWS X-Ray SDK: 2.4.0→2.15.0、Jersey: 2.32→3.1.1） | nablarch-document 6u1 | なし |
 | 9 | ブランクプロジェクト | 変更 | Java 21で動かす際に必要な修正手順を解説書に追加 | nablarch-document 6u1 | なし |
 | 10 | 稼働環境 | 変更 | テスト環境を以下の通り更新。**Java**: Java SE 17/21。**データベース**: Oracle Database 12c/19c/21c/23c、IBM Db2 10.5/11.5、SQL Server 2017/2019/2022、PostgreSQL 10.0/11.5/12.2/13.2/14.0/15.2/16.2。**アプリケーションサーバ**: WildFly 31.0.1.Final、Apache Tomcat 10.1.17、Jakarta EE、Hibernate Validator 8.0.0.Final、JBeret 2.1.1.Final。**MOM**: IBM MQ 9.3 | nablarch-document 6u1 | なし |

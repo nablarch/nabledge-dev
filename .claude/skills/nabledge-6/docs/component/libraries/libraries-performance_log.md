@@ -44,13 +44,21 @@ performanceLogFormatter.format=\n\tpoint = [$point$] result = [$result$]\
 
 `PerformanceLogUtil` を使用して出力する。処理開始時に `PerformanceLogUtil#start`、終了時に `PerformanceLogUtil#end` を呼び出す。`end` が呼ばれた時点で `start` 取得時の日時とメモリ使用量を合わせて出力する。
 
+`end` メソッドには、ポイント名・処理結果を表す文字列に加えて、ログ出力のオプション情報（`Object...` 可変長引数）を第3引数として指定できる。オプション情報を省略した呼び出しも可能。
+
 ```java
+// startメソッドでは、測定対象を識別するポイントを指定する。
+// 誤設定による無駄な出力を防ぐため、
+// このポイント名が設定ファイルに定義されていないとログは出力されない。
 String point = "UserSearchAction#doUSERS00101";
 PerformanceLogUtil.start(point);
 
+// 検索実行
 UserSearchService searchService = new UserSearchService();
 SqlResultSet searchResult = searchService.selectByCondition(condition);
 
+// endメソッドでは、ポイント、処理結果を表す文字列、ログ出力のオプション情報を指定できる。
+// 以下ではログ出力のオプション情報は指定していない。
 PerformanceLogUtil.end(point, String.valueOf(searchResult.size()));
 ```
 

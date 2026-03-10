@@ -10,7 +10,6 @@ ItemReaderでは処理対象レコードの主キーのみ取得し、ItemProces
 - :ref:`universal_dao` を使用した悲観的ロックは :ref:`universal_dao_jpa_pessimistic_lock` を参照
 
 ```java
-// ItemReader: 主キーのみ取得
 @Dependent
 @Named
 public class SampleReader extends AbstractItemReader {
@@ -34,7 +33,6 @@ public class SampleReader extends AbstractItemReader {
     public void close() throws Exception { list.close(); }
 }
 
-// ItemProcessor: 主キーでロック付き取得
 @Dependent
 @Named
 public class SampleProcessor implements ItemProcessor {
@@ -42,12 +40,11 @@ public class SampleProcessor implements ItemProcessor {
     public Object processItem(Object item) {
         final Project project =
                 UniversalDao.findBySqlFile(Project.class, "FIND_BY_ID_WITH_LOCK", item);
-        // 業務処理
+        // 業務処理のため省略
         return project;
     }
 }
 
-// ItemWriter: 一括更新
 @Dependent
 @Named
 public class SampleWriter extends AbstractItemWriter {

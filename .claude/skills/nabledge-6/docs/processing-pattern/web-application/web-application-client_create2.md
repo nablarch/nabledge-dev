@@ -14,7 +14,7 @@
 public class ClientForm implements Serializable {
     private String clientName;
     private String industryCode;
-    // getter、setter必須
+    // getter、setterは省略
 }
 ```
 

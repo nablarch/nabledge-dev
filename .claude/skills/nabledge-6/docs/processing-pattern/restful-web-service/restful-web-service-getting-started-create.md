@@ -4,35 +4,53 @@
 
 ## 動作確認手順
 
-POSTリクエストで以下の情報を送信する。
+1. **事前にDBの状態を確認**
 
-- URL: `http://localhost:9080/projects`
-- HTTPメソッド: `POST`
-- Content-Type: `application/json`
+   H2のコンソールから下記SQLを実行し、レコードが存在しないことを確認する。
 
-リクエストボディ（全フィールド）:
+   ```sql
+   SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+   ```
 
-```json
-{
-    "projectName": "プロジェクト９９９",
-    "projectType": "development",
-    "projectClass": "ss",
-    "projectManager": "山田",
-    "projectLeader": "田中",
-    "clientId": 10,
-    "projectStartDate": "20160101",
-    "projectEndDate": "20161231",
-    "note": "備考９９９",
-    "sales": 10000,
-    "costOfGoodsSold": 20000,
-    "sga": 30000,
-    "allocationOfCorpExpenses": 40000
-}
-```
+2. **プロジェクト情報の登録**
+
+   POSTリクエストで以下の情報を送信する。
+
+   - URL: `http://localhost:9080/projects`
+   - HTTPメソッド: `POST`
+   - Content-Type: `application/json`
+
+   リクエストボディ（全フィールド）:
+
+   ```json
+   {
+       "projectName": "プロジェクト９９９",
+       "projectType": "development",
+       "projectClass": "ss",
+       "projectManager": "山田",
+       "projectLeader": "田中",
+       "clientId": 10,
+       "projectStartDate": "20160101",
+       "projectEndDate": "20161231",
+       "note": "備考９９９",
+       "sales": 10000,
+       "costOfGoodsSold": 20000,
+       "sga": 30000,
+       "allocationOfCorpExpenses": 40000
+   }
+   ```
+
+3. **動作確認**
+
+   H2のコンソールから下記SQLを実行し、レコードが1件取得できることを確認する。
+
+   ```sql
+   SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+   ```
 
 ## フォームの作成
 
-**クラス**: `ProjectForm`
+**クラス**: `public class ProjectForm implements Serializable`
 
 - プロパティは全てString型で宣言すること（:ref:`bean_validation-form_property` 参照）
 

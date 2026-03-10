@@ -25,7 +25,7 @@ $ java nablarch.fw.batch.ee.Main jobName --option1 value1 --option2 value2
 - **異常終了（1）**: 終了ステータスが "WARNING" 以外、かつバッチステータスが `BatchStatus.COMPLETED` 以外の場合
 - **警告終了（2）**: 終了ステータスが "WARNING" の場合
 
-JOBの終了待ちの間に中断された場合は、異常終了（1）を返す。
+JOBの終了待ちの間に中断された場合は、異常終了のコードを返す。
 
 警告終了させるには、chunkまたはbatchlet内で `JobContext#setExitStatus(String)` を呼び出し `"WARNING"` を終了ステータスとして設定する。警告終了時はバッチステータスは任意の値を許可するため、例外を送出してバッチステータスが `BatchStatus.COMPLETED` 以外となる場合でも、終了ステータスに "WARNING" を設定していれば警告終了する。
 

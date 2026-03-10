@@ -20,7 +20,7 @@ Nablarchの初期化には以下の2つの設定が必要:
 
 排他制御は2種類提供されるが、:ref:`universal_dao` の使用を推奨する（:ref:`UniversalDaoを推奨する理由 <exclusive_control-deprecated>` 参照）。
 
-- :ref:`exclusive_control`（非推奨）
+- :ref:`exclusive_control`
 - :ref:`universal_dao`（推奨）
   - :ref:`universal_dao_jpa_optimistic_lock`（楽観排他）
   - :ref:`universal_dao_jpa_pessimistic_lock`（悲観排他）

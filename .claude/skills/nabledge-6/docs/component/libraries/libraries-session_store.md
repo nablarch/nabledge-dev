@@ -111,6 +111,10 @@ HIDDENストア使用時は、入力・確認画面のJSPに :ref:`tag-hidden_st
 
 ```jsp
 <n:form>
+  <!--
+    name属性にはコンポーネント設定ファイルに定義した、
+    HiddenStoreのparameterNameプロパティの値を設定
+  -->
   <n:hiddenStore name="nablarch_hiddenStore" />
 </n:form>
 ```

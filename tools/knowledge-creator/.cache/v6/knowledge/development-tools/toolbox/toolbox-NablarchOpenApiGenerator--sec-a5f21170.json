@@ -132,7 +132,7 @@
     }
   ],
   "sections": {
-    "overview": "[OpenAPI](https://www.openapis.org/) ドキュメントからソースコードを生成する [OpenAPI Generator](https://openapi-generator.tech/) のGenerator実装。Nablarch RESTfulウェブサービス用のGeneratorを提供し、[OpenAPI GeneratorのMavenプラグイン](https://openapi-generator.tech/docs/plugins)に組み込んで実行することでソースコードを生成する。\n\n生成物:\n- パス・オペレーション定義 → リソース(アクション)インターフェース\n- スキーマ定義 → リクエスト/レスポンス対応モデル",
+    "overview": "[OpenAPI](https://www.openapis.org/) ドキュメントからソースコードを生成する [OpenAPI Generator](https://openapi-generator.tech/) のGenerator実装。Nablarch RESTfulウェブサービス用のGeneratorを提供し、[OpenAPI GeneratorのMavenプラグイン](https://openapi-generator.tech/docs/plugins)に組み込んで実行することでソースコードを生成する。\n\n生成されたソースコードを使用することで、OpenAPIドキュメントで定義したREST APIのインターフェースに従ったアクションクラスの実装が容易となる。\n\n生成物:\n- パス・オペレーション定義 → リソース(アクション)インターフェース\n- スキーマ定義 → リクエスト/レスポンス対応モデル",
     "prerequisites": "- Nablarch RESTfulウェブサービスのソースコード生成元となるOpenAPIドキュメントが作成済みであること\n- OpenAPIドキュメントは[OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3.html)仕様で記述されていること",
     "operation-overview": "OpenAPIドキュメントを入力として以下を生成:\n\n1. パス・オペレーション定義 → リソース(アクション)インターフェース\n2. スキーマ定義 → リクエスト/レスポンス対応モデル\n\n> **補足**: `.openapi-generator-ignore`、`.openapi-generator/FILES`、`.openapi-generator/VERSION` が `output` 指定ディレクトリ配下に生成されるが、これらは使用しない。",
     "operation-method": "1. ウェブサービスの設計情報を元にOpenAPIドキュメントを作成する\n2. Nablarch RESTfulウェブサービスのプロジェクトを作成し、MavenプラグインとしてOpenAPI Generatorおよび本ツールの設定を行う\n3. プロジェクトをビルドし、リソース(アクション)インターフェースとモデルを生成する\n4. 生成したリソース(アクション)インターフェースとモデルを使用して、Nablarch RESTfulウェブサービスの実装を行う\n\n> **補足**: 本ツールはOpenAPIドキュメントの修正に合わせて繰り返し実行可能。アクションクラスは生成されたリソース(アクション)インターフェースを実装して作成するため、再実行してもアクションクラスの実装内容は失われない。\n\n> **補足**: CLIでも使用可能。詳しくは「CLIとして実行する」を参照。",

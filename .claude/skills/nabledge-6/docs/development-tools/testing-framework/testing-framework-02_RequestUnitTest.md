@@ -1,5 +1,44 @@
 # リクエスト単体テスト（ウェブアプリケーション）
 
+## 前提事項
+
+内蔵サーバを使用してHTMLダンプを出力するというリクエスト単体テストは、**１リクエスト１画面遷移のシンクライアント型ウェブアプリケーション**を対象としている。
+
+Ajaxやリッチクライアントを利用したアプリケーションの場合、**HTMLダンプによるレイアウト確認は使用できない**。
+
+> **補足**: ViewテクノロジにはJSPを使用しているが、サーブレットコンテナ上で画面全体をレンダリングする方式であれば、JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。
+
+## 構造（BasicHttpRequestTestTemplate / AbstractHttpRequestTestTemplate / TestCaseInfo）
+
+リクエスト単体テストを構成する主なクラスとリソース：
+
+| 名称 | 役割 | 作成単位 |
+|------|------|----------|
+| テストクラス | テストロジックを実装する | テスト対象クラス(Action)につき１つ作成 |
+| テストデータ（Excelファイル） | 準備データ・期待結果・HTTPパラメータなどを記載する | テストクラスにつき１つ作成 |
+| テスト対象クラス(Action) | テスト対象のクラス（Action以降の業務ロジックを含む） | 取引につき1クラス作成 |
+| DbAccessTestSupport | 準備データ投入などデータベースを使用するテストに必要な機能を提供する | － |
+| **HttpServer** | **内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する機能を持つ。** | － |
+| HttpRequestTestSupport | 内蔵サーバの起動やリクエスト単体テストで必要となる各種アサートを提供する | － |
+| AbstractHttpRequestTestTemplate / BasicHttpRequestTestTemplate | リクエスト単体テストをテンプレート化するクラス。テストソース・テストデータを定型化する | － |
+| TestCaseInfo | データシートに定義されたテストケース情報を格納するクラス | － |
+
+> **重要**: 上記のクラス群は、**内蔵サーバも含め全て同一のJVM上で動作する**。このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。
+
+---
+
+**BasicHttpRequestTestTemplate**
+
+各テストクラスのスーパクラス。本クラスを使用することで、リクエスト単体テストのテストソース・テストデータを定型化でき、テストソース記述量を大きく削減できる。
+
+**AbstractHttpRequestTestTemplate**
+
+アプリケーションプログラマが直接使用することはない。テストデータの書き方を変えたい場合など、**自動テストフレームワークを拡張する際**に用いる。
+
+**TestCaseInfo**
+
+データシートに定義されたテストケース情報を格納するクラス。テストデータの書き方を変えたい場合は、本クラス及び`AbstractHttpRequestTestTemplate`を継承する。
+
 ## データベース関連機能
 
 データベース機能は`DbAccessTestSupport`クラスに委譲して実現している。
@@ -41,6 +80,32 @@ void setToken(HttpRequest request, ExecutionContext context, boolean valid)
 ```
 第3引数がtrue: `setValidToken`と同動作。false: セッションからトークン情報が除去される。これを使用することで、テストクラスにトークン設定の分岐処理を書かずに済む。
 
+テストデータ上でトークン設定を制御する典型的なパターン：
+```java
+// 【説明】テストデータから取得したものとする。
+String isTokenValid;
+
+// 【説明】"true"の場合はトークンが設定される。
+setToken(req, ctx, Boolean.parseBoolean(isTokenValid));
+```
+このようにテストデータの文字列値（"true"/"false"）からトークン設定を制御することで、テストクラス側に条件分岐を書かずに済む。
+
+## 実行
+
+`HttpRequestTestSupport`にある下記のメソッドを呼び出すことで、内蔵サーバが起動されリクエストが送信される。
+
+```java
+HttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx)
+```
+
+引数には以下の値を引き渡す：
+
+- `caseName` — テストケース説明。HTMLダンプ出力時のファイル名に使用される。
+- `req` — `HttpRequest`インスタンス
+- `ctx` — `ExecutionContext`インスタンス
+
+戻り値は`HttpResponse`。
+
 ## システムリポジトリの初期化
 
 `execute`メソッド内部でシステムリポジトリの再初期化を行う。これによりクラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。
@@ -50,7 +115,7 @@ void setToken(HttpRequest request, ExecutionContext context, boolean valid)
 2. テスト対象のウェブアプリケーションのコンポーネント設定ファイルを用いてシステムリポジトリを再初期化
 3. `execute`メソッド終了時に、バックアップしたシステムリポジトリを復元
 
-テスト対象のウェブアプリケーションに関する設定については、:ref:`howToConfigureRequestUnitTestEnv` を参照。
+テスト対象のウェブアプリケーションに関する設定については、`:ref:howToConfigureRequestUnitTestEnv` を参照。
 
 ## メッセージ
 

@@ -53,6 +53,6 @@
 | `RuntimeException` | `FATAL` レベルのログを出力し、`Retryable` を送出 |
 | `ThreadDeath` | `INFO` レベルのログを出力し、ThreadDeathを再送出 |
 | `StackOverflowError` | `FATAL` レベルのログを出力し、`Retryable` を送出 |
-| `OutOfMemoryError` | 標準エラー出力にメッセージ出力後 `FATAL` レベルのログを出力し、`Retryable` を送出（ヒープ不足の原因オブジェクト参照が切れ処理継続可能な場合があるため） |
+| `OutOfMemoryError` | 標準エラー出力にヒープ不足発生メッセージを出力後、`FATAL` レベルのログを出力し、`Retryable` を送出。**標準エラー出力を先に行う理由**: ログ出力時に再度ヒープ不足が発生する可能性があるため、標準エラー出力にメッセージ出力後にログを出力する。ヒープ不足の原因オブジェクトへの参照が切れ処理継続可能な場合があるため Retryable を送出する |
 | `VirtualMachineError` | 発生した例外を再送出 |
 | 上記以外のエラー | `FATAL` レベルのログを出力し、`Retryable` を送出 |

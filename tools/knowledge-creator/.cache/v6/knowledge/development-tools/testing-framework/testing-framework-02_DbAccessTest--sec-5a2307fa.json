@@ -20,6 +20,19 @@
       ]
     },
     {
+      "id": "default-values",
+      "title": "デフォルト値",
+      "hints": [
+        "デフォルト値",
+        "数値型",
+        "文字列型",
+        "日付型",
+        "省略カラム",
+        "1970-01-01",
+        "半角スペース"
+      ]
+    },
+    {
       "id": "configuration-items",
       "title": "設定項目一覧",
       "hints": [
@@ -60,6 +73,7 @@
   ],
   "sections": {
     "good-example-relevant-columns": "テストケースに関係のあるカラムのみをExcelに記載することで可読性・保守性が向上する。テーブル定義変更時も、無関係なカラムであれば影響を受けない。\n\nこのテストケースに関係のあるカラムは以下のとおり。\n\n- レコードを一意に特定するための主キーカラム（PK_1、PK_2）\n- 更新対象レコードを抽出する条件となる「有効期限」カラム\n- 更新対象となる「削除フラグ」カラム\n\n期待値の記述には `EXPECTED_TABLE` の代わりに `EXPECTED_COMPLETE_TABLE` を使用する。\n\n**SETUP_TABLE 例** (SAMPLE_TABLE):\n\n| PK_1 | PK_2 | 有効期限 | 削除フラグ |\n|---|---|---|---|\n| 01 | 0001 | 20101231 | 0 |\n| 02 | 0002 | 20110101 | 0 |\n\n**EXPECTED_COMPLETE_TABLE 例** (SAMPLE_TABLE):\n\n| PK_1 | PK_2 | 有効期限 | 削除フラグ |\n|---|---|---|---|\n| 01 | 0001 | 20101231 | 1 |\n| 02 | 0002 | 20110101 | 0 |",
+    "default-values": "自動テストフレームワークのコンポーネント設定ファイルにて明示的に指定していない場合、デフォルト値には以下の値が使用される。\n\n| カラム | デフォルト値 |\n|---|---|\n| 数値型 | 0 |\n| 文字列型 | 半角スペース |\n| 日付型 | 1970-01-01 00:00:00.0 |",
     "configuration-items": "**クラス**: `nablarch.test.core.db.BasicDefaultValues`\n\nコンポーネント設定ファイルで設定できる項目:\n\n| 設定項目名 | 説明 | 設定値 |\n|---|---|---|\n| charValue | 文字列型のデフォルト値 | 1文字のASCII文字 |\n| numberValue | 数値型のデフォルト値 | 0または正の整数 |\n| dateValue | 日付型のデフォルト値 | JDBCタイムスタンプエスケープ形式 (yyyy-mm-dd hh:mm:ss.fffffffff) |",
     "component-config-example": "```xml\n<!-- TestDataParser -->\n<component name=\"testDataParser\" class=\"nablarch.test.core.reader.BasicTestDataParser\">\n  <!-- データベースデフォルト値 -->\n  <property name=\"defaultValues\">\n    <component class=\"nablarch.test.core.db.BasicDefaultValues\">\n      <property name=\"charValue\" value=\"a\"/>\n      <property name=\"dateValue\" value=\"2000-01-01 12:34:56.123456789\"/>\n      <property name=\"numberValue\" value=\"1\"/>\n    </component>\n  </property>\n</component>\n```",
     "notes": "## setUpDbメソッドの注意点\n\n- Excelに全カラムを記述する必要はない。省略されたカラムにはデフォルト値が設定される。\n- 1シート内に複数テーブルを記述できる。`setUpDb(String sheetName)` 実行時、指定シート内のデータタイプ `SETUP_TABLE` 全てが登録対象となる。\n\n## assertTableEqualsメソッドの注意点\n\n- 期待値で省略されたカラムは比較対象外。\n- 主キーで突合するため、レコード順序が異なっていても正しく比較できる。\n- 1シート内に複数テーブル記述可能。`assertTableEquals(String sheetName)` 実行時、指定シート内のデータタイプ `EXPECTED_TABLE` 全てが比較される。\n- `java.sql.Timestamp` 型のフォーマットは `yyyy-mm-dd hh:mm:ss.fffffffff`（fffffffffはナノ秒）。ナノ秒未設定でも `0` として表示される（例: `2010-01-01 12:34:56.0`）。Excelに期待値を記載する場合は末尾に `.0` を付与すること。\n\n## assertSqlResultSetEqualsメソッドの注意点\n\n- SELECT文で指定した全カラムが比較対象。特定カラムのみを比較対象外にすることはできない。\n- レコード順序が異なる場合はアサート失敗。（理由: SELECTカラムに主キーが含まれるとは限らないため、また ORDER BY 指定がなされる場合が多く順序も厳密に比較する必要があるため）\n\n## 登録・更新系テストの注意点\n\n- 自動設定項目を利用してDBに登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前に設定すること。（:ref:`using_ThreadContext`）\n- デフォルト以外のトランザクションを使用する場合は、本フレームワークにトランザクション制御を行わせる必要がある。（:ref:`using_transactions`）\n\n## 外部キーテーブルへのデータセットアップ\n\n:ref:`master_data_backup` と同じ機能を用いてテーブルの親子関係を判断しデータを削除・登録する。詳細は :ref:`MasterDataRestore-fk_key` を参照。\n\n## Excelカラムのデータ型\n\n:java:extdoc:`SqlPStatement <nablarch.core.db.statement.SqlPStatement>` で対応している型のカラムのみ記述可能。それ以外のデータ型（例: OracleのROWID、PostgreSQLのOIDなど）は記述不可。"

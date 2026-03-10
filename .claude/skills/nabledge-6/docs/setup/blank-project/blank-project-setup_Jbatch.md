@@ -13,7 +13,9 @@
 
 ## mvnコマンドの実行
 
-[Maven Archetype Plugin](https://maven.apache.org/archetype/maven-archetype-plugin/usage.html)を使用してブランクプロジェクトを生成する。
+まず、ブランクプロジェクトを作成したいディレクトリ（任意のディレクトリ可）にカレントディレクトリを変更する。
+
+その後、[Maven Archetype Plugin](https://maven.apache.org/archetype/maven-archetype-plugin/usage.html)を使用して以下のコマンドを実行する。
 
 ```bat
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-batch-ee-archetype -DarchetypeVersion={nablarch_version}
@@ -52,6 +54,16 @@ cd myapp-batch-ee
 mvn test
 ```
 
+実行に成功すると、以下のようなログがコンソールに出力される。
+
+```text
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+```
+
 ## 起動テスト
 
 生成したプロジェクトに含まれるバッチアプリケーション:
@@ -69,6 +81,8 @@ mvn package
 ```
 
 **chunk方式の起動**:
+
+SAMPLE_USERテーブルからデータを取り出し、編集してCSVファイルに出力する処理が実装されている。
 
 ```bash
 mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args="'sample-chunk'"

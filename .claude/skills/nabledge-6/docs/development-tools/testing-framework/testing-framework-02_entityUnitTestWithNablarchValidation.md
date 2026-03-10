@@ -1,11 +1,5 @@
 # Nablarch Validationに対応したForm/Entityのクラス単体テスト
 
-## 文字種と文字列長の単項目精査テストケース
-
-文字種・文字列長に関する単項目精査専用のテスト方法。ケース数が多くなりがちな単項目精査のテストケース作成・メンテナンスを容易にする。
-
-> **補足**: 本テスト方法は、プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でプロパティにアクセスする親Form）に対しては使用できない。その場合、独自に精査処理のテストを実装すること。
-
 ## Form/Entity単体テストの書き方
 
 ## テストデータの作成
@@ -30,6 +24,12 @@
 public class SystemAccountEntityTest extends EntityTestSupport {
 ```
 
+## 文字種と文字列長の単項目精査テストケース
+
+文字種・文字列長に関する単項目精査専用のテスト方法。ケース数が多くなりがちな単項目精査のテストケース作成・メンテナンスを容易にする。
+
+> **補足**: 本テスト方法は、プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でプロパティにアクセスする親Form）に対しては使用できない。その場合、独自に精査処理のテストを実装すること。
+
 ## テストケース表の作成方法（文字種・文字列長）
 
 Excelシートに以下のカラムを用意する:
@@ -43,7 +43,9 @@ Excelシートに以下のカラムを用意する:
 | messageIdWhenEmptyInput | 未入力時に期待するメッセージID（省略可） |
 | messageIdWhenInvalidLength | 文字列長不適合時に期待するメッセージID（省略可） |
 | messageIdWhenNotApplicable | 文字種不適合時に期待するメッセージID |
-| 半角英字〜外字（12種） | 各文字種を許容するか（`o`: 許容、`x`: 不許容） |
+| 半角英字〜外字（11種） | 各文字種を許容するか（`o`: 許容、`x`: 不許容） |
+
+文字種カラムは 半角英字、半角数字、半角記号、半角カナ、全角英字、全角数字、全角ひらがな、全角カタカナ、全角漢字、全角記号その他、外字 の11種。
 
 messageIdWhenEmptyInput省略時: :ref:`entityUnitTest_EntityTestConfiguration` のemptyInputMessageIdが使用される。
 
@@ -79,8 +81,8 @@ testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);
 |---|---|---|
 | 文字種（各12種） | 各文字種でmax長の文字列 | 許容/不許容の設定に従い精査成功/失敗を検証 |
 | 未入力 | 空文字（長さ0） | — |
-| 最小文字列長 | min長の文字列 | min省略時は文字列長不足テストを実行しない |
-| 最長文字列長 | max長の文字列 | — |
+| 最小文字列長 | min長の文字列 | 入力値は、o印を付けた文字種で構成される。min欄が省略された場合は文字列長不足のテストは実行されない。 |
+| 最長文字列長 | max長の文字列 | 入力値は、o印を付けた文字種で構成される。 |
 | 文字列長不足 | min-1長の文字列 | — |
 | 文字列長超過 | max+1長の文字列 | — |
 
@@ -96,7 +98,7 @@ Excelシートに以下のカラムを用意する:
 |---|---|
 | propertyName | テスト対象のプロパティ名 |
 | case | テストケースの簡単な説明 |
-| input1 | 入力値 |
+| input1 | 入力値（:ref:`special_notation_in_cell` の記法を使用することで効率的に入力値を作成できる） |
 | messageId | 期待するメッセージID（精査エラーにならない場合は空欄） |
 
 1つのキーに対して複数パラメータを指定する場合は、input2、input3 というようにカラムを追加する。
@@ -120,22 +122,6 @@ testSingleValidation(ENTITY_CLASS, sheetName, id);
 ## バリデーションメソッドのテストケース
 
 上記の単項目精査テストでは、エンティティのセッターメソッドに付与されたアノテーションのみが検証され、**アノテーション**: `@ValidateFor` を付与したstaticバリデーションメソッドは実行されない。独自のバリデーションメソッドをエンティティに実装した場合は、別途テストを作成する必要がある。
-
-## テストメソッドの作成方法
-
-変数内容を変更するだけで異なるEntityの精査テストに対応できる。
-
-```java
-/** テスト対象エンティティクラス */
-private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;
-
-@Test
-public void testValidateForRegisterUser() {
-    String sheetName = "testValidateForRegisterUser";
-    String validateFor = "registerUser";
-    testValidateAndConvert(ENTITY_CLASS, sheetName, validateFor);
-}
-```
 
 ## テストケース表の作成
 
@@ -189,11 +175,38 @@ public void testValidateForRegisterUser() {
 
 ![項目間精査テストケース](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_entityUnitTestWithNablarchValidation/entityUnitTest_RelationalValidation.png)
 
-## Excelへの定義
+## テストメソッドの作成方法
+
+これまでに作成したテストケース、データを使用するテストメソッドを以下に示す。下記コードの変数内容を変更するだけで、異なるEntityの精査のテストに対応できる。
+
+```java
+// ～前略～
+
+/** テスト対象エンティティクラス */
+private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;
+
+// ～中略～
+/**
+ * {@link SystemAccountEntity#validateForRegisterUser(nablarch.core.validation.ValidationContext)} のテスト。
+ */
+@Test
+public void testValidateForRegisterUser() {
+    // 精査実行
+    String sheetName = "testValidateForRegisterUser";
+    String validateFor = "registerUser";
+    testValidateAndConvert(ENTITY_CLASS, sheetName, validateFor);
+}
+
+// ～後略～
+```
+
+## コンストラクタに対するテストケース
 
 Nablarch Validationで入力値チェックを実施しているEntityには `Map<String, Object>` を引数にとるコンストラクタが実装されており（:ref:`nablarch_validation-execute` 参照）、このコンストラクタに対するテストを作成する必要がある。対象プロパティはEntityに定義されている全プロパティ。テストデータにはプロパティ名・設定値・期待値（getterで取得した値）を用意する。
 
 > **補足**: Entityは自動生成されるため、アプリケーションで使用されないコンストラクタが生成される可能性がある。その場合リクエスト単体テストではテストできないため、Entity単体テストで必ずコンストラクタのテストを行うこと。一般的なFormについてはクラス単体テストでコンストラクタのテストを行う必要はない。
+
+### Excelへの定義
 
 ![コンストラクタテストのExcel定義](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_entityUnitTestWithNablarchValidation/entityUnitTest_Constructor.png)
 
@@ -232,6 +245,7 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 public void testConstructor() {
     testConstructorAndGetter(entityClass, sheetName, id);
 
+    // テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。
     Map<String, String[]> data = getParamMap(sheetName, "testConstructorOther");
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("users", Arrays.asList(data.get("set")));

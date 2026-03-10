@@ -32,6 +32,7 @@ public class ConfigurationFactory implements ComponentFactory<Configuration> {
         Configuration cfg = new Configuration(Configuration.getVersion());
         cfg.setClassLoaderForTemplateLoading(getClass().getClassLoader(), basePackagePath);
         cfg.setDefaultEncoding(encoding);
+        //必要に応じてConfigurationへその他の設定を行う
         return cfg;
     }
 

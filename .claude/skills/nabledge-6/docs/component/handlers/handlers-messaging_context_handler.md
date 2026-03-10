@@ -20,6 +20,10 @@
 </dependency>
 ```
 
+## 制約
+
+なし。
+
 ## MQの接続先を設定する
 
 `messagingProvider` プロパティに `MessagingProvider` 実装クラスを設定してMQ接続を取得する。

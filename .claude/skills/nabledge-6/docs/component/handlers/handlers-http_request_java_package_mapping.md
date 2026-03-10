@@ -12,6 +12,8 @@ URL形式: `/<baseUri>/<className>/<methodName>`
 
 処理内容: URIを解析し、対応するアクションのメソッドを呼び出す。
 
+![処理の流れ](../../knowledge/component/handlers/assets/handlers-http_request_java_package_mapping/flow.png)
+
 ## ハンドラクラス名
 
 **クラス名**: `HttpRequestJavaPackageMapping`

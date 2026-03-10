@@ -8,15 +8,17 @@
 
 データベースに保存されたアカウント情報（ユーザIDとパスワード）を使用したユーザ認証のサンプル実装。ログイン処理を実行する業務処理の中で使用することを想定している。
 
+> **注意**: 本機能では、ログイン処理を実行する業務処理は提供しない。Nablarch導入プロジェクトにて、要件に応じてログイン処理を作成すること。
+
 [ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-password-authentication)
 
 > **補足**: 導入プロジェクトでは要件を満たすよう本サンプル実装を修正して使用すること。
 
 デフォルトでは [PBKDF2](https://www.ietf.org/rfc/rfc2898.txt) を使用してパスワードを暗号化する。各プロジェクトでストレッチング回数やソルトなどを設定する必要がある。
 
-設定内容の詳細は [0101_PBKDF2PasswordEncryptor](about-nablarch-0101_PBKDF2PasswordEncryptor.md) を参照。
+設定内容の詳細は `0101_PBKDF2PasswordEncryptor` を参照。
 
-## 構成
+## 構成：クラス構成
 
 **インタフェース**:
 
@@ -49,7 +51,7 @@
 |---|---|
 | `SystemAccount` | ユーザのアカウント情報を保持するクラス。ユニバーサルDAOの検索結果を格納する |
 
-> **補足**: エンティティクラスは :ref:`gsp-dba-maven-plugin(DBA作業支援ツール) <gsp-maven-plugin>` を使用して自動生成すること。本サンプルのエンティティクラスをそのまま使用せず、各プロジェクトで自動生成したものを使用すること。
+> **補足**: エンティティクラスはgsp-dba-maven-plugin（DBA作業支援ツール）を使用して自動生成すること。本サンプルのエンティティクラスをそのまま使用せず、各プロジェクトで自動生成したものを使用すること。
 
 **例外クラス**:
 
@@ -60,7 +62,11 @@
 | `PasswordExpiredException` | 認証時にパスワード有効期限切れの場合の例外。ユーザID、パスワード有効期限、業務日付を保持する |
 | `UserIdLockedException` | 認証時にユーザIDがロックされている場合の例外。ユーザIDとロックする認証失敗回数を保持する |
 
-**テーブル定義（SYSTEM_ACCOUNT）**:
+## 構成：テーブル定義
+
+本サンプルで使用しているアカウントテーブルの定義。本サンプルを導入プロジェクトに取り込む際は、プロジェクトのテーブル定義に従いSQLファイルおよびソースコードを修正すること。
+
+**システムアカウント（SYSTEM_ACCOUNT）**:
 
 | 論理名 | 物理名 | Javaの型 | 制約 |
 |---|---|---|---|
@@ -74,11 +80,9 @@
 | 有効日(To) | EFFECTIVE_DATE_TO | java.util.Date | |
 | 最終ログイン日時 | LAST_LOGIN_DATE_TIME | java.util.Date | |
 
-本サンプルを導入プロジェクトに取り込む際は、プロジェクトのテーブル定義に従いSQLファイルおよびソースコードを修正すること。
-
 > **補足**: 上記テーブル定義は本サンプルで必要な属性のみ。導入プロジェクトでは必要なユーザ属性の追加や関連テーブルの作成など要件に応じてテーブル設計すること。
 
-## 使用方法
+## 使用方法：概要
 
 パスワード認証の特徴:
 - 認証時にアカウント情報の有効日（From/To）をチェックする
@@ -87,13 +91,19 @@
 - 暗号化されたパスワード（デフォルトはPBKDF2）を使用して認証する
 - 認証成功時のみシステム日時で最終ログイン日時を更新する
 
-業務機能からはシステムリポジトリから直接コンポーネントを取得せず、`AuthenticationUtil`を使用すること。
+PasswordAuthenticatorおよびPasswordEncryptorはNablarchのシステムリポジトリから取得して使用する想定となっている。業務機能の各箇所でシステムリポジトリからコンポーネントを直接取得するべきではないため、本機能ではシステムリポジトリからのコンポーネント取得とパスワード認証・暗号化処理をラップした`AuthenticationUtil`を提供している。
 
-**SystemAccountAuthenticatorの設定**:
+プロジェクトで実装するログイン機能やユーザ登録機能などからは`AuthenticationUtil`を使用すること。
+
+## SystemAccountAuthenticatorの使用方法
+
+**コンポーネント設定例**:
 
 ```xml
 <component name="authenticator" class="please.change.me.common.authentication.SystemAccountAuthenticator">
+  <!-- パスワードを暗号化するPasswordEncryptor -->
   <property name="passwordEncryptor" ref="passwordEncryptor" />
+  <!-- データベースへのトランザクション制御を行うクラス -->
   <property name="dbManager">
     <component class="nablarch.core.db.transaction.SimpleDbTransactionManager">
       <property name="dbTransactionName" value="authenticator"/>
@@ -101,28 +111,33 @@
       <property name="transactionFactory" ref="transactionFactory"/>
     </component>
   </property>
+  <!-- ユーザIDをロックする認証失敗回数 -->
   <property name="failedCountToLock" value="5"/>
 </component>
 ```
 
+**プロパティ説明**:
+
 | プロパティ名 | 必須 | デフォルト値 | 説明 |
 |---|---|---|---|
-| passwordEncryptor | ○ | | パスワード暗号化に使用するPasswordEncryptor。[0101_PBKDF2PasswordEncryptor](about-nablarch-0101_PBKDF2PasswordEncryptor.md) を参考に設定したコンポーネント名をrefに指定すること |
-| dbManager | ○ | | データベーストランザクション制御用のSimpleDbTransactionManagerインスタンス |
-| failedCountToLock | | 0 | ユーザIDをロックする認証失敗回数。0の場合はロック機能を使用しない |
+| `passwordEncryptor` | ○ | | パスワード暗号化に使用するPasswordEncryptor。`0101_PBKDF2PasswordEncryptor` を参考に設定したコンポーネント名をrefに指定すること |
+| `dbManager` | ○ | | データベーストランザクション制御用のSimpleDbTransactionManagerインスタンス |
+| `failedCountToLock` | | 0 | ユーザIDをロックする認証失敗回数。0の場合はロック機能を使用しない |
 
-> **重要**: SystemAccountAuthenticatorのトランザクション制御が個別アプリケーションに影響しないよう、個別アプリケーションとは別のトランザクションを使用すること。設定例のdbTransactionNameに指定した "authenticator" は個別アプリケーションでは使用しないこと。
+> **重要**: SystemAccountAuthenticatorのトランザクション制御が個別アプリケーションに影響しないよう、個別アプリケーションとは別のトランザクションを使用すること。設定例のdbTransactionNameに指定した `"authenticator"` は個別アプリケーションでは使用しないこと。
 
-**AuthenticationUtilのメソッド**:
+## AuthenticationUtilの使用方法
+
+AuthenticationUtilでは以下のユーティリティメソッドを実装している。システムリポジトリからコンポーネントを取得する際のコンポーネント名は、SystemAccountAuthenticatorの設定で登録しているコンポーネント名と合わせる必要がある。設定例と異なるコンポーネント名で登録している場合はソースコードを修正すること。
+
+**メソッド一覧**:
 
 | メソッド | 説明 |
 |---|---|
 | `encryptPassword` | システムリポジトリから `passwordEncryptor` というコンポーネント名でPasswordEncryptorを取得し、`PasswordEncryptor#encrypt(String, String)` を呼び出す |
 | `authenticate` | システムリポジトリから `authenticator` というコンポーネント名でPasswordAuthenticatorを取得し、`PasswordAuthenticator#authenticate(String, String)` を呼び出す |
 
-> **補足**: システムリポジトリ登録時のコンポーネント名が :ref:`passwordAuth-settings-label` の設定例と異なる場合、AuthenticationUtilのソースコードを修正すること。
-
-認証処理の実装例:
+**認証処理の実装例**:
 
 ```java
 try {

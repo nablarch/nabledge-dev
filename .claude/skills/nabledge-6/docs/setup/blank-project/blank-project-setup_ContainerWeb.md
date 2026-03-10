@@ -46,6 +46,13 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **重要**: groupIdおよびpackageはJavaのパッケージ名にマッピングされる。英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
 
+プロジェクト情報の入力が終わると、`Y: :` と表示される。
+
+- 入力した内容をもとにひな形を生成する場合には「Y」を入力する。
+- プロジェクト情報の入力をやり直したい場合には「N」を入力する。
+
+コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
+
 ## 疎通確認
 
 疎通確認の仕組みや手順は通常のウェブプロジェクトと同じ。:ref:`firstStepWebStartupTest` を参照。
@@ -59,6 +66,15 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 ```text
 cd myapp-container-web
 mvn package jib:dockerBuild
+```
+
+ビルドされたDockerイメージは、ローカルリポジトリに保存される。以下のコマンドでローカルリポジトリに保存されたイメージを確認できる。
+
+```text
+docker image ls
+REPOSITORY              TAG         IMAGE ID       CREATED        SIZE
+myapp-container-web     0.1.0       dd60cbdc7722   50 years ago   449MB
+myapp-container-web     latest      dd60cbdc7722   50 years ago   449MB
 ```
 
 作成されるイメージ（デフォルト設定）:
@@ -87,6 +103,8 @@ docker run -d -p 8080:8080 -v %CD%\h2:/usr/local/tomcat/h2 --name myapp-containe
 起動後、`http://localhost:8080/` でアプリケーションの動作を確認できる。
 
 > **補足**: 上記コマンドはSAMPLE.h2.dbを使用する場合の例。SAMPLE.h2.dbを使用しない場合はボリューム指定（`-v`）は不要。
+
+> **前提**: Dockerの実行はDocker Desktopを使用していることを前提としている（:ref:`firstStepPreamble` 参照）。
 
 > **補足**: Docker Toolboxを使用している場合、ボリューム指定でエラーになる。DockerはVirtualBox上のVMで動作するため、ボリュームのホスト側に指定できるパスはVM上のパスになる。Windowsのデフォルトでは `C:\Users` がVM上の `/c/users` にマウントされているため、ボリューム指定を `-v /c/users/path/to/project/h2:/usr/local/tomcat/h2` のようにする必要がある。
 

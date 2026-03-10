@@ -12,7 +12,7 @@
 
 提供JAR: `nablarch-testing-XXX.jar`、`nablarch-testing-jetty12-XXX.jar`
 
-**モジュール**:
+pom.xmlのdependencies要素以下の記述があることを確認する:
 ```xml
 <dependency>
   <groupId>com.nablarch.framework</groupId>
@@ -31,7 +31,7 @@ JAR取得コマンド:
 mvn dependency:copy-dependencies -DoutputDirectory=lib
 ```
 
-[httpDump.bat](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_SetUpHttpDumpTool/httpDump.bat) をpom.xmlと同じディレクトリに配置する。
+`httpDump.bat` をpom.xmlと同じディレクトリに配置する。
 
 ## 設定画面起動
 

@@ -16,6 +16,8 @@
 
 ## 制約
 
+**必須要件**: 本ハンドラはCSRFトークンをセッションストアに格納するため、本ハンドラを使用する場合は :ref:`session_store` の使用が必須となる。
+
 - :ref:`session_store_handler` より後ろに配置すること（CSRFトークンをセッションストアに格納するため）
 - :ref:`tag` を使用する場合は :ref:`nablarch_tag_handler` より後ろに配置すること（:ref:`tag-hidden_encryption` を使用してCSRFトークンを出力するため）
 
@@ -48,6 +50,8 @@
 <component name="csrfTokenVerificationHandler"
            class="nablarch.fw.web.handler.CsrfTokenVerificationHandler" />
 ```
+
+**RESTfulウェブサービスでのCSRF対策**: `CsrfTokenUtil` を使用すると、生成されたCSRFトークンを取得できる。プロジェクトのアーキテクチャに合わせてクライアントにCSRFトークンを送る仕組みを実装することで、:ref:`RESTfulウェブサービス<restful_web_service>` のCSRF対策を実現できる。
 
 **カスタマイズ可能なコンポーネント** (`CsrfTokenVerificationHandler` プロパティ):
 

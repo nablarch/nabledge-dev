@@ -58,9 +58,7 @@
 </component>
 ```
 
-## 拡張例
-
-### エラー時のレスポンスにメッセージを設定する
+## エラー時のレスポンスにメッセージを設定する
 
 バリデーションエラー発生時など、エラーレスポンスのボディにエラーメッセージを設定して返却したい場合は、`ErrorResponseBuilder` の継承クラスを作成して対応する。
 
@@ -92,7 +90,7 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 }
 ```
 
-### 特定のエラーの場合に個別に定義したエラーレスポンスを返却する
+## 特定のエラーの場合に個別に定義したエラーレスポンスを返却する
 
 後続処理で発生したエラーに対して個別にステータスコードやボディを定義したレスポンスを返したい場合は、`ErrorResponseBuilder` の継承クラスを作成し、例外に応じたレスポンス生成処理を個別に実装する。
 
@@ -111,7 +109,7 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 }
 ```
 
-### クライアントに返すレスポンスに共通処理を追加する
+## クライアントに返すレスポンスに共通処理を追加する
 
 正常時・エラー発生時を問わず、CORS対応やセキュリティ対応でレスポンスヘッダを共通指定したい場合は、`ResponseFinisher` インタフェースを実装したクラスを作成し、`responseFinishers`プロパティに指定する。
 

@@ -72,7 +72,7 @@ messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\
 | $messageBodyHex$ | $messageBody$ のヘキサダンプ |
 | $messageBodyLength$ | メッセージボディのバイト長 |
 
-**HTTPメッセージフォーマット（httpSentMessageFormat/httpReceivedMessageFormat）のプレースホルダ**: $threadName$, $messageId$, $destination$, $correlationId$, $messageBody$, $messageBodyHex$, $messageBodyLength$, $messageHeader$（$replyTo$, $timeToLive$ は使用不可）
+**HTTPメッセージフォーマット（httpSentMessageFormat/httpReceivedMessageFormat）のプレースホルダ**: $threadName$, $messageId$, $destination$, $correlationId$, $messageBody$, $messageBodyHex$, $messageBodyLength$, $messageHeader$
 
 **sentMessageFormatデフォルト**:
 

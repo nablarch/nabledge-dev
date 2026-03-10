@@ -2,13 +2,13 @@
 
 ## 概要
 
-> **重要**: 2020年10月に[AWS Distro for OpenTelemetry](https://aws.amazon.com/jp/otel/?otel-blogs.sort-by=item.additionalFields.createdDate&otel-blogs.sort-order=desc)が発表されたが、2021年3月現在正式リリースはされていない。正式リリース後、Nablarchでの動作確認がとれた場合は本章をAWS Distro for OpenTelemetryを使用した手順に差し替える可能性がある。
+> **重要**: 2020年10月に[AWS Distro for OpenTelemetry](https://aws.amazon.com/jp/otel/?otel-blogs.sort-by=item.additionalFields.createdDate&otel-blogs.sort-order=desc)が発表されたが、2021年3月現在production-readyとなっているが、正式リリースはされていない。正式リリース後、Nablarchでの動作確認がとれた場合は本章をAWS Distro for OpenTelemetryを使用した手順に差し替える可能性がある。
 
 Nablarchはフレームワークの構造上、[自動計測エージェント](https://docs.aws.amazon.com/ja_jp/xray/latest/devguide/aws-x-ray-auto-instrumentation-agent-for-java.html)が使用できないため、[AWS X-Ray SDK for Java](https://docs.aws.amazon.com/ja_jp/xray/latest/devguide/xray-sdk-java.html)をアプリケーションに組み込む方式を使用する。
 
-設定の判断基準:
-- :ref:`xray_configuration_incoming_request` の設定のみでサービス間の関連はトレースできる
-- :ref:`xray_configuration_outgoing_http_calls` と :ref:`xray_configuration_sql_queries` はアプリケーションの要件に応じて設定する
+以下はコンテナ用アーキタイプを使用した場合の例を示す。設定の判断基準:
+- 受信HTTPリクエスト の設定のみでサービス間の関連はトレースできる
+- 送信HTTP呼び出し と SQLクエリ はアプリケーションの要件に応じて設定する
 
 ## 依存関係の追加
 
@@ -142,7 +142,42 @@ public class JerseyHttpClientWithAWSXRayFactory implements ComponentFactory<Clie
 <component name="httpClient" class="com.example.system.httpclient.JerseyHttpClientWithAWSXRayFactory" />
 ```
 
-システムリポジトリから `@SystemRepositoryComponent` のコンストラクタインジェクション（`@ComponentRef("httpClient")`）または `SystemRepository.get("httpclient")` で取得できる。
+システムリポジトリに登録したHTTPクライアントを使用するクラスには `@SystemRepositoryComponent` を付与することでDIコンテナの構築対象となり、コンストラクタインジェクションでHTTPクライアントが登録される。`@ComponentRef` でコンポーネントを、`@ConfigValue` で設定値を注入できる:
+
+```java
+package com.example;
+
+import nablarch.core.repository.di.config.externalize.annotation.ComponentRef;
+import nablarch.core.repository.di.config.externalize.annotation.ConfigValue;
+import nablarch.core.repository.di.config.externalize.annotation.SystemRepositoryComponent;
+import jakarta.ws.rs.client.Client;
+
+@SystemRepositoryComponent
+public class HttpProductRepository {
+
+    private final Client httpClient;
+    private final String productAPI;
+
+    public HttpProductRepository(@ComponentRef("httpClient") Client httpClient,
+                                @ConfigValue("${api.product.url}") String productAPI) {
+        this.httpClient = httpClient;
+        this.productAPI = productAPI;
+    }
+
+    public ProductList findAll() {
+        WebTarget target = httpClient.target(productAPI).path("/products");
+        return target.request().get(ProductList.class);
+    }
+}
+```
+
+また、システムリポジトリから直接HTTPクライアントを取得して使用することも可能:
+
+```java
+Client httpClient = SystemRepository.get("httpclient");
+WebTarget target = httpClient.target(productAPI).path("/products");
+ProductResponse products = target.request().get(ProductResponse.class);
+```
 
 ## SQLクエリ
 

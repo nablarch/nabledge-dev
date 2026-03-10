@@ -26,8 +26,6 @@
 
 ## フォーカスを取得可能なHTMLタグ
 
-フォーカスを取得可能なHTMLタグで共通的に使用できる属性。
-
 | 属性 | 説明 |
 |---|---|
 | accesskey | XHTMLのaccesskey属性 |
@@ -555,7 +553,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | autofocus | | | HTML5のautofocus属性（:ref:`論理属性 <boolean_attribute>`） |
 | allowDoubleSubmission | | `true` | 二重サブミットを許可するか（true/false） |
 | secure | | | URIをhttpsにするか（true/false） |
-| displayMethod | | | 表示制御方法（NODISPLAY=非表示/DISABLED=非活性/NORMAL=通常表示） |
+| displayMethod | | | 認可判定とサービス提供可否判定の結果に応じて表示制御を行う場合の表示方法（NODISPLAY=非表示/DISABLED=非活性/NORMAL=通常表示） |
 | suppressDefaultSubmit | | `false` | デフォルトのサブミット関数呼び出しをonclickに設定しないよう抑制するか（true/false） |
 
 ## buttonタグ
@@ -574,7 +572,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | autofocus | | | HTML5のautofocus属性（:ref:`論理属性 <boolean_attribute>`） |
 | allowDoubleSubmission | | `true` | 二重サブミットを許可するか（true/false） |
 | secure | | | URIをhttpsにするか（true/false） |
-| displayMethod | | | 表示制御方法（NODISPLAY=非表示/DISABLED=非活性/NORMAL=通常表示） |
+| displayMethod | | | 認可判定とサービス提供可否判定の結果に応じて表示制御を行う場合の表示方法（NODISPLAY=非表示/DISABLED=非活性/NORMAL=通常表示） |
 | suppressDefaultSubmit | | `false` | デフォルトのサブミット関数呼び出しをonclickに設定しないよう抑制するか（true/false） |
 
 ## submitLinkタグ
@@ -591,7 +589,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | coords | | | XHTMLのcoords属性 |
 | allowDoubleSubmission | | `true` | 二重サブミットを許可するか（true/false） |
 | secure | | | URIをhttpsにするか（true/false） |
-| displayMethod | | | 表示制御方法（NODISPLAY=非表示/DISABLED=非活性/NORMAL=通常表示） |
+| displayMethod | | | 認可判定とサービス提供可否判定の結果に応じて表示制御を行う場合の表示方法（NODISPLAY=非表示/DISABLED=非活性/NORMAL=通常表示） |
 | suppressDefaultSubmit | | `false` | デフォルトのサブミット関数呼び出しをonclickに設定しないよう抑制するか（true/false） |
 
 ## popupSubmitタグ

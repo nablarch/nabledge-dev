@@ -425,9 +425,11 @@ public class SampleForm {
 
 ## 数値型への型変換
 
-バリデーション後にBeanクラスの数値型に入力値を変換するには、その項目に `@Digits` アノテーションが必須。ドメインバリデーション使用時はドメインEnumへの設定を推奨する。
+バリデーション後にBeanクラスの数値型に入力値を変換するには、その項目に `@Digits` アノテーションが必須。ドメインバリデーション使用時はドメインEnumへの設定が必要となる。
 
 数値型変換のコンバータが :ref:`nablarch_validation-definition_validator_convertor` の手順に従い設定されていることが前提。
+
+> **推奨**: 下記の例ではsetterに `@Digits` を指定しているが、ドメインバリデーションを使用する場合はドメインEnumへの指定を推奨する。
 
 ```java
 public class SampleForm {

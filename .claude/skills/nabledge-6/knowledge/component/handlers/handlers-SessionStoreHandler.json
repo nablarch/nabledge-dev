@@ -13,6 +13,19 @@
   "processing_patterns": [],
   "index": [
     {
+      "id": "overview",
+      "title": "概要",
+      "hints": [
+        "セッション変数保存ハンドラ",
+        "セッションストア",
+        "後勝ち",
+        "マルチスレッド",
+        "タブブラウザ",
+        "複数スレッド",
+        "ストア選択"
+      ]
+    },
+    {
       "id": "handler-class-name",
       "title": "ハンドラクラス名",
       "hints": [
@@ -99,7 +112,8 @@
         "NABLARCH_SID",
         "HttpOnly",
         "セッションクッキー",
-        "クッキー属性"
+        "クッキー属性",
+        "DbStore"
       ]
     },
     {
@@ -112,11 +126,15 @@
         "expiration",
         "UserSessionSchema",
         "SESSION_OBJECT",
-        "有効期間データベース保存"
+        "有効期間データベース保存",
+        "SimpleDbTransactionManager",
+        "BasicApplicationInitializer",
+        "DbStore"
       ]
     }
   ],
   "sections": {
+    "overview": "後続のハンドラやライブラリで追加・更新・削除されたセッション変数を、セッションストアに保存するハンドラ。セッションストア機能の詳細は :ref:`session_store` を参照。\n\n> **重要**: 同一セッションの処理が複数のスレッドで実行された場合（例えば、タブブラウザで複数タブから同時にリクエストがあった場合）、使用しているストアによっては後勝ちとなる。このため、使用するストアの特性をよく理解し、要件にあったストアを選択する必要がある。ストアの詳細は :ref:`session_store-future_of_store` を参照。",
     "handler-class-name": "**クラス名**: `nablarch.common.web.session.SessionStoreHandler`",
     "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```\n\nDBストア・有効期間のDB保存を使用する場合のみ:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-dbstore</artifactId>\n</dependency>\n```",
     "constraints": "- :ref:`http_response_handler` より後ろに配置すること。サーブレットフォワード時にフォワード先でセッションストアの値にアクセスできるようにするため。\n- HIDDENストア使用時は :ref:`multipart_handler` より後ろに配置すること。リクエストパラメータにアクセスできるようにするため。\n- :ref:`forwarding_handler` より前に配置すること。:ref:`forwarding_handler` を本ハンドラよりも前に設定した場合、内部フォワード時にHIDDENストアを使用すると最新のセッション変数を取得できない問題が発生するため。",

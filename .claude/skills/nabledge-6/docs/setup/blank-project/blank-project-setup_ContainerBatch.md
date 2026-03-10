@@ -63,6 +63,17 @@ cd myapp-container-batch
 mvn compile jib:dockerBuild
 ```
 
+ビルドされたDockerイメージはローカルリポジトリに保存される。以下のコマンドで確認できる:
+
+```text
+docker image ls
+REPOSITORY              TAG         IMAGE ID       CREATED        SIZE
+myapp-container-batch   0.1.0       1cafd4108237   51 years ago   253MB
+myapp-container-batch   latest      1cafd4108237   51 years ago   253MB
+```
+
+`myapp-container-batch:0.1.0` と `myapp-container-batch:latest` の2つのイメージが登録されていることが分かる。
+
 作成されるイメージ（2つ）:
 - `${project.artifactId}:latest`
 - `${project.artifactId}:${project.version}`
@@ -118,3 +129,6 @@ docker run -it --rm -v %CD%\\h2:/h2 --name myapp-container-batch myapp-container
 **Docker環境について**:
 - Docker Desktop使用を :ref:`前提 <firstStepPreamble>` としている。
 - Docker Toolbox使用時、DockerはVirtualBox上のVMで動作するため、ボリュームのホスト側はVM上のパスを指定する必要がある。Windowsのデフォルトでは `C:\Users` がVM上の `/c/users` にマウント済み。ボリューム指定例: `-v /c/users/path/to/project/h2:/usr/local/tomcat/h2`
+
+**H2、ツールについて**:
+[../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照すること。
