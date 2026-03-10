@@ -197,14 +197,22 @@ class TestRunClaudeLog:
 
         assert content == SAMPLE_NDJSON
 
-    def test_no_files_written_on_subprocess_error(self, tmp_path):
-        """No files are written when subprocess.run returns non-zero returncode."""
+    def test_only_in_txt_written_on_subprocess_error(self, tmp_path):
+        """Only .in.txt is written when subprocess.run returns non-zero returncode.
+
+        The IN log is written before calling CC so the prompt is preserved even
+        if CC crashes or exits with an error.
+        """
         log_dir = str(tmp_path / "executions")
+        prompt_text = "error test"
 
         with patch("subprocess.run", return_value=_make_fake_result(returncode=1)):
-            result = run_claude(prompt="error test", json_schema=SAMPLE_SCHEMA,
+            result = run_claude(prompt=prompt_text, json_schema=SAMPLE_SCHEMA,
                                 log_dir=log_dir, file_id="error-test")
 
         assert result.returncode == 1
-        if os.path.exists(log_dir):
-            assert len(os.listdir(log_dir)) == 0, "No files should be written on error"
+        files = os.listdir(log_dir)
+        assert len(files) == 1, f"Expected 1 file (.in.txt), got {len(files)}: {files}"
+        assert files[0].endswith(".in.txt"), f"Expected .in.txt, got: {files[0]}"
+        with open(os.path.join(log_dir, files[0]), encoding="utf-8") as f:
+            assert f.read() == prompt_text

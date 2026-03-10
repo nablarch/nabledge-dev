@@ -97,6 +97,13 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
     env = os.environ.copy()
     env.pop('CLAUDECODE', None)
 
+    # Save IN log before calling CC so the prompt is preserved even if CC crashes
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    base = os.path.join(log_dir, f"{file_id}_{timestamp}")
+    with open(f"{base}.in.txt", 'w', encoding='utf-8') as f:
+        f.write(prompt)
+
     result = subprocess.run(
         cmd, input=prompt, capture_output=True, text=True, env=env
     )
@@ -124,10 +131,7 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
                     stdout="", stderr="No result line found in stream-json output"
                 )
 
-            # Save execution logs
-            os.makedirs(log_dir, exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-            base = os.path.join(log_dir, f"{file_id}_{timestamp}")
+            # base was already computed before CC call
 
             # Extract tool calls from stream
             tool_calls = []
@@ -167,10 +171,6 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
                     "stop_reason": response.get("stop_reason"),
                     "tool_calls":  tool_calls,
                 }, f, ensure_ascii=False, indent=2)
-
-            # {base}.in.txt - prompt (IN)
-            with open(f"{base}.in.txt", 'w', encoding='utf-8') as f:
-                f.write(prompt)
 
             # {base}.out.json - structured_output (OUT)
             structured_output = response.get("structured_output")
