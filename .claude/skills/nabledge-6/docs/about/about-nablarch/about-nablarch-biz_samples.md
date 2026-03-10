@@ -6,4 +6,9 @@
 
 > **ヒント**: 実際にアプリケーションに組み込む際には、プロジェクトの要件に合わせて適宜カスタマイズを実施し、十分なテストを実施すること。
 
-*キーワード: 実装サンプル, カスタマイズ, テスト, アプリケーション組み込み, 01/index, 03/index, 04/index, 05/index, 08/index, 09/index, 10/index, 11/index, 12/index, 13/index*
+<details>
+<summary>keywords</summary>
+
+実装サンプル, カスタマイズ, テスト, アプリケーション組み込み, 01/index, 03/index, 04/index, 05/index, 08/index, 09/index, 10/index, 11/index, 12/index, 13/index
+
+</details>

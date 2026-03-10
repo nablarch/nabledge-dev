@@ -8,13 +8,23 @@
 
 **前提条件**: 本ハンドラを使用するには、`ServiceAvailability` を実装したクラスを本ハンドラに設定する必要がある。
 
-*キーワード: ServiceAvailability, サービス提供可否チェック, 前提条件, 設定必須*
+<details>
+<summary>keywords</summary>
+
+ServiceAvailability, サービス提供可否チェック, 前提条件, 設定必須
+
+</details>
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.common.availability.ServiceAvailabilityCheckHandler`
 
-*キーワード: ServiceAvailabilityCheckHandler, nablarch.common.availability.ServiceAvailabilityCheckHandler, ハンドラクラス名*
+<details>
+<summary>keywords</summary>
+
+ServiceAvailabilityCheckHandler, nablarch.common.availability.ServiceAvailabilityCheckHandler, ハンドラクラス名
+
+</details>
 
 ## モジュール一覧
 
@@ -26,14 +36,24 @@
 </dependency>
 ```
 
-*キーワード: nablarch-common-auth, com.nablarch.framework, モジュール依存関係, Maven依存*
+<details>
+<summary>keywords</summary>
+
+nablarch-common-auth, com.nablarch.framework, モジュール依存関係, Maven依存
+
+</details>
 
 ## 制約
 
 - :ref:`thread_context_handler` より後ろに配置すること: スレッドコンテキスト上のリクエストIDを使用するため、:ref:`thread_context_handler` より後ろに配置する必要がある。
 - :ref:`forwarding_handler` より後ろに配置すること: 内部フォーワード時にフォーワード先の :ref:`内部リクエストID <internal_request_id>` でチェックしたい場合。あわせて :ref:`thread_context_handler` の `attributes` に `InternalRequestIdAttribute` を追加すること。
 
-*キーワード: thread_context_handler, forwarding_handler, InternalRequestIdAttribute, ハンドラ配置順序, 制約*
+<details>
+<summary>keywords</summary>
+
+thread_context_handler, forwarding_handler, InternalRequestIdAttribute, ハンドラ配置順序, 制約
+
+</details>
 
 ## リクエストに対するサービス提供可否チェック
 
@@ -47,4 +67,9 @@
 
 フォーワード先のリクエストIDでチェックしたい場合は、`ServiceAvailabilityCheckHandler.setUsesInternalRequestId(boolean)` で `true` を指定（デフォルト: `false`）。
 
-*キーワード: ThreadContext, ServiceUnavailable, setUsesInternalRequestId, サービス提供可否チェック, リクエストID, 503*
+<details>
+<summary>keywords</summary>
+
+ThreadContext, ServiceUnavailable, setUsesInternalRequestId, サービス提供可否チェック, リクエストID, 503
+
+</details>

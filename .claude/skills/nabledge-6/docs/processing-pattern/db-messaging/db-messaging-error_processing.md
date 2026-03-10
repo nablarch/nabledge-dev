@@ -16,7 +16,12 @@ protected void transactionFailure(SqlRow inputData, ExecutionContext context) {
 }
 ```
 
-*キーワード: BatchActionBase, transactionFailure, SqlRow, ExecutionContext, エラーデータ除外, トランザクション失敗コールバック, 処理継続, データベースメッセージング*
+<details>
+<summary>keywords</summary>
+
+BatchActionBase, transactionFailure, SqlRow, ExecutionContext, エラーデータ除外, トランザクション失敗コールバック, 処理継続, データベースメッセージング
+
+</details>
 
 ## プロセスを異常終了させる
 
@@ -37,4 +42,9 @@ public Result handle(SqlRow inputData, ExecutionContext ctx) {
 }
 ```
 
-*キーワード: ProcessAbnormalEnd, SqlRow, ExecutionContext, Result, プロセス異常終了, テーブルキュー監視, 処理停止, データ滞留*
+<details>
+<summary>keywords</summary>
+
+ProcessAbnormalEnd, SqlRow, ExecutionContext, Result, プロセス異常終了, テーブルキュー監視, 処理停止, データ滞留
+
+</details>

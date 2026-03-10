@@ -14,7 +14,12 @@ ${attach:ファイルパス}
 
 > **補足**: ファイルパスは、**テスト実行時のカレントディレクトリからの相対パス**（プロジェクトルートディレクトリからの相対パス）で記述する。
 
-*キーワード: ${attach:ファイルパス}, ファイルアップロード, HTTPリクエストパラメータ, アップロードファイル指定, プロジェクトルート相対パス, ウェブアプリケーションのテスト前提*
+<details>
+<summary>keywords</summary>
+
+${attach:ファイルパス}, ファイルアップロード, HTTPリクエストパラメータ, アップロードファイル指定, プロジェクトルート相対パス, ウェブアプリケーションのテスト前提
+
+</details>
 
 ## バイナリファイルの場合
 
@@ -37,7 +42,12 @@ ${attach:ファイルパス}
 |---|---|---|
 | `${attach:test/resources/images/picture.png}` | アップロードします。 | `false` |
 
-*キーワード: バイナリファイルアップロード, 画像ファイル, requestParams, LIST_MAP, ${attach:}指定例*
+<details>
+<summary>keywords</summary>
+
+バイナリファイルアップロード, 画像ファイル, requestParams, LIST_MAP, ${attach:}指定例
+
+</details>
 
 ## 固定長ファイル、CSVファイルの場合
 
@@ -69,4 +79,9 @@ ${attach:ファイルパス}
 
 > **補足**: 固定長ファイルやCSVファイルのアップロードでも事前にファイルを用意することは可能だが、テストデータの保守容易性を考慮するとテストデータシートに記載すべきである。
 
-*キーワード: 固定長ファイル, CSVファイル, SETUP_FIXED, テストデータシート, text-encoding, record-separator*
+<details>
+<summary>keywords</summary>
+
+固定長ファイル, CSVファイル, SETUP_FIXED, テストデータシート, text-encoding, record-separator
+
+</details>

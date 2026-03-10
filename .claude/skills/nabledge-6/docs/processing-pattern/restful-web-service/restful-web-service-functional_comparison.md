@@ -41,4 +41,9 @@
 [11] Nablarchにあるトランザクション管理を使用する。
 [12] エラー処理は共通化し、JaxRsResponseHandlerをカスタマイズすることを想定している。業務処理で個別にエラー処理をしたい場合は、リソースメソッドにてtry/catchを使用する。
 
-*キーワード: 機能比較, Jakarta RESTful Web Servicesサポート, HTTPメッセージング, Jakarta RESTful Web Services, リクエストマッピング, バリデーション, クライアントAPI, MessagingAction, BodyConverter, DataRecordFormatter, JaxRsResponseHandler, RESTfulウェブサービス選択, 非同期処理, トランザクション制御*
+<details>
+<summary>keywords</summary>
+
+機能比較, Jakarta RESTful Web Servicesサポート, HTTPメッセージング, Jakarta RESTful Web Services, リクエストマッピング, バリデーション, クライアントAPI, MessagingAction, BodyConverter, DataRecordFormatter, JaxRsResponseHandler, RESTfulウェブサービス選択, 非同期処理, トランザクション制御
+
+</details>

@@ -6,7 +6,12 @@
 
 **クラス**: `nablarch.common.web.interceptor.InjectForm`
 
-*キーワード: InjectForm, nablarch.common.web.interceptor.InjectForm, インターセプタクラス名*
+<details>
+<summary>keywords</summary>
+
+InjectForm, nablarch.common.web.interceptor.InjectForm, インターセプタクラス名
+
+</details>
 
 ## モジュール一覧
 
@@ -30,7 +35,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web, nablarch-core-validation-ee, nablarch-core-validation, BeanValidation, NablarchValidation, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, nablarch-core-validation-ee, nablarch-core-validation, BeanValidation, NablarchValidation, モジュール依存関係
+
+</details>
 
 ## InjectFormを使用する
 
@@ -65,7 +75,12 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 
 > **補足**: :ref:`bean_validation` を使用する場合、バリデーションエラー時にもリクエストスコープからオブジェクトを取得可能となるよう設定できる。詳細は :ref:`bean_validation_onerror` を参照。
 
-*キーワード: @InjectForm, @OnError, InjectForm#form, InjectForm#name, InjectForm#prefix, UserForm, バリデーション, リクエストスコープ, フォームオブジェクト, 入力値チェック, ApplicationException, バリデーション対象外, プレフィックス, form.userId, form.password, validate*
+<details>
+<summary>keywords</summary>
+
+@InjectForm, @OnError, InjectForm#form, InjectForm#name, InjectForm#prefix, UserForm, バリデーション, リクエストスコープ, フォームオブジェクト, 入力値チェック, ApplicationException, バリデーション対象外, プレフィックス, form.userId, form.password, validate
+
+</details>
 
 ## バリデーションエラー時の遷移先を指定する
 
@@ -75,7 +90,12 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 
 バリデーションエラー発生時に遷移先画面で表示するデータを取得したい場合は、:ref:`on_error-forward` を参照。
 
-*キーワード: @OnError, OnError, nablarch.fw.web.interceptor.OnError, ApplicationException, バリデーションエラー, 遷移先, システムエラー*
+<details>
+<summary>keywords</summary>
+
+@OnError, OnError, nablarch.fw.web.interceptor.OnError, ApplicationException, バリデーションエラー, 遷移先, システムエラー
+
+</details>
 
 ## Bean Validationのグループを指定する
 
@@ -89,4 +109,9 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 }
 ```
 
-*キーワード: @InjectForm, InjectForm#validationGroup, nablarch.common.web.interceptor.InjectForm, Bean Validationグループ, validationGroup, バリデーショングループ指定*
+<details>
+<summary>keywords</summary>
+
+@InjectForm, InjectForm#validationGroup, nablarch.common.web.interceptor.InjectForm, Bean Validationグループ, validationGroup, バリデーショングループ指定
+
+</details>

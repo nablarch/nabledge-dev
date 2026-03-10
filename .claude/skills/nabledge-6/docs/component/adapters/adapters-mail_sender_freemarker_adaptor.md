@@ -14,7 +14,12 @@
 
 > **補足**: FreeMarkerのバージョン2.3.27-incubatingを使用してテストを行っている。バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
-*キーワード: nablarch-mail-sender-freemarker-adaptor, FreeMarkerメールアダプタ, モジュール依存関係, FreeMarker 2.3.27-incubating*
+<details>
+<summary>keywords</summary>
+
+nablarch-mail-sender-freemarker-adaptor, FreeMarkerメールアダプタ, モジュール依存関係, FreeMarker 2.3.27-incubating
+
+</details>
 
 ## E-mail FreeMarkerアダプタを使用するための設定を行う
 
@@ -63,7 +68,12 @@ public class ConfigurationFactory implements ComponentFactory<Configuration> {
 </component>
 ```
 
-*キーワード: FreeMarkerMailProcessor, MailRequester, ComponentFactory, Configuration, ConfigurationFactory, basePackagePath, encoding, nablarch.integration.mail.freemarker.FreeMarkerMailProcessor, nablarch.common.mail.MailRequester, nablarch.core.repository.di.ComponentFactory, FreeMarkerアダプタ設定, コンポーネント設定, テンプレートエンジン設定*
+<details>
+<summary>keywords</summary>
+
+FreeMarkerMailProcessor, MailRequester, ComponentFactory, Configuration, ConfigurationFactory, basePackagePath, encoding, nablarch.integration.mail.freemarker.FreeMarkerMailProcessor, nablarch.common.mail.MailRequester, nablarch.core.repository.di.ComponentFactory, FreeMarkerアダプタ設定, コンポーネント設定, テンプレートエンジン設定
+
+</details>
 
 ## メールのテンプレートを作成する
 
@@ -82,10 +92,20 @@ ${approver}は速やかに${title}を承認してください。${option}
 
 テンプレートファイルの配置場所は `Configuration` の設定による。前節の設定例ではクラスパスからロードされ、`basePackagePath` に `com/example/template/` を設定した場合、クラスパス上の `com/example/template/` ディレクトリにテンプレートファイルを配置する。
 
-*キーワード: TemplateEngineProcessedResult, nablarch.common.mail.TemplateEngineProcessedResult, テンプレート作成, デリミタ, 件名と本文分割*
+<details>
+<summary>keywords</summary>
+
+TemplateEngineProcessedResult, nablarch.common.mail.TemplateEngineProcessedResult, テンプレート作成, デリミタ, 件名と本文分割
+
+</details>
 
 ## メール送信要求を登録する
 
 定型メールの送信要求を登録するだけでよい。詳細は :ref:`mail-request` を参照。
 
-*キーワード: メール送信要求登録, 定型メール送信, mail-request*
+<details>
+<summary>keywords</summary>
+
+メール送信要求登録, 定型メール送信, mail-request
+
+</details>

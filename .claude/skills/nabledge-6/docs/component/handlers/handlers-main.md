@@ -18,7 +18,12 @@
 7. 例外及びエラーに応じたログの出力
 8. 終了ログの出力（`LauncherLogFormatter#getEndLogFormat`）
 
-*キーワード: nablarch.fw.launcher.Main, Main, CommandLine, LauncherLogFormatter, ApplicationSettingLogFormatter, スタンドアロン起動, ハンドラキュー実行, システムリポジトリ初期化, 起動ランチャ, setupExecutionContext, 実行コンテキスト初期化, getStartLogFormat, getEndLogFormat*
+<details>
+<summary>keywords</summary>
+
+nablarch.fw.launcher.Main, Main, CommandLine, LauncherLogFormatter, ApplicationSettingLogFormatter, スタンドアロン起動, ハンドラキュー実行, システムリポジトリ初期化, 起動ランチャ, setupExecutionContext, 実行コンテキスト初期化, getStartLogFormat, getEndLogFormat
+
+</details>
 
 ## モジュール一覧
 
@@ -30,7 +35,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven
+
+</details>
 
 ## アプリケーションを起動する
 
@@ -49,7 +59,12 @@ java nablarch.fw.launcher.Main \
   -userId testUser
 ```
 
-*キーワード: nablarch.fw.launcher.Main, -diConfig, -requestPath, -userId, アプリケーション起動, 起動オプション, 異常終了, 終了コード127, user.id, Request#getRequestPath*
+<details>
+<summary>keywords</summary>
+
+nablarch.fw.launcher.Main, -diConfig, -requestPath, -userId, アプリケーション起動, 起動オプション, 異常終了, 終了コード127, user.id, Request#getRequestPath
+
+</details>
 
 ## アプリケーション起動に任意のオプションを設定する
 
@@ -69,7 +84,12 @@ public Result handle(String inputData, ExecutionContext ctx) {
 }
 ```
 
-*キーワード: ExecutionContext, nablarch.fw.ExecutionContext, getSessionScopedVar, 任意オプションパラメータ, セッションコンテキスト変数取得, Result, Result.Success*
+<details>
+<summary>keywords</summary>
+
+ExecutionContext, nablarch.fw.ExecutionContext, getSessionScopedVar, 任意オプションパラメータ, セッションコンテキスト変数取得, Result, Result.Success
+
+</details>
 
 ## 例外及びエラーに応じた処理内容
 
@@ -80,4 +100,9 @@ public Result handle(String inputData, ExecutionContext ctx) {
 | `Result.Error`（サブクラス含む） | FATALレベルのログ出力後、ステータスコードが0〜127の場合はそのまま返し、それ以外は127を返す。 |
 | 上記以外の例外クラス | FATALレベルのログ出力後、127を返す。 |
 
-*キーワード: Result.Error, nablarch.fw.Result.Error, 例外処理, エラー処理, 終了コード127, FATALログ*
+<details>
+<summary>keywords</summary>
+
+Result.Error, nablarch.fw.Result.Error, 例外処理, エラー処理, 終了コード127, FATALログ
+
+</details>

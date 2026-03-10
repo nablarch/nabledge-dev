@@ -17,7 +17,12 @@
 
 > **補足**: GETリクエストの場合、hiddenパラメータに関連する処理は行わず、複合キーの復元処理のみ行う（:ref:`tag-using_get` 参照）。
 
-*キーワード: NablarchTagHandler, nablarch.common.web.handler.NablarchTagHandler, CustomTagConfig, nablarch.common.web.tag.CustomTagConfig, カスタムタグ制御, hidden暗号化, チェックボックス, 複合キー復元, リクエスト処理*
+<details>
+<summary>keywords</summary>
+
+NablarchTagHandler, nablarch.common.web.handler.NablarchTagHandler, CustomTagConfig, nablarch.common.web.tag.CustomTagConfig, カスタムタグ制御, hidden暗号化, チェックボックス, 複合キー復元, リクエスト処理
+
+</details>
 
 ## モジュール一覧
 
@@ -29,14 +34,24 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web-tag, com.nablarch.framework, モジュール, 依存関係, Maven*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-tag, com.nablarch.framework, モジュール, 依存関係, Maven
+
+</details>
 
 ## 制約
 
 - :ref:`multipart_handler` より後ろに設定すること。リクエストパラメータにアクセスするため。
 - :ref:`hidden暗号化<tag-hidden_encryption>` 使用時は、:ref:`thread_context_handler` より後ろに設定すること。スレッドコンテキストからリクエストIDを取得するため。
 
-*キーワード: ハンドラ順序, multipart_handler, thread_context_handler, 設定順序制約, hidden暗号化, リクエストID*
+<details>
+<summary>keywords</summary>
+
+ハンドラ順序, multipart_handler, thread_context_handler, 設定順序制約, hidden暗号化, リクエストID
+
+</details>
 
 ## 復号に失敗(改竄エラー、セッション無効化エラー)した場合のエラーページを設定する
 
@@ -59,4 +74,9 @@
 </component>
 ```
 
-*キーワード: 改竄エラー, セッション無効化エラー, 復号失敗, エラーページ設定, path, statusCode, sessionExpirePath, sessionExpireStatusCode, NablarchTagHandler*
+<details>
+<summary>keywords</summary>
+
+改竄エラー, セッション無効化エラー, 復号失敗, エラーページ設定, path, statusCode, sessionExpirePath, sessionExpireStatusCode, NablarchTagHandler
+
+</details>

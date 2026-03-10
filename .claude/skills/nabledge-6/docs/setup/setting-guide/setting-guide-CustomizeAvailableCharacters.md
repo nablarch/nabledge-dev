@@ -8,7 +8,12 @@
 
 ![](../../knowledge/setup/setting-guide/assets/setting-guide-CustomizeAvailableCharacters/charset.png)
 
-*キーワード: 文字集合, 包含関係, 使用可能文字, 文字種別*
+<details>
+<summary>keywords</summary>
+
+文字集合, 包含関係, 使用可能文字, 文字種別
+
+</details>
 
 ## 文字集合定義の所在
 
@@ -24,7 +29,12 @@
 
 > **補足**: 定義場所: `nablarch/core/validation/charset-definition.xml`
 
-*キーワード: charset-definition.config, charset-definition.xml, 文字集合定義, halfWidthWhitespace, デフォルトコンフィギュレーション*
+<details>
+<summary>keywords</summary>
+
+charset-definition.config, charset-definition.xml, 文字集合定義, halfWidthWhitespace, デフォルトコンフィギュレーション
+
+</details>
 
 ## メッセージIDを設定するだけで使用できる使用可能文字
 
@@ -41,7 +51,12 @@
 
 メッセージID及びメッセージ内容の変更手順は [./CustomizeMessageIDAndMessage](setting-guide-CustomizeMessageIDAndMessage.md) を参照。
 
-*キーワード: メッセージID設定, システム許容文字, 全角文字, 半角英数, ASCII文字, 半角数字, 全角カタカナ, バリデーション設定*
+<details>
+<summary>keywords</summary>
+
+メッセージID設定, システム許容文字, 全角文字, 半角英数, ASCII文字, 半角数字, 全角カタカナ, バリデーション設定
+
+</details>
 
 ## メッセージIDを指定するだけでは使用できない使用可能文字
 
@@ -130,7 +145,12 @@ Nablarchの設定ファイル（ウェブプロジェクトでは `web-component
 
 メッセージID及びメッセージ内容の変更手順は [./CustomizeMessageIDAndMessage](setting-guide-CustomizeMessageIDAndMessage.md) を参照。
 
-*キーワード: LiteralCharsetDef, nablarch.core.validation.validator.unicode.LiteralCharsetDef, コンポーネント定義, 全角英字, 全角ひらがな, 起動時警告, 文字バリデーション設定, allowedCharacters, messageId*
+<details>
+<summary>keywords</summary>
+
+LiteralCharsetDef, nablarch.core.validation.validator.unicode.LiteralCharsetDef, コンポーネント定義, 全角英字, 全角ひらがな, 起動時警告, 文字バリデーション設定, allowedCharacters, messageId
+
+</details>
 
 ## 単独で使用できない使用可能文字
 
@@ -138,4 +158,9 @@ Nablarchの設定ファイル（ウェブプロジェクトでは `web-component
 
 - halfWidthSpace
 
-*キーワード: halfWidthSpace, 半角スペース, 単独使用不可*
+<details>
+<summary>keywords</summary>
+
+halfWidthSpace, 半角スペース, 単独使用不可
+
+</details>

@@ -10,7 +10,12 @@
 - htmlファイルがブラウザに関連付けされていること
 - ブラウザのプロキシ設定で、localhostが除外されていること
 
-*キーワード: HttpDumpツール前提条件, Java Maven インストール要件, プロキシ設定 localhost除外, Mavenプロジェクト要件, ブラウザ関連付け*
+<details>
+<summary>keywords</summary>
+
+HttpDumpツール前提条件, Java Maven インストール要件, プロキシ設定 localhost除外, Mavenプロジェクト要件, ブラウザ関連付け
+
+</details>
 
 ## 提供方法
 
@@ -37,19 +42,34 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 `httpDump.bat` をpom.xmlと同じディレクトリに配置する。
 
-*キーワード: nablarch-testing, nablarch-testing-jetty12, Maven依存関係, mvn dependency:copy-dependencies, httpDump.bat, JAR取得*
+<details>
+<summary>keywords</summary>
+
+nablarch-testing, nablarch-testing-jetty12, Maven依存関係, mvn dependency:copy-dependencies, httpDump.bat, JAR取得
+
+</details>
 
 ## 設定画面起動
 
 EclipseにhttpDumpをHTMLファイルの外部エディタとして登録する: ウィンドウ(Window) → 設定(Preference) → 一般(General) → エディタ(Editors) → ファイルの関連付け(File Associations) → *.html を選択 → 追加(Add)ボタン押下。
 
-*キーワード: Eclipse設定, ファイルの関連付け, 外部エディタ登録, *.html, Eclipse Preference*
+<details>
+<summary>keywords</summary>
+
+Eclipse設定, ファイルの関連付け, 外部エディタ登録, *.html, Eclipse Preference
+
+</details>
 
 ## 外部プログラム選択
 
 エディタ種別として「外部プログラム(External program)」ラジオボタンを選択し、参照(Browse)ボタンを押下する。
 
-*キーワード: 外部プログラム設定, Eclipse エディタ選択, External program, Browse*
+<details>
+<summary>keywords</summary>
+
+外部プログラム設定, Eclipse エディタ選択, External program, Browse
+
+</details>
 
 ## 起動用バッチファイル（シェルスクリプト）選択
 
@@ -57,10 +77,20 @@ OSに応じてファイルを選択:
 - Windows: `httpDump.bat`
 - Linux: `httpDump.sh`
 
-*キーワード: httpDump.bat, httpDump.sh, Windows Linux OS別選択, バッチファイル指定*
+<details>
+<summary>keywords</summary>
+
+httpDump.bat, httpDump.sh, Windows Linux OS別選択, バッチファイル指定
+
+</details>
 
 ## HTMLファイルからの起動方法
 
 Eclipseのパッケージエクスプローラ等でHTMLファイルを右クリック → 「httpDumpで開く」でツールを起動する。
 
-*キーワード: HTMLファイル起動, Eclipse パッケージエクスプローラ, httpDumpで開く, 右クリック起動*
+<details>
+<summary>keywords</summary>
+
+HTMLファイル起動, Eclipse パッケージエクスプローラ, httpDumpで開く, 右クリック起動
+
+</details>

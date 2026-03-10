@@ -6,7 +6,12 @@
 
 **クラス名**: `nablarch.fw.handler.DuplicateProcessCheckHandler`
 
-*キーワード: DuplicateProcessCheckHandler, nablarch.fw.handler.DuplicateProcessCheckHandler, プロセス多重起動防止ハンドラ クラス名*
+<details>
+<summary>keywords</summary>
+
+DuplicateProcessCheckHandler, nablarch.fw.handler.DuplicateProcessCheckHandler, プロセス多重起動防止ハンドラ クラス名
+
+</details>
 
 ## モジュール一覧
 
@@ -18,13 +23,23 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-batch, com.nablarch.framework, Maven依存関係, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-batch, com.nablarch.framework, Maven依存関係, モジュール依存関係
+
+</details>
 
 ## 制約
 
 :ref:`thread_context_handler` よりも後ろに設定すること。本ハンドラはスレッドコンテキスト上のリクエストIDを元にプロセス多重起動チェックを行うため。
 
-*キーワード: thread_context_handler, スレッドコンテキスト変数管理ハンドラ, ハンドラ順序, 設定順序制約, リクエストID*
+<details>
+<summary>keywords</summary>
+
+thread_context_handler, スレッドコンテキスト変数管理ハンドラ, ハンドラ順序, 設定順序制約, リクエストID
+
+</details>
 
 ## 多重起動防止チェックを行うための設定
 
@@ -68,10 +83,20 @@
 </component>
 ```
 
-*キーワード: BasicDuplicateProcessChecker, nablarch.fw.handler.BasicDuplicateProcessChecker, DuplicateProcessCheckHandler, dbTransactionManager, tableName, processIdentifierColumnName, processActiveFlgColumnName, exitCode, initializeList, 多重起動防止設定, リクエストID, 起動中フラグ, BasicApplicationInitializer, 異常終了, 多重起動 異常終了*
+<details>
+<summary>keywords</summary>
+
+BasicDuplicateProcessChecker, nablarch.fw.handler.BasicDuplicateProcessChecker, DuplicateProcessCheckHandler, dbTransactionManager, tableName, processIdentifierColumnName, processActiveFlgColumnName, exitCode, initializeList, 多重起動防止設定, リクエストID, 起動中フラグ, BasicApplicationInitializer, 異常終了, 多重起動 異常終了
+
+</details>
 
 ## 多重起動防止チェック処理をカスタマイズする
 
 `DuplicateProcessChecker` の実装クラスを作成することでカスタマイズ可能。実装クラスは :ref:`duplicate_process_check_handler-configuration` の設定方法に従い、本ハンドラの `duplicateProcessChecker` プロパティに設定して使用する。
 
-*キーワード: DuplicateProcessChecker, nablarch.fw.handler.DuplicateProcessChecker, 多重起動防止チェックカスタマイズ, カスタム実装*
+<details>
+<summary>keywords</summary>
+
+DuplicateProcessChecker, nablarch.fw.handler.DuplicateProcessChecker, 多重起動防止チェックカスタマイズ, カスタム実装
+
+</details>

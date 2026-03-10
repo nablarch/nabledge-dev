@@ -18,7 +18,12 @@ void assertStatusCode(String message, HttpResponse.Status expected, HttpResponse
 
 期待値とレスポンスのステータスコードが不一致の場合、アサート失敗となる。
 
-*キーワード: RestTestSupport, assertStatusCode, HttpResponse.Status, HttpResponse, ステータスコード確認, HTTPレスポンス検証*
+<details>
+<summary>keywords</summary>
+
+RestTestSupport, assertStatusCode, HttpResponse.Status, HttpResponse, ステータスコード確認, HTTPレスポンス検証
+
+</details>
 
 ## レスポンスボディ
 
@@ -42,7 +47,12 @@ String readTextResource(String fileName)
 | テストクラスソースファイル | `<PROJECT_ROOT>/test/java/com/example/` | `SampleTest.java` |
 | レスポンスボディ期待値ファイル | `<PROJECT_ROOT>/test/resources/com/example/SampleTest` | `response.json`（引数に指定） |
 
-*キーワード: RestTestSupport, readTextResource, JSONAssert, json-path-assert, XMLUnit, レスポンスボディ検証, JSONアサート*
+<details>
+<summary>keywords</summary>
+
+RestTestSupport, readTextResource, JSONAssert, json-path-assert, XMLUnit, レスポンスボディ検証, JSONアサート
+
+</details>
 
 ## 概要・構造
 
@@ -139,7 +149,12 @@ RestMockHttpRequest request = post("/projects")
 HttpResponse sendRequest(HttpRequest request)
 ```
 
-*キーワード: SimpleRestTestSupport, RestTestSupport, RestMockHttpRequest, DbAccessTestSupport, HttpServer, HttpRequest, nablarch-testing-rest, nablarch-testing-jetty12, nablarch-testing-default-configuration, リクエスト単体テスト, 内蔵サーバ, RESTfulウェブサービステスト, sendRequest*
+<details>
+<summary>keywords</summary>
+
+SimpleRestTestSupport, RestTestSupport, RestMockHttpRequest, DbAccessTestSupport, HttpServer, HttpRequest, nablarch-testing-rest, nablarch-testing-jetty12, nablarch-testing-default-configuration, リクエスト単体テスト, 内蔵サーバ, RESTfulウェブサービステスト, sendRequest
+
+</details>
 
 ## 各種設定値
 
@@ -185,4 +200,9 @@ HttpResponse sendRequest(HttpRequest request)
   <property name="webFrontControllerKey" value="jaxrsController"/>
 ```
 
-*キーワード: RestTestConfiguration, webBaseDir, webFrontControllerKey, nablarch.test.core.http.RestTestConfiguration, Webフロントコントローラー設定, jaxrsController, rest-request-test.xml, WebFrontController, nablarch.fw.web.servlet.WebFrontController*
+<details>
+<summary>keywords</summary>
+
+RestTestConfiguration, webBaseDir, webFrontControllerKey, nablarch.test.core.http.RestTestConfiguration, Webフロントコントローラー設定, jaxrsController, rest-request-test.xml, WebFrontController, nablarch.fw.web.servlet.WebFrontController
+
+</details>

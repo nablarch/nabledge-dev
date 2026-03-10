@@ -6,4 +6,9 @@
 
 Nablarchのデフォルトコンフィグレーション設定値とブランクプロジェクトの設定値の一覧（Excelファイル）。[デフォルト設定一覧.xlsx](../../knowledge/setup/configuration/assets/configuration-configuration/デフォルト設定一覧.xlsx)
 
-*キーワード: デフォルト設定一覧, デフォルトコンフィグレーション, 設定値一覧, ブランクプロジェクト設定値*
+<details>
+<summary>keywords</summary>
+
+デフォルト設定一覧, デフォルトコンフィグレーション, 設定値一覧, ブランクプロジェクト設定値
+
+</details>

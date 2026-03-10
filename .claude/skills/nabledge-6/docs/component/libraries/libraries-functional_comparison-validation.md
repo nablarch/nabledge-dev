@@ -36,4 +36,9 @@
 
 [8] 正規化はBean Validationの機能ではなくハンドラとして提供している。正規化が必要な場合は :ref:`normalize_handler` を使用する。
 
-*キーワード: ValidatorUtil, BeanUtil, nablarch.core.validation.ee.ValidatorUtil, nablarch.core.beans.BeanUtil, Bean Validation機能比較, Nablarch Validation機能比較, バリデーション機能比較, ドメインバリデーション, 型変換, 正規化, 相関バリデーション, Jakarta Bean Validation*
+<details>
+<summary>keywords</summary>
+
+ValidatorUtil, BeanUtil, nablarch.core.validation.ee.ValidatorUtil, nablarch.core.beans.BeanUtil, Bean Validation機能比較, Nablarch Validation機能比較, バリデーション機能比較, ドメインバリデーション, 型変換, 正規化, 相関バリデーション, Jakarta Bean Validation
+
+</details>

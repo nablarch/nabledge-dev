@@ -10,7 +10,12 @@
 
 **クラス**: `nablarch.fw.web.interceptor.OnErrors`
 
-*キーワード: OnErrors, nablarch.fw.web.interceptor.OnErrors, 例外インターセプタ, レスポンス指定, 業務アクション例外処理*
+<details>
+<summary>keywords</summary>
+
+OnErrors, nablarch.fw.web.interceptor.OnErrors, 例外インターセプタ, レスポンス指定, 業務アクション例外処理
+
+</details>
 
 ## モジュール一覧
 
@@ -22,7 +27,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, モジュール依存関係
+
+</details>
 
 ## OnErrorsを使用する
 
@@ -43,4 +53,9 @@ public HttpResponse handle(HttpRequest request, ExecutionContext context) {
 
 > **重要**: `OnError` の定義順に例外を処理するため、継承関係にある例外を定義する場合は、必ずサブクラスの例外から先に定義すること。
 
-*キーワード: @OnErrors, @OnError, nablarch.fw.web.interceptor.OnError, UserLockedException, AuthenticationException, ApplicationException, 例外ハンドリング, 継承関係, サブクラス優先定義*
+<details>
+<summary>keywords</summary>
+
+@OnErrors, @OnError, nablarch.fw.web.interceptor.OnError, UserLockedException, AuthenticationException, ApplicationException, 例外ハンドリング, 継承関係, サブクラス優先定義
+
+</details>

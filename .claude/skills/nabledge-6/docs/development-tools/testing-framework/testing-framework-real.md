@@ -21,4 +21,9 @@ public class M21AA03Test extends MessagingRequestTestSupport {
 
 [./batch](testing-framework-batch.md)
 
-*キーワード: MessagingRequestTestSupport, nablarch.test.core.messaging.MessagingRequestTestSupport, 同期応答メッセージ受信処理, 取引単体テスト, テストクラス命名規則, メッセージング取引単体テスト*
+<details>
+<summary>keywords</summary>
+
+MessagingRequestTestSupport, nablarch.test.core.messaging.MessagingRequestTestSupport, 同期応答メッセージ受信処理, 取引単体テスト, テストクラス命名規則, メッセージング取引単体テスト
+
+</details>

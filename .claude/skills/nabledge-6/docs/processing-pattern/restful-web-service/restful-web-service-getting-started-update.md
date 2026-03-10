@@ -89,4 +89,9 @@ public class ProjectAction {
     }
 ```
 
-*キーワード: ProjectUpdateForm, ProjectAction, Project, @Required, @Domain, @Consumes, @Valid, @PUT, @Path, BeanUtil, UniversalDao, HttpResponse, ErrorResponseBuilder, NoDataException, OptimisticLockException, PUTリクエスト, REST更新処理, JSONリクエストボディ受信, フォームバリデーション*
+<details>
+<summary>keywords</summary>
+
+ProjectUpdateForm, ProjectAction, Project, @Required, @Domain, @Consumes, @Valid, @PUT, @Path, BeanUtil, UniversalDao, HttpResponse, ErrorResponseBuilder, NoDataException, OptimisticLockException, PUTリクエスト, REST更新処理, JSONリクエストボディ受信, フォームバリデーション
+
+</details>

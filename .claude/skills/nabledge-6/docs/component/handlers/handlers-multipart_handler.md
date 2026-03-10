@@ -6,7 +6,12 @@
 
 **クラス名**: `nablarch.fw.web.upload.MultipartHandler`
 
-*キーワード: MultipartHandler, nablarch.fw.web.upload.MultipartHandler, マルチパートリクエストハンドラ, ハンドラクラス*
+<details>
+<summary>keywords</summary>
+
+MultipartHandler, nablarch.fw.web.upload.MultipartHandler, マルチパートリクエストハンドラ, ハンドラクラス
+
+</details>
 
 ## モジュール一覧
 
@@ -25,19 +30,34 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web, nablarch-core, モジュール依存関係, Maven*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, nablarch-core, モジュール依存関係, Maven
+
+</details>
 
 ## 制約
 
 なし。
 
-*キーワード: 制約, マルチパートハンドラ制約*
+<details>
+<summary>keywords</summary>
+
+制約, マルチパートハンドラ制約
+
+</details>
 
 ## このハンドラの動作条件
 
 リクエストヘッダの `Content-Type` が `multipart/form-data` と一致する場合のみリクエストボディを解析する。それ以外の場合は何もせず後続ハンドラに委譲する。
 
-*キーワード: Content-Type, multipart/form-data, 動作条件, マルチパート判定, リクエスト振り分け*
+<details>
+<summary>keywords</summary>
+
+Content-Type, multipart/form-data, 動作条件, マルチパート判定, リクエスト振り分け
+
+</details>
 
 ## アップロードファイルの一時保存先を指定する
 
@@ -55,7 +75,12 @@
 </component>
 ```
 
-*キーワード: uploadFileTmpDir, file_path_management, FilePathSetting, 一時保存先ディレクトリ, java.io.tmpdir, アップロード一時ファイル*
+<details>
+<summary>keywords</summary>
+
+uploadFileTmpDir, file_path_management, FilePathSetting, 一時保存先ディレクトリ, java.io.tmpdir, アップロード一時ファイル
+
+</details>
 
 ## 巨大なファイルのアップロードを防ぐ
 
@@ -77,7 +102,12 @@
 </component>
 ```
 
-*キーワード: contentLengthLimit, UploadSettings, 413, Payload Too Large, ファイルサイズ上限, DoS攻撃対策, アップロードサイズ制限*
+<details>
+<summary>keywords</summary>
+
+contentLengthLimit, UploadSettings, 413, Payload Too Large, ファイルサイズ上限, DoS攻撃対策, アップロードサイズ制限
+
+</details>
 
 ## ファイルの大量アップロードを防ぐ
 
@@ -97,7 +127,12 @@
 </component>
 ```
 
-*キーワード: maxFileCount, UploadSettings, 400, Bad Request, ファイル数上限, 大量アップロード防止*
+<details>
+<summary>keywords</summary>
+
+maxFileCount, UploadSettings, 400, Bad Request, ファイル数上限, 大量アップロード防止
+
+</details>
 
 ## 一時ファイルの削除（クリーニング）を行う
 
@@ -107,7 +142,12 @@
 
 自動削除設定はデフォルトで有効。本番環境で安易に無効にすると大量の一時ファイルがディスク上に残り、ディスクフルの原因となるため注意すること。無効にする場合は `UploadSettings#autoCleaning` に `false` を設定する。
 
-*キーワード: autoCleaning, UploadSettings, 一時ファイル削除, クリーニング, 自動削除設定, ディスクフル防止*
+<details>
+<summary>keywords</summary>
+
+autoCleaning, UploadSettings, 一時ファイル削除, クリーニング, 自動削除設定, ディスクフル防止
+
+</details>
 
 ## マルチパート解析エラー及びファイルサイズ上限超過時の遷移先画面を設定する
 
@@ -119,7 +159,12 @@
 - アップロード中にクライアントからの切断要求があり、ボディ部が不完全な場合
 - バウンダリーが存在しない場合
 
-*キーワード: web.xml, 400, BadRequest, エラーページ設定, session_store_handler, http_error_handler, マルチパート解析エラー*
+<details>
+<summary>keywords</summary>
+
+web.xml, 400, BadRequest, エラーページ設定, session_store_handler, http_error_handler, マルチパート解析エラー
+
+</details>
 
 ## アップロードしたファイルを読み込む
 
@@ -151,4 +196,9 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) throws
 > }
 > ```
 
-*キーワード: HttpRequest, getPart, PartInfo, data_bind, data_format, アップロードファイル読み込み, 一時ファイル取得, バイナリファイル, getSavedFile, InputStream*
+<details>
+<summary>keywords</summary>
+
+HttpRequest, getPart, PartInfo, data_bind, data_format, アップロードファイル読み込み, 一時ファイル取得, バイナリファイル, getSavedFile, InputStream
+
+</details>

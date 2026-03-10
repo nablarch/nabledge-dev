@@ -21,7 +21,12 @@
 
 証明書は認証局から発行してもらい、メール送信機能（バッチ）からアクセス可能なディレクトリに配置すること。ディレクトリへのアクセス権限は必要最小限にし、不要なユーザが証明書にアクセスできないようにすること。
 
-*キーワード: bcjmail-jdk18on, org.bouncycastle, bouncycastle, 電子署名, 証明書準備, Maven依存設定*
+<details>
+<summary>keywords</summary>
+
+bcjmail-jdk18on, org.bouncycastle, bouncycastle, 電子署名, 証明書準備, Maven依存設定
+
+</details>
 
 ## 電子署名付きメール送信機能の構造
 
@@ -31,7 +36,12 @@
 
 詳細は :ref:`メール送信機能<mail>` を参照。
 
-*キーワード: nablarch.common.mail.MailSender, 電子署名付きメール, メール送信パターンID, テーブル設計*
+<details>
+<summary>keywords</summary>
+
+nablarch.common.mail.MailSender, 電子署名付きメール, メール送信パターンID, テーブル設計
+
+</details>
 
 ## 設定ファイルの準備
 
@@ -66,10 +76,20 @@
 | certificateFileName | 証明書ファイルのパス |
 | keyStoreType | キーストアタイプ（PKCS12またはJKS） |
 
-*キーワード: please.change.me.common.mail.smime.CertificateWrapper, certificateList, 証明書設定, PKCS12, JKS, keyStoreType, certificateFileName, password, keyPassword*
+<details>
+<summary>keywords</summary>
+
+please.change.me.common.mail.smime.CertificateWrapper, certificateList, 証明書設定, PKCS12, JKS, keyStoreType, certificateFileName, password, keyPassword
+
+</details>
 
 ## 実行方法
 
 アクションクラスに `please.change.me.common.mail.smime.SMIMESignedMailSender` を指定してバッチプロセスを起動する。プロセス起動時に処理すべきメールを特定できるメール送信パターンIDを引数として指定する。
 
-*キーワード: please.change.me.common.mail.smime.SMIMESignedMailSender, メール送信バッチ, メール送信パターンID, バッチ起動*
+<details>
+<summary>keywords</summary>
+
+please.change.me.common.mail.smime.SMIMESignedMailSender, メール送信バッチ, メール送信パターンID, バッチ起動
+
+</details>

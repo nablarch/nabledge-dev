@@ -10,7 +10,12 @@
 SessionUtil.delete(ctx, "project");
 ```
 
-*キーワード: SessionUtil, SessionUtil.delete, セッション削除, 初期表示, セッションストア, 残存セッション削除*
+<details>
+<summary>keywords</summary>
+
+SessionUtil, SessionUtil.delete, セッション削除, 初期表示, セッションストア, 残存セッション削除
+
+</details>
 
 ## 入力画面から確認画面へ遷移
 
@@ -22,7 +27,12 @@ Project project = BeanUtil.createAndCopy(Project.class, form);
 SessionUtil.put(ctx, "project", project);
 ```
 
-*キーワード: SessionUtil, SessionUtil.put, BeanUtil, Project, ProjectForm, セッション保存, 確認画面遷移, フォームからエンティティへ変換*
+<details>
+<summary>keywords</summary>
+
+SessionUtil, SessionUtil.put, BeanUtil, Project, ProjectForm, セッション保存, 確認画面遷移, フォームからエンティティへ変換
+
+</details>
 
 ## 確認画面から入力画面へ戻る
 
@@ -35,7 +45,12 @@ context.setRequestScopedVar("form", form);
 SessionUtil.delete(ctx, "project");
 ```
 
-*キーワード: SessionUtil, SessionUtil.get, SessionUtil.delete, BeanUtil, Project, ProjectForm, セッション取得, 入力画面へ戻る, エンティティからフォームへ変換*
+<details>
+<summary>keywords</summary>
+
+SessionUtil, SessionUtil.get, SessionUtil.delete, BeanUtil, Project, ProjectForm, セッション取得, 入力画面へ戻る, エンティティからフォームへ変換
+
+</details>
 
 ## 登録処理を実行
 
@@ -47,4 +62,9 @@ Project project = SessionUtil.get(ctx, "project");
 SessionUtil.delete(ctx, "project");
 ```
 
-*キーワード: SessionUtil, SessionUtil.get, SessionUtil.delete, Project, 登録処理, セッション削除, 登録完了後クリーンアップ*
+<details>
+<summary>keywords</summary>
+
+SessionUtil, SessionUtil.get, SessionUtil.delete, Project, 登録処理, セッション削除, 登録完了後クリーンアップ
+
+</details>

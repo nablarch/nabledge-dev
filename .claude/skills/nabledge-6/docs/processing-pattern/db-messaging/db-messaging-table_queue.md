@@ -13,7 +13,12 @@ public class ProjectCreationServiceAction extends BatchAction<SqlRow> {
 }
 ```
 
-*キーワード: BatchAction, SqlRow, テーブルキュー, アクションクラス作成, DBメッセージング*
+<details>
+<summary>keywords</summary>
+
+BatchAction, SqlRow, テーブルキュー, アクションクラス作成, DBメッセージング
+
+</details>
 
 ## テーブルを監視するためのリーダを生成する
 
@@ -73,7 +78,12 @@ from ins_project_receive_message
 where status = '0' and process_id = :processId
 ```
 
-*キーワード: DatabaseTableQueueReader, DatabaseRecordReader, DatabaseRecordListener, SqlPStatement, createReader, SimpleDbTransactionManager, SimpleDbTransactionExecutor, AppDbConnection, SystemRepository, テーブルキュー監視, 悲観ロック, 未処理データ取得*
+<details>
+<summary>keywords</summary>
+
+DatabaseTableQueueReader, DatabaseRecordReader, DatabaseRecordListener, SqlPStatement, createReader, SimpleDbTransactionManager, SimpleDbTransactionExecutor, AppDbConnection, SystemRepository, テーブルキュー監視, 悲観ロック, 未処理データ取得
+
+</details>
 
 ## 未処理データを元に業務処理を実行する
 
@@ -98,7 +108,12 @@ public Result handle(final SqlRow inputData, final ExecutionContext context) {
 }
 ```
 
-*キーワード: handle, Result.Success, UniversalDao, ApplicationException, MessageUtil, MessageLevel, 業務処理実装, テーブルキュー処理*
+<details>
+<summary>keywords</summary>
+
+handle, Result.Success, UniversalDao, ApplicationException, MessageUtil, MessageLevel, 業務処理実装, テーブルキュー処理
+
+</details>
 
 ## 処理済みデータのステータスを更新する
 
@@ -152,4 +167,9 @@ where received_message_sequence = :id
 
 SQLファイルへのSQL記述ルールは :ref:`database-use_sql_file` 参照。
 
-*キーワード: transactionSuccess, transactionFailure, StatusUpdateDto, ステータス更新, 処理済みデータ, 正常終了, 異常終了*
+<details>
+<summary>keywords</summary>
+
+transactionSuccess, transactionFailure, StatusUpdateDto, ステータス更新, 処理済みデータ, 正常終了, 異常終了
+
+</details>

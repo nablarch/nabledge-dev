@@ -6,7 +6,12 @@
 
 **クラス名**: `nablarch.fw.web.handler.CsrfTokenVerificationHandler`
 
-*キーワード: CsrfTokenVerificationHandler, nablarch.fw.web.handler.CsrfTokenVerificationHandler, CSRFトークン検証ハンドラ, ハンドラクラス名*
+<details>
+<summary>keywords</summary>
+
+CsrfTokenVerificationHandler, nablarch.fw.web.handler.CsrfTokenVerificationHandler, CSRFトークン検証ハンドラ, ハンドラクラス名
+
+</details>
 
 ## モジュール一覧
 
@@ -18,7 +23,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web, com.nablarch.framework, モジュール, Maven依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, com.nablarch.framework, モジュール, Maven依存関係
+
+</details>
 
 ## 制約
 
@@ -29,7 +39,12 @@
 
 > **補足**: :ref:`multipart_handler` を使ったファイルアップロード時にファイルの保存前にCSRFトークンの検証を行いたい場合は、:ref:`multipart_handler` の前に本ハンドラおよび :ref:`session_store_handler` を配置すること。
 
-*キーワード: session_store_handler, nablarch_tag_handler, multipart_handler, tag-hidden_encryption, session_store, セッションストア必須, ハンドラ配置順, CSRFトークン制約*
+<details>
+<summary>keywords</summary>
+
+session_store_handler, nablarch_tag_handler, multipart_handler, tag-hidden_encryption, session_store, セッションストア必須, ハンドラ配置順, CSRFトークン制約
+
+</details>
 
 ## CSRFトークンの生成と検証
 
@@ -84,7 +99,12 @@
 <component name="csrfTokenVerificationHandler" class="nablarch.test.NopHandler" />
 ```
 
-*キーワード: CsrfTokenGenerator, UUIDv4CsrfTokenGenerator, VerificationTargetMatcher, HttpMethodVerificationTargetMatcher, VerificationFailureHandler, BadRequestVerificationFailureHandler, NopHandler, csrfTokenGenerator, verificationTargetMatcher, verificationFailureHandler, csrfTokenHeaderName, csrfTokenParameterName, csrfTokenSessionStoredVarName, csrfTokenSavedStoreName, X-CSRF-TOKEN, csrf-token, nablarch_csrf-token, WebConfig, nablarch.common.web.WebConfig, CsrfTokenUtil, RESTfulウェブサービス, CSRFトークン生成, CSRFトークン検証, テスト無効化, BadRequest 400*
+<details>
+<summary>keywords</summary>
+
+CsrfTokenGenerator, UUIDv4CsrfTokenGenerator, VerificationTargetMatcher, HttpMethodVerificationTargetMatcher, VerificationFailureHandler, BadRequestVerificationFailureHandler, NopHandler, csrfTokenGenerator, verificationTargetMatcher, verificationFailureHandler, csrfTokenHeaderName, csrfTokenParameterName, csrfTokenSessionStoredVarName, csrfTokenSavedStoreName, X-CSRF-TOKEN, csrf-token, nablarch_csrf-token, WebConfig, nablarch.common.web.WebConfig, CsrfTokenUtil, RESTfulウェブサービス, CSRFトークン生成, CSRFトークン検証, テスト無効化, BadRequest 400
+
+</details>
 
 ## CSRFトークンを再生成する
 
@@ -94,4 +114,9 @@
 - ログイン時にセッションストアを破棄して再生成する実装であれば、このメソッドは不要（セッションストア破棄時にCSRFトークンも破棄され、次のページ表示時に新しいトークンが生成されるため）
 - ログイン時にセッションIDの再生成のみ行う実装の場合は、このメソッドを使用してCSRFトークンも再生成すること
 
-*キーワード: CsrfTokenUtil, regenerateCsrfToken, nablarch.common.web.csrf.CsrfTokenUtil, CSRFトークン再生成, ログイン, セッションID再生成, セッションストア破棄*
+<details>
+<summary>keywords</summary>
+
+CsrfTokenUtil, regenerateCsrfToken, nablarch.common.web.csrf.CsrfTokenUtil, CSRFトークン再生成, ログイン, セッションID再生成, セッションストア破棄
+
+</details>

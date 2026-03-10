@@ -85,7 +85,12 @@
 - ドメイン定義書サンプルのバリデーション記載をBean Validationに変更（Nablarch Validationから変更）
 - JSP自動生成ツール・業務画面JSP検証ツールの記載削除
 
-*キーワード: 5u25からの変更点, Jakarta EE 10対応, Java 17必須, BeanUtil, SystemTimeUtil, LocalDateTime, LocalDate, ユニバーサルDAO, JSR310アダプタ, SLF4Jアダプタ, Domaアダプタ, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, UI開発基盤削除, nablarch-fw-web, nablarch-core-beans, nablarch.httpTestConfiguration.tempDirectory*
+<details>
+<summary>keywords</summary>
+
+5u25からの変更点, Jakarta EE 10対応, Java 17必須, BeanUtil, SystemTimeUtil, LocalDateTime, LocalDate, ユニバーサルDAO, JSR310アダプタ, SLF4Jアダプタ, Domaアダプタ, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, UI開発基盤削除, nablarch-fw-web, nablarch-core-beans, nablarch.httpTestConfiguration.tempDirectory
+
+</details>
 
 ## 6u2 変更点（6u1からの移行）
 
@@ -158,7 +163,12 @@
 - ドメイン定義書サンプルのバリデーション記載をBean Validationに変更
 - 業務画面JSP検証ツールの記載削除
 
-*キーワード: 6u1からの変更点, CSP nonce対応, Bean Validation, Micrometerアダプタ, OTLP, マイグレーションガイド, テスト環境データベース, Oracle 23ai, JBoss Logging, Domaアダプタ, nablarch-micrometer-adaptor, nablarch-testing-jetty12, nablarch.httpTestConfiguration.tempDirectory*
+<details>
+<summary>keywords</summary>
+
+6u1からの変更点, CSP nonce対応, Bean Validation, Micrometerアダプタ, OTLP, マイグレーションガイド, テスト環境データベース, Oracle 23ai, JBoss Logging, Domaアダプタ, nablarch-micrometer-adaptor, nablarch-testing-jetty12, nablarch.httpTestConfiguration.tempDirectory
+
+</details>
 
 ## バージョンアップ手順
 
@@ -175,7 +185,12 @@
    - `micrometer-registry-statsd`
 3. Mavenのビルドを再実行する
 
-*キーワード: バージョンアップ手順, nablarch-bom, pom.xml, micrometer-registry-datadog, micrometer-registry-cloudwatch2, micrometer-registry-statsd, 5系からの移行, 6u1からの移行*
+<details>
+<summary>keywords</summary>
+
+バージョンアップ手順, nablarch-bom, pom.xml, micrometer-registry-datadog, micrometer-registry-cloudwatch2, micrometer-registry-statsd, 5系からの移行, 6u1からの移行
+
+</details>
 
 ## モジュールバージョン一覧
 
@@ -260,4 +275,9 @@
 | アダプタ | com.nablarch.integration | nablarch-wmq-adaptor | 2.1.0 |
 | 開発ツール | com.nablarch.tool | nablarch-toolbox | 2.1.0 |
 
-*キーワード: モジュールバージョン, 6u2, com.nablarch.framework, com.nablarch.integration, com.nablarch.example, nablarch-testing-jetty12, nablarch-biz-sample-all, アーティファクトID, 依存関係バージョン*
+<details>
+<summary>keywords</summary>
+
+モジュールバージョン, 6u2, com.nablarch.framework, com.nablarch.integration, com.nablarch.example, nablarch-testing-jetty12, nablarch-biz-sample-all, アーティファクトID, 依存関係バージョン
+
+</details>

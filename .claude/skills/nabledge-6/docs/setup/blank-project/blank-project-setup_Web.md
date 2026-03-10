@@ -9,7 +9,12 @@
 - ウェブプロジェクトの生成
 - ウェブプロジェクトの動作確認
 
-*キーワード: ウェブプロジェクト初期セットアップ, ウェブプロジェクト生成, 動作確認*
+<details>
+<summary>keywords</summary>
+
+ウェブプロジェクト初期セットアップ, ウェブプロジェクト生成, 動作確認
+
+</details>
 
 ## 生成するプロジェクトの概要
 
@@ -23,7 +28,12 @@
 
 プロジェクト間の関係とディレクトリ構成については [../MavenModuleStructures/index](blank-project-MavenModuleStructures.md) を参照。
 
-*キーワード: H2 Database Engine, ルーティングアダプタ, Mavenプロジェクト, ウェブアプリケーション構成, ブランクプロジェクト概要*
+<details>
+<summary>keywords</summary>
+
+H2 Database Engine, ルーティングアダプタ, Mavenプロジェクト, ウェブアプリケーション構成, ブランクプロジェクト概要
+
+</details>
 
 ## ブランクプロジェクト作成
 
@@ -55,7 +65,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 - `Y`を入力すると、入力した内容をもとにひな形を生成する。
 - `N`を入力すると、プロジェクト情報の入力をやり直せる。
 
-*キーワード: nablarch-web-archetype, Maven archetype:generate, ブランクプロジェクト作成, archetypeVersion, groupId, artifactId, version, package*
+<details>
+<summary>keywords</summary>
+
+nablarch-web-archetype, Maven archetype:generate, ブランクプロジェクト作成, archetypeVersion, groupId, artifactId, version, package
+
+</details>
 
 ## 疎通確認
 
@@ -108,7 +123,12 @@ mvn jetty:run
 
 **疎通確認に失敗する場合**: 原因不明の場合は :ref:`firstStepGenerateWebBlankProject` からやり直すこと。
 
-*キーワード: SampleAction, SampleActionRequestTest, 疎通確認, mvn test, mvn jetty:run, 自動テスト, 起動確認*
+<details>
+<summary>keywords</summary>
+
+SampleAction, SampleActionRequestTest, 疎通確認, mvn test, mvn jetty:run, 自動テスト, 起動確認
+
+</details>
 
 ## データベースに関する設定を行う
 
@@ -117,7 +137,12 @@ mvn jetty:run
 - 使用するRDBMSを変更する場合は :ref:`customize-db` を参照。
 - ER図からのDDL生成・実行、Entityクラスの自動生成にはgsp-dba-maven-pluginの初期設定および実行が必要。詳細は :ref:`gsp-maven-plugin` を参照。
 
-*キーワード: H2 Database Engine, customize-db, gsp-dba-maven-plugin, RDBMS変更, DDL生成, Entityクラス自動生成*
+<details>
+<summary>keywords</summary>
+
+H2 Database Engine, customize-db, gsp-dba-maven-plugin, RDBMS変更, DDL生成, Entityクラス自動生成
+
+</details>
 
 ## 補足（web.xml）
 
@@ -125,10 +150,20 @@ JNDI経由で接続を取得する場合、`web.xml`に`<resource-ref>`要素の
 
 本番環境のみJNDI経由で接続する場合、`<resource-ref>`要素はローカル開発環境では不要な定義となるが、アプリケーション内でその定義を使用するコードを記述しない限り参照されないため、ローカル環境での動作に問題は発生しない。
 
-*キーワード: web.xml, resource-ref, JNDI, 接続設定, 環境別設定*
+<details>
+<summary>keywords</summary>
+
+web.xml, resource-ref, JNDI, 接続設定, 環境別設定
+
+</details>
 
 ## 補足
 
 H2のデータ確認方法やブランクプロジェクトに組み込まれているツールについては [../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照。
 
-*キーワード: H2データ確認, ブランクプロジェクト補足, 組み込みツール*
+<details>
+<summary>keywords</summary>
+
+H2データ確認, ブランクプロジェクト補足, 組み込みツール
+
+</details>

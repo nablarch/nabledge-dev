@@ -10,13 +10,23 @@
 - 応答電文オブジェクト内のプロトコルヘッダの値を、対応するHTTPヘッダに設定する
 - XMLやJSONなどの形式への直列化（シリアライズ）を行う
 
-*キーワード: HTTPメッセージングレスポンス変換ハンドラ, 応答電文オブジェクト, HTTPレスポンスオブジェクト変換, 直列化, シリアライズ, XML, JSON, プロトコルヘッダ, HTTPヘッダ設定*
+<details>
+<summary>keywords</summary>
+
+HTTPメッセージングレスポンス変換ハンドラ, 応答電文オブジェクト, HTTPレスポンスオブジェクト変換, 直列化, シリアライズ, XML, JSON, プロトコルヘッダ, HTTPヘッダ設定
+
+</details>
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler`
 
-*キーワード: HttpMessagingResponseBuildingHandler, nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler, HTTPメッセージング, レスポンス変換ハンドラ, ハンドラクラス*
+<details>
+<summary>keywords</summary>
+
+HttpMessagingResponseBuildingHandler, nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler, HTTPメッセージング, レスポンス変換ハンドラ, ハンドラクラス
+
+</details>
 
 ## モジュール一覧
 
@@ -28,13 +38,23 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-messaging-http, com.nablarch.framework, モジュール, Maven依存関係, HTTPメッセージング*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-messaging-http, com.nablarch.framework, モジュール, Maven依存関係, HTTPメッセージング
+
+</details>
 
 ## 制約
 
 - :ref:`http_response_handler` よりも後ろに設定すること。:ref:`http_response_handler` がこのハンドラで生成した `HTTPレスポンスオブジェクト` をクライアントに返却するため。
 
-*キーワード: http_response_handler, HttpResponse, nablarch.fw.web.HttpResponse, ハンドラ順序, 制約, 設定順*
+<details>
+<summary>keywords</summary>
+
+http_response_handler, HttpResponse, nablarch.fw.web.HttpResponse, ハンドラ順序, 制約, 設定順
+
+</details>
 
 ## レスポンスヘッダに設定される値
 
@@ -50,7 +70,12 @@ Content-TypeはフォーマッタのMIME（`DataRecordFormatterSupport#getMimeTy
 
 > **重要**: このハンドラでは上記に記載のないレスポンスヘッダを設定できない。上記以外のレスポンスヘッダが必要な場合はプロジェクトでハンドラを作成すること。
 
-*キーワード: Status-Code, Content-Type, X-Correlation-Id, CorrelationId, InterSystemMessage, DataRecordFormatterSupport, レスポンスヘッダ, HTTPヘッダ設定, Content-Type生成*
+<details>
+<summary>keywords</summary>
+
+Status-Code, Content-Type, X-Correlation-Id, CorrelationId, InterSystemMessage, DataRecordFormatterSupport, レスポンスヘッダ, HTTPヘッダ設定, Content-Type生成
+
+</details>
 
 ## フレームワーク制御ヘッダのレイアウトを変更する
 
@@ -66,4 +91,9 @@ Content-TypeはフォーマッタのMIME（`DataRecordFormatterSupport#getMimeTy
 </component>
 ```
 
-*キーワード: StructuredFwHeaderDefinition, nablarch.fw.messaging.reader.StructuredFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダ, ヘッダ定義変更, FwHeaderDefinition*
+<details>
+<summary>keywords</summary>
+
+StructuredFwHeaderDefinition, nablarch.fw.messaging.reader.StructuredFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダ, ヘッダ定義変更, FwHeaderDefinition
+
+</details>

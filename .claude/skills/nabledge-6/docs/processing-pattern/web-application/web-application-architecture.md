@@ -11,7 +11,12 @@
 - :ref:`nablarch_servlet_context_listener` (`NablarchServletContextListener`): システムリポジトリやログの初期化処理を行うサーブレットコンテキストリスナー
 - :ref:`web_front_controller` (`WebFrontController`): 受け取ったリクエストに対する処理をハンドラキューに委譲するサーブレットフィルタ
 
-*キーワード: NablarchServletContextListener, WebFrontController, ウェブアプリケーション構成, サーブレットコンテキストリスナー, ハンドラキュー, ServletAPI*
+<details>
+<summary>keywords</summary>
+
+NablarchServletContextListener, WebFrontController, ウェブアプリケーション構成, サーブレットコンテキストリスナー, ハンドラキュー, ServletAPI
+
+</details>
 
 ## ウェブアプリケーションの処理の流れ
 
@@ -23,7 +28,12 @@
 6. `HttpResponseHandler`が`HttpResponse`をクライアントへのレスポンスに変換する（例: JSPのServlet Forward）。
 7. responseが返却される。
 
-*キーワード: WebFrontController, DispatchHandler, HttpResponse, HttpResponseHandler, リクエスト処理フロー, ディスパッチハンドラ, アクションクラス, jakarta.servlet.Filter*
+<details>
+<summary>keywords</summary>
+
+WebFrontController, DispatchHandler, HttpResponse, HttpResponseHandler, リクエスト処理フロー, ディスパッチハンドラ, アクションクラス, jakarta.servlet.Filter
+
+</details>
 
 ## ウェブアプリケーションで使用するハンドラ
 
@@ -82,4 +92,9 @@
 | 12 | :ref:`transaction_management_handler` | トランザクションを開始する | トランザクションをコミットする | トランザクションをロールバックする |
 | 13 | :ref:`router_adaptor` | リクエストパスをもとに呼び出すアクションを決定する | — | — |
 
-*キーワード: ハンドラキュー構成, 最小ハンドラ構成, 文字エンコーディング, セッションストア, CSRFトークン検証, トランザクション管理, router_adaptor, セキュリティヘッダ*
+<details>
+<summary>keywords</summary>
+
+ハンドラキュー構成, 最小ハンドラ構成, 文字エンコーディング, セッションストア, CSRFトークン検証, トランザクション管理, router_adaptor, セキュリティヘッダ
+
+</details>

@@ -14,7 +14,12 @@
 
 > **補足**: リクエストIDは設定ファイルに指定することで、集計対象の機能を絞り込むことができる。
 
-*キーワード: オンラインアクセスログ集計, リクエスト数集計, 処理時間集計, 閾値超過リクエスト数, アクセスログ統計*
+<details>
+<summary>keywords</summary>
+
+オンラインアクセスログ集計, リクエスト数集計, 処理時間集計, 閾値超過リクエスト数, アクセスログ統計
+
+</details>
 
 ## サンプル構成
 
@@ -24,7 +29,12 @@
 | オンラインアクセスログ解析結果集計バッチ | 解析バッチで出力されたCSVファイルを元に集計処理を行うバッチ処理。集計期間は設定ファイルに指定された日数分 |
 | オンラインアクセスログ集計結果レポートサンプル | 集計バッチで出力した集計結果を元にExcelにレポート（集計結果表）を出力するExcelマクロ |
 
-*キーワード: サンプル構成, 解析バッチ, 集計バッチ, Excelレポートサンプル, 3種類構成*
+<details>
+<summary>keywords</summary>
+
+サンプル構成, 解析バッチ, 集計バッチ, Excelレポートサンプル, 3種類構成
+
+</details>
 
 ## 処理の流れ
 
@@ -32,7 +42,12 @@
 
 > **補足**: オンラインログ配置サーバと運用担当者様端末を明示的に分けて記載している。オンラインアクセスログには個人情報が含まれている可能性があるため、セキュリティで保護された環境での実行を推奨する。なお、リクエスト情報集計結果には個人情報等の項目は含まれないため、セキュリティで保護された環境以外で実行することも可能であるが、ログの解析及び集計処理を実行した環境で実行することに特に問題はない。
 
-*キーワード: 処理フロー, ログ解析手順, 集計処理, レポート生成, セキュリティ推奨*
+<details>
+<summary>keywords</summary>
+
+処理フロー, ログ解析手順, 集計処理, レポート生成, セキュリティ推奨
+
+</details>
 
 ## 各サンプルの仕様及び実行手順
 
@@ -87,7 +102,12 @@ CSVファイル名: `REQUEST_INFO_YYYYMMDD.csv`（YYYYMMDD = システム日付8
 
 集計バッチで出力した集計結果を元にExcelにレポート（集計結果表）を出力するExcelマクロ。表を元にグラフの作成などをする場合には、Excelの機能を使用してグラフ化を行うこと。
 
-*キーワード: 解析バッチ仕様, 集計バッチ仕様, REQUEST_INFO_YYYYMMDD.csv, 時間別集計, 日別集計, 年月別集計, CSV出力項目*
+<details>
+<summary>keywords</summary>
+
+解析バッチ仕様, 集計バッチ仕様, REQUEST_INFO_YYYYMMDD.csv, 時間別集計, 日別集計, 年月別集計, CSV出力項目
+
+</details>
 
 ## 本サンプルを実行するための設定情報（解析バッチ）
 
@@ -118,7 +138,12 @@ CSVファイル名: `REQUEST_INFO_YYYYMMDD.csv`（YYYYMMDD = システム日付8
 | requestInfoSummaryBaseName | 集計結果CSV出力先ディレクトリの論理名（実マッピング: `main/resources/statistics/file.xml`） |
 | requestInfoSummaryFormatName | 集計結果CSVのフォーマット定義ファイル名。デフォルト: `main/format/requestInfoAggregate.fmt`。フォーマット拡張時は新規ファイル名を指定すること |
 
-*キーワード: OnlineStatisticsDefinition, please.change.me.statistics.action.settings.OnlineStatisticsDefinition, accessLogDir, accessLogFileNamePattern, accessLogParseDir, endLogPattern, includeRequestIdList, findRequestIdPattern, findProcessNamePattern, findStatusCodePattern, logOutputDateTimeStartPosition, logOutputDateTimeEndPosition, logOutputDateTimeFormat, findExecutionTimePattern, thresholdExecutionTime, aggregatePeriod, requestInfoFormatName, requestInfo.dir, requestInfoSummaryBaseName, requestInfoSummaryFormatName*
+<details>
+<summary>keywords</summary>
+
+OnlineStatisticsDefinition, please.change.me.statistics.action.settings.OnlineStatisticsDefinition, accessLogDir, accessLogFileNamePattern, accessLogParseDir, endLogPattern, includeRequestIdList, findRequestIdPattern, findProcessNamePattern, findStatusCodePattern, logOutputDateTimeStartPosition, logOutputDateTimeEndPosition, logOutputDateTimeFormat, findExecutionTimePattern, thresholdExecutionTime, aggregatePeriod, requestInfoFormatName, requestInfo.dir, requestInfoSummaryBaseName, requestInfoSummaryFormatName
+
+</details>
 
 ## 実行方法（解析バッチ）
 
@@ -130,13 +155,23 @@ CSVファイル名: `REQUEST_INFO_YYYYMMDD.csv`（YYYYMMDD = システム日付8
 | requestPath | `OnlineAccessLogParseAction` |
 | userId | バッチユーザID |
 
-*キーワード: OnlineAccessLogParseAction, statistics-batch.xml, バッチ実行パラメータ, diConfig, requestPath*
+<details>
+<summary>keywords</summary>
+
+OnlineAccessLogParseAction, statistics-batch.xml, バッチ実行パラメータ, diConfig, requestPath
+
+</details>
 
 ## 本サンプルを実行するための設定情報（集計バッチ）
 
 集計バッチの設定はオンラインアクセスログ解析バッチと共通。設定値は `please.change.me.statistics.action.settings.OnlineStatisticsDefinition` のプロパティへ設定する（全て必須）。設定プロパティの詳細は「本サンプルを実行するための設定情報（解析バッチ）」セクションを参照。
 
-*キーワード: 集計バッチ設定, OnlineStatisticsDefinition, 共通設定, statistics-batch.xml*
+<details>
+<summary>keywords</summary>
+
+集計バッチ設定, OnlineStatisticsDefinition, 共通設定, statistics-batch.xml
+
+</details>
 
 ## 実行方法（集計バッチ）
 
@@ -148,7 +183,12 @@ CSVファイル名: `REQUEST_INFO_YYYYMMDD.csv`（YYYYMMDD = システム日付8
 | requestPath | `RequestInfoAggregateAction` |
 | userId | バッチユーザID |
 
-*キーワード: RequestInfoAggregateAction, statistics-batch.xml, バッチ実行パラメータ, diConfig, requestPath*
+<details>
+<summary>keywords</summary>
+
+RequestInfoAggregateAction, statistics-batch.xml, バッチ実行パラメータ, diConfig, requestPath
+
+</details>
 
 ## 実行方法（レポートサンプル）
 
@@ -156,4 +196,9 @@ CSVファイル名: `REQUEST_INFO_YYYYMMDD.csv`（YYYYMMDD = システム日付8
 
 実行方法の詳細: `/tool/ウェブアプリケーションリクエストレポートツール.xls`
 
-*キーワード: Excelマクロ, レポート出力, ウェブアプリケーションリクエストレポートツール, 集計結果表*
+<details>
+<summary>keywords</summary>
+
+Excelマクロ, レポート出力, ウェブアプリケーションリクエストレポートツール, 集計結果表
+
+</details>

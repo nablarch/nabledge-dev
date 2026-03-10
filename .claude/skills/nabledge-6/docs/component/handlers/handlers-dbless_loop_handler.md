@@ -8,7 +8,12 @@
 
 > **重要**: DBに接続するバッチアプリケーションではトランザクション管理が必要になるため、本ハンドラではなく `loop_handler` を使用すること。
 
-*キーワード: ループ制御ハンドラ, DbLessLoopHandler, 繰り返し実行, データリーダ, 後続ハンドラ, DBなしバッチ, 処理対象データ*
+<details>
+<summary>keywords</summary>
+
+ループ制御ハンドラ, DbLessLoopHandler, 繰り返し実行, データリーダ, 後続ハンドラ, DBなしバッチ, 処理対象データ
+
+</details>
 
 ## ハンドラクラス名
 
@@ -16,7 +21,12 @@
 
 DBに接続しないバッチアプリケーション向けのループ制御ハンドラ。DBに接続するバッチアプリケーションでは、トランザクション管理が必要なため `loop_handler` を使用すること。
 
-*キーワード: DbLessLoopHandler, nablarch.fw.handler.DbLessLoopHandler, ループ制御ハンドラ, DBなしバッチ, 繰り返し実行, データリーダ, loop_handler*
+<details>
+<summary>keywords</summary>
+
+DbLessLoopHandler, nablarch.fw.handler.DbLessLoopHandler, ループ制御ハンドラ, DBなしバッチ, 繰り返し実行, データリーダ, loop_handler
+
+</details>
 
 ## モジュール一覧
 
@@ -28,4 +38,9 @@ DBに接続しないバッチアプリケーション向けのループ制御ハ
 </dependency>
 ```
 
-*キーワード: nablarch-fw-standalone, com.nablarch.framework, Maven依存関係, モジュール*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, com.nablarch.framework, Maven依存関係, モジュール
+
+</details>

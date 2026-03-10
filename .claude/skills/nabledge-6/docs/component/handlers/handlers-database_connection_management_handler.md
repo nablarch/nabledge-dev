@@ -16,7 +16,12 @@
 
 **制約**: なし。
 
-*キーワード: DbConnectionManagementHandler, nablarch.common.handler.DbConnectionManagementHandler, データベース接続管理, スレッド管理, transaction_management_handler, トランザクション制御必須*
+<details>
+<summary>keywords</summary>
+
+DbConnectionManagementHandler, nablarch.common.handler.DbConnectionManagementHandler, データベース接続管理, スレッド管理, transaction_management_handler, トランザクション制御必須
+
+</details>
 
 ## モジュール一覧
 
@@ -32,7 +37,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-core-jdbc, nablarch-common-jdbc, Mavenモジュール, 依存設定*
+<details>
+<summary>keywords</summary>
+
+nablarch-core-jdbc, nablarch-common-jdbc, Mavenモジュール, 依存設定
+
+</details>
 
 ## データベースの接続先を設定する
 
@@ -51,7 +61,12 @@
 
 > **注意**: ファクトリクラスの詳細は `:ref:database-connect` を参照。
 
-*キーワード: connectionFactory, setConnectionFactory, ConnectionFactory, BasicDbConnectionFactoryForDataSource, データベース接続設定, 接続ファクトリ設定*
+<details>
+<summary>keywords</summary>
+
+connectionFactory, setConnectionFactory, ConnectionFactory, BasicDbConnectionFactoryForDataSource, データベース接続設定, 接続ファクトリ設定
+
+</details>
 
 ## アプリケーションで複数のデータベース接続（トランザクション）を使用する
 
@@ -82,4 +97,9 @@ AppDbConnection connection = DbConnectionContext.getConnection("userAccessLog");
 
 > **注意**: `DbConnectionContext.getConnection(String)` に渡す接続名は、`connectionName` プロパティに設定した値と一致させる必要がある。
 
-*キーワード: connectionName, setConnectionName, DbConnectionContext, AppDbConnection, 複数データベース接続, デフォルト接続, DbConnectionContext.getConnection*
+<details>
+<summary>keywords</summary>
+
+connectionName, setConnectionName, DbConnectionContext, AppDbConnection, 複数データベース接続, デフォルト接続, DbConnectionContext.getConnection
+
+</details>

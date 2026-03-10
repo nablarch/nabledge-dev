@@ -34,7 +34,12 @@
 - 開封率・クリックカウントの効果測定
 - メールアドレスによるクライアント判別と送信メール切り替え
 
-*キーワード: メール送信, ディレードオンライン処理, 非同期メール送信, テンプレートメール, 定型メール, 大量メール一斉送信非対応, TinyTemplateEngineMailProcessor, mail_sender_freemarker_adaptor, mail_sender_thymeleaf_adaptor, mail_sender_velocity_adaptor*
+<details>
+<summary>keywords</summary>
+
+メール送信, ディレードオンライン処理, 非同期メール送信, テンプレートメール, 定型メール, 大量メール一斉送信非対応, TinyTemplateEngineMailProcessor, mail_sender_freemarker_adaptor, mail_sender_thymeleaf_adaptor, mail_sender_velocity_adaptor
+
+</details>
 
 ## モジュール一覧
 
@@ -56,7 +61,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-mail-sender, nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, メール送信モジュール, Maven依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-mail-sender, nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, メール送信モジュール, Maven依存関係
+
+</details>
 
 ## メール送信を使うための設定
 
@@ -200,7 +210,12 @@
 </component>
 ```
 
-*キーワード: MailRequestTable, MailRecipientTable, MailAttachedFileTable, MailTemplateTable, MailConfig, MailRequester, MailRequestConfig, MailSessionConfig, TinyTemplateEngineMailProcessor, mailRequestSbnId, recipientTypeTO, recipientTypeCC, recipientTypeBCC, statusUnsent, statusSent, statusFailure, mailRequestCountMessageId, sendSuccessMessageId, sendFailureCode, abnormalEndExitCode, defaultReplyTo, defaultReturnPath, defaultCharset, maxRecipientCount, maxAttachedFileSize, mailSmtpHost, mailHost, mailSmtpPort, mailSmtpConnectionTimeout, mailSmtpTimeout, mailSendPatternIdColumnName, sendProcessIdColumnName, メール送信設定, テーブルスキーマ設定, SMTPサーバ設定, コード値設定, メール送信要求コンポーネント設定*
+<details>
+<summary>keywords</summary>
+
+MailRequestTable, MailRecipientTable, MailAttachedFileTable, MailTemplateTable, MailConfig, MailRequester, MailRequestConfig, MailSessionConfig, TinyTemplateEngineMailProcessor, mailRequestSbnId, recipientTypeTO, recipientTypeCC, recipientTypeBCC, statusUnsent, statusSent, statusFailure, mailRequestCountMessageId, sendSuccessMessageId, sendFailureCode, abnormalEndExitCode, defaultReplyTo, defaultReturnPath, defaultCharset, maxRecipientCount, maxAttachedFileSize, mailSmtpHost, mailHost, mailSmtpPort, mailSmtpConnectionTimeout, mailSmtpTimeout, mailSendPatternIdColumnName, sendProcessIdColumnName, メール送信設定, テーブルスキーマ設定, SMTPサーバ設定, コード値設定, メール送信要求コンポーネント設定
+
+</details>
 
 ## メール送信要求を登録する
 
@@ -238,7 +253,12 @@ String mailRequestId = requester.requestToSend(mailRequest);
 > - 値に`null`を指定した場合、空文字列で置き換える
 > - テンプレートのプレースホルダとキー/値の整合性チェックは行わない。プレースホルダに対応する値が未設定の場合、プレースホルダが変換されずにメールが送信される。対応するプレースホルダがない値は無視されてメールが送信される。
 
-*キーワード: MailRequester, MailUtil, FreeTextMailContext, TemplateMailContext, AttachedFile, requestToSend, getMailRequester, setVariable, addAttachedFile, メール送信要求登録, 定型メール, 非定型メール, テンプレートメール, 添付ファイル*
+<details>
+<summary>keywords</summary>
+
+MailRequester, MailUtil, FreeTextMailContext, TemplateMailContext, AttachedFile, requestToSend, getMailRequester, setVariable, addAttachedFile, メール送信要求登録, 定型メール, 非定型メール, テンプレートメール, 添付ファイル
+
+</details>
 
 ## メールを送信する(メール送信バッチを実行する)
 
@@ -277,7 +297,12 @@ java nablarch.fw.launcher.Main \
   -mailSendPatternId 02
 ```
 
-*キーワード: MailSender, メール送信バッチ, 常駐バッチ, 二重送信防止, statusUpdateTransaction, mailSendPatternId, メール送信パターンID, 未送信データ抽出*
+<details>
+<summary>keywords</summary>
+
+MailSender, メール送信バッチ, 常駐バッチ, 二重送信防止, statusUpdateTransaction, mailSendPatternId, メール送信パターンID, 未送信データ抽出
+
+</details>
 
 ## メール送信時のエラー処理
 
@@ -296,7 +321,12 @@ java nablarch.fw.launcher.Main \
 
 ログ出力処理やリトライ処理を変更したい場合は :ref:`mail-mail_extension_sample` を参照。
 
-*キーワード: MailSender, AddressException, InvalidCharacterException, SendFailedException, リトライ, メール送信エラー, 例外処理, ログ出力*
+<details>
+<summary>keywords</summary>
+
+MailSender, AddressException, InvalidCharacterException, SendFailedException, リトライ, メール送信エラー, 例外処理, ログ出力
+
+</details>
 
 ## メール送信をマルチプロセス化する
 
@@ -311,7 +341,12 @@ java nablarch.fw.launcher.Main \
 
 > **重要**: マルチプロセス化の目的は大量メールの分散送信ではなく（:ref:`do-not-use-for-campaign-mail` 参照）、冗長構成のサーバで一部に障害が発生してもメール送信を継続できることである。各プロセスが送信対象とするメールはプロセス起動時点での未送信メール全てであり（メール送信パターンIDを指定している場合は該当パターンIDのうち未送信メール全て）、プロセス間での均等分散は行わない。
 
-*キーワード: MailRequestTable, sendProcessIdColumnName, mailMultiProcessTransaction, 悲観ロック, マルチプロセス, 冗長構成, 排他制御*
+<details>
+<summary>keywords</summary>
+
+MailRequestTable, sendProcessIdColumnName, mailMultiProcessTransaction, 悲観ロック, マルチプロセス, 冗長構成, 排他制御
+
+</details>
 
 ## メールヘッダインジェクション攻撃への対策
 
@@ -327,7 +362,12 @@ java nablarch.fw.launcher.Main \
 - 件名
 - 差し戻し先メールアドレス
 
-*キーワード: InvalidCharacterException, メールヘッダインジェクション, セキュリティ対策, 改行コード, 件名, 差し戻し先メールアドレス, JavaMail*
+<details>
+<summary>keywords</summary>
+
+InvalidCharacterException, メールヘッダインジェクション, セキュリティ対策, 改行コード, 件名, 差し戻し先メールアドレス, JavaMail
+
+</details>
 
 ## 拡張例
 
@@ -371,4 +411,9 @@ java nablarch.fw.launcher.Main \
 </component>
 ```
 
-*キーワード: MailSender, MailRequester, mailTransactionManager, 電子署名, メール本文暗号化, トランザクション指定, 拡張, SimpleDbTransactionManager, TableIdGenerator*
+<details>
+<summary>keywords</summary>
+
+MailSender, MailRequester, mailTransactionManager, 電子署名, メール本文暗号化, トランザクション指定, 拡張, SimpleDbTransactionManager, TableIdGenerator
+
+</details>

@@ -8,7 +8,12 @@
 
 このインターセプタを使用するには、:ref:`tag-double_submission_token_setting` または :ref:`use_token_interceptor` によるトークン設定が必要。
 
-*キーワード: OnDoubleSubmission, nablarch.common.web.token.OnDoubleSubmission, 二重サブミットチェック, インターセプタ*
+<details>
+<summary>keywords</summary>
+
+OnDoubleSubmission, nablarch.common.web.token.OnDoubleSubmission, 二重サブミットチェック, インターセプタ
+
+</details>
 
 ## モジュール一覧
 
@@ -20,7 +25,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web-tag, com.nablarch.framework, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-tag, com.nablarch.framework, モジュール依存関係
+
+</details>
 
 ## OnDoubleSubmissionを使用する
 
@@ -33,7 +43,12 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 }
 ```
 
-*キーワード: @OnDoubleSubmission, path属性, 二重サブミット防止, アクションメソッドアノテーション*
+<details>
+<summary>keywords</summary>
+
+@OnDoubleSubmission, path属性, 二重サブミット防止, アクションメソッドアノテーション
+
+</details>
 
 ## OnDoubleSubmissionのデフォルト値を指定する
 
@@ -57,10 +72,20 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 
 > **重要**: `OnDoubleSubmission` と `BasicDoubleSubmissionHandler` の両方で`path`が未指定の場合、二重サブミット判定時に遷移先が不明となりシステムエラーとなる。:ref:`tag-double_submission_server_side` を使用するアプリケーションでは、必ずどちらかに`path`を指定すること。
 
-*キーワード: BasicDoubleSubmissionHandler, nablarch.common.web.token.BasicDoubleSubmissionHandler, doubleSubmissionHandler, path, messageId, statusCode, デフォルト値設定, アプリケーション全体設定*
+<details>
+<summary>keywords</summary>
+
+BasicDoubleSubmissionHandler, nablarch.common.web.token.BasicDoubleSubmissionHandler, doubleSubmissionHandler, path, messageId, statusCode, デフォルト値設定, アプリケーション全体設定
+
+</details>
 
 ## OnDoubleSubmissionの振る舞いを変更する
 
 `DoubleSubmissionHandler` インタフェースを実装し、`doubleSubmissionHandler` という名前でコンポーネント定義に追加することで、`OnDoubleSubmission` の振る舞いを変更できる。
 
-*キーワード: DoubleSubmissionHandler, nablarch.common.web.token.DoubleSubmissionHandler, doubleSubmissionHandler, 振る舞いカスタマイズ, インターフェース実装*
+<details>
+<summary>keywords</summary>
+
+DoubleSubmissionHandler, nablarch.common.web.token.DoubleSubmissionHandler, doubleSubmissionHandler, 振る舞いカスタマイズ, インターフェース実装
+
+</details>

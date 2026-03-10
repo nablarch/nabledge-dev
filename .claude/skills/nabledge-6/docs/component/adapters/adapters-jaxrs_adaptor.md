@@ -37,7 +37,12 @@
 
 > **補足**: Jackson1系はNablarch5u16よりサポート廃止。Jackson1系を使用していた場合はJackson2系へ移行すること。参考: https://jvndb.jvn.jp/ja/contents/2019/JVNDB-2019-012258.html, https://github.com/advisories/GHSA-r6j9-8759-g62w
 
-*キーワード: nablarch-jackson-adaptor, nablarch-jersey-adaptor, nablarch-resteasy-adaptor, Jacksonアダプタ, Jerseyアダプタ, RESTEasyアダプタ, モジュール依存関係, Jackson2.17.1, Jackson1系廃止*
+<details>
+<summary>keywords</summary>
+
+nablarch-jackson-adaptor, nablarch-jersey-adaptor, nablarch-resteasy-adaptor, Jacksonアダプタ, Jerseyアダプタ, RESTEasyアダプタ, モジュール依存関係, Jackson2.17.1, Jackson1系廃止
+
+</details>
 
 ## Jersey環境下でRESTfulウェブサービスを使用する
 
@@ -72,7 +77,12 @@
 
 > **補足**: ウェブアプリケーションサーバに[Jackson](https://github.com/FasterXML/jackson)がバンドルされていない場合は、Jacksonのモジュールをアプリケーションモジュールとセットでデプロイすること。
 
-*キーワード: JerseyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, JaxbBodyConverter, FormUrlEncodedConverter, MultipartFormDataBodyConverter, jaxrs_bean_validation_handler, Jersey設定, ハンドラ自動構成, ボディコンバータ*
+<details>
+<summary>keywords</summary>
+
+JerseyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, JaxbBodyConverter, FormUrlEncodedConverter, MultipartFormDataBodyConverter, jaxrs_bean_validation_handler, Jersey設定, ハンドラ自動構成, ボディコンバータ
+
+</details>
 
 ## RESTEasy環境下でRESTfulウェブサービスを使用する
 
@@ -107,10 +117,20 @@
 
 > **補足**: ウェブアプリケーションサーバに[Jackson](https://github.com/FasterXML/jackson)がバンドルされていない場合は、Jacksonのモジュールをアプリケーションモジュールとセットでデプロイすること。
 
-*キーワード: ResteasyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, JaxbBodyConverter, FormUrlEncodedConverter, MultipartFormDataBodyConverter, jaxrs_bean_validation_handler, RESTEasy設定, ハンドラ自動構成, ボディコンバータ*
+<details>
+<summary>keywords</summary>
+
+ResteasyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, JaxbBodyConverter, FormUrlEncodedConverter, MultipartFormDataBodyConverter, jaxrs_bean_validation_handler, RESTEasy設定, ハンドラ自動構成, ボディコンバータ
+
+</details>
 
 ## 各環境下で使用するボディコンバータを変更（追加）したい
 
 プロジェクトで対応すべきMIMEが増えた場合は、`JaxRsHandlerListFactory`を実装して対応する。実装の参考として`JerseyJaxRsHandlerListFactory`および`ResteasyJaxRsHandlerListFactory`が利用できる。
 
-*キーワード: JaxRsHandlerListFactory, JerseyJaxRsHandlerListFactory, ResteasyJaxRsHandlerListFactory, カスタムボディコンバータ, MIMEタイプ追加, ボディコンバータ変更, ボディコンバータ拡張*
+<details>
+<summary>keywords</summary>
+
+JaxRsHandlerListFactory, JerseyJaxRsHandlerListFactory, ResteasyJaxRsHandlerListFactory, カスタムボディコンバータ, MIMEタイプ追加, ボディコンバータ変更, ボディコンバータ拡張
+
+</details>

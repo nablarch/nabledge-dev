@@ -8,7 +8,12 @@
 
 ファイル入力の場合は `ResumeDataReader` を使用することで、障害発生ポイントからの再実行が可能。
 
-*キーワード: ResumeDataReader, nablarch.fw.reader.ResumeDataReader, リラン, 再実行, ステータス管理, ファイル入力, 障害復旧*
+<details>
+<summary>keywords</summary>
+
+ResumeDataReader, nablarch.fw.reader.ResumeDataReader, リラン, 再実行, ステータス管理, ファイル入力, 障害復旧
+
+</details>
 
 ## バッチ処理でエラー発生時に処理を継続する
 
@@ -18,10 +23,20 @@
 
 > **補足**: :ref:`都度起動バッチ<nablarch_batch-each_time_batch>` で `TransactionAbnormalEnd` が送出されると、バッチ処理が異常終了となる。
 
-*キーワード: TransactionAbnormalEnd, nablarch.fw.results.TransactionAbnormalEnd, エラー継続, 常駐バッチ, 都度起動バッチ, retry_handler, 処理継続*
+<details>
+<summary>keywords</summary>
+
+TransactionAbnormalEnd, nablarch.fw.results.TransactionAbnormalEnd, エラー継続, 常駐バッチ, 都度起動バッチ, retry_handler, 処理継続
+
+</details>
 
 ## バッチ処理を異常終了にする
 
 `ProcessAbnormalEnd` を送出するとバッチ処理を異常終了にできる。送出された場合のプロセス終了コードはこのクラスに指定された値となる。
 
-*キーワード: ProcessAbnormalEnd, nablarch.fw.launcher.ProcessAbnormalEnd, 異常終了, プロセス終了コード, バッチ異常終了*
+<details>
+<summary>keywords</summary>
+
+ProcessAbnormalEnd, nablarch.fw.launcher.ProcessAbnormalEnd, 異常終了, プロセス終了コード, バッチ異常終了
+
+</details>

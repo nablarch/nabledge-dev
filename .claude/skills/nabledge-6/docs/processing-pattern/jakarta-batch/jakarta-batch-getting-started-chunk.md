@@ -32,7 +32,12 @@
    SELECT * FROM BONUS;
    ```
 
-*キーワード: 動作確認, TRUNCATE TABLE BONUS, 賞与計算バッチ実行, bonus-calculate, mvn exec:java, SELECT * FROM BONUS, H2コンソール, 動作確認手順*
+<details>
+<summary>keywords</summary>
+
+動作確認, TRUNCATE TABLE BONUS, 賞与計算バッチ実行, bonus-calculate, mvn exec:java, SELECT * FROM BONUS, H2コンソール, 動作確認手順
+
+</details>
 
 ## バッチ処理の構成
 
@@ -40,7 +45,12 @@
 
 リスナーの詳細は:ref:`バッチアプリケーションで使用するリスナー<jsr352-listener>`および:ref:`リスナーの指定方法<jsr352-listener>`を参照。
 
-*キーワード: リスナー, トランザクション制御, JSR352, バッチ処理構成, jsr352-listener, バッチアプリケーション リスナー, nablarchJobListenerExecutor, nablarchStepListenerExecutor*
+<details>
+<summary>keywords</summary>
+
+リスナー, トランザクション制御, JSR352, バッチ処理構成, jsr352-listener, バッチアプリケーション リスナー, nablarchJobListenerExecutor, nablarchStepListenerExecutor
+
+</details>
 
 ## 入力データソースからデータを読み込む
 
@@ -116,7 +126,12 @@ FROM EMPLOYEE
 INNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE
 ```
 
-*キーワード: ItemReader, AbstractItemReader, ItemProcessor, DeferredEntityList, UniversalDao, @Named, @Dependent, Chunkステップ データ読み込み, 遅延ロード, ItemReader実装, open, readItem, close, EmployeeSearchReader, EmployeeForm, findAllBySqlFile*
+<details>
+<summary>keywords</summary>
+
+ItemReader, AbstractItemReader, ItemProcessor, DeferredEntityList, UniversalDao, @Named, @Dependent, Chunkステップ データ読み込み, 遅延ロード, ItemReader実装, open, readItem, close, EmployeeSearchReader, EmployeeForm, findAllBySqlFile
+
+</details>
 
 ## 業務ロジックを実行する
 
@@ -148,7 +163,12 @@ public class BonusCalculateProcessor implements ItemProcessor {
 }
 ```
 
-*キーワード: ItemProcessor, BonusCalculateProcessor, @Named, @Dependent, 業務ロジック実装, Chunkステップ 業務処理, processItem, writeItems, Bonus, calculateBonus, EmployeeForm*
+<details>
+<summary>keywords</summary>
+
+ItemProcessor, BonusCalculateProcessor, @Named, @Dependent, 業務ロジック実装, Chunkステップ 業務処理, processItem, writeItems, Bonus, calculateBonus, EmployeeForm
+
+</details>
 
 ## 永続化処理を行う
 
@@ -169,7 +189,12 @@ public class BonusWriter extends AbstractItemWriter {
 }
 ```
 
-*キーワード: ItemWriter, AbstractItemWriter, UniversalDao, batchInsert, トランザクションコミット, 永続化処理, Chunkステップ 書き込み, writeItems, BonusWriter, @Dependent, @Named*
+<details>
+<summary>keywords</summary>
+
+ItemWriter, AbstractItemWriter, UniversalDao, batchInsert, トランザクションコミット, 永続化処理, Chunkステップ 書き込み, writeItems, BonusWriter, @Dependent, @Named
+
+</details>
 
 ## JOB設定ファイルを作成する
 
@@ -197,4 +222,9 @@ public class BonusWriter extends AbstractItemWriter {
 </job>
 ```
 
-*キーワード: JOB定義ファイル, item-count, chunk要素, nablarchJobListenerExecutor, nablarchStepListenerExecutor, nablarchItemWriteListenerExecutor, JOB設定, batch-jobs, META-INF, bonus-calculate*
+<details>
+<summary>keywords</summary>
+
+JOB定義ファイル, item-count, chunk要素, nablarchJobListenerExecutor, nablarchStepListenerExecutor, nablarchItemWriteListenerExecutor, JOB設定, batch-jobs, META-INF, bonus-calculate
+
+</details>

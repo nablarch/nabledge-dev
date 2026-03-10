@@ -33,7 +33,12 @@
 
 > **重要**: テーブル採番は大量データを処理するバッチ処理でボトルネックになることが多い。データベース側の採番カラムやシーケンスを使うことを強く推奨する。データベース機能として採番カラム・シーケンスが使用できない場合のみ、テーブル採番を使用すること。
 
-*キーワード: シーケンス採番, テーブル採番, サロゲートキー採番, 採番識別名, テーブル採番レイアウト, SequenceIdGenerator, TableIdGenerator, universal_dao以外での使用, 採番ボトルネック, 親キー連番, 専用テーブル採番*
+<details>
+<summary>keywords</summary>
+
+シーケンス採番, テーブル採番, サロゲートキー採番, 採番識別名, テーブル採番レイアウト, SequenceIdGenerator, TableIdGenerator, universal_dao以外での使用, 採番ボトルネック, 親キー連番, 専用テーブル採番
+
+</details>
 
 ## モジュール一覧
 
@@ -49,7 +54,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, 採番モジュール, Maven依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, 採番モジュール, Maven依存関係
+
+</details>
 
 ## 使用方法
 
@@ -87,10 +97,20 @@
 </component>
 ```
 
-*キーワード: BasicDaoContextFactory, TableIdGenerator, SequenceIdGenerator, BasicApplicationInitializer, sequenceIdGenerator, tableIdGenerator, tableName, idColumnName, noColumnName, ユニバーサルDAO採番設定, シーケンス採番設定, テーブル採番設定, 自動採番カラム*
+<details>
+<summary>keywords</summary>
+
+BasicDaoContextFactory, TableIdGenerator, SequenceIdGenerator, BasicApplicationInitializer, sequenceIdGenerator, tableIdGenerator, tableName, idColumnName, noColumnName, ユニバーサルDAO採番設定, シーケンス採番設定, テーブル採番設定, 自動採番カラム
+
+</details>
 
 ## 拡張例
 
 テーブルやシーケンスを使った採番の実装を置き換えるには、`IdGenerator` を実装したクラスを作成する。作成したクラスは :ref:`generator_dao_setting` に従いコンポーネント設定ファイルに定義することで使用可能となる。
 
-*キーワード: IdGenerator, 採番拡張, カスタム採番実装, IdGenerator実装, 採番置き換え*
+<details>
+<summary>keywords</summary>
+
+IdGenerator, 採番拡張, カスタム採番実装, IdGenerator実装, 採番置き換え
+
+</details>

@@ -15,4 +15,9 @@
 >
 > 権限管理の条件が変わる可能性があるシステムでは、 [authorization/permission_check](libraries-permission_check.md) が適している（導入コストは高いが、しっかりとしたデータ管理で権限管理が行える）。
 
-*キーワード: 認可チェック, 権限管理, ロールチェック, パーミッションチェック, authorization/permission_check, authorization/role_check, 両機能の使い分け*
+<details>
+<summary>keywords</summary>
+
+認可チェック, 権限管理, ロールチェック, パーミッションチェック, authorization/permission_check, authorization/role_check, 両機能の使い分け
+
+</details>

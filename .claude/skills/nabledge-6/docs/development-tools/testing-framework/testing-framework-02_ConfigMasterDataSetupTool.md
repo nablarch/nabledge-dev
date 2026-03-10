@@ -15,7 +15,12 @@
 
 > **注意**: バックアップ用スキーマおよびそのテーブルの作成については、マスタデータ自動復旧機能ガイドの `:ref:master_data_backup_settings` を参照。
 
-*キーワード: 前提条件, インストール要件, Eclipse インストール, Maven インストール, Nablarchアーキタイプ, テーブル作成済み, バックアップ用スキーマ, マスタデータ投入ツール前提*
+<details>
+<summary>keywords</summary>
+
+前提条件, インストール要件, Eclipse インストール, Maven インストール, Nablarchアーキタイプ, テーブル作成済み, バックアップ用スキーマ, マスタデータ投入ツール前提
+
+</details>
 
 ## 提供方法・セットアップ手順
 
@@ -30,7 +35,12 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 続いて `master-data-setup-tool.zip` をダウンロードし、プロジェクトのディレクトリ（pom.xmlが存在するディレクトリ）にディレクトリ付きで展開する。
 
-*キーワード: nablarch-testing jar, nablarch-testing-XXX.jar, mvn compile, mvn dependency:copy-dependencies, DoutputDirectory=lib, 提供方法, ツールセットアップ, マスタデータ投入ツール インストール, jarファイル ダウンロード*
+<details>
+<summary>keywords</summary>
+
+nablarch-testing jar, nablarch-testing-XXX.jar, mvn compile, mvn dependency:copy-dependencies, DoutputDirectory=lib, 提供方法, ツールセットアップ, マスタデータ投入ツール インストール, jarファイル ダウンロード
+
+</details>
 
 ## プロパティファイルの書き換え
 
@@ -60,7 +70,12 @@ masterdata.test.backup-schema=nablarch_test_master
 
 その他の設定値はディレクトリ構造が変わらない限り修正不要。
 
-*キーワード: masterdata.test.backup-schema, バックアップスキーマ設定, マスタデータ投入ツール設定, プロパティファイル, master-data-setup-tool.zip, MASTER_DATA.xlsx, master_data-build.properties, master_data-log.properties, master_data-app-log.properties*
+<details>
+<summary>keywords</summary>
+
+masterdata.test.backup-schema, バックアップスキーマ設定, マスタデータ投入ツール設定, プロパティファイル, master-data-setup-tool.zip, MASTER_DATA.xlsx, master_data-build.properties, master_data-log.properties, master_data-app-log.properties
+
+</details>
 
 ## Antビュー起動
 
@@ -68,7 +83,12 @@ Eclipse ツールバーから ウィンドウ(Window)→設定(Show View) を選
 
 ![Antビューを開く操作画面](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_ConfigMasterDataSetupTool/open_ant_view.png)
 
-*キーワード: Eclipse連携, Antビュー起動, Eclipseツール設定, マスタデータ投入ツール Eclipse, Show View*
+<details>
+<summary>keywords</summary>
+
+Eclipse連携, Antビュー起動, Eclipseツール設定, マスタデータ投入ツール Eclipse, Show View
+
+</details>
 
 ## ビルドファイル登録
 
@@ -82,4 +102,9 @@ Eclipse ツールバーから ウィンドウ(Window)→設定(Show View) を選
 
 ![登録済みビルドファイルの確認](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_ConfigMasterDataSetupTool/build_file_in_view.png)
 
-*キーワード: master_data-build.xml, Antビルドファイル登録, Eclipseビルドファイル, マスタデータ投入ツール設定, Antビュー*
+<details>
+<summary>keywords</summary>
+
+master_data-build.xml, Antビルドファイル登録, Eclipseビルドファイル, マスタデータ投入ツール設定, Antビュー
+
+</details>

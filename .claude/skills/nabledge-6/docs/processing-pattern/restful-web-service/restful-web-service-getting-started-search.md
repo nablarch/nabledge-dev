@@ -117,4 +117,9 @@ public class ProjectAction {
   }
 ```
 
-*キーワード: ProjectSearchForm, ProjectSearchDto, ProjectAction, Project, BeanUtil, JaxRsHttpRequest, ValidatorUtil, UniversalDao, MediaType, @Produces, @Path, @GET, @Domain, RESTful検索処理, クエリパラメータ, UniversalDao検索, JSON返却, BeanValidation*
+<details>
+<summary>keywords</summary>
+
+ProjectSearchForm, ProjectSearchDto, ProjectAction, Project, BeanUtil, JaxRsHttpRequest, ValidatorUtil, UniversalDao, MediaType, @Produces, @Path, @GET, @Domain, RESTful検索処理, クエリパラメータ, UniversalDao検索, JSON返却, BeanValidation
+
+</details>

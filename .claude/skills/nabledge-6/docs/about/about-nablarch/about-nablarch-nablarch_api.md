@@ -15,4 +15,9 @@
 - `DaoContext`: クラスに `@Published(tag="architect")` が記載されているためアーキテクト向けの公開API
 - `BasicDaoContext#findAll`: クラスにもメソッドにも `@Published` が記載されていないため非公開API
 
-*キーワード: @Published, 公開API判断, Nablarch APIドキュメント, アーキテクト向けAPI, 非公開API, Javadocアノテーション, NablarchTestingApi, DaoContext, BasicDaoContext*
+<details>
+<summary>keywords</summary>
+
+@Published, 公開API判断, Nablarch APIドキュメント, アーキテクト向けAPI, 非公開API, Javadocアノテーション, NablarchTestingApi, DaoContext, BasicDaoContext
+
+</details>

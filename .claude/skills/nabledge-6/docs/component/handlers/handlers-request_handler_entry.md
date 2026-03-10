@@ -10,7 +10,12 @@
 
 **クラス名**: `nablarch.fw.RequestHandlerEntry`
 
-*キーワード: RequestHandlerEntry, nablarch.fw.RequestHandlerEntry, リクエストパスフィルタリング, 条件付きハンドラ呼び出し, 特定URLハンドラ*
+<details>
+<summary>keywords</summary>
+
+RequestHandlerEntry, nablarch.fw.RequestHandlerEntry, リクエストパスフィルタリング, 条件付きハンドラ呼び出し, 特定URLハンドラ
+
+</details>
 
 ## モジュール一覧
 
@@ -22,13 +27,23 @@
 </dependency>
 ```
 
-*キーワード: nablarch-core, com.nablarch.framework, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-core, com.nablarch.framework, モジュール依存関係
+
+</details>
 
 ## 制約
 
 なし。
 
-*キーワード: 制約なし*
+<details>
+<summary>keywords</summary>
+
+制約なし
+
+</details>
 
 ## 本ハンドラの使用例
 
@@ -62,7 +77,12 @@
       <component-ref name="sessionStoreHandler" />
 ```
 
-*キーワード: requestPattern, handler, ResourceMapping, WebFrontController, 静的コンテンツダウンロード, JPEGファイルダウンロード*
+<details>
+<summary>keywords</summary>
+
+requestPattern, handler, ResourceMapping, WebFrontController, 静的コンテンツダウンロード, JPEGファイルダウンロード
+
+</details>
 
 ## リクエストパターン指定のバリエーション
 
@@ -93,4 +113,9 @@
 | `//*.jsp` | `/app/admin/index.jsp` | 呼ばれる |
 | `//*.jsp` | `/app/index.html` | 呼ばれない（`*.jsp`がマッチしない） |
 
-*キーワード: requestPattern, ワイルドカード, Glob式, 前方一致, パターンマッチング*
+<details>
+<summary>keywords</summary>
+
+requestPattern, ワイルドカード, Glob式, 前方一致, パターンマッチング
+
+</details>

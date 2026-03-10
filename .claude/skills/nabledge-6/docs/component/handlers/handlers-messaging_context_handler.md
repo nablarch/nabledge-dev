@@ -12,7 +12,12 @@
 
 **クラス**: `MessagingContextHandler`
 
-*キーワード: MessagingContextHandler, nablarch.fw.messaging.handler.MessagingContextHandler, MOMメッセージング, MQ接続管理, スレッド管理*
+<details>
+<summary>keywords</summary>
+
+MessagingContextHandler, nablarch.fw.messaging.handler.MessagingContextHandler, MOMメッセージング, MQ接続管理, スレッド管理
+
+</details>
 
 ## モジュール一覧
 
@@ -24,13 +29,23 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-messaging, com.nablarch.framework, モジュール, 依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-messaging, com.nablarch.framework, モジュール, 依存関係
+
+</details>
 
 ## 制約
 
 なし。
 
-*キーワード: 制約, なし*
+<details>
+<summary>keywords</summary>
+
+制約, なし
+
+</details>
 
 ## MQの接続先を設定する
 
@@ -46,4 +61,9 @@
 </component>
 ```
 
-*キーワード: MessagingProvider, nablarch.fw.messaging.MessagingProvider, JmsMessagingProvider, nablarch.fw.messaging.provider.JmsMessagingProvider, messagingProvider, MQ接続設定, プロバイダクラス設定*
+<details>
+<summary>keywords</summary>
+
+MessagingProvider, nablarch.fw.messaging.MessagingProvider, JmsMessagingProvider, nablarch.fw.messaging.provider.JmsMessagingProvider, messagingProvider, MQ接続設定, プロバイダクラス設定
+
+</details>

@@ -14,7 +14,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web, com.nablarch.framework, Webフロントコントローラ, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, com.nablarch.framework, Webフロントコントローラ, モジュール依存関係
+
+</details>
 
 ## コンポーネント設定ファイルにハンドラキューを設定する
 
@@ -33,7 +38,12 @@
 </component>
 ```
 
-*キーワード: WebFrontController, nablarch.fw.web.servlet.WebFrontController, handlerQueue, HttpCharacterEncodingHandler, nablarch.fw.web.handler.HttpCharacterEncodingHandler, GlobalErrorHandler, nablarch.fw.handler.GlobalErrorHandler, ハンドラキュー設定, コンポーネント設定ファイル, webFrontController*
+<details>
+<summary>keywords</summary>
+
+WebFrontController, nablarch.fw.web.servlet.WebFrontController, handlerQueue, HttpCharacterEncodingHandler, nablarch.fw.web.handler.HttpCharacterEncodingHandler, GlobalErrorHandler, nablarch.fw.handler.GlobalErrorHandler, ハンドラキュー設定, コンポーネント設定ファイル, webFrontController
+
+</details>
 
 ## サーブレットフィルタを設定する
 
@@ -59,7 +69,12 @@
 </filter-mapping>
 ```
 
-*キーワード: RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, サーブレットフィルタ設定, web.xml設定, webFrontController*
+<details>
+<summary>keywords</summary>
+
+RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, サーブレットフィルタ設定, web.xml設定, webFrontController
+
+</details>
 
 ## 委譲するWebフロントコントローラの名前を変更する
 
@@ -122,4 +137,9 @@
 </filter-mapping>
 ```
 
-*キーワード: RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, controllerName, webFrontController, jaxrsController, 複数Webフロントコントローラ, RESTfulウェブサービス併用, コントローラ名変更*
+<details>
+<summary>keywords</summary>
+
+RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, controllerName, webFrontController, jaxrsController, 複数Webフロントコントローラ, RESTfulウェブサービス併用, コントローラ名変更
+
+</details>

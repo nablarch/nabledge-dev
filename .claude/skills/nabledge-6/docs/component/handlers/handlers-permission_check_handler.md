@@ -8,7 +8,12 @@
 
 本ハンドラを使用するには、`PermissionFactory` を実装したクラスを本ハンドラに設定する必要がある。
 
-*キーワード: PermissionCheckHandler, nablarch.common.permission.PermissionCheckHandler, PermissionFactory, nablarch.common.permission.PermissionFactory, 認可チェックハンドラ, ハンドラクラス*
+<details>
+<summary>keywords</summary>
+
+PermissionCheckHandler, nablarch.common.permission.PermissionCheckHandler, PermissionFactory, nablarch.common.permission.PermissionFactory, 認可チェックハンドラ, ハンドラクラス
+
+</details>
 
 ## モジュール一覧
 
@@ -20,7 +25,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-common-auth, com.nablarch.framework, モジュール, 依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-common-auth, com.nablarch.framework, モジュール, 依存関係
+
+</details>
 
 ## 制約
 
@@ -28,7 +38,12 @@
 - :ref:`forwarding_handler` より後ろに配置すること。内部フォーワード先の :ref:`内部リクエストID <internal_request_id>` をもとに認可チェックしたい場合。この場合、:ref:`thread_context_handler` の `attributes` に `InternalRequestIdAttribute` を追加すること。
 - :ref:`http_error_handler` より後ろに配置すること。認可チェックエラー時に表示するエラーページを指定するため。
 
-*キーワード: InternalRequestIdAttribute, nablarch.common.handler.threadcontext.InternalRequestIdAttribute, ハンドラ配置順序, 制約, スレッドコンテキスト, 内部リクエストID*
+<details>
+<summary>keywords</summary>
+
+InternalRequestIdAttribute, nablarch.common.handler.threadcontext.InternalRequestIdAttribute, ハンドラ配置順序, 制約, スレッドコンテキスト, 内部リクエストID
+
+</details>
 
 ## リクエストに対する認可チェック
 
@@ -39,13 +54,23 @@
 
 チェック対象のリクエストIDをフォーワード先のリクエストIDに変更する場合は、`PermissionCheckHandler.setUsesInternalRequestId` で `true` を指定する（デフォルト: `false`）。
 
-*キーワード: PermissionCheckHandler, Permission, nablarch.common.permission.Permission, Forbidden, nablarch.fw.results.Forbidden, setUsesInternalRequestId, リクエスト認可チェック, 権限チェック, 403エラー, 内部リクエストID*
+<details>
+<summary>keywords</summary>
+
+PermissionCheckHandler, Permission, nablarch.common.permission.Permission, Forbidden, nablarch.fw.results.Forbidden, setUsesInternalRequestId, リクエスト認可チェック, 権限チェック, 403エラー, 内部リクエストID
+
+</details>
 
 ## 権限がない場合に表示するエラーページを指定する
 
 権限がない場合に表示するエラーページは、:ref:`http_error_handler` （HTTPエラー制御ハンドラ）で指定する。指定方法は :ref:`HttpErrorHandler_DefaultPage` 参照。
 
-*キーワード: エラーページ指定, 403エラーページ, HTTPエラー制御ハンドラ, HttpErrorHandler_DefaultPage*
+<details>
+<summary>keywords</summary>
+
+エラーページ指定, 403エラーページ, HTTPエラー制御ハンドラ, HttpErrorHandler_DefaultPage
+
+</details>
 
 ## 特定のリクエストを認可チェックから除外する
 
@@ -60,4 +85,9 @@
 </component>
 ```
 
-*キーワード: setIgnoreRequestIds, PermissionCheckHandler, nablarch.common.permission.PermissionCheckHandler, 認可チェック除外, ログイン前リクエスト*
+<details>
+<summary>keywords</summary>
+
+setIgnoreRequestIds, PermissionCheckHandler, nablarch.common.permission.PermissionCheckHandler, 認可チェック除外, ログイン前リクエスト
+
+</details>

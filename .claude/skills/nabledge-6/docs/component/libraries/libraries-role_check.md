@@ -18,7 +18,12 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 - **本認可チェックが適している場合**: ロール自体の増減やロールに割り当てる機能の変更が頻繁に発生しない場合。ロールと機能の組み合わせが固定されており今後大きく変化しない場合。
 - **[permission_check](libraries-permission_check.md) を推奨する場合**: 組織変更でロールや機能の組み合わせが頻繁に変わるシステム（例: 部署によって権限が変わる場合）。本認可チェックでは変更のたびにアノテーションの書き換えが必要になるため、[permission_check](libraries-permission_check.md) を使って権限の組み合わせをデータで管理することを推奨する。
 
-*キーワード: @CheckRole, CheckRole, 認可チェック, ロールベースアクセス制御, ロール割り当て, permission_check, 認可判定, BasicRoleEvaluator, 使い分け*
+<details>
+<summary>keywords</summary>
+
+@CheckRole, CheckRole, 認可チェック, ロールベースアクセス制御, ロール割り当て, permission_check, 認可判定, BasicRoleEvaluator, 使い分け
+
+</details>
 
 ## モジュール一覧
 
@@ -39,7 +44,12 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 </dependency>
 ```
 
-*キーワード: nablarch-common-auth, nablarch-common-auth-session, nablarch-main-default-configuration, モジュール, 依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-common-auth, nablarch-common-auth-session, nablarch-main-default-configuration, モジュール, 依存関係
+
+</details>
 
 ## 使用方法
 
@@ -185,7 +195,12 @@ JSP側でEL式/JSTLを使って制御する:
 </c:if>
 ```
 
-*キーワード: @CheckRole, CheckRole, BasicRoleEvaluator, SessionStoreUserRoleResolver, CheckRoleUtil, checkRole, checkRoleAllOf, checkRoleAnyOf, CheckRoleLogger, SessionStoreUserRoleUtil, SessionUtil, Forbidden, BasicApplicationInitializer, userRoleResolver, targetPackage, targetClassPattern, interceptorsOrder, anyOf, ロール割り当て, セッションストア, JSP表示制御, アノテーション設定確認, プログラム判定*
+<details>
+<summary>keywords</summary>
+
+@CheckRole, CheckRole, BasicRoleEvaluator, SessionStoreUserRoleResolver, CheckRoleUtil, checkRole, checkRoleAllOf, checkRoleAnyOf, CheckRoleLogger, SessionStoreUserRoleUtil, SessionUtil, Forbidden, BasicApplicationInitializer, userRoleResolver, targetPackage, targetClassPattern, interceptorsOrder, anyOf, ロール割り当て, セッションストア, JSP表示制御, アノテーション設定確認, プログラム判定
+
+</details>
 
 ## 仕組み
 
@@ -198,7 +213,12 @@ JSP側でEL式/JSTLを使って制御する:
 - `BasicRoleEvaluator`（`RoleEvaluator` のデフォルト実装）はユーザのロール解決を `UserRoleResolver` に委譲する
 - `SessionStoreUserRoleResolver`（`UserRoleResolver` のデフォルト実装）はセッションストアに保存された情報でユーザのロールを解決する
 
-*キーワード: RoleEvaluator, BasicRoleEvaluator, UserRoleResolver, SessionStoreUserRoleResolver, CheckRole, CheckRoleUtil, SystemRepository, ThreadContext, Interceptor, 認可チェックの仕組み, インターセプタ, ロール解決, roleEvaluator*
+<details>
+<summary>keywords</summary>
+
+RoleEvaluator, BasicRoleEvaluator, UserRoleResolver, SessionStoreUserRoleResolver, CheckRole, CheckRoleUtil, SystemRepository, ThreadContext, Interceptor, 認可チェックの仕組み, インターセプタ, ロール解決, roleEvaluator
+
+</details>
 
 ## 拡張方法
 
@@ -216,4 +236,9 @@ JSP側でEL式/JSTLを使って制御する:
 <component name="userRoleResolver" class="com.example.CustomUserRoleResolver" />
 ```
 
-*キーワード: RoleEvaluator, UserRoleResolver, BasicRoleEvaluator, SessionStoreUserRoleResolver, roleEvaluator, userRoleResolver, カスタマイズ, 拡張, 差し替え*
+<details>
+<summary>keywords</summary>
+
+RoleEvaluator, UserRoleResolver, BasicRoleEvaluator, SessionStoreUserRoleResolver, roleEvaluator, userRoleResolver, カスタマイズ, 拡張, 差し替え
+
+</details>

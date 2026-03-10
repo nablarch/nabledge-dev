@@ -6,7 +6,12 @@
 
 Bean ValidationによるForm/Entity単体テストの書き方を説明する。Form単体テストとEntity単体テストはほぼ同じ方法で行え、共通内容はForm単体テストをベースに説明する。
 
-*キーワード: Bean Validation, Form単体テスト, Entity単体テスト, 単体テスト, EntityTestSupport*
+<details>
+<summary>keywords</summary>
+
+Bean Validation, Form単体テスト, Entity単体テスト, 単体テスト, EntityTestSupport
+
+</details>
 
 ## Form/Entity単体テストの書き方
 
@@ -48,7 +53,12 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 
 > **補足**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする親Form）には使用不可。その場合は独自に精査処理のテストを実装すること。
 
-*キーワード: EntityTestSupport, nablarch.test.core.db.EntityTestSupport, テストデータExcel, テストクラス作成, Form単体テスト, Entity単体テスト, 単項目精査テスト*
+<details>
+<summary>keywords</summary>
+
+EntityTestSupport, nablarch.test.core.db.EntityTestSupport, テストデータExcel, テストクラス作成, Form単体テスト, Entity単体テスト, 単項目精査テスト
+
+</details>
 
 ## テストケース表の作成方法（文字種・文字列長）
 
@@ -97,7 +107,12 @@ messageIdWhenInvalidLength省略時のデフォルト値:
 
 ![文字種・文字列長テストケース例](../../knowledge/development-tools/testing-framework/assets/testing-framework-01_entityUnitTestWithBeanValidation/entityUnitTest_CharsetAndLengthExample_BeanValidation.png)
 
-*キーワード: propertyName, allowEmpty, group, min, max, messageIdWhenEmptyInput, messageIdWhenInvalidLength, messageIdWhenNotApplicable, interpolateKey_n, interpolateValue_n, 文字種テスト, 文字列長テスト, 単項目精査*
+<details>
+<summary>keywords</summary>
+
+propertyName, allowEmpty, group, min, max, messageIdWhenEmptyInput, messageIdWhenInvalidLength, messageIdWhenNotApplicable, interpolateKey_n, interpolateValue_n, 文字種テスト, 文字列長テスト, 単項目精査
+
+</details>
 
 ## テストメソッドの作成方法
 
@@ -129,7 +144,12 @@ public void testCharsetAndLength() {
 | 文字列長不足 | 最小文字列長－1の文字列 | 入力値はo印を付けた文字種で構成される。min省略時は本テストは実行されない。 |
 | 文字列長超過 | 最大文字列長＋1の文字列 | 入力値はo印を付けた文字種で構成される。max省略時は本テストは実行されない。 |
 
-*キーワード: testValidateCharsetAndLength, EntityTestSupport, 文字種テスト実行, 文字列長テスト実行, 単項目精査テスト*
+<details>
+<summary>keywords</summary>
+
+testValidateCharsetAndLength, EntityTestSupport, 文字種テスト実行, 文字列長テスト実行, 単項目精査テスト
+
+</details>
 
 ## テストケース表の作成方法（その他の単項目精査）
 
@@ -147,7 +167,12 @@ public void testCharsetAndLength() {
 
 ![その他単項目精査テストデータ例](../../knowledge/development-tools/testing-framework/assets/testing-framework-01_entityUnitTestWithBeanValidation/entityUnitTest_singleValidationDataExample_BeanValidation.png)
 
-*キーワード: propertyName, case, group, messageId, その他単項目精査, 日付フォーマット精査, input1, interpolateKey_n, interpolateValue_n, special_notation_in_cell*
+<details>
+<summary>keywords</summary>
+
+propertyName, case, group, messageId, その他単項目精査, 日付フォーマット精査, input1, interpolateKey_n, interpolateValue_n, special_notation_in_cell
+
+</details>
 
 ## テストメソッドの作成方法（単項目精査）
 
@@ -185,7 +210,12 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 }
 ```
 
-*キーワード: testSingleValidation, EntityTestSupport, 単項目精査, UserRegistrationFormTest, TARGET_CLASS, sheetName, id*
+<details>
+<summary>keywords</summary>
+
+testSingleValidation, EntityTestSupport, 単項目精査, UserRegistrationFormTest, TARGET_CLASS, sheetName, id
+
+</details>
 
 ## テストケース表の作成（項目間精査）
 
@@ -217,7 +247,12 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 
 ![項目間精査テストデータ例](../../knowledge/development-tools/testing-framework/assets/testing-framework-01_entityUnitTestWithBeanValidation/entityUnitTest_validationTestData_BeanValidation.png)
 
-*キーワード: AssertTrue, testShots, params, 項目間精査, テストケース表, 入力パラメータ表, 埋め込み文字, special_notation_in_cell, interpolateKey, interpolateValue, expectedMessageId, propertyName*
+<details>
+<summary>keywords</summary>
+
+AssertTrue, testShots, params, 項目間精査, テストケース表, 入力パラメータ表, 埋め込み文字, special_notation_in_cell, interpolateKey, interpolateValue, expectedMessageId, propertyName
+
+</details>
 
 ## テストメソッドの作成方法（項目間精査）
 
@@ -251,7 +286,12 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 }
 ```
 
-*キーワード: testBeanValidation, testWholeFormValidation, EntityTestSupport, 項目間精査, UserRegistrationFormTest, TARGET_CLASS, sheetName*
+<details>
+<summary>keywords</summary>
+
+testBeanValidation, testWholeFormValidation, EntityTestSupport, 項目間精査, UserRegistrationFormTest, TARGET_CLASS, sheetName
+
+</details>
 
 ## Excelへの定義（setter/getter）
 
@@ -299,7 +339,12 @@ assertEquals(form.getUsers(), Arrays.asList(data.get("get")));
 
 ![setter/getterロジックのExcelデータ定義例](../../knowledge/development-tools/testing-framework/assets/testing-framework-01_entityUnitTestWithBeanValidation/entityUnitTest_SetterAndGetter_PostNo.png)
 
-*キーワード: testSetterAndGetter, getParamMap, getListParamMap, EntityTestSupport, setter/getterテスト, Entity単体テスト, 型制限, BigDecimal, java.util.Date, valueOf, Integer, Long, java.sql.Date, java.sql.Timestamp*
+<details>
+<summary>keywords</summary>
+
+testSetterAndGetter, getParamMap, getListParamMap, EntityTestSupport, setter/getterテスト, Entity単体テスト, 型制限, BigDecimal, java.util.Date, valueOf, Integer, Long, java.sql.Date, java.sql.Timestamp
+
+</details>
 
 ## 設定項目一覧
 
@@ -318,7 +363,12 @@ assertEquals(form.getUsers(), Arrays.asList(data.get("get")));
 | characterGenerator | 文字列生成クラス（`nablarch.test.core.util.generator.CharacterGenerator`の実装クラスを指定。通常は`nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator`を使用） |
 | validationTestStrategy | テスト用バリデーションストラテジ（Bean Validationを使用する場合は`nablarch.test.core.entity.BeanValidationTestStrategy`を**固定で指定**） |
 
-*キーワード: EntityTestConfiguration, BasicJapaneseCharacterGenerator, BeanValidationTestStrategy, CharacterGenerator, maxMessageId, maxAndMinMessageId, underLimitMessageId, fixLengthMessageId, minMessageId, emptyInputMessageId, validationTestStrategy, characterGenerator*
+<details>
+<summary>keywords</summary>
+
+EntityTestConfiguration, BasicJapaneseCharacterGenerator, BeanValidationTestStrategy, CharacterGenerator, maxMessageId, maxAndMinMessageId, underLimitMessageId, fixLengthMessageId, minMessageId, emptyInputMessageId, validationTestStrategy, characterGenerator
+
+</details>
 
 ## コンポーネント設定ファイルの記述例
 
@@ -340,4 +390,9 @@ assertEquals(form.getUsers(), Arrays.asList(data.get("get")));
 </component>
 ```
 
-*キーワード: EntityTestConfiguration, BasicJapaneseCharacterGenerator, BeanValidationTestStrategy, nablarch.test.core.entity.EntityTestConfiguration, XML設定例*
+<details>
+<summary>keywords</summary>
+
+EntityTestConfiguration, BasicJapaneseCharacterGenerator, BeanValidationTestStrategy, nablarch.test.core.entity.EntityTestConfiguration, XML設定例
+
+</details>

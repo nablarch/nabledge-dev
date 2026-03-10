@@ -57,4 +57,9 @@ public class SampleWriter extends AbstractItemWriter {
 }
 ```
 
-*キーワード: UniversalDao, DeferredEntityList, AbstractItemReader, AbstractItemWriter, ItemProcessor, 悲観的ロック, ロック時間短縮, Jakartaバッチ, 主キー取得, バッチ排他制御, @Dependent, @Named, SampleReader, SampleProcessor, SampleWriter, ProjectId, Project*
+<details>
+<summary>keywords</summary>
+
+UniversalDao, DeferredEntityList, AbstractItemReader, AbstractItemWriter, ItemProcessor, 悲観的ロック, ロック時間短縮, Jakartaバッチ, 主キー取得, バッチ排他制御, @Dependent, @Named, SampleReader, SampleProcessor, SampleWriter, ProjectId, Project
+
+</details>

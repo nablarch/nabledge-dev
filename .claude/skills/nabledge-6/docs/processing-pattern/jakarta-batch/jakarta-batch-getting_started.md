@@ -6,7 +6,12 @@
 
 > **補足**: ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。本格的なアプリケーションを作成する場合は `blank_project` から作成すること。
 
-*キーワード: Jakartaバッチアプリケーション開発, プロジェクト作成, blank_project, batchlet, chunk, Exampleアプリケーション*
+<details>
+<summary>keywords</summary>
+
+Jakartaバッチアプリケーション開発, プロジェクト作成, blank_project, batchlet, chunk, Exampleアプリケーション
+
+</details>
 
 ## 前提条件
 
@@ -17,4 +22,9 @@
 > - Exampleアプリケーションの設定
 > - 使用しているOSSプラグインについて
 
-*キーワード: 前提条件, example_application, Exampleアプリケーション, 環境構築*
+<details>
+<summary>keywords</summary>
+
+前提条件, example_application, Exampleアプリケーション, 環境構築
+
+</details>

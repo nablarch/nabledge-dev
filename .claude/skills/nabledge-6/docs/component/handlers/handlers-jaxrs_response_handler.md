@@ -14,13 +14,23 @@
 
 > **補足（名称変更について）**: Nablarch5までは「JAX-RSレスポンスハンドラ」という名称だった。Java EEがEclipse Foundationに移管され仕様名が変わったことに伴い、Nablarch6から「Jakarta RESTful Web Servicesレスポンスハンドラ」に名称変更された。変更されたのは名称のみで、機能的な差はない。
 
-*キーワード: Jakarta RESTful Web Servicesレスポンスハンドラ, JAX-RSレスポンスハンドラ, JaxRsResponseHandler, レスポンスハンドラ概要, 名称変更, Nablarch6, エラーレスポンス, エラーログ, クライアント返却*
+<details>
+<summary>keywords</summary>
+
+Jakarta RESTful Web Servicesレスポンスハンドラ, JAX-RSレスポンスハンドラ, JaxRsResponseHandler, レスポンスハンドラ概要, 名称変更, Nablarch6, エラーレスポンス, エラーログ, クライアント返却
+
+</details>
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.jaxrs.JaxRsResponseHandler`
 
-*キーワード: JaxRsResponseHandler, nablarch.fw.jaxrs.JaxRsResponseHandler, レスポンスハンドラ, ハンドラクラス名*
+<details>
+<summary>keywords</summary>
+
+JaxRsResponseHandler, nablarch.fw.jaxrs.JaxRsResponseHandler, レスポンスハンドラ, ハンドラクラス名
+
+</details>
 
 ## モジュール一覧
 
@@ -32,13 +42,23 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-jaxrs, モジュール, 依存関係, com.nablarch.framework*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-jaxrs, モジュール, 依存関係, com.nablarch.framework
+
+</details>
 
 ## 制約
 
 このハンドラに固有の制約はない。
 
-*キーワード: 制約, JaxRsResponseHandler制約*
+<details>
+<summary>keywords</summary>
+
+制約, JaxRsResponseHandler制約
+
+</details>
 
 ## 例外及びエラーに応じたレスポンスの生成
 
@@ -56,7 +76,12 @@
 
 > **重要**: `ErrorResponseBuilder`処理中に例外が発生するとレスポンスが生成できずクライアントに返せない状態となる。カスタマイズ時は処理中に例外が発生しないよう実装すること。処理中に例外が発生した場合、フレームワークはWARNレベルでログ出力し、ステータスコード500のレスポンスを生成して後続処理を継続する。
 
-*キーワード: ErrorResponseBuilder, nablarch.fw.jaxrs.ErrorResponseBuilder, HttpErrorResponse, nablarch.fw.web.HttpErrorResponse, HttpResponse, errorResponseBuilder, エラーレスポンス生成, 例外処理*
+<details>
+<summary>keywords</summary>
+
+ErrorResponseBuilder, nablarch.fw.jaxrs.ErrorResponseBuilder, HttpErrorResponse, nablarch.fw.web.HttpErrorResponse, HttpResponse, errorResponseBuilder, エラーレスポンス生成, 例外処理
+
+</details>
 
 ## 例外及びエラーに応じたログ出力
 
@@ -70,7 +95,12 @@
 </component>
 ```
 
-*キーワード: JaxRsErrorLogWriter, nablarch.fw.jaxrs.JaxRsErrorLogWriter, errorLogWriter, エラーログ出力, 例外ログ*
+<details>
+<summary>keywords</summary>
+
+JaxRsErrorLogWriter, nablarch.fw.jaxrs.JaxRsErrorLogWriter, errorLogWriter, エラーログ出力, 例外ログ
+
+</details>
 
 ## エラー時のレスポンスにメッセージを設定する
 
@@ -104,7 +134,12 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 }
 ```
 
-*キーワード: ErrorResponseBuilder, ApplicationException, エラーレスポンスカスタマイズ, バリデーションエラー, エラーメッセージ設定, エラーレスポンスボディ*
+<details>
+<summary>keywords</summary>
+
+ErrorResponseBuilder, ApplicationException, エラーレスポンスカスタマイズ, バリデーションエラー, エラーメッセージ設定, エラーレスポンスボディ
+
+</details>
 
 ## 特定のエラーの場合に個別に定義したエラーレスポンスを返却する
 
@@ -125,7 +160,12 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 }
 ```
 
-*キーワード: ErrorResponseBuilder, NoDataException, 個別エラーレスポンス, ステータスコード, エラーレスポンスカスタマイズ*
+<details>
+<summary>keywords</summary>
+
+ErrorResponseBuilder, NoDataException, 個別エラーレスポンス, ステータスコード, エラーレスポンスカスタマイズ
+
+</details>
 
 ## クライアントに返すレスポンスに共通処理を追加する
 
@@ -164,4 +204,9 @@ public class CustomResponseFinisher implements ResponseFinisher {
 </component>
 ```
 
-*キーワード: ResponseFinisher, nablarch.fw.jaxrs.ResponseFinisher, AdoptHandlerResponseFinisher, nablarch.fw.jaxrs.AdoptHandlerResponseFinisher, responseFinishers, レスポンスヘッダ, CORS対応, secure_handler*
+<details>
+<summary>keywords</summary>
+
+ResponseFinisher, nablarch.fw.jaxrs.ResponseFinisher, AdoptHandlerResponseFinisher, nablarch.fw.jaxrs.AdoptHandlerResponseFinisher, responseFinishers, レスポンスヘッダ, CORS対応, secure_handler
+
+</details>

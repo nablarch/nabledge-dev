@@ -26,4 +26,9 @@
 
 テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。
 
-*キーワード: DataReader, Result, Result.Success, アクションクラス, フォームクラス, エンティティクラス, バリデーション, 責務配置, バッチ設計*
+<details>
+<summary>keywords</summary>
+
+DataReader, Result, Result.Success, アクションクラス, フォームクラス, エンティティクラス, バリデーション, 責務配置, バッチ設計
+
+</details>

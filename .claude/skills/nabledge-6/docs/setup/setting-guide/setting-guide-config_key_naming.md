@@ -9,7 +9,12 @@
 - 項目名はlowerCamelCaseで記述する
 - 区切り文字に`.`（ドット）を使用する
 
-*キーワード: 設定項目名ルール, lowerCamelCase, ドット区切り, 命名規則*
+<details>
+<summary>keywords</summary>
+
+設定項目名ルール, lowerCamelCase, ドット区切り, 命名規則
+
+</details>
 
 ## 共通プレフィックス
 
@@ -17,7 +22,12 @@ Nablarchがデフォルトで用意する設定項目の項目名には、プレ
 
 > **補足**: PJが個別に作成する項目についても、所定のプレフィックスを付与することを推奨する。これはPJ個別の項目を検索しやすくするためである。
 
-*キーワード: nablarch., 共通プレフィックス, 名前空間, プレフィックス規則, 項目名重複防止*
+<details>
+<summary>keywords</summary>
+
+nablarch., 共通プレフィックス, 名前空間, プレフィックス規則, 項目名重複防止
+
+</details>
 
 ## 単一のコンポーネント内でのみ使用される設定項目
 
@@ -50,7 +60,12 @@ nablarch.codeCache.loadOnStartUp=true
 
 この場合、`codeCache`がコンポーネント名、`loadOnStartUp`がそのコンポーネントのプロパティ名であり、共通プレフィックス`nablarch.`が付与されるので、`nablarch.codeCache.loadOnStartUp`となる。このルールにより、ある項目がどのコンポーネントで使用されるものかを調査しやすくなる。
 
-*キーワード: nablarch.<コンポーネント名>.<プロパティ名>, コンポーネント設定項目, 単一コンポーネント命名, nablarch.codeCache.loadOnStartUp, BasicStaticDataCache*
+<details>
+<summary>keywords</summary>
+
+nablarch.<コンポーネント名>.<プロパティ名>, コンポーネント設定項目, 単一コンポーネント命名, nablarch.codeCache.loadOnStartUp, BasicStaticDataCache
+
+</details>
 
 ## 複数のコンポーネント定義に跨る設定項目
 
@@ -60,7 +75,12 @@ nablarch.codeCache.loadOnStartUp=true
 nablarch.commonProperty.<項目名>
 ```
 
-*キーワード: nablarch.commonProperty, 複数コンポーネント共通プロパティ, commonProperty命名*
+<details>
+<summary>keywords</summary>
+
+nablarch.commonProperty, 複数コンポーネント共通プロパティ, commonProperty命名
+
+</details>
 
 ## DBテーブルのスキーマ情報
 
@@ -85,4 +105,9 @@ nablarch.messageTable.valueColumnName=MESSAGE
 
 > **補足**: Nablarch Application Frameworkが使用するテーブルをデフォルト値のまま使用する場合は、この設定値を意識する必要はない。
 
-*キーワード: nablarch.<テーブル名>Table.<設定値>, DBテーブルスキーマ設定, nablarch.messageTable.tableName, テーブル物理名設定, スキーマ情報命名*
+<details>
+<summary>keywords</summary>
+
+nablarch.<テーブル名>Table.<設定値>, DBテーブルスキーマ設定, nablarch.messageTable.tableName, テーブル物理名設定, スキーマ情報命名
+
+</details>

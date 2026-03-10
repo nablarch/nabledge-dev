@@ -32,7 +32,12 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) {
 3. DBへ一括登録する
 4. ファイルを保存する
 
-*キーワード: ProjectUploadAction, @OnDoubleSubmission, @OnError, ApplicationException, HttpRequest, PartInfo, LoginUserPrincipal, SessionUtil, MessageUtil, MessageLevel, HttpResponse, ExecutionContext, CSVファイルアップロード, 一括登録, 業務アクションメソッド, ファイルアップロード処理フロー*
+<details>
+<summary>keywords</summary>
+
+ProjectUploadAction, @OnDoubleSubmission, @OnError, ApplicationException, HttpRequest, PartInfo, LoginUserPrincipal, SessionUtil, MessageUtil, MessageLevel, HttpResponse, ExecutionContext, CSVファイルアップロード, 一括登録, 業務アクションメソッド, ファイルアップロード処理フロー
+
+</details>
 
 ## ファイルアップロード機能の実装
 
@@ -91,7 +96,12 @@ private void saveFile(final PartInfo partInfo) {
 </component>
 ```
 
-*キーワード: ApplicationException, MessageUtil, MessageLevel, HttpRequest, PartInfo, UploadHelper, filePathSetting, FilePathSetting, n:form, n:file, n:message, n:errors, multipart/form-data, ファイルアップロード画面, UploadHelper#moveFileTo, ファイル保存, マルチパートリクエストハンドラ, ファイルパス管理*
+<details>
+<summary>keywords</summary>
+
+ApplicationException, MessageUtil, MessageLevel, HttpRequest, PartInfo, UploadHelper, filePathSetting, FilePathSetting, n:form, n:file, n:message, n:errors, multipart/form-data, ファイルアップロード画面, UploadHelper#moveFileTo, ファイル保存, マルチパートリクエストハンドラ, ファイルパス管理
+
+</details>
 
 ## 一括登録機能の実装
 
@@ -211,4 +221,9 @@ private void insertProjects(List<Project> projects) {
 }
 ```
 
-*キーワード: ProjectUploadDto, ObjectMapper, ObjectMapperFactory, ValidatorUtil, UniversalDao, ApplicationException, InvalidDataFormatException, Message, MessageUtil, MessageLevel, @Csv, @CsvFormat, @Required, @Domain, @LineNumber, PartInfo, HttpRequest, HttpResponse, ExecutionContext, Collectors, LoginUserPrincipal, Project, CsvDataBindConfig, CSVファイル一括登録, ファイルアップロード, Bean Validation, バッチインサート, 行番号取得*
+<details>
+<summary>keywords</summary>
+
+ProjectUploadDto, ObjectMapper, ObjectMapperFactory, ValidatorUtil, UniversalDao, ApplicationException, InvalidDataFormatException, Message, MessageUtil, MessageLevel, @Csv, @CsvFormat, @Required, @Domain, @LineNumber, PartInfo, HttpRequest, HttpResponse, ExecutionContext, Collectors, LoginUserPrincipal, Project, CsvDataBindConfig, CSVファイル一括登録, ファイルアップロード, Bean Validation, バッチインサート, 行番号取得
+
+</details>

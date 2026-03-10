@@ -9,20 +9,35 @@ Nablarchの初期化には以下の2つの設定が必要:
 1. :ref:`システムリポジトリのロードの為の設定 <nablarch_servlet_context_listener>`
 2. :ref:`ハンドラキューの設定(構築) <web_front_controller>`
 
-*キーワード: nablarch_servlet_context_listener, web_front_controller, Nablarch初期化, システムリポジトリ, ハンドラキュー設定*
+<details>
+<summary>keywords</summary>
+
+nablarch_servlet_context_listener, web_front_controller, Nablarch初期化, システムリポジトリ, ハンドラキュー設定
+
+</details>
 
 ## 入力値のチェック
 
 - :ref:`入力値のチェック <validation>`
 - [エラーメッセージの画面表示](web-application-error_message.md)
 
-*キーワード: validation, バリデーション, 入力値チェック, エラーメッセージ*
+<details>
+<summary>keywords</summary>
+
+validation, バリデーション, 入力値チェック, エラーメッセージ
+
+</details>
 
 ## データベースアクセス
 
 データベースアクセス: :ref:`database_management`
 
-*キーワード: database_management, データベースアクセス, DB操作*
+<details>
+<summary>keywords</summary>
+
+database_management, データベースアクセス, DB操作
+
+</details>
 
 ## 排他制御
 
@@ -33,13 +48,23 @@ Nablarchの初期化には以下の2つの設定が必要:
   - :ref:`universal_dao_jpa_optimistic_lock`（楽観排他）
   - :ref:`universal_dao_jpa_pessimistic_lock`（悲観排他）
 
-*キーワード: exclusive_control, universal_dao, universal_dao_jpa_optimistic_lock, universal_dao_jpa_pessimistic_lock, 排他制御, 楽観排他, 悲観排他*
+<details>
+<summary>keywords</summary>
+
+exclusive_control, universal_dao, universal_dao_jpa_optimistic_lock, universal_dao_jpa_pessimistic_lock, 排他制御, 楽観排他, 悲観排他
+
+</details>
 
 ## ファイルアップロード
 
 ファイルアップロードの読み込み: :ref:`multipart_handler-read_upload_file`
 
-*キーワード: multipart_handler-read_upload_file, ファイルアップロード, マルチパート*
+<details>
+<summary>keywords</summary>
+
+multipart_handler-read_upload_file, ファイルアップロード, マルチパート
+
+</details>
 
 ## ファイルダウンロード
 
@@ -50,7 +75,12 @@ Nablarchの初期化には以下の2つの設定が必要:
 
 > **警告**: 大量データのダウンロード時は :ref:`universal_dao-lazy_load` を使用し、データベースの検索結果をヒープ上に展開しないこと。
 
-*キーワード: data_bind, data_bind-file_download, data_format-file_download, universal_dao-lazy_load, ファイルダウンロード, データバインド, 大量データ*
+<details>
+<summary>keywords</summary>
+
+data_bind, data_bind-file_download, data_format-file_download, universal_dao-lazy_load, ファイルダウンロード, データバインド, 大量データ
+
+</details>
 
 ## URIとアクションクラスのマッピング
 
@@ -59,7 +89,12 @@ URIとアクションクラスのマッピングは2種類提供されるが、:
 - :ref:`router_adaptor`（推奨）
 - :ref:`http_request_java_package_mapping`
 
-*キーワード: router_adaptor, http_request_java_package_mapping, URIマッピング, アクションクラスマッピング, ルーティング*
+<details>
+<summary>keywords</summary>
+
+router_adaptor, http_request_java_package_mapping, URIマッピング, アクションクラスマッピング, ルーティング
+
+</details>
 
 ## 2重サブミット防止
 
@@ -67,13 +102,23 @@ URIとアクションクラスのマッピングは2種類提供されるが、:
 
 JSP以外のテンプレートエンジンを使用する場合は :ref:`use_token_interceptor` も参照すること。
 
-*キーワード: tag-double_submission, use_token_interceptor, 2重サブミット防止, ダブルサブミット*
+<details>
+<summary>keywords</summary>
+
+tag-double_submission, use_token_interceptor, 2重サブミット防止, ダブルサブミット
+
+</details>
 
 ## 入力データの保持
 
 入力データの保持: :ref:`session_store`
 
-*キーワード: session_store, セッションストア, 入力データ保持*
+<details>
+<summary>keywords</summary>
+
+session_store, セッションストア, 入力データ保持
+
+</details>
 
 ## ページネーション
 
@@ -81,7 +126,12 @@ JSP以外のテンプレートエンジンを使用する場合は :ref:`use_tok
 
 クライアントサイドのページネーションはプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない。
 
-*キーワード: database_management, ページネーション, 範囲検索, クライアントサイドページング*
+<details>
+<summary>keywords</summary>
+
+database_management, ページネーション, 範囲検索, クライアントサイドページング
+
+</details>
 
 ## 画面の作成
 
@@ -93,7 +143,12 @@ JSP以外のテンプレートエンジンを使用する場合は :ref:`use_tok
 - :ref:`Thymeleafを使用した画面開発 <web_thymeleaf_adaptor>`
 - :ref:`view_other`
 
-*キーワード: tag, jsp_session, web_thymeleaf_adaptor, view_other, JSP, Thymeleaf, 画面開発, テンプレートエンジン*
+<details>
+<summary>keywords</summary>
+
+tag, jsp_session, web_thymeleaf_adaptor, view_other, JSP, Thymeleaf, 画面開発, テンプレートエンジン
+
+</details>
 
 ## 国際化対応
 
@@ -107,7 +162,12 @@ JSP以外のテンプレートエンジンを使用する場合は :ref:`use_tok
 
 > **警告**: :ref:`メッセージタグでの国際化対応 <tag-write_message>` を使用した場合、画面レイアウトが崩れる可能性がある。レイアウト崩れを許容できる場合のみ使用すること。
 
-*キーワード: message-multi_lang, code-use_multilingualization, tag-write_message, tag_change_resource_path_of_lang, 国際化, 多言語化, 言語切り替え*
+<details>
+<summary>keywords</summary>
+
+message-multi_lang, code-use_multilingualization, tag-write_message, tag_change_resource_path_of_lang, 国際化, 多言語化, 言語切り替え
+
+</details>
 
 ## 認証
 
@@ -115,19 +175,34 @@ JSP以外のテンプレートエンジンを使用する場合は :ref:`use_tok
 
 認証情報の保持: :ref:`session_store-authentication_data`
 
-*キーワード: session_store-authentication_data, 認証, 認証情報*
+<details>
+<summary>keywords</summary>
+
+session_store-authentication_data, 認証, 認証情報
+
+</details>
 
 ## 認可チェック
 
 認可チェック: :ref:`permission_check`
 
-*キーワード: permission_check, 認可チェック, 権限チェック*
+<details>
+<summary>keywords</summary>
+
+permission_check, 認可チェック, 権限チェック
+
+</details>
 
 ## ステータスコード
 
 [ステータスコードの使い分け(外部サイト)](https://qiita.com/kawasima/items/e48180041ace99842779)
 
-*キーワード: ステータスコード, HTTPステータスコード*
+<details>
+<summary>keywords</summary>
+
+ステータスコード, HTTPステータスコード
+
+</details>
 
 ## エラー時の画面遷移とステータスコード
 
@@ -141,34 +216,64 @@ JSP以外のテンプレートエンジンを使用する場合は :ref:`use_tok
 
 [ステータスコードの使い分け(外部サイト)](https://qiita.com/kawasima/items/e48180041ace99842779)
 
-*キーワード: HttpErrorHandler_DefaultPage, forward_error_page-handler, on_error_interceptor, on_errors_interceptor, forward_error_page-try_catch, エラーページ遷移, エラーハンドリング*
+<details>
+<summary>keywords</summary>
+
+HttpErrorHandler_DefaultPage, forward_error_page-handler, on_error_interceptor, on_errors_interceptor, forward_error_page-try_catch, エラーページ遷移, エラーハンドリング
+
+</details>
 
 ## MOMメッセージ送信
 
 MOMメッセージ送信: :ref:`同期応答メッセージ送信 <mom_system_messaging-sync_message_send>`
 
-*キーワード: mom_system_messaging-sync_message_send, MOMメッセージ, 同期応答メッセージ送信*
+<details>
+<summary>keywords</summary>
+
+mom_system_messaging-sync_message_send, MOMメッセージ, 同期応答メッセージ送信
+
+</details>
 
 ## Webアプリケーションのスケールアウト設計
 
 Webアプリケーションのスケールアウト設計: :ref:`stateless_web_app`
 
-*キーワード: stateless_web_app, スケールアウト, ステートレス, 水平スケール*
+<details>
+<summary>keywords</summary>
+
+stateless_web_app, スケールアウト, ステートレス, 水平スケール
+
+</details>
 
 ## CSRF対策
 
 CSRF対策: :ref:`CSRF対策 <csrf_token_verification_handler>`
 
-*キーワード: csrf_token_verification_handler, CSRF対策, CSRFトークン, クロスサイトリクエストフォージェリ*
+<details>
+<summary>keywords</summary>
+
+csrf_token_verification_handler, CSRF対策, CSRFトークン, クロスサイトリクエストフォージェリ
+
+</details>
 
 ## ウェブアプリケーションとRESTfulウェブサービスの併用
 
 ウェブアプリケーションとRESTfulウェブサービスを併用する場合: :ref:`委譲するWebフロントコントローラの名前を変更する <change_web_front_controller_name>`
 
-*キーワード: change_web_front_controller_name, Webフロントコントローラ, RESTfulウェブサービス併用*
+<details>
+<summary>keywords</summary>
+
+change_web_front_controller_name, Webフロントコントローラ, RESTfulウェブサービス併用
+
+</details>
 
 ## Content Security Policy(CSP)対応
 
 Content Security Policy(CSP)対応: :ref:`Content Security Policy(CSP)対応 <content_security_policy>`
 
-*キーワード: content_security_policy, CSP, Content Security Policy*
+<details>
+<summary>keywords</summary>
+
+content_security_policy, CSP, Content Security Policy
+
+</details>

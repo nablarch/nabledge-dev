@@ -6,13 +6,23 @@
 
 取得した情報はアクセス解析に利用される。ページのアクセス数等からサイトの利用状況を把握し、サイトの改善に利用する。アクセス情報は匿名で収集され、個人を特定することはできない。
 
-*キーワード: アクセス解析, 情報収集, 匿名収集, サイト改善*
+<details>
+<summary>keywords</summary>
+
+アクセス解析, 情報収集, 匿名収集, サイト改善
+
+</details>
 
 ## 情報の送信先
 
 取得した情報は [Plausible Analytics](https://plausible.io) に送信される。
 
-*キーワード: Plausible Analytics, アクセス情報送信先, 外部送信*
+<details>
+<summary>keywords</summary>
+
+Plausible Analytics, アクセス情報送信先, 外部送信
+
+</details>
 
 ## 情報の種類・用途
 
@@ -32,4 +42,9 @@
 
 詳細は [Plausible Analyticsのポリシー](https://plausible.io/data-policy) を参照。
 
-*キーワード: ページのURL, リファラー, ブラウザ, OS, デバイス種別, 位置情報, ユーザーエージェント, IPアドレス*
+<details>
+<summary>keywords</summary>
+
+ページのURL, リファラー, ブラウザ, OS, デバイス種別, 位置情報, ユーザーエージェント, IPアドレス
+
+</details>

@@ -12,7 +12,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-core-beans, com.nablarch.framework, BeanUtilモジュール, Maven依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-core-beans, com.nablarch.framework, BeanUtilモジュール, Maven依存関係
+
+</details>
 
 ## 使用方法
 
@@ -92,7 +97,12 @@ final User user = BeanUtil.createAndCopy(User.class, userMap);
 > }
 > ```
 
-*キーワード: BeanUtil, nablarch.core.beans.BeanUtil, getProperty, setProperty, createAndCopy, createMapAndCopy, Java Beansプロパティ操作, Bean間値コピー, MapとBeanの変換, List型パラメータ制限, ItemsForm, BadSampleForm, GoodSampleForm, User, Address, UserDto, Serializable*
+<details>
+<summary>keywords</summary>
+
+BeanUtil, nablarch.core.beans.BeanUtil, getProperty, setProperty, createAndCopy, createMapAndCopy, Java Beansプロパティ操作, Bean間値コピー, MapとBeanの変換, List型パラメータ制限, ItemsForm, BadSampleForm, GoodSampleForm, User, Address, UserDto, Serializable
+
+</details>
 
 ## BeanUtilの型変換ルール
 
@@ -104,7 +114,12 @@ final User user = BeanUtil.createAndCopy(User.class, userMap);
 
 > **重要**: 型変換ルールはアプリケーション共通の設定。特定の処理のみ異なる型変換ルールを適用したい場合は :ref:`bean_util-format_logical` を参照し、特定のプロパティや型に対して `Converter` 実装を適用すること。
 
-*キーワード: Converter, nablarch.core.beans.Converter, nablarch.core.beans.converter, 型変換, 精度の小さい型への変換, ネストオブジェクト, Long Integer変換, validation連携*
+<details>
+<summary>keywords</summary>
+
+Converter, nablarch.core.beans.Converter, nablarch.core.beans.converter, 型変換, 精度の小さい型への変換, ネストオブジェクト, Long Integer変換, validation連携
+
+</details>
 
 ## 型変換ルールを追加する
 
@@ -149,7 +164,12 @@ public class SampleConversionManager implements ConversionManager {
 </component>
 ```
 
-*キーワード: ConversionManager, nablarch.core.beans.ConversionManager, BasicConversionManager, nablarch.core.beans.BasicConversionManager, ExtensionConverter, nablarch.core.beans.ExtensionConverter, conversionManager, 型変換ルール追加, カスタムコンバータ, SampleConversionManager, getConverters, getExtensionConvertor*
+<details>
+<summary>keywords</summary>
+
+ConversionManager, nablarch.core.beans.ConversionManager, BasicConversionManager, nablarch.core.beans.BasicConversionManager, ExtensionConverter, nablarch.core.beans.ExtensionConverter, conversionManager, 型変換ルール追加, カスタムコンバータ, SampleConversionManager, getConverters, getExtensionConvertor
+
+</details>
 
 ## 型変換時に許容するフォーマットを指定する
 
@@ -160,7 +180,12 @@ public class SampleConversionManager implements ConversionManager {
 2. :ref:`bean_util-format_property_setting` - プロパティ単位にアノテーションで設定
 3. :ref:`bean_util-format_default_setting` - デフォルト設定（システム共通）
 
-*キーワード: フォーマット指定, 日付フォーマット, 数値フォーマット, カンマ編集, 型変換フォーマット, 優先順位*
+<details>
+<summary>keywords</summary>
+
+フォーマット指定, 日付フォーマット, 数値フォーマット, カンマ編集, 型変換フォーマット, 優先順位
+
+</details>
 
 ## デフォルト(システム共通)の許容するフォーマットを設定する
 
@@ -190,7 +215,12 @@ public class SampleConversionManager implements ConversionManager {
 
 > **重要**: `yyyy/MM/dd` と `yyyy/MM/dd HH:mm:ss` のように日付と日時のフォーマットを両方デフォルト指定した場合、日時形式の値も `yyyy/MM/dd` でパースされ時間情報が欠落するケースがある。デフォルトには日付フォーマットのみ指定し、日時形式の項目は :ref:`bean_util-format_property_setting` でオーバーライドすること。
 
-*キーワード: BasicConversionManager, nablarch.core.beans.BasicConversionManager, conversionManager, datePatterns, numberPatterns, デフォルトフォーマット設定, システム共通設定*
+<details>
+<summary>keywords</summary>
+
+BasicConversionManager, nablarch.core.beans.BasicConversionManager, conversionManager, datePatterns, numberPatterns, デフォルトフォーマット設定, システム共通設定
+
+</details>
 
 ## コピー対象のプロパティに対して許容するフォーマットを設定する
 
@@ -217,7 +247,12 @@ public class Bean {
 }
 ```
 
-*キーワード: CopyOption, nablarch.core.beans.CopyOption, datePattern, numberPattern, アノテーション, プロパティ単位フォーマット設定*
+<details>
+<summary>keywords</summary>
+
+CopyOption, nablarch.core.beans.CopyOption, datePattern, numberPattern, アノテーション, プロパティ単位フォーマット設定
+
+</details>
 
 ## BeanUtil呼び出し時に許容するフォーマットを設定する
 
@@ -235,7 +270,12 @@ final CopyOptions copyOptions = CopyOptions.options()
 final DestBean copy = BeanUtil.createAndCopy(DestBean.class, bean, copyOptions);
 ```
 
-*キーワード: CopyOptions, nablarch.core.beans.CopyOptions, CopyOptions.Builder, nablarch.core.beans.CopyOptions.Builder, datePatternByName, converterByName, BeanUtil呼び出し時フォーマット設定, 自動生成Bean*
+<details>
+<summary>keywords</summary>
+
+CopyOptions, nablarch.core.beans.CopyOptions, CopyOptions.Builder, nablarch.core.beans.CopyOptions.Builder, datePatternByName, converterByName, BeanUtil呼び出し時フォーマット設定, 自動生成Bean
+
+</details>
 
 ## BeanUtilでレコードを使用する
 
@@ -253,4 +293,9 @@ Java 16以降のレコードを `BeanUtil` でJava Beansと同様に取り扱う
 > public record GoodSampleRecord(List<Item> items) {}
 > ```
 
-*キーワード: Javaレコード, record, BeanUtil.setProperty, BeanUtil.copy, レコード使用制限, List型パラメータ, イミュータブル, Java 16, BadSampleRecord, GoodSampleRecord*
+<details>
+<summary>keywords</summary>
+
+Javaレコード, record, BeanUtil.setProperty, BeanUtil.copy, レコード使用制限, List型パラメータ, イミュータブル, Java 16, BadSampleRecord, GoodSampleRecord
+
+</details>

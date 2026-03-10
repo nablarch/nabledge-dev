@@ -12,7 +12,12 @@ JSPを使用している場合は :ref:`tag-form_tag` のuseToken属性でトー
 
 **クラス**: `nablarch.common.web.token.UseToken`
 
-*キーワード: UseToken, nablarch.common.web.token.UseToken, 二重サブミット防止, トークン発行, JSP以外のテンプレートエンジン, on_double_submission_interceptor*
+<details>
+<summary>keywords</summary>
+
+UseToken, nablarch.common.web.token.UseToken, 二重サブミット防止, トークン発行, JSP以外のテンプレートエンジン, on_double_submission_interceptor
+
+</details>
 
 ## モジュール一覧
 
@@ -24,7 +29,12 @@ JSPを使用している場合は :ref:`tag-form_tag` のuseToken属性でトー
 </dependency>
 ```
 
-*キーワード: nablarch-fw-web-tag, com.nablarch.framework, Mavenモジュール*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-tag, com.nablarch.framework, Mavenモジュール
+
+</details>
 
 ## UseTokenを使用する
 
@@ -48,4 +58,9 @@ public HttpResponse confirm(HttpRequest req, ExecutionContext ctx) {
 
 `name` 属性は `"nablarch_token"` と設定し、`value` 属性はリクエストスコープのキー `"nablarch_request_token"` から取得した値を設定する必要がある。このname属性とリクエストスコープから値を取得するキーは変更可能。詳しくは :ref:`サーバ側の二重サブミット防止 <tag-double_submission_server_side>` を参照。
 
-*キーワード: @UseToken, nablarch_token, nablarch_request_token, Thymeleaf, hiddenフィールド, トークン埋め込み, 二重サブミット防止*
+<details>
+<summary>keywords</summary>
+
+@UseToken, nablarch_token, nablarch_request_token, Thymeleaf, hiddenフィールド, トークン埋め込み, 二重サブミット防止
+
+</details>

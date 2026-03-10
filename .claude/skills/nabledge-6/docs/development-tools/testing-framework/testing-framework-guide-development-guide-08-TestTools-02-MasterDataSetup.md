@@ -8,4 +8,9 @@
 
 > **重要**: 本ツールはマルチスレッド機能に対応していない。マルチスレッド機能のテストは、テスティングフレームワークを使用しないテスト（結合テストなど）で行うこと。
 
-*キーワード: マスタデータ投入, gsp-dba-maven-plugin, blank_project, マルチスレッド非対応, データベース初期データ投入*
+<details>
+<summary>keywords</summary>
+
+マスタデータ投入, gsp-dba-maven-plugin, blank_project, マルチスレッド非対応, データベース初期データ投入
+
+</details>

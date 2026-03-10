@@ -8,7 +8,12 @@
 
 新たなリソースへのトランザクション制御要件が出た場合は、本機能で定められたインタフェースを実装することで対応できる。詳細は :ref:`transaction_addResource` を参照。
 
-*キーワード: トランザクション管理, データベーストランザクション, メッセージキュートランザクション, トランザクション制御リソース追加*
+<details>
+<summary>keywords</summary>
+
+トランザクション管理, データベーストランザクション, メッセージキュートランザクション, トランザクション制御リソース追加
+
+</details>
 
 ## モジュール一覧
 
@@ -25,7 +30,12 @@
 </dependency>
 ```
 
-*キーワード: nablarch-core-transaction, nablarch-core-jdbc, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-core-transaction, nablarch-core-jdbc, モジュール依存関係
+
+</details>
 
 ## データベースに対するトランザクション制御
 
@@ -44,7 +54,12 @@
 
 > **補足**: JdbcTransactionFactoryを直接使用することは基本的にない。トランザクション制御が必要な場合は :ref:`transaction_management_handler` を使うこと。
 
-*キーワード: JdbcTransactionFactory, isolationLevel, transactionTimeoutSec, データベーストランザクション制御, データベース接続設定, database-new_transaction, TransactionManagementHandler*
+<details>
+<summary>keywords</summary>
+
+JdbcTransactionFactory, isolationLevel, transactionTimeoutSec, データベーストランザクション制御, データベース接続設定, database-new_transaction, TransactionManagementHandler
+
+</details>
 
 ## データベースに対するトランザクションタイムアウトを適用する
 
@@ -66,7 +81,12 @@
 
 **リセットタイミング**: `Transaction#begin` 呼び出し時にリセットされる。`Transaction#commit` や `Transaction#rollback` ではリセットされないので注意すること。
 
-*キーワード: JdbcTransactionFactory, TransactionTimeoutException, transactionTimeoutSec, トランザクションタイムアウト, クエリータイムアウト, Statement#setQueryTimeout*
+<details>
+<summary>keywords</summary>
+
+JdbcTransactionFactory, TransactionTimeoutException, transactionTimeoutSec, トランザクションタイムアウト, クエリータイムアウト, Statement#setQueryTimeout
+
+</details>
 
 ## 拡張例
 
@@ -132,4 +152,9 @@ public class SampleTransactionFactory implements TransactionFactory {
 </component>
 ```
 
-*キーワード: Transaction, TransactionFactory, TransactionManagementHandler, トランザクションリソース追加, カスタムトランザクション実装, IBM MQ*
+<details>
+<summary>keywords</summary>
+
+Transaction, TransactionFactory, TransactionManagementHandler, トランザクションリソース追加, カスタムトランザクション実装, IBM MQ
+
+</details>

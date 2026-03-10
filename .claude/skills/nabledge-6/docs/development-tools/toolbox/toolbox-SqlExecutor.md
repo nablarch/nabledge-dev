@@ -8,7 +8,12 @@ Nablarch SQL ExecutorはNablarch特殊構文を含むSQLファイルを対話的
 
 使用前にPJで使用するDBを設定し、Mavenでビルドする必要がある。
 
-*キーワード: SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行*
+<details>
+<summary>keywords</summary>
+
+SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行
+
+</details>
 
 ## 想定使用方法
 
@@ -35,7 +40,12 @@ Nablarch SQL ExecutorはNablarch特殊構文を含むSQLファイルを対話的
 
 > **補足**: NablarchはDomaのアダプタを提供している（:ref:`doma_adaptor`）。Domaを使用すると、本ツールのような複雑なセットアップ不要で本番環境用SQLをテスト実行できる（動的条件構築でもSQLの書き換え不要）。Domaの使用を検討することを推奨する。[Doma](https://doma.readthedocs.io/en/stable/)
 
-*キーワード: 配布ワークフロー, DB接続方法, ローカルDB, PJ共通DB, 制約, WITH句, IN句, DATETIMEリテラル, Doma, doma_adaptor*
+<details>
+<summary>keywords</summary>
+
+配布ワークフロー, DB接続方法, ローカルDB, PJ共通DB, 制約, WITH句, IN句, DATETIMEリテラル, Doma, doma_adaptor
+
+</details>
 
 ## 配布方法 — 前提条件とソースコード取得
 
@@ -49,7 +59,12 @@ Nablarch SQL ExecutorはNablarch特殊構文を含むSQLファイルを対話的
 
 [https://github.com/nablarch/sql-executor](https://github.com/nablarch/sql-executor) からcloneする。
 
-*キーワード: 配布前提条件, Firefox, Chrome, Nablarch開発環境, JDBCドライバ登録, Maven Central Repository, Project Local Repository, customizeDBAddFileMavenRepo, ソースコード取得, sql-executor clone*
+<details>
+<summary>keywords</summary>
+
+配布前提条件, Firefox, Chrome, Nablarch開発環境, JDBCドライバ登録, Maven Central Repository, Project Local Repository, customizeDBAddFileMavenRepo, ソースコード取得, sql-executor clone
+
+</details>
 
 ## 配布方法 — DB設定変更
 
@@ -164,7 +179,12 @@ JDBCドライバのクラス名（`dataSource`コンポーネントの`driverCla
 | DB2 | com.ibm.db2.jcc.DB2Driver | nablarch.core.db.dialect.DB2Dialect |
 | SQL Server | com.microsoft.sqlserver.jdbc.SQLServerDriver | nablarch.core.db.dialect.SqlServerDialect |
 
-*キーワード: DB設定変更, db.config, pom.xml, db.xml, JDBCドライバ変更, ダイアレクト, H2Dialect, OracleDialect, PostgreSQLDialect, DB2Dialect, SqlServerDialect, BasicDataSource, BasicDbConnectionFactoryForDataSource, driverClassName, OracleDriver, DB2Driver, SQLServerDriver*
+<details>
+<summary>keywords</summary>
+
+DB設定変更, db.config, pom.xml, db.xml, JDBCドライバ変更, ダイアレクト, H2Dialect, OracleDialect, PostgreSQLDialect, DB2Dialect, SqlServerDialect, BasicDataSource, BasicDbConnectionFactoryForDataSource, driverClassName, OracleDriver, DB2Driver, SQLServerDriver
+
+</details>
 
 ## 配布方法 — 起動確認と配布ファイル作成
 
@@ -186,7 +206,12 @@ mvn package
 
 `target`直下に作成された`sql-executor-distribution.zip`を配布することで、Git/Mavenの環境なしでツールを使用できる。
 
-*キーワード: mvn compile exec:java, mvn package, 起動確認, 配布ファイル作成, sql-executor-distribution.zip, localhost:7979, Internet Explorer*
+<details>
+<summary>keywords</summary>
+
+mvn compile exec:java, mvn package, 起動確認, 配布ファイル作成, sql-executor-distribution.zip, localhost:7979, Internet Explorer
+
+</details>
 
 ## 配布されたツールの使用方法
 
@@ -225,7 +250,12 @@ cmd /c start http://localhost:7979/index.html
 
 実行しても何も出力されずに異常終了する場合は、:ref:`faq` を参照。
 
-*キーワード: sql-executor.bat, DB接続変更, ツール起動, 配布ツール使用, db.url, db.user, db.password, 異常終了, faq*
+<details>
+<summary>keywords</summary>
+
+sql-executor.bat, DB接続変更, ツール起動, 配布ツール使用, db.url, db.user, db.password, 異常終了, faq
+
+</details>
 
 ## 操作方法
 
@@ -261,7 +291,12 @@ DATE型フィールドへの値設定はSQL92のDATEリテラル形式（例: `1
 
 > **警告**: DATETIMEリテラルを条件とした検索はできない。
 
-*キーワード: SQLExecutor操作方法, IN句記法, 日付型設定, パラメータ指定, SQL実行, SYSDATE, IllegalArgumentException, 埋込み変数入力, 初回起動, 再検索, ステートメント一覧*
+<details>
+<summary>keywords</summary>
+
+SQLExecutor操作方法, IN句記法, 日付型設定, パラメータ指定, SQL実行, SYSDATE, IllegalArgumentException, 埋込み変数入力, 初回起動, 再検索, ステートメント一覧
+
+</details>
 
 ## FAQ
 
@@ -286,4 +321,9 @@ DATE型フィールドへの値設定はSQL92のDATEリテラル形式（例: `1
 
 **A3**: 文字列を入力したい場合には文字列を `'` で囲んでいるかを確認する。真偽値、日付型を入力したい場合には、スペルミスや形式のミスがないかを確認して対処する。
 
-*キーワード: sql.log, app.log, FAQ, DBコネクションエラー, パラメータの指定方法が正しくありません, 実行ログ, 異常終了, トラブルシューティング*
+<details>
+<summary>keywords</summary>
+
+sql.log, app.log, FAQ, DBコネクションエラー, パラメータの指定方法が正しくありません, 実行ログ, 異常終了, トラブルシューティング
+
+</details>

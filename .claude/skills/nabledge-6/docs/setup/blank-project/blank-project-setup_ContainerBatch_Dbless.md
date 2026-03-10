@@ -11,7 +11,12 @@
 3. コンテナイメージの作成
 4. コンテナイメージの実行
 
-*キーワード: コンテナ用バッチ, DB接続無し, 初期セットアップ, プロジェクト生成, コンテナイメージ*
+<details>
+<summary>keywords</summary>
+
+コンテナ用バッチ, DB接続無し, 初期セットアップ, プロジェクト生成, コンテナイメージ
+
+</details>
 
 ## 生成するプロジェクトの概要
 
@@ -23,7 +28,12 @@
 
 他プロジェクトとの関係およびディレクトリ構成は [../MavenModuleStructures/index](blank-project-MavenModuleStructures.md) を参照。
 
-*キーワード: Mavenプロジェクト, 単一プロジェクト構成, 都度起動バッチ, ディレクトリ構成, about_maven_parent_module*
+<details>
+<summary>keywords</summary>
+
+Mavenプロジェクト, 単一プロジェクト構成, 都度起動バッチ, ディレクトリ構成, about_maven_parent_module
+
+</details>
 
 ## ブランクプロジェクト作成
 
@@ -56,7 +66,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
-*キーワード: nablarch-container-batch-dbless-archetype, mvn archetype:generate, archetypeVersion, groupId, artifactId, ブランクプロジェクト生成, Nablarch 6u2*
+<details>
+<summary>keywords</summary>
+
+nablarch-container-batch-dbless-archetype, mvn archetype:generate, archetypeVersion, groupId, artifactId, ブランクプロジェクト生成, Nablarch 6u2
+
+</details>
 
 ## 疎通確認
 
@@ -64,7 +79,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **注意**: アーティファクトIDが `myapp-container-batch-dbless` になっている点は適宜読み替えてディレクトリやコマンドを指定すること。
 
-*キーワード: 疎通確認, myapp-container-batch-dbless, 都度起動バッチ*
+<details>
+<summary>keywords</summary>
+
+疎通確認, myapp-container-batch-dbless, 都度起動バッチ
+
+</details>
 
 ## コンテナイメージを作成する
 
@@ -72,7 +92,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **注意**: アーティファクトIDが `myapp-container-batch-dbless` になっている点は適宜読み替えてディレクトリやコマンドを指定すること。
 
-*キーワード: コンテナイメージ作成, myapp-container-batch-dbless, Docker*
+<details>
+<summary>keywords</summary>
+
+コンテナイメージ作成, myapp-container-batch-dbless, Docker
+
+</details>
 
 ## コンテナイメージを実行する
 
@@ -82,4 +107,9 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **重要**: コンテナ用Nablarchバッチ（DB接続無し）プロジェクトでは都度起動バッチのみ実行可能。
 
-*キーワード: コンテナイメージ実行, myapp-container-batch-dbless, 都度起動バッチ, DB接続無し実行制限*
+<details>
+<summary>keywords</summary>
+
+コンテナイメージ実行, myapp-container-batch-dbless, 都度起動バッチ, DB接続無し実行制限
+
+</details>

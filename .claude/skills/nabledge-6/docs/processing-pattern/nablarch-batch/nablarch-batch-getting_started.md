@@ -6,7 +6,12 @@
 
 > **補足**: ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。
 
-*キーワード: Exampleアプリケーション, blank_project, 本格的なアプリケーション, 実装例, Getting Started*
+<details>
+<summary>keywords</summary>
+
+Exampleアプリケーション, blank_project, 本格的なアプリケーション, 実装例, Getting Started
+
+</details>
 
 ## 前提条件
 
@@ -17,10 +22,20 @@
 > - Exampleアプリケーションの設定
 > - 使用しているOSSプラグインについて
 
-*キーワード: 前提条件, Exampleアプリケーション, 動作環境, 事前構築, example_application*
+<details>
+<summary>keywords</summary>
+
+前提条件, Exampleアプリケーション, 動作環境, 事前構築, example_application
+
+</details>
 
 ## 概要
 
 > **補足**: Nablarchバッチアプリケーションでは、:ref:`都度起動バッチ<nablarch_batch-each_time_batch>` と :ref:`常駐バッチ<nablarch_batch-resident_batch>` でアプリケーションの実装方法に違いがない。両者で異なるのはハンドラ構成のみであるため、Getting Startedは共通化されている。
 
-*キーワード: 都度起動バッチ, 常駐バッチ, ハンドラ構成, Nablarchバッチアプリケーション, 実装方法の違い*
+<details>
+<summary>keywords</summary>
+
+都度起動バッチ, 常駐バッチ, ハンドラ構成, Nablarchバッチアプリケーション, 実装方法の違い
+
+</details>

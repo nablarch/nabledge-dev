@@ -6,19 +6,34 @@
 
 - :ref:`Nablarchバッチアプリケーションの起動方法<main-run_application>`
 
-*キーワード: バッチアプリケーション起動, Nablarchバッチ起動方法, アプリケーション実行*
+<details>
+<summary>keywords</summary>
+
+バッチアプリケーション起動, Nablarchバッチ起動方法, アプリケーション実行
+
+</details>
 
 ## システムリポジトリの初期化
 
 システムリポジトリの初期化は、アプリケーション起動時にシステムリポジトリの設定ファイルのパスを指定することで行う。
 
-*キーワード: システムリポジトリ初期化, 設定ファイルパス指定, アプリケーション起動時初期化*
+<details>
+<summary>keywords</summary>
+
+システムリポジトリ初期化, 設定ファイルパス指定, アプリケーション起動時初期化
+
+</details>
 
 ## 入力値のチェック
 
 - :ref:`入力値のチェック <validation>`
 
-*キーワード: 入力値チェック, バリデーション, validation*
+<details>
+<summary>keywords</summary>
+
+入力値チェック, バリデーション, validation
+
+</details>
 
 ## データベースアクセス
 
@@ -27,7 +42,12 @@
 標準提供のデータリーダ:
 - `DatabaseRecordReader (データベース読み込み)`
 
-*キーワード: データベースアクセス, DatabaseRecordReader, データリーダ, データベース読み込み*
+<details>
+<summary>keywords</summary>
+
+データベースアクセス, DatabaseRecordReader, データリーダ, データベース読み込み
+
+</details>
 
 ## ファイル入出力
 
@@ -38,7 +58,12 @@
 - `ValidatableFileDataReader (バリデージョン機能付きファイル読み込み)`
 - `ResumeDataReader (レジューム機能付き読み込み)`
 
-*キーワード: ファイル入出力, FileDataReader, ValidatableFileDataReader, ResumeDataReader, ファイル読み込み, レジューム機能*
+<details>
+<summary>keywords</summary>
+
+ファイル入出力, FileDataReader, ValidatableFileDataReader, ResumeDataReader, ファイル読み込み, レジューム機能
+
+</details>
 
 ## 排他制御
 
@@ -48,7 +73,12 @@
 - :ref:`universal_dao`
   - :ref:`悲観的ロック<nablarch_batch_pessimistic_lock>`
 
-*キーワード: 排他制御, UniversalDao推奨, 悲観的ロック, exclusive_control非推奨, pessimistic lock*
+<details>
+<summary>keywords</summary>
+
+排他制御, UniversalDao推奨, 悲観的ロック, exclusive_control非推奨, pessimistic lock
+
+</details>
 
 ## バッチ処理の実行制御
 
@@ -58,23 +88,43 @@
 - :ref:`バッチ処理のコミット間隔の制御 <loop_handler-commit_interval>`
 - :ref:`1回のバッチ処理の処理件数制限 <data_read_handler-max_count>` (大量データを処理するバッチ処理を数日に分けて処理させる場合など)
 
-*キーワード: バッチ実行制御, プロセス終了コード, エラー処理, マルチスレッド並列実行, コミット間隔, 処理件数制限*
+<details>
+<summary>keywords</summary>
+
+バッチ実行制御, プロセス終了コード, エラー処理, マルチスレッド並列実行, コミット間隔, 処理件数制限
+
+</details>
 
 ## MOMメッセージ送信
 
 - :ref:`同期応答メッセージ送信<mom_system_messaging-sync_message_send>`
 - :ref:`応答不要メッセージ送信<mom_system_messaging-async_message_send>`
 
-*キーワード: MOMメッセージ送信, 同期応答メッセージ送信, 応答不要メッセージ送信, メッセージング*
+<details>
+<summary>keywords</summary>
+
+MOMメッセージ送信, 同期応答メッセージ送信, 応答不要メッセージ送信, メッセージング
+
+</details>
 
 ## バッチ実行中の状態の保持
 
 - :ref:`nablarch_batch_retention_state`
 
-*キーワード: バッチ状態保持, バッチ実行中状態, nablarch_batch_retention_state*
+<details>
+<summary>keywords</summary>
+
+バッチ状態保持, バッチ実行中状態, nablarch_batch_retention_state
+
+</details>
 
 ## 常駐バッチのマルチプロセス化
 
 - :ref:`nablarch_batch_multiple_process`
 
-*キーワード: 常駐バッチ, マルチプロセス, nablarch_batch_multiple_process*
+<details>
+<summary>keywords</summary>
+
+常駐バッチ, マルチプロセス, nablarch_batch_multiple_process
+
+</details>

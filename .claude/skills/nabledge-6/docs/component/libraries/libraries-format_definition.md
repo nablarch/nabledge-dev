@@ -27,7 +27,12 @@ text-encoding: "ms932"  # 文字コードはms932
 record-length:  120     # 各業の長さは120バイト
 ```
 
-*キーワード: 文字コード, UTF-8, リテラル表記, コメント, フォーマット定義ファイル記法, 文字列リテラル, 真偽値, 10進整数*
+<details>
+<summary>keywords</summary>
+
+文字コード, UTF-8, リテラル表記, コメント, フォーマット定義ファイル記法, 文字列リテラル, 真偽値, 10進整数
+
+</details>
 
 ## フォーマット定義ファイルの構造
 
@@ -36,7 +41,12 @@ record-length:  120     # 各業の長さは120バイト
 - **ディレクティブ宣言部**: データ形式（固定長やJSONなど）やエンコーディングなどの共通設定を定義する。
 - **レコードフォーマット定義部**: レコード内のフィールド定義、フィールドごとのデータ型やデータ変換ルールを定義する。
 
-*キーワード: ディレクティブ宣言部, レコードフォーマット定義部, フォーマット定義ファイル構造*
+<details>
+<summary>keywords</summary>
+
+ディレクティブ宣言部, レコードフォーマット定義部, フォーマット定義ファイル構造
+
+</details>
 
 ## 共通で使用可能なディレクティブ一覧
 
@@ -48,7 +58,12 @@ record-length:  120     # 各業の長さは120バイト
 | text-encoding | 必須 | 文字列フィールドの読み書き時のエンコーディング。JSONの場合はUTF-8/UTF-16(BE or LE)/UTF-32(BE or LE)のみ指定可能。XMLの場合はXML宣言部のエンコーディングが優先される |
 | record-separator | 任意 | レコード終端文字（改行文字）。Variableの場合は必須。JSON/XMLでは使用しない |
 
-*キーワード: file-type, text-encoding, record-separator, 共通ディレクティブ, ディレクティブ定義, ディレクティブ宣言部*
+<details>
+<summary>keywords</summary>
+
+file-type, text-encoding, record-separator, 共通ディレクティブ, ディレクティブ定義, ディレクティブ宣言部
+
+</details>
 
 ## Fixed(固定長)形式で指定可能なディレクティブ一覧
 
@@ -81,7 +96,12 @@ fixed-sign-position:            true     # 符号は先頭に
 required-plus-sign:             false    # 正符号は付加しない
 ```
 
-*キーワード: record-length, positive-zone-sign-nibble, negative-zone-sign-nibble, positive-pack-sign-nibble, negative-pack-sign-nibble, required-decimal-point, fixed-sign-position, required-plus-sign, 固定長, Fixed, ゾーン数値, パック数値, 符号付き数値*
+<details>
+<summary>keywords</summary>
+
+record-length, positive-zone-sign-nibble, negative-zone-sign-nibble, positive-pack-sign-nibble, negative-pack-sign-nibble, required-decimal-point, fixed-sign-position, required-plus-sign, 固定長, Fixed, ゾーン数値, パック数値, 符号付き数値
+
+</details>
 
 ## Variable(可変長)形式で指定可能なディレクティブ一覧
 
@@ -110,7 +130,12 @@ requires-title:             false       # タイトルレコードは無し
 max-record-length:          1000        # このcsvのレコードには最大でも1000文字まで
 ```
 
-*キーワード: field-separator, quoting-delimiter, ignore-blank-lines, requires-title, title-record-type-name, max-record-length, 可変長, Variable, CSV, TSV, タイトルレコード, RFC4180*
+<details>
+<summary>keywords</summary>
+
+field-separator, quoting-delimiter, ignore-blank-lines, requires-title, title-record-type-name, max-record-length, 可変長, Variable, CSV, TSV, タイトルレコード, RFC4180
+
+</details>
 
 ## JSON形式で指定可能なディレクティブ一覧
 
@@ -121,7 +146,12 @@ file-type:      "JSON"      # jsonフォーマット
 text-encoding:  "utf-8"     # 文字列型フィールドの文字エンコーディング
 ```
 
-*キーワード: JSON, JSON形式, JSONディレクティブ*
+<details>
+<summary>keywords</summary>
+
+JSON, JSON形式, JSONディレクティブ
+
+</details>
 
 ## XML形式で指定可能なディレクティブ一覧
 
@@ -132,7 +162,12 @@ file-type:      "XML"       # xmlフォーマット
 text-encoding:  "utf-8"     # 文字列型フィールドの文字エンコーディング
 ```
 
-*キーワード: XML, XML形式, XMLディレクティブ*
+<details>
+<summary>keywords</summary>
+
+XML, XML形式, XMLディレクティブ
+
+</details>
 
 ## フィールド定義
 
@@ -207,7 +242,12 @@ address [1..*]    # 1以上
 }
 ```
 
-*キーワード: フィールド定義, フィールド開始位置, フィールド名, フィールドタイプ, フィールドコンバータ, 多重度, OBフィールドタイプ混在禁止, レコードタイプ名, java.util.Map, 数字のみフィールド名禁止, XML属性値定義, JSON多重度, XML多重度, ?プレフィックス, filler項目, 入力対象除外, 項目通番, 要素通番*
+<details>
+<summary>keywords</summary>
+
+フィールド定義, フィールド開始位置, フィールド名, フィールドタイプ, フィールドコンバータ, 多重度, OBフィールドタイプ混在禁止, レコードタイプ名, java.util.Map, 数字のみフィールド名禁止, XML属性値定義, JSON多重度, XML多重度, ?プレフィックス, filler項目, 入力対象除外, 項目通番, 要素通番
+
+</details>
 
 ## マルチフォーマット形式のレコードを定義する
 
@@ -240,7 +280,12 @@ dataKbn = "2"         # dataKbnが"2"の場合データレコード
 
 > **補足**: JSON及びXMLデータ形式にはレコードの概念が存在しないため、マルチフォーマット形式のフォーマット定義には対応していない。
 
-*キーワード: マルチフォーマット, Classifier, レコード識別, レコード判定条件, 固定長マルチレコード, 複数レコードフォーマット, dataKbn*
+<details>
+<summary>keywords</summary>
+
+マルチフォーマット, Classifier, レコード識別, レコード判定条件, 固定長マルチレコード, 複数レコードフォーマット, dataKbn
+
+</details>
 
 ## フィールドタイプ一覧
 
@@ -324,7 +369,12 @@ XML入出力データ:
 3 address N
 ```
 
-*キーワード: 固定長フィールドタイプ, 可変長フィールドタイプ, JSONフィールドタイプ, XMLフィールドタイプ, ゾーン数値, パック数値, バイナリ列, 数値文字列, FixedLengthConvertorSetting, VariableLengthConvertorSetting, InvalidDataFormatException, SignedNumberStringDecimal, convertEmptyToNull, フォーマット定義フィールドタイプ, X, N, XN, Z, SZ, P, SP, B, X9, SX9, BL, OB*
+<details>
+<summary>keywords</summary>
+
+固定長フィールドタイプ, 可変長フィールドタイプ, JSONフィールドタイプ, XMLフィールドタイプ, ゾーン数値, パック数値, バイナリ列, 数値文字列, FixedLengthConvertorSetting, VariableLengthConvertorSetting, InvalidDataFormatException, SignedNumberStringDecimal, convertEmptyToNull, フォーマット定義フィールドタイプ, X, N, XN, Z, SZ, P, SP, B, X9, SX9, BL, OB
+
+</details>
 
 ## フィールドコンバータ一覧
 
@@ -337,7 +387,12 @@ XML入出力データ:
 | signed_number | String <-> BigDecimal | 符号付きの数字文字列をBigDecimalに変換する。符号が許可される点以外は :ref:`numberコンバータ <data_format-number_convertor>` と同じ仕様。 |
 | replacement | 型変換なし | 入出力とも置換対象文字を変換先の文字に置換して返す。引数: 置き換えタイプ名（任意）。詳細は :ref:`data_format-replacement` を参照。 |
 
-*キーワード: pad, encoding, number, signed_number, replacement, リテラル値, デフォルト値, BigDecimal, フィールドコンバータ, パディング, トリム, 文字エンコーディング, 数値変換, 文字置換*
+<details>
+<summary>keywords</summary>
+
+pad, encoding, number, signed_number, replacement, リテラル値, デフォルト値, BigDecimal, フィールドコンバータ, パディング, トリム, 文字エンコーディング, 数値変換, 文字置換
+
+</details>
 
 ## 項目定義の省略について
 
@@ -345,4 +400,9 @@ XML入出力データ:
 
 **JSON・XMLデータ**: フォーマット定義ファイルに定義されていない項目は読み取り対象外となる。実際のデータに存在していても、アプリケーションで不要であれば定義しなくてよい。
 
-*キーワード: 項目定義省略, 固定長, 可変長, JSON, XML, フォーマット定義, 項目定義, 読み取り対象外*
+<details>
+<summary>keywords</summary>
+
+項目定義省略, 固定長, 可変長, JSON, XML, フォーマット定義, 項目定義, 読み取り対象外
+
+</details>

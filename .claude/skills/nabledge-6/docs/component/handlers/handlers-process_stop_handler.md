@@ -16,7 +16,12 @@
 
 > **重要**: 本ハンドラはプロセス停止フラグの初期化を行わない。再度同じプロセスを実行する際には、予めプロセス停止フラグを初期化すること。
 
-*キーワード: BasicProcessStopHandler, nablarch.fw.handler.BasicProcessStopHandler, プロセス停止制御, ループ中断, プロセス停止フラグ, 都度起動バッチ*
+<details>
+<summary>keywords</summary>
+
+BasicProcessStopHandler, nablarch.fw.handler.BasicProcessStopHandler, プロセス停止制御, ループ中断, プロセス停止フラグ, 都度起動バッチ
+
+</details>
 
 ## モジュール一覧
 
@@ -33,13 +38,23 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-standalone, nablarch-fw-batch, モジュール依存関係*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, nablarch-fw-batch, モジュール依存関係
+
+</details>
 
 ## 制約
 
 :ref:`thread_context_handler` より後ろに設定すること。本ハンドラはスレッドコンテキスト上のリクエストIDをもとに停止処理を行うため、:ref:`thread_context_handler` より後ろに配置する必要がある。
 
-*キーワード: ThreadContextHandler, thread_context_handler, スレッドコンテキスト, リクエストID, ハンドラ設定順序*
+<details>
+<summary>keywords</summary>
+
+ThreadContextHandler, thread_context_handler, スレッドコンテキスト, リクエストID, ハンドラ設定順序
+
+</details>
 
 ## プロセス停止制御を行うための設定
 
@@ -76,4 +91,9 @@
 </component>
 ```
 
-*キーワード: dbTransactionManager, tableName, requestIdColumnName, processHaltColumnName, checkInterval, exitCode, BasicApplicationInitializer, プロセス停止設定, 都度起動バッチ, 常駐バッチ, サブスレッド, メインスレッド*
+<details>
+<summary>keywords</summary>
+
+dbTransactionManager, tableName, requestIdColumnName, processHaltColumnName, checkInterval, exitCode, BasicApplicationInitializer, プロセス停止設定, 都度起動バッチ, 常駐バッチ, サブスレッド, メインスレッド
+
+</details>

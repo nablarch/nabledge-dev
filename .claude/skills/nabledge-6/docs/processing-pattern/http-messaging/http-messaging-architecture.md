@@ -10,7 +10,12 @@ HTTPメッセージングでは、外部(ブラウザや外部システムなど
 
 Nablarchウェブアプリケーションと同じ構成となる。詳細は、:ref:`web_application-structure` を参照。
 
-*キーワード: HTTPメッセージング, RESTfulウェブサービス推奨, ウェブサービス構成, web_application-structure, Nablarchウェブアプリケーション, 外部システム, httpメッセージ処理, ウェブサービス構築*
+<details>
+<summary>keywords</summary>
+
+HTTPメッセージング, RESTfulウェブサービス推奨, ウェブサービス構成, web_application-structure, Nablarchウェブアプリケーション, 外部システム, httpメッセージ処理, ウェブサービス構築
+
+</details>
 
 ## HTTPメッセージングの処理の流れ
 
@@ -21,7 +26,12 @@ Nablarchウェブアプリケーションと同じ構成となる。詳細は、
 5. アクションクラスは、処理結果を示す `ResponseMessage` を作成し返却する。
 6. :ref:`http_messaging_response_building_handler` が、`ResponseMessage` をレスポンス(jsonやxmlなど)に変換し、クライアントへ応答を返す。
 
-*キーワード: HTTPメッセージング処理フロー, ハンドラキュー, DispatchHandler, ResponseMessage, リクエスト処理, WebFrontController*
+<details>
+<summary>keywords</summary>
+
+HTTPメッセージング処理フロー, ハンドラキュー, DispatchHandler, ResponseMessage, リクエスト処理, WebFrontController
+
+</details>
 
 ## HTTPメッセージングで使用するハンドラ
 
@@ -49,7 +59,12 @@ Nablarchウェブアプリケーションと同じ構成となる。詳細は、
 - :ref:`thread_context_clear_handler`
 - :ref:`http_access_log_handler`
 
-*キーワード: ハンドラキュー, http_response_handler, http_messaging_request_parsing_handler, http_messaging_response_building_handler, message_resend_handler, service_availability, permission_check_handler, database_connection_management_handler, transaction_management_handler, global_error_handler, http_messaging_error_handler, http_request_java_package_mapping, thread_context_handler, thread_context_clear_handler, http_access_log_handler*
+<details>
+<summary>keywords</summary>
+
+ハンドラキュー, http_response_handler, http_messaging_request_parsing_handler, http_messaging_response_building_handler, message_resend_handler, service_availability, permission_check_handler, database_connection_management_handler, transaction_management_handler, global_error_handler, http_messaging_error_handler, http_request_java_package_mapping, thread_context_handler, thread_context_clear_handler, http_access_log_handler
+
+</details>
 
 ## HTTPメッセージングの最小ハンドラ構成
 
@@ -69,10 +84,20 @@ Nablarchウェブアプリケーションと同じ構成となる。詳細は、
 | 10 | :ref:`transaction_management_handler` | トランザクション開始 | トランザクションコミット | トランザクションロールバック |
 | 11 | :ref:`http_messaging_response_building_handler` | — | 業務アクションが生成したメッセージからhttp用レスポンス生成 | 後続ハンドラで発生した例外からエラー用httpレスポンス生成 |
 
-*キーワード: 最小ハンドラ構成, thread_context_clear_handler, global_error_handler, http_response_handler, thread_context_handler, http_messaging_error_handler, request_path_java_package_mapping, http_messaging_request_parsing_handler, RequestMessage, database_connection_management_handler, http_messaging_response_building_handler, transaction_management_handler*
+<details>
+<summary>keywords</summary>
+
+最小ハンドラ構成, thread_context_clear_handler, global_error_handler, http_response_handler, thread_context_handler, http_messaging_error_handler, request_path_java_package_mapping, http_messaging_request_parsing_handler, RequestMessage, database_connection_management_handler, http_messaging_response_building_handler, transaction_management_handler
+
+</details>
 
 ## HTTPメッセージングで使用するアクション
 
 **クラス**: `MessagingAction` — 同期応答メッセージング用アクションのテンプレートクラス
 
-*キーワード: MessagingAction, nablarch.fw.messaging.action.MessagingAction, 同期応答メッセージング, アクションクラス*
+<details>
+<summary>keywords</summary>
+
+MessagingAction, nablarch.fw.messaging.action.MessagingAction, 同期応答メッセージング, アクションクラス
+
+</details>

@@ -35,4 +35,9 @@
 
 LettuceRedisClientの設定については :ref:`redisstore_redis_client_config_client_classes` を参照。
 
-*キーワード: RedisHealthChecker, LettuceRedisClient, HealthChecker, HealthCheckEndpointHandler, healthCheckers, client, key, Redisヘルスチェック, ヘルスチェック設定, Lettuceアダプタ*
+<details>
+<summary>keywords</summary>
+
+RedisHealthChecker, LettuceRedisClient, HealthChecker, HealthCheckEndpointHandler, healthCheckers, client, key, Redisヘルスチェック, ヘルスチェック設定, Lettuceアダプタ
+
+</details>

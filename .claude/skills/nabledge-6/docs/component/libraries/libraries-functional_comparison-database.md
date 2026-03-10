@@ -29,4 +29,9 @@
 [4] 任意の処理が必要となる場合は、ユニバーサルDAOを呼び出す側で処理を行うことで対応する。
 [5] ユニバーサルDAOでは、楽観的ロックのみサポートする。悲観的ロックやJakarta Persistenceで定義されている検索時のロックモードの指定などはサポートしない。悲観的ロックは `select for update` などを使用することで実現できる。
 
-*キーワード: ユニバーサルDAO, Jakarta Persistence, 機能比較, CRUD, 遅延ロード, バッチ実行, ページング, 排他制御, 楽観ロック, 悲観ロック, サロゲートキー, 動的SQL組み立て, Jakarta Bean Validation*
+<details>
+<summary>keywords</summary>
+
+ユニバーサルDAO, Jakarta Persistence, 機能比較, CRUD, 遅延ロード, バッチ実行, ページング, 排他制御, 楽観ロック, 悲観ロック, サロゲートキー, 動的SQL組み立て, Jakarta Bean Validation
+
+</details>

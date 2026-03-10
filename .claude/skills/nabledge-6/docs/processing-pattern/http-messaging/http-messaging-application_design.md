@@ -14,4 +14,9 @@
 
 **エンティティクラス**: テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。
 
-*キーワード: RequestMessage, ResponseMessage, nablarch.fw.messaging.RequestMessage, nablarch.fw.messaging.ResponseMessage, アクションクラス, フォームクラス, エンティティクラス, HTTPメッセージング責務配置, バリデーション*
+<details>
+<summary>keywords</summary>
+
+RequestMessage, ResponseMessage, nablarch.fw.messaging.RequestMessage, nablarch.fw.messaging.ResponseMessage, アクションクラス, フォームクラス, エンティティクラス, HTTPメッセージング責務配置, バリデーション
+
+</details>

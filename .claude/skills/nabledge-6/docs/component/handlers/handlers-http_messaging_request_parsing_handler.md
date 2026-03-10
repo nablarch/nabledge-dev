@@ -6,7 +6,12 @@
 
 **クラス**: `nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler`
 
-*キーワード: HttpMessagingRequestParsingHandler, nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler, ハンドラクラス*
+<details>
+<summary>keywords</summary>
+
+HttpMessagingRequestParsingHandler, nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler, ハンドラクラス
+
+</details>
 
 ## モジュール一覧
 
@@ -18,14 +23,24 @@
 </dependency>
 ```
 
-*キーワード: nablarch-fw-messaging-http, モジュール, Maven依存関係, com.nablarch.framework*
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-messaging-http, モジュール, Maven依存関係, com.nablarch.framework
+
+</details>
 
 ## 制約
 
 - :ref:`http_response_handler` より後ろに配置すること: 変換処理に失敗した場合にステータスコードを指定したレスポンスをクライアントに返すため。
 - :ref:`thread_context_handler` より後ろに配置すること: スレッドコンテキスト上のリクエストIDをもとに `DataRecordFormatter` を取得するため。
 
-*キーワード: http_response_handler, thread_context_handler, DataRecordFormatter, ハンドラ配置順序, 制約*
+<details>
+<summary>keywords</summary>
+
+http_response_handler, thread_context_handler, DataRecordFormatter, ハンドラ配置順序, 制約
+
+</details>
 
 ## HTTPリクエストを要求電文に変換する
 
@@ -81,7 +96,12 @@
 | `MessagingException` | INFO | 400 | リクエストボディが不正 |
 | `InvalidDataFormatException` | INFO | 400 | リクエストボディのフォーマットが不正 |
 
-*キーワード: HttpRequest, RequestMessage, X-Message-Id, X-Correlation-Id, StructuredFwHeaderDefinition, StandardFwHeaderDefinition, RequestEntityTooLarge, MessagingException, InvalidDataFormatException, HTTPリクエスト変換, 要求電文, フレームワーク制御ヘッダ, リクエストボディ変換, フォーマット定義, fwHeaderKeys*
+<details>
+<summary>keywords</summary>
+
+HttpRequest, RequestMessage, X-Message-Id, X-Correlation-Id, StructuredFwHeaderDefinition, StandardFwHeaderDefinition, RequestEntityTooLarge, MessagingException, InvalidDataFormatException, HTTPリクエスト変換, 要求電文, フレームワーク制御ヘッダ, リクエストボディ変換, フォーマット定義, fwHeaderKeys
+
+</details>
 
 ## 巨大なサイズのリクエストを防ぐ
 
@@ -98,4 +118,9 @@
 </component>
 ```
 
-*キーワード: bodyLengthLimit, サイズ制限, リクエストボディ上限, 413, ディスクリソース枯渇防止*
+<details>
+<summary>keywords</summary>
+
+bodyLengthLimit, サイズ制限, リクエストボディ上限, 413, ディスクリソース枯渇防止
+
+</details>

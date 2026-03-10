@@ -11,7 +11,12 @@
 3. コンテナイメージの作成
 4. コンテナイメージの実行
 
-*キーワード: コンテナ用ウェブプロジェクト生成, Dockerコンテナ, 初期セットアップ, コンテナイメージ作成*
+<details>
+<summary>keywords</summary>
+
+コンテナ用ウェブプロジェクト生成, Dockerコンテナ, 初期セットアップ, コンテナイメージ作成
+
+</details>
 
 ## 生成するプロジェクトの概要
 
@@ -25,7 +30,12 @@
 
 他のプロジェクトとの関係およびディレクトリ構成は [../MavenModuleStructures/index](blank-project-MavenModuleStructures.md) を参照。
 
-*キーワード: H2 Database Engine, ルーティングアダプタ, Mavenプロジェクト, 単一プロジェクト構成, router_adaptor, about_maven_parent_module*
+<details>
+<summary>keywords</summary>
+
+H2 Database Engine, ルーティングアダプタ, Mavenプロジェクト, 単一プロジェクト構成, router_adaptor, about_maven_parent_module
+
+</details>
 
 ## ブランクプロジェクト作成
 
@@ -59,7 +69,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
-*キーワード: nablarch-container-web-archetype, Maven Archetype Plugin, archetypeVersion, groupId, artifactId, ブランクプロジェクト生成, mvn archetype:generate*
+<details>
+<summary>keywords</summary>
+
+nablarch-container-web-archetype, Maven Archetype Plugin, archetypeVersion, groupId, artifactId, ブランクプロジェクト生成, mvn archetype:generate
+
+</details>
 
 ## 疎通確認
 
@@ -67,7 +82,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **注意**: アーティファクトIDが `myapp-container-web` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-*キーワード: 疎通確認, firstStepWebStartupTest, コンテナ用ウェブプロジェクト動作確認*
+<details>
+<summary>keywords</summary>
+
+疎通確認, firstStepWebStartupTest, コンテナ用ウェブプロジェクト動作確認
+
+</details>
 
 ## コンテナイメージを作成する
 
@@ -103,7 +123,12 @@ myapp-container-web     latest      dd60cbdc7722   50 years ago   449MB
 
 > **補足**: タグが指すイメージが変更されると検証時と異なるバージョンが選択される可能性がある。検証完了後はダイジェストで指定することを推奨する。ダイジェスト指定例: `<jib.from.image>tomcat@sha256:28fde3a9cf9ff62b250cd2ce5b8981a75eedbe6a37a9954c8432f6f52483cfb8</jib.from.image>`
 
-*キーワード: Jib, jib:dockerBuild, jib.from.image, Dockerコンテナイメージ作成, Tomcat, mvn package jib:dockerBuild, docker image ls, ローカルリポジトリ*
+<details>
+<summary>keywords</summary>
+
+Jib, jib:dockerBuild, jib.from.image, Dockerコンテナイメージ作成, Tomcat, mvn package jib:dockerBuild, docker image ls, ローカルリポジトリ
+
+</details>
 
 ## コンテナイメージを実行する
 
@@ -130,7 +155,12 @@ docker stop myapp-container-web
 docker rm myapp-container-web
 ```
 
-*キーワード: docker run, コンテナ実行, ボリューム指定, Docker Toolbox, SAMPLE.h2.db, Docker Desktop*
+<details>
+<summary>keywords</summary>
+
+docker run, コンテナ実行, ボリューム指定, Docker Toolbox, SAMPLE.h2.db, Docker Desktop
+
+</details>
 
 ## データベースに関する設定を行う
 
@@ -138,10 +168,20 @@ docker rm myapp-container-web
 
 ER図からのDDL生成・実行、Entityクラスの自動生成にはgsp-dba-maven-pluginの初期設定と実行が必要。詳細は :ref:`gsp-maven-plugin` を参照。
 
-*キーワード: customize-db, gsp-maven-plugin, gsp-dba-maven-plugin, H2 Database Engine, RDBMS変更*
+<details>
+<summary>keywords</summary>
+
+customize-db, gsp-maven-plugin, gsp-dba-maven-plugin, H2 Database Engine, RDBMS変更
+
+</details>
 
 ## 補足
 
 H2のデータの確認方法やブランクプロジェクトに組み込まれているツールの詳細は [../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照。
 
-*キーワード: H2データ確認, ブランクプロジェクトツール, firststep_complement*
+<details>
+<summary>keywords</summary>
+
+H2データ確認, ブランクプロジェクトツール, firststep_complement
+
+</details>

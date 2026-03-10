@@ -23,4 +23,9 @@ public HttpResponse delete(HttpRequest request, ExecutionContext context) {
 
 > **補足**: :ref:`universal_dao` は主キーを条件とする削除のみ提供。主キー以外を条件に削除する場合は別途SQLを作成して :ref:`SQLIDを指定してSQLを実行する<database-execute_sqlid>` で実行する。
 
-*キーワード: UniversalDao, SessionUtil, HttpRequest, ExecutionContext, HttpResponse, Project, @OnDoubleSubmission, ProjectAction, プロジェクト削除, 主キー削除, 二重サブミット防止, UniversalDao#delete*
+<details>
+<summary>keywords</summary>
+
+UniversalDao, SessionUtil, HttpRequest, ExecutionContext, HttpResponse, Project, @OnDoubleSubmission, ProjectAction, プロジェクト削除, 主キー削除, 二重サブミット防止, UniversalDao#delete
+
+</details>

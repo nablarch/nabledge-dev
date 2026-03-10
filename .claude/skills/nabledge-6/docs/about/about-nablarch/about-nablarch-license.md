@@ -8,4 +8,9 @@
 
 [LICENSE.txt](../../knowledge/about/about-nablarch/assets/about-nablarch-license/LICENSE.txt)
 
-*キーワード: Apache License 2.0, ライセンス, Nablarchライセンス, LICENSE.txt*
+<details>
+<summary>keywords</summary>
+
+Apache License 2.0, ライセンス, Nablarchライセンス, LICENSE.txt
+
+</details>

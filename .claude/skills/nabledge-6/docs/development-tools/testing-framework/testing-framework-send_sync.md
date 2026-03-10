@@ -25,7 +25,12 @@
 1. テストデータをExcelに記載でき、外部インターフェース設計書のフォーマット定義に沿って記述できる。同期応答メッセージ送信処理用のテストデータ書式が提供されている。
 2. メッセージ同期送信処理のテストコードを記述する必要がない。要求電文の期待値と応答電文をExcelに記載すると、フレームワークが自動的にアサートと応答電文返却を行う。テスト準備・実行・結果確認が可能なスーパークラスが提供されており、コーディングほぼ不要でテスト実行可能。
 
-*キーワード: 同期応答メッセージ送信処理, リクエスト単体テスト, 要求電文, 応答電文, キュー, リクエストID, 自動テストフレームワーク, Nablarch Application Framework, メッセージ同期送信, メッセージ同期送信処理*
+<details>
+<summary>keywords</summary>
+
+同期応答メッセージ送信処理, リクエスト単体テスト, 要求電文, 応答電文, キュー, リクエストID, 自動テストフレームワーク, Nablarch Application Framework, メッセージ同期送信, メッセージ同期送信処理
+
+</details>
 
 ## テストの実施方法
 
@@ -33,7 +38,12 @@
 
 本項では、同期応答メッセージ送信処理固有の実施方法についてのみ解説する。
 
-*キーワード: テスト実施方法, 同期応答メッセージ, ウェブアプリケーション, バッチ処理*
+<details>
+<summary>keywords</summary>
+
+テスト実施方法, 同期応答メッセージ, ウェブアプリケーション, バッチ処理
+
+</details>
 
 ## テストデータの書き方
 
@@ -41,7 +51,12 @@
 
 テストデータの記述方法詳細は :ref:`how_to_write_excel` を参照。
 
-*キーワード: テストデータ, Excelファイル, テストソースコード, ディレクトリ*
+<details>
+<summary>keywords</summary>
+
+テストデータ, Excelファイル, テストソースコード, ディレクトリ
+
+</details>
 
 ## 要求電文の期待値および応答電文の準備
 
@@ -64,7 +79,12 @@
 
 > **補足**: Nablarch標準の同期応答メッセージ送信機能では、要求電文と応答電文のヘッダ部は共通フォーマットを使用するため、テストデータのヘッダ部フォーマット定義はリクエスト単位で統一すること。ボディ部は要求電文と応答電文で異なるフォーマットを定義できる。
 
-*キーワード: expectedMessage, responseMessage, グループID, 要求電文期待値, 応答電文, テストケース, リクエストID*
+<details>
+<summary>keywords</summary>
+
+expectedMessage, responseMessage, グループID, 要求電文期待値, 応答電文, テストケース, リクエストID
+
+</details>
 
 ## 電文表の書式
 
@@ -102,7 +122,12 @@
 
 > **補足**: 要求電文のヘッダの期待値および応答電文の本文・ヘッダについても、識別子を除く部分については要求電文の本文の期待値と同様の記載方法となる。
 
-*キーワード: 電文表, 識別子, EXPECTED_REQUEST_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, RESPONSE_BODY_MESSAGES, ディレクティブ, BasicDataTypeMapping, フィールド定義, データ型*
+<details>
+<summary>keywords</summary>
+
+電文表, 識別子, EXPECTED_REQUEST_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, RESPONSE_BODY_MESSAGES, ディレクティブ, BasicDataTypeMapping, フィールド定義, データ型
+
+</details>
 
 ## 複数回送信テスト
 
@@ -123,7 +148,12 @@
 
 > **補足**: 送信対象のリクエストIDが複数存在する場合、送信順のテストは不可能。異なるリクエストIDの電文がどの順番で送信されてもテストは成功する。
 
-*キーワード: 複数レコード, ヘッダ重複, 複数回送信, ヘッダとボディ交互, 送信順, tips_groupId, auto-test-framework_multi-datatype*
+<details>
+<summary>keywords</summary>
+
+複数レコード, ヘッダ重複, 複数回送信, ヘッダとボディ交互, 送信順, tips_groupId, auto-test-framework_multi-datatype
+
+</details>
 
 ## 障害系のテスト
 
@@ -140,7 +170,12 @@
 
 > **補足**: 業務アクション内で `MessagingException` を明示的に制御していない場合、個別のリクエスト単体テストで障害系テストを行う必要はない。
 
-*キーワード: 障害系テスト, errorMode, タイムアウト, MessageSendSyncTimeoutException, MessagingException, errorMode:timeout, errorMode:msgException, タイムアウトエラー, メッセージ送受信エラー*
+<details>
+<summary>keywords</summary>
+
+障害系テスト, errorMode, タイムアウト, MessageSendSyncTimeoutException, MessagingException, errorMode:timeout, errorMode:msgException, タイムアウトエラー, メッセージ送受信エラー
+
+</details>
 
 ## テスト結果検証
 
@@ -148,7 +183,12 @@
 - 要求電文の内容の検証
 - 要求電文の送信件数の検証
 
-*キーワード: テスト結果検証, 要求電文検証, 送信件数検証*
+<details>
+<summary>keywords</summary>
+
+テスト結果検証, 要求電文検証, 送信件数検証
+
+</details>
 
 ## モックアップクラスを使用した取引単体テストの実施方法
 
@@ -249,7 +289,12 @@ loggers.MESSAGING_MAP.level=DEBUG
 loggers.MESSAGING_MAP.writerNames=stdout,appFile
 ```
 
-*キーワード: Excelファイル設定, 応答電文フォーマット, リクエストID, message シート, send_sync_test_data_path, MockMessagingProvider, EXPECTED_REQUEST_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, RESPONSE_BODY_MESSAGES, errorMode:timeout, errorMode:msgException, MessagingException, Excelファイル再読み込み, 障害系テスト, 要求電文ログ出力, BasicDataTypeMapping, FileLogWriter, BasicLogFormatter*
+<details>
+<summary>keywords</summary>
+
+Excelファイル設定, 応答電文フォーマット, リクエストID, message シート, send_sync_test_data_path, MockMessagingProvider, EXPECTED_REQUEST_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, RESPONSE_BODY_MESSAGES, errorMode:timeout, errorMode:msgException, MessagingException, Excelファイル再読み込み, 障害系テスト, 要求電文ログ出力, BasicDataTypeMapping, FileLogWriter, BasicLogFormatter
+
+</details>
 
 ## フレームワークで使用するクラスの設定
 
@@ -339,4 +384,9 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
 </dependency>
 ```
 
-*キーワード: MockMessagingProvider, BasicTestDataParser, PoiXlsReader, nablarch-testing, sendSyncTestData, filePathSetting, コンポーネント設定, pom.xml, テストプロファイル, NullInterpreter, QuotationTrimmer, CompositeInterpreter, BasicJapaneseCharacterInterpreter, FilePathSetting*
+<details>
+<summary>keywords</summary>
+
+MockMessagingProvider, BasicTestDataParser, PoiXlsReader, nablarch-testing, sendSyncTestData, filePathSetting, コンポーネント設定, pom.xml, テストプロファイル, NullInterpreter, QuotationTrimmer, CompositeInterpreter, BasicJapaneseCharacterInterpreter, FilePathSetting
+
+</details>

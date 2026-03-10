@@ -14,4 +14,9 @@ Nablarchでは機能追加要望・改善要望・不具合報告を[JIRA](https
 4. 課題一覧画面の青い作成ボタン（画面幅が狭い場合は"+"ボタン）を押下して課題作成ウィンドウを開く
 5. 課題を作成
 
-*キーワード: JIRAへの課題起票, 機能追加要望, 改善要望, 不具合報告, Atlassianアカウント, Nablarch JIRA参加*
+<details>
+<summary>keywords</summary>
+
+JIRAへの課題起票, 機能追加要望, 改善要望, 不具合報告, Atlassianアカウント, Nablarch JIRA参加
+
+</details>

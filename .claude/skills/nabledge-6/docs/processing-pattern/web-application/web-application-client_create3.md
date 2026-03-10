@@ -34,4 +34,9 @@ public HttpResponse input(HttpRequest request, ExecutionContext context) {
 
 - 初期表示処理で :ref:`session_store` へ登録したオブジェクトを削除する（戻るボタンを押下せずにヘッダメニューから直接登録画面に遷移された場合等を考慮）
 
-*キーワード: ClientAction, SessionUtil, BeanUtil, nablarch.core.beans.BeanUtil, HttpResponse, HttpRequest, ExecutionContext, Client, ClientForm, EntityList, Industry, UniversalDao, 確認画面から戻る, セッションストア, 内部フォーワード, フォーム変換, 登録画面戻る*
+<details>
+<summary>keywords</summary>
+
+ClientAction, SessionUtil, BeanUtil, nablarch.core.beans.BeanUtil, HttpResponse, HttpRequest, ExecutionContext, Client, ClientForm, EntityList, Industry, UniversalDao, 確認画面から戻る, セッションストア, 内部フォーワード, フォーム変換, 登録画面戻る
+
+</details>

@@ -10,7 +10,12 @@
 
 ![メール送信処理の処理概要と業務アプリケーションのテスト範囲](../../knowledge/development-tools/testing-framework/assets/testing-framework-mail/mail_overview.jpg)
 
-*キーワード: メール送信テスト範囲, リクエスト単体テスト, メール送信要求API, データベース格納確認*
+<details>
+<summary>keywords</summary>
+
+メール送信テスト範囲, リクエスト単体テスト, メール送信要求API, データベース格納確認
+
+</details>
 
 ## テストの実施方法
 
@@ -18,4 +23,9 @@
 
 期待する上記3テーブルの状態をExcelシートに記述する。
 
-*キーワード: メール送信要求テーブル, メール送信先テーブル, メール添付ファイルテーブル, Excelシート, テスト実施方法, テーブル格納確認*
+<details>
+<summary>keywords</summary>
+
+メール送信要求テーブル, メール送信先テーブル, メール添付ファイルテーブル, Excelシート, テスト実施方法, テーブル格納確認
+
+</details>

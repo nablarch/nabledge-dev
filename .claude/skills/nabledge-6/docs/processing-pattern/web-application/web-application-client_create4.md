@@ -84,4 +84,9 @@ public HttpResponse complete(HttpRequest request, ExecutionContext context) {
 </html>
 ```
 
-*キーワード: UniversalDao, SessionUtil, HttpRequest, ExecutionContext, HttpResponse, @OnDoubleSubmission, OnDoubleSubmission, allowDoubleSubmission, forConfirmationPage, Client, データベース登録, 二重サブミット防止, セッションストア, 303リダイレクト, 登録完了画面*
+<details>
+<summary>keywords</summary>
+
+UniversalDao, SessionUtil, HttpRequest, ExecutionContext, HttpResponse, @OnDoubleSubmission, OnDoubleSubmission, allowDoubleSubmission, forConfirmationPage, Client, データベース登録, 二重サブミット防止, セッションストア, 303リダイレクト, 登録完了画面
+
+</details>

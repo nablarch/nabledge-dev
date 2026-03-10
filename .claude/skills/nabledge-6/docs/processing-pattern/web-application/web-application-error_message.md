@@ -38,4 +38,9 @@
 </ul>
 ```
 
-*キーワード: ErrorMessages, nablarch.fw.web.message.ErrorMessages, hasError, getMessage, getGlobalMessages, getAllMessages, バリデーションエラーメッセージ表示, Thymeleaf, リクエストスコープ, グローバルメッセージ, プロパティエラーメッセージ*
+<details>
+<summary>keywords</summary>
+
+ErrorMessages, nablarch.fw.web.message.ErrorMessages, hasError, getMessage, getGlobalMessages, getAllMessages, バリデーションエラーメッセージ表示, Thymeleaf, リクエストスコープ, グローバルメッセージ, プロパティエラーメッセージ
+
+</details>
