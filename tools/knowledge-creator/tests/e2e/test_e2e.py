@@ -56,10 +56,10 @@ class TestContext(Context):
         return f"{self.log_dir}/reports"
 
 
-def _make_ctx(run_id=None, max_rounds=2):
+def _make_ctx(version="6", run_id=None, max_rounds=2):
     if run_id is None:
         run_id = f"e2e-{uuid.uuid4().hex[:8]}"
-    ctx = TestContext(version="6", repo=REPO, concurrency=4, run_id=run_id)
+    ctx = TestContext(version=version, repo=REPO, concurrency=4, run_id=run_id)
     ctx.max_rounds = max_rounds
     return ctx
 
@@ -107,9 +107,10 @@ def _copy_state(src_ctx, dst_ctx):
 
 
 def _count_json_files(directory):
-    """Count all .json files recursively in a directory."""
+    """Count all .json files recursively in a directory, excluding assets/ subdirectories."""
     count = 0
-    for root, _, files in os.walk(directory):
+    for root, dirs, files in os.walk(directory):
+        dirs[:] = [d for d in dirs if d != "assets"]
         count += sum(1 for f in files if f.endswith(".json"))
     return count
 
@@ -355,9 +356,8 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
 # Session fixtures
 # ============================================================
 
-@pytest.fixture(scope="session")
-def expected():
-    """Generate all expected values from generate_expected.py."""
+def _build_expected(repo, version):
+    """Build expected values for a given version."""
     from generate_expected import (
         list_sources,
         classify_all,
@@ -368,8 +368,8 @@ def expected():
     )
     import generate_expected as ge
 
-    sources = list_sources(REPO, "6")
-    catalog_entries = classify_all(sources, REPO)
+    sources = list_sources(repo, version)
+    catalog_entries = classify_all(sources, repo, version)
 
     ids = [e["id"] for e in catalog_entries]
     N = len(catalog_entries)
@@ -383,14 +383,10 @@ def expected():
         oid = e["split_info"]["original_id"]
         split_groups.setdefault(oid, []).append(e)
 
-    # Merged files from Phase B output
     expected_merged_b = compute_merged_files(catalog_entries)
     M = len(expected_merged_b)
-
-    # Merged files from Phase E output (used for Phase M assertions after Phase E runs)
     expected_merged_fixed = compute_merged_files(catalog_entries, knowledge_fn=ge.mock_phase_e_knowledge)
 
-    # Processing-pattern type files
     pp_type_merged = set()
     for e in catalog_entries:
         if e["type"] == "processing-pattern":
@@ -401,7 +397,6 @@ def expected():
 
     F_TARGET = M - len(pp_type_merged)
 
-    # 1/3 target: sorted base_names の先頭 1/3
     all_base_names = sorted(set(e.get('base_name', e['id']) for e in catalog_entries))
     target_base_names = all_base_names[:len(all_base_names) // 3]
     target_split_ids = []
@@ -409,7 +404,6 @@ def expected():
         matched = [e["id"] for e in catalog_entries if e.get("base_name") == bn]
         target_split_ids.extend(matched)
 
-    # Per-file expected outputs
     expected_knowledge_cache = {
         e["id"]: mock_phase_b_knowledge(e["id"], e) for e in catalog_entries
     }
@@ -420,9 +414,8 @@ def expected():
         e["id"]: mock_phase_e_knowledge(e["id"], e) for e in catalog_entries
     }
 
-    # index.toon expected header
     expected_index_toon_header = (
-        f"# Nabledge-6 Knowledge Index\n\n"
+        f"# Nabledge-{version} Knowledge Index\n\n"
         f"files[{M},]{{title,type,category,processing_patterns,path}}:"
     )
 
@@ -452,8 +445,20 @@ def expected():
 
 
 @pytest.fixture(scope="session")
+def expected():
+    """Generate all expected values for v6."""
+    return _build_expected(REPO, "6")
+
+
+@pytest.fixture(scope="session")
+def expected_v5():
+    """Generate all expected values for v5."""
+    return _build_expected(REPO, "5")
+
+
+@pytest.fixture(scope="session")
 def gen_state(expected):
-    ctx = _make_ctx(run_id=f"gen-state-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    ctx = _make_ctx(version="6", run_id=f"gen-state-{uuid.uuid4().hex[:8]}", max_rounds=2)
     counter = {"B": [], "D": [], "E": [], "F": []}
     mock = _make_cc_mock(
         expected["expected_knowledge_cache"],
@@ -469,6 +474,32 @@ def gen_state(expected):
         shutil.rmtree(ctx.log_dir)
 
 
+@pytest.fixture(scope="session")
+def gen_state_v5(expected_v5):
+    ctx = _make_ctx(version="5", run_id=f"gen-state-v5-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v5["expected_knowledge_cache"],
+        expected_v5["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session", params=["6", "5"])
+def version_fixture(request, expected, expected_v5, gen_state, gen_state_v5):
+    """Parametrized fixture providing version, expected values, and gen_state for v6 and v5."""
+    if request.param == "6":
+        return {"version": "6", "expected": expected, "gen_state": gen_state}
+    return {"version": "5", "expected": expected_v5, "gen_state": gen_state_v5}
+
+
 # ============================================================
 # TestGen: full pipeline ABCDEM
 # ============================================================
@@ -476,13 +507,15 @@ def gen_state(expected):
 class TestGen:
     """test_gen: kc gen — Phase ABCDEM with clean state, verify all outputs."""
 
-    def test_gen(self, expected):
+    def test_gen(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
         catalog_entries = expected["catalog_entries"]
 
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -521,14 +554,16 @@ class TestGen:
 class TestGenResume:
     """test_gen_resume: kc gen --resume — 1 pre-placed file, Phase B skips it."""
 
-    def test_gen_resume(self, expected):
+    def test_gen_resume(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
         catalog_entries = expected["catalog_entries"]
         preplace_entry = catalog_entries[0]
 
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -588,7 +623,10 @@ class TestGenResume:
 class TestRegenTarget:
     """test_regen_target: kc regen --target — Phase ABCDEM on 1/3 of base_names."""
 
-    def test_regen_target(self, gen_state, expected):
+    def test_regen_target(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -599,7 +637,7 @@ class TestRegenTarget:
         target_base_names = params["target_base_names"]
 
         src_ctx = gen_state["ctx"]
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -643,14 +681,17 @@ class TestRegenTarget:
 class TestFix:
     """test_fix: kc fix — Phase ACDEM (no B), stale file deleted after Phase M."""
 
-    def test_fix(self, gen_state, expected):
+    def test_fix(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
         catalog_entries = expected["catalog_entries"]
 
         src_ctx = gen_state["ctx"]
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],
@@ -704,7 +745,10 @@ class TestFix:
 class TestFixTarget:
     """test_fix_target: kc fix --target — Phase ACDEM with target 1/3 of base_names."""
 
-    def test_fix_target(self, gen_state, expected):
+    def test_fix_target(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
         params = expected["params"]
         U = params["U"]
         M = params["M"]
@@ -715,7 +759,7 @@ class TestFixTarget:
         target_base_names = params["target_base_names"]
 
         src_ctx = gen_state["ctx"]
-        ctx = _make_ctx(max_rounds=2)
+        ctx = _make_ctx(version=version, max_rounds=2)
         counter = {"B": [], "D": [], "E": [], "F": []}
         mock = _make_cc_mock(
             expected["expected_knowledge_cache"],

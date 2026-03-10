@@ -12,92 +12,33 @@ from common import load_json, write_json, read_file
 from logger import get_logger
 
 
-# RST path-based mapping (evaluated in order, first match wins)
-RST_MAPPING = [
-    # processing-pattern
-    ("application_framework/application_framework/batch/nablarch_batch", "processing-pattern", "nablarch-batch"),
-    ("application_framework/application_framework/batch/jsr352", "processing-pattern", "jakarta-batch"),
-    ("application_framework/application_framework/batch/", "processing-pattern", "nablarch-batch"),  # Catch-all for batch
-    ("application_framework/application_framework/web_service/rest", "processing-pattern", "restful-web-service"),
-    ("application_framework/application_framework/web_service/http_messaging", "processing-pattern", "http-messaging"),
-    ("application_framework/application_framework/web_service/", "processing-pattern", "restful-web-service"),  # Catch-all for web_service
-    ("application_framework/application_framework/web/", "processing-pattern", "web-application"),
-    ("application_framework/application_framework/messaging/mom", "processing-pattern", "mom-messaging"),
-    ("application_framework/application_framework/messaging/db", "processing-pattern", "db-messaging"),
+def _load_mappings(repo: str, version: str) -> dict:
+    """Load RST/MD/XLSX mappings from version-specific JSON file.
 
-    # component - handlers
-    ("application_framework/application_framework/handlers/", "component", "handlers"),
-    ("application_framework/application_framework/batch/jBatchHandler", "component", "handlers"),
-
-    # component - libraries
-    ("application_framework/application_framework/libraries/", "component", "libraries"),
-
-    # component - adapters
-    ("application_framework/adaptors/", "component", "adapters"),
-
-    # development-tools
-    ("development_tools/testing_framework/", "development-tools", "testing-framework"),
-    ("development_tools/toolbox/", "development-tools", "toolbox"),
-    ("development_tools/java_static_analysis/", "development-tools", "java-static-analysis"),
-
-    # setup
-    ("application_framework/application_framework/blank_project/", "setup", "blank-project"),
-    ("application_framework/application_framework/configuration/", "setup", "configuration"),
-    ("application_framework/setting_guide/", "setup", "setting-guide"),
-    ("application_framework/application_framework/cloud_native/", "setup", "cloud-native"),
-
-    # about
-    ("about_nablarch/", "about", "about-nablarch"),
-    ("application_framework/application_framework/nablarch_architecture/", "about", "about-nablarch"),
-    ("application_framework/application_framework/nablarch/", "about", "about-nablarch"),
-    ("migration/", "about", "migration"),
-    ("release_notes/", "about", "release-notes"),
-
-    # biz_samples - examples and utilities
-    ("biz_samples/", "about", "about-nablarch"),
-
-    # messaging intermediate page
-    ("application_framework/application_framework/messaging/", "processing-pattern", "db-messaging"),
-
-    # Standalone content pages
-    ("examples/", "about", "about-nablarch"),
-    ("external_contents/", "about", "about-nablarch"),
-    ("inquiry/", "about", "about-nablarch"),
-    ("jakarta_ee/", "about", "about-nablarch"),
-    ("nablarch_api/", "about", "about-nablarch"),
-    ("releases/", "about", "release-notes"),
-    ("terms_of_use/", "about", "about-nablarch"),
-
-    # Intermediate toctree pages (will be no_knowledge_content in Phase B)
-    ("application_framework/application_framework/", "about", "about-nablarch"),
-    ("application_framework/", "about", "about-nablarch"),
-    ("development_tools/", "development-tools", "testing-framework"),
-]
-
-# MD filename-based mapping
-MD_MAPPING = {
-    "Nablarchバッチ処理パターン.md": ("guide", "nablarch-patterns"),
-    "Nablarchでの非同期処理.md": ("guide", "nablarch-patterns"),
-    "Nablarchアンチパターン.md": ("guide", "nablarch-patterns"),
-}
-
-# Excel filename-based mapping
-XLSX_MAPPING = {
-    "Nablarch機能のセキュリティ対応表.xlsx": ("check", "security-check"),
-}
-
-
-def classify_excel_by_pattern(filename: str) -> tuple:
-    """Classify Excel file by filename pattern.
+    Each version has its own complete mapping file (vN.json).
+    Keep in sync with load_mappings() in tests/e2e/generate_expected.py.
 
     Returns:
-        (type, category) tuple or None if no match
+        dict with keys: rst, md, xlsx, xlsx_patterns
     """
-    # Release notes: *-releasenote.xlsx (covers both v5 and v6)
-    if filename.endswith("-releasenote.xlsx"):
-        return ("releases", "releases")
+    mappings_dir = os.path.join(repo, "tools/knowledge-creator/mappings")
+    mapping_path = os.path.join(mappings_dir, f"v{version}.json")
 
-    return None
+    if not os.path.exists(mapping_path):
+        raise FileNotFoundError(
+            f"Mapping file not found: {mapping_path}\n"
+            f"Create tools/knowledge-creator/mappings/v{version}.json to support this version."
+        )
+
+    with open(mapping_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    return {
+        "rst": data.get("rst", []),
+        "md": data.get("md", {}),
+        "xlsx": data.get("xlsx", {}),
+        "xlsx_patterns": data.get("xlsx_patterns", []),
+    }
 
 
 def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
@@ -142,6 +83,11 @@ class Step2Classify:
         self.dry_run = dry_run
         self.sources_data = sources_data
         self.logger = get_logger()
+        mappings = _load_mappings(ctx.repo, ctx.version)
+        self._rst_mapping = [(e["pattern"], e["type"], e["category"]) for e in mappings["rst"]]
+        self._md_mapping = {k: (v["type"], v["category"]) for k, v in mappings["md"].items()}
+        self._xlsx_mapping = {k: (v["type"], v["category"]) for k, v in mappings["xlsx"].items()}
+        self._xlsx_patterns = [(e["endswith"], e["type"], e["category"]) for e in mappings["xlsx_patterns"]]
 
     def generate_id(self, filename: str, format: str, category: str = None,
                     source_path: str = None, matched_pattern: str = None) -> str:
@@ -152,13 +98,13 @@ class Step2Classify:
             format: File format (rst/md/xlsx)
             category: Category from classification (optional)
             source_path: Source file path for index.rst disambiguation (optional)
-            matched_pattern: RST_MAPPING pattern that matched (optional, for index.rst)
+            matched_pattern: rst mapping pattern that matched (optional, for index.rst)
 
         Returns:
             Unique file ID (category-filename format for rst/md)
         """
-        # For Excel files in XLSX_MAPPING, use category as ID (fixed mapping)
-        if format == "xlsx" and filename in XLSX_MAPPING:
+        # For Excel files with exact filename mapping, use category as ID
+        if format == "xlsx" and filename in self._xlsx_mapping:
             return category
 
         base_name = None
@@ -223,8 +169,8 @@ class Step2Classify:
         if rel_path == "index.rst":
             return "about", "about-nablarch", ""
 
-        # Try to match against RST_MAPPING
-        for pattern, type_, category in RST_MAPPING:
+        # Try to match against rst mapping (version-specific entries first)
+        for pattern, type_, category in self._rst_mapping:
             if pattern in rel_path:
                 return type_, category, pattern
 
@@ -525,15 +471,16 @@ class Step2Classify:
             if format == "rst":
                 type_, category, matched_pattern = self.classify_rst(path)
             elif format == "md":
-                if filename in MD_MAPPING:
-                    type_, category = MD_MAPPING[filename]
+                if filename in self._md_mapping:
+                    type_, category = self._md_mapping[filename]
             elif format == "xlsx":
-                if filename in XLSX_MAPPING:
-                    type_, category = XLSX_MAPPING[filename]
+                if filename in self._xlsx_mapping:
+                    type_, category = self._xlsx_mapping[filename]
                 else:
-                    result = classify_excel_by_pattern(filename)
-                    if result:
-                        type_, category = result
+                    for endswith, t, c in self._xlsx_patterns:
+                        if filename.endswith(endswith):
+                            type_, category = t, c
+                            break
 
             if type_ is None or category is None:
                 unmatched.append({
@@ -723,10 +670,11 @@ class Step2Classify:
         self.logger.info(f"\n   📑Classified {len(classified)} files")
 
         # Group by type, then by category
-        type_order = ['processing-pattern', 'component', 'development-tools', 'setup', 'about', 'guide', 'check']
+        type_order = ['processing-pattern', 'component', 'extension', 'development-tools', 'setup', 'about', 'guide', 'check']
         type_emoji = {
             'processing-pattern': '🔄',
             'component': '🧩',
+            'extension': '🔩',
             'development-tools': '🛠️',
             'setup': '⚙️',
             'about': 'ℹ️',
@@ -753,8 +701,8 @@ class Step2Classify:
 
         if unmatched:
             self.logger.error(f"\n   ❌ ERROR: {len(unmatched)} RST files have no RST_MAPPING entry.")
-            self.logger.error(f"   Add a mapping for each file to RST_MAPPING in:")
-            self.logger.error(f"   tools/knowledge-creator/steps/step2_classify.py")
+            self.logger.error(f"   Add a mapping for each file to:")
+            self.logger.error(f"   tools/knowledge-creator/mappings/v{self.ctx.version}.json")
             self.logger.error(f"")
             self.logger.error(f"   Unmapped files:")
             for item in unmatched:

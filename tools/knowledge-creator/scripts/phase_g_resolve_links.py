@@ -48,9 +48,10 @@ class PhaseGResolveLinks:
         """Scan all knowledge files to build global label index."""
         self.logger.info("  Building label index...")
 
-        # Get all knowledge JSON files
+        # Get all knowledge JSON files (exclude assets/ subdirectories)
         pattern = f"{self.ctx.knowledge_dir}/**/*.json"
-        json_files = glob(pattern, recursive=True)
+        json_files = [p for p in glob(pattern, recursive=True)
+                      if f"{os.sep}assets{os.sep}" not in p]
 
         for json_path in json_files:
             knowledge = load_json(json_path)
@@ -339,9 +340,10 @@ class PhaseGResolveLinks:
         resolved_dir = self.ctx.knowledge_resolved_dir
         os.makedirs(resolved_dir, exist_ok=True)
 
-        # Process all knowledge files
+        # Process all knowledge files (exclude assets/ subdirectories)
         pattern = f"{self.ctx.knowledge_dir}/**/*.json"
-        json_files = glob(pattern, recursive=True)
+        json_files = [p for p in glob(pattern, recursive=True)
+                      if f"{os.sep}assets{os.sep}" not in p]
 
         resolved_count = 0
         for json_path in json_files:

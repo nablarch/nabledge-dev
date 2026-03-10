@@ -28,9 +28,9 @@ class Step1ListSources:
                         rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
                         sources.append({"path": rel_path, "format": "rst", "filename": f})
 
-        # 2. Pattern documents (MD) - always use v6
+        # 2. Pattern documents (MD)
         pattern_dir = (
-            f"{self.ctx.repo}/.lw/nab-official/v6/"
+            f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/"
             "nablarch-system-development-guide/"
             "Nablarchシステム開発ガイド/docs/nablarch-patterns/"
         )
@@ -44,9 +44,9 @@ class Step1ListSources:
                 rel_path = os.path.relpath(filepath, self.ctx.repo)
                 sources.append({"path": rel_path, "format": "md", "filename": f})
 
-        # 3. Security mapping table (Excel) - always use v6
+        # 3. Security mapping table (Excel)
         xlsx_path = (
-            f"{self.ctx.repo}/.lw/nab-official/v6/"
+            f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/"
             "nablarch-system-development-guide/"
             "Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx"
         )
