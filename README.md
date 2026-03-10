@@ -1,6 +1,6 @@
 # nabledge-dev
 
-Nablarch ナレッジ開発リポジトリ
+[Nabledge](https://github.com/nablarch/nabledge) ナレッジ開発リポジトリ
 
 ## ドキュメント
 
@@ -48,18 +48,20 @@ claude
 
 ### 開発フロー
 
-```
-フィーチャーブランチ → main（PR 経由）→ nablarch/nabledge:develop（自動同期）
-```
+```mermaid
+flowchart TD
+    MAIN["nabledge-dev<br/>main"]
+    WB["nabledge-dev<br/>ワーキングブランチ"]
+    GHA["GitHub Actions<br/>（自動同期）"]
+    DEV["nablarch/nabledge<br/>develop"]
+    RELEASE["nablarch/nabledge<br/>main（リリース）"]
 
-`main` ブランチへの変更がプッシュされると、GitHub Actions が自動的に：
-1. スキルコンテンツをマーケットプレイスのプラグイン構造に変換
-2. [nablarch/nabledge](https://github.com/nablarch/nabledge) の `develop` ブランチへ同期
-
-これにより：
-- 開発作業を継続的に nabledge:develop へ統合できる
-- ユーザーは develop ブランチから未リリース機能をテストできる
-- 役割の明確な分離：nabledge-dev は開発用、nabledge は配布用
+    MAIN -->|"ブランチ作成"| WB
+    WB -->|"PR マージ"| MAIN
+    MAIN -->|"push"| GHA
+    GHA -->|"自動同期"| DEV
+    DEV -->|"develop → main PR をマージ"| RELEASE
+```
 
 ### 開発バージョンのテスト
 
@@ -85,21 +87,6 @@ claude
 ### リリース手順
 
 リリースは**このリポジトリではなく** **[nablarch/nabledge](https://github.com/nablarch/nabledge)** リポジトリで管理されます。
-
-```mermaid
-flowchart TD
-    MAIN["nabledge-dev<br/>main"]
-    WB["nabledge-dev<br/>ワーキングブランチ"]
-    GHA["GitHub Actions<br/>（自動同期）"]
-    DEV["nablarch/nabledge<br/>develop"]
-    RELEASE["nablarch/nabledge<br/>main（リリース）"]
-
-    MAIN -->|"ブランチ作成"| WB
-    WB -->|"PR マージ"| MAIN
-    MAIN -->|"push"| GHA
-    GHA -->|"自動同期"| DEV
-    DEV -->|"develop → main PR をマージ"| RELEASE
-```
 
 > nablarch/nabledge:develop での動作確認手順は「[開発バージョンのテスト](#開発バージョンのテスト)」を参照してください。
 
