@@ -12,79 +12,39 @@ from common import load_json, write_json, read_file
 from logger import get_logger
 
 
-# RST path-based mapping (evaluated in order, first match wins)
-RST_MAPPING = [
-    # processing-pattern
-    ("application_framework/application_framework/batch/nablarch_batch", "processing-pattern", "nablarch-batch"),
-    ("application_framework/application_framework/batch/jsr352", "processing-pattern", "jakarta-batch"),
-    ("application_framework/application_framework/batch/", "processing-pattern", "nablarch-batch"),  # Catch-all for batch
-    ("application_framework/application_framework/web_service/rest", "processing-pattern", "restful-web-service"),
-    ("application_framework/application_framework/web_service/http_messaging", "processing-pattern", "http-messaging"),
-    ("application_framework/application_framework/web_service/", "processing-pattern", "restful-web-service"),  # Catch-all for web_service
-    ("application_framework/application_framework/web/", "processing-pattern", "web-application"),
-    ("application_framework/application_framework/messaging/mom", "processing-pattern", "mom-messaging"),
-    ("application_framework/application_framework/messaging/db", "processing-pattern", "db-messaging"),
+def load_mappings(version: str) -> dict:
+    """Load RST/MD/XLSX mappings from JSON files for the given version.
 
-    # component - handlers
-    ("application_framework/application_framework/handlers/", "component", "handlers"),
-    ("application_framework/application_framework/batch/jBatchHandler", "component", "handlers"),
+    Merges common.json with version-specific vN.json.
+    Version-specific rst_mapping entries are prepended (matched first).
 
-    # component - libraries
-    ("application_framework/application_framework/libraries/", "component", "libraries"),
+    Returns:
+        dict with keys: rst_mapping (list of tuples), md_mapping (dict), xlsx_mapping (dict)
+    """
+    # Mappings directory is always ../mappings/ relative to this script file
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    mappings_dir = os.path.normpath(os.path.join(script_dir, "..", "mappings"))
 
-    # component - adapters
-    ("application_framework/adaptors/", "component", "adapters"),
+    def _load(path):
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
 
-    # development-tools
-    ("development_tools/testing_framework/", "development-tools", "testing-framework"),
-    ("development_tools/toolbox/", "development-tools", "toolbox"),
-    ("development_tools/java_static_analysis/", "development-tools", "java-static-analysis"),
+    common = _load(os.path.join(mappings_dir, "common.json"))
+    version_path = os.path.join(mappings_dir, f"v{version}.json")
+    version_specific = _load(version_path) if os.path.exists(version_path) else {}
 
-    # setup
-    ("application_framework/application_framework/blank_project/", "setup", "blank-project"),
-    ("application_framework/application_framework/configuration/", "setup", "configuration"),
-    ("application_framework/setting_guide/", "setup", "setting-guide"),
-    ("application_framework/application_framework/cloud_native/", "setup", "cloud-native"),
+    # rst_mapping: version-specific first (prepended), then common
+    rst = [tuple(e) for e in version_specific.get("rst_mapping", [])]
+    rst += [tuple(e) for e in common.get("rst_mapping", [])]
 
-    # about
-    ("about_nablarch/", "about", "about-nablarch"),
-    ("application_framework/application_framework/nablarch_architecture/", "about", "about-nablarch"),
-    ("application_framework/application_framework/nablarch/", "about", "about-nablarch"),
-    ("migration/", "about", "migration"),
-    ("release_notes/", "about", "release-notes"),
+    # md_mapping and xlsx_mapping: common as base, version overrides
+    md = {k: tuple(v) for k, v in common.get("md_mapping", {}).items()}
+    md.update({k: tuple(v) for k, v in version_specific.get("md_mapping", {}).items()})
 
-    # biz_samples - examples and utilities
-    ("biz_samples/", "about", "about-nablarch"),
+    xlsx = {k: tuple(v) for k, v in common.get("xlsx_mapping", {}).items()}
+    xlsx.update({k: tuple(v) for k, v in version_specific.get("xlsx_mapping", {}).items()})
 
-    # messaging intermediate page
-    ("application_framework/application_framework/messaging/", "processing-pattern", "db-messaging"),
-
-    # Standalone content pages
-    ("examples/", "about", "about-nablarch"),
-    ("external_contents/", "about", "about-nablarch"),
-    ("inquiry/", "about", "about-nablarch"),
-    ("jakarta_ee/", "about", "about-nablarch"),
-    ("nablarch_api/", "about", "about-nablarch"),
-    ("releases/", "about", "release-notes"),
-    ("terms_of_use/", "about", "about-nablarch"),
-
-    # Intermediate toctree pages (will be no_knowledge_content in Phase B)
-    ("application_framework/application_framework/", "about", "about-nablarch"),
-    ("application_framework/", "about", "about-nablarch"),
-    ("development_tools/", "development-tools", "testing-framework"),
-]
-
-# MD filename-based mapping
-MD_MAPPING = {
-    "Nablarchバッチ処理パターン.md": ("guide", "nablarch-patterns"),
-    "Nablarchでの非同期処理.md": ("guide", "nablarch-patterns"),
-    "Nablarchアンチパターン.md": ("guide", "nablarch-patterns"),
-}
-
-# Excel filename-based mapping
-XLSX_MAPPING = {
-    "Nablarch機能のセキュリティ対応表.xlsx": ("check", "security-check"),
-}
+    return {"rst_mapping": rst, "md_mapping": md, "xlsx_mapping": xlsx}
 
 
 def classify_excel_by_pattern(filename: str) -> tuple:
@@ -142,6 +102,10 @@ class Step2Classify:
         self.dry_run = dry_run
         self.sources_data = sources_data
         self.logger = get_logger()
+        mappings = load_mappings(ctx.version)
+        self.rst_mapping = mappings["rst_mapping"]
+        self.md_mapping = mappings["md_mapping"]
+        self.xlsx_mapping = mappings["xlsx_mapping"]
 
     def generate_id(self, filename: str, format: str, category: str = None,
                     source_path: str = None, matched_pattern: str = None) -> str:
@@ -157,8 +121,8 @@ class Step2Classify:
         Returns:
             Unique file ID (category-filename format for rst/md)
         """
-        # For Excel files in XLSX_MAPPING, use category as ID (fixed mapping)
-        if format == "xlsx" and filename in XLSX_MAPPING:
+        # For Excel files in xlsx_mapping, use category as ID (fixed mapping)
+        if format == "xlsx" and filename in self.xlsx_mapping:
             return category
 
         base_name = None
@@ -223,8 +187,8 @@ class Step2Classify:
         if rel_path == "index.rst":
             return "about", "about-nablarch", ""
 
-        # Try to match against RST_MAPPING
-        for pattern, type_, category in RST_MAPPING:
+        # Try to match against rst_mapping
+        for pattern, type_, category in self.rst_mapping:
             if pattern in rel_path:
                 return type_, category, pattern
 
@@ -525,11 +489,11 @@ class Step2Classify:
             if format == "rst":
                 type_, category, matched_pattern = self.classify_rst(path)
             elif format == "md":
-                if filename in MD_MAPPING:
-                    type_, category = MD_MAPPING[filename]
+                if filename in self.md_mapping:
+                    type_, category = self.md_mapping[filename]
             elif format == "xlsx":
-                if filename in XLSX_MAPPING:
-                    type_, category = XLSX_MAPPING[filename]
+                if filename in self.xlsx_mapping:
+                    type_, category = self.xlsx_mapping[filename]
                 else:
                     result = classify_excel_by_pattern(filename)
                     if result:
@@ -752,15 +716,16 @@ class Step2Classify:
                     self.logger.info(f"         {emoji}{cat}: {category_counts[cat]}")
 
         if unmatched:
-            self.logger.error(f"\n   ❌ ERROR: {len(unmatched)} RST files have no RST_MAPPING entry.")
-            self.logger.error(f"   Add a mapping for each file to RST_MAPPING in:")
-            self.logger.error(f"   tools/knowledge-creator/steps/step2_classify.py")
+            self.logger.error(f"\n   ❌ ERROR: {len(unmatched)} RST files have no mapping entry.")
+            self.logger.error(f"   Add a mapping for each file to rst_mapping in:")
+            self.logger.error(f"   tools/knowledge-creator/mappings/common.json (shared)")
+            self.logger.error(f"   tools/knowledge-creator/mappings/v{self.ctx.version}.json (version-specific)")
             self.logger.error(f"")
             self.logger.error(f"   Unmapped files:")
             for item in unmatched:
                 self.logger.error(f"     {item['path']}")
             self.logger.error(f"")
-            self.logger.error(f"   Example: (\"examples/\", \"about\", \"about-nablarch\"),")
+            self.logger.error(f'   Example: ["examples/", "about", "about-nablarch"]')
             self.logger.error(f"   If no existing type/category fits, add a new one.")
             raise SystemExit(1)
 

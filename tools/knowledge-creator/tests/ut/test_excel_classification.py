@@ -4,7 +4,7 @@ import os
 import tempfile
 import shutil
 from step1_list_sources import Step1ListSources
-from step2_classify import Step2Classify, classify_excel_by_pattern, XLSX_MAPPING
+from step2_classify import Step2Classify, classify_excel_by_pattern
 
 
 @pytest.fixture
@@ -145,9 +145,64 @@ class TestExcelIDGeneration:
         sources = Step1ListSources(ctx, dry_run=True).run()
         classifier = Step2Classify(ctx, dry_run=True, sources_data=sources)
 
-        # XLSX_MAPPINGに含まれるファイル
-        for filename in XLSX_MAPPING.keys():
-            type_, category = XLSX_MAPPING[filename]
+        # xlsx_mappingに含まれるファイル
+        for filename, (type_, category) in classifier.xlsx_mapping.items():
             file_id = classifier.generate_id(filename, "xlsx", category)
             # categoryのみがIDになる（filename部分が含まれない）
             assert file_id == category
+
+
+class TestLoadMappings:
+    """Tests for load_mappings version-specific override behavior."""
+
+    def test_version_specific_rst_prepended(self, tmp_path):
+        """Version-specific rst_mapping entries are prepended before common ones."""
+        from step2_classify import load_mappings
+
+        mappings_dir = tmp_path / "tools" / "knowledge-creator" / "mappings"
+        mappings_dir.mkdir(parents=True)
+        import json
+        (mappings_dir / "common.json").write_text(json.dumps({
+            "rst_mapping": [["common_path/", "about", "about-nablarch"]],
+            "md_mapping": {},
+            "xlsx_mapping": {}
+        }), encoding="utf-8")
+        (mappings_dir / "v99.json").write_text(json.dumps({
+            "rst_mapping": [["version_path/", "processing-pattern", "nablarch-batch"]],
+            "md_mapping": {},
+            "xlsx_mapping": {}
+        }), encoding="utf-8")
+
+        import unittest.mock as mock
+        script_path = str(tmp_path / "tools" / "knowledge-creator" / "scripts" / "step2_classify.py")
+        with mock.patch("step2_classify.__file__", script_path):
+            mappings = load_mappings("99")
+
+        rst = mappings["rst_mapping"]
+        assert rst[0] == ("version_path/", "processing-pattern", "nablarch-batch")
+        assert rst[1] == ("common_path/", "about", "about-nablarch")
+
+    def test_version_specific_xlsx_overrides_common(self, tmp_path):
+        """Version-specific xlsx_mapping entries override common ones for the same key."""
+        from step2_classify import load_mappings
+
+        mappings_dir = tmp_path / "tools" / "knowledge-creator" / "mappings"
+        mappings_dir.mkdir(parents=True)
+        import json
+        (mappings_dir / "common.json").write_text(json.dumps({
+            "rst_mapping": [],
+            "md_mapping": {},
+            "xlsx_mapping": {"file.xlsx": ["common-type", "common-category"]}
+        }), encoding="utf-8")
+        (mappings_dir / "v99.json").write_text(json.dumps({
+            "rst_mapping": [],
+            "md_mapping": {},
+            "xlsx_mapping": {"file.xlsx": ["version-type", "version-category"]}
+        }), encoding="utf-8")
+
+        import unittest.mock as mock
+        script_path = str(tmp_path / "tools" / "knowledge-creator" / "scripts" / "step2_classify.py")
+        with mock.patch("step2_classify.__file__", script_path):
+            mappings = load_mappings("99")
+
+        assert mappings["xlsx_mapping"]["file.xlsx"] == ("version-type", "version-category")

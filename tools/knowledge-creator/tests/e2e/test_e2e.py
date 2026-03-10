@@ -359,6 +359,7 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
 def expected():
     """Generate all expected values from generate_expected.py."""
     from generate_expected import (
+        load_mappings,
         list_sources,
         classify_all,
         mock_phase_b_knowledge,
@@ -368,8 +369,9 @@ def expected():
     )
     import generate_expected as ge
 
+    mappings = load_mappings(REPO, "6")
     sources = list_sources(REPO, "6")
-    catalog_entries = classify_all(sources, REPO)
+    catalog_entries = classify_all(sources, REPO, mappings)
 
     ids = [e["id"] for e in catalog_entries]
     N = len(catalog_entries)
@@ -745,6 +747,65 @@ class TestFixTarget:
             )
             assert len(counter["F"]) == 0, (
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
+            )
+
+        finally:
+            if os.path.exists(ctx.log_dir):
+                shutil.rmtree(ctx.log_dir)
+
+
+# ============================================================
+# TestPhaseAV5: Phase A classification for v5
+# ============================================================
+
+class TestPhaseAV5:
+    """Phase A dry-run for v5 — verifies extension_components/ mappings from v5.json."""
+
+    def test_phase_a_v5(self):
+        from generate_expected import load_mappings, list_sources, classify_all
+        from collections import Counter as _Counter
+
+        ctx = TestContext(version="5", repo=REPO, concurrency=4,
+                         run_id=f"v5-phase-a-{uuid.uuid4().hex[:8]}")
+
+        try:
+            args = _make_args(ctx, phase="A")
+            args.dry_run = True
+            from unittest.mock import patch
+            with patch("phase_b_generate._default_run_claude", lambda *a, **kw: None):
+                _run_pipeline(ctx, args)
+
+            mappings = load_mappings(REPO, "5")
+            sources = list_sources(REPO, "5")
+            catalog_entries = classify_all(sources, REPO, mappings)
+
+            ids = [e["id"] for e in catalog_entries]
+            assert len(ids) == len(set(ids)), (
+                f"Duplicate IDs in v5 catalog: {[k for k, v in _Counter(ids).items() if v > 1]}"
+            )
+
+            extension_entries = [
+                e for e in catalog_entries if "extension_components" in e["source_path"]
+            ]
+            assert len(extension_entries) > 0, "No extension_components entries classified for v5"
+
+            ext_categories = {e["category"] for e in extension_entries}
+            assert "etl" in ext_categories, (
+                f"etl category missing from v5 extension_components: {ext_categories}"
+            )
+            assert "workflow" in ext_categories, (
+                f"workflow category missing from v5 extension_components: {ext_categories}"
+            )
+            assert "report" in ext_categories, (
+                f"report category missing from v5 extension_components: {ext_categories}"
+            )
+
+
+            # Verify report maps to development-tools (not processing-pattern)
+            report_entries = [e for e in extension_entries if e["category"] == "report"]
+            assert all(e["type"] == "development-tools" for e in report_entries), (
+                f"report category must map to development-tools: "
+                f"{[(e['id'], e['type']) for e in report_entries]}"
             )
 
         finally:
