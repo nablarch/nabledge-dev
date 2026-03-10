@@ -63,9 +63,25 @@ class PhaseGResolveLinks:
             trace_path = f"{self.ctx.trace_dir}/{file_id}.json"
             if os.path.exists(trace_path):
                 trace = load_json(trace_path)
+
+                # Use explicit label_to_section_id mapping if available
+                label_to_section_id_map = trace.get("label_to_section_id", {})
+                for label, section_id in label_to_section_id_map.items():
+                    self.label_index[label] = (file_id, section_id)
+
                 internal_labels = trace.get("internal_labels", [])
                 for label in internal_labels:
-                    # Try to map label to section_id
+                    # Skip labels already resolved by label_to_section_id mapping
+                    if label in self.label_index:
+                        label_underscore = label.replace("-", "_")
+                        label_hyphen = label.replace("_", "-")
+                        if label_underscore != label and label_underscore not in self.label_index:
+                            self.label_index[label_underscore] = self.label_index[label]
+                        if label_hyphen != label and label_hyphen not in self.label_index:
+                            self.label_index[label_hyphen] = self.label_index[label]
+                        continue
+
+                    # Try to map label to section_id by guessing
                     # For now, assume label matches section_id or is file-level
                     section_id = self._find_section_for_label(knowledge, label)
 

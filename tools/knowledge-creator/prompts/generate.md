@@ -67,7 +67,13 @@ If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and 
 
 {EXPECTED_SECTIONS}
 
-The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+The above list shows sections detected by the classification tool. Each entry shows the section title and the pre-assigned ID in parentheses (ID: section-id).
+
+If this list is not empty:
+- You MUST generate ALL sections listed above.
+- You MUST use the EXACT IDs specified in parentheses — do not rename or modify them.
+
+If empty, scan the source yourself in Step 2.
 
 ---
 

@@ -287,6 +287,58 @@ class TestPhaseGLinkResolution:
         assert "[Jackson](https://github.com/FasterXML/jackson)" in overview, \
             "External URLs should remain unchanged"
 
+    def test_uses_trace_label_to_section_id_mapping(self, ctx):
+        """When trace has label_to_section_id mapping, Phase G should use it exactly
+        instead of guessing from label name."""
+        knowledge = {
+            "id": "test-handler",
+            "title": "Test Handler",
+            "official_doc_urls": [],
+            "index": [
+                {"id": "overview", "title": "Overview", "hints": []},
+                {"id": "target-section", "title": "Target Section", "hints": []}
+            ],
+            "sections": {
+                "overview": "See :ref:`some_rst_label` for details.",
+                "target-section": "Target content here."
+            }
+        }
+
+        # Trace with explicit label_to_section_id mapping
+        # some_rst_label does NOT match target-section by name guessing,
+        # so without the mapping the ref would not resolve to the correct section
+        trace = {
+            "internal_labels": ["some_rst_label"],
+            "label_to_section_id": {"some_rst_label": "target-section"},
+            "sections": []
+        }
+
+        knowledge_path = f"{ctx.knowledge_dir}/component/test-handler.json"
+        os.makedirs(os.path.dirname(knowledge_path), exist_ok=True)
+        with open(knowledge_path, "w", encoding="utf-8") as f:
+            json.dump(knowledge, f, ensure_ascii=False)
+
+        trace_path = f"{ctx.trace_dir}/test-handler.json"
+        os.makedirs(os.path.dirname(trace_path), exist_ok=True)
+        with open(trace_path, "w", encoding="utf-8") as f:
+            json.dump(trace, f, ensure_ascii=False)
+
+        # Execute Phase G
+        phase_g = PhaseGResolveLinks(ctx)
+        result = phase_g.run()
+
+        # Verify: :ref:`some_rst_label` resolves to #target-section
+        assert result["resolved_count"] == 1
+        resolved_path = f"{ctx.knowledge_resolved_dir}/component/test-handler.json"
+        assert os.path.exists(resolved_path)
+
+        with open(resolved_path, "r", encoding="utf-8") as f:
+            resolved = json.load(f)
+
+        overview = resolved["sections"]["overview"]
+        assert "#target-section" in overview, \
+            ":ref:`some_rst_label` should resolve to #target-section using trace mapping"
+
     def test_mixed_links(self, ctx):
         """Multiple link types in one section should all be resolved."""
         knowledge = {

@@ -101,13 +101,18 @@ class PhaseBGenerate:
         else:
             prompt = prompt.replace("{INTERNAL_LABELS}", "[]")
 
-        # Pass detected section list to prevent Claude from missing sections (especially for large split files)
+        # Pass detected section list with pre-computed IDs to prevent Claude from missing/misnaming sections
         if "section_range" in file_info and "sections" in file_info["section_range"]:
             sections_list = file_info["section_range"]["sections"]
             if isinstance(sections_list, list) and sections_list:
                 if len(sections_list) > 10:
                     self.logger.debug(f"    Passing {len(sections_list)} detected sections to Claude")
-                sections_md = "\n".join(f"- {s}" for s in sections_list)
+                # Include script-computed section IDs so Claude uses them exactly
+                lines = []
+                for title in sections_list:
+                    section_id = self._title_to_section_id(title)
+                    lines.append(f"- {title} (ID: {section_id})")
+                sections_md = "\n".join(lines)
                 prompt = prompt.replace("{EXPECTED_SECTIONS}", sections_md)
             else:
                 prompt = prompt.replace("{EXPECTED_SECTIONS}", "(empty - scan the source yourself)")
@@ -133,6 +138,33 @@ class PhaseBGenerate:
         if not knowledge:
             raise ValueError("No 'knowledge' field in output")
         return knowledge, trace
+
+    def _post_process_knowledge(self, knowledge, file_info):
+        """Post-process AI-generated knowledge to fix processing_patterns issues."""
+        sections = knowledge.get("sections", {})
+        index = knowledge.get("index", [])
+
+        # Move 'processing-patterns' from sections to top-level processing_patterns
+        pp_in_sections = sections.pop("processing-patterns", None)
+
+        # Also remove from index if present
+        knowledge["index"] = [e for e in index if e["id"] != "processing-patterns"]
+
+        # Determine processing_patterns value
+        if file_info.get("type") == "processing-pattern":
+            # Always use category for processing-pattern type
+            knowledge["processing_patterns"] = [file_info["category"]]
+        elif "processing_patterns" not in knowledge:
+            # Use value from sections if found, else empty
+            if pp_in_sections and isinstance(pp_in_sections, str):
+                knowledge["processing_patterns"] = [pp_in_sections]
+            elif pp_in_sections and isinstance(pp_in_sections, list):
+                knowledge["processing_patterns"] = pp_in_sections
+            else:
+                knowledge["processing_patterns"] = []
+        # else: keep AI's value as-is
+
+        return knowledge
 
     def _extract_section_range(self, content, section_range):
         lines = content.splitlines()
@@ -186,14 +218,34 @@ class PhaseBGenerate:
                 write_json(log_path, {"file_id": file_id, "status": "error", "error": str(e)})
             return {"status": "error", "id": file_id, "error": str(e)}
 
+        knowledge_json = self._post_process_knowledge(knowledge_json, file_info)
+
         if not self.dry_run:
             write_json(output_path, knowledge_json)
 
             if trace_json and trace_json.get("sections"):
+                sections_list = trace_json["sections"]
+                label_to_section_id = {}
+                if file_info.get("format") == "rst":
+                    labels = self._extract_rst_labels(source_content)
+                    # Map each label to the closest section that contains it
+                    # Simple approach: for each label, find which section ID it resembles
+                    for label in labels:
+                        # Try to find matching section_id from trace
+                        for sec in sections_list:
+                            sec_id = sec.get("section_id", "")
+                            # Match by converting label to section-id format
+                            label_as_id = label.replace("_", "-")
+                            if sec_id == label or sec_id == label_as_id:
+                                label_to_section_id[label] = sec_id
+                                label_to_section_id[label_as_id] = sec_id
+                                break
+
                 write_json(f"{self.ctx.trace_dir}/{file_id}.json", {
                     "file_id": file_id,
                     "generated_at": started_at,
-                    "sections": trace_json["sections"]
+                    "sections": sections_list,
+                    "label_to_section_id": label_to_section_id,
                 })
 
         finished_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
