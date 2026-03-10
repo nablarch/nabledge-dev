@@ -6,6 +6,30 @@
 
 ---
 
+## 処理フローと問題発生箇所
+
+### 処理フロー（概要）
+
+```
+Phase A: Preparation  → source ファイルの分類・catalog.json の生成
+Phase B: Generation   → AI（Claude）が source から knowledge JSON を生成・キャッシュに保存
+Phase C: Structure Check → knowledge JSON の構造バリデーション（S3/S4: index ↔ sections の整合性）
+Phase D: Content Check → knowledge JSON のコンテンツ品質チェック
+Phase E: Fix          → Phase D の指摘を AI が修正
+Phase G: Resolve Links → RST ラベルを knowledge のセクション ID に解決
+Phase M: Finalization → knowledge を plugin/knowledge/ にコピー・catalog 完成
+```
+
+### 問題の発生箇所
+
+問題は **Phase B** で埋め込まれた。Phase B では AI（Claude）が source ドキュメントを読み、knowledge JSON を生成する。AI は以下の 2 点を誤ることがあった：
+
+1. セクション ID を独自に命名する（スクリプト採番と乖離）
+2. `processing_patterns` をデータフィールドでなく通常セクションとして出力する
+
+これらは **AI の確率的な出力による誤り**であり、スクリプトの制御フローのバグではない。
+一律ではなく一部のファイルにのみ発生しているのはこのためである。
+
 ## 発生事象と問題
 
 ### Phase C バリデーション失敗
@@ -20,19 +44,26 @@
 
 Phase C の S3/S4 チェックは `phase_c_structure_check.py` で定義されており、knowledge ファイルの `index[].id` の集合と `sections` キーの集合が一致することを要求する。
 
-### `processing_patterns` フィールドの欠落
+### 根本原因：AI にセクション ID を命名させていた
 
-421件の既存キャッシュファイルすべてに、top-level フィールド `processing_patterns` が存在しなかった。Phase D のコンテンツチェックで `testing-framework-real` に `section_issue` として記録されていた問題でもある。
+Phase B のスクリプト（`phase_b_generate.py`）は RST セクションタイトルから `_title_to_section_id()` で ID を**スクリプト側で確定**できる。しかし当初のプロンプトは **タイトル名のみ** を AI に渡していた（ID を伝えていなかった）。
 
-### 根本原因
+この設計により AI はセクション ID を独自に命名していた。スクリプトが採番した ID と AI が命名した ID が一致しないと、Phase C の S3/S4 エラーが発生する。また、RST の `.. _label:` ディレクティブから生成されるページ内・ページ間リンクは **スクリプト採番の ID** を前提として解決される（Phase G）。AI が異なる ID を付けた時点で、これらの ref 参照は消失・リンク切れとなっていた。
 
-Phase B の AI（Claude）が knowledge ファイルを生成する際、2つの誤りを起こしていた。
+つまり、セクション ID の命名権は最初からスクリプトが持つべきだったが、AI に任せていたことが根本原因である。
 
-1. **セクションIDの不一致**: Phase B のスクリプトが RST のセクションタイトルからセクションIDを採番しているが、AI にはタイトル名のみ渡していたため、AI が独自にセクションIDを命名し、スクリプトの採番結果と乖離することがあった。`libraries-data_bind--sec-cd48d52b` の `section-extension` vs `extension` がその例。
+### 根本原因：`processing_patterns` を AI に生成させていた
 
-2. **`processing-patterns` のセクション混入**: AI が `processing_patterns` をデータフィールドとして扱わず、通常のセクション（`sections` キー）として出力することがあった。その結果、`sections` に `processing-patterns` キーが入り、対応する `index` エントリが存在しないため S4 エラーが発生した（`handlers-jaxrs_access_log_handler--sec-2a8f8aeb`）。また、top-level の `processing_patterns` フィールドが生成されなかった。
+`processing_patterns` フィールドはソースドキュメントのコンテンツから導出するものではなく、**catalog.json の `type`/`category`** から機械的に決まる値である（`type == "processing-pattern"` なら `[category]`、それ以外は `[]`）。Phase M がこの値を読み取り、Phase F（`_file-search.md`）の絞り込みに使用する。
 
-3. **catalog の `processing_patterns` 未注入**: catalog.json の各ファイルエントリには `processing_patterns` が定義されているが（全 421 件、うち 82 件が非空）、Phase B はこれを AI 生成後の knowledge ファイルに注入していなかった。
+しかし Phase B では AI に `processing_patterns` の生成を任せており（プロンプトにフィールド定義があった）、AI は値を設定しないか、誤ってセクション（`sections["processing-patterns"]`）として出力することがあった。catalog から機械的に注入する後処理がなかったため、3 件のファイルに S4 エラーが発生し、421 件全件で `processing_patterns` フィールドが未設定となっていた。
+
+### 2つの問題は独立している
+
+| 問題 | 根本原因 |
+|------|---------|
+| S3/S4 エラー（セクションID不一致） | AI にセクション ID を命名させていた |
+| `processing_patterns` 未設定 | catalog の値を AI 生成後に注入する後処理がなかった |
 
 ---
 
