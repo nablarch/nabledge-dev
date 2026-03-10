@@ -1,158 +1,149 @@
 # nabledge-dev
 
-Nablarch knowledge development
+[Nabledge](https://github.com/nablarch/nabledge) の開発リポジトリ
 
-## Documents
+## ドキュメント
 
-- 📊 [Development Status](docs/development-status.md) - Current progress and roadmap
-- 📐 [Design Document](docs/nabledge-design.md) - Architecture and design details
-- 🎯 [Activity Mapping](docs/activity-mapping.md) - Workflow and role division with Nabledge
-- 🚀 [Grand Design](docs/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3-product strategy ⚠️ **DRAFT - UNAPPROVED, SUBJECT TO CHANGE**
+- 📊 [開発状況](docs/development-status.md) - 現在の進捗とロードマップ
+- 📐 [設計ドキュメント](docs/nabledge-design.md) - アーキテクチャと設計の詳細
+- 🎯 [アクティビティマッピング](docs/activity-mapping.md) - Nabledge とのワークフローおよび役割分担
+- 🚀 [グランドデザイン](docs/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3製品戦略 ⚠️ **ドラフト - 未承認・変更の可能性あり**
 
-## Prerequisites
+## 前提条件
 
 - WSL2 / Ubuntu
-- CA certificate (if behind corporate proxy)
+- CA 証明書（企業プロキシ環境の場合）
 
-## Setup
+## セットアップ
 
-### 1. Install CA Certificate (for proxy environments)
+### 1. CA 証明書のインストール（プロキシ環境の場合）
 
 ```bash
 sudo cp /path/to/your/ca.crt /usr/local/share/ca-certificates/ca.crt
 sudo update-ca-certificates
 ```
 
-### 2. Environment Setup
+### 2. 環境セットアップ
 
 ```bash
 ./setup.sh
 cp .env.example .env
-# Edit .env and set your credentials
+# .env を編集して認証情報を設定する
 ```
 
-## Getting Started
+## 使い方
 
 ```bash
 source .env
 claude
 ```
 
-## Branch Strategy
+## ブランチ戦略
 
-This repository uses a single-branch development workflow:
+このリポジトリはシングルブランチの開発ワークフローを採用しています。すべての開発作業はプルリクエスト経由で **main** ブランチにマージされ、変更は [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) に自動同期されます。
 
-| Branch | Purpose | Workflow |
-|--------|---------|----------|
-| **main** | Development branch | All development work is merged here via pull requests. Changes automatically sync to [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) |
+### 開発フロー
 
-### Development Flow
+```mermaid
+flowchart LR
+    MAIN["nabledge-dev<br/>main"]
+    WB["nabledge-dev<br/>ワーキングブランチ"]
+    GHA["GitHub Actions<br/>（自動同期）"]
+    DEV["nablarch/nabledge<br/>develop"]
+    RELEASE["nablarch/nabledge<br/>main（リリース）"]
 
+    MAIN -->|"ブランチ作成"| WB
+    WB -->|"PR マージ"| MAIN
+    MAIN -->|"push"| GHA
+    GHA -->|"自動同期"| DEV
+    DEV -->|"main に追い付きマージ"| RELEASE
 ```
-Feature branch → main (via PR) → nablarch/nabledge:develop (auto-sync)
-```
 
-When changes are pushed to the `main` branch, GitHub Actions automatically:
-1. Transforms the skill content to marketplace plugin structure
-2. Syncs to the `develop` branch in [nablarch/nabledge](https://github.com/nablarch/nabledge)
+### 開発バージョンのテスト
 
-This allows:
-- Continuous integration of development work to nabledge:develop
-- Users can test unreleased features from the develop branch
-- Clear separation: nabledge-dev for development, nabledge for distribution
+`nablarch/nabledge:develop` の最新開発バージョンをテストするには：
 
-### Testing Development Version
+**Claude Code の場合：**
 
-To test the latest development version from `nablarch/nabledge:develop`:
-
-1. **Download setup script:**
+1. セットアップスクリプトをダウンロードして実行：
    ```bash
    curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-cc.sh > /tmp/setup-6-cc.sh
-   ```
-
-2. **Install from develop branch:**
-   ```bash
    NABLEDGE_BRANCH=develop bash /tmp/setup-6-cc.sh
    ```
 
-3. **Verify installation:**
+2. インストールを確認：
    ```bash
-   claude-code
-   # In Claude Code session:
+   claude
+   # Claude Code セッション内で：
    /nabledge-6
    ```
 
-### Release Procedure
+**GitHub Copilot の場合：**
 
-Releases are managed in the **[nablarch/nabledge](https://github.com/nablarch/nabledge)** repository, not here.
+1. セットアップスクリプトをダウンロードして実行：
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-ghc.sh > /tmp/setup-6-ghc.sh
+   NABLEDGE_BRANCH=develop bash /tmp/setup-6-ghc.sh
+   ```
 
-**In nablarch/nabledge repository:**
+2. インストールを確認：
+   ```bash
+   # VS Code でリポジトリを開き、GitHub Copilot Chat で：
+   @workspace /nabledge-6
+   ```
 
-1. **Prepare release** - Update version files and CHANGELOG in develop branch
-2. **Create release PR** - From `develop` to `main` branch
-3. **Merge and tag** - After review, merge PR and create version tag
-4. **Publish release** - Create GitHub release with release notes
+### リリース手順
 
-See `.claude/rules/release.md` for detailed release workflow.
+バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリでリリース作業を行います。
 
-## Development
+> nablarch/nabledge:develop での動作確認手順は「[開発バージョンのテスト](#開発バージョンのテスト)」を参照してください。
 
-### Custom Slash Commands
+**nablarch/nabledge リポジトリでの手順：**
 
-This repository provides custom slash commands to streamline development workflow:
+1. **差分確認用 PR を作成** - `main` から `develop` へ PR を作成し、変更内容をレビュー
+2. **develop に追い付きマージ** - リリース OK になったら `main` を `develop` に追い付かせるようにマージ（PR はコミットが作られるため PR 経由ではなく直接マージ）
 
-#### /hi - Full Development Workflow
-Execute complete workflow from issue/PR to review request:
+詳細なリリースワークフローは `.claude/rules/release.md` を参照してください。
+
+## 開発
+
+### カスタムスラッシュコマンド
+
+このリポジトリには開発ワークフローを効率化するカスタムスラッシュコマンドが用意されています：
+
+#### /hi - フル開発ワークフロー
+イシュー起票から PR レビュー依頼まで一通りのワークフローを実行します：
 ```
-/hi 123        # Start work on issue #123
-/hi 456        # Resume work on issue/PR #456
-/hi            # Interactive selection
+/hi 123        # イシュー #123 の作業を開始
+/hi 456        # イシュー/PR #456 の作業を再開
+/hi            # インタラクティブ選択
 ```
-Creates branch, implements changes, runs tests, creates PR. Use with issue# to start new work, or PR# to resume existing work.
+ブランチの作成・変更の実装・テストの実行・PR の作成まで自動で行います。
 
-#### /fb - Review Feedback Response
-Respond to PR review feedback:
+#### /fb - レビューフィードバック対応
+PR レビューのフィードバックに対応します：
 ```
-/fb 456        # Respond to reviews on PR #456
-/fb            # Auto-detect from current branch
+/fb 456        # PR #456 のレビューに対応
+/fb            # 現在のブランチから自動検出
 ```
-Fetches comments, implements fixes, commits, replies to reviewers.
+コメントを取得し、修正を実装してコミット後、レビュアーに返信します。
 
-#### /bb - Merge and Cleanup
-Approve and merge PR, cleanup branch:
+#### /bb - マージとクリーンアップ
+PR の承認・マージとブランチの後片付けを行います：
 ```
-/bb 456        # Merge PR #456 and delete branch
-/bb            # Auto-detect from current branch
+/bb 456        # PR #456 をマージしてブランチを削除
+/bb            # 現在のブランチから自動検出
 ```
-Approves PR, merges, detaches HEAD to main, deletes branch.
+PR を承認してマージし、HEAD を main に切り替えてブランチを削除します。
 
-### Testing nabledge Skills
+### nabledge スキルのテスト
 
-Use the `nabledge-test` skill to validate nabledge-6 functionality:
+nabledge スキルの性能を改善した場合、`nabledge-test` スキルでベースラインと比較して改善効果を確認します。
 
-```
-# Run a single test scenario
-/nabledge-test 6 handlers-001
+## フィードバック
 
-# Run all test scenarios
-/nabledge-test 6 --all
+### 公開済みの nabledge スキルについて
+[nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) にイシューを登録するか、機能リクエストをお送りください。他のユーザーも検索・参照しやすくなります。
 
-# Run tests for a specific category
-/nabledge-test 6 --category handlers
-```
-
-Test scenarios are defined in `.claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json`. Results are saved to `.pr/xxxxx/test-<id>-<timestamp>.md`.
-
-The nabledge-test skill uses skill-creator's evaluation procedures to verify:
-- Correct workflow execution (keyword-search, section-judgement)
-- Expected keywords present in responses
-- Relevant sections identified from knowledge files
-- Knowledge file content used (not LLM training data)
-
-## Feedback
-
-### For published nabledge skills
-Report issues or request features in [nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) - this helps users search and find solutions.
-
-### For unreleased development work
-Report issues or discuss changes in [nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues).
+### 未リリースの開発作業について
+[nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues) にイシューを登録するか、変更内容について議論してください。
