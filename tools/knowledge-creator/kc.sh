@@ -25,7 +25,6 @@ if [ -z "$COMMAND" ] || [ -z "$VERSION" ]; then
     echo "  --max-rounds N    CDEループ回数（default: 1）"
     echo "  --concurrency N   並列数（default: 4）"
     echo "  --test FILE       テストファイル指定"
-    echo "  --verbose         CC詳細ログ出力（stream-json + ツール呼び出し記録）"
     exit 1
 fi
 
