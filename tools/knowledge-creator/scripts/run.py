@@ -580,7 +580,7 @@ def _collect_file_details(ctx) -> list:
     def load_exec_rounds(executions_dir, file_id):
         """指定ファイルのexecution logsをタイムスタンプ順に返す（ラウンド順）。"""
         pattern = os.path.join(executions_dir, f'{file_id}_*.json')
-        paths = sorted(_glob.glob(pattern))
+        paths = sorted(p for p in _glob.glob(pattern) if not p.endswith('.out.json'))
         rounds = []
         for p in paths:
             try:

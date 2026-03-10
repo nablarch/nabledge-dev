@@ -64,7 +64,7 @@ def write_file(path: str, content: str):
 
 
 def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> subprocess.CompletedProcess:
-    """Run claude -p with metrics logging.
+    """Run claude -p with full logging (always-on verbose mode).
 
     Args:
         prompt: Prompt text
@@ -75,14 +75,18 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
     Returns:
         CompletedProcess with stdout containing structured_output JSON
 
-    Log format (saved to log_dir/{file_id}_{timestamp}.json):
-        file_id, timestamp, subtype, cc_metrics, prompt (IN), structured_output (OUT)
+    Output files (all saved to log_dir with shared {file_id}_{timestamp} prefix):
+        .json      - metadata: file_id, timestamp, subtype, cc_metrics, stop_reason, tool_calls
+        .in.txt    - prompt text (IN)
+        .out.json  - structured_output JSON (OUT)
+        .ndjson    - raw stream-json output from Claude CLI
     """
     disallowed = "Read,Edit,Write,Glob,Grep,LS,ToolSearch"
 
     cmd = [
         "claude", "-p",
-        "--output-format", "json",
+        "--output-format", "stream-json",
+        "--verbose",
         "--json-schema", json.dumps(json_schema),
         "--max-turns", "10",
         "--disallowedTools", disallowed
@@ -99,12 +103,52 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
 
     if result.returncode == 0:
         try:
-            response = json.loads(result.stdout)
+            raw_output = result.stdout
+            response = None
+            ndjson_lines = []
+            for line in raw_output.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                    ndjson_lines.append(obj)
+                    if obj.get("type") == "result":
+                        response = obj
+                except json.JSONDecodeError:
+                    continue
 
-            # Save execution log with cc_metrics, prompt (IN), and structured_output (OUT)
+            if response is None:
+                return subprocess.CompletedProcess(
+                    args=result.args, returncode=1,
+                    stdout="", stderr="No result line found in stream-json output"
+                )
+
+            # Save execution logs
             os.makedirs(log_dir, exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-            log_path = os.path.join(log_dir, f"{file_id}_{timestamp}.json")
+            base = os.path.join(log_dir, f"{file_id}_{timestamp}")
+
+            # Extract tool calls from stream
+            tool_calls = []
+            for obj in ndjson_lines:
+                content_items = []
+                if isinstance(obj.get("message"), dict):
+                    content_items = obj["message"].get("content", [])
+                elif isinstance(obj.get("content"), list):
+                    content_items = obj["content"]
+                for item in content_items:
+                    if isinstance(item, dict) and item.get("type") == "tool_use":
+                        input_data = item.get("input", {})
+                        input_summary = {}
+                        for k, v in input_data.items():
+                            sv = str(v)
+                            input_summary[k] = (sv[:200] + "...") if len(sv) > 200 else sv
+                        tool_calls.append({
+                            "tool_name": item.get("name", "unknown"),
+                            "input_summary": input_summary,
+                        })
+
             cc_metrics = {
                 "duration_ms":     response.get("duration_ms"),
                 "duration_api_ms": response.get("duration_api_ms"),
@@ -112,22 +156,34 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
                 "total_cost_usd":  response.get("total_cost_usd"),
                 "usage":           response.get("usage", {}),
             }
-            log_data = {
-                "file_id":           file_id,
-                "timestamp":         timestamp,
-                "subtype":           response.get("subtype"),
-                "cc_metrics":        cc_metrics,
-                "prompt":            prompt,
-                "structured_output": response.get("structured_output"),
-            }
 
-            with open(log_path, 'w', encoding='utf-8') as f:
-                json.dump(log_data, f, ensure_ascii=False, indent=2)
+            # {base}.json - metadata
+            with open(f"{base}.json", 'w', encoding='utf-8') as f:
+                json.dump({
+                    "file_id":     file_id,
+                    "timestamp":   timestamp,
+                    "subtype":     response.get("subtype"),
+                    "cc_metrics":  cc_metrics,
+                    "stop_reason": response.get("stop_reason"),
+                    "tool_calls":  tool_calls,
+                }, f, ensure_ascii=False, indent=2)
+
+            # {base}.in.txt - prompt (IN)
+            with open(f"{base}.in.txt", 'w', encoding='utf-8') as f:
+                f.write(prompt)
+
+            # {base}.out.json - structured_output (OUT)
+            structured_output = response.get("structured_output")
+            with open(f"{base}.out.json", 'w', encoding='utf-8') as f:
+                json.dump(structured_output, f, ensure_ascii=False, indent=2)
+
+            # {base}.ndjson - raw stream-json output
+            with open(f"{base}.ndjson", 'w', encoding='utf-8') as f:
+                f.write(raw_output)
 
             # Handle structured output
             subtype = response.get("subtype", "")
             if subtype == "success":
-                structured_output = response.get("structured_output")
                 if structured_output is not None:
                     return subprocess.CompletedProcess(
                         args=result.args, returncode=0,
@@ -201,6 +257,8 @@ def aggregate_cc_metrics(executions_dir: str) -> dict:
     count = 0
 
     for path in glob.glob(os.path.join(executions_dir, "*.json")):
+        if path.endswith(".out.json"):
+            continue
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
