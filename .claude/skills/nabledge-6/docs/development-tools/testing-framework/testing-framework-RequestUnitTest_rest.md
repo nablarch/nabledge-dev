@@ -1,5 +1,7 @@
 # リクエスト単体テスト（RESTfulウェブサービス）
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/RestMockHttpRequest.html)
+
 ## ステータスコード
 
 **クラス**: `RestTestSupport`
@@ -15,6 +17,8 @@ void assertStatusCode(String message, HttpResponse.Status expected, HttpResponse
 | `response` | 内蔵サーバから返却された`HttpResponse`インスタンス |
 
 期待値とレスポンスのステータスコードが不一致の場合、アサート失敗となる。
+
+<small>キーワード: RestTestSupport, assertStatusCode, HttpResponse.Status, HttpResponse, ステータスコード確認, HTTPレスポンス検証</small>
 
 ## レスポンスボディ
 
@@ -37,6 +41,8 @@ String readTextResource(String fileName)
 |---|---|---|
 | テストクラスソースファイル | `<PROJECT_ROOT>/test/java/com/example/` | `SampleTest.java` |
 | レスポンスボディ期待値ファイル | `<PROJECT_ROOT>/test/resources/com/example/SampleTest` | `response.json`（引数に指定） |
+
+<small>キーワード: RestTestSupport, readTextResource, JSONAssert, json-path-assert, XMLUnit, レスポンスボディ検証, JSONアサート</small>
 
 ## 概要・構造
 
@@ -133,6 +139,8 @@ RestMockHttpRequest request = post("/projects")
 HttpResponse sendRequest(HttpRequest request)
 ```
 
+<small>キーワード: SimpleRestTestSupport, RestTestSupport, RestMockHttpRequest, DbAccessTestSupport, HttpServer, HttpRequest, nablarch-testing-rest, nablarch-testing-jetty12, nablarch-testing-default-configuration, リクエスト単体テスト, 内蔵サーバ, RESTfulウェブサービステスト, sendRequest</small>
+
 ## 各種設定値
 
 環境依存の設定値はコンポーネント設定ファイルで変更可能。
@@ -176,3 +184,5 @@ HttpResponse sendRequest(HttpRequest request)
 <component name="restTestConfiguration" class="nablarch.test.core.http.RestTestConfiguration">
   <property name="webFrontControllerKey" value="jaxrsController"/>
 ```
+
+<small>キーワード: RestTestConfiguration, webBaseDir, webFrontControllerKey, nablarch.test.core.http.RestTestConfiguration, Webフロントコントローラー設定, jaxrsController, rest-request-test.xml, WebFrontController, nablarch.fw.web.servlet.WebFrontController</small>

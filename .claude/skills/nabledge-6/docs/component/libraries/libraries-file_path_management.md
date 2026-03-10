@@ -1,8 +1,12 @@
 # ファイルパス管理
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/file_path_management.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/util/FilePathSetting.html)
+
 ## 機能概要
 
 システムで使用するファイルの入出力先ディレクトリや拡張子を論理名で管理する機能。論理名を指定するだけで、そのディレクトリ配下のファイルに対する入出力を実現できる。
+
+<small>キーワード: ファイルパス管理, 論理名管理, ディレクトリ管理, 拡張子管理, ファイル入出力</small>
 
 ## モジュール一覧
 
@@ -13,6 +17,8 @@
   <artifactId>nablarch-core</artifactId>
 </dependency>
 ```
+
+<small>キーワード: nablarch-core, モジュール依存関係, com.nablarch.framework</small>
 
 ## 使用方法
 
@@ -51,6 +57,8 @@
 </component>
 ```
 
+<small>キーワード: FilePathSetting, basePathSettings, fileExtensions, filePathSetting, classpathスキーム, fileスキーム, ファイルパス設定, 論理名定義</small>
+
 ## 論理名が示すファイルパスを取得する
 
 `FilePathSetting` を使用して論理名に対応するファイルパスを取得する。
@@ -65,3 +73,5 @@ File csvOutputDir = filePathSetting.getBaseDirectory("csv-output");
 // /var/nablarch/input/users
 File users = filePathSetting.getFileWithoutCreate("fixed-file-input", "users")
 ```
+
+<small>キーワード: FilePathSetting, getFileWithoutCreate, getBaseDirectory, 論理名, ファイルパス取得</small>

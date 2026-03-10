@@ -1,5 +1,7 @@
 # リクエストディスパッチハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/request_path_java_package_mapping.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Request.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/RequestPathJavaPackageMapping.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/JavaPackageMappingEntry.html)
+
 ## ハンドラクラス名
 
 **クラス**: `nablarch.fw.handler.RequestPathJavaPackageMapping`
@@ -21,6 +23,8 @@
 
 処理: リクエストパスを解析し、対応するアクションの `handle` メソッドを呼び出す。
 
+<small>キーワード: RequestPathJavaPackageMapping, nablarch.fw.handler.RequestPathJavaPackageMapping, リクエストディスパッチ, アクション委譲, リクエストパス解析, メッセージングディスパッチ</small>
+
 ## モジュール一覧
 
 **モジュール**:
@@ -31,9 +35,13 @@
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw, モジュール依存設定, com.nablarch.framework</small>
+
 ## 制約
 
 なし
+
+<small>キーワード: 制約なし, RequestPathJavaPackageMapping制約</small>
 
 ## ベースパッケージ、ベースパスの設定
 
@@ -46,11 +54,15 @@
 </component>
 ```
 
+<small>キーワード: basePackage, basePath, ベースパッケージ設定, ベースパス設定, RequestPathJavaPackageMapping設定</small>
+
 ## 複数パッケージのクラスにディスパッチする
 
 リクエストパスのクラス名指定箇所に、ベースパッケージからの相対パッケージ名を指定することで複数パッケージのクラスへディスパッチできる。
 
 例: :ref:`request_path_java_package_mapping_path_setting` の設定（basePath=`/app/action/`、basePackage=`nablarch.application`）で `nablarch.application.xxx.ExampleBatchAction` へディスパッチする場合、リクエストパスに `/app/action/xxx/ExampleBatchAction` を指定する。
+
+<small>キーワード: 複数パッケージディスパッチ, 相対パッケージ指定, リクエストパスサブパッケージ</small>
 
 ## クラス名のプレフィクス、サフィックスの設定
 
@@ -66,6 +78,8 @@
   <property name="classNameSuffix" value="BatchAction" />
 </component>
 ```
+
+<small>キーワード: classNamePrefix, classNameSuffix, クラス名省略, プレフィクス設定, サフィックス設定</small>
 
 ## 複雑なパッケージへのディスパッチ
 
@@ -97,6 +111,8 @@
 </component>
 ```
 
+<small>キーワード: JavaPackageMappingEntry, nablarch.fw.handler.JavaPackageMappingEntry, optionalPackageMappingEntries, requestPattern, 複雑なパッケージディスパッチ, パッケージマッピング, リクエストパターン設定</small>
+
 ## ディスパッチ対象クラスを遅延実行する
 
 デフォルトではディスパッチ先クラスへの委譲は即時実行される。ハンドラキュー上の後続ハンドラ実行後にディスパッチしたい場合は、`immediate` プロパティに `false` を設定する。
@@ -107,3 +123,5 @@
   <property name="immediate"   value="false" />
 </component>
 ```
+
+<small>キーワード: immediate, 遅延実行, ディスパッチタイミング制御, 後続ハンドラ実行後ディスパッチ</small>

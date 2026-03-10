@@ -1,5 +1,7 @@
 # マスタデータ投入ツール インストールガイド
 
+**公式ドキュメント**: [マスタデータ投入ツール インストールガイド](https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.html)
+
 ## 前提事項
 
 マスタデータ投入ツールを使用するには以下の前提条件を満たしている必要がある。
@@ -13,6 +15,8 @@
 
 > **注意**: バックアップ用スキーマおよびそのテーブルの作成については、マスタデータ自動復旧機能ガイドの `:ref:master_data_backup_settings` を参照。
 
+<small>キーワード: 前提条件, インストール要件, Eclipse インストール, Maven インストール, Nablarchアーキタイプ, テーブル作成済み, バックアップ用スキーマ, マスタデータ投入ツール前提</small>
+
 ## 提供方法・セットアップ手順
 
 本ツールは `nablarch-testing-XXX.jar` にて提供される。
@@ -25,6 +29,8 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 ```
 
 続いて `master-data-setup-tool.zip` をダウンロードし、プロジェクトのディレクトリ（pom.xmlが存在するディレクトリ）にディレクトリ付きで展開する。
+
+<small>キーワード: nablarch-testing jar, nablarch-testing-XXX.jar, mvn compile, mvn dependency:copy-dependencies, DoutputDirectory=lib, 提供方法, ツールセットアップ, マスタデータ投入ツール インストール, jarファイル ダウンロード</small>
 
 ## プロパティファイルの書き換え
 
@@ -54,11 +60,15 @@ masterdata.test.backup-schema=nablarch_test_master
 
 その他の設定値はディレクトリ構造が変わらない限り修正不要。
 
+<small>キーワード: masterdata.test.backup-schema, バックアップスキーマ設定, マスタデータ投入ツール設定, プロパティファイル, master-data-setup-tool.zip, MASTER_DATA.xlsx, master_data-build.properties, master_data-log.properties, master_data-app-log.properties</small>
+
 ## Antビュー起動
 
 Eclipse ツールバーから ウィンドウ(Window)→設定(Show View) を選択し、Antビューを開く。
 
 ![Antビューを開く操作画面](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_ConfigMasterDataSetupTool/open_ant_view.png)
+
+<small>キーワード: Eclipse連携, Antビュー起動, Eclipseツール設定, マスタデータ投入ツール Eclipse, Show View</small>
 
 ## ビルドファイル登録
 
@@ -71,3 +81,5 @@ Eclipse ツールバーから ウィンドウ(Window)→設定(Show View) を選
 ![ビルドファイル選択画面](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_ConfigMasterDataSetupTool/select_build_file.png)
 
 ![登録済みビルドファイルの確認](../../knowledge/development-tools/testing-framework/assets/testing-framework-02_ConfigMasterDataSetupTool/build_file_in_view.png)
+
+<small>キーワード: master_data-build.xml, Antビルドファイル登録, Eclipseビルドファイル, マスタデータ投入ツール設定, Antビュー</small>

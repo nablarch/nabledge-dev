@@ -1,5 +1,7 @@
 # 静的データのキャッシュ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/static_data_cache.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/cache/StaticDataLoader.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/cache/BasicStaticDataCache.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/cache/StaticDataCache.html)
+
 ## 機能概要
 
 データベースやファイルなどに格納した静的データへのアクセスを高速化するキャッシュ機能を提供する。この機能は単体では動作しない。静的データをキャッシュしたい場合には、:ref:`static_data_cache-load_data` を参照しデータのロード処理を実装すること。
@@ -7,6 +9,8 @@
 > **重要**: キャッシュしたデータをヒープ上に保持する。大量のデータをキャッシュした場合、Full GCが頻発しパフォーマンスに悪影響を与える可能性があるため注意すること。
 
 **任意のデータをキャッシュできる**: この機能が提供するインタフェースを実装することで任意のデータをキャッシュできる。新たなデータをキャッシュしたい場合にはデータをロードする処理のみを実装すればよい。マルチスレッド環境下での同期処理を行う必要がない。
+
+<small>キーワード: 静的データキャッシュ, ヒープキャッシュ, Full GC, キャッシュ機能, マルチスレッド同期不要</small>
 
 ## モジュール一覧
 
@@ -17,6 +21,8 @@
   <artifactId>nablarch-core</artifactId>
 </dependency>
 ```
+
+<small>キーワード: nablarch-core, モジュール依存関係, com.nablarch.framework</small>
 
 ## 任意のデータをキャッシュする
 
@@ -75,6 +81,8 @@ public class SampleService {
 </component>
 ```
 
+<small>キーワード: StaticDataLoader, BasicStaticDataCache, StaticDataCache, BasicApplicationInitializer, loader, データロード, キャッシュ初期化, loadAll, getValue</small>
+
 ## データのキャッシュタイミングを制御する
 
 データのキャッシュタイミングは以下の2パターンから選択できる（:ref:`static_data_cache-cache_timing`）:
@@ -94,3 +102,5 @@ public class SampleService {
   <property name="loadOnStartup" value="true" />
 </component>
 ```
+
+<small>キーワード: BasicStaticDataCache, loadOnStartup, 一括ロード, オンデマンドロード, キャッシュタイミング</small>

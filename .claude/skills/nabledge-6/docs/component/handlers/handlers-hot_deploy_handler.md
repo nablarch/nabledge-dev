@@ -1,5 +1,7 @@
 # ホットデプロイハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/hot_deploy_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/hotdeploy/HotDeployHandler.html)
+
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.hotdeploy.HotDeployHandler`
@@ -12,6 +14,8 @@
 
 > **補足**: 本ハンドラを使用する場合は、サーバのホットデプロイ機能を無効化すること。
 
+<small>キーワード: HotDeployHandler, nablarch.fw.hotdeploy.HotDeployHandler, ホットデプロイ, クラス再ロード, 開発環境専用, 本番環境禁止, リクエスト単体テスト</small>
+
 ## モジュール一覧
 
 **モジュール**:
@@ -23,6 +27,8 @@
 ```
 
 **制約**: なし。
+
+<small>キーワード: nablarch-fw-web-hotdeploy, com.nablarch.framework, モジュール, Maven依存関係, 制約, ホットデプロイハンドラ制約</small>
 
 ## ホットデプロイ対象のパッケージを指定する
 
@@ -40,3 +46,5 @@
 ```
 
 > **重要**: エンティティクラスはホットデプロイ対象にしてはならない。理由: (1) リクエストごとに対象パッケージ内の全クラスが再ロードされるためレスポンス速度の低下につながる恐れがある (2) リクエストごとにクラスローダが変わるため、`:ref:session_store` を使用した場合などでエンティティクラスのキャストに失敗する場合がある。
+
+<small>キーワード: targetPackages, ホットデプロイ対象パッケージ, エンティティクラス除外, クラスローダ, session_store, キャスト失敗</small>

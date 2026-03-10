@@ -1,5 +1,7 @@
 # リクエスト単体テストの実施方法(ファイルアップロード)
 
+**公式ドキュメント**: [リクエスト単体テストの実施方法(ファイルアップロード)](https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/fileupload.html)
+
 ## アップロードファイルの記述方法
 
 ファイルアップロードのテストはウェブアプリケーションのテストの一種であるため、ファイルアップロードのテストを実施するにはウェブアプリケーションのテスト（index）が前提となる。
@@ -11,6 +13,8 @@ ${attach:ファイルパス}
 ```
 
 > **補足**: ファイルパスは、**テスト実行時のカレントディレクトリからの相対パス**（プロジェクトルートディレクトリからの相対パス）で記述する。
+
+<small>キーワード: ${attach:ファイルパス}, ファイルアップロード, HTTPリクエストパラメータ, アップロードファイル指定, プロジェクトルート相対パス, ウェブアプリケーションのテスト前提</small>
 
 ## バイナリファイルの場合
 
@@ -32,6 +36,8 @@ ${attach:ファイルパス}
 | uploadfile | comment | public |
 |---|---|---|
 | `${attach:test/resources/images/picture.png}` | アップロードします。 | `false` |
+
+<small>キーワード: バイナリファイルアップロード, 画像ファイル, requestParams, LIST_MAP, ${attach:}指定例</small>
 
 ## 固定長ファイル、CSVファイルの場合
 
@@ -62,3 +68,5 @@ ${attach:ファイルパス}
 | 田中次郎 | 20 | 大阪府門真市東田町2-2 |
 
 > **補足**: 固定長ファイルやCSVファイルのアップロードでも事前にファイルを用意することは可能だが、テストデータの保守容易性を考慮するとテストデータシートに記載すべきである。
+
+<small>キーワード: 固定長ファイル, CSVファイル, SETUP_FIXED, テストデータシート, text-encoding, record-separator</small>

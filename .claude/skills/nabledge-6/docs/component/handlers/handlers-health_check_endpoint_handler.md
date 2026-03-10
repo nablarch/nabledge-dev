@@ -1,5 +1,7 @@
 # ヘルスチェックエンドポイントハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/health_check_endpoint_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/HealthCheckEndpointHandler.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/health/DbHealthChecker.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html) [5](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/health/HealthChecker.html) [6](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/health/HealthCheckResponseBuilder.html)
+
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.web.handler.HealthCheckEndpointHandler`
@@ -7,6 +9,8 @@
 :ref:`web_application` と :ref:`restful_web_service` のヘルスチェックを行うエンドポイントを提供するハンドラ。本ハンドラはエンドポイントとなるため、後続ハンドラの呼び出しは行わない。
 
 デフォルト実装として `DbHealthChecker` と :ref:`lettuce_adaptor` (Redis) のヘルスチェックを提供している。
+
+<small>キーワード: HealthCheckEndpointHandler, nablarch.fw.web.handler.HealthCheckEndpointHandler, ヘルスチェックエンドポイントハンドラ, 後続ハンドラ呼び出しなし, DbHealthChecker, Redisヘルスチェック</small>
 
 ## モジュール一覧
 
@@ -26,9 +30,13 @@ DBのヘルスチェックを行う場合:
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw-web, nablarch-core-jdbc, Maven依存関係, モジュール設定</small>
+
 ## 制約
 
 > **重要**: :ref:`http_response_handler` または :ref:`jaxrs_response_handler` より後ろに配置すること。本ハンドラで生成した `HttpResponse` を :ref:`http_response_handler` または :ref:`jaxrs_response_handler` が処理するため。
+
+<small>キーワード: http_response_handler, jaxrs_response_handler, ハンドラ配置順序, HttpResponse, 配置制約</small>
 
 ## ヘルスチェックのエンドポイントを作る
 
@@ -77,6 +85,8 @@ DBヘルスチェックの設定例:
 
 `status` にヘルスチェック全体の結果、`targets` に対象ごとの結果を出力する。`targets` の1つでも失敗の場合、全体結果が失敗となる。
 
+<small>キーワード: HealthCheckEndpointHandler, DbHealthChecker, HealthChecker, healthCheckers, dataSource, dialect, ヘルスチェックエンドポイント設定, DBヘルスチェック, JSONレスポンス, RequestHandlerEntry, requestPattern</small>
+
 ## ヘルスチェックを追加する
 
 `HealthChecker` を継承したクラスを作成し、`healthCheckers` プロパティに指定するとヘルスチェックを追加できる。
@@ -110,6 +120,8 @@ public class CustomHealthChecker extends HealthChecker {
   </property>
 </component>
 ```
+
+<small>キーワード: HealthChecker, CustomHealthChecker, tryOut, HttpRequest, ExecutionContext, healthCheckers, カスタムヘルスチェック実装, ヘルスチェック追加</small>
 
 ## ヘルスチェック結果のレスポンスを変更する
 
@@ -181,3 +193,5 @@ public class CustomHealthCheckResponseBuilder extends HealthCheckResponseBuilder
   </property>
 </component>
 ```
+
+<small>キーワード: HealthCheckResponseBuilder, CustomHealthCheckResponseBuilder, healthyStatusCode, healthyStatus, unhealthyStatusCode, unhealthyStatus, writeBody, getContentType, buildResponseBody, HealthCheckResult, HealthCheckResult.Target, レスポンスカスタマイズ, ステータスコード変更</small>

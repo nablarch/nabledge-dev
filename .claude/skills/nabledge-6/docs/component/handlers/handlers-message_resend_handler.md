@@ -1,5 +1,7 @@
 # 再送電文制御ハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/mom_messaging/message_resend_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/handler/MessageResendHandler.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/tableschema/SentMessageTableSchema.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/InterSystemMessage.html) [5](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/ResponseMessage.html) [6](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/StandardFwHeaderDefinition.html)
+
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.messaging.handler.MessageResendHandler`
@@ -13,6 +15,8 @@
 2. 再送電文の場合: 保存済み応答電文を送信
 3. 再送電文以外または保存済み応答電文がない場合: 後続ハンドラへ委譲
 
+<small>キーワード: MessageResendHandler, nablarch.fw.messaging.handler.MessageResendHandler, 再送電文制御, 重複電文制御, 応答電文自動送信, 処理フロー</small>
+
 ## モジュール一覧
 
 **モジュール**:
@@ -23,10 +27,14 @@
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw-messaging, com.nablarch.framework, Mavenモジュール</small>
+
 ## 制約
 
 - :ref:`message_reply_handler` よりも後ろに設定すること: 作成した応答電文を送信するために、:ref:`message_reply_handler` より後ろに配置する必要がある。
 - :ref:`transaction_management_handler` よりも後ろに設定すること: 応答電文をDBに保存するため、:ref:`transaction_management_handler` より後ろに配置する必要がある。
+
+<small>キーワード: message_reply_handler, transaction_management_handler, ハンドラ順序制約, 配置順序</small>
 
 ## 応答電文の保存先について
 
@@ -42,6 +50,8 @@
 
 デフォルトのテーブル名・カラム名は `SentMessageTableSchema` を参照。変更する場合は `sentMessageTableSchemaプロパティ` で設定可能。
 
+<small>キーワード: SentMessageTableSchema, nablarch.fw.messaging.tableschema.SentMessageTableSchema, sentMessageTableSchema, 応答電文テーブル, 送信済み電文保存, テーブルスキーマ, InterSystemMessage, ResponseMessage</small>
+
 ## 同一電文(再送電文)の判定方法
 
 以下の条件を両方満たす場合、再送電文（処理済み）と判定し、保存済み応答電文を返却する:
@@ -54,6 +64,8 @@
 > - 再送電文の相関メッセージIDには、初回送信時の要求電文のメッセージIDを設定すること
 > - フレームワーク制御ヘッダの再送要求フラグに値を設定すること
 
+<small>キーワード: 再送電文判定, フレームワーク制御ヘッダ, 再送要求フラグ, 相関メッセージID, mom_system_messaging-fw_header, 重複受信判定</small>
+
 ## フレームワーク制御ヘッダの設定
 
 応答電文内のフレームワーク制御ヘッダ定義を変更する場合、プロジェクトで拡張したフレームワーク制御ヘッダ定義を設定する。未設定の場合はデフォルトの `StandardFwHeaderDefinition` が使用される。
@@ -65,3 +77,5 @@
   </property>
 </component>
 ```
+
+<small>キーワード: StandardFwHeaderDefinition, nablarch.fw.messaging.StandardFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダカスタマイズ</small>

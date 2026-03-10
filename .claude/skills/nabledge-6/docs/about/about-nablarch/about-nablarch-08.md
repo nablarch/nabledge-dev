@@ -1,5 +1,7 @@
 # HTMLメール送信機能サンプル
 
+**公式ドキュメント**: [HTMLメール送信機能サンプル](https://nablarch.github.io/docs/LATEST/doc/biz_samples/08/index.html)
+
 ## 実装済み
 
 > **重要**: 本サンプルはキャンペーン通知のようなHTMLメールの一括送信には対応していない。以下に該当する場合は専用プロダクトの使用を推奨する:
@@ -26,6 +28,8 @@
 - HTMLメール（代替テキストを含む）を送信できる
 - 本文のプレースホルダー部分の文字列にHTMLエスケープを行う（通常のオンライン画面と同様のセキュリティ対策）
 
+<small>キーワード: HTMLメール送信, 代替テキスト, HTMLエスケープ, セキュリティ対策, 一括送信非対応, メールクライアント差異, レスポンシブデザイン非推奨, mail</small>
+
 ## 取り下げ
 
 取り下げた要求（本サンプルでは提供しない）:
@@ -37,6 +41,8 @@
    - 画像埋めこみはメール容量を増大させ、HTMLを拒否したユーザでも受信に時間がかかる
    - メールサーバへの負荷も増大する
    - コンシューマ向けWebサービスではURL形式の使用が多いため未提供
+
+<small>キーワード: 未対応機能, 画像埋めこみ非対応, クライアント差異吸収非対応, 取り下げ要求</small>
 
 ## メールの形式
 
@@ -60,6 +66,8 @@
 
 **メール構造パターン4** (HTML、添付有り):
 ![メール構造パターン4](../../knowledge/about/about-nablarch/assets/about-nablarch-08/Mail_Pattern04.jpg)
+
+<small>キーワード: TemplateMailContext, TemplateHtmlMailContext, メール形式, メール構造パターン, 添付ファイル, TEXT, HTML</small>
 
 ## クラス図
 
@@ -93,6 +101,8 @@
 
 > **注意**: Nablarchアプリケーションフレームワークの標準メール送信機能ではスキーマ定義を設定ファイルで行うが、本ライブラリではソースコードを直接修正すれば良いため、設定ファイルでのスキーマ定義は不要。ただし、テーブルアクセスの機能（`HtmlMailTable`）はRequesterとSenderで共通のため、`htmlMailTable`コンポーネントの定義は必ず行うこと。
 
+<small>キーワード: HtmlMailRequester, TemplateHtmlMailContext, HtmlMailTable, HtmlMailSender, HtmlMailContentCreator, MailRequester, MailSender, クラス構成, コンポーネント設定, mailRequester</small>
+
 ## データモデル
 
 メール機能からの拡張テーブル（DDLはテスト資源に含まれる）。
@@ -112,9 +122,13 @@
 | メール送信要求ID | `java.lang.String` | PK |
 | 代替テキスト | `java.lang.String` | HTMLメールを表示できないメーラーのためのテキスト |
 
+<small>キーワード: HTMLメール用代替テキストテンプレートテーブル, HTMLメール用代替テキストテーブル, メールテンプレートID, 言語, 代替テキスト, メール送信要求ID, データモデル</small>
+
 ## HTMLメールの送信
 
 実装は:ref:`メール送信機能<mail>`の定型メール送信と同様。業務アクションで使用するコンテキストクラスが `TemplateMailContext` の代わりに `TemplateHtmlMailContext` となる点のみが異なる。
+
+<small>キーワード: HTMLメール送信実装, TemplateMailContext, TemplateHtmlMailContext, 定型メール送信</small>
 
 ## コンテンツの動的な切替
 
@@ -135,6 +149,8 @@ public HttpResponse doSendMail(HttpRequest req, ExecutionContext ctx) {
     // その他のプロパティを設定し、MailRequesterを呼び出す。
 }
 ```
+
+<small>キーワード: TemplateHtmlMailContext, contentType, text/plain, text/html, コンテンツ切替, 動的切替, 代替テキスト切替</small>
 
 ## 電子署名の併用
 
@@ -179,6 +195,8 @@ protected void addBodyContent(MimeMessage mimeMessage, MailRequestTable.MailRequ
 }
 ```
 
+<small>キーワード: HtmlMailRequester, HtmlMailTable, HtmlMailContentCreator, SMIMESignedMailSender, 電子署名, S/MIME, HTMLメール併用, bouncycastle_mail_sample</small>
+
 ## タグを埋めこむ
 
 > **重要**: タグの埋めこみは以下の理由から提供時には実装しておらず、推奨もしていない:
@@ -199,3 +217,5 @@ public void setReplaceKeyRawValue(String key, String tag) {
 > **補足**: HTMLメールのテストは通常のメールと同様:
 > - HTMLテキストはメール送信要求のテーブルを検証する
 > - 実際のメールクライアントでのレイアウト確認は送信バッチを使用してメールを送信して確認する
+
+<small>キーワード: TemplateHtmlMailContext, setReplaceKeyRawValue, setReplaceKeyValue, HTMLタグ埋めこみ, HTMLエスケープ回避, セキュリティリスク</small>

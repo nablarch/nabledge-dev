@@ -1,5 +1,7 @@
 # コンテナ用Nablarchバッチプロジェクトの初期セットアップ
 
+**公式ドキュメント**: [コンテナ用Nablarchバッチプロジェクトの初期セットアップ](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/blank_project/setup_containerBlankProject/setup_ContainerBatch.html)
+
 ## コンテナ用Nablarchバッチプロジェクトの初期セットアップ
 
 コンテナ用Nablarchバッチプロジェクトの初期セットアップ手順。以下の順に実施する:
@@ -7,6 +9,8 @@
 2. 疎通確認
 3. コンテナイメージ作成
 4. コンテナイメージ実行
+
+<small>キーワード: コンテナバッチ初期セットアップ, ブランクプロジェクト作成手順, コンテナイメージ作成, コンテナイメージ実行</small>
 
 ## 生成するプロジェクトの概要
 
@@ -20,6 +24,8 @@
 メール送信バッチ: :ref:`常駐バッチ<nablarch_batch-resident_batch>` として動作し、SMTPサーバへメール送信。設定ファイルサンプルは `src/main/resources/mail-sender-boot.xml`。初期環境構築時は不要。必要になったタイミングで :ref:`メール送信<mail>` を参照。
 
 他プロジェクトとの関係・ディレクトリ構成: [../MavenModuleStructures/index](blank-project-MavenModuleStructures.md) 参照。
+
+<small>キーワード: プロジェクト種別, H2 Database Engine, メール送信バッチ, Mavenプロジェクト, 単一プロジェクト構成</small>
 
 ## ブランクプロジェクト作成
 
@@ -48,11 +54,15 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 - 入力した内容をもとにひな形を生成する場合は「Y」を入力する。
 - プロジェクト情報の入力をやり直したい場合は「N」を入力する。
 
+<small>キーワード: mvn archetype:generate, nablarch-container-batch-archetype, archetypeVersion, groupId, artifactId</small>
+
 ## 疎通確認
 
 疎通確認の手順は通常のNablarchバッチプロジェクトと同じ。:ref:`Nablarchバッチプロジェクトの初期セットアップ手順 <firstStepBatchStartupTest>` を参照。
 
 > **注意**: アーティファクトIDが `myapp-container-batch` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+
+<small>キーワード: 疎通確認, コンテナバッチ動作確認, myapp-container-batch, firstStepBatchStartupTest</small>
 
 ## コンテナイメージを作成する
 
@@ -93,6 +103,8 @@ myapp-container-batch   latest      1cafd4108237   51 years ago   253MB
 > <jib.from.image>eclipse-temurin@sha256:7dacdab7c335d90cf4e110f5744ca27d5a3ed87901a7c08022c8c12055438bd2</jib.from.image>
 > ```
 
+<small>キーワード: Jib, jib:dockerBuild, jib.from.image, eclipse-temurin, Dockerイメージビルド, コンテナイメージ作成</small>
+
 ## コンテナイメージを実行する
 
 **都度起動バッチ**:
@@ -113,10 +125,14 @@ docker run -it --rm -v %CD%\\h2:/h2 --name myapp-container-batch myapp-container
 
 動作は :ref:`疎通確認(テーブルをキューとして使ったメッセージング)<firstStepBatchStartupTestDbMessagingBatch>` と同じ。待機状態となるのでctrl+c等で強制終了。
 
+<small>キーワード: docker run, 都度起動バッチ, テーブルをキューとして使ったメッセージング, batch-boot.xml, resident-batch-boot.xml, コンテナ実行, SampleBatch, SampleResiBatch</small>
+
 ## データベースに関する設定を行う
 
 - RDBMSを変更する場合: :ref:`customize-db` を参照。
 - ER図からのDDL生成・実行、Entityクラス自動生成には gsp-dba-maven-plugin の初期設定が必要。:ref:`gsp-maven-plugin` 参照。
+
+<small>キーワード: H2 Database Engine, RDBMS変更, gsp-dba-maven-plugin, DDL生成, データベース設定</small>
 
 ## 補足
 
@@ -132,3 +148,5 @@ docker run -it --rm -v %CD%\\h2:/h2 --name myapp-container-batch myapp-container
 
 **H2、ツールについて**:
 [../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照すること。
+
+<small>キーワード: コンテナイメージ実行オプション, Docker Desktop, Docker Toolbox, ボリューム指定, -rmオプション, SAMPLE.h2.db</small>

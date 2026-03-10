@@ -1,10 +1,14 @@
 # 電文応答制御ハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/mom_messaging/message_reply_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/ResponseMessage.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/StandardFwHeaderDefinition.html)
+
 ## ハンドラクラス名
 
 後続ハンドラの処理結果（`ResponseMessage`）をもとに応答電文を作成し、接続先システムに返却する。
 
 **クラス名**: `nablarch.fw.messaging.handler.MessageReplyHandler`
+
+<small>キーワード: MessageReplyHandler, nablarch.fw.messaging.handler.MessageReplyHandler, ResponseMessage, 電文応答制御ハンドラ, 応答電文送信</small>
 
 ## モジュール一覧
 
@@ -16,12 +20,16 @@
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw-messaging, com.nablarch.framework, Mavenモジュール, 依存関係設定</small>
+
 ## 制約
 
 - :ref:`messaging_context_handler` より後ろに設定すること。本ハンドラはMQへ応答電文を送信するため、MQ接続を確立する :ref:`messaging_context_handler` より後ろに配置する必要がある。
 - :ref:`transaction_management_handler` との位置関係は2相コミットの使用有無で異なる。
   - **2相コミットを使用する場合**: DBトランザクションとMQ（Jakarta Messaging）トランザクションをトランザクションマネージャでまとめてコミットするため、トランザクション制御前に応答電文を送信する必要がある。:ref:`transaction_management_handler` より後ろに本ハンドラを設定すること。
   - **2相コミットを使用しない場合**: 本ハンドラが応答を送信する前に業務処理の結果を確定させる必要がある。:ref:`transaction_management_handler` は本ハンドラより後ろに設定すること。
+
+<small>キーワード: messaging_context_handler, transaction_management_handler, ハンドラ配置順序, 2相コミット, トランザクション制御, メッセージキュー配置制約</small>
 
 ## フレームワーク制御ヘッダの設定
 
@@ -36,3 +44,5 @@
   </property>
 </component>
 ```
+
+<small>キーワード: StandardFwHeaderDefinition, nablarch.fw.messaging.StandardFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダ, カスタマイズ, mom_system_messaging-fw_header</small>

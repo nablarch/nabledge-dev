@@ -1,5 +1,7 @@
 # プロセス停止制御ハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/standalone/process_stop_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/BasicProcessStopHandler.html)
+
 ## ハンドラクラス名
 
 **クラス**: `nablarch.fw.handler.BasicProcessStopHandler`
@@ -13,6 +15,8 @@
 > **補足**: 都度起動バッチで、大量データ処理が終わらない場合などに、強制的に処理を停止するために使用する。
 
 > **重要**: 本ハンドラはプロセス停止フラグの初期化を行わない。再度同じプロセスを実行する際には、予めプロセス停止フラグを初期化すること。
+
+<small>キーワード: BasicProcessStopHandler, nablarch.fw.handler.BasicProcessStopHandler, プロセス停止制御, ループ中断, プロセス停止フラグ, 都度起動バッチ</small>
 
 ## モジュール一覧
 
@@ -29,9 +33,13 @@
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw-standalone, nablarch-fw-batch, モジュール依存関係</small>
+
 ## 制約
 
 :ref:`thread_context_handler` より後ろに設定すること。本ハンドラはスレッドコンテキスト上のリクエストIDをもとに停止処理を行うため、:ref:`thread_context_handler` より後ろに配置する必要がある。
+
+<small>キーワード: ThreadContextHandler, thread_context_handler, スレッドコンテキスト, リクエストID, ハンドラ設定順序</small>
 
 ## プロセス停止制御を行うための設定
 
@@ -67,3 +75,5 @@
   </property>
 </component>
 ```
+
+<small>キーワード: dbTransactionManager, tableName, requestIdColumnName, processHaltColumnName, checkInterval, exitCode, BasicApplicationInitializer, プロセス停止設定, 都度起動バッチ, 常駐バッチ, サブスレッド, メインスレッド</small>

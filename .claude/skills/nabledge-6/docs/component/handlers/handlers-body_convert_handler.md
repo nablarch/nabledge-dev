@@ -1,10 +1,14 @@
 # リクエストボディ変換ハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/rest/body_convert_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/jakarta/ws/rs/Consumes.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/jakarta/ws/rs/Produces.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/BodyConvertHandler.html) [5](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/BodyConverter.html)
+
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.jaxrs.BodyConvertHandler`
 
 リクエストボディとレスポンスボディの変換処理を行うハンドラ。
+
+<small>キーワード: BodyConvertHandler, nablarch.fw.jaxrs.BodyConvertHandler, リクエストボディ変換ハンドラ, レスポンスボディ変換</small>
 
 ## モジュール一覧
 
@@ -16,9 +20,13 @@
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw-jaxrs, com.nablarch.framework, モジュール依存関係</small>
+
 ## 制約
 
 本ハンドラは `router_adaptor` よりも後ろに設定すること。リソース(アクション)クラスのメソッドに設定されたアノテーション情報を元に変換処理を行うため、ディスパッチ先を特定する `router_adaptor` よりも後ろに配置する必要がある。
+
+<small>キーワード: router_adaptor, ハンドラ設定順序, ディスパッチ先特定, アノテーション情報</small>
 
 ## 変換処理を行うコンバータを設定する
 
@@ -39,6 +47,8 @@
 </component>
 ```
 
+<small>キーワード: BodyConverter, bodyConverters, JaxbBodyConverter, FormUrlEncodedConverter, MIMEタイプ変換設定, 415ステータスコード</small>
+
 ## リクエストボディをFormに変換する
 
 リクエストボディの変換フォーマットはメソッドの `Consumes` アノテーションで決まる。リクエストヘッダの `Content-Type` が `Consumes` のMIMEと異なる場合、ステータスコード `415` を返却する。
@@ -54,6 +64,8 @@ public HttpResponse saveJson(Person person) {
 }
 ```
 
+<small>キーワード: @Consumes, Consumes, Content-Type, リクエストボディ変換, 415ステータスコード, @Valid, HttpResponse, MediaType, application/json, UniversalDao</small>
+
 ## リソース(アクション)の処理結果をレスポンスボディに変換する
 
 レスポンスボディへの変換フォーマットはメソッドの `Produces` アノテーションで決まる。
@@ -67,3 +79,5 @@ public List<Person> findJson() {
     return UniversalDao.findAll(Person.class);
 }
 ```
+
+<small>キーワード: @Produces, Produces, レスポンスボディ変換, application/json, MediaType, UniversalDao</small>

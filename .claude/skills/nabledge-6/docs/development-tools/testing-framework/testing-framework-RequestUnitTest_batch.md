@@ -1,12 +1,18 @@
 # リクエスト単体テスト（バッチ処理）
 
+**公式ドキュメント**: [リクエスト単体テスト（バッチ処理）](https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_batch.html)
+
 ## 概要
 
 リクエスト単体テスト（バッチ処理）では、実際にバッチをコマンドラインから起動したときの動作を擬似的に再現し、テストを行う。
 
+<small>キーワード: リクエスト単体テスト バッチ処理, コマンドラインから起動, 動作を擬似的に再現, バッチテスト概要</small>
+
 ## 全体像
 
 ![バッチリクエスト単体テストクラス構成図](../../knowledge/development-tools/testing-framework/assets/testing-framework-RequestUnitTest_batch/batch_request_test_class.png)
+
+<small>キーワード: バッチリクエスト単体テストクラス構成図, クラス構成, バッチテスト全体構成</small>
 
 ## 主なクラス・リソース一覧
 
@@ -23,11 +29,15 @@
 | DbAccessTestSupport | DB準備データ投入などデータベースを使用するテストに必要な機能を提供する | － |
 | FileSupport | 入力ファイル作成などファイルを使用するテストに必要な機能を提供する | － |
 
+<small>キーワード: 主なクラス一覧, 作成単位, テスト対象クラスにつき１つ, テストクラスにつき１つ, DbAccessTestSupport, リクエスト単体テストクラス, Excelファイル テストデータ, StandaloneTestSupportTemplate, BatchRequestTestSupport, TestShot, MainForRequestTesting, FileSupport</small>
+
 ## StandaloneTestSupportTemplate
 
 **クラス**: `StandaloneTestSupportTemplate`
 
 バッチ・メッセージング処理など、コンテナ外で動作する処理のテスト実行環境を提供する。テストデータを読み取り、全 `TestShot` を実行する。
+
+<small>キーワード: StandaloneTestSupportTemplate, コンテナ外処理テスト, テストショット実行, バッチテスト実行環境</small>
 
 ## TestShot
 
@@ -46,6 +56,8 @@
 
 入力データ準備や結果確認ロジックはバッチや各種メッセージング処理ごとに異なるので、方式に応じたカスタマイズが可能となっている。
 
+<small>キーワード: TestShot, テストショット, データベースセットアップ, ステータスコード確認, ログ出力結果確認, カスタマイズ可能, 方式に応じたカスタマイズ</small>
+
 ## BatchRequestTestSupport
 
 **クラス**: `BatchRequestTestSupport`
@@ -60,6 +72,8 @@
 
 具体的な使用方法は [../05_UnitTestGuide/02_RequestUnitTest/batch](testing-framework-batch.md) を参照。
 
+<small>キーワード: BatchRequestTestSupport, バッチリクエスト単体テスト, 入力ファイル作成, 出力ファイル確認, テストスーパクラス</small>
+
 ## MainForRequestTesting
 
 **クラス**: `MainForRequestTesting`
@@ -68,11 +82,15 @@
 - テスト用コンポーネント設定ファイルからシステムリポジトリを初期化する
 - 常駐化機能を無効化する
 
+<small>キーワード: MainForRequestTesting, テスト用メインクラス, 常駐化無効化, テスト用コンポーネント設定</small>
+
 ## DbAccessTestSupport
 
 **クラス**: `DbAccessTestSupport`
 
 DB準備データ投入などデータベースを使用するテストに必要な機能を提供するクラス。
+
+<small>キーワード: DbAccessTestSupport, DB準備データ投入, データベーステスト, データベース使用テスト</small>
 
 ## FileSupport
 
@@ -81,6 +99,8 @@ DB準備データ投入などデータベースを使用するテストに必要
 ファイル操作を提供するクラス（バッチ処理以外でも使用可能）:
 - テストデータから入力ファイルを作成する
 - テストデータの期待値と実際に出力されたファイルの内容を比較する
+
+<small>キーワード: FileSupport, ファイルテスト, 入力ファイル作成, 出力ファイル比較, ファイル内容確認</small>
 
 ## 固定長ファイル
 
@@ -92,9 +112,13 @@ DB準備データ投入などデータベースを使用するテストに必要
 
 > **補足**: `0x`プレフィックスなしの場合は文字列とみなし、ディレクティブの文字コードでエンコードしてバイト配列に変換される。例：文字コードWindows-31Jで`4AD`と記載した場合、`0x344144`（3バイト）に変換される。
 
+<small>キーワード: 固定長ファイル, パディング, バイナリデータ, 16進数形式, テストデータ記述方法</small>
+
 ## 可変長ファイル
 
 可変長ファイルのテストデータの基本的な記述方法は :ref:`batch_request_test` を参照。
+
+<small>キーワード: 可変長ファイル, テストデータ記述方法, バッチテストデータ</small>
 
 ## 常駐バッチのテスト用ハンドラ構成
 
@@ -115,6 +139,8 @@ DB準備データ投入などデータベースを使用するテストに必要
 ```xml
 <component name="requestThreadLoopHandler" class="nablarch.test.OneShotLoopHandler" />
 ```
+
+<small>キーワード: RequestThreadLoopHandler, OneShotLoopHandler, 常駐バッチテスト, ハンドラ設定変更, テスト用ハンドラ</small>
 
 ## ディレクティブのデフォルト値
 
@@ -143,3 +169,5 @@ DB準備データ投入などデータベースを使用するテストに必要
   <entry key="record-separator" value="CRLF"/>
 </map>
 ```
+
+<small>キーワード: defaultDirectives, fixedLengthDirectives, variableLengthDirectives, ディレクティブデフォルト設定, コンポーネント設定ファイル</small>

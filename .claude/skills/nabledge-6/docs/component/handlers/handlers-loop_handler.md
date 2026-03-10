@@ -1,5 +1,7 @@
 # トランザクションループ制御ハンドラ
 
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/batch/loop_handler.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/LoopHandler.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/transaction/TransactionFactory.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/handler/DbConnectionManagementHandler.html) [5](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/TransactionEventCallback.html)
+
 ## 概要
 
 データリーダ上に処理対象のデータが存在する間、後続ハンドラの処理を繰り返し実行する。実行中はトランザクションを制御し、一定の繰り返し回数ごとにトランザクションをコミットする。コミット間隔を大きくすることで、バッチ処理のスループットを向上させることができる。
@@ -9,11 +11,15 @@
 - トランザクションの終了（コミットやロールバック）
 - トランザクションの終了時のコールバック
 
+<small>キーワード: LoopHandler, トランザクションループ制御ハンドラ, データリーダ, ループ処理, 後続ハンドラ繰り返し実行, トランザクション制御, コミット間隔, バッチ処理ループ, 処理対象データ繰り返し</small>
+
 ## ハンドラクラス名
 
 **クラス**: `nablarch.fw.handler.LoopHandler`
 
 データリーダ上に処理対象データが存在する間、後続ハンドラの処理を繰り返し実行し、トランザクション制御を行うハンドラ。スタンドアロンバッチ処理で使用する。
+
+<small>キーワード: LoopHandler, nablarch.fw.handler.LoopHandler, トランザクションループ制御ハンドラ, ハンドラクラス名</small>
 
 ## モジュール一覧
 
@@ -36,9 +42,13 @@
 </dependency>
 ```
 
+<small>キーワード: nablarch-fw-standalone, nablarch-core-transaction, nablarch-core-jdbc, モジュール依存関係, Maven依存設定</small>
+
 ## 制約
 
 - :ref:`database_connection_management_handler` より後ろに設定すること。DBトランザクション制御時、スレッド上にトランザクション管理対象のDB接続が存在している必要がある。
+
+<small>キーワード: database_connection_management_handler, DbConnectionManagementHandler, ハンドラ順序制約, データベース接続管理ハンドラ, トランザクション制御制約</small>
 
 ## トランザクション制御対象を設定する
 
@@ -60,6 +70,8 @@
 </component>
 ```
 
+<small>キーワード: transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション制御対象設定, トランザクション識別名</small>
+
 ## コミット間隔を指定する
 
 `commitInterval` プロパティでコミット間隔（件数）を設定する。間隔を大きくするとバッチ処理のスループットが向上する。
@@ -69,6 +81,8 @@
   <property name="commitInterval" value="1000" />
 </component>
 ```
+
+<small>キーワード: commitInterval, コミット間隔, バッチスループット, トランザクションコミット間隔, loop_handler-commit_interval</small>
 
 ## トランザクション終了時に任意の処理を実行したい
 
@@ -110,3 +124,5 @@ public static class SampleHandler
   <component class="sample.SampleHandler" />
 </list>
 ```
+
+<small>キーワード: TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了通知, ロールバック後処理, loop_handler-callback</small>
