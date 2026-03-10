@@ -40,7 +40,7 @@ Get all commits since the previous version tag:
 git log --oneline --since="{last release date}"
 ```
 
-For each commit, determine user impact by checking whether changed files fall under deployed content (per `sync-manifest.txt`):
+For each commit, determine user impact by checking whether changed files fall under deployed content (per `.github/workflows/sync-to-nabledge/sync-manifest.txt`):
 
 **Deployed content scope:**
 - `.claude/skills/nabledge-6/` — skill content, knowledge files, workflows
@@ -72,12 +72,45 @@ Review current `[Unreleased]` section in `.claude/skills/nabledge-6/plugin/CHANG
 
 After user confirmation, update all 4 versioning files:
 
-| File | Change |
-|------|--------|
-| `.claude/skills/nabledge-6/plugin/CHANGELOG.md` | Move `[Unreleased]` to `[X.Y] - YYYY-MM-DD`; add release tag link at bottom |
-| `.claude/skills/nabledge-6/plugin/plugin.json` | Set `"version"` to `"X.Y"` |
-| `.claude/marketplace/.claude-plugin/marketplace.json` | Set `metadata.version` to `"X.Y"` |
-| `.claude/marketplace/CHANGELOG.md` | Add row to version table |
+**`.claude/skills/nabledge-6/plugin/CHANGELOG.md`**
+
+Replace `## [Unreleased]` with versioned section, and add tag link at bottom:
+
+```markdown
+## [0.5] - 2026-03-10
+
+### 追加
+- ...
+
+[0.5]: https://github.com/nablarch/nabledge/releases/tag/0.5
+[0.4]: https://github.com/nablarch/nabledge/releases/tag/0.4
+```
+
+**`.claude/skills/nabledge-6/plugin/plugin.json`**
+
+```json
+{
+  "version": "0.5"
+}
+```
+
+**`.claude/marketplace/.claude-plugin/marketplace.json`**
+
+```json
+{
+  "metadata": {
+    "version": "0.5"
+  }
+}
+```
+
+**`.claude/marketplace/CHANGELOG.md`**
+
+Add a row at the top of the version table:
+
+```markdown
+| 0.5 | [0.5](plugins/nabledge-6/CHANGELOG.md#05---2026-03-10) | - | 2026-03-10 |
+```
 
 ### Step 4: Verify Against Previous Release PR
 
