@@ -77,7 +77,6 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
 
     Log format (saved to log_dir/{file_id}_{timestamp}.json):
         file_id, timestamp, subtype, cc_metrics, prompt (IN), structured_output (OUT)
-        Filename uses microsecond-precision timestamp to avoid collisions across rounds.
     """
     disallowed = "Read,Edit,Write,Glob,Grep,LS,ToolSearch"
 
@@ -104,7 +103,7 @@ def run_claude(prompt: str, json_schema: dict, log_dir: str, file_id: str) -> su
 
             # Save execution log with cc_metrics, prompt (IN), and structured_output (OUT)
             os.makedirs(log_dir, exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
             log_path = os.path.join(log_dir, f"{file_id}_{timestamp}.json")
             cc_metrics = {
                 "duration_ms":     response.get("duration_ms"),

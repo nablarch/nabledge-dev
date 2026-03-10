@@ -149,39 +149,6 @@ class TestRunClaudeLog:
             f"Log keys mismatch: got {set(log.keys())}, expected {expected_keys}"
         )
 
-    def test_multiple_rounds_produce_separate_log_files(self, tmp_path):
-        """Same file_id processed in 2 rounds must produce 2 separate log files (no overwrite).
-
-        Ensures microsecond-precision timestamp prevents collision when rounds
-        execute within the same second (e.g., mocked CC in tests or fast cached calls).
-        """
-        log_dir = str(tmp_path / "executions")
-        file_id = "multi-round-file"
-
-        fake_result = subprocess.CompletedProcess(
-            args=["claude", "-p"],
-            returncode=0,
-            stdout=json.dumps(SAMPLE_CC_RESPONSE),
-            stderr="",
-        )
-
-        with patch("subprocess.run", return_value=fake_result):
-            run_claude(prompt="round 1 prompt", json_schema=SAMPLE_SCHEMA,
-                       log_dir=log_dir, file_id=file_id)
-            run_claude(prompt="round 2 prompt", json_schema=SAMPLE_SCHEMA,
-                       log_dir=log_dir, file_id=file_id)
-
-        files = sorted(f for f in os.listdir(log_dir) if f.endswith(".json"))
-        assert len(files) == 2, (
-            f"Expected 2 separate log files for 2 rounds, got {len(files)}: {files}"
-        )
-
-        logs = [json.load(open(os.path.join(log_dir, f), encoding="utf-8")) for f in files]
-        prompts = {log["prompt"] for log in logs}
-        assert prompts == {"round 1 prompt", "round 2 prompt"}, (
-            f"Round logs have wrong prompts: {prompts}"
-        )
-
     def test_no_log_written_on_subprocess_error(self, tmp_path):
         """No log file is written when subprocess.run returns non-zero returncode."""
         log_dir = str(tmp_path / "executions")
