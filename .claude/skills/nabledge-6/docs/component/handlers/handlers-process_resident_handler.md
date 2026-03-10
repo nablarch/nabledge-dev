@@ -11,13 +11,13 @@
 - 一定間隔（データの監視間隔）毎に後続ハンドラを呼び出す
 - 後続ハンドラで例外発生時に、このハンドラの継続有無などを判断する（詳細は「後続ハンドラで発生した例外の扱い」参照）
 
-<small>キーワード: プロセス常駐化ハンドラ, ProcessResidentHandler, 常駐起動型バッチ, 定期監視, データソース監視, 一定間隔繰り返し実行, 後続ハンドラキュー</small>
+*キーワード: プロセス常駐化ハンドラ, ProcessResidentHandler, 常駐起動型バッチ, 定期監視, データソース監視, 一定間隔繰り返し実行, 後続ハンドラキュー*
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.handler.ProcessResidentHandler`
 
-<small>キーワード: ProcessResidentHandler, nablarch.fw.handler.ProcessResidentHandler, プロセス常駐化ハンドラ, 常駐起動型バッチ</small>
+*キーワード: ProcessResidentHandler, nablarch.fw.handler.ProcessResidentHandler, プロセス常駐化ハンドラ, 常駐起動型バッチ*
 
 ## モジュール一覧
 
@@ -29,13 +29,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven</small>
+*キーワード: nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven*
 
 ## 制約
 
 > **重要**: 本ハンドラは :ref:`retry_handler` よりも後ろに設定すること。実行時例外を捕捉した場合、`RetryableException` でラップして再送出し、プロセスの継続制御を :ref:`retry_handler` に委譲するため。
 
-<small>キーワード: ProcessResidentHandler, RetryableException, リトライハンドラ設定順序, retry_handler, 制約, ハンドラ設定順</small>
+*キーワード: ProcessResidentHandler, RetryableException, リトライハンドラ設定順序, retry_handler, 制約, ハンドラ設定順*
 
 ## データの監視間隔を設定する
 
@@ -48,7 +48,7 @@
 </component>
 ```
 
-<small>キーワード: dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デフォルト1000ms</small>
+*キーワード: dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デフォルト1000ms*
 
 ## プロセス常駐化ハンドラの終了方法
 
@@ -72,7 +72,7 @@
 </component>
 ```
 
-<small>キーワード: normalEndExceptions, ProcessStop, ProcessStopHandler, プロセス正常終了, process_stop_handler, 常駐ハンドラ終了</small>
+*キーワード: normalEndExceptions, ProcessStop, ProcessStopHandler, プロセス正常終了, process_stop_handler, 常駐ハンドラ終了*
 
 ## 後続ハンドラで発生した例外の扱い
 
@@ -86,4 +86,4 @@
 | プロセス正常終了例外（ :ref:`process_resident_handler-normal_end` 参照） | 後続ハンドラの戻り値をそのまま返し処理終了 |
 | 上記以外 | ログ記録後、 `RetryableException` でラップして再送出 |
 
-<small>キーワード: ServiceUnavailable, RetryableException, ProcessAbnormalEnd, abnormalEndExceptions, RetryUtil, 例外ハンドリング, サービス閉塞中, リトライ可能例外, プロセス異常終了</small>
+*キーワード: ServiceUnavailable, RetryableException, ProcessAbnormalEnd, abnormalEndExceptions, RetryUtil, 例外ハンドリング, サービス閉塞中, リトライ可能例外, プロセス異常終了*

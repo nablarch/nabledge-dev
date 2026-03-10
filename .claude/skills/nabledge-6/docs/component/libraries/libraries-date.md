@@ -9,7 +9,7 @@
 - システム日時を切り替える方法については「拡張例 > システム日時の切り替え」を参照。
 - 業務日付を切り替える方法については「拡張例 > 業務日付の切り替え」を参照。
 
-<small>キーワード: システム日時切り替え, 業務日付切り替え, テスト用日時変更, コンポーネント差し替え</small>
+*キーワード: システム日時切り替え, 業務日付切り替え, テスト用日時変更, コンポーネント差し替え*
 
 ## モジュール一覧
 
@@ -27,7 +27,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core, nablarch-common-jdbc, 日付管理モジュール, Maven依存関係</small>
+*キーワード: nablarch-core, nablarch-common-jdbc, 日付管理モジュール, Maven依存関係*
 
 ## システム日時の管理機能を使うための設定
 
@@ -39,7 +39,7 @@
 <component name="systemTimeProvider" class="nablarch.core.date.BasicSystemTimeProvider" />
 ```
 
-<small>キーワード: BasicSystemTimeProvider, systemTimeProvider, システム日時設定, コンポーネント定義</small>
+*キーワード: BasicSystemTimeProvider, systemTimeProvider, システム日時設定, コンポーネント定義*
 
 ## システム日時を取得する
 
@@ -47,7 +47,7 @@
 
 システム日時の取得は `SystemTimeUtil` を使用する。
 
-<small>キーワード: SystemTimeUtil, システム日時取得</small>
+*キーワード: SystemTimeUtil, システム日時取得*
 
 ## 業務日付管理機能を使うための設定
 
@@ -82,7 +82,7 @@
 </component>
 ```
 
-<small>キーワード: BasicBusinessDateProvider, businessDateProvider, tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager, BasicApplicationInitializer, initializeList, 業務日付設定, 業務日付テーブル</small>
+*キーワード: BasicBusinessDateProvider, businessDateProvider, tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager, BasicApplicationInitializer, initializeList, 業務日付設定, 業務日付テーブル*
 
 ## 業務日付を取得する
 
@@ -90,7 +90,7 @@
 
 業務日付の取得は `BusinessDateUtil` を使用する。
 
-<small>キーワード: BusinessDateUtil, 業務日付取得</small>
+*キーワード: BusinessDateUtil, 業務日付取得*
 
 ## 業務日付を任意の日付に上書く
 
@@ -102,7 +102,7 @@
 
 例: 区分`batch`の日付を`20160317`に設定する場合: `-DBasicBusinessDateProvider.batch=20160317`
 
-<small>キーワード: BasicBusinessDateProvider, 業務日付上書き, repository-overwrite_environment_configuration, システムプロパティ, バッチ再実行</small>
+*キーワード: BasicBusinessDateProvider, 業務日付上書き, repository-overwrite_environment_configuration, システムプロパティ, バッチ再実行*
 
 ## 業務日付を更新する
 
@@ -118,7 +118,7 @@ BusinessDateProvider provider = SystemRepository.get("businessDateProvider");
 provider.setDate(segment, date);
 ```
 
-<small>キーワード: BasicBusinessDateProvider, SystemRepository, setDate, 業務日付更新</small>
+*キーワード: BasicBusinessDateProvider, SystemRepository, setDate, 業務日付更新*
 
 ## 拡張例
 
@@ -136,4 +136,4 @@ provider.setDate(segment, date);
 1. `BusinessDateProvider` (`nablarch.core.date.BusinessDateProvider`) を実装したクラスを作成する。
 2. 「業務日付管理機能を使うための設定」に従い設定する。
 
-<small>キーワード: SystemTimeProvider, BusinessDateProvider, システム日時切り替え, 業務日付切り替え, ユニットテスト</small>
+*キーワード: SystemTimeProvider, BusinessDateProvider, システム日時切り替え, 業務日付切り替え, ユニットテスト*

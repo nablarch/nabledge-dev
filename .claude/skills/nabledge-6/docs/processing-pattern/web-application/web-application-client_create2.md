@@ -159,4 +159,4 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 2. 顧客名に半角文字列、業種を未選択にして確認ボタンを押下する
 3. 登録画面が再度表示され、エラーメッセージが表示されることを確認する
 
-<small>キーワード: ClientForm, ClientAction, BeanUtil, SessionUtil, UniversalDao, EntityList, Client, Industry, HttpResponse, HttpRequest, ExecutionContext, @InjectForm, @OnError, @Required, @Domain, ApplicationException, Serializable, フォームクラス作成, バリデーション設定, セッションストア保存, 登録確認画面, 確認画面JSP, 入力画面確認画面切り替え</small>
+*キーワード: ClientForm, ClientAction, BeanUtil, SessionUtil, UniversalDao, EntityList, Client, Industry, HttpResponse, HttpRequest, ExecutionContext, @InjectForm, @OnError, @Required, @Domain, ApplicationException, Serializable, フォームクラス作成, バリデーション設定, セッションストア保存, 登録確認画面, 確認画面JSP, 入力画面確認画面切り替え*

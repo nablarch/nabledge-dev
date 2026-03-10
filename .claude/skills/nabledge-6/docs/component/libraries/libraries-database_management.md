@@ -18,4 +18,4 @@
 
 > **補足**: :ref:`universal_dao` とJakarta Persistenceとの機能比較は、:ref:`database-functional_comparison` を参照。
 
-<small>キーワード: データベースアクセス, ユニバーサルDAO, JDBCラッパー, SQL実行, データベース接続, universal_dao, database, functional_comparison</small>
+*キーワード: データベースアクセス, ユニバーサルDAO, JDBCラッパー, SQL実行, データベース接続, universal_dao, database, functional_comparison*

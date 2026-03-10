@@ -123,4 +123,4 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 
 > **Tip**: 独自のエラー制御ハンドラを追加することで、`OptimisticLockException` 発生時に排他制御エラー画面へ遷移させることができる。ハンドラによるエラー制御の作成方法は :ref:`ハンドラで例外クラスに対応したエラーページに遷移させる <forward_error_page-handler>` を参照。
 
-<small>キーワード: InnerProjectForm, ProjectBulkForm, ProjectListDto, ProjectBulkAction, ProjectSearchForm, ProjectSearchDto, EntityList, UniversalDao, BeanUtil, SessionUtil, Project, @Valid, @Required, @Domain, @InjectForm, @OnError, @OnDoubleSubmission, ApplicationException, OptimisticLockException, useToken, 一括更新, ネストフォーム, セッションストア, 排他制御, Bean Validation</small>
+*キーワード: InnerProjectForm, ProjectBulkForm, ProjectListDto, ProjectBulkAction, ProjectSearchForm, ProjectSearchDto, EntityList, UniversalDao, BeanUtil, SessionUtil, Project, @Valid, @Required, @Domain, @InjectForm, @OnError, @OnDoubleSubmission, ApplicationException, OptimisticLockException, useToken, 一括更新, ネストフォーム, セッションストア, 排他制御, Bean Validation*

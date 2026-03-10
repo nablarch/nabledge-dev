@@ -42,7 +42,7 @@ performanceLogFormatter.format=\n\tpoint = [$point$] result = [$result$]\
                                \n\tend_free_memory = [$endFreeMemory$] end_used_memory = [$endUsedMemory$]
 ```
 
-<small>キーワード: パフォーマンスログ出力方針, DEBUGレベル, PERFORMANCEロガー, log.properties設定, app-log.properties設定, PerformanceLogFormatter, ログレベル設定</small>
+*キーワード: パフォーマンスログ出力方針, DEBUGレベル, PERFORMANCEロガー, log.properties設定, app-log.properties設定, PerformanceLogFormatter, ログレベル設定*
 
 ## パフォーマンスログを出力する
 
@@ -68,7 +68,7 @@ PerformanceLogUtil.end(point, String.valueOf(searchResult.size()));
 
 > **重要**: `PerformanceLogUtil` は測定対象を :ref:`実行時ID <log-execution_id>` ＋ポイント名で一意に識別する。再帰呼び出しの中で使用すると計測できないため注意すること。
 
-<small>キーワード: PerformanceLogUtil, startメソッド, endメソッド, パフォーマンス計測, 実行時間計測, メモリ使用量, 再帰呼び出し制限, 実行時ID, ポイント名, オプション情報, Object..., varargs</small>
+*キーワード: PerformanceLogUtil, startメソッド, endメソッド, パフォーマンス計測, 実行時間計測, メモリ使用量, 再帰呼び出し制限, 実行時ID, ポイント名, オプション情報, Object..., varargs*
 
 ## パフォーマンスログの設定
 
@@ -114,7 +114,7 @@ performanceLogFormatter.datePattern=yyyy-MM-dd HH:mm:ss.SSS
 performanceLogFormatter.format=point:$point$ result:$result$ exe_time:$executionTime$ms
 ```
 
-<small>キーワード: PerformanceLogFormatter, performanceLogFormatter.className, performanceLogFormatter.format, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints, app-log.properties設定, フォーマット設定, プレースホルダ</small>
+*キーワード: PerformanceLogFormatter, performanceLogFormatter.className, performanceLogFormatter.format, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints, app-log.properties設定, フォーマット設定, プレースホルダ*
 
 ## JSON形式の構造化ログとして出力する
 
@@ -137,4 +137,4 @@ performanceLogFormatter.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 performanceLogFormatter.targets=point,result,executionTime
 ```
 
-<small>キーワード: PerformanceJsonLogFormatter, JsonLogFormatter, performanceLogFormatter.targets, performanceLogFormatter.structuredMessagePrefix, JSON構造化ログ, performanceLogFormatter.className, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints</small>
+*キーワード: PerformanceJsonLogFormatter, JsonLogFormatter, performanceLogFormatter.targets, performanceLogFormatter.structuredMessagePrefix, JSON構造化ログ, performanceLogFormatter.className, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints*

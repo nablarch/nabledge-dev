@@ -27,4 +27,4 @@
 
 > **重要**: メッセージングはシステムで共通のデータリーダを使用するため、:ref:`Nablarchバッチアプリケーションの責務配置<nablarch_batch-application_design>` と異なり、アクションはデータリーダを生成する責務を持たない。メッセージングで使用するデータリーダはコンポーネント定義に `dataReader` という名前で追加する。
 
-<small>キーワード: FwHeaderReader, MessageReader, RequestMessage, ResponseMessage, nablarch.fw.messaging.reader.FwHeaderReader, nablarch.fw.messaging.reader.MessageReader, nablarch.fw.messaging.RequestMessage, nablarch.fw.messaging.ResponseMessage, nablarch.fw.Result.Success, MOMメッセージング, アクションクラス, フォームクラス, エンティティクラス, データリーダ, 責務配置, 応答不要メッセージング</small>
+*キーワード: FwHeaderReader, MessageReader, RequestMessage, ResponseMessage, nablarch.fw.messaging.reader.FwHeaderReader, nablarch.fw.messaging.reader.MessageReader, nablarch.fw.messaging.RequestMessage, nablarch.fw.messaging.ResponseMessage, nablarch.fw.Result.Success, MOMメッセージング, アクションクラス, フォームクラス, エンティティクラス, データリーダ, 責務配置, 応答不要メッセージング*

@@ -6,7 +6,7 @@
 
 **クラス名**: `nablarch.fw.web.upload.MultipartHandler`
 
-<small>キーワード: MultipartHandler, nablarch.fw.web.upload.MultipartHandler, マルチパートリクエストハンドラ, ハンドラクラス</small>
+*キーワード: MultipartHandler, nablarch.fw.web.upload.MultipartHandler, マルチパートリクエストハンドラ, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -25,19 +25,19 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, nablarch-core, モジュール依存関係, Maven</small>
+*キーワード: nablarch-fw-web, nablarch-core, モジュール依存関係, Maven*
 
 ## 制約
 
 なし。
 
-<small>キーワード: 制約, マルチパートハンドラ制約</small>
+*キーワード: 制約, マルチパートハンドラ制約*
 
 ## このハンドラの動作条件
 
 リクエストヘッダの `Content-Type` が `multipart/form-data` と一致する場合のみリクエストボディを解析する。それ以外の場合は何もせず後続ハンドラに委譲する。
 
-<small>キーワード: Content-Type, multipart/form-data, 動作条件, マルチパート判定, リクエスト振り分け</small>
+*キーワード: Content-Type, multipart/form-data, 動作条件, マルチパート判定, リクエスト振り分け*
 
 ## アップロードファイルの一時保存先を指定する
 
@@ -55,7 +55,7 @@
 </component>
 ```
 
-<small>キーワード: uploadFileTmpDir, file_path_management, FilePathSetting, 一時保存先ディレクトリ, java.io.tmpdir, アップロード一時ファイル</small>
+*キーワード: uploadFileTmpDir, file_path_management, FilePathSetting, 一時保存先ディレクトリ, java.io.tmpdir, アップロード一時ファイル*
 
 ## 巨大なファイルのアップロードを防ぐ
 
@@ -77,7 +77,7 @@
 </component>
 ```
 
-<small>キーワード: contentLengthLimit, UploadSettings, 413, Payload Too Large, ファイルサイズ上限, DoS攻撃対策, アップロードサイズ制限</small>
+*キーワード: contentLengthLimit, UploadSettings, 413, Payload Too Large, ファイルサイズ上限, DoS攻撃対策, アップロードサイズ制限*
 
 ## ファイルの大量アップロードを防ぐ
 
@@ -97,7 +97,7 @@
 </component>
 ```
 
-<small>キーワード: maxFileCount, UploadSettings, 400, Bad Request, ファイル数上限, 大量アップロード防止</small>
+*キーワード: maxFileCount, UploadSettings, 400, Bad Request, ファイル数上限, 大量アップロード防止*
 
 ## 一時ファイルの削除（クリーニング）を行う
 
@@ -107,7 +107,7 @@
 
 自動削除設定はデフォルトで有効。本番環境で安易に無効にすると大量の一時ファイルがディスク上に残り、ディスクフルの原因となるため注意すること。無効にする場合は `UploadSettings#autoCleaning` に `false` を設定する。
 
-<small>キーワード: autoCleaning, UploadSettings, 一時ファイル削除, クリーニング, 自動削除設定, ディスクフル防止</small>
+*キーワード: autoCleaning, UploadSettings, 一時ファイル削除, クリーニング, 自動削除設定, ディスクフル防止*
 
 ## マルチパート解析エラー及びファイルサイズ上限超過時の遷移先画面を設定する
 
@@ -119,7 +119,7 @@
 - アップロード中にクライアントからの切断要求があり、ボディ部が不完全な場合
 - バウンダリーが存在しない場合
 
-<small>キーワード: web.xml, 400, BadRequest, エラーページ設定, session_store_handler, http_error_handler, マルチパート解析エラー</small>
+*キーワード: web.xml, 400, BadRequest, エラーページ設定, session_store_handler, http_error_handler, マルチパート解析エラー*
 
 ## アップロードしたファイルを読み込む
 
@@ -151,4 +151,4 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) throws
 > }
 > ```
 
-<small>キーワード: HttpRequest, getPart, PartInfo, data_bind, data_format, アップロードファイル読み込み, 一時ファイル取得, バイナリファイル, getSavedFile, InputStream</small>
+*キーワード: HttpRequest, getPart, PartInfo, data_bind, data_format, アップロードファイル読み込み, 一時ファイル取得, バイナリファイル, getSavedFile, InputStream*

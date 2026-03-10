@@ -8,7 +8,7 @@
 
 > **補足**: ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。
 
-<small>キーワード: RESTfulウェブサービス開発, Exampleアプリケーション, blank_project, 本格的なアプリケーション作成, サンプルアプリケーション</small>
+*キーワード: RESTfulウェブサービス開発, Exampleアプリケーション, blank_project, 本格的なアプリケーション作成, サンプルアプリケーション*
 
 ## 前提条件
 
@@ -19,4 +19,4 @@
 > - Exampleアプリケーションの設定
 > - 使用しているOSSプラグインについて
 
-<small>キーワード: 前提条件, 動作環境構築, Exampleアプリケーション環境構築, 事前準備, example_application</small>
+*キーワード: 前提条件, 動作環境構築, Exampleアプリケーション環境構築, 事前準備, example_application*

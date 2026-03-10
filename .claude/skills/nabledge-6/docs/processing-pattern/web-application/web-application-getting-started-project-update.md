@@ -118,7 +118,7 @@ WHERE
 </n:form>
 ```
 
-<small>キーワード: ProjectTargetForm, ProjectUpdateForm, ProjectAction, ProjectDto, ProjectProfit, Project, LoginUserPrincipal, Client, @InjectForm, @OnError, @Required, @Domain, NoDataException, ApplicationException, MessageUtil, MessageLevel, UniversalDao, SessionUtil, BeanUtil, フォーム作成, 更新画面表示, バリデーション, 楽観的ロック, セッションストア, 二重サブミット防止</small>
+*キーワード: ProjectTargetForm, ProjectUpdateForm, ProjectAction, ProjectDto, ProjectProfit, Project, LoginUserPrincipal, Client, @InjectForm, @OnError, @Required, @Domain, NoDataException, ApplicationException, MessageUtil, MessageLevel, UniversalDao, SessionUtil, BeanUtil, フォーム作成, 更新画面表示, バリデーション, 楽観的ロック, セッションストア, 二重サブミット防止*
 
 ## データベースの更新
 
@@ -174,4 +174,4 @@ public HttpResponse completeOfUpdate(HttpRequest request, ExecutionContext conte
 
 完了画面のタイトルは`プロジェクト変更完了画面`とし、`message-info`クラスのdiv内に更新完了メッセージを表示する。
 
-<small>キーワード: ProjectAction, Project, @OnDoubleSubmission, @Version, @Column, UniversalDao, SessionUtil, ResourceLocator, 楽観的ロック, データベース更新, 二重サブミット防止, リダイレクト, バージョン番号</small>
+*キーワード: ProjectAction, Project, @OnDoubleSubmission, @Version, @Column, UniversalDao, SessionUtil, ResourceLocator, 楽観的ロック, データベース更新, 二重サブミット防止, リダイレクト, バージョン番号*

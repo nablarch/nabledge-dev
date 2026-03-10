@@ -15,7 +15,7 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
 - **メインクラス**: `nablarch.fw.batch.ee.Main` がNablarchのJSR-352バッチ起動クラスである。
 - **ジョブ名**: `-Dexec.args` にジョブ定義ファイルの `job` 要素 `id` 属性で指定したジョブ名（例: `zip-code-truncate-table`）を渡す。
 
-<small>キーワード: nablarch.fw.batch.ee.Main, メインクラス, ジョブ名指定, exec:java, zip-code-truncate-table, バッチ起動コマンド, JSR-352バッチ実行</small>
+*キーワード: nablarch.fw.batch.ee.Main, メインクラス, ジョブ名指定, exec:java, zip-code-truncate-table, バッチ起動コマンド, JSR-352バッチ実行*
 
 ## 対象テーブルのデータを削除する
 
@@ -92,4 +92,4 @@ public class TruncateTableBatchlet extends AbstractBatchlet {
 - `batchlet` 要素の `ref` 属性にはBatchletクラス名の頭文字を小文字にした名称を指定する。
 - `property` 要素でBatchletクラスのプロパティにインジェクトする値を指定する。
 
-<small>キーワード: TruncateTableBatchlet, AbstractBatchlet, Batchlet, jakarta.batch.api.Batchlet, @Dependent, @Named, @Inject, @BatchProperty, AppDbConnection, DbConnectionContext, SqlPStatement, Batchletステップ実装, テーブルデータ削除バッチ, CDI管理Bean登録, ジョブ定義ファイル設定, バッチプロパティインジェクション</small>
+*キーワード: TruncateTableBatchlet, AbstractBatchlet, Batchlet, jakarta.batch.api.Batchlet, @Dependent, @Named, @Inject, @BatchProperty, AppDbConnection, DbConnectionContext, SqlPStatement, Batchletステップ実装, テーブルデータ削除バッチ, CDI管理Bean登録, ジョブ定義ファイル設定, バッチプロパティインジェクション*

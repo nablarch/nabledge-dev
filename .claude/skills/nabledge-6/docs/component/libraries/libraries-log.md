@@ -40,7 +40,7 @@ RotatePolicy:
 
 > **補足**: 本フレームワークでは、:ref:`障害通知ログ <failure_log>` と :ref:`障害解析ログ <failure_log>` を合わせて**障害ログ**と呼ぶ。
 
-<small>キーワード: BasicLogger, BasicLoggerFactory, FileLogWriter, SynchronousFileLogWriter, StandardOutputLogWriter, LogPublisher, BasicLogFormatter, DateRotatePolicy, FileSizeRotatePolicy, LogWriter, LogFormatter, Logger, LoggerFactory, ログ出力機能, LogWriter差し替え, LogFormatter差し替え, Logger差し替え, ログの種類, failure_log, sql_log, performance_log, http_access_log, jaxrs_access_log, messaging_log, 障害ログ, ブランクプロジェクト, アーキタイプ</small>
+*キーワード: BasicLogger, BasicLoggerFactory, FileLogWriter, SynchronousFileLogWriter, StandardOutputLogWriter, LogPublisher, BasicLogFormatter, DateRotatePolicy, FileSizeRotatePolicy, LogWriter, LogFormatter, Logger, LoggerFactory, ログ出力機能, LogWriter差し替え, LogFormatter差し替え, Logger差し替え, ログの種類, failure_log, sql_log, performance_log, http_access_log, jaxrs_access_log, messaging_log, 障害ログ, ブランクプロジェクト, アーキタイプ*
 
 ## モジュール一覧
 
@@ -80,7 +80,7 @@ RotatePolicy:
 </dependency>
 ```
 
-<small>キーワード: nablarch-core, nablarch-core-applog, nablarch-core-jdbc, nablarch-fw-web, nablarch-fw-jaxrs, nablarch-fw-messaging, Maven依存関係, モジュール設定</small>
+*キーワード: nablarch-core, nablarch-core-applog, nablarch-core-jdbc, nablarch-fw-web, nablarch-fw-jaxrs, nablarch-fw-messaging, Maven依存関係, モジュール設定*
 
 ## ログを出力する
 
@@ -103,7 +103,7 @@ if (LOGGER.isDebugEnabled()) {
 
 > **補足**: SQLログや監視ログなど特定用途向けのログ出力では、その用途を表す名前（SQL、MONITORなど）をロガー名に指定し、それ以外はクラスのFQCNを指定する。
 
-<small>キーワード: Logger, LoggerManager, LoggerManager.get, isDebugEnabled, logDebug, ログ出力, ロガー取得, ログレベル事前チェック</small>
+*キーワード: Logger, LoggerManager, LoggerManager.get, isDebugEnabled, logDebug, ログ出力, ロガー取得, ログレベル事前チェック*
 
 ## ログ出力の設定
 
@@ -194,7 +194,7 @@ loggers.validation.level=DEBUG
 loggers.validation.writerNames=stdout
 ```
 
-<small>キーワード: log.properties, nablarch.log.filePath, loggerFactory.className, writerNames, availableLoggersNamesOrder, nameRegex, loggers, BasicLoggerFactory, LogLevel, FileUtil, ログ設定, プロパティファイル, LogWriter設定, ロガー設定, FileLogWriter, StandardOutputLogWriter</small>
+*キーワード: log.properties, nablarch.log.filePath, loggerFactory.className, writerNames, availableLoggersNamesOrder, nameRegex, loggers, BasicLoggerFactory, LogLevel, FileUtil, ログ設定, プロパティファイル, LogWriter設定, ロガー設定, FileLogWriter, StandardOutputLogWriter*
 
 ## ログ出力の設定を上書く
 
@@ -206,7 +206,7 @@ loggers.validation.writerNames=stdout
 java -Dloggers.root.level=INFO ...
 ```
 
-<small>キーワード: システムプロパティ, ログ設定上書き, プロセス毎設定変更, loggers.root.level</small>
+*キーワード: システムプロパティ, ログ設定上書き, プロセス毎設定変更, loggers.root.level*
 
 ## ログのフォーマットを指定する
 
@@ -250,7 +250,7 @@ ID体系:
 
 > **補足**: `BasicLogFormatter` では `\n` と `\t` という文字列は出力できない。
 
-<small>キーワード: BasicLogFormatter, LogFormatter, ThreadContext, 起動プロセス, 処理方式, 実行時ID, thread_context_handler, nablarch.bootProcess, nablarch.processingSystem, プレースホルダ, datePattern, ログフォーマット</small>
+*キーワード: BasicLogFormatter, LogFormatter, ThreadContext, 起動プロセス, 処理方式, 実行時ID, thread_context_handler, nablarch.bootProcess, nablarch.processingSystem, プレースホルダ, datePattern, ログフォーマット*
 
 ## 各種ログの設定
 
@@ -270,7 +270,7 @@ java -Dnablarch.appLog.filePath=file:/var/log/app/app-log.properties ...
 - :ref:`jaxrs_access_log-setting`
 - :ref:`messaging_log-setting`
 
-<small>キーワード: app-log.properties, nablarch.appLog.filePath, FileUtil, 各種ログ設定, failure_log, sql_log, performance_log, http_access_log, jaxrs_access_log, messaging_log</small>
+*キーワード: app-log.properties, nablarch.appLog.filePath, FileUtil, 各種ログ設定, failure_log, sql_log, performance_log, http_access_log, jaxrs_access_log, messaging_log*
 
 ## ログファイルのローテーションを行う
 
@@ -293,13 +293,13 @@ writer.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy
 writer.sample.rotateTime=12:00
 ```
 
-<small>キーワード: FileSizeRotatePolicy, DateRotatePolicy, RotatePolicy, FileLogWriter, ログローテーション, rotatePolicy, rotateTime</small>
+*キーワード: FileSizeRotatePolicy, DateRotatePolicy, RotatePolicy, FileLogWriter, ログローテーション, rotatePolicy, rotateTime*
 
 ## LogWriterを追加する
 
 新しいLogWriterを追加する場合は `LogWriter` インタフェースを実装したクラスを作成する。`LogFormatter` を使用するLogWriterを作成する場合は、共通処理を提供する `LogWriterSupport` を継承して作成する。
 
-<small>キーワード: LogWriter, LogWriterSupport, LogFormatter, LogWriter拡張, LogWriter追加</small>
+*キーワード: LogWriter, LogWriterSupport, LogFormatter, LogWriter拡張, LogWriter追加*
 
 ## LogFormatterを追加する
 
@@ -312,7 +312,7 @@ public void logInfo(String message, Object... options)
 public void logInfo(String message, Throwable cause, Object... options)
 ```
 
-<small>キーワード: LogFormatter, LogLevelLabelProvider, Logger, LogFormatter拡張, LogFormatter追加, options引数, 可変長引数, logInfo</small>
+*キーワード: LogFormatter, LogLevelLabelProvider, Logger, LogFormatter拡張, LogFormatter追加, options引数, 可変長引数, logInfo*
 
 ## ログの出力項目（プレースホルダ）を追加する
 
@@ -351,7 +351,7 @@ public class CustomLogFormatter extends BasicLogFormatter {
 }
 ```
 
-<small>キーワード: BasicLogFormatter, LogItem, ObjectSettings, LogContext, プレースホルダ追加, getLogItems, CustomBootProcessItem, CustomLogFormatter</small>
+*キーワード: BasicLogFormatter, LogItem, ObjectSettings, LogContext, プレースホルダ追加, getLogItems, CustomBootProcessItem, CustomLogFormatter*
 
 ## ログの初期化メッセージを出力しないようにする
 
@@ -385,7 +385,7 @@ writerNames=sample
 writer.sample.className = sample.CustomFileLogWriter
 ```
 
-<small>キーワード: FileLogWriter, LogWriterSupport, needsToWrite, 初期化メッセージ抑制, suppressionWriting, log_adaptor, 初期化メッセージ, StringUtil, initializeWriter</small>
+*キーワード: FileLogWriter, LogWriterSupport, needsToWrite, 初期化メッセージ抑制, suppressionWriting, log_adaptor, 初期化メッセージ, StringUtil, initializeWriter*
 
 ## LogWriterでのJsonLogFormatter設定
 
@@ -456,7 +456,7 @@ LOGGER.logInfo("addition fields", structuredArgs);
 {"date":"2021-02-04 12:34:56.789","logLevel":"INFO","message":"addition fields","key1":"value1","key2":123,"key3":true,"key5":"2021-02-04 12:34:56.789"}
 ```
 
-<small>キーワード: JsonLogFormatter, BasicLogFormatter, LoggerManager, targets, datePattern, ignoreNullValueMember, payload, JSON形式ログ出力, 構造化ログ, JsonLogFormatter設定, payload追加, writer.appLog.formatter.className, writer.appLog.formatter.targets, writer.appLog.formatter.datePattern</small>
+*キーワード: JsonLogFormatter, BasicLogFormatter, LoggerManager, targets, datePattern, ignoreNullValueMember, payload, JSON形式ログ出力, 構造化ログ, JsonLogFormatter設定, payload追加, writer.appLog.formatter.className, writer.appLog.formatter.targets, writer.appLog.formatter.datePattern*
 
 ## 各種ログのJSON版フォーマッタ
 
@@ -471,7 +471,7 @@ LOGGER.logInfo("addition fields", structuredArgs);
 | :ref:`HTTPアクセスログ（RESTfulウェブサービス用） <jaxrs_access_log-json_setting>` | `JaxRsAccessJsonLogFormatter` |
 | :ref:`メッセージングログ <messaging_log-json_setting>` | `MessagingJsonLogFormatter` |
 
-<small>キーワード: FailureJsonLogFormatter, SqlJsonLogFormatter, PerformanceJsonLogFormatter, HttpAccessJsonLogFormatter, JaxRsAccessJsonLogFormatter, MessagingJsonLogFormatter, 各種ログJSON, フォーマッタ差し替え, 障害ログ, SQLログ, パフォーマンスログ, HTTPアクセスログ, メッセージングログ</small>
+*キーワード: FailureJsonLogFormatter, SqlJsonLogFormatter, PerformanceJsonLogFormatter, HttpAccessJsonLogFormatter, JaxRsAccessJsonLogFormatter, MessagingJsonLogFormatter, 各種ログJSON, フォーマッタ差し替え, 障害ログ, SQLログ, パフォーマンスログ, HTTPアクセスログ, メッセージングログ*
 
 ## NablarchバッチのJSON出力設定
 
@@ -529,7 +529,7 @@ launcherLogFormatter.endLogMsgLabel=BATCH END
 </component>
 ```
 
-<small>キーワード: ApplicationSettingJsonLogFormatter, ApplicationSettingLogFormatter, LauncherJsonLogFormatter, LauncherLogFormatter, CommitLogger, BasicCommitLogger, JsonCommitLogger, structuredMessagePrefix, applicationSettingLogFormatter.className, applicationSettingLogFormatter.appSettingTargets, applicationSettingLogFormatter.appSettingWithDateTargets, applicationSettingLogFormatter.systemSettingItems, launcherLogFormatter.className, launcherLogFormatter.startTargets, launcherLogFormatter.endTargets, launcherLogFormatter.startLogMsgLabel, launcherLogFormatter.endLogMsgLabel, バッチJSON設定, commitLogger</small>
+*キーワード: ApplicationSettingJsonLogFormatter, ApplicationSettingLogFormatter, LauncherJsonLogFormatter, LauncherLogFormatter, CommitLogger, BasicCommitLogger, JsonCommitLogger, structuredMessagePrefix, applicationSettingLogFormatter.className, applicationSettingLogFormatter.appSettingTargets, applicationSettingLogFormatter.appSettingWithDateTargets, applicationSettingLogFormatter.systemSettingItems, launcherLogFormatter.className, launcherLogFormatter.startTargets, launcherLogFormatter.endTargets, launcherLogFormatter.startLogMsgLabel, launcherLogFormatter.endLogMsgLabel, バッチJSON設定, commitLogger*
 
 ## SynchronousFileLogWriterを使用するにあたっての注意事項
 
@@ -579,7 +579,7 @@ writer.monitorLog.failureCodeInterruptLockWait=MSG00104
 
 > **重要**: `maxFileSize`プロパティを指定するとログのローテーションが発生し、ログが出力できなくなるので指定しないこと。
 
-<small>キーワード: SynchronousFileLogWriter, nablarch.core.log.basic.SynchronousFileLogWriter, failureCodeCreateLockFile, failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait, lockFilePath, lockRetryInterval, lockWaitTime, outputBufferSize, 複数プロセス書き込み, ロックファイル排他制御, 障害通知ログ, ログ競合, BasicLogFormatter, maxFileSize, filePath, encoding, level, writerNames</small>
+*キーワード: SynchronousFileLogWriter, nablarch.core.log.basic.SynchronousFileLogWriter, failureCodeCreateLockFile, failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait, lockFilePath, lockRetryInterval, lockWaitTime, outputBufferSize, 複数プロセス書き込み, ロックファイル排他制御, 障害通知ログ, ログ競合, BasicLogFormatter, maxFileSize, filePath, encoding, level, writerNames*
 
 ## LogPublisherの使い方
 
@@ -630,7 +630,7 @@ LogPublisher.addListener(listener);
 
 登録した `LogListener` は、`removeListener(LogListener)` または `removeAllListeners()` で削除できる。
 
-<small>キーワード: LogPublisher, LogListener, LogContext, nablarch.core.log.basic.LogPublisher, nablarch.core.log.basic.LogListener, nablarch.core.log.basic.LogContext, addListener, removeListener, removeAllListeners, ログイベント連携, ログリスナー登録, onWritten</small>
+*キーワード: LogPublisher, LogListener, LogContext, nablarch.core.log.basic.LogPublisher, nablarch.core.log.basic.LogListener, nablarch.core.log.basic.LogContext, addListener, removeListener, removeAllListeners, ログイベント連携, ログリスナー登録, onWritten*
 
 ## ログレベルの定義
 
@@ -649,7 +649,7 @@ LogPublisher.addListener(listener);
 
 > **補足**: フレームワークが出力するログについては、:ref:`log-fw_log_policy` を参照すること。
 
-<small>キーワード: FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ログレベル定義, ログ出力制御</small>
+*キーワード: FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ログレベル定義, ログ出力制御*
 
 ## フレームワークのログ出力方針
 
@@ -661,7 +661,7 @@ LogPublisher.addListener(listener);
 | DEBUG | アプリケーション開発時に使用するデバッグ情報を出力する。DEBUGレベルを設定することで開発に必要な情報が出力されるよう考慮されている。 |
 | TRACE | フレームワーク開発時に使用するデバッグ情報を出力する。アプリケーション開発での使用は想定していない。 |
 
-<small>キーワード: フレームワークログ出力方針, 障害ログ, FATAL, ERROR, WARN, INFO, DEBUG, TRACE</small>
+*キーワード: フレームワークログ出力方針, 障害ログ, FATAL, ERROR, WARN, INFO, DEBUG, TRACE*
 
 ## log4jとの機能比較
 
@@ -692,4 +692,4 @@ LogPublisher.addListener(listener);
 [1] Nablarchのログ出力はファイルの世代管理を提供していないので、一部提供ありとしている。
 [2] :ref:`log_adaptor` を使用する。または、プロジェクトで作成する。作成方法は :ref:`log-add_log_writer` を参照。
 
-<small>キーワード: log4j, 機能比較, ログローテーション, log_adaptor, log-add_log_writer, ファイルサイズローテーション, 非同期ログ出力</small>
+*キーワード: log4j, 機能比較, ログローテーション, log_adaptor, log-add_log_writer, ファイルサイズローテーション, 非同期ログ出力*

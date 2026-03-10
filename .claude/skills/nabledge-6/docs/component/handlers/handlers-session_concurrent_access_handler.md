@@ -15,7 +15,7 @@
 
 **クラス名**: `nablarch.fw.web.handler.SessionConcurrentAccessHandler`
 
-<small>キーワード: SessionConcurrentAccessHandler, nablarch.fw.web.handler.SessionConcurrentAccessHandler, セッション並行アクセス制御, スレッド処理不整合防止, セッション排他制御, 並行アクセス制御, 非推奨ハンドラ</small>
+*キーワード: SessionConcurrentAccessHandler, nablarch.fw.web.handler.SessionConcurrentAccessHandler, セッション並行アクセス制御, スレッド処理不整合防止, セッション排他制御, 並行アクセス制御, 非推奨ハンドラ*
 
 ## モジュール一覧
 
@@ -27,10 +27,10 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, com.nablarch.framework, モジュール依存関係</small>
+*キーワード: nablarch-fw-web, com.nablarch.framework, モジュール依存関係*
 
 ## 制約
 
 なし。
 
-<small>キーワード: 制約なし, 使用制限なし</small>
+*キーワード: 制約なし, 使用制限なし*

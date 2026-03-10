@@ -10,7 +10,7 @@
 
 **任意のデータをキャッシュできる**: この機能が提供するインタフェースを実装することで任意のデータをキャッシュできる。新たなデータをキャッシュしたい場合にはデータをロードする処理のみを実装すればよい。マルチスレッド環境下での同期処理を行う必要がない。
 
-<small>キーワード: 静的データキャッシュ, ヒープキャッシュ, Full GC, キャッシュ機能, マルチスレッド同期不要</small>
+*キーワード: 静的データキャッシュ, ヒープキャッシュ, Full GC, キャッシュ機能, マルチスレッド同期不要*
 
 ## モジュール一覧
 
@@ -22,7 +22,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core, モジュール依存関係, com.nablarch.framework</small>
+*キーワード: nablarch-core, モジュール依存関係, com.nablarch.framework*
 
 ## 任意のデータをキャッシュする
 
@@ -81,7 +81,7 @@ public class SampleService {
 </component>
 ```
 
-<small>キーワード: StaticDataLoader, BasicStaticDataCache, StaticDataCache, BasicApplicationInitializer, loader, データロード, キャッシュ初期化, loadAll, getValue</small>
+*キーワード: StaticDataLoader, BasicStaticDataCache, StaticDataCache, BasicApplicationInitializer, loader, データロード, キャッシュ初期化, loadAll, getValue*
 
 ## データのキャッシュタイミングを制御する
 
@@ -103,4 +103,4 @@ public class SampleService {
 </component>
 ```
 
-<small>キーワード: BasicStaticDataCache, loadOnStartup, 一括ロード, オンデマンドロード, キャッシュタイミング</small>
+*キーワード: BasicStaticDataCache, loadOnStartup, 一括ロード, オンデマンドロード, キャッシュタイミング*

@@ -11,7 +11,7 @@
 - トランザクションの終了（コミットやロールバック）
 - トランザクションの終了時のコールバック
 
-<small>キーワード: LoopHandler, トランザクションループ制御ハンドラ, データリーダ, ループ処理, 後続ハンドラ繰り返し実行, トランザクション制御, コミット間隔, バッチ処理ループ, 処理対象データ繰り返し</small>
+*キーワード: LoopHandler, トランザクションループ制御ハンドラ, データリーダ, ループ処理, 後続ハンドラ繰り返し実行, トランザクション制御, コミット間隔, バッチ処理ループ, 処理対象データ繰り返し*
 
 ## ハンドラクラス名
 
@@ -19,7 +19,7 @@
 
 データリーダ上に処理対象データが存在する間、後続ハンドラの処理を繰り返し実行し、トランザクション制御を行うハンドラ。スタンドアロンバッチ処理で使用する。
 
-<small>キーワード: LoopHandler, nablarch.fw.handler.LoopHandler, トランザクションループ制御ハンドラ, ハンドラクラス名</small>
+*キーワード: LoopHandler, nablarch.fw.handler.LoopHandler, トランザクションループ制御ハンドラ, ハンドラクラス名*
 
 ## モジュール一覧
 
@@ -42,13 +42,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-standalone, nablarch-core-transaction, nablarch-core-jdbc, モジュール依存関係, Maven依存設定</small>
+*キーワード: nablarch-fw-standalone, nablarch-core-transaction, nablarch-core-jdbc, モジュール依存関係, Maven依存設定*
 
 ## 制約
 
 - :ref:`database_connection_management_handler` より後ろに設定すること。DBトランザクション制御時、スレッド上にトランザクション管理対象のDB接続が存在している必要がある。
 
-<small>キーワード: database_connection_management_handler, DbConnectionManagementHandler, ハンドラ順序制約, データベース接続管理ハンドラ, トランザクション制御制約</small>
+*キーワード: database_connection_management_handler, DbConnectionManagementHandler, ハンドラ順序制約, データベース接続管理ハンドラ, トランザクション制御制約*
 
 ## トランザクション制御対象を設定する
 
@@ -70,7 +70,7 @@
 </component>
 ```
 
-<small>キーワード: transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション制御対象設定, トランザクション識別名</small>
+*キーワード: transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション制御対象設定, トランザクション識別名*
 
 ## コミット間隔を指定する
 
@@ -82,7 +82,7 @@
 </component>
 ```
 
-<small>キーワード: commitInterval, コミット間隔, バッチスループット, トランザクションコミット間隔, loop_handler-commit_interval</small>
+*キーワード: commitInterval, コミット間隔, バッチスループット, トランザクションコミット間隔, loop_handler-commit_interval*
 
 ## トランザクション終了時に任意の処理を実行したい
 
@@ -125,4 +125,4 @@ public static class SampleHandler
 </list>
 ```
 
-<small>キーワード: TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了通知, ロールバック後処理, loop_handler-callback</small>
+*キーワード: TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了通知, ロールバック後処理, loop_handler-callback*

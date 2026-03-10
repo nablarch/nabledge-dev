@@ -14,7 +14,7 @@
 
 メッセージのフォーマットには `java.text.MessageFormat` の拡張機能を使用する。実行時の値を埋め込む場合は :ref:`message-format-spec` のパターン文字列を定義する。
 
-<small>キーワード: メッセージ管理, プロパティファイル, データベース管理, メッセージフォーマット, java.text.MessageFormat, MessageFormat, 実行中更新不可</small>
+*キーワード: メッセージ管理, プロパティファイル, データベース管理, メッセージフォーマット, java.text.MessageFormat, MessageFormat, 実行中更新不可*
 
 ## モジュール一覧
 
@@ -36,7 +36,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core, nablarch-core-message, nablarch-common-jdbc, Maven依存関係, モジュール</small>
+*キーワード: nablarch-core, nablarch-core-message, nablarch-common-jdbc, Maven依存関係, モジュール*
 
 ## プロパティファイルの作成単位
 
@@ -46,7 +46,7 @@
 - コンシューマ向け: `consumer/main/resources/messages.properties`
 - 社員向け: `intra/main/resources/messages.properties`
 
-<small>キーワード: プロパティファイル作成単位, アプリケーション単位, messages.properties, 影響範囲, メッセージ管理</small>
+*キーワード: プロパティファイル作成単位, アプリケーション単位, messages.properties, 影響範囲, メッセージ管理*
 
 ## プロパティファイルにメッセージを定義する
 
@@ -62,7 +62,7 @@ success.delete.project=プロジェクトの削除が完了しました。
 success.update.project=プロジェクトの更新が完了しました。
 ```
 
-<small>キーワード: messages.properties, classpath, UTF-8, java.util.Properties, プロパティファイル定義, native2ascii</small>
+*キーワード: messages.properties, classpath, UTF-8, java.util.Properties, プロパティファイル定義, native2ascii*
 
 ## 多言語化対応
 
@@ -108,7 +108,7 @@ success.update.project=プロジェクトの更新が完了しました。
 - 言語別: `messages_{言語}.properties`（例: `messages_en.properties`）
 - `messages.properties` が存在しない場合はエラーになる
 
-<small>キーワード: PropertiesStringResourceLoader, 多言語化, defaultLocale, ThreadContext, locales, 言語設定, BasicStaticDataCache, StringResourceHolder, BasicApplicationInitializer</small>
+*キーワード: PropertiesStringResourceLoader, 多言語化, defaultLocale, ThreadContext, locales, 言語設定, BasicStaticDataCache, StringResourceHolder, BasicApplicationInitializer*
 
 ## メッセージを持つ業務例外を送出する
 
@@ -123,7 +123,7 @@ Message message = MessageUtil.createMessage(MessageLevel.ERROR, "errors.login.al
 throw new ApplicationException(message);
 ```
 
-<small>キーワード: ApplicationException, MessageUtil, 業務例外, MessageLevel, createMessage, メッセージ送出, Message, nablarch.core.message.Message</small>
+*キーワード: ApplicationException, MessageUtil, 業務例外, MessageLevel, createMessage, メッセージ送出, Message, nablarch.core.message.Message*
 
 ## 埋め込み文字を使用する
 
@@ -155,7 +155,7 @@ MessageUtil.createMessage(MessageLevel.INFO, "success.upload.project", options);
 
 フォーマット方法を変更する場合は :ref:`message-change_formatter` を参照。
 
-<small>キーワード: MessageFormat, java.text.MessageFormat, java.util.Map, 埋め込み文字, MessageUtil, パターン文字</small>
+*キーワード: MessageFormat, java.text.MessageFormat, java.util.Map, 埋め込み文字, MessageUtil, パターン文字*
 
 ## 画面の固定文言をメッセージから取得する
 
@@ -171,7 +171,7 @@ login.title=ログイン
 </div>
 ```
 
-<small>キーワード: messageタグ, 固定文言, JSP, n:message, tag-write_message, カスタムタグ</small>
+*キーワード: messageタグ, 固定文言, JSP, n:message, tag-write_message, カスタムタグ*
 
 ## メッセージレベルを使い分ける
 
@@ -205,7 +205,7 @@ JSPでは `errors` タグを使用して、WebUtilに格納したメッセージ
 <n:errors />
 ```
 
-<small>キーワード: MessageLevel, nablarch_info, nablarch_warn, nablarch_error, errorsタグ, WebUtil, ApplicationException, INFO, WARN, ERROR, notifyMessages</small>
+*キーワード: MessageLevel, nablarch_info, nablarch_warn, nablarch_error, errorsタグ, WebUtil, ApplicationException, INFO, WARN, ERROR, notifyMessages*
 
 ## 拡張例
 
@@ -259,4 +259,4 @@ public class SampleMessageFormatter implements MessageFormatter {
 - `BasicMessageFormatter`: :ref:`埋め込み文字の仕様 <message-format-spec>` に従いフォーマット。実装クラスが未定義の場合はこのクラスが使用される。
 - `JavaMessageFormatBaseMessageFormatter`: `MessageFormat` を使用してフォーマット。
 
-<small>キーワード: PropertiesStringResourceLoader, BasicStringResourceLoader, BasicStaticDataCache, StringResourceHolder, MessageFormatter, BasicMessageFormatter, JavaMessageFormatBaseMessageFormatter, MessageFormat, プロパティファイル設定変更, データベースメッセージ管理, メッセージフォーマット変更</small>
+*キーワード: PropertiesStringResourceLoader, BasicStringResourceLoader, BasicStaticDataCache, StringResourceHolder, MessageFormatter, BasicMessageFormatter, JavaMessageFormatBaseMessageFormatter, MessageFormat, プロパティファイル設定変更, データベースメッセージ管理, メッセージフォーマット変更*

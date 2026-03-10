@@ -8,7 +8,7 @@
 
 バッチレットで業務ロジックを実行し、ステップの処理結果を表す文字列（バッチレットの終了ステータス）を返却する。終了ステータスの詳細は Jakarta Batch Specification を参照。用途例: ファイルダウンロード、`insert～select` のみで完結するSQL実行など。
 
-<small>キーワード: Batchlet, バッチレット, ステップ処理結果, 業務ロジック実行, バッチレットクラス, 終了ステータス, Jakarta Batch Specification</small>
+*キーワード: Batchlet, バッチレット, ステップ処理結果, 業務ロジック実行, バッチレットクラス, 終了ステータス, Jakarta Batch Specification*
 
 ## Chunkステップの場合
 
@@ -34,4 +34,4 @@
 
 テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。
 
-<small>キーワード: ItemReader, ItemProcessor, ItemWriter, Form, Entity, チャンク処理, フォームクラス, エンティティクラス, 入力値チェック, Bean Validation, Jakarta Batch Specification</small>
+*キーワード: ItemReader, ItemProcessor, ItemWriter, Form, Entity, チャンク処理, フォームクラス, エンティティクラス, 入力値チェック, Bean Validation, Jakarta Batch Specification*

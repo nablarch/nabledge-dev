@@ -111,4 +111,4 @@ Nablarch 5 から 6 への移行手順: [Nablarch 5から6への移行ガイド]
 | アダプタ | com.nablarch.integration | nablarch-wmq-adaptor | 2.0.0 |
 | 開発ツール | com.nablarch.tool | nablarch-toolbox | 2.0.0 |
 
-<small>キーワード: Jakarta EE 10対応, Java 17, Nablarch 5から6への移行, マイグレーション, モジュールバージョン, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, アダプタ動作未検証, nablarch-testing-jetty12, com.nablarch.framework, com.nablarch.integration, nablarch-single-module-archetype, com.nablarch.configuration, com.nablarch.tool, nablarch-toolbox</small>
+*キーワード: Jakarta EE 10対応, Java 17, Nablarch 5から6への移行, マイグレーション, モジュールバージョン, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, アダプタ動作未検証, nablarch-testing-jetty12, com.nablarch.framework, com.nablarch.integration, nablarch-single-module-archetype, com.nablarch.configuration, com.nablarch.tool, nablarch-toolbox*

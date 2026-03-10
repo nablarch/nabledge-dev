@@ -16,13 +16,13 @@ URL形式: `/<baseUri>/<className>/<methodName>`
 
 ![処理の流れ](../../knowledge/component/handlers/assets/handlers-http_request_java_package_mapping/flow.png)
 
-<small>キーワード: HttpRequestJavaPackageMapping, HTTPリクエストディスパッチ, URLマッピング, アクションクラス, router_adaptor推奨</small>
+*キーワード: HttpRequestJavaPackageMapping, HTTPリクエストディスパッチ, URLマッピング, アクションクラス, router_adaptor推奨*
 
 ## ハンドラクラス名
 
 **クラス名**: `HttpRequestJavaPackageMapping`
 
-<small>キーワード: HttpRequestJavaPackageMapping, nablarch.fw.web.handler.HttpRequestJavaPackageMapping, ハンドラクラス名</small>
+*キーワード: HttpRequestJavaPackageMapping, nablarch.fw.web.handler.HttpRequestJavaPackageMapping, ハンドラクラス名*
 
 ## モジュール一覧
 
@@ -34,13 +34,13 @@ URL形式: `/<baseUri>/<className>/<methodName>`
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, com.nablarch.framework, Maven依存関係</small>
+*キーワード: nablarch-fw-web, com.nablarch.framework, Maven依存関係*
 
 ## 制約
 
 **ハンドラキューの最後に置くこと**: 本ハンドラは後続のハンドラを呼び出さない。このため、本ハンドラの配置はハンドラキューの最後に置くこと。
 
-<small>キーワード: ハンドラキュー, 配置順序, 最後に配置, 制約</small>
+*キーワード: ハンドラキュー, 配置順序, 最後に配置, 制約*
 
 ## ディスパッチの設定
 
@@ -56,7 +56,7 @@ URL形式: `/<baseUri>/<className>/<methodName>`
 
 ディスパッチ例: URL `/action/UserAction/index` → クラス `jp.co.tis.nablarch.example.UserAction`
 
-<small>キーワード: baseUri, basePackage, ディスパッチ設定, URLマッピング設定, packageMapping</small>
+*キーワード: baseUri, basePackage, ディスパッチ設定, URLマッピング設定, packageMapping*
 
 ## アクションが複数のパッケージに配置される場合の設定
 
@@ -64,4 +64,4 @@ URL形式: `/<baseUri>/<className>/<methodName>`
 
 ![パッケージマッピング例](../../knowledge/component/handlers/assets/handlers-http_request_java_package_mapping/package_mapping.png)
 
-<small>キーワード: 複数パッケージ, パッケージマッピング, アクションクラス配置, サブパッケージ</small>
+*キーワード: 複数パッケージ, パッケージマッピング, アクションクラス配置, サブパッケージ*

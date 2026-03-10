@@ -44,7 +44,7 @@ messagingLogFormatter.httpSentMessageFormat=@@@@ HTTP SENT MESSAGE @@@@\n\tthrea
 messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_body   = [$messageBody$]
 ```
 
-<small>キーワード: メッセージングログ出力方針, ログレベル INFO, ロガー名 MESSAGING, アプリケーションログ出力, log.properties設定, メッセージングログ設定例</small>
+*キーワード: メッセージングログ出力方針, ログレベル INFO, ロガー名 MESSAGING, アプリケーションログ出力, log.properties設定, メッセージングログ設定例*
 
 ## メッセージングログの設定
 
@@ -130,7 +130,7 @@ messagingLogFormatter.httpSentMessageFormat=@@@@ HTTP SENT MESSAGE @@@@\n\tthrea
 messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_body   = [$messageBody$]
 ```
 
-<small>キーワード: MessagingLogFormatter, messagingLogFormatter.className, messagingLogFormatter.maskingPatterns, messagingLogFormatter.maskingChar, messagingLogFormatter.sentMessageFormat, messagingLogFormatter.receivedMessageFormat, messagingLogFormatter.httpSentMessageFormat, messagingLogFormatter.httpReceivedMessageFormat, メッセージマスキング設定, MOMメッセージングフォーマット, HTTPメッセージングフォーマット, メッセージボディISO-8859-1</small>
+*キーワード: MessagingLogFormatter, messagingLogFormatter.className, messagingLogFormatter.maskingPatterns, messagingLogFormatter.maskingChar, messagingLogFormatter.sentMessageFormat, messagingLogFormatter.receivedMessageFormat, messagingLogFormatter.httpSentMessageFormat, messagingLogFormatter.httpReceivedMessageFormat, メッセージマスキング設定, MOMメッセージングフォーマット, HTTPメッセージングフォーマット, メッセージボディISO-8859-1*
 
 ## JSON形式の構造化ログとして出力する
 
@@ -173,4 +173,4 @@ messagingLogFormatter.httpSentMessageTargets=threadName,messageId,destination,co
 messagingLogFormatter.httpReceivedMessageTargets=threadName,messageId,destination,correlationId,messageHeader,messageBody
 ```
 
-<small>キーワード: MessagingJsonLogFormatter, JSON構造化ログ, messagingLogFormatter.structuredMessagePrefix, messagingLogFormatter.sentMessageTargets, messagingLogFormatter.receivedMessageTargets, messagingLogFormatter.httpSentMessageTargets, messagingLogFormatter.httpReceivedMessageTargets, messagingLogFormatter.sentMessageLabel, messagingLogFormatter.receivedMessageLabel, messagingLogFormatter.httpSentMessageLabel, messagingLogFormatter.httpReceivedMessageLabel, JsonLogFormatter, メッセージングログJSON形式出力</small>
+*キーワード: MessagingJsonLogFormatter, JSON構造化ログ, messagingLogFormatter.structuredMessagePrefix, messagingLogFormatter.sentMessageTargets, messagingLogFormatter.receivedMessageTargets, messagingLogFormatter.httpSentMessageTargets, messagingLogFormatter.httpReceivedMessageTargets, messagingLogFormatter.sentMessageLabel, messagingLogFormatter.receivedMessageLabel, messagingLogFormatter.httpSentMessageLabel, messagingLogFormatter.httpReceivedMessageLabel, JsonLogFormatter, メッセージングログJSON形式出力*

@@ -34,4 +34,4 @@
 
 [7] Jakarta Batchに準拠したバッチアプリケーションでは、一定間隔で入力データソースを監視するようなバッチ処理は実現できない。このようなバッチアプリケーションが必要となった場合は、:ref:`Nablarchバッチアプリケーションの常駐バッチ <nablarch_batch-resident_batch>` を使用して実現すること。
 
-<small>キーワード: DuplicateJobRunningCheckListener, ItemReader, ResumeDataReader, Jakarta Batchとの機能比較, バッチアプリケーション比較, リトライ処理, 障害復旧・再実行, 並列実行, 常駐バッチ, コミット制御, 例外ハンドリング, 同時実行防止, プロセス停止</small>
+*キーワード: DuplicateJobRunningCheckListener, ItemReader, ResumeDataReader, Jakarta Batchとの機能比較, バッチアプリケーション比較, リトライ処理, 障害復旧・再実行, 並列実行, 常駐バッチ, コミット制御, 例外ハンドリング, 同時実行防止, プロセス停止*

@@ -6,7 +6,7 @@
 
 リクエスト単体テストの実施方法は :ref:`message_sendSyncMessage_test` を参照すること。ただし、「送信キュー」「受信キュー」は「通信先」と読み替えること。本ドキュメントでは :ref:`message_sendSyncMessage_test` と異なる箇所のみを解説する。
 
-<small>キーワード: HTTP同期応答メッセージ送信処理, リクエスト単体テスト, message_sendSyncMessage_test, 通信先, 送信キュー, 受信キュー</small>
+*キーワード: HTTP同期応答メッセージ送信処理, リクエスト単体テスト, message_sendSyncMessage_test, 通信先, 送信キュー, 受信キュー*
 
 ## テストデータの書き方
 
@@ -34,7 +34,7 @@
 
 > **補足**: 送信対象のリクエストIDが複数存在する場合、送信順のテストは不可能。順番が異なっても（例: `ProjectSaveMessage2`が`ProjectSaveMessage`より先に送信されても）テストは成功となる。
 
-<small>キーワード: RESPONSE_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, テストデータ記述方法, JSON, XML, グループID, tips_groupId, auto-test-framework_multi-datatype, no</small>
+*キーワード: RESPONSE_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, テストデータ記述方法, JSON, XML, グループID, tips_groupId, auto-test-framework_multi-datatype, no*
 
 ## 障害系のテスト
 
@@ -48,7 +48,7 @@
 - スローされる`HttpMessagingTimeoutException`は :ref:`message_sendSyncMessage_test` とは異なるクラス
 - 業務アクション内で`MessagingException`を明示的に制御していない場合、個別のリクエスト単体テストで障害系テストを行う必要はない
 
-<small>キーワード: errorMode:timeout, errorMode:msgException, HttpMessagingTimeoutException, MessagingException, 障害系テスト, タイムアウトエラー</small>
+*キーワード: errorMode:timeout, errorMode:msgException, HttpMessagingTimeoutException, MessagingException, 障害系テスト, タイムアウトエラー*
 
 ## モックアップを使用するための記述・要求電文のアサート
 
@@ -71,7 +71,7 @@
 
 テストデータのディレクティブ行に設定された`file-type`の値によりアサート方法が変化する。詳細は :ref:`real_request_test` のレスポンスメッセージの項を参照。
 
-<small>キーワード: expectedMessageByClient, responseMessageByClient, モックアップ, MOMメッセージ, HTTPメッセージ, グループID, file-type, dealUnitTest_send_sync, real_request_test</small>
+*キーワード: expectedMessageByClient, responseMessageByClient, モックアップ, MOMメッセージ, HTTPメッセージ, グループID, file-type, dealUnitTest_send_sync, real_request_test*
 
 ## フレームワークで使用するクラスの設定
 
@@ -92,4 +92,4 @@
 |---|---|---|---|
 | charset | | UTF-8 | ログ出力に使用する文字コード名 |
 
-<small>キーワード: RequestTestingMessagingClient, defaultMessageSenderClient, charset, モックアップクラス設定, コンポーネント設定, nablarch.test.core.messaging.RequestTestingMessagingClient</small>
+*キーワード: RequestTestingMessagingClient, defaultMessageSenderClient, charset, モックアップクラス設定, コンポーネント設定, nablarch.test.core.messaging.RequestTestingMessagingClient*

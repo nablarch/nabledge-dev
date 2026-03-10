@@ -12,4 +12,4 @@
 
 > **補足**: :ref:`data_bind` と :ref:`data_format` の機能比較は :ref:`data_io-functional_comparison` を参照。
 
-<small>キーワード: データバインド, 汎用データフォーマット, data_bind, data_format, データ入出力, フォーマット変換, 機能選択, IDE補完</small>
+*キーワード: データバインド, 汎用データフォーマット, data_bind, data_format, データ入出力, フォーマット変換, 機能選択, IDE補完*

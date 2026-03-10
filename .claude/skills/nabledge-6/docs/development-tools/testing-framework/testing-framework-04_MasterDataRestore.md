@@ -8,7 +8,7 @@
 
 マスタメンテナンス機能等のテストでは、マスタデータを変更しないと実施できない異常系テストケース（例: 存在するはずのデータが存在しなかった場合のテスト）が存在し、マスタレコードの削除が必要になる場合がある。テスト中にマスタデータを変更した場合、それ以降のテストクラスではマスタデータが意図しない状態になりテストが失敗することがある。本機能はこのような意図しないテスト失敗を防止するために提供される。
 
-<small>キーワード: マスタデータ復旧, マスタデータ変更, テスト失敗防止, テストメソッド終了, 異常系テスト</small>
+*キーワード: マスタデータ復旧, マスタデータ変更, テスト失敗防止, テストメソッド終了, 異常系テスト*
 
 ## 特徴
 
@@ -18,7 +18,7 @@
 - マスタデータ復旧は自動で行われるので、各テストクラスで復旧処理・復旧用データを用意する必要がない。
 - バックアップ用スキーマからテーブル毎に一括で復旧するので、1件ずつINSERTする場合に比べて高速に復旧できる。
 
-<small>キーワード: テスト実行順序, 自動復旧, 高速復旧, バックアップスキーマ, 一括復旧</small>
+*キーワード: テスト実行順序, 自動復旧, 高速復旧, バックアップスキーマ, 一括復旧*
 
 ## 必要となるスキーマ
 
@@ -29,7 +29,7 @@
 | 自動テスト用スキーマ | 自動テストに使用するスキーマ。 |
 | バックアップ用スキーマ | 復旧に使用するためのマスタデータを保存しておくためのスキーマ。 |
 
-<small>キーワード: 自動テスト用スキーマ, バックアップ用スキーマ, 必要スキーマ, 2つのスキーマ</small>
+*キーワード: 自動テスト用スキーマ, バックアップ用スキーマ, 必要スキーマ, 2つのスキーマ*
 
 ## 動作イメージ
 
@@ -40,7 +40,7 @@
 1. テーブル内のレコードを全件削除する。
 2. バックアップ用スキーマのテーブルからレコードを全件挿入する。
 
-<small>キーワード: 監視対象テーブル, SQLログ監視, 全件削除, 全件挿入, 復旧メカニズム, コンポーネント設定ファイル</small>
+*キーワード: 監視対象テーブル, SQLログ監視, 全件削除, 全件挿入, 復旧メカニズム, コンポーネント設定ファイル*
 
 ## バックアップ用スキーマの作成、データ投入
 
@@ -48,7 +48,7 @@
 
 > **補足**: 復旧用スキーマに全テーブルを作成する必要はない。復旧対象とするテーブルのみ存在すればよい（復旧対象外のテーブルがあっても問題ない）。
 
-<small>キーワード: バックアップスキーマ作成, マスタデータ復旧, データ投入, 復旧対象テーブル</small>
+*キーワード: バックアップスキーマ作成, マスタデータ復旧, データ投入, 復旧対象テーブル*
 
 ## 外部キーが設定されたテーブルを使用する場合について
 
@@ -62,7 +62,7 @@
 nablarch.suppress-table-sort=true
 ```
 
-<small>キーワード: 外部キー, slow test, テーブル削除挿入順序, 親子関係, nablarch.suppress-table-sort</small>
+*キーワード: 外部キー, slow test, テーブル削除挿入順序, 親子関係, nablarch.suppress-table-sort*
 
 ## コンポーネント設定ファイルに監視対象テーブルを記載
 
@@ -93,7 +93,7 @@ nablarch.suppress-table-sort=true
 </component>
 ```
 
-<small>キーワード: MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tablesTobeWatched, testEventListeners, 監視対象テーブル, コンポーネント設定</small>
+*キーワード: MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tablesTobeWatched, testEventListeners, 監視対象テーブル, コンポーネント設定*
 
 ## ログ出力設定
 
@@ -121,4 +121,4 @@ loggers.sql.level=DEBUG
 loggers.sql.writerNames=nop
 ```
 
-<small>キーワード: MasterDataRestorer$SqlLogWatchingFormatter, nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter, NopLogWriter, nablarch.test.core.log.NopLogWriter, BasicLoggerFactory, nablarch.core.log.basic.BasicLoggerFactory, StandardOutputLogWriter, nablarch.core.log.basic.StandardOutputLogWriter, SQLログ, app-log.properties, log.properties</small>
+*キーワード: MasterDataRestorer$SqlLogWatchingFormatter, nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter, NopLogWriter, nablarch.test.core.log.NopLogWriter, BasicLoggerFactory, nablarch.core.log.basic.BasicLoggerFactory, StandardOutputLogWriter, nablarch.core.log.basic.StandardOutputLogWriter, SQLログ, app-log.properties, log.properties*

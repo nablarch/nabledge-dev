@@ -17,4 +17,4 @@
 
 > **補足**: :ref:`restful_web_service` と :ref:`http_messaging` の機能比較は [restful_web_service_functional_comparison](restful-web-service-functional_comparison.md) を参照。
 
-<small>キーワード: MessagingException, nablarch.fw.messaging.MessagingException, RESTfulウェブサービス, HTTPメッセージング, フレームワーク選択, restful_web_service, http_messaging, Jakarta RESTful Web Services</small>
+*キーワード: MessagingException, nablarch.fw.messaging.MessagingException, RESTfulウェブサービス, HTTPメッセージング, フレームワーク選択, restful_web_service, http_messaging, Jakarta RESTful Web Services*

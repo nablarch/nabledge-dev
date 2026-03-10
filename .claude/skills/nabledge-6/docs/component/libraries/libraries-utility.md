@@ -14,4 +14,4 @@
 | `Base64Util` | nablarch-core | Base64エンコーディング機能。Java 8以降は `Base64エンコーディングの標準API` が提供されており、本ユーティリティは後方互換のために存在 |
 | `BinaryUtil` | nablarch-fw-web-extension | バイナリに関する機能 |
 
-<small>キーワード: DateUtil, FileUtil, ObjectUtil, StringUtil, BeanUtil, Base64Util, BinaryUtil, nablarch.core.util.DateUtil, nablarch.core.util.FileUtil, nablarch.core.util.ObjectUtil, nablarch.core.util.StringUtil, nablarch.core.beans.BeanUtil, nablarch.core.util.Base64Util, nablarch.core.util.BinaryUtil, 日付ユーティリティ, 文字列ユーティリティ, Base64エンコーディング, バイナリユーティリティ, 汎用ユーティリティ</small>
+*キーワード: DateUtil, FileUtil, ObjectUtil, StringUtil, BeanUtil, Base64Util, BinaryUtil, nablarch.core.util.DateUtil, nablarch.core.util.FileUtil, nablarch.core.util.ObjectUtil, nablarch.core.util.StringUtil, nablarch.core.beans.BeanUtil, nablarch.core.util.Base64Util, nablarch.core.util.BinaryUtil, 日付ユーティリティ, 文字列ユーティリティ, Base64エンコーディング, バイナリユーティリティ, 汎用ユーティリティ*

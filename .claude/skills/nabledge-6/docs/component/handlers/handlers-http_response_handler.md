@@ -6,7 +6,7 @@
 
 **クラス**: `HttpResponseHandler`
 
-<small>キーワード: HttpResponseHandler, nablarch.fw.web.handler.HttpResponseHandler, ハンドラクラス名</small>
+*キーワード: HttpResponseHandler, nablarch.fw.web.handler.HttpResponseHandler, ハンドラクラス名*
 
 ## モジュール一覧
 
@@ -18,13 +18,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, com.nablarch.framework, モジュール, 依存関係</small>
+*キーワード: nablarch-fw-web, com.nablarch.framework, モジュール, 依存関係*
 
 ## 制約
 
 本ハンドラを使用するにあたっての制約事項はなし。
 
-<small>キーワード: 制約, HTTPレスポンスハンドラ</small>
+*キーワード: 制約, HTTPレスポンスハンドラ*
 
 ## 応答の変換方法
 
@@ -40,13 +40,13 @@
 | スキームが上記以外でステータスコードが400以上の場合 | ステータスコードに合うエラー画面を表示 |
 | 上記以外の場合 | `HttpResponse#getBodyStream()` の結果を応答 |
 
-<small>キーワード: HttpResponse, ResourceLocator, ServletResponse, サーブレットフォワード, リダイレクト, スキーム変換, レスポンス方法, servlet, redirect, http, https, 直接レスポンス</small>
+*キーワード: HttpResponse, ResourceLocator, ServletResponse, サーブレットフォワード, リダイレクト, スキーム変換, レスポンス方法, servlet, redirect, http, https, 直接レスポンス*
 
 ## カスタムレスポンスライター
 
 `customResponseWriter` プロパティに `CustomResponseWriter` の実装クラスを設定することで、任意のレスポンス出力処理（テンプレートエンジン等による出力）を実行できる。Nablarchが提供する実装として :ref:`web_thymeleaf_adaptor` がある。
 
-<small>キーワード: CustomResponseWriter, customResponseWriter, カスタムレスポンスライター, テンプレートエンジン, web_thymeleaf_adaptor</small>
+*キーワード: CustomResponseWriter, customResponseWriter, カスタムレスポンスライター, テンプレートエンジン, web_thymeleaf_adaptor*
 
 ## HTTPステータスコードの変更
 
@@ -56,7 +56,7 @@
 | 元のステータスコードが400の場合 | 200を返す |
 | 上記以外の場合 | 元のステータスコードをそのまま返す |
 
-<small>キーワード: HTTPステータスコード変更, Ajaxリクエスト, ステータスコード400, ステータスコード200, ステータスコード変換</small>
+*キーワード: HTTPステータスコード変更, Ajaxリクエスト, ステータスコード400, ステータスコード200, ステータスコード変換*
 
 ## 言語毎のコンテンツパスの切り替え
 
@@ -79,7 +79,7 @@
 
 > **補足**: カスタムレスポンスライターでレスポンス出力を行う場合、本機能は使用できない。テンプレートエンジン等が持つ多言語対応機能と混在させないため。
 
-<small>キーワード: DirectoryBasedResourcePathRule, FilenameBasedResourcePathRule, ResourcePathRule, contentPathRule, 言語切り替え, コンテンツパス, 多言語対応</small>
+*キーワード: DirectoryBasedResourcePathRule, FilenameBasedResourcePathRule, ResourcePathRule, contentPathRule, 言語切り替え, コンテンツパス, 多言語対応*
 
 ## 本ハンドラ内で発生した致命的エラーの対応
 
@@ -107,4 +107,4 @@
 
 > **重要**: 上記HTMLのレスポンスは固定的で設定変更不可。このレスポンスを出してはいけないシステムでは、本ハンドラを参考にハンドラの自作を検討すること。
 
-<small>キーワード: ServletException, RuntimeException, Error, 致命的エラー, ステータスコード500, 固定レスポンス, エラーレスポンス</small>
+*キーワード: ServletException, RuntimeException, Error, 致命的エラー, ステータスコード500, 固定レスポンス, エラーレスポンス*

@@ -56,7 +56,7 @@ jaxRsAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$user
                                     \n\tfree_memory    = [$freeMemory$]
 ```
 
-<small>キーワード: HTTPアクセスログ出力方針, ログレベル INFO, HTTP_ACCESS, log.properties, app-log.properties, JaxRsAccessLogFormatter, アプリケーションログ, jaxrs_access_log_handler, 証跡ログ, リクエストパラメータ</small>
+*キーワード: HTTPアクセスログ出力方針, ログレベル INFO, HTTP_ACCESS, log.properties, app-log.properties, JaxRsAccessLogFormatter, アプリケーションログ, jaxrs_access_log_handler, 証跡ログ, リクエストパラメータ*
 
 ## HTTPアクセスログの設定
 
@@ -109,7 +109,7 @@ jaxRsAccessLogFormatter.beginOutputEnabled=true
 jaxRsAccessLogFormatter.endOutputEnabled=true
 ```
 
-<small>キーワード: JaxRsAccessLogFormatter, jaxRsAccessLogFormatter.className, jaxRsAccessLogFormatter.beginFormat, jaxRsAccessLogFormatter.endFormat, jaxRsAccessLogFormatter.datePattern, jaxRsAccessLogFormatter.maskingPatterns, jaxRsAccessLogFormatter.maskingChar, jaxRsAccessLogFormatter.bodyLogTargetMatcher, jaxRsAccessLogFormatter.bodyMaskingFilter, jaxRsAccessLogFormatter.bodyMaskingItemNames, jaxRsAccessLogFormatter.parametersSeparator, jaxRsAccessLogFormatter.sessionScopeSeparator, jaxRsAccessLogFormatter.beginOutputEnabled, jaxRsAccessLogFormatter.endOutputEnabled, HTTPアクセスログ設定, マスキング, リクエストボディログ, レスポンスボディログ, MessageBodyLogTargetMatcher, JaxRsBodyLogTargetMatcher, LogContentMaskingFilter, JaxRsBodyMaskingFilter, BasicLogFormatter, ThreadContext</small>
+*キーワード: JaxRsAccessLogFormatter, jaxRsAccessLogFormatter.className, jaxRsAccessLogFormatter.beginFormat, jaxRsAccessLogFormatter.endFormat, jaxRsAccessLogFormatter.datePattern, jaxRsAccessLogFormatter.maskingPatterns, jaxRsAccessLogFormatter.maskingChar, jaxRsAccessLogFormatter.bodyLogTargetMatcher, jaxRsAccessLogFormatter.bodyMaskingFilter, jaxRsAccessLogFormatter.bodyMaskingItemNames, jaxRsAccessLogFormatter.parametersSeparator, jaxRsAccessLogFormatter.sessionScopeSeparator, jaxRsAccessLogFormatter.beginOutputEnabled, jaxRsAccessLogFormatter.endOutputEnabled, HTTPアクセスログ設定, マスキング, リクエストボディログ, レスポンスボディログ, MessageBodyLogTargetMatcher, JaxRsBodyLogTargetMatcher, LogContentMaskingFilter, JaxRsBodyMaskingFilter, BasicLogFormatter, ThreadContext*
 
 ## JSON形式の構造化ログとして出力する
 
@@ -147,7 +147,7 @@ httpAccessLogFormatter.beginLabel=HTTP ACCESS BEGIN
 httpAccessLogFormatter.endLabel=HTTP ACCESS END
 ```
 
-<small>キーワード: JaxRsAccessJsonLogFormatter, JSON構造化ログ, jaxRsAccessLogFormatter.beginTargets, jaxRsAccessLogFormatter.endTargets, jaxRsAccessLogFormatter.datePattern, jaxRsAccessLogFormatter.maskingPatterns, jaxRsAccessLogFormatter.maskingChar, jaxRsAccessLogFormatter.beginOutputEnabled, jaxRsAccessLogFormatter.endOutputEnabled, jaxRsAccessLogFormatter.structuredMessagePrefix, jaxRsAccessLogFormatter.beginLabel, jaxRsAccessLogFormatter.endLabel, httpAccessLogFormatter.className, JsonLogFormatter</small>
+*キーワード: JaxRsAccessJsonLogFormatter, JSON構造化ログ, jaxRsAccessLogFormatter.beginTargets, jaxRsAccessLogFormatter.endTargets, jaxRsAccessLogFormatter.datePattern, jaxRsAccessLogFormatter.maskingPatterns, jaxRsAccessLogFormatter.maskingChar, jaxRsAccessLogFormatter.beginOutputEnabled, jaxRsAccessLogFormatter.endOutputEnabled, jaxRsAccessLogFormatter.structuredMessagePrefix, jaxRsAccessLogFormatter.beginLabel, jaxRsAccessLogFormatter.endLabel, httpAccessLogFormatter.className, JsonLogFormatter*
 
 ## セッションストアIDについて
 
@@ -160,4 +160,4 @@ httpAccessLogFormatter.endLabel=HTTP ACCESS END
 - セッションストアIDが発行されていないリクエストでは、途中でIDが発行されたとしても、同一リクエスト内で出力されるセッションストアIDは全て空になる
 - 途中で `セッションを破棄` したり `IDを変更` しても、ログに出力される値はリクエスト処理開始時のものから変化しない
 
-<small>キーワード: セッションストアID, session_store_handler, jaxrs_access_log_handler, セッション識別ID, ハンドラ配置順序, SessionUtil</small>
+*キーワード: セッションストアID, session_store_handler, jaxrs_access_log_handler, セッション識別ID, ハンドラ配置順序, SessionUtil*

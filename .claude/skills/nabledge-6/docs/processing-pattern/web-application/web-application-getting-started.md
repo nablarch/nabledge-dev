@@ -8,7 +8,7 @@
 
 > **補足**: ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。
 
-<small>キーワード: ウェブアプリケーション開発, Exampleアプリケーション, blank_project, client_create, project_search, project_update, project_delete, project_upload, project_download, popup, project_bulk_update</small>
+*キーワード: ウェブアプリケーション開発, Exampleアプリケーション, blank_project, client_create, project_search, project_update, project_delete, project_upload, project_download, popup, project_bulk_update*
 
 ## 前提条件
 
@@ -22,4 +22,4 @@
 > - 使用しているOSSプラグインについて
 > - 使用しているUIフレームワークについて
 
-<small>キーワード: 前提条件, example_application, 環境構築, 動作環境, スコープ外</small>
+*キーワード: 前提条件, example_application, 環境構築, 動作環境, スコープ外*

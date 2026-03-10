@@ -31,7 +31,7 @@ public HttpResponse sample(SampleForm form, JaxRsHttpRequest request) {
 | フォーム(Java Beans) | :ref:`body_convert_handler` でレスポンスボディに変換してクライアントに返却 |
 | `HttpResponse` | HttpResponseの情報をそのままクライアントに返却 |
 
-<small>キーワード: JaxRsHttpRequest, ExecutionContext, HttpResponse, メソッドシグネチャ, 引数, 戻り値, リソースクラス, void, Java Beans, HttpRequest</small>
+*キーワード: JaxRsHttpRequest, ExecutionContext, HttpResponse, メソッドシグネチャ, 引数, 戻り値, リソースクラス, void, Java Beans, HttpRequest*
 
 ## パスパラメータを扱う
 
@@ -59,7 +59,7 @@ public User delete(JaxRsHttpRequest req) {
 
 > **重要**: Jakarta RESTful Web Servicesで規定されている `PathParam` は使用できない。
 
-<small>キーワード: JaxRsHttpRequest, PathParam, パスパラメータ, getPathParam, ルーティング設定, router_adaptor, UniversalDao</small>
+*キーワード: JaxRsHttpRequest, PathParam, パスパラメータ, getPathParam, ルーティング設定, router_adaptor, UniversalDao*
 
 ## クエリーパラメータを扱う
 
@@ -83,7 +83,7 @@ public HttpResponse search(JaxRsHttpRequest req) {
 
 > **重要**: Jakarta RESTful Web Servicesで規定されている `QueryParam` は使用できない。
 
-<small>キーワード: JaxRsHttpRequest, BeanUtil, QueryParam, クエリパラメータ, getParamMap, BeanUtil.createAndCopy, UserSearchForm, ValidatorUtil</small>
+*キーワード: JaxRsHttpRequest, BeanUtil, QueryParam, クエリパラメータ, getParamMap, BeanUtil.createAndCopy, UserSearchForm, ValidatorUtil*
 
 ## レスポンスヘッダを設定する
 
@@ -111,4 +111,4 @@ public EntityResponse<List<Client>> something(JaxRsHttpRequest request, Executio
 }
 ```
 
-<small>キーワード: HttpResponse, EntityResponse, レスポンスヘッダ, setHeader, @Produces, ステータスコード, secure_handler, setStatusCode, setEntity</small>
+*キーワード: HttpResponse, EntityResponse, レスポンスヘッダ, setHeader, @Produces, ステータスコード, secure_handler, setStatusCode, setEntity*

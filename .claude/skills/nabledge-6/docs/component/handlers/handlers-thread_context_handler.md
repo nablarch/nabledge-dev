@@ -8,13 +8,13 @@
 
 **スレッドコンテキスト**とは、リクエストIDやユーザIDなど、同一の処理スレッド内で共有する値をスレッドローカル領域上に保持するための仕組みである。
 
-<small>キーワード: スレッドコンテキスト変数管理ハンドラ概要, スレッドコンテキストとは, リクエスト毎に初期化, スレッドローカル, リクエストID, ユーザID, 処理スレッド内で共有</small>
+*キーワード: スレッドコンテキスト変数管理ハンドラ概要, スレッドコンテキストとは, リクエスト毎に初期化, スレッドローカル, リクエストID, ユーザID, 処理スレッド内で共有*
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.common.handler.threadcontext.ThreadContextHandler`
 
-<small>キーワード: ThreadContextHandler, nablarch.common.handler.threadcontext.ThreadContextHandler, スレッドコンテキスト変数管理ハンドラ, ハンドラクラス名</small>
+*キーワード: ThreadContextHandler, nablarch.common.handler.threadcontext.ThreadContextHandler, スレッドコンテキスト変数管理ハンドラ, ハンドラクラス名*
 
 ## モジュール一覧
 
@@ -34,13 +34,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw, nablarch-fw-web, Maven依存関係, モジュール設定, 国際化モジュール</small>
+*キーワード: nablarch-fw, nablarch-fw-web, Maven依存関係, モジュール設定, 国際化モジュール*
 
 ## 制約
 
 なし
 
-<small>キーワード: 制約なし, スレッドコンテキストハンドラ制約</small>
+*キーワード: 制約なし, スレッドコンテキストハンドラ制約*
 
 ## リクエスト毎にスレッドコンテキストの初期化を行う
 
@@ -144,7 +144,7 @@ public class SessionStoreUserIdAttribute extends UserIdAttribute {
 </component>
 ```
 
-<small>キーワード: ThreadContextAttribute, RequestIdAttribute, InternalRequestIdAttribute, UserIdAttribute, UserIdAttributeInSessionStore, LanguageAttribute, HttpLanguageAttribute, LanguageAttributeInHttpCookie, LanguageAttributeInHttpSession, TimeZoneAttribute, TimeZoneAttributeInHttpCookie, TimeZoneAttributeInHttpSession, ExecutionIdAttribute, スレッドコンテキスト初期化, リクエストID設定, ユーザID設定, 言語設定, タイムゾーン設定, セッションキー, anonymousId, sessionKey, getUserIdSession, thread_context_clear_handler, ServiceAvailabilityCheckHandler, SessionUtil</small>
+*キーワード: ThreadContextAttribute, RequestIdAttribute, InternalRequestIdAttribute, UserIdAttribute, UserIdAttributeInSessionStore, LanguageAttribute, HttpLanguageAttribute, LanguageAttributeInHttpCookie, LanguageAttributeInHttpSession, TimeZoneAttribute, TimeZoneAttributeInHttpCookie, TimeZoneAttributeInHttpSession, ExecutionIdAttribute, スレッドコンテキスト初期化, リクエストID設定, ユーザID設定, 言語設定, タイムゾーン設定, セッションキー, anonymousId, sessionKey, getUserIdSession, thread_context_clear_handler, ServiceAvailabilityCheckHandler, SessionUtil*
 
 ## スレッドコンテキストの属性値を設定/取得する
 
@@ -155,7 +155,7 @@ public class SessionStoreUserIdAttribute extends UserIdAttribute {
 String requestId = ThreadContext.getRequestId();
 ```
 
-<small>キーワード: ThreadContext, getRequestId, スレッドコンテキスト取得, 属性値アクセス, nablarch.core.ThreadContext</small>
+*キーワード: ThreadContext, getRequestId, スレッドコンテキスト取得, 属性値アクセス, nablarch.core.ThreadContext*
 
 ## ユーザが言語を選択する画面を作る
 
@@ -203,7 +203,7 @@ public class I18nHandler implements HttpRequestHandler {
 }
 ```
 
-<small>キーワード: LanguageAttributeInHttpCookie, LanguageAttributeInHttpSession, LanguageAttributeInHttpUtil, keepLanguage, 言語選択, 国際化, 多言語対応, Cookie言語設定, languageAttribute, user.language</small>
+*キーワード: LanguageAttributeInHttpCookie, LanguageAttributeInHttpSession, LanguageAttributeInHttpUtil, keepLanguage, 言語選択, 国際化, 多言語対応, Cookie言語設定, languageAttribute, user.language*
 
 ## ユーザがタイムゾーンを選択する画面を作る
 
@@ -251,4 +251,4 @@ public class I18nHandler implements HttpRequestHandler {
 }
 ```
 
-<small>キーワード: TimeZoneAttributeInHttpCookie, TimeZoneAttributeInHttpSession, TimeZoneAttributeInHttpUtil, keepTimeZone, タイムゾーン選択, 国際化, タイムゾーン切り替え, timeZoneAttribute, user.timeZone</small>
+*キーワード: TimeZoneAttributeInHttpCookie, TimeZoneAttributeInHttpSession, TimeZoneAttributeInHttpUtil, keepTimeZone, タイムゾーン選択, 国際化, タイムゾーン切り替え, timeZoneAttribute, user.timeZone*

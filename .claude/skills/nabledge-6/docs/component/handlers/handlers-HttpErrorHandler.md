@@ -12,7 +12,7 @@
 
 **クラス名**: `nablarch.fw.web.handler.HttpErrorHandler`
 
-<small>キーワード: HttpErrorHandler, nablarch.fw.web.handler.HttpErrorHandler, HTTPエラー制御ハンドラ, 例外ハンドラ, エラーレスポンス変換</small>
+*キーワード: HttpErrorHandler, nablarch.fw.web.handler.HttpErrorHandler, HTTPエラー制御ハンドラ, 例外ハンドラ, エラーレスポンス変換*
 
 ## モジュール一覧
 
@@ -24,14 +24,14 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, モジュール依存関係, com.nablarch.framework</small>
+*キーワード: nablarch-fw-web, モジュール依存関係, com.nablarch.framework*
 
 ## 制約
 
 - :ref:`http_response_handler` より後ろに配置すること: 本ハンドラで生成した `HttpResponse` をHTTPレスポンスハンドラが処理するため。
 - :ref:`http_access_log_handler` より後ろに配置すること: 本ハンドラで生成したエラー用 `HttpResponse` を元にログ出力を行うため。
 
-<small>キーワード: http_response_handler, http_access_log_handler, ハンドラ配置順序, 配置制約, HTTPレスポンスハンドラ, HTTPアクセスログハンドラ, HttpResponse</small>
+*キーワード: http_response_handler, http_access_log_handler, ハンドラ配置順序, 配置制約, HTTPレスポンスハンドラ, HTTPアクセスログハンドラ, HttpResponse*
 
 ## 例外の種類に応じた処理とレスポンスの生成
 
@@ -64,7 +64,7 @@
 **Result.Errorのログ出力設定:**
 `writeFailureLogPattern` プロパティに正規表現を設定し、`Error#getStatusCode()` とマッチした場合に `FATAL` レベルのログを出力する。
 
-<small>キーワード: NoMoreHandlerException, HttpErrorResponse, ApplicationException, ErrorMessages, nablarch.fw.Result.Error, writeFailureLogPattern, errorMessageRequestAttributeName, 例外処理, ログ出力レベル, エラーレスポンス生成, StackOverflowError, ThreadDeath, VirtualMachineError, errors</small>
+*キーワード: NoMoreHandlerException, HttpErrorResponse, ApplicationException, ErrorMessages, nablarch.fw.Result.Error, writeFailureLogPattern, errorMessageRequestAttributeName, 例外処理, ログ出力レベル, エラーレスポンス生成, StackOverflowError, ThreadDeath, VirtualMachineError, errors*
 
 ## デフォルトページの設定
 
@@ -85,4 +85,4 @@
 
 > **重要**: この機能を使用した場合、`web.xml` へのエラーページ設定（`error-page` 要素）と重複してJSPの設定が必要となる。`web.xml` へ設定しなかった場合、エラーの発生場所によってはウェブサーバのデフォルトのエラーページが表示される。デフォルトエラーページの設定は本機能ではなく `web.xml` へ行うことを推奨する。
 
-<small>キーワード: defaultPage, defaultPages, デフォルトページ設定, エラーページ, web.xml, HttpErrorHandler, error-page, HttpResponse</small>
+*キーワード: defaultPage, defaultPages, デフォルトページ設定, エラーページ, web.xml, HttpErrorHandler, error-page, HttpResponse*

@@ -6,7 +6,7 @@
 
 **クラス名**: `ResourceMapping`
 
-<small>キーワード: nablarch.fw.web.handler.ResourceMapping, ResourceMapping, リソースマッピングハンドラ, ハンドラクラス名</small>
+*キーワード: nablarch.fw.web.handler.ResourceMapping, ResourceMapping, リソースマッピングハンドラ, ハンドラクラス名*
 
 ## モジュール一覧
 
@@ -18,14 +18,14 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, com.nablarch.framework, Mavenモジュール, 依存関係</small>
+*キーワード: nablarch-fw-web, com.nablarch.framework, Mavenモジュール, 依存関係*
 
 ## 制約
 
 - :ref:`forwarding_handler` よりも後に配置すること: `forward://` スキームを使用するため。
 - :ref:`http_response_handler` よりも後に配置すること: `servlet://`、`file://`、`classpath://` スキームの使用と、エラー時の404(Not Found)応答処理のため。
 
-<small>キーワード: forwarding_handler, http_response_handler, forward://, servlet://, file://, classpath://, ハンドラ配置順序, 制約</small>
+*キーワード: forwarding_handler, http_response_handler, forward://, servlet://, file://, classpath://, ハンドラ配置順序, 制約*
 
 ## 静的リソースのダウンロード
 
@@ -52,4 +52,4 @@
 
 > **重要**: 本ハンドラを単独でハンドラキューに追加すると、すべてのURLが静的リソースとして処理される（本ハンドラ以降のすべてのハンドラが実行されなくなる）。:ref:`request_handler_entry` と組み合わせて使用すること。
 
-<small>キーワード: baseUri, basePath, request_handler_entry, 静的リソースダウンロード, 認可チェック, ResourceMapping設定, 後続ハンドラ呼び出しなし</small>
+*キーワード: baseUri, basePath, request_handler_entry, 静的リソースダウンロード, 認可チェック, ResourceMapping設定, 後続ハンドラ呼び出しなし*

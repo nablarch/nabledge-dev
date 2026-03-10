@@ -6,7 +6,7 @@
 
 **クラス**: `nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler`
 
-<small>キーワード: HttpMessagingRequestParsingHandler, nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler, ハンドラクラス</small>
+*キーワード: HttpMessagingRequestParsingHandler, nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -18,14 +18,14 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-messaging-http, モジュール, Maven依存関係, com.nablarch.framework</small>
+*キーワード: nablarch-fw-messaging-http, モジュール, Maven依存関係, com.nablarch.framework*
 
 ## 制約
 
 - :ref:`http_response_handler` より後ろに配置すること: 変換処理に失敗した場合にステータスコードを指定したレスポンスをクライアントに返すため。
 - :ref:`thread_context_handler` より後ろに配置すること: スレッドコンテキスト上のリクエストIDをもとに `DataRecordFormatter` を取得するため。
 
-<small>キーワード: http_response_handler, thread_context_handler, DataRecordFormatter, ハンドラ配置順序, 制約</small>
+*キーワード: http_response_handler, thread_context_handler, DataRecordFormatter, ハンドラ配置順序, 制約*
 
 ## HTTPリクエストを要求電文に変換する
 
@@ -81,7 +81,7 @@
 | `MessagingException` | INFO | 400 | リクエストボディが不正 |
 | `InvalidDataFormatException` | INFO | 400 | リクエストボディのフォーマットが不正 |
 
-<small>キーワード: HttpRequest, RequestMessage, X-Message-Id, X-Correlation-Id, StructuredFwHeaderDefinition, StandardFwHeaderDefinition, RequestEntityTooLarge, MessagingException, InvalidDataFormatException, HTTPリクエスト変換, 要求電文, フレームワーク制御ヘッダ, リクエストボディ変換, フォーマット定義, fwHeaderKeys</small>
+*キーワード: HttpRequest, RequestMessage, X-Message-Id, X-Correlation-Id, StructuredFwHeaderDefinition, StandardFwHeaderDefinition, RequestEntityTooLarge, MessagingException, InvalidDataFormatException, HTTPリクエスト変換, 要求電文, フレームワーク制御ヘッダ, リクエストボディ変換, フォーマット定義, fwHeaderKeys*
 
 ## 巨大なサイズのリクエストを防ぐ
 
@@ -98,4 +98,4 @@
 </component>
 ```
 
-<small>キーワード: bodyLengthLimit, サイズ制限, リクエストボディ上限, 413, ディスクリソース枯渇防止</small>
+*キーワード: bodyLengthLimit, サイズ制限, リクエストボディ上限, 413, ディスクリソース枯渇防止*

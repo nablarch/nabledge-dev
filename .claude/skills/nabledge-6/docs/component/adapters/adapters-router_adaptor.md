@@ -14,7 +14,7 @@
 
 > **補足**: http-request-routerのバージョン0.1.1でテスト済み。バージョン変更時はプロジェクト側でテストを実施すること。
 
-<small>キーワード: nablarch-router-adaptor, com.nablarch.integration, ルーティングアダプタ, モジュール依存関係, http-request-router</small>
+*キーワード: nablarch-router-adaptor, com.nablarch.integration, ルーティングアダプタ, モジュール依存関係, http-request-router*
 
 ## ルーティングアダプタを使用するための設定を行う
 
@@ -54,7 +54,7 @@
 
 クラスパス直下に `routes.xml` を作成し、URLと業務アクションのマッピングを設定する。設定方法は[ライブラリのREADMEドキュメント(外部サイト)](https://github.com/kawasima/http-request-router/blob/master/README.ja.md)を参照。
 
-<small>キーワード: RoutesMapping, nablarch.integration.router.RoutesMapping, packageMapping, basePackage, ディスパッチハンドラ設定, ルート定義ファイル, routes.xml, ハンドラキュー設定, アクションクラスマッピング, WebFrontController, nablarch.fw.web.servlet.WebFrontController, BasicApplicationInitializer, nablarch.core.repository.initialization.BasicApplicationInitializer, handlerQueue, initializeList</small>
+*キーワード: RoutesMapping, nablarch.integration.router.RoutesMapping, packageMapping, basePackage, ディスパッチハンドラ設定, ルート定義ファイル, routes.xml, ハンドラキュー設定, アクションクラスマッピング, WebFrontController, nablarch.fw.web.servlet.WebFrontController, BasicApplicationInitializer, nablarch.core.repository.initialization.BasicApplicationInitializer, handlerQueue, initializeList*
 
 ## 業務アクションとURLを自動的にマッピングする
 
@@ -86,7 +86,7 @@ router.controllerDetector=nablarch.integration.router.NablarchControllerDetector
 | LoginAction#index | /action/login/index |
 | ProjectUploadAction#index | /action/projectUpload/index |
 
-<small>キーワード: NablarchControllerDetector, nablarch.integration.router.NablarchControllerDetector, routes.properties, 自動マッピング, JBoss, WildFly, :controller, :action, router.controllerDetector</small>
+*キーワード: NablarchControllerDetector, nablarch.integration.router.NablarchControllerDetector, routes.properties, 自動マッピング, JBoss, WildFly, :controller, :action, router.controllerDetector*
 
 ## Jakarta RESTful Web ServicesのPathアノテーションでマッピングする
 
@@ -313,4 +313,4 @@ POST /api/foo/(:id) => com.example.FooAction#update
 </component>
 ```
 
-<small>キーワード: PathOptionsProviderRoutesMapping, JaxRsPathOptionsProvider, JaxRsMethodBinderFactory, JerseyJaxRsHandlerListFactory, RoutesMapping, JaxRsHttpRequest, PathOptionsFormatter, BasicApplicationInitializer, WebFrontController, @Path, @GET, @POST, @DELETE, @HEAD, @OPTIONS, @PATCH, @PUT, @Produces, applicationPath, basePackage, pathOptionsProvider, pathOptionsFormatter, methodBinderFactory, handlerQueue, initializeList, Pathアノテーション ルーティング, JAX-RS マッピング, パスパラメータ, ルーティング定義確認, アノテーション引き継ぎ, インターフェース継承</small>
+*キーワード: PathOptionsProviderRoutesMapping, JaxRsPathOptionsProvider, JaxRsMethodBinderFactory, JerseyJaxRsHandlerListFactory, RoutesMapping, JaxRsHttpRequest, PathOptionsFormatter, BasicApplicationInitializer, WebFrontController, @Path, @GET, @POST, @DELETE, @HEAD, @OPTIONS, @PATCH, @PUT, @Produces, applicationPath, basePackage, pathOptionsProvider, pathOptionsFormatter, methodBinderFactory, handlerQueue, initializeList, Pathアノテーション ルーティング, JAX-RS マッピング, パスパラメータ, ルーティング定義確認, アノテーション引き継ぎ, インターフェース継承*

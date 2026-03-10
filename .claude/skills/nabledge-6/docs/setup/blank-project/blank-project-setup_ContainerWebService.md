@@ -11,7 +11,7 @@
 - コンテナイメージの作成
 - コンテナイメージの実行
 
-<small>キーワード: コンテナ用RESTfulウェブサービス, 初期セットアップ, ブランクプロジェクト, コンテナイメージ, RESTfulウェブサービスプロジェクト生成</small>
+*キーワード: コンテナ用RESTfulウェブサービス, 初期セットアップ, ブランクプロジェクト, コンテナイメージ, RESTfulウェブサービスプロジェクト生成*
 
 ## 事前準備
 
@@ -20,7 +20,7 @@
 - Firefox
 - Chrome
 
-<small>キーワード: 事前準備, ブラウザインストール, Firefox, Chrome, 疎通確認準備</small>
+*キーワード: 事前準備, ブラウザインストール, Firefox, Chrome, 疎通確認準備*
 
 ## 生成するプロジェクトの概要
 
@@ -32,7 +32,7 @@
 | 組み込まれているアダプタ | Jersey用アダプタ（:ref:`jaxrs_adaptor`）、ルーティングアダプタ（:ref:`router_adaptor`） |
 | 生成するプロジェクトに含まれるもの | NablarchのRESTfulウェブサービス用の基本的な設定、疎通確認用RESTfulウェブサービス、Mavenと連動して動作するツールの初期設定 |
 
-<small>キーワード: Mavenプロジェクト, H2 Database Engine, Jerseyアダプタ, ルーティングアダプタ, 単一プロジェクト構成</small>
+*キーワード: Mavenプロジェクト, H2 Database Engine, Jerseyアダプタ, ルーティングアダプタ, 単一プロジェクト構成*
 
 ## ブランクプロジェクト作成
 
@@ -66,7 +66,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
-<small>キーワード: mvn archetype:generate, nablarch-container-jaxrs-archetype, groupId, artifactId, archetypeVersion</small>
+*キーワード: mvn archetype:generate, nablarch-container-jaxrs-archetype, groupId, artifactId, archetypeVersion*
 
 ## 疎通確認
 
@@ -74,7 +74,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **注意**: アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-<small>キーワード: 疎通確認, myapp-container-jaxrs, RESTfulウェブサービス動作確認</small>
+*キーワード: 疎通確認, myapp-container-jaxrs, RESTfulウェブサービス動作確認*
 
 ## コンテナイメージを作成する
 
@@ -82,7 +82,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 > **注意**: アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-<small>キーワード: コンテナイメージ作成, Dockerイメージビルド, myapp-container-jaxrs</small>
+*キーワード: コンテナイメージ作成, Dockerイメージビルド, myapp-container-jaxrs*
 
 ## コンテナイメージを実行する
 
@@ -94,7 +94,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 - `http://localhost:8080/find/json`
 - `http://localhost:8080/find/xml`
 
-<small>キーワード: コンテナイメージ実行, localhost:8080, find/json, find/xml, myapp-container-jaxrs</small>
+*キーワード: コンテナイメージ実行, localhost:8080, find/json, find/xml, myapp-container-jaxrs*
 
 ## データベースに関する設定を行う
 
@@ -102,10 +102,10 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ER図からのDDL生成や実行、Entityクラスの自動生成には、gsp-dba-maven-pluginの初期設定および実行が必要。詳細は :ref:`gsp-maven-plugin` を参照。
 
-<small>キーワード: H2 Database Engine, データベース設定, RDBMS変更, gsp-dba-maven-plugin, DDL生成</small>
+*キーワード: H2 Database Engine, データベース設定, RDBMS変更, gsp-dba-maven-plugin, DDL生成*
 
 ## 補足
 
 H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、[../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照。
 
-<small>キーワード: H2データ確認, ブランクプロジェクト補足, 組み込みツール</small>
+*キーワード: H2データ確認, ブランクプロジェクト補足, 組み込みツール*

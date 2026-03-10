@@ -56,7 +56,7 @@ sqlLogFormatter.startExecuteBatchFormat=$methodName$\n\tSQL = [$sql$]\n\tadditio
 sqlLogFormatter.endExecuteBatchFormat=$methodName$\n\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]
 ```
 
-<small>キーワード: SQLログ, SQLログ出力方針, SQL文実行時間, SqlLogFormatter, log.properties, app-log.properties, DEBUGレベル, SQLパラメータ, バインド変数, FileLogWriter, BasicLogFormatter, SqlPStatement, SqlStatement, sqlLogFormatter.startRetrieveFormat, sqlLogFormatter.endRetrieveFormat, sqlLogFormatter.startExecuteFormat, sqlLogFormatter.endExecuteFormat, sqlLogFormatter.startExecuteQueryFormat, sqlLogFormatter.endExecuteQueryFormat, sqlLogFormatter.startExecuteUpdateFormat, sqlLogFormatter.endExecuteUpdateFormat, sqlLogFormatter.startExecuteBatchFormat, sqlLogFormatter.endExecuteBatchFormat</small>
+*キーワード: SQLログ, SQLログ出力方針, SQL文実行時間, SqlLogFormatter, log.properties, app-log.properties, DEBUGレベル, SQLパラメータ, バインド変数, FileLogWriter, BasicLogFormatter, SqlPStatement, SqlStatement, sqlLogFormatter.startRetrieveFormat, sqlLogFormatter.endRetrieveFormat, sqlLogFormatter.startExecuteFormat, sqlLogFormatter.endExecuteFormat, sqlLogFormatter.startExecuteQueryFormat, sqlLogFormatter.endExecuteQueryFormat, sqlLogFormatter.startExecuteUpdateFormat, sqlLogFormatter.endExecuteUpdateFormat, sqlLogFormatter.startExecuteBatchFormat, sqlLogFormatter.endExecuteBatchFormat*
 
 ## SQLログの設定
 
@@ -94,7 +94,7 @@ sqlLogFormatter.startExecuteBatchFormat=$methodName$\n\tSQL:$sql$\n\tadditional_
 sqlLogFormatter.endExecuteBatchFormat=$methodName$\n\texe:$executeTime$ms count:$updateCount$
 ```
 
-<small>キーワード: SqlLogFormatter, SqlPStatement, SqlStatement, sqlLogFormatter.className, sqlLogFormatter.startRetrieveFormat, sqlLogFormatter.endRetrieveFormat, sqlLogFormatter.startExecuteFormat, sqlLogFormatter.endExecuteFormat, sqlLogFormatter.startExecuteQueryFormat, sqlLogFormatter.endExecuteQueryFormat, sqlLogFormatter.startExecuteUpdateFormat, sqlLogFormatter.endExecuteUpdateFormat, sqlLogFormatter.startExecuteBatchFormat, sqlLogFormatter.endExecuteBatchFormat, SQLログ設定, ログフォーマット, プレースホルダ</small>
+*キーワード: SqlLogFormatter, SqlPStatement, SqlStatement, sqlLogFormatter.className, sqlLogFormatter.startRetrieveFormat, sqlLogFormatter.endRetrieveFormat, sqlLogFormatter.startExecuteFormat, sqlLogFormatter.endExecuteFormat, sqlLogFormatter.startExecuteQueryFormat, sqlLogFormatter.endExecuteQueryFormat, sqlLogFormatter.startExecuteUpdateFormat, sqlLogFormatter.endExecuteUpdateFormat, sqlLogFormatter.startExecuteBatchFormat, sqlLogFormatter.endExecuteBatchFormat, SQLログ設定, ログフォーマット, プレースホルダ*
 
 ## JSON形式の構造化ログとして出力する
 
@@ -134,4 +134,4 @@ sqlLogFormatter.startExecuteBatchTargets=methodName,sql,additionalInfo
 sqlLogFormatter.endExecuteBatchTargets=methodName,executeTime,batchCount
 ```
 
-<small>キーワード: SqlJsonLogFormatter, JsonLogFormatter, sqlLogFormatter.structuredMessagePrefix, sqlLogFormatter.startRetrieveTargets, sqlLogFormatter.endRetrieveTargets, sqlLogFormatter.startExecuteTargets, sqlLogFormatter.endExecuteTargets, sqlLogFormatter.startExecuteQueryTargets, sqlLogFormatter.endExecuteQueryTargets, sqlLogFormatter.startExecuteUpdateTargets, sqlLogFormatter.endExecuteUpdateTargets, sqlLogFormatter.startExecuteBatchTargets, sqlLogFormatter.endExecuteBatchTargets, JSON形式ログ, 構造化ログ, SQLログJSON出力</small>
+*キーワード: SqlJsonLogFormatter, JsonLogFormatter, sqlLogFormatter.structuredMessagePrefix, sqlLogFormatter.startRetrieveTargets, sqlLogFormatter.endRetrieveTargets, sqlLogFormatter.startExecuteTargets, sqlLogFormatter.endExecuteTargets, sqlLogFormatter.startExecuteQueryTargets, sqlLogFormatter.endExecuteQueryTargets, sqlLogFormatter.startExecuteUpdateTargets, sqlLogFormatter.endExecuteUpdateTargets, sqlLogFormatter.startExecuteBatchTargets, sqlLogFormatter.endExecuteBatchTargets, JSON形式ログ, 構造化ログ, SQLログJSON出力*

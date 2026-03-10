@@ -6,7 +6,7 @@
 
 アーキタイプから生成したプロジェクトには、メッセージID及びメッセージのデフォルト設定が含まれている。内容を確認した上で変更が必要。
 
-<small>キーワード: メッセージID変更, メッセージ内容変更, デフォルト設定変更, アーキタイプ生成プロジェクト</small>
+*キーワード: メッセージID変更, メッセージ内容変更, デフォルト設定変更, アーキタイプ生成プロジェクト*
 
 ## エラー内容とメッセージIDの紐付けの変更方法
 
@@ -20,10 +20,10 @@ nablarch.zenkakuCharset.messageId=M000000017
 
 項目の値を変更することで、エラー内容とメッセージIDの紐付けを変更できる。
 
-<small>キーワード: common.properties, nablarch.zenkakuCharset.messageId, メッセージID紐付け, エラーメッセージ設定, メッセージID変更</small>
+*キーワード: common.properties, nablarch.zenkakuCharset.messageId, メッセージID紐付け, エラーメッセージ設定, メッセージID変更*
 
 ## メッセージIDとメッセージの紐付けの変更方法
 
 メッセージIDとメッセージの紐付けは、初期設定では `src/main/resources/messages.properties` で行っている。このファイルを編集することで紐付けを変更できる。
 
-<small>キーワード: messages.properties, メッセージ内容設定, メッセージIDマッピング, メッセージ変更</small>
+*キーワード: messages.properties, メッセージ内容設定, メッセージIDマッピング, メッセージ変更*

@@ -6,7 +6,7 @@
 
 **クラス名**: `nablarch.fw.messaging.handler.HttpMessagingErrorHandler`
 
-<small>キーワード: HttpMessagingErrorHandler, nablarch.fw.messaging.handler.HttpMessagingErrorHandler, ハンドラクラス</small>
+*キーワード: HttpMessagingErrorHandler, nablarch.fw.messaging.handler.HttpMessagingErrorHandler, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -18,13 +18,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-messaging-http, com.nablarch.framework, Mavenモジュール, 依存関係</small>
+*キーワード: nablarch-fw-messaging-http, com.nablarch.framework, Mavenモジュール, 依存関係*
 
 ## 制約
 
 - :ref:`http_response_handler` より後ろに配置すること。本ハンドラが生成した `HttpResponse` を :ref:`http_response_handler` が処理するため。
 
-<small>キーワード: http_response_handler, HttpResponse, ハンドラ配置順序, 制約</small>
+*キーワード: http_response_handler, HttpResponse, ハンドラ配置順序, 制約*
 
 ## 例外の種類に応じたログ出力とレスポンス生成
 
@@ -38,10 +38,10 @@
 
 **`writeFailureLogPattern` の設定**: `setWriteFailureLogPattern` に正規表現を設定する。正規表現が `Error#getStatusCode()` にマッチした場合のみ、FATAL レベルでログ出力。
 
-<small>キーワード: NoMoreHandlerException, HttpErrorResponse, Result.Error, ApplicationException, MessagingException, writeFailureLogPattern, ログ出力, レスポンス生成, 例外処理, エラーレスポンス</small>
+*キーワード: NoMoreHandlerException, HttpErrorResponse, Result.Error, ApplicationException, MessagingException, writeFailureLogPattern, ログ出力, レスポンス生成, 例外処理, エラーレスポンス*
 
 ## レスポンスボディが空の場合のデフォルトレスポンスの設定
 
 詳細は :ref:`HTTPエラー制御ハンドラのデフォルトページの設定 <HttpErrorHandler_DefaultPage>` を参照。
 
-<small>キーワード: HttpErrorHandler_DefaultPage, デフォルトレスポンスボディ, デフォルトページ, レスポンスボディ空</small>
+*キーワード: HttpErrorHandler_DefaultPage, デフォルトレスポンスボディ, デフォルトページ, レスポンスボディ空*

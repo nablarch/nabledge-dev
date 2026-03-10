@@ -14,7 +14,7 @@
 
 **クラス**: `nablarch.fw.web.interceptor.OnError`
 
-<small>キーワード: OnError, nablarch.fw.web.interceptor.OnError, OnErrorインターセプタ, 例外処理, バリデーションエラー対応, インターセプタ設定</small>
+*キーワード: OnError, nablarch.fw.web.interceptor.OnError, OnErrorインターセプタ, 例外処理, バリデーションエラー対応, インターセプタ設定*
 
 ## モジュール一覧
 
@@ -26,7 +26,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, com.nablarch.framework, モジュール依存関係, Maven依存性</small>
+*キーワード: nablarch-fw-web, com.nablarch.framework, モジュール依存関係, Maven依存性*
 
 ## OnErrorを使用する
 
@@ -42,7 +42,7 @@ public HttpResponse handle(HttpRequest request, ExecutionContext context) {
 }
 ```
 
-<small>キーワード: @OnError, ApplicationException, RuntimeException, type属性, path属性, アクションメソッド設定, HTTPレスポンス制御, HttpResponse</small>
+*キーワード: @OnError, ApplicationException, RuntimeException, type属性, path属性, アクションメソッド設定, HTTPレスポンス制御, HttpResponse*
 
 ## エラー時の遷移先画面に表示するデータを取得する
 
@@ -64,7 +64,7 @@ public HttpResponse initializeRegisterPage(HttpRequest request, ExecutionContext
 }
 ```
 
-<small>キーワード: 内部フォワード, forward://, リクエストスコープ, エラー時データ取得, @InjectForm, @OnError, HttpResponse</small>
+*キーワード: 内部フォワード, forward://, リクエストスコープ, エラー時データ取得, @InjectForm, @OnError, HttpResponse*
 
 ## 複数のレスポンスを指定する
 
@@ -84,4 +84,4 @@ public HttpResponse handle(HttpRequest request, ExecutionContext context) {
 }
 ```
 
-<small>キーワード: HttpErrorResponse, 複数レスポンス, 条件分岐, ApplicationException, nablarch.fw.web.HttpErrorResponse</small>
+*キーワード: HttpErrorResponse, 複数レスポンス, 条件分岐, ApplicationException, nablarch.fw.web.HttpErrorResponse*

@@ -10,7 +10,7 @@
 4. 登録確認画面が表示される。
 5. 「確定」ボタンを押下し、データベースに顧客を登録して完了画面を表示する。
 
-<small>キーワード: 顧客登録, 入力画面, 確認画面, 完了画面, 全角文字列, 業種, プルダウン, 登録フロー</small>
+*キーワード: 顧客登録, 入力画面, 確認画面, 完了画面, 全角文字列, 業種, プルダウン, 登録フロー*
 
 ## 顧客登録機能の仕様
 
@@ -23,4 +23,4 @@
 
 ![テーブル定義](../../knowledge/processing-pattern/web-application/assets/web-application-getting-started-client-create/client_table.png)
 
-<small>キーワード: ClientAction, 顧客登録, 登録機能, URLマッピング, アクションメソッド, HTTPメソッド</small>
+*キーワード: ClientAction, 顧客登録, 登録機能, URLマッピング, アクションメソッド, HTTPメソッド*

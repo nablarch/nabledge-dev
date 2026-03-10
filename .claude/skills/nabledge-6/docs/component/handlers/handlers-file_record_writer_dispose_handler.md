@@ -6,13 +6,13 @@
 
 業務アクションやハンドラで開いた出力ファイルを閉じる(リソースの解放)ハンドラ。解放対象となるのは `FileRecordWriterHolder` を使用して開いた出力ファイルのみ。`java.io` パッケージ等の他のAPIで開いたリソースは個別にクローズ処理を行うこと。
 
-<small>キーワード: 出力ファイル開放ハンドラとは, FileRecordWriterDisposeHandler概要, 出力ファイルを閉じる, リソース解放ハンドラ</small>
+*キーワード: 出力ファイル開放ハンドラとは, FileRecordWriterDisposeHandler概要, 出力ファイルを閉じる, リソース解放ハンドラ*
 
 ## ハンドラクラス名
 
 **クラス**: `nablarch.common.io.FileRecordWriterDisposeHandler`
 
-<small>キーワード: FileRecordWriterDisposeHandler, nablarch.common.io.FileRecordWriterDisposeHandler, 出力ファイル開放ハンドラ, ハンドラクラス</small>
+*キーワード: FileRecordWriterDisposeHandler, nablarch.common.io.FileRecordWriterDisposeHandler, 出力ファイル開放ハンドラ, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -25,13 +25,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core-dataformat, com.nablarch.framework, 汎用データフォーマット, モジュール依存関係</small>
+*キーワード: nablarch-core-dataformat, com.nablarch.framework, 汎用データフォーマット, モジュール依存関係*
 
 ## 制約
 
 出力ファイル開放ハンドラに固有の制約はない。
 
-<small>キーワード: 制約なし, 出力ファイル開放ハンドラ制約</small>
+*キーワード: 制約なし, 出力ファイル開放ハンドラ制約*
 
 ## ハンドラキューへの設定について
 
@@ -39,4 +39,4 @@
 
 ハンドラキューに設定するだけで、後続ハンドラや業務アクションで開いた出力ファイルを自動的にクローズする。ファイルを出力する全てのハンドラより手前に設定すること。
 
-<small>キーワード: FileRecordWriterHolder, nablarch.common.io.FileRecordWriterHolder, ハンドラキュー設定, 出力ファイル自動クローズ, リソース解放</small>
+*キーワード: FileRecordWriterHolder, nablarch.common.io.FileRecordWriterHolder, ハンドラキュー設定, 出力ファイル自動クローズ, リソース解放*

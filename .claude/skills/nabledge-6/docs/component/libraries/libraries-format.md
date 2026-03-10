@@ -6,7 +6,7 @@
 
 日付や数値などのデータをフォーマットして文字列型に変換する機能。フォーマット設定を本機能に集約することで、画面・ファイル・メール等の形式ごとに個別設定が不要になる。
 
-<small>キーワード: フォーマッタ, 日付フォーマット, 数値フォーマット, データ変換, FormatterUtil</small>
+*キーワード: フォーマッタ, 日付フォーマット, 数値フォーマット, データ変換, FormatterUtil*
 
 ## モジュール一覧
 
@@ -18,7 +18,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core, Maven依存関係, モジュール設定</small>
+*キーワード: nablarch-core, Maven依存関係, モジュール設定*
 
 ## 使用方法
 
@@ -69,7 +69,7 @@ public class SampleDto {
 }
 ```
 
-<small>キーワード: FormatterUtil, dateTime, number, SimpleDateFormat, DecimalFormat, DateTimeFormatter, DateTimeStrFormatter, NumberFormatter, NumberStrFormatter, dateStrPattern, 日付フォーマット, 数値フォーマット, フォーマッタ使用方法</small>
+*キーワード: FormatterUtil, dateTime, number, SimpleDateFormat, DecimalFormat, DateTimeFormatter, DateTimeStrFormatter, NumberFormatter, NumberStrFormatter, dateStrPattern, 日付フォーマット, 数値フォーマット, フォーマッタ使用方法*
 
 ## フォーマッタの設定を変更する
 
@@ -103,7 +103,7 @@ public class SampleDto {
 </component>
 ```
 
-<small>キーワード: FormatterConfig, formatterConfig, formatters, DateTimeFormatter, DateTimeStrFormatter, NumberFormatter, NumberStrFormatter, dateStrPattern, フォーマッタ設定変更, デフォルトパターン変更</small>
+*キーワード: FormatterConfig, formatterConfig, formatters, DateTimeFormatter, DateTimeStrFormatter, NumberFormatter, NumberStrFormatter, dateStrPattern, フォーマッタ設定変更, デフォルトパターン変更*
 
 ## フォーマッタを追加する
 
@@ -142,4 +142,4 @@ public class SampleDto {
 </component>
 ```
 
-<small>キーワード: Formatter, FormatterConfig, カスタムフォーマッタ追加, Formatter実装, nablarch.core.text.Formatter</small>
+*キーワード: Formatter, FormatterConfig, カスタムフォーマッタ追加, Formatter実装, nablarch.core.text.Formatter*

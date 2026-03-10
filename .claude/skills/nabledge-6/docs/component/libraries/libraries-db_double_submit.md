@@ -10,7 +10,7 @@
 
 > **重要**: HTTPセッションを使用した :ref:`二重サブミット防止 <tag-double_submission>` はCSRF対策に使用できたが、本機能はユーザを識別せずにトークンをDBに格納しているためCSRF対策に使用できない。本機能を使用する場合は、CSRF対策に :ref:`csrf_token_verification_handler` を使用すること。
 
-<small>キーワード: 二重サブミット防止, DBトークン管理, スケールアウト, CSRF対策, tag-double_submission, csrf_token_verification_handler</small>
+*キーワード: 二重サブミット防止, DBトークン管理, スケールアウト, CSRF対策, tag-double_submission, csrf_token_verification_handler*
 
 ## モジュール一覧
 
@@ -22,7 +22,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web-doublesubmit-jdbc, データベース二重サブミット防止, Mavenモジュール</small>
+*キーワード: nablarch-fw-web-doublesubmit-jdbc, データベース二重サブミット防止, Mavenモジュール*
 
 ## 使用方法
 
@@ -78,4 +78,4 @@
 > <component name="tokenManager" class="nablarch.common.web.token.HttpSessionTokenManager"/>
 > ```
 
-<small>キーワード: DbTokenManager, DbTokenSchema, SimpleDbTransactionManager, UUIDV4TokenGenerator, HttpSessionTokenManager, BasicApplicationInitializer, tokenManager, tokenGenerator, DOUBLE_SUBMISSIONテーブル, dbManager, dbTokenSchema, tableName, tokenName, createdAtName, TOKEN, CREATED_AT</small>
+*キーワード: DbTokenManager, DbTokenSchema, SimpleDbTransactionManager, UUIDV4TokenGenerator, HttpSessionTokenManager, BasicApplicationInitializer, tokenManager, tokenGenerator, DOUBLE_SUBMISSIONテーブル, dbManager, dbTokenSchema, tableName, tokenName, createdAtName, TOKEN, CREATED_AT*

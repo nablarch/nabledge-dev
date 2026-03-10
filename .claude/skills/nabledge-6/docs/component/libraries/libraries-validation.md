@@ -24,4 +24,4 @@ Nablarchでは2種類のバリデーション機能を提供している。
 
 バリデーションエラー時に表示するメッセージの定義方法は、 [message](libraries-message.md) を参照。
 
-<small>キーワード: バリデーション, Bean Validation, Nablarch Validation, Jakarta Bean Validation, 入力値チェック, 推奨バリデーション</small>
+*キーワード: バリデーション, Bean Validation, Nablarch Validation, Jakarta Bean Validation, 入力値チェック, 推奨バリデーション*

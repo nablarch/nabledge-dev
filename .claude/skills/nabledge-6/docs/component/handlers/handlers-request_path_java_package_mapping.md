@@ -23,7 +23,7 @@
 
 処理: リクエストパスを解析し、対応するアクションの `handle` メソッドを呼び出す。
 
-<small>キーワード: RequestPathJavaPackageMapping, nablarch.fw.handler.RequestPathJavaPackageMapping, リクエストディスパッチ, アクション委譲, リクエストパス解析, メッセージングディスパッチ</small>
+*キーワード: RequestPathJavaPackageMapping, nablarch.fw.handler.RequestPathJavaPackageMapping, リクエストディスパッチ, アクション委譲, リクエストパス解析, メッセージングディスパッチ*
 
 ## モジュール一覧
 
@@ -35,13 +35,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw, モジュール依存設定, com.nablarch.framework</small>
+*キーワード: nablarch-fw, モジュール依存設定, com.nablarch.framework*
 
 ## 制約
 
 なし
 
-<small>キーワード: 制約なし, RequestPathJavaPackageMapping制約</small>
+*キーワード: 制約なし, RequestPathJavaPackageMapping制約*
 
 ## ベースパッケージ、ベースパスの設定
 
@@ -54,7 +54,7 @@
 </component>
 ```
 
-<small>キーワード: basePackage, basePath, ベースパッケージ設定, ベースパス設定, RequestPathJavaPackageMapping設定</small>
+*キーワード: basePackage, basePath, ベースパッケージ設定, ベースパス設定, RequestPathJavaPackageMapping設定*
 
 ## 複数パッケージのクラスにディスパッチする
 
@@ -62,7 +62,7 @@
 
 例: :ref:`request_path_java_package_mapping_path_setting` の設定（basePath=`/app/action/`、basePackage=`nablarch.application`）で `nablarch.application.xxx.ExampleBatchAction` へディスパッチする場合、リクエストパスに `/app/action/xxx/ExampleBatchAction` を指定する。
 
-<small>キーワード: 複数パッケージディスパッチ, 相対パッケージ指定, リクエストパスサブパッケージ</small>
+*キーワード: 複数パッケージディスパッチ, 相対パッケージ指定, リクエストパスサブパッケージ*
 
 ## クラス名のプレフィクス、サフィックスの設定
 
@@ -79,7 +79,7 @@
 </component>
 ```
 
-<small>キーワード: classNamePrefix, classNameSuffix, クラス名省略, プレフィクス設定, サフィックス設定</small>
+*キーワード: classNamePrefix, classNameSuffix, クラス名省略, プレフィクス設定, サフィックス設定*
 
 ## 複雑なパッケージへのディスパッチ
 
@@ -111,7 +111,7 @@
 </component>
 ```
 
-<small>キーワード: JavaPackageMappingEntry, nablarch.fw.handler.JavaPackageMappingEntry, optionalPackageMappingEntries, requestPattern, 複雑なパッケージディスパッチ, パッケージマッピング, リクエストパターン設定</small>
+*キーワード: JavaPackageMappingEntry, nablarch.fw.handler.JavaPackageMappingEntry, optionalPackageMappingEntries, requestPattern, 複雑なパッケージディスパッチ, パッケージマッピング, リクエストパターン設定*
 
 ## ディスパッチ対象クラスを遅延実行する
 
@@ -124,4 +124,4 @@
 </component>
 ```
 
-<small>キーワード: immediate, 遅延実行, ディスパッチタイミング制御, 後続ハンドラ実行後ディスパッチ</small>
+*キーワード: immediate, 遅延実行, ディスパッチタイミング制御, 後続ハンドラ実行後ディスパッチ*

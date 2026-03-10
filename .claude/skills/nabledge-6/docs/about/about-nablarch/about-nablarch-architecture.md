@@ -8,7 +8,7 @@
 
 ![Nablarchアプリケーションフレームワーク構成要素](../../knowledge/about/about-nablarch/assets/about-nablarch-architecture/fw-design.png)
 
-<small>キーワード: Nablarchフレームワーク構成要素, アーキテクチャ概要, JSR352バッチ適用外, フレームワーク設計図</small>
+*キーワード: Nablarchフレームワーク構成要素, アーキテクチャ概要, JSR352バッチ適用外, フレームワーク設計図*
 
 ## ハンドラキュー(handler queue)
 
@@ -47,10 +47,10 @@
 >
 > インターセプタの実行順設定の詳細は `Factory` を参照。
 
-<small>キーワード: ハンドラキュー, ハンドラ, インターセプタ, 横断的処理, OnDoubleSubmission, UseToken, OnErrors, OnError, InjectForm, nablarch.common.web.token.OnDoubleSubmission, nablarch.common.web.token.UseToken, nablarch.fw.web.interceptor.OnErrors, nablarch.fw.web.interceptor.OnError, nablarch.common.web.interceptor.InjectForm, Interceptor.Factory, nablarch.fw.Interceptor.Factory</small>
+*キーワード: ハンドラキュー, ハンドラ, インターセプタ, 横断的処理, OnDoubleSubmission, UseToken, OnErrors, OnError, InjectForm, nablarch.common.web.token.OnDoubleSubmission, nablarch.common.web.token.UseToken, nablarch.fw.web.interceptor.OnErrors, nablarch.fw.web.interceptor.OnError, nablarch.common.web.interceptor.InjectForm, Interceptor.Factory, nablarch.fw.Interceptor.Factory*
 
 ## ライブラリ(library)
 
 ライブラリとは、データベースアクセスやファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群のこと。Nablarchアプリケーションフレームワークが提供するライブラリは :ref:`library` を参照。
 
-<small>キーワード: ライブラリ, データベースアクセス, ファイルアクセス, ログ出力, コンポーネント</small>
+*キーワード: ライブラリ, データベースアクセス, ファイルアクセス, ログ出力, コンポーネント*

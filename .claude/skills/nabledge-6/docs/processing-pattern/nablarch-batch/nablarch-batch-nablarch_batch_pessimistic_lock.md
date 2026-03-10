@@ -40,4 +40,4 @@ public class SampleAction extends BatchAction<SqlRow> {
 }
 ```
 
-<small>キーワード: BatchAction, SampleAction, DatabaseRecordReader, SqlPStatement, DbConnectionContext, UniversalDao, SqlRow, ExecutionContext, Project, Success, DataReader, Result, 悲観的ロック, バッチ処理, データリーダ, 主キー取得, 排他制御</small>
+*キーワード: BatchAction, SampleAction, DatabaseRecordReader, SqlPStatement, DbConnectionContext, UniversalDao, SqlRow, ExecutionContext, Project, Success, DataReader, Result, 悲観的ロック, バッチ処理, データリーダ, 主キー取得, 排他制御*

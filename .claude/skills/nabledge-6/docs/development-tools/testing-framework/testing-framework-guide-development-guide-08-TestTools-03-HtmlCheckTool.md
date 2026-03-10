@@ -8,7 +8,7 @@ HTMLチェックツールの目的:
 - 終了タグ忘れ等の構文不正により、想定している画面表示とは異なる画面がユーザに表示されることを防ぐ。
 - プロジェクトの規約により禁止されているタグが使用されることを防ぐ。
 
-<small>キーワード: HTMLチェックツール, 構文チェック, 禁止タグ検出, 終了タグ忘れ防止, HTML不正検出</small>
+*キーワード: HTMLチェックツール, 構文チェック, 禁止タグ検出, 終了タグ忘れ防止, HTML不正検出*
 
 ## 仕様
 
@@ -38,7 +38,7 @@ HTMLチェックツールの目的:
 >
 > 対応方法: JavaScriptはHTML(JSP)に直接記述せず、外部ファイル化して対応すること。
 
-<small>キーワード: HTML4.01準拠, タグ構文チェック, boolean属性, クォーテーション省略禁止, W3C非推奨タグ, HTMLチェック仕様, JavaScript連続ハイフン</small>
+*キーワード: HTML4.01準拠, タグ構文チェック, boolean属性, クォーテーション省略禁止, W3C非推奨タグ, HTMLチェック仕様, JavaScript連続ハイフン*
 
 ## HTML4.01との相違点
 
@@ -52,14 +52,14 @@ HTMLチェックツールの目的:
 <select id="bar"></select>
 ```
 
-<small>キーワード: HTML4.01との相違点, 空タグ許容, 空のspanタグ, optionのないselectタグ, DOM操作</small>
+*キーワード: HTML4.01との相違点, 空タグ許容, 空のspanタグ, optionのないselectタグ, DOM操作*
 
 ## 前提条件
 
 HTMLチェックツールを使用するための前提条件:
 - リクエスト単体テストを実行可能であること。
 
-<small>キーワード: 前提条件, リクエスト単体テスト実行, HTMLチェックツール使用条件</small>
+*キーワード: 前提条件, リクエスト単体テスト実行, HTMLチェックツール使用条件*
 
 ## 使用禁止タグ・属性のカスタマイズ方法
 
@@ -98,7 +98,7 @@ tr,bgcolor
 body,
 ```
 
-<small>キーワード: htmlCheckerConfig, 使用禁止タグ設定, タグ・属性カスタマイズ, 禁止タグ変更, html-check-config.csv, HttpTestConfiguration</small>
+*キーワード: htmlCheckerConfig, 使用禁止タグ設定, タグ・属性カスタマイズ, 禁止タグ変更, html-check-config.csv, HttpTestConfiguration*
 
 ## HTMLチェック実行要否の設定方法
 
@@ -110,7 +110,7 @@ body,
 </component>
 ```
 
-<small>キーワード: checkHtml, HTMLチェック有効化, チェック実行要否, HTMLチェック無効化, HttpTestConfiguration</small>
+*キーワード: checkHtml, HTMLチェック有効化, チェック実行要否, HTMLチェック無効化, HttpTestConfiguration*
 
 ## HTMLチェック内容の変更
 
@@ -161,7 +161,7 @@ public class SimpleHtmlChecker implements HtmlChecker {
 </component>
 ```
 
-<small>キーワード: htmlChecker, HtmlChecker, HttpTestConfiguration, HTMLチェック内容変更, SimpleHtmlChecker, InvalidHtmlException</small>
+*キーワード: htmlChecker, HtmlChecker, HttpTestConfiguration, HTMLチェック内容変更, SimpleHtmlChecker, InvalidHtmlException*
 
 ## テスト実行時指摘確認方法
 
@@ -171,4 +171,4 @@ public class SimpleHtmlChecker implements HtmlChecker {
 
 該当HTMLの出力元となるJSPを修正し、テストを再実行する。
 
-<small>キーワード: テスト失敗, JUnitコンソール, 指摘箇所確認, JSP修正, HTMLチェック結果表示</small>
+*キーワード: テスト失敗, JUnitコンソール, 指摘箇所確認, JSP修正, HTMLチェック結果表示*

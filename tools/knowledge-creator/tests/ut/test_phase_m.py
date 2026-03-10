@@ -128,8 +128,8 @@ class TestPhaseM:
         with open(md_path, encoding="utf-8") as f:
             md_content = f.read()
         assert "**公式ドキュメント**: [Test](https://example.com)" in md_content
-        assert "<small>キーワード: s1</small>" in md_content
-        assert "<small>キーワード: s2</small>" in md_content
+        assert "*キーワード: s1*" in md_content
+        assert "*キーワード: s2*" in md_content
 
         # Verify 6: index.toon exists
         assert os.path.exists(f"{ctx.knowledge_dir}/index.toon")
@@ -368,7 +368,7 @@ class TestPhaseM:
             md_content = f.read()
 
         assert "**公式ドキュメント**: [1](https://example.com/a) [2](https://example.com/b)" in md_content
-        assert "<small>キーワード: hint1, hint2</small>" in md_content
+        assert "*キーワード: hint1, hint2*" in md_content
 
     def test_docs_empty_official_urls_and_hints(self, ctx, mock_claude):
         """Empty official_doc_urls and hints produce no URL line or keyword line."""
@@ -411,4 +411,4 @@ class TestPhaseM:
             md_content = f.read()
 
         assert "**公式ドキュメント**" not in md_content
-        assert "<small>キーワード" not in md_content
+        assert "キーワード" not in md_content

@@ -105,7 +105,7 @@ type    = "02"
 13 data    X(28)
 ```
 
-<small>キーワード: 固定長マルチフォーマット, Fixed, レコード識別, Classifier, dataKbn, record-length, マルチフォーマット定義</small>
+*キーワード: 固定長マルチフォーマット, Fixed, レコード識別, Classifier, dataKbn, record-length, マルチフォーマット定義*
 
 ## Variable(可変長)でマルチフォーマット定義のサンプル集
 
@@ -270,4 +270,4 @@ requires-title:    true
 
 > **補足**: タイトルレコードのレコードタイプ名を`Title`から変更したい場合は、:ref:`data_format-title_type_nameディレクティブ <data_format-title_type_name>` を使用すること。その場合、タイトルレコードのレコードタイプ名を:ref:`data_format-title_type_nameディレクティブ <data_format-title_type_name>`で設定した値に変更すること。
 
-<small>キーワード: 可変長マルチフォーマット, Variable, タイトルレコード, requires-title, field-separator, Classifier, data_format-variable_title_sample</small>
+*キーワード: 可変長マルチフォーマット, Variable, タイトルレコード, requires-title, field-separator, Classifier, data_format-variable_title_sample*

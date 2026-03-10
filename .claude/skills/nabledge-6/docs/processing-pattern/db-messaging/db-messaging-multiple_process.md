@@ -74,4 +74,4 @@
 
 > **重要**: 悲観ロックSQL（`beforeReadRecords`内）は別トランザクションで実行する必要がある。
 
-<small>キーワード: DatabaseRecordReader, DatabaseRecordListener, SimpleDbTransactionManager, SimpleDbTransactionExecutor, DatabaseTableQueueReader, SystemRepository, beforeReadRecords, AppDbConnection, DataReader, SqlRow, ExecutionContext, マルチプロセス化, 悲観ロック, DBキューメッセージング複数起動, 2重取り込み防止, PROCESS_ID, 冗長化構成</small>
+*キーワード: DatabaseRecordReader, DatabaseRecordListener, SimpleDbTransactionManager, SimpleDbTransactionExecutor, DatabaseTableQueueReader, SystemRepository, beforeReadRecords, AppDbConnection, DataReader, SqlRow, ExecutionContext, マルチプロセス化, 悲観ロック, DBキューメッセージング複数起動, 2重取り込み防止, PROCESS_ID, 冗長化構成*

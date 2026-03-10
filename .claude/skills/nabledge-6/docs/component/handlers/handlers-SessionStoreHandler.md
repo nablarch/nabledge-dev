@@ -8,13 +8,13 @@
 
 > **重要**: 同一セッションの処理が複数のスレッドで実行された場合（例えば、タブブラウザで複数タブから同時にリクエストがあった場合）、使用しているストアによっては後勝ちとなる。このため、使用するストアの特性をよく理解し、要件にあったストアを選択する必要がある。ストアの詳細は :ref:`session_store-future_of_store` を参照。
 
-<small>キーワード: セッション変数保存ハンドラ, セッションストア, 後勝ち, マルチスレッド, タブブラウザ, 複数スレッド, ストア選択</small>
+*キーワード: セッション変数保存ハンドラ, セッションストア, 後勝ち, マルチスレッド, タブブラウザ, 複数スレッド, ストア選択*
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.common.web.session.SessionStoreHandler`
 
-<small>キーワード: SessionStoreHandler, nablarch.common.web.session.SessionStoreHandler, セッション変数保存ハンドラ, ハンドラクラス名</small>
+*キーワード: SessionStoreHandler, nablarch.common.web.session.SessionStoreHandler, セッション変数保存ハンドラ, ハンドラクラス名*
 
 ## モジュール一覧
 
@@ -34,7 +34,7 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, nablarch-fw-web-dbstore, com.nablarch.framework, モジュール依存関係, DBストア</small>
+*キーワード: nablarch-fw-web, nablarch-fw-web-dbstore, com.nablarch.framework, モジュール依存関係, DBストア*
 
 ## 制約
 
@@ -42,7 +42,7 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 - HIDDENストア使用時は :ref:`multipart_handler` より後ろに配置すること。リクエストパラメータにアクセスできるようにするため。
 - :ref:`forwarding_handler` より前に配置すること。:ref:`forwarding_handler` を本ハンドラよりも前に設定した場合、内部フォワード時にHIDDENストアを使用すると最新のセッション変数を取得できない問題が発生するため。
 
-<small>キーワード: http_response_handler, multipart_handler, forwarding_handler, HIDDENストア, ハンドラ配置順, 制約</small>
+*キーワード: http_response_handler, multipart_handler, forwarding_handler, HIDDENストア, ハンドラ配置順, 制約*
 
 ## セッションストアを使用するための設定
 
@@ -61,13 +61,13 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 
 `SessionManager` に設定するプロパティの詳細は :ref:`session_store-use_config` を参照。
 
-<small>キーワード: SessionManager, nablarch.common.web.session.SessionManager, sessionManager, セッションストア設定, セッションマネージャ</small>
+*キーワード: SessionManager, nablarch.common.web.session.SessionManager, sessionManager, セッションストア設定, セッションマネージャ*
 
 ## セッション変数を直列化してセッションストアに保存する
 
 セッション変数をセッションストアに保存する際、直列化の仕組みを選択できる。選択可能な直列化の仕組みの詳細は :ref:`session_store-serialize` を参照。
 
-<small>キーワード: session_store-serialize, 直列化, セッション変数シリアライズ, セッション変数保存</small>
+*キーワード: session_store-serialize, 直列化, セッション変数シリアライズ, セッション変数保存*
 
 ## セッションストアの改竄をチェックする
 
@@ -76,7 +76,7 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 - HIDDENストアの改竄を検知した場合: ステータスコード400の `HttpErrorResponse` を送出
 - それ以外のストアの改竄を検知した場合: セッションストアの復号処理時に発生した例外をそのまま送出
 
-<small>キーワード: HttpErrorResponse, nablarch.fw.web.HttpErrorResponse, 改竄チェック, セッションストア改竄, ステータスコード400</small>
+*キーワード: HttpErrorResponse, nablarch.fw.web.HttpErrorResponse, 改竄チェック, セッションストア改竄, ステータスコード400*
 
 ## 改竄エラー時の遷移先を設定する
 
@@ -84,7 +84,7 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 
 理由: 本ハンドラは :ref:`session_store_handler-constraint` に記載の通り :ref:`forwarding_handler` より前に配置する必要がある。:ref:`forwarding_handler` は :ref:`http_error_handler` よりも手前に設定する必要があるため、本ハンドラで発生した例外に対しては :ref:`HttpErrorHandler_DefaultPage` の設定値が適用できず、`web.xml` への設定が必要となる。
 
-<small>キーワード: web.xml, 改竄エラー, HttpErrorHandler_DefaultPage, forwarding_handler, エラーページ設定</small>
+*キーワード: web.xml, 改竄エラー, HttpErrorHandler_DefaultPage, forwarding_handler, エラーページ設定*
 
 ## セッションIDを保持するクッキーの名前や属性を変更する
 
@@ -121,7 +121,7 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 </component>
 ```
 
-<small>キーワード: cookieName, cookiePath, cookieDomain, cookieSecure, NABLARCH_SID, HttpOnly, セッションクッキー, クッキー属性, DbStore</small>
+*キーワード: cookieName, cookiePath, cookieDomain, cookieSecure, NABLARCH_SID, HttpOnly, セッションクッキー, クッキー属性, DbStore*
 
 ## 有効期間をデータベースに保存する
 
@@ -170,4 +170,4 @@ DBストア・有効期間のDB保存を使用する場合のみ:
 </component>
 ```
 
-<small>キーワード: HttpSessionManagedExpiration, DbManagedExpiration, nablarch.common.web.session.DbManagedExpiration, expiration, UserSessionSchema, SESSION_OBJECT, 有効期間データベース保存, SimpleDbTransactionManager, BasicApplicationInitializer, DbStore</small>
+*キーワード: HttpSessionManagedExpiration, DbManagedExpiration, nablarch.common.web.session.DbManagedExpiration, expiration, UserSessionSchema, SESSION_OBJECT, 有効期間データベース保存, SimpleDbTransactionManager, BasicApplicationInitializer, DbStore*

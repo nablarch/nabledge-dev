@@ -6,7 +6,7 @@
 
 **クラス名**: `nablarch.fw.handler.StatusCodeConvertHandler`
 
-<small>キーワード: StatusCodeConvertHandler, nablarch.fw.handler.StatusCodeConvertHandler, ハンドラクラス</small>
+*キーワード: StatusCodeConvertHandler, nablarch.fw.handler.StatusCodeConvertHandler, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -18,13 +18,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-standalone, モジュール依存関係, Maven依存関係</small>
+*キーワード: nablarch-fw-standalone, モジュール依存関係, Maven依存関係*
 
 ## 制約
 
 :ref:`main` の直後に設定すること。本ハンドラが処理結果のステータスコードをプロセスの終了コードに変換するため。
 
-<small>キーワード: 制約, ハンドラ設定順序, main直後, 設定制約</small>
+*キーワード: 制約, ハンドラ設定順序, main直後, 設定制約*
 
 ## ステータスコード→プロセス終了コード変換
 
@@ -45,4 +45,4 @@
 
 > **補足**: 変換ルールは設定で切り替えできない。要件を満たせない場合はプロジェクト固有の変換ハンドラを作成すること。
 
-<small>キーワード: ステータスコード変換, プロセス終了コード, エラーコード変換ルール, 終了コードマッピング, 100～199, アプリケーションエラー処理</small>
+*キーワード: ステータスコード変換, プロセス終了コード, エラーコード変換ルール, 終了コードマッピング, 100～199, アプリケーションエラー処理*

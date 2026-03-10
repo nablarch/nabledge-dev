@@ -14,7 +14,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, com.nablarch.framework, Webフロントコントローラ, モジュール依存関係</small>
+*キーワード: nablarch-fw-web, com.nablarch.framework, Webフロントコントローラ, モジュール依存関係*
 
 ## コンポーネント設定ファイルにハンドラキューを設定する
 
@@ -33,7 +33,7 @@
 </component>
 ```
 
-<small>キーワード: WebFrontController, nablarch.fw.web.servlet.WebFrontController, handlerQueue, HttpCharacterEncodingHandler, nablarch.fw.web.handler.HttpCharacterEncodingHandler, GlobalErrorHandler, nablarch.fw.handler.GlobalErrorHandler, ハンドラキュー設定, コンポーネント設定ファイル, webFrontController</small>
+*キーワード: WebFrontController, nablarch.fw.web.servlet.WebFrontController, handlerQueue, HttpCharacterEncodingHandler, nablarch.fw.web.handler.HttpCharacterEncodingHandler, GlobalErrorHandler, nablarch.fw.handler.GlobalErrorHandler, ハンドラキュー設定, コンポーネント設定ファイル, webFrontController*
 
 ## サーブレットフィルタを設定する
 
@@ -59,7 +59,7 @@
 </filter-mapping>
 ```
 
-<small>キーワード: RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, サーブレットフィルタ設定, web.xml設定, webFrontController</small>
+*キーワード: RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, サーブレットフィルタ設定, web.xml設定, webFrontController*
 
 ## 委譲するWebフロントコントローラの名前を変更する
 
@@ -122,4 +122,4 @@
 </filter-mapping>
 ```
 
-<small>キーワード: RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, controllerName, webFrontController, jaxrsController, 複数Webフロントコントローラ, RESTfulウェブサービス併用, コントローラ名変更</small>
+*キーワード: RepositoryBasedWebFrontController, nablarch.fw.web.servlet.RepositoryBasedWebFrontController, NablarchServletContextListener, nablarch.fw.web.servlet.NablarchServletContextListener, controllerName, webFrontController, jaxrsController, 複数Webフロントコントローラ, RESTfulウェブサービス併用, コントローラ名変更*

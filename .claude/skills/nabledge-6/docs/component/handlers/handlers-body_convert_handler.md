@@ -8,7 +8,7 @@
 
 リクエストボディとレスポンスボディの変換処理を行うハンドラ。
 
-<small>キーワード: BodyConvertHandler, nablarch.fw.jaxrs.BodyConvertHandler, リクエストボディ変換ハンドラ, レスポンスボディ変換</small>
+*キーワード: BodyConvertHandler, nablarch.fw.jaxrs.BodyConvertHandler, リクエストボディ変換ハンドラ, レスポンスボディ変換*
 
 ## モジュール一覧
 
@@ -20,13 +20,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-jaxrs, com.nablarch.framework, モジュール依存関係</small>
+*キーワード: nablarch-fw-jaxrs, com.nablarch.framework, モジュール依存関係*
 
 ## 制約
 
 本ハンドラは `router_adaptor` よりも後ろに設定すること。リソース(アクション)クラスのメソッドに設定されたアノテーション情報を元に変換処理を行うため、ディスパッチ先を特定する `router_adaptor` よりも後ろに配置する必要がある。
 
-<small>キーワード: router_adaptor, ハンドラ設定順序, ディスパッチ先特定, アノテーション情報</small>
+*キーワード: router_adaptor, ハンドラ設定順序, ディスパッチ先特定, アノテーション情報*
 
 ## 変換処理を行うコンバータを設定する
 
@@ -47,7 +47,7 @@
 </component>
 ```
 
-<small>キーワード: BodyConverter, bodyConverters, JaxbBodyConverter, FormUrlEncodedConverter, MIMEタイプ変換設定, 415ステータスコード</small>
+*キーワード: BodyConverter, bodyConverters, JaxbBodyConverter, FormUrlEncodedConverter, MIMEタイプ変換設定, 415ステータスコード*
 
 ## リクエストボディをFormに変換する
 
@@ -64,7 +64,7 @@ public HttpResponse saveJson(Person person) {
 }
 ```
 
-<small>キーワード: @Consumes, Consumes, Content-Type, リクエストボディ変換, 415ステータスコード, @Valid, HttpResponse, MediaType, application/json, UniversalDao</small>
+*キーワード: @Consumes, Consumes, Content-Type, リクエストボディ変換, 415ステータスコード, @Valid, HttpResponse, MediaType, application/json, UniversalDao*
 
 ## リソース(アクション)の処理結果をレスポンスボディに変換する
 
@@ -80,4 +80,4 @@ public List<Person> findJson() {
 }
 ```
 
-<small>キーワード: @Produces, Produces, レスポンスボディ変換, application/json, MediaType, UniversalDao</small>
+*キーワード: @Produces, Produces, レスポンスボディ変換, application/json, MediaType, UniversalDao*

@@ -32,7 +32,7 @@ H2のコンソールから下記SQLを実行し、住所情報が登録されて
 SELECT * FROM ZIP_CODE_DATA;
 ```
 
-<small>キーワード: ZIP_CODE_DATA, TRUNCATE, ImportZipCodeFileAction, ImportZipCodeFile, import-zip-code-file.xml, mvn exec:java, nablarch.fw.launcher.Main, requestPath, diConfig, userId, バッチ実行, テーブル削除, 登録確認</small>
+*キーワード: ZIP_CODE_DATA, TRUNCATE, ImportZipCodeFileAction, ImportZipCodeFile, import-zip-code-file.xml, mvn exec:java, nablarch.fw.launcher.Main, requestPath, diConfig, userId, バッチ実行, テーブル削除, 登録確認*
 
 ## 入力データソースからデータを読み込む
 
@@ -58,7 +58,7 @@ SELECT * FROM ZIP_CODE_DATA;
 
 > **補足**: `ObjectMapper` のように `hasNext` メソッドを持たないクラスからデータを読む場合、`ObjectMapperIterator` を作成するとデータリーダの実装をシンプルにできる
 
-<small>キーワード: ZipCodeForm, ZipCodeFileReader, ObjectMapperIterator, ObjectMapperFactory, FilePathSetting, DataReader, ObjectMapper, @Csv, @CsvFormat, @LineNumber, @Domain, @Required, CsvType, QuoteMode, CSVファイル読み込み, データリーダ, csv-input, importZipCode, バリデーション, 行番号</small>
+*キーワード: ZipCodeForm, ZipCodeFileReader, ObjectMapperIterator, ObjectMapperFactory, FilePathSetting, DataReader, ObjectMapper, @Csv, @CsvFormat, @LineNumber, @Domain, @Required, CsvType, QuoteMode, CSVファイル読み込み, データリーダ, csv-input, importZipCode, バリデーション, 行番号*
 
 ## 業務ロジックを実行する
 
@@ -72,4 +72,4 @@ SELECT * FROM ZIP_CODE_DATA;
 
 > **補足**: :ref:`bean_validation` のロジックはバッチ間で差がないため、インターセプタ（`@ValidateData`）を作成してバリデーション処理を共通化できる
 
-<small>キーワード: ImportZipCodeFileAction, BatchAction, ZipCodeData, BeanUtil, UniversalDao, ZipCodeFileReader, @ValidateData, handle, createReader, Result, Result.Success, 業務アクション, DBへのデータ登録, インターセプタ, バリデーション共通化</small>
+*キーワード: ImportZipCodeFileAction, BatchAction, ZipCodeData, BeanUtil, UniversalDao, ZipCodeFileReader, @ValidateData, handle, createReader, Result, Result.Success, 業務アクション, DBへのデータ登録, インターセプタ, バリデーション共通化*

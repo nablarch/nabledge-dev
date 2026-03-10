@@ -16,7 +16,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-jsr310-adaptor, LocalDate, LocalDateTime, JSR310アダプタ, Date and Time API, 後方互換, BeanUtil JSR310対応</small>
+*キーワード: nablarch-jsr310-adaptor, LocalDate, LocalDateTime, JSR310アダプタ, Date and Time API, 後方互換, BeanUtil JSR310対応*
 
 ## 使用方法
 
@@ -34,4 +34,4 @@
 > <component name="dateTimeConfiguration" class="sample.SampleDateTimeConfiguration" />
 > ```
 
-<small>キーワード: DateTimeConfiguration, BasicDateTimeConfiguration, dateTimeConfiguration, JSR310有効化, 日時フォーマット設定, コンポーネント設定, JSR310.xml</small>
+*キーワード: DateTimeConfiguration, BasicDateTimeConfiguration, dateTimeConfiguration, JSR310有効化, 日時フォーマット設定, コンポーネント設定, JSR310.xml*

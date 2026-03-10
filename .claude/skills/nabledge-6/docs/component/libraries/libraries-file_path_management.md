@@ -6,7 +6,7 @@
 
 システムで使用するファイルの入出力先ディレクトリや拡張子を論理名で管理する機能。論理名を指定するだけで、そのディレクトリ配下のファイルに対する入出力を実現できる。
 
-<small>キーワード: ファイルパス管理, 論理名管理, ディレクトリ管理, 拡張子管理, ファイル入出力</small>
+*キーワード: ファイルパス管理, 論理名管理, ディレクトリ管理, 拡張子管理, ファイル入出力*
 
 ## モジュール一覧
 
@@ -18,7 +18,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core, モジュール依存関係, com.nablarch.framework</small>
+*キーワード: nablarch-core, モジュール依存関係, com.nablarch.framework*
 
 ## 使用方法
 
@@ -57,7 +57,7 @@
 </component>
 ```
 
-<small>キーワード: FilePathSetting, basePathSettings, fileExtensions, filePathSetting, classpathスキーム, fileスキーム, ファイルパス設定, 論理名定義</small>
+*キーワード: FilePathSetting, basePathSettings, fileExtensions, filePathSetting, classpathスキーム, fileスキーム, ファイルパス設定, 論理名定義*
 
 ## 論理名が示すファイルパスを取得する
 
@@ -74,4 +74,4 @@ File csvOutputDir = filePathSetting.getBaseDirectory("csv-output");
 File users = filePathSetting.getFileWithoutCreate("fixed-file-input", "users")
 ```
 
-<small>キーワード: FilePathSetting, getFileWithoutCreate, getBaseDirectory, 論理名, ファイルパス取得</small>
+*キーワード: FilePathSetting, getFileWithoutCreate, getBaseDirectory, 論理名, ファイルパス取得*

@@ -6,7 +6,7 @@
 
 テストクラス作成ルール: (1) テスト対象Actionクラスと同一パッケージ (2) クラス名は`{Actionクラス名}RequestTest` (3) **クラス**: `nablarch.test.core.batch.BatchRequestTestSupport`を継承する。
 
-<small>キーワード: BatchRequestTestSupport, テストクラス命名規則, バッチリクエストテスト, ActionRequestTest, nablarch.test.core.batch.BatchRequestTestSupport</small>
+*キーワード: BatchRequestTestSupport, テストクラス命名規則, バッチリクエストテスト, ActionRequestTest, nablarch.test.core.batch.BatchRequestTestSupport*
 
 ## テストメソッド分割
 
@@ -14,7 +14,7 @@
 - テストケース間の関連が強く、シート分割により可読性が劣化する場合（例：入力ファイルのフォーマットチェック）
 - テストデータが少量で、1シートに記述しても可読性・保守性に影響しない場合
 
-<small>キーワード: テストメソッド分割, テストケース分割, バッチテスト設計, テストシート分割</small>
+*キーワード: テストメソッド分割, テストケース分割, バッチテスト設計, テストシート分割*
 
 ## テストデータの書き方
 
@@ -44,7 +44,7 @@
 
 > **補足**: グループIDに`default`と記載するとデフォルトグループIDを使用できる。デフォルトと個別グループは併用可能（両方のデータが有効になる）。
 
-<small>キーワード: testShots, LIST_MAP, setUpTable, setUpFile, expectedFile, expectedTable, expectedLog, diConfig, requestPath, userId, テストケース一覧, テストデータ書式, expectedMessage, responseMessage, expectedMessageByClient, responseMessageByClient</small>
+*キーワード: testShots, LIST_MAP, setUpTable, setUpFile, expectedFile, expectedTable, expectedLog, diConfig, requestPath, userId, テストケース一覧, テストデータ書式, expectedMessage, responseMessage, expectedMessageByClient, responseMessageByClient*
 
 ## コマンドライン引数
 
@@ -54,13 +54,13 @@
 
 テストケース一覧の標準カラム以外のカラムはコマンドラインオプションとみなされる。例: カラム名`paramA`に値`valueA`を設定すると`-paramA=valueA`として扱われる。
 
-<small>キーワード: args[n], コマンドライン引数, コマンドラインオプション, バッチ起動引数</small>
+*キーワード: args[n], コマンドライン引数, コマンドラインオプション, バッチ起動引数*
 
 ## データベースの準備
 
 :ref:`request_test_testcases`（オンライン）と同様に、グループIDで対応付けを行う。
 
-<small>キーワード: データベース準備, グループID, DB初期データ, setUpTable</small>
+*キーワード: データベース準備, グループID, DB初期データ, setUpTable*
 
 ## 固定長ファイルの準備
 
@@ -145,7 +145,7 @@
 
 > **補足**: 同一レコード種別に複数のデータレコードがある場合、フィールド定義（データ型・フィールド長）は最初の行にのみ記載し、2件目以降の行は値のみを記載する。
 
-<small>キーワード: SETUP_FIXED, 固定長ファイル, BasicDataTypeMapping, StringDataType, fixedLengthConvertorSetting, FixedLengthConvertorSetting, 符号無数値, 符号付数値, TEST_X9, TEST_SX9, レコード種別, フィールド長, setUpFile, nablarch.test.core.file.StringDataType, SingleByteCharacterString, DoubleByteCharacterString, ByteStreamDataString, ZonedDecimal, SignedZonedDecimal, PackedDecimal, SignedPackedDecimal, Bytes, NumberStringDecimal, SignedNumberStringDecimal</small>
+*キーワード: SETUP_FIXED, 固定長ファイル, BasicDataTypeMapping, StringDataType, fixedLengthConvertorSetting, FixedLengthConvertorSetting, 符号無数値, 符号付数値, TEST_X9, TEST_SX9, レコード種別, フィールド長, setUpFile, nablarch.test.core.file.StringDataType, SingleByteCharacterString, DoubleByteCharacterString, ByteStreamDataString, ZonedDecimal, SignedZonedDecimal, PackedDecimal, SignedPackedDecimal, Bytes, NumberStringDecimal, SignedNumberStringDecimal*
 
 ## テストクラスの作成要件
 
@@ -167,7 +167,7 @@ import nablarch.test.core.batch.BatchRequestTestSupport;
 public class B21AC01Test extends BatchRequestTestSupport {
 ```
 
-<small>キーワード: BatchRequestTestSupport, 取引単体テスト, テストクラス命名規則, 取引ID, バッチ取引テスト</small>
+*キーワード: BatchRequestTestSupport, 取引単体テスト, テストクラス命名規則, 取引ID, バッチ取引テスト*
 
 ## テストケース分割方針
 
@@ -177,7 +177,7 @@ public class B21AC01Test extends BatchRequestTestSupport {
 
 **非常に簡単なテストケースの場合**: 非常に簡単なテストケースで、テストデータ量が少ない場合、1シートに全テストケースを含めてもよい。
 
-<small>キーワード: 1シート1テストケース, テストケース分割, 複雑なテストケース, シンプルテストケース</small>
+*キーワード: 1シート1テストケース, テストケース分割, 複雑なテストケース, シンプルテストケース*
 
 ## 基本的な記述方法
 
@@ -203,7 +203,7 @@ public void testSuccess() {
 | 2 | ユーザ削除 | 100 | default | | default | | userDeleteBatch |
 | 3 | ファイル出力 | 100 | default | | fileInputBatch | default | fileOutputBatch |
 
-<small>キーワード: execute(), testShots, expectedStatusCode, requestPath, setUpTable, setUpFile, expectedTable, expectedFile, LIST_MAP</small>
+*キーワード: execute(), testShots, expectedStatusCode, requestPath, setUpTable, setUpFile, expectedTable, expectedFile, LIST_MAP*
 
 ## 1テストケースを複数シートに分割する場合
 
@@ -231,7 +231,7 @@ public void testSuccess() {
 
 **【testSuccess_fileOutputシート】**: no, case, expectedStatusCode, setUpTable, outFile, requestPath
 
-<small>キーワード: execute(シート名), シート分割, testSuccess_fileInput, testSuccess_userDelete, testSuccess_fileOutput</small>
+*キーワード: execute(シート名), シート分割, testSuccess_fileInput, testSuccess_userDelete, testSuccess_fileOutput*
 
 ## 1シートに複数ケースを含める場合
 
@@ -256,7 +256,7 @@ public void testSuccess() {
 
 グループIDの詳細は `tips_groupId` を参照。
 
-<small>キーワード: グループID, 1シート複数ケース, tips_groupId, グループID連番, 1-1 1-2 2-1 2-2</small>
+*キーワード: グループID, 1シート複数ケース, tips_groupId, グループID連番, 1-1 1-2 2-1 2-2*
 
 ## 可変長ファイル（CSVファイル）の準備
 
@@ -286,7 +286,7 @@ public void testSuccess() {
 
 > **補足**: フィールド区切り文字を変更する場合、ディレクティブで明示的に指定する。例：タブ区切り（TSV）にする場合: `field-separator=\t`
 
-<small>キーワード: SETUP_VARIABLE, 可変長ファイル準備, CSVファイル, フィールド区切り文字, field-separator</small>
+*キーワード: SETUP_VARIABLE, 可変長ファイル準備, CSVファイル, フィールド区切り文字, field-separator*
 
 ## 空のファイルを定義する方法
 
@@ -300,25 +300,25 @@ public void testSuccess() {
 | record-separator | CRLF |
 | //空ファイル | |
 
-<small>キーワード: 空ファイル定義, 0バイトファイル, SETUP_VARIABLE, ディレクティブ</small>
+*キーワード: 空ファイル定義, 0バイトファイル, SETUP_VARIABLE, ディレクティブ*
 
 ## 期待するデータベースの状態
 
 :ref:`オンライン<request_test_expected_tables>` と同様に、期待するデータベースの状態をテストケース一覧とリンクさせる。テストケース一覧の `expectedTable` 欄にグループIDを記載することで、そのグループIDのテストデータで実際のDB状態を確認できる。
 
-<small>キーワード: 期待するデータベース状態, expectedTable, テストケース一覧, request_test_expected_tables</small>
+*キーワード: 期待するデータベース状態, expectedTable, テストケース一覧, request_test_expected_tables*
 
 ## 期待する固定長ファイル
 
 テスト対象バッチが出力する固定長ファイルをアサートする。準備データのデータタイプ `SETUP_FIXED` に対し、期待値では `EXPECTED_FIXED` を使用する。その他の記述方法は`固定長ファイルの準備`_と同様。
 
-<small>キーワード: EXPECTED_FIXED, SETUP_FIXED, 期待する固定長ファイル, ファイルアサート</small>
+*キーワード: EXPECTED_FIXED, SETUP_FIXED, 期待する固定長ファイル, ファイルアサート*
 
 ## 期待する可変長ファイル
 
 テスト対象バッチが出力する可変長ファイルをアサートする。準備データのデータタイプ `SETUP_VARIABLE` に対し、期待値では `EXPECTED_VARIABLE` を使用する。その他の記述方法は`可変長ファイル（CSVファイル）の準備`_と同様。
 
-<small>キーワード: EXPECTED_VARIABLE, SETUP_VARIABLE, 期待する可変長ファイル, ファイルアサート</small>
+*キーワード: EXPECTED_VARIABLE, SETUP_VARIABLE, 期待する可変長ファイル, ファイルアサート*
 
 ## テストメソッドの書き方
 
@@ -337,13 +337,13 @@ public void testResigster() {
 }
 ```
 
-<small>キーワード: BatchRequestTestSupport, execute, テストメソッド作成, スーパクラス, シート名指定</small>
+*キーワード: BatchRequestTestSupport, execute, テストメソッド作成, スーパクラス, シート名指定*
 
 ## テスト起動方法
 
 クラス単体テストと同様。通常のJUnitテストと同じように実行する。
 
-<small>キーワード: テスト起動, JUnit実行, クラス単体テスト</small>
+*キーワード: テスト起動, JUnit実行, クラス単体テスト*
 
 ## テスト結果検証
 
@@ -386,4 +386,4 @@ messageカラムは空でも可（FATALの例ではmessage3が空）。
 
 > **重要**: `expectedLog` 欄にグループIDを記載した場合、必ず期待するメッセージを1行以上設定すること。メッセージが0行の場合、またはグループIDに紐付くLIST_MAP要素が存在しない場合、フレームワークは例外を送出する。
 
-<small>キーワード: expectedTable, expectedFile, expectedLog, EXPECTED_FIXED, EXPECTED_VARIABLE, ログ結果検証, ファイル結果検証, データベース結果検証, logLevel, messageN, LIST_MAP, expectedLogMessages</small>
+*キーワード: expectedTable, expectedFile, expectedLog, EXPECTED_FIXED, EXPECTED_VARIABLE, ログ結果検証, ファイル結果検証, データベース結果検証, logLevel, messageN, LIST_MAP, expectedLogMessages*

@@ -21,7 +21,7 @@
 
 > **重要**: 排他制御用テーブル設計後は更新順序を設計すること。更新順序を定めることでデッドロックを防止し、データ整合性を保証する。更新順序が未定義だとデッドロックが発生する可能性が非常に高い。
 
-<small>キーワード: 排他制御, 楽観的ロック, 悲観的ロック, 排他制御用テーブル, 非推奨機能, exclusive_control-optimistic_lock, exclusive_control-pessimistic_lock, バージョン番号カラム, デッドロック防止, 更新順序</small>
+*キーワード: 排他制御, 楽観的ロック, 悲観的ロック, 排他制御用テーブル, 非推奨機能, exclusive_control-optimistic_lock, exclusive_control-pessimistic_lock, バージョン番号カラム, デッドロック防止, 更新順序*
 
 ## モジュール一覧
 
@@ -42,7 +42,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-common-exclusivecontrol, nablarch-common-exclusivecontrol-jdbc, nablarch-fw-web-tag, モジュール設定, Maven依存関係</small>
+*キーワード: nablarch-common-exclusivecontrol, nablarch-common-exclusivecontrol-jdbc, nablarch-fw-web-tag, モジュール設定, Maven依存関係*
 
 ## 排他制御を使うために準備する
 
@@ -70,7 +70,7 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
 }
 ```
 
-<small>キーワード: BasicExclusiveControlManager, ExclusiveControlContext, optimisticLockErrorMessageId, 排他制御セットアップ, exclusiveControlManager, setTableName, setVersionColumnName, setPrimaryKeyColumnNames, appendCondition</small>
+*キーワード: BasicExclusiveControlManager, ExclusiveControlContext, optimisticLockErrorMessageId, 排他制御セットアップ, exclusiveControlManager, setTableName, setVersionColumnName, setPrimaryKeyColumnNames, appendCondition*
 
 ## 楽観的ロックを行う
 
@@ -99,7 +99,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 > **重要**: `HttpExclusiveControlUtil.checkVersions` を呼び出さないと、画面間でバージョン番号が引き継がれない。
 
-<small>キーワード: HttpExclusiveControlUtil, OptimisticLockException, ApplicationException, 楽観的ロック, prepareVersion, checkVersions, updateVersionsWithCheck, @OnError, @OnErrors</small>
+*キーワード: HttpExclusiveControlUtil, OptimisticLockException, ApplicationException, 楽観的ロック, prepareVersion, checkVersions, updateVersionsWithCheck, @OnError, @OnErrors*
 
 ## 一括更新で楽観的ロックを行う
 
@@ -142,7 +142,7 @@ for(User deletedUser : deletedUsers) {
 
 > **補足**: `CompositeKey` と複合主キー対応カスタムタグを使うと複合主キーをより簡単に扱える。詳細は :ref:`tag-composite_key` を参照。
 
-<small>キーワード: HttpExclusiveControlUtil, CompositeKey, 一括更新排他制御, 複合主キー, prepareVersions, checkVersion, updateVersionWithCheck, checkVersions, updateVersionsWithCheck</small>
+*キーワード: HttpExclusiveControlUtil, CompositeKey, 一括更新排他制御, 複合主キー, prepareVersions, checkVersion, updateVersionWithCheck, checkVersions, updateVersionsWithCheck*
 
 ## 悲観的ロックを行う
 
@@ -154,10 +154,10 @@ ExclusiveControlUtil.updateVersion(new UsersExclusiveControl("U00001"));
 
 > **重要**: バッチ処理では、前処理でロック対象の主キーのみを取得し、本処理で1件ずつロックを取得してからデータ取得・更新すること。理由: (1) データ取得から更新の間に他プロセスによるデータ更新を防ぐ (2) ロック時間を短くし、並列処理への影響を最小化する。
 
-<small>キーワード: ExclusiveControlUtil, 悲観的ロック, updateVersion, バージョン番号管理</small>
+*キーワード: ExclusiveControlUtil, 悲観的ロック, updateVersion, バージョン番号管理*
 
 ## 拡張例
 
 なし。
 
-<small>キーワード: 排他制御拡張, 拡張なし</small>
+*キーワード: 排他制御拡張, 拡張なし*

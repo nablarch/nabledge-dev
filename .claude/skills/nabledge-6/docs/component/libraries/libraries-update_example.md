@@ -22,7 +22,7 @@ ProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);
 context.setRequestScopedVar("form", form);
 ```
 
-<small>キーワード: SessionUtil, BeanUtil, ProjectForm, セッションストア削除, 入力画面初期表示, セッション初期化, セッションストア保存</small>
+*キーワード: SessionUtil, BeanUtil, ProjectForm, セッションストア削除, 入力画面初期表示, セッション初期化, セッションストア保存*
 
 ## 入力画面から確認画面へ遷移
 
@@ -37,7 +37,7 @@ Project project = SessionUtil.get(context, "project");
 BeanUtil.copy(form, project);
 ```
 
-<small>キーワード: SessionUtil, BeanUtil, Project, ProjectForm, 確認画面遷移, セッションストア取得, 入力情報上書き</small>
+*キーワード: SessionUtil, BeanUtil, Project, ProjectForm, 確認画面遷移, セッションストア取得, 入力情報上書き*
 
 ## 確認画面から入力画面へ戻る
 
@@ -52,7 +52,7 @@ ProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);
 context.setRequestScopedVar("form", form);
 ```
 
-<small>キーワード: SessionUtil, BeanUtil, Project, ProjectForm, 入力画面戻る, セッションストア取得, フォーム変換</small>
+*キーワード: SessionUtil, BeanUtil, Project, ProjectForm, 入力画面戻る, セッションストア取得, フォーム変換*
 
 ## 更新処理を実行
 
@@ -66,4 +66,4 @@ Project project = SessionUtil.get(ctx, "project");
 SessionUtil.delete(ctx, "project");
 ```
 
-<small>キーワード: SessionUtil, Project, セッションストア削除, 更新処理完了後セッション削除</small>
+*キーワード: SessionUtil, Project, セッションストア削除, 更新処理完了後セッション削除*

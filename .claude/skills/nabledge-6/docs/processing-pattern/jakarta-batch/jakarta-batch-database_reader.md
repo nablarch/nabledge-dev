@@ -54,4 +54,4 @@ public class EmployeeSearchReader extends BaseDatabaseItemReader {
 }
 ```
 
-<small>キーワード: BaseDatabaseItemReader, nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader, DeferredEntityList, UniversalDao, ProgressManager, @Dependent, @Named, @Inject, doOpen, readItem, doClose, EmployeeSearchReader, EmployeeForm, データベース入力Chunk, 遅延ロード, リーダ専用DB接続, Chunkステップ</small>
+*キーワード: BaseDatabaseItemReader, nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader, DeferredEntityList, UniversalDao, ProgressManager, @Dependent, @Named, @Inject, doOpen, readItem, doClose, EmployeeSearchReader, EmployeeForm, データベース入力Chunk, 遅延ロード, リーダ専用DB接続, Chunkステップ*

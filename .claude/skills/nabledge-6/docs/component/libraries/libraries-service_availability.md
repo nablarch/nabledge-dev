@@ -13,7 +13,7 @@
 
 :ref:`ServiceAvailabilityCheckHandler` をハンドラキューに設定することで、ウェブ・常駐バッチの両方でリクエスト単位のサービス提供可否チェックが可能。処理方式（ウェブ/常駐バッチ）に非依存。
 
-<small>キーワード: ServiceAvailabilityCheckHandler, サービス提供可否チェック, リクエスト単位, ウェブ, 常駐バッチ, 503, 空回り</small>
+*キーワード: ServiceAvailabilityCheckHandler, サービス提供可否チェック, リクエスト単位, ウェブ, 常駐バッチ, 503, 空回り*
 
 ## モジュール一覧
 
@@ -29,7 +29,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-common-auth, nablarch-common-auth-jdbc, モジュール, 依存関係</small>
+*キーワード: nablarch-common-auth, nablarch-common-auth-jdbc, モジュール, 依存関係*
 
 ## 使用方法
 
@@ -67,10 +67,10 @@ DBテーブルレイアウト:
 
 サービス提供可否に応じたボタン・リンクの非表示（非活性）制御は :ref:`tag-submit_display_control` を参照。
 
-<small>キーワード: BasicServiceAvailability, BasicApplicationInitializer, ServiceAvailabilityUtil, tableName, requestTableRequestIdColumnName, requestTableServiceAvailableColumnName, requestTableServiceAvailableOkStatus, dbManager, コンポーネント設定, 初期化, 画面表示制御</small>
+*キーワード: BasicServiceAvailability, BasicApplicationInitializer, ServiceAvailabilityUtil, tableName, requestTableRequestIdColumnName, requestTableServiceAvailableColumnName, requestTableServiceAvailableOkStatus, dbManager, コンポーネント設定, 初期化, 画面表示制御*
 
 ## 拡張例
 
 なし。
 
-<small>キーワード: 拡張例, なし</small>
+*キーワード: 拡張例, なし*

@@ -6,7 +6,7 @@
 
 ブランクプロジェクト（プロジェクトのひな形）に関するセクション。「ブランクプロジェクトの種類」および「ブランクプロジェクトの設計思想と留意事項」を含む。
 
-<small>キーワード: ブランクプロジェクト, プロジェクトひな形, blank project, 初期セットアップ</small>
+*キーワード: ブランクプロジェクト, プロジェクトひな形, blank project, 初期セットアップ*
 
 ## ブランクプロジェクトの種類
 
@@ -20,7 +20,7 @@
 - コンテナ用RESTfulウェブサービスプロジェクト
 - コンテナ用Nablarchバッチプロジェクト
 
-<small>キーワード: ウェブプロジェクト, RESTfulウェブサービスプロジェクト, Jakarta Batchバッチプロジェクト, Nablarchバッチプロジェクト, コンテナ用プロジェクト, ブランクプロジェクト種類一覧</small>
+*キーワード: ウェブプロジェクト, RESTfulウェブサービスプロジェクト, Jakarta Batchバッチプロジェクト, Nablarchバッチプロジェクト, コンテナ用プロジェクト, ブランクプロジェクト種類一覧*
 
 ## ブランクプロジェクトの設計思想と留意事項
 
@@ -33,7 +33,7 @@
 
 プロジェクト構成の検討時は :ref:`mavenModuleStructuresModuleDivisionPolicy` を参照すること。
 
-<small>キーワード: プロジェクト構成, 共通部品, Entityクラス, mavenModuleStructuresModuleDivisionPolicy, 最小ハンドラ構成, マルチプロジェクト</small>
+*キーワード: プロジェクト構成, 共通部品, Entityクラス, mavenModuleStructuresModuleDivisionPolicy, 最小ハンドラ構成, マルチプロジェクト*
 
 ## 初期セットアップの前提
 
@@ -52,7 +52,7 @@
 | APサーバ | ウェブ・RESTfulプロジェクトの疎通確認にJetty12を使用。mvnコマンドからjetty-ee10-maven-pluginを実行し組み込みJetty12へデプロイ・起動するため事前準備不要 |
 | DBサーバ | アーキタイプにH2 Database Engine（H2）が組み込まれているため別途インストール不要 |
 
-<small>キーワード: Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-ee10-maven-plugin, 前提ソフトウェア</small>
+*キーワード: Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-ee10-maven-plugin, 前提ソフトウェア*
 
 ## Mavenの設定
 
@@ -60,7 +60,7 @@
 
 > **重要**: Maven関連と思われるトラブルに遭遇した場合は :ref:`mvnFrequentlyTrouble` を参照すること。
 
-<small>キーワード: Mavenリポジトリ, settings.xml, mvnSetting, mvnFrequentlyTrouble, Maven設定</small>
+*キーワード: Mavenリポジトリ, settings.xml, mvnSetting, mvnFrequentlyTrouble, Maven設定*
 
 ## 使用するNablarchのバージョンの指定
 
@@ -101,7 +101,7 @@ nablarch-bom定義例（抜粋）:
 </dependencyManagement>
 ```
 
-<small>キーワード: nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile, com.nablarch.framework, nablarch-core</small>
+*キーワード: nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile, com.nablarch.framework, nablarch-core*
 
 ## 初期セットアップを行う際の共通的な注意点
 
@@ -111,4 +111,4 @@ nablarch-bom定義例（抜粋）:
 - `mvn archetype:generate` はコマンドラインから実行すること。eclipse 4.4.2から実行した場合、意図しないファイルが出力される。
 - 作成したブランクプロジェクトをeclipseで開くとMavenライフサイクル関連エラー（例: `Plugin execution not covered by lifecycle configuration`）が出力されることがある。eclipseがプラグインのインストールを提案するので従うこと。ネットワーク環境が不安定な場合は、予めプラグインをインストールしたeclipseを配付する等の対応を検討すること。
 
-<small>キーワード: マルチバイト文字, mvn archetype:generate, eclipse, Plugin execution not covered by lifecycle configuration, 注意事項, Mavenライフサイクル</small>
+*キーワード: マルチバイト文字, mvn archetype:generate, eclipse, Plugin execution not covered by lifecycle configuration, 注意事項, Mavenライフサイクル*

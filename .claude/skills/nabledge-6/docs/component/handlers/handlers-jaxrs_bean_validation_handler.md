@@ -10,7 +10,7 @@
 
 **クラス名**: `nablarch.fw.jaxrs.JaxRsBeanValidationHandler`
 
-<small>キーワード: JaxRsBeanValidationHandler, nablarch.fw.jaxrs.JaxRsBeanValidationHandler, JAX-RS BeanValidationハンドラ, ApplicationException, Bean Validationハンドラ, リソースクラス, バリデーションエラー</small>
+*キーワード: JaxRsBeanValidationHandler, nablarch.fw.jaxrs.JaxRsBeanValidationHandler, JAX-RS BeanValidationハンドラ, ApplicationException, Bean Validationハンドラ, リソースクラス, バリデーションエラー*
 
 ## モジュール一覧
 
@@ -28,13 +28,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-jaxrs, nablarch-core-validation-ee, モジュール依存関係, Maven, Bean Validation</small>
+*キーワード: nablarch-fw-jaxrs, nablarch-core-validation-ee, モジュール依存関係, Maven, Bean Validation*
 
 ## 制約
 
 :ref:`body_convert_handler` よりも後ろに設定すること。このハンドラは :ref:`body_convert_handler` がリクエストボディから変換したForm(Bean)に対してバリデーションを行うため。
 
-<small>キーワード: body_convert_handler, ハンドラ設定順序, 制約, BodyConvertHandler, リクエストボディ変換</small>
+*キーワード: body_convert_handler, ハンドラ設定順序, 制約, BodyConvertHandler, リクエストボディ変換*
 
 ## リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する
 
@@ -50,7 +50,7 @@ public HttpResponse save(Person person) {
 }
 ```
 
-<small>キーワード: @Valid, Valid, バリデーション実行, Form, Bean, アノテーション, jaxrs_bean_validation_handler_perform_validation</small>
+*キーワード: @Valid, Valid, バリデーション実行, Form, Bean, アノテーション, jaxrs_bean_validation_handler_perform_validation*
 
 ## Bean Validationのグループを指定する
 
@@ -70,4 +70,4 @@ public HttpResponse save(Person person) {
 }
 ```
 
-<small>キーワード: @ConvertGroup, ConvertGroup, Default.class, Bean Validationグループ, バリデーショングループ, from属性, to属性</small>
+*キーワード: @ConvertGroup, ConvertGroup, Default.class, Bean Validationグループ, バリデーショングループ, from属性, to属性*

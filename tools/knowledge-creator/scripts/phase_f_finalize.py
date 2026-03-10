@@ -162,7 +162,7 @@ class PhaseFFinalize:
                 # Add hints as keywords
                 hints = entry.get("hints", [])
                 if hints:
-                    md_lines.append(f"<small>キーワード: {', '.join(hints)}</small>")
+                    md_lines.append(f"*キーワード: {', '.join(hints)}*")
                     md_lines.append("")
 
             md_path = f"{self.ctx.docs_dir}/{fi['type']}/{fi['category']}/{fi['id']}.md"

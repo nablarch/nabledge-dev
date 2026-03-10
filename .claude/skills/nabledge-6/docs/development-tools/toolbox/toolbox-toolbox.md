@@ -10,4 +10,4 @@
 | SqlExecutor | SQL文を対話的に実行するツール |
 | NablarchOpenApiGenerator | OpenAPIドキュメントからソースコードを生成するツール |
 
-<small>キーワード: JSP静的解析, SQLエグゼキュータ, OpenAPIジェネレータ, 開発支援ツール, ツール一覧, JspStaticAnalysis, SqlExecutor, NablarchOpenApiGenerator</small>
+*キーワード: JSP静的解析, SQLエグゼキュータ, OpenAPIジェネレータ, 開発支援ツール, ツール一覧, JspStaticAnalysis, SqlExecutor, NablarchOpenApiGenerator*

@@ -14,7 +14,7 @@
 
 > **補足**: Thymeleaf 3.1.1.RELEASEでテスト済み。バージョンを変更する場合はプロジェクト側でテストを行うこと。
 
-<small>キーワード: nablarch-mail-sender-thymeleaf-adaptor, Thymeleaf, メール送信アダプタ, モジュール設定, 依存関係</small>
+*キーワード: nablarch-mail-sender-thymeleaf-adaptor, Thymeleaf, メール送信アダプタ, モジュール設定, 依存関係*
 
 ## E-mail Thymeleafアダプタを使用するための設定を行う
 
@@ -39,7 +39,7 @@
 </component>
 ```
 
-<small>キーワード: ThymeleafMailProcessor, nablarch.integration.mail.thymeleaf.ThymeleafMailProcessor, MailRequester, nablarch.common.mail.MailRequester, TemplateEngine, ClassLoaderTemplateResolver, コンポーネント設定, メール処理設定</small>
+*キーワード: ThymeleafMailProcessor, nablarch.integration.mail.thymeleaf.ThymeleafMailProcessor, MailRequester, nablarch.common.mail.MailRequester, TemplateEngine, ClassLoaderTemplateResolver, コンポーネント設定, メール処理設定*
 
 ## メールのテンプレートを作成する
 
@@ -56,10 +56,10 @@
 
 テンプレートファイルの配置場所は `TemplateEngine` の設定に依存する。上記設定例では `ClassLoaderTemplateResolver` の `prefix` に `com/example/template/` を設定しているため、クラスパス上の `com/example/template/` ディレクトリにテンプレートファイルを配置する。
 
-<small>キーワード: TemplateEngineProcessedResult, nablarch.common.mail.TemplateEngineProcessedResult, ClassLoaderTemplateResolver, TemplateEngine, デリミタ, テンプレート, 件名, 本文</small>
+*キーワード: TemplateEngineProcessedResult, nablarch.common.mail.TemplateEngineProcessedResult, ClassLoaderTemplateResolver, TemplateEngine, デリミタ, テンプレート, 件名, 本文*
 
 ## メール送信要求を登録する
 
 定型メールの送信要求を登録するだけでよい。詳細は :ref:`mail-request` を参照。
 
-<small>キーワード: メール送信要求, 定型メール送信, mail-request</small>
+*キーワード: メール送信要求, 定型メール送信, mail-request*

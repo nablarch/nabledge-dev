@@ -26,4 +26,4 @@ public class BatchActionSample extends BatchAction<Object> {
 > - **リクエストスコープ**: スレッドごとに状態を保持する領域
 > - **セッションスコープ**: バッチ全体の状態を保持する領域
 
-<small>キーワード: AtomicInteger, ExecutionContext, BatchAction, BatchActionSample, Result, Result.Success, スレッドセーフ, 状態保持, バッチアクション, マルチスレッド, リクエストスコープ, セッションスコープ</small>
+*キーワード: AtomicInteger, ExecutionContext, BatchAction, BatchActionSample, Result, Result.Success, スレッドセーフ, 状態保持, バッチアクション, マルチスレッド, リクエストスコープ, セッションスコープ*

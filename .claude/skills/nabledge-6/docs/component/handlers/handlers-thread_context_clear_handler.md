@@ -6,7 +6,7 @@
 
 **クラス名**: `nablarch.common.handler.threadcontext.ThreadContextClearHandler`
 
-<small>キーワード: ThreadContextClearHandler, nablarch.common.handler.threadcontext.ThreadContextClearHandler, スレッドコンテキスト変数削除ハンドラ, ハンドラクラス</small>
+*キーワード: ThreadContextClearHandler, nablarch.common.handler.threadcontext.ThreadContextClearHandler, スレッドコンテキスト変数削除ハンドラ, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -18,16 +18,16 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw, com.nablarch.framework, モジュール依存関係, Maven依存設定</small>
+*キーワード: nablarch-fw, com.nablarch.framework, モジュール依存関係, Maven依存設定*
 
 ## 制約
 
 > **重要**: 本ハンドラは極力手前側に配置すること。復路処理では、本ハンドラより手前のハンドラはスレッドコンテキストにアクセスできなくなる。
 
-<small>キーワード: ハンドラ配置順序, スレッドコンテキストアクセス制約, 復路処理, ハンドラキュー配置</small>
+*キーワード: ハンドラ配置順序, スレッドコンテキストアクセス制約, 復路処理, ハンドラキュー配置*
 
 ## スレッドコンテキストの削除処理
 
 `ThreadContextHandler` でスレッドローカル上に設定した値を全て削除する。
 
-<small>キーワード: スレッドコンテキスト削除, スレッドローカル変数削除, ThreadContextHandler, 変数クリア</small>
+*キーワード: スレッドコンテキスト削除, スレッドローカル変数削除, ThreadContextHandler, 変数クリア*

@@ -18,7 +18,7 @@ void assertStatusCode(String message, HttpResponse.Status expected, HttpResponse
 
 期待値とレスポンスのステータスコードが不一致の場合、アサート失敗となる。
 
-<small>キーワード: RestTestSupport, assertStatusCode, HttpResponse.Status, HttpResponse, ステータスコード確認, HTTPレスポンス検証</small>
+*キーワード: RestTestSupport, assertStatusCode, HttpResponse.Status, HttpResponse, ステータスコード確認, HTTPレスポンス検証*
 
 ## レスポンスボディ
 
@@ -42,7 +42,7 @@ String readTextResource(String fileName)
 | テストクラスソースファイル | `<PROJECT_ROOT>/test/java/com/example/` | `SampleTest.java` |
 | レスポンスボディ期待値ファイル | `<PROJECT_ROOT>/test/resources/com/example/SampleTest` | `response.json`（引数に指定） |
 
-<small>キーワード: RestTestSupport, readTextResource, JSONAssert, json-path-assert, XMLUnit, レスポンスボディ検証, JSONアサート</small>
+*キーワード: RestTestSupport, readTextResource, JSONAssert, json-path-assert, XMLUnit, レスポンスボディ検証, JSONアサート*
 
 ## 概要・構造
 
@@ -139,7 +139,7 @@ RestMockHttpRequest request = post("/projects")
 HttpResponse sendRequest(HttpRequest request)
 ```
 
-<small>キーワード: SimpleRestTestSupport, RestTestSupport, RestMockHttpRequest, DbAccessTestSupport, HttpServer, HttpRequest, nablarch-testing-rest, nablarch-testing-jetty12, nablarch-testing-default-configuration, リクエスト単体テスト, 内蔵サーバ, RESTfulウェブサービステスト, sendRequest</small>
+*キーワード: SimpleRestTestSupport, RestTestSupport, RestMockHttpRequest, DbAccessTestSupport, HttpServer, HttpRequest, nablarch-testing-rest, nablarch-testing-jetty12, nablarch-testing-default-configuration, リクエスト単体テスト, 内蔵サーバ, RESTfulウェブサービステスト, sendRequest*
 
 ## 各種設定値
 
@@ -185,4 +185,4 @@ HttpResponse sendRequest(HttpRequest request)
   <property name="webFrontControllerKey" value="jaxrsController"/>
 ```
 
-<small>キーワード: RestTestConfiguration, webBaseDir, webFrontControllerKey, nablarch.test.core.http.RestTestConfiguration, Webフロントコントローラー設定, jaxrsController, rest-request-test.xml, WebFrontController, nablarch.fw.web.servlet.WebFrontController</small>
+*キーワード: RestTestConfiguration, webBaseDir, webFrontControllerKey, nablarch.test.core.http.RestTestConfiguration, Webフロントコントローラー設定, jaxrsController, rest-request-test.xml, WebFrontController, nablarch.fw.web.servlet.WebFrontController*

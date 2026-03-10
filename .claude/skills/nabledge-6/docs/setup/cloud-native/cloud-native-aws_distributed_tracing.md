@@ -12,7 +12,7 @@ Nablarchはフレームワークの構造上、[自動計測エージェント](
 - 受信HTTPリクエスト の設定のみでサービス間の関連はトレースできる
 - 送信HTTP呼び出し と SQLクエリ はアプリケーションの要件に応じて設定する
 
-<small>キーワード: 分散トレーシング, AWS X-Ray, AWS X-Ray SDK for Java, 自動計測エージェント, AWS Distro for OpenTelemetry</small>
+*キーワード: 分散トレーシング, AWS X-Ray, AWS X-Ray SDK for Java, 自動計測エージェント, AWS Distro for OpenTelemetry*
 
 ## 依存関係の追加
 
@@ -48,7 +48,7 @@ Nablarchはフレームワークの構造上、[自動計測エージェント](
 
 > **補足**: SQLクエリのトレースには `aws-xray-recorder-sdk-sql-postgres` や `aws-xray-recorder-sdk-sql-mysql` ではなく、任意のJDBCデータソースをトレース可能な `aws-xray-recorder-sdk-sql` を使用する。
 
-<small>キーワード: aws-xray-recorder-sdk-bom, aws-xray-recorder-sdk-core, aws-xray-recorder-sdk-apache-http, aws-xray-recorder-sdk-sql, 依存関係追加, Maven</small>
+*キーワード: aws-xray-recorder-sdk-bom, aws-xray-recorder-sdk-core, aws-xray-recorder-sdk-apache-http, aws-xray-recorder-sdk-sql, 依存関係追加, Maven*
 
 ## 受信HTTPリクエスト
 
@@ -75,7 +75,7 @@ Nablarchはフレームワークの構造上、[自動計測エージェント](
 </filter-mapping>
 ```
 
-<small>キーワード: AWSXRayServletFilter, 受信HTTPリクエストトレース, web.xml, com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter, サーブレットフィルタ</small>
+*キーワード: AWSXRayServletFilter, 受信HTTPリクエストトレース, web.xml, com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter, サーブレットフィルタ*
 
 ## 送信HTTP呼び出し
 
@@ -187,7 +187,7 @@ WebTarget target = httpClient.target(productAPI).path("/products");
 ProductResponse products = target.request().get(ProductResponse.class);
 ```
 
-<small>キーワード: 送信HTTP呼び出しトレース, JerseyHttpClientWithAWSXRayFactory, ApacheConnectorProvider, ApacheHttpClientBuilderConfigurator, com.amazonaws.xray.proxies.apache.http.HttpClientBuilder, jersey-apache-connector, ComponentFactory, @SystemRepositoryComponent, @ComponentRef, @ConfigValue</small>
+*キーワード: 送信HTTP呼び出しトレース, JerseyHttpClientWithAWSXRayFactory, ApacheConnectorProvider, ApacheHttpClientBuilderConfigurator, com.amazonaws.xray.proxies.apache.http.HttpClientBuilder, jersey-apache-connector, ComponentFactory, @SystemRepositoryComponent, @ComponentRef, @ConfigValue*
 
 ## SQLクエリ
 
@@ -244,4 +244,4 @@ public class TracingDataSourceFactory implements ComponentFactory<DataSource> {
 </component>
 ```
 
-<small>キーワード: TracingDataSource, TracingDataSourceFactory, SQLクエリトレース, データソースデコレート, com.amazonaws.xray.sql.TracingDataSource, dataSource</small>
+*キーワード: TracingDataSource, TracingDataSourceFactory, SQLクエリトレース, データソースデコレート, com.amazonaws.xray.sql.TracingDataSource, dataSource*

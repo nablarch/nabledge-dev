@@ -10,13 +10,13 @@
 - 応答電文オブジェクト内のプロトコルヘッダの値を、対応するHTTPヘッダに設定する
 - XMLやJSONなどの形式への直列化（シリアライズ）を行う
 
-<small>キーワード: HTTPメッセージングレスポンス変換ハンドラ, 応答電文オブジェクト, HTTPレスポンスオブジェクト変換, 直列化, シリアライズ, XML, JSON, プロトコルヘッダ, HTTPヘッダ設定</small>
+*キーワード: HTTPメッセージングレスポンス変換ハンドラ, 応答電文オブジェクト, HTTPレスポンスオブジェクト変換, 直列化, シリアライズ, XML, JSON, プロトコルヘッダ, HTTPヘッダ設定*
 
 ## ハンドラクラス名
 
 **クラス名**: `nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler`
 
-<small>キーワード: HttpMessagingResponseBuildingHandler, nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler, HTTPメッセージング, レスポンス変換ハンドラ, ハンドラクラス</small>
+*キーワード: HttpMessagingResponseBuildingHandler, nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler, HTTPメッセージング, レスポンス変換ハンドラ, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -28,13 +28,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-messaging-http, com.nablarch.framework, モジュール, Maven依存関係, HTTPメッセージング</small>
+*キーワード: nablarch-fw-messaging-http, com.nablarch.framework, モジュール, Maven依存関係, HTTPメッセージング*
 
 ## 制約
 
 - :ref:`http_response_handler` よりも後ろに設定すること。:ref:`http_response_handler` がこのハンドラで生成した `HTTPレスポンスオブジェクト` をクライアントに返却するため。
 
-<small>キーワード: http_response_handler, HttpResponse, nablarch.fw.web.HttpResponse, ハンドラ順序, 制約, 設定順</small>
+*キーワード: http_response_handler, HttpResponse, nablarch.fw.web.HttpResponse, ハンドラ順序, 制約, 設定順*
 
 ## レスポンスヘッダに設定される値
 
@@ -50,7 +50,7 @@ Content-TypeはフォーマッタのMIME（`DataRecordFormatterSupport#getMimeTy
 
 > **重要**: このハンドラでは上記に記載のないレスポンスヘッダを設定できない。上記以外のレスポンスヘッダが必要な場合はプロジェクトでハンドラを作成すること。
 
-<small>キーワード: Status-Code, Content-Type, X-Correlation-Id, CorrelationId, InterSystemMessage, DataRecordFormatterSupport, レスポンスヘッダ, HTTPヘッダ設定, Content-Type生成</small>
+*キーワード: Status-Code, Content-Type, X-Correlation-Id, CorrelationId, InterSystemMessage, DataRecordFormatterSupport, レスポンスヘッダ, HTTPヘッダ設定, Content-Type生成*
 
 ## フレームワーク制御ヘッダのレイアウトを変更する
 
@@ -66,4 +66,4 @@ Content-TypeはフォーマッタのMIME（`DataRecordFormatterSupport#getMimeTy
 </component>
 ```
 
-<small>キーワード: StructuredFwHeaderDefinition, nablarch.fw.messaging.reader.StructuredFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダ, ヘッダ定義変更, FwHeaderDefinition</small>
+*キーワード: StructuredFwHeaderDefinition, nablarch.fw.messaging.reader.StructuredFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダ, ヘッダ定義変更, FwHeaderDefinition*

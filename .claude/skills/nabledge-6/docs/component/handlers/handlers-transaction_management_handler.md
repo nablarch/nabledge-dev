@@ -13,7 +13,7 @@
 
 **クラス名**: `nablarch.common.handler.TransactionManagementHandler`
 
-<small>キーワード: TransactionManagementHandler, nablarch.common.handler.TransactionManagementHandler, トランザクション制御ハンドラ, 透過的トランザクション, ハンドラクラス</small>
+*キーワード: TransactionManagementHandler, nablarch.common.handler.TransactionManagementHandler, トランザクション制御ハンドラ, 透過的トランザクション, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -37,13 +37,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-core-transaction, nablarch-core-jdbc, nablarch-core, com.nablarch.framework, Maven依存関係</small>
+*キーワード: nablarch-core-transaction, nablarch-core-jdbc, nablarch-core, com.nablarch.framework, Maven依存関係*
 
 ## 制約
 
 - :ref:`database_connection_management_handler` より後ろに配置すること。データベースに対するトランザクションを制御する場合、スレッド上にトランザクション管理対象のDB接続が存在している必要があるため。
 
-<small>キーワード: DbConnectionManagementHandler, database_connection_management_handler, ハンドラ配置順序, DB接続, 制約</small>
+*キーワード: DbConnectionManagementHandler, database_connection_management_handler, ハンドラ配置順序, DB接続, 制約*
 
 ## トランザクション制御対象を設定する
 
@@ -70,7 +70,7 @@
 </component>
 ```
 
-<small>キーワード: transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション設定</small>
+*キーワード: transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション設定*
 
 ## 特定の例外の場合にトランザクションをコミットさせる
 
@@ -87,7 +87,7 @@
 </component>
 ```
 
-<small>キーワード: transactionCommitExceptions, 例外時コミット, ロールバック対象外, 例外クラス設定, TransactionManagementHandler</small>
+*キーワード: transactionCommitExceptions, 例外時コミット, ロールバック対象外, 例外クラス設定, TransactionManagementHandler*
 
 ## トランザクション終了時に任意の処理を実行したい
 
@@ -132,7 +132,7 @@ public static class SampleHandler
 </list>
 ```
 
-<small>キーワード: TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了イベント</small>
+*キーワード: TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了イベント*
 
 ## アプリケーションで複数のトランザクションを使用する
 
@@ -177,4 +177,4 @@ public static class SampleHandler
 </list>
 ```
 
-<small>キーワード: transactionName, 複数トランザクション, TransactionManagementHandler, DbConnectionManagementHandler, 複数DB接続</small>
+*キーワード: transactionName, 複数トランザクション, TransactionManagementHandler, DbConnectionManagementHandler, 複数DB接続*

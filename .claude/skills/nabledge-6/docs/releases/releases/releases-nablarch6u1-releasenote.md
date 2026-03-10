@@ -48,14 +48,14 @@
 
 > **重要**: 古いIBM MQ（IBM WebSphere MQ）では動作しない可能性があります。IBM MQ 9.3へバージョンアップしてください。バージョンアップできない場合は、[解説書](https://nablarch.github.io/docs/6u1/doc/application_framework/adaptors/webspheremq_adaptor.html)に記載のとおりアダプタが使用するライブラリのバージョンを変更してください。
 
-<small>キーワード: Nablarch 6u1, リリースノート, SystemTimeUtil, LocalDateTime, LocalDate, BeanUtil, レコード, ユニバーサルDAO, 汎用データフォーマット, JSONエスケープ文字, Dialectインターフェース, 件数取得SQL, RESTfulウェブサービス, HTTPリクエスト, SLF4Jアダプタ, slf4j-nablarch-adaptor, logアダプタ, nablarch-slf4j-adaptor, IBM MQアダプタ, Redisストア, Lettuceアダプタ, nablarch-lettuce-adaptor, Java 21, ブランクプロジェクト, nablarch-core, nablarch-common-dao, nablarch-core-beans, nablarch-core-dataformat, nablarch-core-jdbc, nablarch-fw-web, nablarch-fw-jaxrs, nablarch-wmq-adaptor, nablarch-testing, nablarch-example-web, HttpRequestTestSupport, getParamMap, getParam, InjectForm, @Consumes, @Valid, DefaultDialect</small>
+*キーワード: Nablarch 6u1, リリースノート, SystemTimeUtil, LocalDateTime, LocalDate, BeanUtil, レコード, ユニバーサルDAO, 汎用データフォーマット, JSONエスケープ文字, Dialectインターフェース, 件数取得SQL, RESTfulウェブサービス, HTTPリクエスト, SLF4Jアダプタ, slf4j-nablarch-adaptor, logアダプタ, nablarch-slf4j-adaptor, IBM MQアダプタ, Redisストア, Lettuceアダプタ, nablarch-lettuce-adaptor, Java 21, ブランクプロジェクト, nablarch-core, nablarch-common-dao, nablarch-core-beans, nablarch-core-dataformat, nablarch-core-jdbc, nablarch-fw-web, nablarch-fw-jaxrs, nablarch-wmq-adaptor, nablarch-testing, nablarch-example-web, HttpRequestTestSupport, getParamMap, getParam, InjectForm, @Consumes, @Valid, DefaultDialect*
 
 ## バージョンアップ手順
 
 1. `pom.xml`の`<dependencyManagement>`セクションに指定されている`nablarch-bom`のバージョンを`6u1`に書き換える
 2. Mavenのビルドを再実行する
 
-<small>キーワード: バージョンアップ手順, nablarch-bom, pom.xml, dependencyManagement, Maven, 6u1適用方法</small>
+*キーワード: バージョンアップ手順, nablarch-bom, pom.xml, dependencyManagement, Maven, 6u1適用方法*
 
 ## 件数取得SQLの拡張ポイント追加
 
@@ -89,4 +89,4 @@ public String convertCountSql(String sqlId, Object condition, StatementFactory s
 
 これによりコンパイルエラーが解消され、件数取得SQLはバージョンアップ前と同じ動作になります。件数取得SQLを差し替えたい場合は、[ユニバーサルDAO解説書](https://nablarch.github.io/docs/6u1/doc/application_framework/application_framework/libraries/database/universal_dao.html#universal_dao-customize_sql_for_counting)を参考に上記メソッドの実装を変更してください。
 
-<small>キーワード: Dialectインターフェース, 件数取得SQL, convertCountSql, DefaultDialect, StatementFactory, コンパイルエラー, 独自ダイアレクト, ページング, 拡張ポイント</small>
+*キーワード: Dialectインターフェース, 件数取得SQL, convertCountSql, DefaultDialect, StatementFactory, コンパイルエラー, 独自ダイアレクト, ページング, 拡張ポイント*

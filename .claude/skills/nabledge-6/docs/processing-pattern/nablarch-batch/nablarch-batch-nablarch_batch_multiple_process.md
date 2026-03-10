@@ -50,4 +50,4 @@ public DatabaseRecordReader createReader(ExecutionContext context) {
 }
 ```
 
-<small>キーワード: DatabaseRecordReader, DatabaseRecordListener, SimpleDbTransactionExecutor, ParameterizedSqlPStatement, DbConnectionContext, ExecutionContext, AppDbConnection, FileCreateRequest, SystemRepository, UUID, マルチプロセス化, 悲観ロック, 常駐バッチ, processId UUID</small>
+*キーワード: DatabaseRecordReader, DatabaseRecordListener, SimpleDbTransactionExecutor, ParameterizedSqlPStatement, DbConnectionContext, ExecutionContext, AppDbConnection, FileCreateRequest, SystemRepository, UUID, マルチプロセス化, 悲観ロック, 常駐バッチ, processId UUID*

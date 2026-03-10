@@ -9,4 +9,4 @@
 
 参考: [ウェブアプリケーション Thymeleafアダプタのソースコード](https://github.com/nablarch/nablarch-web-thymeleaf-adaptor)
 
-<small>キーワード: CustomResponseWriter, nablarch.fw.web.handler.responsewriter.CustomResponseWriter, テンプレートエンジン, web.xml, Servlet forward, カスタムレスポンスライター</small>
+*キーワード: CustomResponseWriter, nablarch.fw.web.handler.responsewriter.CustomResponseWriter, テンプレートエンジン, web.xml, Servlet forward, カスタムレスポンスライター*

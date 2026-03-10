@@ -11,7 +11,7 @@
 - データリーダを使用して入力データの読み込み
 - 実行時IDの採番
 
-<small>キーワード: データリードハンドラ, DataReadHandler, DataReader, NoMoreRecord, 入力データ読み込み, 実行時ID, 後続ハンドラ, データ終端</small>
+*キーワード: データリードハンドラ, DataReadHandler, DataReader, NoMoreRecord, 入力データ読み込み, 実行時ID, 後続ハンドラ, データ終端*
 
 ## ハンドラクラス名
 
@@ -19,7 +19,7 @@
 
 データリーダを使用して入力データの順次読み込みを行うスタンドアロンバッチ向けハンドラ。
 
-<small>キーワード: DataReadHandler, nablarch.fw.handler.DataReadHandler, データリードハンドラ, ハンドラクラス</small>
+*キーワード: DataReadHandler, nablarch.fw.handler.DataReadHandler, データリードハンドラ, ハンドラクラス*
 
 ## モジュール一覧
 
@@ -31,13 +31,13 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, スタンドアロンバッチ</small>
+*キーワード: nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, スタンドアロンバッチ*
 
 ## 制約
 
 本ハンドラより手前のハンドラにて、`ExecutionContext` に `DataReader` を設定する必要がある。本ハンドラ呼び出し時に `DataReader` が未設定の場合、処理対象データ無しとして `NoMoreRecord` を返却して処理を終了する。
 
-<small>キーワード: DataReader, ExecutionContext, NoMoreRecord, nablarch.fw.DataReader, nablarch.fw.ExecutionContext, DataReader設定制約, 処理終了条件, NoMoreRecord返却</small>
+*キーワード: DataReader, ExecutionContext, NoMoreRecord, nablarch.fw.DataReader, nablarch.fw.ExecutionContext, DataReader設定制約, 処理終了条件, NoMoreRecord返却*
 
 ## 最大処理件数の設定
 
@@ -50,4 +50,4 @@
 </component>
 ```
 
-<small>キーワード: maxCount, DataReadHandler, NoMoreRecord, 最大処理件数, バッチ分割処理, 件数制限, nablarch.fw.handler.DataReadHandler</small>
+*キーワード: maxCount, DataReadHandler, NoMoreRecord, 最大処理件数, バッチ分割処理, 件数制限, nablarch.fw.handler.DataReadHandler*

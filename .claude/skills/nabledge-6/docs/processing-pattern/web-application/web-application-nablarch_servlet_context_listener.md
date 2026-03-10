@@ -29,7 +29,7 @@
 </dependency>
 ```
 
-<small>キーワード: nablarch-fw-web, nablarch-core, nablarch-core-repository, nablarch-core-applog, モジュール依存関係, Mavenモジュール, サーブレットコンテキストリスナー</small>
+*キーワード: nablarch-fw-web, nablarch-core, nablarch-core-repository, nablarch-core-applog, モジュール依存関係, Mavenモジュール, サーブレットコンテキストリスナー*
 
 ## システムリポジトリを初期化する
 
@@ -52,7 +52,7 @@
 </listener>
 ```
 
-<small>キーワード: NablarchServletContextListener, di.config, web.xml, システムリポジトリ初期化, サーブレットコンテキストリスナー登録, コンポーネント設定ファイル</small>
+*キーワード: NablarchServletContextListener, di.config, web.xml, システムリポジトリ初期化, サーブレットコンテキストリスナー登録, コンポーネント設定ファイル*
 
 ## 初期化の成否を後続処理で取得する
 
@@ -84,4 +84,4 @@ public class CustomServletContextListener implements ServletContextListener {
 
 > **補足**: 複数のサーブレットコンテキストリスナーが登録されている場合、先に実行されたリスナーの例外を検知して処理を中止するか無視して後続を継続するかはサーブレットコンテナの実装に依存する。
 
-<small>キーワード: NablarchServletContextListener, isInitializationCompleted, サーブレットコンテキストリスナー実行順序, @WebListener, 初期化完了確認, web.xml定義</small>
+*キーワード: NablarchServletContextListener, isInitializationCompleted, サーブレットコンテキストリスナー実行順序, @WebListener, 初期化完了確認, web.xml定義*
