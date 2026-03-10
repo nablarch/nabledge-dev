@@ -17,61 +17,40 @@ import hashlib
 from collections import Counter
 
 # ============================================================
-# Constants (copied from spec, NOT imported from step2_classify.py)
+# Constants
 # ============================================================
 
 SPLIT_SECTION_THRESHOLD = 2
 LINE_GROUP_THRESHOLD = 400
 
-RST_MAPPING = [
-    ("application_framework/application_framework/batch/nablarch_batch", "processing-pattern", "nablarch-batch"),
-    ("application_framework/application_framework/batch/jsr352", "processing-pattern", "jakarta-batch"),
-    ("application_framework/application_framework/batch/", "processing-pattern", "nablarch-batch"),
-    ("application_framework/application_framework/web_service/rest", "processing-pattern", "restful-web-service"),
-    ("application_framework/application_framework/web_service/http_messaging", "processing-pattern", "http-messaging"),
-    ("application_framework/application_framework/web_service/", "processing-pattern", "restful-web-service"),
-    ("application_framework/application_framework/web/", "processing-pattern", "web-application"),
-    ("application_framework/application_framework/messaging/mom", "processing-pattern", "mom-messaging"),
-    ("application_framework/application_framework/messaging/db", "processing-pattern", "db-messaging"),
-    ("application_framework/application_framework/handlers/", "component", "handlers"),
-    ("application_framework/application_framework/batch/jBatchHandler", "component", "handlers"),
-    ("application_framework/application_framework/libraries/", "component", "libraries"),
-    ("application_framework/adaptors/", "component", "adapters"),
-    ("development_tools/testing_framework/", "development-tools", "testing-framework"),
-    ("development_tools/toolbox/", "development-tools", "toolbox"),
-    ("development_tools/java_static_analysis/", "development-tools", "java-static-analysis"),
-    ("application_framework/application_framework/blank_project/", "setup", "blank-project"),
-    ("application_framework/application_framework/configuration/", "setup", "configuration"),
-    ("application_framework/setting_guide/", "setup", "setting-guide"),
-    ("application_framework/application_framework/cloud_native/", "setup", "cloud-native"),
-    ("about_nablarch/", "about", "about-nablarch"),
-    ("application_framework/application_framework/nablarch_architecture/", "about", "about-nablarch"),
-    ("application_framework/application_framework/nablarch/", "about", "about-nablarch"),
-    ("migration/", "about", "migration"),
-    ("release_notes/", "about", "release-notes"),
-    ("biz_samples/", "about", "about-nablarch"),
-    ("application_framework/application_framework/messaging/", "processing-pattern", "db-messaging"),
-    ("examples/", "about", "about-nablarch"),
-    ("external_contents/", "about", "about-nablarch"),
-    ("inquiry/", "about", "about-nablarch"),
-    ("jakarta_ee/", "about", "about-nablarch"),
-    ("nablarch_api/", "about", "about-nablarch"),
-    ("releases/", "about", "release-notes"),
-    ("terms_of_use/", "about", "about-nablarch"),
-    ("application_framework/application_framework/", "about", "about-nablarch"),
-    ("application_framework/", "about", "about-nablarch"),
-    ("development_tools/", "development-tools", "testing-framework"),
-]
 
-MD_MAPPING = {
-    "Nablarchバッチ処理パターン.md": ("guide", "nablarch-patterns"),
-    "Nablarchでの非同期処理.md": ("guide", "nablarch-patterns"),
-    "Nablarchアンチパターン.md": ("guide", "nablarch-patterns"),
-}
+def load_mappings(repo: str, version: str) -> dict:
+    """Load RST/MD/XLSX mappings from JSON files.
 
-XLSX_MAPPING = {
-    "Nablarch機能のセキュリティ対応表.xlsx": ("check", "security-check"),
-}
+    Merges common.json with version-specific vN.json.
+    Version-specific entries take priority (prepended for rst, override for md/xlsx).
+    """
+    mappings_dir = os.path.join(repo, "tools/knowledge-creator/mappings")
+
+    def _load(path):
+        if not os.path.exists(path):
+            return {}
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+
+    common = _load(os.path.join(mappings_dir, "common.json"))
+    version_specific = _load(os.path.join(mappings_dir, f"v{version}.json"))
+
+    rst = [(e["pattern"], e["type"], e["category"])
+           for e in version_specific.get("rst", []) + common.get("rst", [])]
+    md = {k: (v["type"], v["category"])
+          for k, v in {**common.get("md", {}), **version_specific.get("md", {})}.items()}
+    xlsx = {k: (v["type"], v["category"])
+            for k, v in {**common.get("xlsx", {}), **version_specific.get("xlsx", {})}.items()}
+    xlsx_patterns = [(e["endswith"], e["type"], e["category"])
+                     for e in version_specific.get("xlsx_patterns", []) + common.get("xlsx_patterns", [])]
+
+    return {"rst": rst, "md": md, "xlsx": xlsx, "xlsx_patterns": xlsx_patterns}
 
 
 # ============================================================
@@ -123,7 +102,7 @@ def list_sources(repo: str, version: str) -> list:
 # Step 2: Classify
 # ============================================================
 
-def classify_rst(path: str):
+def classify_rst(path: str, rst_mapping: list):
     marker = "nablarch-document/ja/"
     idx = path.find(marker)
     if idx < 0:
@@ -133,7 +112,7 @@ def classify_rst(path: str):
     if rel_path == "index.rst":
         return "about", "about-nablarch", ""
 
-    for pattern, type_, category in RST_MAPPING:
+    for pattern, type_, category in rst_mapping:
         if pattern in rel_path:
             return type_, category, pattern
 
@@ -150,8 +129,9 @@ def title_to_section_id(title: str) -> str:
 
 
 def generate_id(filename: str, format: str, category: str = None,
-                source_path: str = None, matched_pattern: str = None) -> str:
-    if format == "xlsx" and filename in XLSX_MAPPING:
+                source_path: str = None, matched_pattern: str = None,
+                xlsx_mapping: dict = None) -> str:
+    if format == "xlsx" and xlsx_mapping and filename in xlsx_mapping:
         return category
 
     if format == "rst":
@@ -184,12 +164,6 @@ def generate_id(filename: str, format: str, category: str = None,
     if category:
         return f"{category}-{base_name}"
     return base_name
-
-
-def classify_excel_by_pattern(filename: str):
-    if filename.endswith("-releasenote.xlsx"):
-        return ("releases", "releases")
-    return None
 
 
 def analyze_rst_sections(content: str) -> list:
@@ -366,7 +340,13 @@ def dedup_ids(classified: list, repo: str) -> list:
     return classified
 
 
-def classify_all(sources: list, repo: str) -> list:
+def classify_all(sources: list, repo: str, version: str = "6") -> list:
+    mappings = load_mappings(repo, version)
+    rst_mapping = mappings["rst"]
+    md_mapping = mappings["md"]
+    xlsx_mapping = mappings["xlsx"]
+    xlsx_patterns = mappings["xlsx_patterns"]
+
     classified = []
 
     for source in sources:
@@ -376,23 +356,25 @@ def classify_all(sources: list, repo: str) -> list:
 
         type_ = category = matched_pattern = None
         if fmt == "rst":
-            type_, category, matched_pattern = classify_rst(path)
+            type_, category, matched_pattern = classify_rst(path, rst_mapping)
         elif fmt == "md":
-            if filename in MD_MAPPING:
-                type_, category = MD_MAPPING[filename]
+            if filename in md_mapping:
+                type_, category = md_mapping[filename]
         elif fmt == "xlsx":
-            if filename in XLSX_MAPPING:
-                type_, category = XLSX_MAPPING[filename]
+            if filename in xlsx_mapping:
+                type_, category = xlsx_mapping[filename]
             else:
-                result = classify_excel_by_pattern(filename)
-                if result:
-                    type_, category = result
+                for endswith, t, c in xlsx_patterns:
+                    if filename.endswith(endswith):
+                        type_, category = t, c
+                        break
 
         if type_ is None or category is None:
             continue
 
         file_id = generate_id(filename, fmt, category,
-                              source_path=path, matched_pattern=matched_pattern)
+                              source_path=path, matched_pattern=matched_pattern,
+                              xlsx_mapping=xlsx_mapping)
         classified.append({
             "source_path": path,
             "format": fmt,
@@ -608,7 +590,7 @@ def main():
     print(f"Sources: {len(sources)}")
 
     # Step 2: Classify + split + dedup
-    catalog_entries = classify_all(sources, repo)
+    catalog_entries = classify_all(sources, repo, "6")
     print(f"Catalog entries: {len(catalog_entries)}")
 
     ids = [e['id'] for e in catalog_entries]

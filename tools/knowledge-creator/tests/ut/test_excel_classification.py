@@ -4,13 +4,20 @@ import os
 import tempfile
 import shutil
 from step1_list_sources import Step1ListSources
-from step2_classify import Step2Classify, classify_excel_by_pattern, XLSX_MAPPING
+from step2_classify import Step2Classify
 
 
 @pytest.fixture
 def temp_repo():
     """Create temporary repository structure with Excel files."""
     repo = tempfile.mkdtemp()
+
+    # Copy mappings directory so classification works
+    real_repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+    shutil.copytree(
+        os.path.join(real_repo, "tools/knowledge-creator/mappings"),
+        os.path.join(repo, "tools/knowledge-creator/mappings"),
+    )
 
     # Create releases directory with Excel files
     releases_dir = f"{repo}/.lw/nab-official/v6/nablarch-document/ja/releases"
@@ -78,32 +85,36 @@ class TestExcelScanning:
 class TestExcelClassification:
     """Test Excel file classification in step2_classify.py."""
 
-    def test_classify_excel_by_pattern_v6_release(self):
+    def _make_classifier(self, temp_repo):
+        from run import Context
+        ctx = Context(version="6", repo=temp_repo, concurrency=1)
+        sources = Step1ListSources(ctx, dry_run=True).run()
+        return Step2Classify(ctx, dry_run=True, sources_data=sources)
+
+    def _classify_xlsx_by_pattern(self, classifier, filename):
+        """Helper: match filename against xlsx_patterns."""
+        for endswith, t, c in classifier._xlsx_patterns:
+            if filename.endswith(endswith):
+                return (t, c)
+        return None
+
+    def test_classify_excel_by_pattern_v6_release(self, temp_repo):
         """nablarch6*-releasenote.xlsx → releases/releases"""
-        result = classify_excel_by_pattern("nablarch6-releasenote.xlsx")
-        assert result == ("releases", "releases")
+        classifier = self._make_classifier(temp_repo)
+        for filename in ["nablarch6-releasenote.xlsx", "nablarch6u1-releasenote.xlsx", "nablarch6u3-releasenote.xlsx"]:
+            assert self._classify_xlsx_by_pattern(classifier, filename) == ("releases", "releases")
 
-        result = classify_excel_by_pattern("nablarch6u1-releasenote.xlsx")
-        assert result == ("releases", "releases")
-
-        result = classify_excel_by_pattern("nablarch6u3-releasenote.xlsx")
-        assert result == ("releases", "releases")
-
-    def test_classify_excel_by_pattern_v5_release(self):
+    def test_classify_excel_by_pattern_v5_release(self, temp_repo):
         """nablarch5*-releasenote.xlsx → releases/releases"""
-        result = classify_excel_by_pattern("nablarch5u12-releasenote.xlsx")
-        assert result == ("releases", "releases")
+        classifier = self._make_classifier(temp_repo)
+        for filename in ["nablarch5u12-releasenote.xlsx", "nablarch5u26-releasenote.xlsx"]:
+            assert self._classify_xlsx_by_pattern(classifier, filename) == ("releases", "releases")
 
-        result = classify_excel_by_pattern("nablarch5u26-releasenote.xlsx")
-        assert result == ("releases", "releases")
-
-    def test_classify_excel_by_pattern_non_release(self):
+    def test_classify_excel_by_pattern_non_release(self, temp_repo):
         """リリースノート以外 → None"""
-        result = classify_excel_by_pattern("other.xlsx")
-        assert result is None
-
-        result = classify_excel_by_pattern("data.xlsx")
-        assert result is None
+        classifier = self._make_classifier(temp_repo)
+        assert self._classify_xlsx_by_pattern(classifier, "other.xlsx") is None
+        assert self._classify_xlsx_by_pattern(classifier, "data.xlsx") is None
 
 
 class TestExcelIDGeneration:
@@ -138,16 +149,15 @@ class TestExcelIDGeneration:
         assert file_id.startswith("releases-")
 
     def test_xlsx_mapping_takes_precedence(self, temp_repo):
-        """XLSX_MAPPINGで固定指定されたファイルはcategoryのみ"""
+        """xlsx_mappingで固定指定されたファイルはcategoryのみ"""
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
 
         sources = Step1ListSources(ctx, dry_run=True).run()
         classifier = Step2Classify(ctx, dry_run=True, sources_data=sources)
 
-        # XLSX_MAPPINGに含まれるファイル
-        for filename in XLSX_MAPPING.keys():
-            type_, category = XLSX_MAPPING[filename]
+        # _xlsx_mappingに含まれるファイル
+        for filename, (type_, category) in classifier._xlsx_mapping.items():
             file_id = classifier.generate_id(filename, "xlsx", category)
             # categoryのみがIDになる（filename部分が含まれない）
             assert file_id == category

@@ -1,14 +1,25 @@
 """Tests: Step2 raises SystemExit on unmatched RST files."""
 import os
+import shutil
 import pytest
 from run import Context
 from step1_list_sources import Step1ListSources
 from step2_classify import Step2Classify
 
+REAL_REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+
+
+def _copy_mappings(repo):
+    shutil.copytree(
+        os.path.join(REAL_REPO, "tools/knowledge-creator/mappings"),
+        os.path.join(str(repo), "tools/knowledge-creator/mappings"),
+    )
+
 
 @pytest.fixture
 def ctx_with_unmatched(tmp_path):
     repo = tmp_path / "repo"
+    _copy_mappings(repo)
     rst_base = repo / ".lw/nab-official/v6/nablarch-document/ja"
     # Unmatched file
     d = rst_base / "unknown_new_feature"
@@ -32,6 +43,7 @@ class TestUnmatchedError:
 
     def test_all_matched_succeeds(self, tmp_path):
         repo = tmp_path / "repo"
+        _copy_mappings(repo)
         rst_base = repo / ".lw/nab-official/v6/nablarch-document/ja/about_nablarch"
         rst_base.mkdir(parents=True, exist_ok=True)
         (rst_base / "concept.rst").write_text("Concept\n=====\n\nContent")
