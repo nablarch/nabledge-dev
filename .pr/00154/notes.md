@@ -55,3 +55,30 @@ CHANGELOG [Unreleased] accurately reflects the 3 meaningful user-facing changes:
 The setup script path change (`a346b98`) is infrastructure-level and requires no CHANGELOG entry.
 
 Pending user confirmation before proceeding with file updates.
+
+---
+
+### Comparison with v0.4 Release PR (#115)
+
+Verified that PR #156 covers all required release files by comparing against PR #115.
+
+**Core release files (4 files):**
+
+| File | PR #115 (v0.4) | PR #156 (v0.5) | Status |
+|------|----------------|----------------|--------|
+| `.claude/skills/nabledge-6/plugin/CHANGELOG.md` | ✅ | ✅ | No missing |
+| `.claude/skills/nabledge-6/plugin/plugin.json` | ✅ | ✅ | No missing |
+| `.claude/marketplace/.claude-plugin/marketplace.json` | ✅ | ✅ | No missing |
+| `.claude/marketplace/CHANGELOG.md` | ✅ | ✅ | No missing |
+
+**Extra files in PR #115 not in PR #156:**
+
+| File | Reason not needed |
+|------|-------------------|
+| `.claude/rules/changelog.md` | Rule file improvement bundled in same PR; not release-specific |
+| `.claude/rules/expert-review.md` | Rule file improvement bundled in same PR; not release-specific |
+| `.claude/skills/pr/workflows/create.md` | Workflow improvement bundled in same PR; not release-specific |
+| `.pr/00114/changes.diff` | Old work log format; replaced by `notes.md` convention |
+| `.pr/00114/review-by-*.md` | Expert reviews; not conducted for this PR (release prep only) |
+
+**Conclusion: No missing changes.** All 4 core versioning files are updated. Differences are non-release files incidentally bundled in #115.
