@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
 from logger import get_logger
+from step2_classify import Step2Classify as _Step2Classify
 
 
 class PhaseBGenerate:
@@ -110,7 +111,7 @@ class PhaseBGenerate:
                 # Include script-computed section IDs so Claude uses them exactly
                 lines = []
                 for title in sections_list:
-                    section_id = self._title_to_section_id(title)
+                    section_id = _Step2Classify._title_to_section_id(title)
                     lines.append(f"- {title} (ID: {section_id})")
                 sections_md = "\n".join(lines)
                 prompt = prompt.replace("{EXPECTED_SECTIONS}", sections_md)
