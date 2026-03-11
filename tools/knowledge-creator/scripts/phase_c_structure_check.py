@@ -10,7 +10,7 @@ import json
 from common import load_json, write_json
 from logger import get_logger
 
-KEBAB_CASE_PATTERN = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
+SECTION_ID_PATTERN = re.compile(r'^s\d+$')
 VALID_PROCESSING_PATTERNS = {
     "nablarch-batch", "jakarta-batch", "restful-web-service",
     "http-messaging", "web-application", "mom-messaging", "db-messaging"
@@ -70,10 +70,10 @@ class PhaseCStructureCheck:
         for sk in section_keys - index_id_set:
             errors.append(f"S4: sections key '{sk}' has no corresponding index entry")
 
-        # S5: Kebab-case
+        # S5: Sequential section ID format
         for entry in knowledge.get("index", []):
-            if not KEBAB_CASE_PATTERN.match(entry["id"]):
-                errors.append(f"S5: Section ID '{entry['id']}' is not kebab-case")
+            if not SECTION_ID_PATTERN.match(entry["id"]):
+                errors.append(f"S5: Section ID '{entry['id']}' is not sequential format (expected: s1, s2, ...)")
 
         # S8: Filename match
         expected_id = os.path.basename(json_path).replace(".json", "")
