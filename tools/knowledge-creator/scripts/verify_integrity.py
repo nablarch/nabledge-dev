@@ -236,9 +236,7 @@ def check_v15_no_trace_references(repo_root, results):
     # Exclude migration scripts (Task 13 will update) and this script itself
     excluded_basenames = {
         "verify_integrity.py",       # meta: this script contains check strings
-        "migrate_to_split_cache.py",  # Task 13: pending update
-        "migrate_to_catalog.py",      # Task 13: pending update
-        "migrate_section_ids.py",     # migration script
+        "migrate_section_ids.py",     # migration script (historical)
     }
     deprecated_patterns = [
         (r'trace_dir', "trace_dir reference"),
