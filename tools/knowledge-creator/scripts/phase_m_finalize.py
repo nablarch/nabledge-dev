@@ -56,7 +56,8 @@ class PhaseMFinalize:
             write_json(self.ctx.classified_list_path, merged_catalog)
 
         # Step 5: Generate browsable docs and index (always full)
-        PhaseFFinalize(self.ctx, dry_run=self.dry_run).run()
+        # Pass split_catalog so Phase F can build link maps from section_map data
+        PhaseFFinalize(self.ctx, dry_run=self.dry_run, catalog_for_links=split_catalog).run()
 
         # Step 6: Restore split catalog
         if not self.dry_run:
