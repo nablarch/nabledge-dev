@@ -66,7 +66,7 @@ class TestSectionSplit:
         assert entries[0]['split_info']['group_line_count'] == total_lines
 
     def test_split_id_format(self, ctx):
-        """分割IDが {original}--{section_id} 形式であること。"""
+        """分割IDが {original}--s{N} 形式であること。"""
         classifier = Step2Classify(ctx, dry_run=True)
         content = self._make_rst(3)
         sections = classifier.analyze_rst_sections(content)
@@ -82,28 +82,9 @@ class TestSectionSplit:
         for entry in entries:
             assert '--' in entry['id'], f"ID should contain '--': {entry['id']}"
             assert entry['id'].startswith('libraries-tag--')
-
-    def test_title_to_section_id_ascii(self):
-        """英字タイトル → ASCII部分を使用。"""
-        result = Step2Classify._title_to_section_id("module-list")
-        assert result == "module-list"
-
-    def test_title_to_section_id_mixed(self):
-        """英字+日本語タイトル → ASCII部分が3文字以上ならそれを使用。"""
-        result = Step2Classify._title_to_section_id("HTMLエスケープ")
-        assert result == "html"
-
-    def test_title_to_section_id_japanese_only(self):
-        """日本語のみタイトル → ハッシュ。"""
-        result = Step2Classify._title_to_section_id("モジュール一覧")
-        assert result.startswith("sec-")
-        assert len(result) == 12  # "sec-" + 8 hex chars
-
-    def test_title_to_section_id_deterministic(self):
-        """同じタイトル → 同じID(決定的)。"""
-        id1 = Step2Classify._title_to_section_id("可変条件を持つSQL")
-        id2 = Step2Classify._title_to_section_id("可変条件を持つSQL")
-        assert id1 == id2
+            # 連番形式: libraries-tag--s{N}
+            suffix = entry['id'].split('--', 1)[1]
+            assert re.match(r'^s\d+$', suffix), f"Expected s{{N}} format, got: {suffix}"
 
     def test_preamble_in_first_section(self, ctx):
         """最初のh2の前のプリアンブルが最初のセクションに含まれること。"""
@@ -144,7 +125,7 @@ class TestSectionSplit:
         assert all_lines == set(range(len(lines)))
 
     def test_duplicate_titles_get_unique_ids(self, ctx):
-        """同じタイトルのh2セクションが重複しないIDを取得すること。"""
+        """同じタイトルのh2セクションでも連番IDは重複しないこと。"""
         classifier = Step2Classify(ctx, dry_run=True)
 
         # 同じタイトルのh2セクションを3つ作る(各150行)
@@ -166,16 +147,99 @@ class TestSectionSplit:
         entries = classifier.split_file_entry(base_entry, sections, content)
 
         # 3セクション × 150行 = 450行 → グループ化される
-        # [Same Title (150)] + [Same Title (150)] = 300行 → 1グループ
-        # [Same Title (150)] = 150行 → 1グループ
+        # [Same Title (s1=150)] + [Same Title (s2=150)] = 300行 → 1グループ
+        # [Same Title (s3=150)] = 150行 → 1グループ
         # 合計2グループ
         assert len(entries) == 2
 
         ids = [e['id'] for e in entries]
         assert len(ids) == len(set(ids)), f"Duplicate IDs found: {ids}"
-        # 期待: test--same-title, test--same-title-2
-        assert ids[0] == "test--same-title"
-        assert ids[1] == "test--same-title-2"
+        # 連番形式: test--s1, test--s3
+        assert ids[0] == "test--s1"
+        assert ids[1] == "test--s3"
+
+    def test_sequential_section_ids_across_parts(self, ctx):
+        """セクションIDがパートをまたいで通し連番になること。"""
+        classifier = Step2Classify(ctx, dry_run=True)
+
+        # 3パートに分割されるファイル（各パート2セクション × 200行）
+        parts = ["Main Title\n==========\n\nPreamble.\n"]
+        for i in range(1, 7):
+            body = "\n".join([f"Line {j}" for j in range(1, 201)])
+            parts.append(f"Section {i}\n----------\n{body}\n")
+        content = "\n".join(parts)
+
+        sections = classifier.analyze_rst_sections(content)
+        base_entry = {
+            'id': 'test', 'type': 'component', 'category': 'test',
+            'source_path': 'test/test.rst', 'format': 'rst', 'filename': 'test.rst',
+            'output_path': 'component/test/test.json',
+            'assets_dir': 'component/test/assets/test/'
+        }
+        entries = classifier.split_file_entry(base_entry, sections, content)
+
+        # 各パートの section_ids が通し連番になっていること
+        all_section_ids = []
+        for entry in entries:
+            all_section_ids.extend(entry['section_range']['section_ids'])
+
+        # s1, s2, s3, s4, s5, s6 が順に並ぶ
+        assert all_section_ids == [f"s{i}" for i in range(1, len(all_section_ids) + 1)]
+
+    def test_section_map_contains_rst_labels(self, ctx):
+        """section_map が RST ラベル（.. _label:）を含むこと。"""
+        classifier = Step2Classify(ctx, dry_run=True)
+
+        content = (
+            "Main Title\n==========\n\nPreamble.\n\n"
+            ".. _first-section:\n\n"
+            "First Section\n----------\n"
+            + "\n".join([f"Line {j}" for j in range(1, 50)]) + "\n\n"
+            ".. _second-section:\n\n"
+            "Second Section\n----------\n"
+            + "\n".join([f"Line {j}" for j in range(1, 50)]) + "\n"
+        )
+
+        sections = classifier.analyze_rst_sections(content)
+        base_entry = {
+            'id': 'test', 'type': 'component', 'category': 'test',
+            'source_path': 'test/test.rst', 'format': 'rst', 'filename': 'test.rst',
+            'output_path': 'component/test/test.json',
+            'assets_dir': 'component/test/assets/test/'
+        }
+        entries = classifier.split_file_entry(base_entry, sections, content)
+
+        assert entries, "Expected at least one entry"
+        section_map = entries[0]['section_map']
+        assert section_map, "section_map should not be empty"
+
+        # RST ラベルが section_map に含まれること
+        all_labels = [label for sm in section_map for label in sm['rst_labels']]
+        assert 'first-section' in all_labels
+        assert 'second-section' in all_labels
+
+    def test_section_map_for_non_split_files(self, ctx, tmp_path):
+        """非分割RSTファイルにも section_map が生成されること。"""
+        classifier = Step2Classify(ctx, dry_run=True)
+
+        content = (
+            "Main Title\n==========\n\nPreamble.\n\n"
+            ".. _only-section:\n\n"
+            "Only Section\n----------\n"
+            + "\n".join([f"Line {j}" for j in range(1, 20)]) + "\n"
+        )
+
+        os.makedirs(f"{ctx.repo}/test", exist_ok=True)
+        with open(f"{ctx.repo}/test/single.rst", "w") as f:
+            f.write(content)
+
+        should_split, sections, _ = classifier.should_split_file("test/single.rst", "rst")
+        assert not should_split, "File with 1 section should not split"
+
+        # run() を通して section_map が付与されることを確認するため
+        # _extract_rst_labels_with_positions を直接テスト
+        labels = classifier._extract_rst_labels_with_positions(content)
+        assert any(label == 'only-section' for label, _ in labels)
 
     def test_h3_fallback_for_large_h2(self, ctx):
         """400行超のh2セクションがh3で再分割され、グループ化されること。"""

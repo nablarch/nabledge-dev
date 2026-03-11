@@ -46,7 +46,7 @@ class TestStructureValidation:
     def test_s3_index_without_section(self, ctx):
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
-        del k["sections"]["overview"]
+        del k["sections"]["s1"]
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
@@ -61,11 +61,12 @@ class TestStructureValidation:
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S4" in e for e in errors)
 
-    def test_s5_non_kebab(self, ctx):
+    def test_s5_non_sequential(self, ctx):
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
-        k["index"].append({"id": "badCamel", "title": "Bad", "hints": ["x"]})
-        k["sections"]["badCamel"] = "content"
+        # kebab-caseだが連番形式（s{N}）ではないID
+        k["index"].append({"id": "not-sequential", "title": "Bad", "hints": ["x"]})
+        k["sections"]["not-sequential"] = "content"
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
@@ -85,7 +86,7 @@ class TestStructureValidation:
         """S7 (empty section) must NOT be checked by Phase C."""
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
-        k["sections"]["overview"] = ""
+        k["sections"]["s1"] = ""
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
@@ -95,8 +96,8 @@ class TestStructureValidation:
         """S9 (section count) must NOT be checked by Phase C."""
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
-        del k["sections"]["module-list"]
-        k["index"] = [e for e in k["index"] if e["id"] != "module-list"]
+        del k["sections"]["s2"]
+        k["index"] = [e for e in k["index"] if e["id"] != "s2"]
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
@@ -106,7 +107,7 @@ class TestStructureValidation:
         """S13 (short section) must NOT be checked by Phase C."""
         from phase_c_structure_check import PhaseCStructureCheck
         k = load_fixture("sample_knowledge.json")
-        k["sections"]["overview"] = "短い"
+        k["sections"]["s1"] = "短い"
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
         errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
