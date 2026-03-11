@@ -19,7 +19,7 @@ import nablarch.test.core.messaging.MessagingRequestTestSupport;
 public class M21AA03Test extends MessagingRequestTestSupport {
 ```
 
-[./batch](testing-framework-batch.md)
+[./batch](testing-framework-batch-02_RequestUnitTest.json)
 
 <details>
 <summary>keywords</summary>

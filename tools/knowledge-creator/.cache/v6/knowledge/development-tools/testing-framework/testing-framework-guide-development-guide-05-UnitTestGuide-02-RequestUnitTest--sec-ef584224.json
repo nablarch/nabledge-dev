@@ -7,7 +7,7 @@
   ],
   "index": [
     {
-      "id": "test-method-writing",
+      "id": "s1",
       "title": "テストメソッドの書き方（スーパクラス）",
       "hints": [
         "BasicHttpRequestTestTemplate",
@@ -21,7 +21,7 @@
       ]
     },
     {
-      "id": "test-method-creation",
+      "id": "s2",
       "title": "テストメソッド作成とスーパクラスメソッド呼び出し",
       "hints": [
         "execute",
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "id": "download-file-test",
+      "id": "s3",
       "title": "ダウンロードファイルのテスト",
       "hints": [
         "FileSupport",
@@ -43,7 +43,7 @@
       ]
     },
     {
-      "id": "custom-processing",
+      "id": "s4",
       "title": "固有の処理を追加する場合",
       "hints": [
         "BasicAdvice",
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "id": "test-launch",
+      "id": "s5",
       "title": "テスト起動方法",
       "hints": [
         "JUnit",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "id": "test-result-verification",
+      "id": "s6",
       "title": "テスト結果確認（目視）",
       "hints": [
         "HTMLダンプ",
@@ -91,11 +91,11 @@
     }
   ],
   "sections": {
-    "test-method-writing": "**クラス**: `BasicHttpRequestTestTemplate`（継承必須）\n\n**スーパクラスの実行フロー**: このクラスでは、準備したテストデータを元に以下の手順でリクエスト単体テストを実行する:\n\n1. データシートからテストケースリスト（`testShots` LIST_MAP）を取得\n2. 取得したテストケース分、以下を繰り返し実行:\n   - データベース初期化\n   - ExecutionContext、HTTPリクエストを生成\n   - 業務テストコード用拡張ポイント呼出（`beforeExecuteRequest` メソッド）\n   - トークンが必要な場合、トークンを設定\n   - テスト対象のリクエスト実行\n   - 実行結果の検証（HTTPステータスコードおよびメッセージID、HTTPレスポンス値（リクエストスコープ値）、検索結果、テーブル更新結果）\n   - 業務テストコード用拡張ポイント呼出（`afterExecuteRequest` メソッド）\n\n**必須オーバーライドメソッド**: `getBaseUri()` — URIの共通部分を返す\n\n```java\npublic class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {\n    @Override\n    protected String getBaseUri() {\n        return \"/action/management/user/UserSearchAction/\";\n    }\n}\n```",
-    "test-method-creation": "**テストメソッドの作成**: 準備したテストシートに対応する `@Test` メソッドを作成する。\n\n```java\n@Test\npublic void testMenus00101() {\n}\n```\n\n**スーパクラスメソッドの呼び出し**: テストメソッド内でスーパクラスの以下のいずれかを呼び出す:\n\n- `void execute()` — 通常の場合に使用\n- `void execute(Advice advice)` — シート固有の準備処理・結果確認処理が必要な場合に使用\n\n```java\n@Test\npublic void testUsers00101Normal() {\n    execute();\n}\n```\n\n固有の処理を挿し込む場合は `execute(Advice advice)` を使用する。詳細は「固有の処理を追加する場合」を参照。",
-    "download-file-test": "ダウンロードファイルをテストする場合は、:ref:`batch_request_test` と同じ方法でExcelファイルに期待値を記載する。`FileSupport#assertFile()` でアサートを行う。\n\n**ダンプファイル命名規則**: `{Excelシート名}_{テストケース名}_{ダウンロードされたファイル名}`\n\nダウンロード処理の場合、ダウンロードされたファイルがダンプされる。ダンプ出力結果が格納されるディレクトリの詳細は :ref:`html_dump_dir` を参照。\n\n```java\nprivate FileSupport fileSupport = new FileSupport(getClass());\n\n@Test\npublic void testRW11AC0104Download() {\n    execute(new BasicAdvice() {\n        @Override\n        public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n            String msgOnFail = \"ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。\";\n            fileSupport.assertFile(msgOnFail, \"testRW11AC0104Download\");\n        }\n    });\n}\n```",
-    "custom-processing": "`execute(Advice advice)` を使用してリクエスト送信前後に固有の処理を挿し込む。`BasicAdvice` の `beforeExecute`/`afterExecute` をオーバーライドする。\n\n> **補足**: 両方のメソッドをオーバーライドする必要はない。必要なものだけオーバーライドすること。処理が長い場合やテストメソッド間で共通する処理はプライベートメソッドに切り出すこと。\n\n```java\nexecute(new BasicAdvice() {\n    @Override\n    public void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 準備処理\n    }\n    @Override\n    public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 結果確認処理\n    }\n});\n```\n\n**TestCaseInfo から取得できる値**:\n- `getTestCaseName()`: 比較失敗時のメッセージ\n- `getSheetName()`: シート名\n- `getTestCaseNo()`: テストケース番号\n- `getHttpRequest()`: テスト実行後の HttpRequest\n\n**リクエストスコープ値の検証API**:\n- `assertSqlResultSetEquals(message, sheetName, expectedId, actual)`: SqlResultSet の検証\n- `assertSqlRowEquals(message, sheetName, expectedId, actual)`: SqlRow（1件）の検証\n- `assertEntity(sheetName, expectedId, actual)`: エンティティ/Formの検証。期待値の書式は :ref:`entityUnitTest_SetterGetterCase` と同様（setterの欄は不要）\n- `assertListMapEquals(expected, actual)`: `List<Map<String, String>>` の検証\n\nExcelからデータを取得する場合: `getListMap(sheetName, dataId)` で `List<Map<String, String>>` を取得。詳細: :ref:`how_to_get_data_from_excel`\n\nFormにSqlResultSet/SqlRow以外が格納されている場合は `assertEntity()` を使用する。FormプロパティのFormを検証する場合は、そのFormを取得して `assertEntity()` で検証する。\n\nリクエストパラメータを検証する場合（:ref:`tag-window_scope` の値リセット確認など）は `testCaseInfo.getHttpRequest()` でテスト後の HttpRequest を取得して検証する。",
-    "test-launch": "通常のJUnitテストと同じように実行する（クラス単体テストと同様）。",
-    "test-result-verification": "１リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開いて目視確認する。\n\n> **補足**: 自動テストフレームワークが :doc:`../../08_TestTools/03_HtmlCheckTool/index` を用いてHTMLファイルを自動チェックする。HTMLファイル内に違反があった場合は違反内容に応じた例外が発生し、テストケースが失敗となる。\n\n**HTMLダンプ出力先**: プロジェクトのルートディレクトリ配下の `tmp/html_dump/` ディレクトリ。詳細: :ref:`dump-dir-label`\n\n**ダンプファイル名**: `testShots` の `description` 欄の記述が使用される。\n\n![HTMLダンプ出力ディレクトリ](assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--sec-ef584224/htmlDumpDir.png)"
+    "s1": "**クラス**: `BasicHttpRequestTestTemplate`（継承必須）\n\n**スーパクラスの実行フロー**: このクラスでは、準備したテストデータを元に以下の手順でリクエスト単体テストを実行する:\n\n1. データシートからテストケースリスト（`testShots` LIST_MAP）を取得\n2. 取得したテストケース分、以下を繰り返し実行:\n   - データベース初期化\n   - ExecutionContext、HTTPリクエストを生成\n   - 業務テストコード用拡張ポイント呼出（`beforeExecuteRequest` メソッド）\n   - トークンが必要な場合、トークンを設定\n   - テスト対象のリクエスト実行\n   - 実行結果の検証（HTTPステータスコードおよびメッセージID、HTTPレスポンス値（リクエストスコープ値）、検索結果、テーブル更新結果）\n   - 業務テストコード用拡張ポイント呼出（`afterExecuteRequest` メソッド）\n\n**必須オーバーライドメソッド**: `getBaseUri()` — URIの共通部分を返す\n\n```java\npublic class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {\n    @Override\n    protected String getBaseUri() {\n        return \"/action/management/user/UserSearchAction/\";\n    }\n}\n```",
+    "s2": "**テストメソッドの作成**: 準備したテストシートに対応する `@Test` メソッドを作成する。\n\n```java\n@Test\npublic void testMenus00101() {\n}\n```\n\n**スーパクラスメソッドの呼び出し**: テストメソッド内でスーパクラスの以下のいずれかを呼び出す:\n\n- `void execute()` — 通常の場合に使用\n- `void execute(Advice advice)` — シート固有の準備処理・結果確認処理が必要な場合に使用\n\n```java\n@Test\npublic void testUsers00101Normal() {\n    execute();\n}\n```\n\n固有の処理を挿し込む場合は `execute(Advice advice)` を使用する。詳細は「固有の処理を追加する場合」を参照。",
+    "s3": "ダウンロードファイルをテストする場合は、:ref:`batch_request_test` と同じ方法でExcelファイルに期待値を記載する。`FileSupport#assertFile()` でアサートを行う。\n\n**ダンプファイル命名規則**: `{Excelシート名}_{テストケース名}_{ダウンロードされたファイル名}`\n\nダウンロード処理の場合、ダウンロードされたファイルがダンプされる。ダンプ出力結果が格納されるディレクトリの詳細は :ref:`html_dump_dir` を参照。\n\n```java\nprivate FileSupport fileSupport = new FileSupport(getClass());\n\n@Test\npublic void testRW11AC0104Download() {\n    execute(new BasicAdvice() {\n        @Override\n        public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n            String msgOnFail = \"ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。\";\n            fileSupport.assertFile(msgOnFail, \"testRW11AC0104Download\");\n        }\n    });\n}\n```",
+    "s4": "`execute(Advice advice)` を使用してリクエスト送信前後に固有の処理を挿し込む。`BasicAdvice` の `beforeExecute`/`afterExecute` をオーバーライドする。\n\n> **補足**: 両方のメソッドをオーバーライドする必要はない。必要なものだけオーバーライドすること。処理が長い場合やテストメソッド間で共通する処理はプライベートメソッドに切り出すこと。\n\n```java\nexecute(new BasicAdvice() {\n    @Override\n    public void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 準備処理\n    }\n    @Override\n    public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 結果確認処理\n    }\n});\n```\n\n**TestCaseInfo から取得できる値**:\n- `getTestCaseName()`: 比較失敗時のメッセージ\n- `getSheetName()`: シート名\n- `getTestCaseNo()`: テストケース番号\n- `getHttpRequest()`: テスト実行後の HttpRequest\n\n**リクエストスコープ値の検証API**:\n- `assertSqlResultSetEquals(message, sheetName, expectedId, actual)`: SqlResultSet の検証\n- `assertSqlRowEquals(message, sheetName, expectedId, actual)`: SqlRow（1件）の検証\n- `assertEntity(sheetName, expectedId, actual)`: エンティティ/Formの検証。期待値の書式は :ref:`entityUnitTest_SetterGetterCase` と同様（setterの欄は不要）\n- `assertListMapEquals(expected, actual)`: `List<Map<String, String>>` の検証\n\nExcelからデータを取得する場合: `getListMap(sheetName, dataId)` で `List<Map<String, String>>` を取得。詳細: :ref:`how_to_get_data_from_excel`\n\nFormにSqlResultSet/SqlRow以外が格納されている場合は `assertEntity()` を使用する。FormプロパティのFormを検証する場合は、そのFormを取得して `assertEntity()` で検証する。\n\nリクエストパラメータを検証する場合（:ref:`tag-window_scope` の値リセット確認など）は `testCaseInfo.getHttpRequest()` でテスト後の HttpRequest を取得して検証する。",
+    "s5": "通常のJUnitテストと同じように実行する（クラス単体テストと同様）。",
+    "s6": "１リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開いて目視確認する。\n\n> **補足**: 自動テストフレームワークが :doc:`../../08_TestTools/03_HtmlCheckTool/index` を用いてHTMLファイルを自動チェックする。HTMLファイル内に違反があった場合は違反内容に応じた例外が発生し、テストケースが失敗となる。\n\n**HTMLダンプ出力先**: プロジェクトのルートディレクトリ配下の `tmp/html_dump/` ディレクトリ。詳細: :ref:`dump-dir-label`\n\n**ダンプファイル名**: `testShots` の `description` 欄の記述が使用される。\n\n![HTMLダンプ出力ディレクトリ](assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--sec-ef584224/htmlDumpDir.png)"
   }
 }

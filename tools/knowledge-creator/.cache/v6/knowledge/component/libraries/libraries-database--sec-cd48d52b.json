@@ -50,7 +50,7 @@
   ],
   "index": [
     {
-      "id": "overview",
+      "id": "s1",
       "title": "機能概要",
       "hints": [
         "Dialect",
@@ -72,7 +72,7 @@
       ]
     },
     {
-      "id": "module-list",
+      "id": "s2",
       "title": "モジュール一覧",
       "hints": [
         "nablarch-core-jdbc",
@@ -82,7 +82,7 @@
       ]
     },
     {
-      "id": "connection-setup",
+      "id": "s3",
       "title": "データベースに対する接続設定",
       "hints": [
         "BasicDbConnectionFactoryForDataSource",
@@ -97,7 +97,7 @@
       ]
     },
     {
-      "id": "use-dialect",
+      "id": "s4",
       "title": "データベース製品に対応したダイアレクトを使用する",
       "hints": [
         "DefaultDialect",
@@ -110,7 +110,7 @@
       ]
     },
     {
-      "id": "sql-file-management",
+      "id": "s5",
       "title": "SQLをファイルで管理する",
       "hints": [
         "BasicStatementFactory",
@@ -126,7 +126,7 @@
       ]
     },
     {
-      "id": "execute-by-sqlid",
+      "id": "s6",
       "title": "SQLIDを指定してSQLを実行する",
       "hints": [
         "DbConnectionContext",
@@ -142,7 +142,7 @@
       ]
     },
     {
-      "id": "stored-procedure",
+      "id": "s7",
       "title": "ストアードプロシージャを実行する",
       "hints": [
         "SqlCStatement",
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "id": "paging",
+      "id": "s8",
       "title": "検索範囲を指定してSQLを実行する",
       "hints": [
         "SelectOption",
@@ -171,13 +171,13 @@
     }
   ],
   "sections": {
-    "overview": "> **補足**: SQLの実行には :ref:`universal_dao` を推奨。ただし :ref:`universal_dao` 内部でこの機能のAPIを使用するため、この機能の設定は必須。\n\n> **重要**: JDBC 3.0に依存。使用するJDBCドライバはJDBC 3.0以上を実装している必要がある。\n\n### データベースの方言を意識することなく使用できる\n\n使用するデータベース製品に対応した :java:extdoc:`Dialect <nablarch.core.db.dialect.Dialect>` を設定することで、製品ごとの方言を意識せずにアプリケーションを実装できる。\n\n:java:extdoc:`Dialect <nablarch.core.db.dialect.Dialect>` が提供するメソッド:\n\n- :java:extdoc:`supportsIdentity() <nablarch.core.db.dialect.Dialect.supportsIdentity()>`: identityカラムを使えるか否か\n- :java:extdoc:`supportsIdentityWithBatchInsert() <nablarch.core.db.dialect.Dialect.supportsIdentityWithBatchInsert()>`: identity(自動採番)カラムを持つテーブルへのbatch insertが行えるか否か\n- :java:extdoc:`supportsSequence() <nablarch.core.db.dialect.Dialect.supportsSequence()>`: シーケンスオブジェクトを使えるか否か\n- :java:extdoc:`supportsOffset() <nablarch.core.db.dialect.Dialect.supportsOffset()>`: 検索クエリーの範囲指定でoffset（またはoffsetと同等の機能）を使えるか否か\n- :java:extdoc:`isDuplicateException(java.sql.SQLException) <nablarch.core.db.dialect.Dialect.isDuplicateException(java.sql.SQLException)>`: 一意制約違反を表す :java:extdoc:`SQLException <java.sql.SQLException>` か否かを判定\n- :java:extdoc:`isTransactionTimeoutError(java.sql.SQLException) <nablarch.core.db.dialect.Dialect.isTransactionTimeoutError(java.sql.SQLException)>`: トランザクションタイムアウト対象の :java:extdoc:`SQLException <java.sql.SQLException>` か否かを判定\n- :java:extdoc:`buildSequenceGeneratorSql(java.lang.String) <nablarch.core.db.dialect.Dialect.buildSequenceGeneratorSql(java.lang.String)>`: シーケンスオブジェクトから次の値を取得するSQL文を生成\n- :java:extdoc:`getResultSetConvertor() <nablarch.core.db.dialect.Dialect.getResultSetConvertor()>`: :java:extdoc:`ResultSet <java.sql.ResultSet>` から値を取得する :java:extdoc:`ResultSetConvertor <nablarch.core.db.statement.ResultSetConvertor>` を返す\n- :java:extdoc:`convertPaginationSql(java.lang.String,nablarch.core.db.statement.SelectOption) <nablarch.core.db.dialect.Dialect.convertPaginationSql(java.lang.String,nablarch.core.db.statement.SelectOption)>`: 検索クエリーを範囲指定（ページング用）SQLに変換\n- :java:extdoc:`convertCountSql(java.lang.String) <nablarch.core.db.dialect.Dialect.convertCountSql(java.lang.String)>`: 検索クエリーを件数取得SQLに変換\n- :java:extdoc:`convertCountSql(java.lang.String,java.lang.Object,nablarch.core.db.statement.StatementFactory) <nablarch.core.db.dialect.Dialect.convertCountSql(java.lang.String,java.lang.Object,nablarch.core.db.statement.StatementFactory)>`: SQLIDを件数取得SQLに変換\n- :java:extdoc:`getPingSql() <nablarch.core.db.dialect.Dialect.getPingSql()>`: :java:extdoc:`Connection <java.sql.Connection>` がDBに接続されているかチェックするSQLを返す\n\n### SQLはロジックではなくSQLファイルに記述する\n\nSQLはSQLファイルに定義し、原則ロジック内には記述しない。必ず `PreparedStatement` を使用するため、SQLインジェクションの脆弱性が排除できる。\n\n> **補足**: どうしてもSQLファイルに定義できない場合は、SQLを直接指定して実行するAPIも提供している。ただし、安易に使用するとSQLインジェクションの脆弱性が埋め込まれる可能性があるため注意すること。SQLインジェクションの脆弱性がないことをテストやレビューで担保することが前提となる。\n\n### BeanのプロパティをSQLのバインド変数に埋め込む\n\nBeanのプロパティに設定した値を :java:extdoc:`java.sql.PreparedStatement` のINパラメータに自動的にバインドする。`PreparedStatement`の値設定用メソッドを複数回呼び出す必要がなくなり、INパラメータが増減した際のインデクス修正なども不要となる。\n\n### like検索の自動エスケープ\n\nlike検索に対するescape句の挿入とワイルドカード文字のエスケープ処理を自動で行う。\n\n### SQL文の動的構築\n\nBeanオブジェクトの状態を元に、実行するSQL文を動的に組み立てる。条件やin句の動的な構築が行える。\n\n### SQLクエリ結果のキャッシュ\n\n実行したSQLと外部から取得した条件（バインド変数に設定した値）が等価である場合に、DBにアクセスせずキャッシュから検索結果を返す。",
-    "module-list": "**モジュール**:\n\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-jdbc</artifactId>\n</dependency>\n```",
-    "connection-setup": "データベース接続設定は以下の2通りから選択:\n\n1. :java:extdoc:`javax.sql.DataSource` を使ったデータベース接続: **クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource`\n2. アプリケーションサーバのデータソース(JNDI)を使ったデータベース接続: **クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForJndi`\n\n```xml\n<!-- DataSourceからの接続 -->\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\">\n  <!-- 設定値の詳細はJavadocを参照すること -->\n</component>\n\n<!-- JNDIからの接続 -->\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForJndi\">\n  <!-- 設定値の詳細はJavadocを参照すること -->\n</component>\n```\n\n上記以外の接続方法を使用したい場合（例: OSSのコネクションプーリングライブラリ）は :ref:`database-add_connection_factory` を参照し実装を追加すること。\n\n> **補足**: 上記クラスを直接使用することは基本的にない。データベースアクセスを必要とする場合には :ref:`database_connection_management_handler` を使用すること。データベースを使用する場合はトランザクション管理も必要。トランザクション管理については :ref:`transaction` を参照。",
-    "use-dialect": "データベース製品に対応したダイアレクトをコンポーネント設定ファイルに設定することで、ダイアレクト機能が有効になる。\n\n> **補足**: 設定しなかった場合は :java:extdoc:`DefaultDialect <nablarch.core.db.dialect.DefaultDialect>` が使用される。`DefaultDialect`は原則全ての機能が無効化されるため、必ずデータベース製品に対応したダイアレクトを設定すること。使用するDBに対応するダイアレクトが存在しない場合や新機能を使いたい場合は :ref:`database-add_dialect` を参照し新しいダイアレクトを作成すること。\n\n:java:extdoc:`BasicDbConnectionFactoryForDataSource <nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource>` および :java:extdoc:`BasicDbConnectionFactoryForJndi <nablarch.core.db.connection.BasicDbConnectionFactoryForJndi>` ともに :java:extdoc:`dialect <nablarch.core.db.connection.ConnectionFactorySupport.setDialect(nablarch.core.db.dialect.Dialect)>` プロパティにダイアレクトを設定する。\n\n設定例（Oracleデータベースの場合）:\n\n```xml\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\">\n  <property name=\"dialect\">\n    <component class=\"nablarch.core.db.dialect.OracleDialect\" />\n  </property>\n</component>\n```",
-    "sql-file-management": "SQLファイルの作成ルール:\n\n- クラスパス配下に作成する\n- 1つのSQLファイルに複数のSQLを記述できるが、SQLIDはファイル内で一意とする\n- SQLIDとSQLIDとの間には空行を挿入する（スペースが存在する行は空行とはみなさない）\n- SQLIDとSQLとの間には `=` を入れる\n- コメントは `--` で記述する（ブロックコメントはサポートしない）\n- SQLは改行やスペース(tab)などで整形してもよい\n\n> **重要**: SQLを複数機能で流用せずに、必ず機能毎に作成すること。複数機能で流用した場合、意図しない使われ方やSQLの変更により思わぬ不具合が発生する。例: 複数機能で使用していたSQL文に排他ロック用の `for update` が追加された場合、排他ロックが不要な機能でもロックが取得され処理遅延の原因となる。\n\nSQLファイル例:\n\n```sql\n-- ＸＸＸＸＸ取得SQL\n-- SQL_ID:GET_XXXX_INFO\nGET_XXXX_INFO =\nselect\n   col1,\n   col2\nfrom\n   test_table\nwhere\n   col1 = :col1\n\n\n-- ＸＸＸＸＸ更新SQL\n-- SQL_ID:UPDATE_XXXX\nupdate_xxxx =\nupdate\n    test_table\nset\n    col2 = :col2\nwhere\n    col1 = :col1\n```\n\n### SQLファイルからSQLをロードするための設定\n\n:java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` の `sqlLoader` プロパティに :java:extdoc:`BasicSqlLoader <nablarch.core.db.statement.BasicSqlLoader>` を設定する。省略した場合のデフォルト値: ファイルエンコーディング=`utf-8`、拡張子=`sql`。\n\nここで定義した `BasicStatementFactory` コンポーネントは、 :ref:`database-connect` で定義したデータベース接続取得コンポーネントに設定する必要がある。\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n  <property name=\"sqlLoader\">\n    <component class=\"nablarch.core.db.statement.BasicSqlLoader\">\n      <property name=\"fileEncoding\" value=\"utf-8\"/>\n      <property name=\"extension\" value=\"sql\"/>\n    </component>\n  </property>\n</component>\n```",
-    "execute-by-sqlid": ":java:extdoc:`DbConnectionContext <nablarch.core.db.connection.DbConnectionContext>` から取得したデータベース接続を使用してSQLを実行する。 :ref:`database_connection_management_handler` でデータベース接続を登録する必要がある。\n\nSQLIDと実行SQLのマッピングルール:\n\n- SQLIDの `#` までがSQLファイル名（クラスパス配下）\n- SQLIDの `#` 以降がSQLファイル内のSQLID\n\n例: SQLIDが `jp.co.tis.sample.action.SampleAction#findUser` の場合、SQLファイルは `jp.co.tis.sample.action.SampleAction.sql`、SQLファイル内のSQLIDは `findUser`。\n\n```java\n// DbConnectionContextからデータベース接続を取得する。\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// SQLIDを元にステートメントを生成する。\nSqlPStatement statement = connection.prepareStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#findUser\");\n\n// 条件を設定する。\nstatement.setLong(1, userId);\n\n// 検索処理を実行する。\nSqlResultSet result = statement.retrieve();\n```",
-    "stored-procedure": "ストアードプロシージャの実行も基本的にはSQLを実行する場合と同じように実装する。\n\n> **重要**: ストアードプロシージャの実行では :ref:`database-bean` はサポートしない。ストアードプロシージャを使用した場合、ロジックがJavaとストアードプロシージャに分散してしまい保守性を著しく低下させるため、原則使用すべきではない。\n\n```java\n// SQLIDを元にストアードプロシージャ実行用のステートメントを生成する。\nSqlCStatement statement = connection.prepareCallBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#execute_sp\");\n\n// IN及びOUTパラメータを設定する。\nstatement.registerOutParameter(1, Types.CHAR);\n\n// 実行する。\nstatement.execute();\n\n// OUTパラメータを取得する。\nString result = statement.getString(1);\n```",
-    "paging": "検索結果の範囲を指定して実行する。\n\n```java\n// DbConnectionContextからデータベース接続を取得する\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// SQLIDと検索範囲を指定してステートメントオブジェクトを生成する。\n// この例では開始位置=11、取得件数=10（11件目から最大10件のレコードを取得）。\nSqlPStatement statement = connection.prepareStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#findUser\", new SelectOption(11, 10));\n\n// 検索処理を実行する\nSqlResultSet result = statement.retrieve();\n```\n\n> **補足**: 検索範囲が指定された場合、検索用のSQLを取得範囲指定のSQLに書き換えてから実行する。取得範囲指定のSQLへの書き換えは :ref:`database-dialect` により行われる。"
+    "s1": "> **補足**: SQLの実行には :ref:`universal_dao` を推奨。ただし :ref:`universal_dao` 内部でこの機能のAPIを使用するため、この機能の設定は必須。\n\n> **重要**: JDBC 3.0に依存。使用するJDBCドライバはJDBC 3.0以上を実装している必要がある。\n\n### データベースの方言を意識することなく使用できる\n\n使用するデータベース製品に対応した :java:extdoc:`Dialect <nablarch.core.db.dialect.Dialect>` を設定することで、製品ごとの方言を意識せずにアプリケーションを実装できる。\n\n:java:extdoc:`Dialect <nablarch.core.db.dialect.Dialect>` が提供するメソッド:\n\n- :java:extdoc:`supportsIdentity() <nablarch.core.db.dialect.Dialect.supportsIdentity()>`: identityカラムを使えるか否か\n- :java:extdoc:`supportsIdentityWithBatchInsert() <nablarch.core.db.dialect.Dialect.supportsIdentityWithBatchInsert()>`: identity(自動採番)カラムを持つテーブルへのbatch insertが行えるか否か\n- :java:extdoc:`supportsSequence() <nablarch.core.db.dialect.Dialect.supportsSequence()>`: シーケンスオブジェクトを使えるか否か\n- :java:extdoc:`supportsOffset() <nablarch.core.db.dialect.Dialect.supportsOffset()>`: 検索クエリーの範囲指定でoffset（またはoffsetと同等の機能）を使えるか否か\n- :java:extdoc:`isDuplicateException(java.sql.SQLException) <nablarch.core.db.dialect.Dialect.isDuplicateException(java.sql.SQLException)>`: 一意制約違反を表す :java:extdoc:`SQLException <java.sql.SQLException>` か否かを判定\n- :java:extdoc:`isTransactionTimeoutError(java.sql.SQLException) <nablarch.core.db.dialect.Dialect.isTransactionTimeoutError(java.sql.SQLException)>`: トランザクションタイムアウト対象の :java:extdoc:`SQLException <java.sql.SQLException>` か否かを判定\n- :java:extdoc:`buildSequenceGeneratorSql(java.lang.String) <nablarch.core.db.dialect.Dialect.buildSequenceGeneratorSql(java.lang.String)>`: シーケンスオブジェクトから次の値を取得するSQL文を生成\n- :java:extdoc:`getResultSetConvertor() <nablarch.core.db.dialect.Dialect.getResultSetConvertor()>`: :java:extdoc:`ResultSet <java.sql.ResultSet>` から値を取得する :java:extdoc:`ResultSetConvertor <nablarch.core.db.statement.ResultSetConvertor>` を返す\n- :java:extdoc:`convertPaginationSql(java.lang.String,nablarch.core.db.statement.SelectOption) <nablarch.core.db.dialect.Dialect.convertPaginationSql(java.lang.String,nablarch.core.db.statement.SelectOption)>`: 検索クエリーを範囲指定（ページング用）SQLに変換\n- :java:extdoc:`convertCountSql(java.lang.String) <nablarch.core.db.dialect.Dialect.convertCountSql(java.lang.String)>`: 検索クエリーを件数取得SQLに変換\n- :java:extdoc:`convertCountSql(java.lang.String,java.lang.Object,nablarch.core.db.statement.StatementFactory) <nablarch.core.db.dialect.Dialect.convertCountSql(java.lang.String,java.lang.Object,nablarch.core.db.statement.StatementFactory)>`: SQLIDを件数取得SQLに変換\n- :java:extdoc:`getPingSql() <nablarch.core.db.dialect.Dialect.getPingSql()>`: :java:extdoc:`Connection <java.sql.Connection>` がDBに接続されているかチェックするSQLを返す\n\n### SQLはロジックではなくSQLファイルに記述する\n\nSQLはSQLファイルに定義し、原則ロジック内には記述しない。必ず `PreparedStatement` を使用するため、SQLインジェクションの脆弱性が排除できる。\n\n> **補足**: どうしてもSQLファイルに定義できない場合は、SQLを直接指定して実行するAPIも提供している。ただし、安易に使用するとSQLインジェクションの脆弱性が埋め込まれる可能性があるため注意すること。SQLインジェクションの脆弱性がないことをテストやレビューで担保することが前提となる。\n\n### BeanのプロパティをSQLのバインド変数に埋め込む\n\nBeanのプロパティに設定した値を :java:extdoc:`java.sql.PreparedStatement` のINパラメータに自動的にバインドする。`PreparedStatement`の値設定用メソッドを複数回呼び出す必要がなくなり、INパラメータが増減した際のインデクス修正なども不要となる。\n\n### like検索の自動エスケープ\n\nlike検索に対するescape句の挿入とワイルドカード文字のエスケープ処理を自動で行う。\n\n### SQL文の動的構築\n\nBeanオブジェクトの状態を元に、実行するSQL文を動的に組み立てる。条件やin句の動的な構築が行える。\n\n### SQLクエリ結果のキャッシュ\n\n実行したSQLと外部から取得した条件（バインド変数に設定した値）が等価である場合に、DBにアクセスせずキャッシュから検索結果を返す。",
+    "s2": "**モジュール**:\n\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-jdbc</artifactId>\n</dependency>\n```",
+    "s3": "データベース接続設定は以下の2通りから選択:\n\n1. :java:extdoc:`javax.sql.DataSource` を使ったデータベース接続: **クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource`\n2. アプリケーションサーバのデータソース(JNDI)を使ったデータベース接続: **クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForJndi`\n\n```xml\n<!-- DataSourceからの接続 -->\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\">\n  <!-- 設定値の詳細はJavadocを参照すること -->\n</component>\n\n<!-- JNDIからの接続 -->\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForJndi\">\n  <!-- 設定値の詳細はJavadocを参照すること -->\n</component>\n```\n\n上記以外の接続方法を使用したい場合（例: OSSのコネクションプーリングライブラリ）は :ref:`database-add_connection_factory` を参照し実装を追加すること。\n\n> **補足**: 上記クラスを直接使用することは基本的にない。データベースアクセスを必要とする場合には :ref:`database_connection_management_handler` を使用すること。データベースを使用する場合はトランザクション管理も必要。トランザクション管理については :ref:`transaction` を参照。",
+    "s4": "データベース製品に対応したダイアレクトをコンポーネント設定ファイルに設定することで、ダイアレクト機能が有効になる。\n\n> **補足**: 設定しなかった場合は :java:extdoc:`DefaultDialect <nablarch.core.db.dialect.DefaultDialect>` が使用される。`DefaultDialect`は原則全ての機能が無効化されるため、必ずデータベース製品に対応したダイアレクトを設定すること。使用するDBに対応するダイアレクトが存在しない場合や新機能を使いたい場合は :ref:`database-add_dialect` を参照し新しいダイアレクトを作成すること。\n\n:java:extdoc:`BasicDbConnectionFactoryForDataSource <nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource>` および :java:extdoc:`BasicDbConnectionFactoryForJndi <nablarch.core.db.connection.BasicDbConnectionFactoryForJndi>` ともに :java:extdoc:`dialect <nablarch.core.db.connection.ConnectionFactorySupport.setDialect(nablarch.core.db.dialect.Dialect)>` プロパティにダイアレクトを設定する。\n\n設定例（Oracleデータベースの場合）:\n\n```xml\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\">\n  <property name=\"dialect\">\n    <component class=\"nablarch.core.db.dialect.OracleDialect\" />\n  </property>\n</component>\n```",
+    "s5": "SQLファイルの作成ルール:\n\n- クラスパス配下に作成する\n- 1つのSQLファイルに複数のSQLを記述できるが、SQLIDはファイル内で一意とする\n- SQLIDとSQLIDとの間には空行を挿入する（スペースが存在する行は空行とはみなさない）\n- SQLIDとSQLとの間には `=` を入れる\n- コメントは `--` で記述する（ブロックコメントはサポートしない）\n- SQLは改行やスペース(tab)などで整形してもよい\n\n> **重要**: SQLを複数機能で流用せずに、必ず機能毎に作成すること。複数機能で流用した場合、意図しない使われ方やSQLの変更により思わぬ不具合が発生する。例: 複数機能で使用していたSQL文に排他ロック用の `for update` が追加された場合、排他ロックが不要な機能でもロックが取得され処理遅延の原因となる。\n\nSQLファイル例:\n\n```sql\n-- ＸＸＸＸＸ取得SQL\n-- SQL_ID:GET_XXXX_INFO\nGET_XXXX_INFO =\nselect\n   col1,\n   col2\nfrom\n   test_table\nwhere\n   col1 = :col1\n\n\n-- ＸＸＸＸＸ更新SQL\n-- SQL_ID:UPDATE_XXXX\nupdate_xxxx =\nupdate\n    test_table\nset\n    col2 = :col2\nwhere\n    col1 = :col1\n```\n\n### SQLファイルからSQLをロードするための設定\n\n:java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` の `sqlLoader` プロパティに :java:extdoc:`BasicSqlLoader <nablarch.core.db.statement.BasicSqlLoader>` を設定する。省略した場合のデフォルト値: ファイルエンコーディング=`utf-8`、拡張子=`sql`。\n\nここで定義した `BasicStatementFactory` コンポーネントは、 :ref:`database-connect` で定義したデータベース接続取得コンポーネントに設定する必要がある。\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n  <property name=\"sqlLoader\">\n    <component class=\"nablarch.core.db.statement.BasicSqlLoader\">\n      <property name=\"fileEncoding\" value=\"utf-8\"/>\n      <property name=\"extension\" value=\"sql\"/>\n    </component>\n  </property>\n</component>\n```",
+    "s6": ":java:extdoc:`DbConnectionContext <nablarch.core.db.connection.DbConnectionContext>` から取得したデータベース接続を使用してSQLを実行する。 :ref:`database_connection_management_handler` でデータベース接続を登録する必要がある。\n\nSQLIDと実行SQLのマッピングルール:\n\n- SQLIDの `#` までがSQLファイル名（クラスパス配下）\n- SQLIDの `#` 以降がSQLファイル内のSQLID\n\n例: SQLIDが `jp.co.tis.sample.action.SampleAction#findUser` の場合、SQLファイルは `jp.co.tis.sample.action.SampleAction.sql`、SQLファイル内のSQLIDは `findUser`。\n\n```java\n// DbConnectionContextからデータベース接続を取得する。\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// SQLIDを元にステートメントを生成する。\nSqlPStatement statement = connection.prepareStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#findUser\");\n\n// 条件を設定する。\nstatement.setLong(1, userId);\n\n// 検索処理を実行する。\nSqlResultSet result = statement.retrieve();\n```",
+    "s7": "ストアードプロシージャの実行も基本的にはSQLを実行する場合と同じように実装する。\n\n> **重要**: ストアードプロシージャの実行では :ref:`database-bean` はサポートしない。ストアードプロシージャを使用した場合、ロジックがJavaとストアードプロシージャに分散してしまい保守性を著しく低下させるため、原則使用すべきではない。\n\n```java\n// SQLIDを元にストアードプロシージャ実行用のステートメントを生成する。\nSqlCStatement statement = connection.prepareCallBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#execute_sp\");\n\n// IN及びOUTパラメータを設定する。\nstatement.registerOutParameter(1, Types.CHAR);\n\n// 実行する。\nstatement.execute();\n\n// OUTパラメータを取得する。\nString result = statement.getString(1);\n```",
+    "s8": "検索結果の範囲を指定して実行する。\n\n```java\n// DbConnectionContextからデータベース接続を取得する\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// SQLIDと検索範囲を指定してステートメントオブジェクトを生成する。\n// この例では開始位置=11、取得件数=10（11件目から最大10件のレコードを取得）。\nSqlPStatement statement = connection.prepareStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#findUser\", new SelectOption(11, 10));\n\n// 検索処理を実行する\nSqlResultSet result = statement.retrieve();\n```\n\n> **補足**: 検索範囲が指定された場合、検索用のSQLを取得範囲指定のSQLに書き換えてから実行する。取得範囲指定のSQLへの書き換えは :ref:`database-dialect` により行われる。"
   }
 }

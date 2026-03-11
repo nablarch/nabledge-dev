@@ -7,7 +7,7 @@
   ],
   "index": [
     {
-      "id": "get-data-from-excel",
+      "id": "s1",
       "title": "Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい",
       "hints": [
         "TestSupport",
@@ -20,7 +20,7 @@
       ]
     },
     {
-      "id": "run-same-test-with-different-data",
+      "id": "s2",
       "title": "同じテストメソッドをテストデータを変えて実行したい",
       "hints": [
         "getListMap",
@@ -31,7 +31,7 @@
       ]
     },
     {
-      "id": "multiple-test-cases-in-one-sheet",
+      "id": "s3",
       "title": "一つのシートに複数テストケースのデータを記載したい",
       "hints": [
         "グループID",
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "id": "fix-system-date",
+      "id": "s4",
       "title": "システム日時を任意の値に固定したい",
       "hints": [
         "FixedSystemTimeProvider",
@@ -56,7 +56,7 @@
       ]
     },
     {
-      "id": "numbering-sequence",
+      "id": "s5",
       "title": "採番をテストしたい",
       "hints": [
         "採番",
@@ -66,7 +66,7 @@
       ]
     },
     {
-      "id": "using-thread-context",
+      "id": "s6",
       "title": "ThreadContextを使用したい",
       "hints": [
         "ThreadContext",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "id": "using-test-data-parser",
+      "id": "s7",
       "title": "TestDataParserを使用したい",
       "hints": [
         "TestDataParser",
@@ -85,7 +85,7 @@
       ]
     },
     {
-      "id": "using-junit-annotation",
+      "id": "s8",
       "title": "JUnitのアノテーションを使用したい",
       "hints": [
         "JUnit",
@@ -96,7 +96,7 @@
       ]
     },
     {
-      "id": "using-transactions",
+      "id": "s9",
       "title": "トランザクションを使用したい",
       "hints": [
         "トランザクション",
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "id": "using-other-class",
+      "id": "s10",
       "title": "その他のクラスを使用したい",
       "hints": [
         "テストサポートクラス",
@@ -116,7 +116,7 @@
       ]
     },
     {
-      "id": "assert-property-from-excel",
+      "id": "s11",
       "title": "Excelのデータを使ってBeanのプロパティをアサートしたい",
       "hints": [
         "assertProperties",
@@ -126,7 +126,7 @@
       ]
     },
     {
-      "id": "tips-test-data",
+      "id": "s12",
       "title": "テストデータに関するヒント",
       "hints": [
         "テストデータ",
@@ -136,7 +136,7 @@
       ]
     },
     {
-      "id": "express-empty-line",
+      "id": "s13",
       "title": "空行を表現したい",
       "hints": [
         "空行",
@@ -146,7 +146,7 @@
       ]
     },
     {
-      "id": "change-master-data",
+      "id": "s14",
       "title": "マスタデータを変更したい",
       "hints": [
         "マスタデータ",
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "id": "change-test-data-dir",
+      "id": "s15",
       "title": "テストデータのディレクトリを変更したい",
       "hints": [
         "テストデータディレクトリ",
@@ -166,7 +166,7 @@
       ]
     },
     {
-      "id": "convert-test-data",
+      "id": "s16",
       "title": "テストデータを変換したい",
       "hints": [
         "テストデータ変換",
@@ -177,21 +177,21 @@
     }
   ],
   "sections": {
-    "get-data-from-excel": "データタイプ`LIST_MAP=<ID>`を使用してExcelファイルからList<Map<String,String>>形式のデータを取得できる。\n\n- データ2行目: MapのKey\n- データ3行目以降: MapのValue\n\n**メソッド**: `TestSupport#getListMap(String sheetName, String id)`, `DbAccessTestSupport#getListMap(String sheetName, String id)`（第1引数: シート名、第2引数: ID）\n\n```java\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nMap<String, String> param = parameters.get(0);\nString empNo = param.get(\"empNo\");\nString expected = param.get(\"expected\");\n```\n\nExcelシート記述形式（`LIST_MAP=parameters`）:\n\n| empNo | expected |\n|---|---|\n| 00001 | 山田太郎 |\n| 00002 | 鈴木一郎 |",
-    "run-same-test-with-different-data": "List-Mapで取得したデータをループしてテストを実行することで、Excelデータを追加するだけでデータバリエーションを増やせる。\n\n```java\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nfor (Map<String, String> param : parameters) {\n    String empNo = param.get(\"empNo\");\n    String expectedDataId = param.get(\"expectedDataId\");\n    SqlResultSet actual = target.selectByPk(empNo);\n    assertSqlResultSetEquals(\"testSelectByPk\", expectedDataId, actual);\n}\n```\n\n> **重要**: 更新系のテストを行う場合、ループ内で`setUpDb`を呼び出すこと。そうしないとテストの成否がデータの順番に依存する。",
-    "multiple-test-cases-in-one-sheet": "グループIDを付与することで、`EXPECTED_TABLE`と`SETUP_TABLE`の複数テストケースのデータを1シートに混在させることができる。\n\n**サポートデータタイプ**: `EXPECTED_TABLE`, `SETUP_TABLE`\n\n書式: `データタイプ[グループID]=テーブル名`\n\n```java\n// グループID \"case_001\" のデータのみ登録\nsetUpDb(\"testUpdate\", \"case_001\");\n// グループID \"case_001\" のデータのみassert\nassertTableEquals(\"データベース更新結果確認\", \"testUpdate\", \"case_001\");\n```\n\nExcel記述例:\n```\nSETUP_TABLE[case_001]=EMPLOYEE_TABLE\nEXPECTED_TABLE[case_001]=EMPLOYEE_TABLE\n\nSETUP_TABLE[case_002]=EMPLOYEE_TABLE\nEXPECTED_TABLE[case_002]=EMPLOYEE_TABLE\n```\n\n> **注意**: 複数グループIDのデータを記述する際は、グループIDごとにまとめて記述すること。まとめて記述しないとデータ読み込みが途中で終了しテストが正しく実行されない。",
-    "fix-system-date": "**クラス**: `nablarch.test.FixedSystemTimeProvider`\n\nコンポーネント設定ファイルの`systemTimeProvider`に`FixedSystemTimeProvider`を指定することで、任意のシステム日時を固定できる。\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| fixedDate | 固定日時文字列。形式: `yyyyMMddHHmmss`（12桁）または `yyyyMMddHHmmssSSS`（15桁） |\n\n```xml\n<component name=\"systemTimeProvider\"\n    class=\"nablarch.test.FixedSystemTimeProvider\">\n  <property name=\"fixedDate\" value=\"20100913123456\" />\n</component>\n```\n\n```java\nSystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject(\"systemTimeProvider\");\nDate now = provider.getDate();\n```",
-    "numbering-sequence": "シーケンス採番のテストでは、採番結果が実行タイミングに依存するため、テスト用に採番値を固定する必要がある。\n\nNablarchテスティングフレームワークでは、採番処理をテスト用の実装に差し替えることで、任意の採番値を返すようにできる。テスト用コンポーネント設定ファイルで、IdGeneratorインタフェースの実装クラスをモック実装に差し替えて使用する。",
-    "using-thread-context": "ThreadContextはリクエストスコープの情報（ユーザID、リクエストIDなど）を保持する。テストでThreadContextの値を設定する場合は、テスト用コンポーネント設定でスレッドコンテキスト変数定義を設定するか、テストコード内で直接`ThreadContext.setObject(String key, Object value)`を使用する。\n\nテスト実行後はThreadContextの値がクリアされることを確認すること。",
-    "using-test-data-parser": "TestDataParserはExcelなどのテストデータファイルを解析するクラス。直接インスタンス化して使用することで、テストデータをプログラムから柔軟に読み取れる。\n\nTestDataParserを直接使用する場合は、データファイルのパスとシート名を指定してデータを取得する。通常はDbAccessTestSupportやTestSupportのメソッド経由で間接的に使用する。",
-    "using-junit-annotation": "NablarchテスティングフレームワークはJUnitの標準アノテーションと組み合わせて使用できる。\n\n- `@Test`: テストメソッドのマーク（標準JUnit）\n- `@Rule` / `@ClassRule`: JUnit Ruleの適用\n- `@Before` / `@After`: テスト前後の処理\n\nDbAccessTestSupportなどの基底クラスはJUnit 4の`TestCase`を継承しているため、JUnit 4のアノテーションが使用可能。",
-    "using-transactions": "テストコードからトランザクションを制御する場合は、SimpleDbTransactionManagerなどのトランザクションマネージャを使用する。\n\nDbAccessTestSupportを継承したテストでは、テストフレームワークが自動的にトランザクション管理を行う。各テストメソッド終了後にロールバックされるため、テスト間でデータが干渉しない。\n\n手動でコミットが必要な場合は、トランザクションマネージャを取得してコミット操作を行う。",
-    "using-other-class": "テスティングフレームワークが提供するその他のユーティリティクラスを使用することで、テスト実装を簡素化できる。\n\nシステムリポジトリからコンポーネントを取得する場合は`SystemRepository.getObject(String name)`を使用する。テスト用のコンポーネント設定ファイルをシステムリポジトリにロードした後、各コンポーネントを取得してテストに使用する。",
-    "assert-property-from-excel": "ExcelファイルのデータをBeanのプロパティ検証に使用する場合、`assertProperties`メソッドが利用できる。\n\nExcelシートにBeanのプロパティ名と期待値を記載し、`assertProperties(String sheetName, String id, Object bean)`を呼び出すことで、Beanの各プロパティ値とExcelの期待値を一括比較できる。\n\nこれにより、多数のプロパティを持つBeanのアサーションを簡潔に記述できる。",
-    "tips-test-data": "テストデータ記述に関するヒント:\n\n- **NULL値**: Excelセルを空欄にするとNULLとして扱われる\n- **空文字**: 空文字を明示的に指定する場合は特殊な記法を使用する\n- **コメント行**: `//`で始まる行はコメントとして無視される\n- **型指定**: 1行目（ヘッダ行の次）に型を指定できる（例: `// CHAR(5)`）\n- **数値**: 数値データはそのまま記載可能",
-    "express-empty-line": "Excelテストデータで空行（改行のみの文字列）を表現する場合、通常の空セルはNULLとして扱われるため区別が必要。\n\n空文字（長さ0の文字列）を表現するには、テスティングフレームワークが定義する特殊な記法（空文字リテラル）を使用する。具体的な記法はフレームワークのバージョンに依存するため、公式ドキュメントを確認すること。",
-    "change-master-data": "テスト実行前にマスタデータを投入・変更する場合は、`SETUP_TABLE`データタイプを使用してExcelシートにマスタデータを定義する。\n\n```\nSETUP_TABLE=CODE_MASTER\n```\n\nシステム全体で共有するマスタデータはテストクラスの`setUpClass`相当の処理で投入し、テスト個別のマスタデータは各テストメソッドの`setUpDb`で投入する。",
-    "change-test-data-dir": "テストデータファイルのデフォルト配置ディレクトリを変更する場合は、コンポーネント設定ファイルでテストサポートクラスの`basePath`プロパティを設定する。\n\nデフォルトではテストクラスと同一パッケージのリソースディレクトリにExcelファイルを配置するが、プロジェクト構成に合わせてディレクトリを変更できる。",
-    "convert-test-data": "テストデータの型変換が必要な場合は、TestDataConverterインタフェースを実装したクラスを使用する。\n\nExcelから読み取った文字列データをJavaの特定の型（Date、BigDecimalなど）に変換する際に使用する。カスタムコンバータを実装することで、プロジェクト固有の型変換ルールを適用できる。"
+    "s1": "データタイプ`LIST_MAP=<ID>`を使用してExcelファイルからList<Map<String,String>>形式のデータを取得できる。\n\n- データ2行目: MapのKey\n- データ3行目以降: MapのValue\n\n**メソッド**: `TestSupport#getListMap(String sheetName, String id)`, `DbAccessTestSupport#getListMap(String sheetName, String id)`（第1引数: シート名、第2引数: ID）\n\n```java\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nMap<String, String> param = parameters.get(0);\nString empNo = param.get(\"empNo\");\nString expected = param.get(\"expected\");\n```\n\nExcelシート記述形式（`LIST_MAP=parameters`）:\n\n| empNo | expected |\n|---|---|\n| 00001 | 山田太郎 |\n| 00002 | 鈴木一郎 |",
+    "s2": "List-Mapで取得したデータをループしてテストを実行することで、Excelデータを追加するだけでデータバリエーションを増やせる。\n\n```java\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nfor (Map<String, String> param : parameters) {\n    String empNo = param.get(\"empNo\");\n    String expectedDataId = param.get(\"expectedDataId\");\n    SqlResultSet actual = target.selectByPk(empNo);\n    assertSqlResultSetEquals(\"testSelectByPk\", expectedDataId, actual);\n}\n```\n\n> **重要**: 更新系のテストを行う場合、ループ内で`setUpDb`を呼び出すこと。そうしないとテストの成否がデータの順番に依存する。",
+    "s3": "グループIDを付与することで、`EXPECTED_TABLE`と`SETUP_TABLE`の複数テストケースのデータを1シートに混在させることができる。\n\n**サポートデータタイプ**: `EXPECTED_TABLE`, `SETUP_TABLE`\n\n書式: `データタイプ[グループID]=テーブル名`\n\n```java\n// グループID \"case_001\" のデータのみ登録\nsetUpDb(\"testUpdate\", \"case_001\");\n// グループID \"case_001\" のデータのみassert\nassertTableEquals(\"データベース更新結果確認\", \"testUpdate\", \"case_001\");\n```\n\nExcel記述例:\n```\nSETUP_TABLE[case_001]=EMPLOYEE_TABLE\nEXPECTED_TABLE[case_001]=EMPLOYEE_TABLE\n\nSETUP_TABLE[case_002]=EMPLOYEE_TABLE\nEXPECTED_TABLE[case_002]=EMPLOYEE_TABLE\n```\n\n> **注意**: 複数グループIDのデータを記述する際は、グループIDごとにまとめて記述すること。まとめて記述しないとデータ読み込みが途中で終了しテストが正しく実行されない。",
+    "s4": "**クラス**: `nablarch.test.FixedSystemTimeProvider`\n\nコンポーネント設定ファイルの`systemTimeProvider`に`FixedSystemTimeProvider`を指定することで、任意のシステム日時を固定できる。\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| fixedDate | 固定日時文字列。形式: `yyyyMMddHHmmss`（12桁）または `yyyyMMddHHmmssSSS`（15桁） |\n\n```xml\n<component name=\"systemTimeProvider\"\n    class=\"nablarch.test.FixedSystemTimeProvider\">\n  <property name=\"fixedDate\" value=\"20100913123456\" />\n</component>\n```\n\n```java\nSystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject(\"systemTimeProvider\");\nDate now = provider.getDate();\n```",
+    "s5": "シーケンス採番のテストでは、採番結果が実行タイミングに依存するため、テスト用に採番値を固定する必要がある。\n\nNablarchテスティングフレームワークでは、採番処理をテスト用の実装に差し替えることで、任意の採番値を返すようにできる。テスト用コンポーネント設定ファイルで、IdGeneratorインタフェースの実装クラスをモック実装に差し替えて使用する。",
+    "s6": "ThreadContextはリクエストスコープの情報（ユーザID、リクエストIDなど）を保持する。テストでThreadContextの値を設定する場合は、テスト用コンポーネント設定でスレッドコンテキスト変数定義を設定するか、テストコード内で直接`ThreadContext.setObject(String key, Object value)`を使用する。\n\nテスト実行後はThreadContextの値がクリアされることを確認すること。",
+    "s7": "TestDataParserはExcelなどのテストデータファイルを解析するクラス。直接インスタンス化して使用することで、テストデータをプログラムから柔軟に読み取れる。\n\nTestDataParserを直接使用する場合は、データファイルのパスとシート名を指定してデータを取得する。通常はDbAccessTestSupportやTestSupportのメソッド経由で間接的に使用する。",
+    "s8": "NablarchテスティングフレームワークはJUnitの標準アノテーションと組み合わせて使用できる。\n\n- `@Test`: テストメソッドのマーク（標準JUnit）\n- `@Rule` / `@ClassRule`: JUnit Ruleの適用\n- `@Before` / `@After`: テスト前後の処理\n\nDbAccessTestSupportなどの基底クラスはJUnit 4の`TestCase`を継承しているため、JUnit 4のアノテーションが使用可能。",
+    "s9": "テストコードからトランザクションを制御する場合は、SimpleDbTransactionManagerなどのトランザクションマネージャを使用する。\n\nDbAccessTestSupportを継承したテストでは、テストフレームワークが自動的にトランザクション管理を行う。各テストメソッド終了後にロールバックされるため、テスト間でデータが干渉しない。\n\n手動でコミットが必要な場合は、トランザクションマネージャを取得してコミット操作を行う。",
+    "s10": "テスティングフレームワークが提供するその他のユーティリティクラスを使用することで、テスト実装を簡素化できる。\n\nシステムリポジトリからコンポーネントを取得する場合は`SystemRepository.getObject(String name)`を使用する。テスト用のコンポーネント設定ファイルをシステムリポジトリにロードした後、各コンポーネントを取得してテストに使用する。",
+    "s11": "ExcelファイルのデータをBeanのプロパティ検証に使用する場合、`assertProperties`メソッドが利用できる。\n\nExcelシートにBeanのプロパティ名と期待値を記載し、`assertProperties(String sheetName, String id, Object bean)`を呼び出すことで、Beanの各プロパティ値とExcelの期待値を一括比較できる。\n\nこれにより、多数のプロパティを持つBeanのアサーションを簡潔に記述できる。",
+    "s12": "テストデータ記述に関するヒント:\n\n- **NULL値**: Excelセルを空欄にするとNULLとして扱われる\n- **空文字**: 空文字を明示的に指定する場合は特殊な記法を使用する\n- **コメント行**: `//`で始まる行はコメントとして無視される\n- **型指定**: 1行目（ヘッダ行の次）に型を指定できる（例: `// CHAR(5)`）\n- **数値**: 数値データはそのまま記載可能",
+    "s13": "Excelテストデータで空行（改行のみの文字列）を表現する場合、通常の空セルはNULLとして扱われるため区別が必要。\n\n空文字（長さ0の文字列）を表現するには、テスティングフレームワークが定義する特殊な記法（空文字リテラル）を使用する。具体的な記法はフレームワークのバージョンに依存するため、公式ドキュメントを確認すること。",
+    "s14": "テスト実行前にマスタデータを投入・変更する場合は、`SETUP_TABLE`データタイプを使用してExcelシートにマスタデータを定義する。\n\n```\nSETUP_TABLE=CODE_MASTER\n```\n\nシステム全体で共有するマスタデータはテストクラスの`setUpClass`相当の処理で投入し、テスト個別のマスタデータは各テストメソッドの`setUpDb`で投入する。",
+    "s15": "テストデータファイルのデフォルト配置ディレクトリを変更する場合は、コンポーネント設定ファイルでテストサポートクラスの`basePath`プロパティを設定する。\n\nデフォルトではテストクラスと同一パッケージのリソースディレクトリにExcelファイルを配置するが、プロジェクト構成に合わせてディレクトリを変更できる。",
+    "s16": "テストデータの型変換が必要な場合は、TestDataConverterインタフェースを実装したクラスを使用する。\n\nExcelから読み取った文字列データをJavaの特定の型（Date、BigDecimalなど）に変換する際に使用する。カスタムコンバータを実装することで、プロジェクト固有の型変換ルールを適用できる。"
   }
 }

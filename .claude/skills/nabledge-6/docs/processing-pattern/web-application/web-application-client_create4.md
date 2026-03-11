@@ -6,7 +6,7 @@
 
 ### 登録処理の実装
 
-セッションストアから顧客エンティティを取得し、:ref:`universal_dao` でDBに登録する。登録後はセッションから削除し、303リダイレクトで完了画面へ遷移する（ブラウザ更新ボタンによる多重登録防止）。リダイレクトのステータスコードは :ref:`web_feature_details-status_code` を参照。
+セッションストアから顧客エンティティを取得し、[universal_dao](libraries-universal_dao.json) でDBに登録する。登録後はセッションから削除し、303リダイレクトで完了画面へ遷移する（ブラウザ更新ボタンによる多重登録防止）。リダイレクトのステータスコードは [web_feature_details-status_code](web-application-feature_details.json) を参照。
 
 ```java
 public HttpResponse create(HttpRequest request, ExecutionContext context) {
@@ -32,7 +32,7 @@ public HttpResponse create(HttpRequest request, ExecutionContext context) {
 }
 ```
 
-JSPでは、入力へ戻るボタンと確定ボタンを `<n:forConfirmationPage>` タグで囲んで確認画面でのみ表示する。:ref:`tag-button_tag` の `allowDoubleSubmission` 属性に `false` を指定することで、二重サブミットを制御するJavaScriptが追加される。
+JSPでは、入力へ戻るボタンと確定ボタンを `<n:forConfirmationPage>` タグで囲んで確認画面でのみ表示する。[tag-button_tag](libraries-tag_reference.json) の `allowDoubleSubmission` 属性に `false` を指定することで、二重サブミットを制御するJavaScriptが追加される。
 
 ```jsp
 <n:forConfirmationPage>

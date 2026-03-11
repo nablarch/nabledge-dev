@@ -27,7 +27,7 @@
   ],
   "index": [
     {
-      "id": "bean-validation-group",
+      "id": "s1",
       "title": "Bean Validationのグループ機能を使用したい",
       "hints": [
         "ValidatorUtil",
@@ -43,7 +43,7 @@
       ]
     },
     {
-      "id": "extension-example",
+      "id": "s2",
       "title": "拡張例",
       "hints": [
         "カスタムアノテーション",
@@ -55,7 +55,7 @@
     }
   ],
   "sections": {
-    "bean-validation-group": "Jakarta Bean Validationの仕様では、バリデーション実行時にグループを指定すると、使用するルールを特定グループに制限できる。\n\n- グループを指定しない場合は `Default` グループに所属するルールでバリデーションされる\n- グループを指定する場合は指定グループに所属するルールでバリデーションされる\n\n**バリデーション対象のForm例**:\n\n```java\npublic class SampleForm {\n\n    @SystemChar(charsetDef = \"数字\", groups = {Default.class, Test1.class})\n    String id;\n\n    @SystemChar.List({\n            @SystemChar(charsetDef = \"全角文字\") // グループを指定しない場合は、Defaultグループに所属していると見なされる\n            @SystemChar(charsetDef = \"半角英数\", groups = Test1.class),\n    })\n    String name;\n\n    public interface Test1 {}\n}\n```\n\n**バリデーション実行例**:\n\n```java\n// グループを指定しない場合はDefaultグループのルールでバリデーション\nValidatorUtil.validate(form);\n\n// グループを指定する場合は指定グループのルールでバリデーション\nValidatorUtil.validateWithGroup(form, SampleForm.Test1.class);\n```\n\nAPIの詳細は :java:extdoc:`ValidatorUtil#validateWithGroup <nablarch.core.validation.ee.ValidatorUtil.validateWithGroup(java.lang.Object,java.lang.Class...)>` および :java:extdoc:`ValidatorUtil#validateProperty <nablarch.core.validation.ee.ValidatorUtil.validateProperty(java.lang.Object,java.lang.String,java.lang.Class...)>` を参照。\n\n> **補足**: グループ機能を使ってフォームクラスを複数画面・APIで共通化できるが、Nablarchではそのような使用方法を推奨していない（:ref:`フォームクラスは、htmlのform単位に作成する <application_design-form_html>` および :ref:`フォームクラスはAPI単位に作成する <rest-application_design-form_html>` 参照）。フォームクラスを共通化する目的でグループ機能を使用する場合は、プロジェクト側で十分検討の上で使用すること。",
-    "extension-example": "### プロジェクト固有のアノテーションとバリデーションロジックを追加したい\n\n:ref:`bean_validation-validator` に記載のバリデータで要件を満たせない場合は、プロジェクト側でアノテーションおよびバリデーションロジックを追加すること。\n\n参考:\n- [Hibernate Validator(外部サイト、英語)](https://hibernate.org/validator/)\n- [Jakarta Bean Validation(外部サイト、英語)](https://jakarta.ee/specifications/bean-validation/)"
+    "s1": "Jakarta Bean Validationの仕様では、バリデーション実行時にグループを指定すると、使用するルールを特定グループに制限できる。\n\n- グループを指定しない場合は `Default` グループに所属するルールでバリデーションされる\n- グループを指定する場合は指定グループに所属するルールでバリデーションされる\n\n**バリデーション対象のForm例**:\n\n```java\npublic class SampleForm {\n\n    @SystemChar(charsetDef = \"数字\", groups = {Default.class, Test1.class})\n    String id;\n\n    @SystemChar.List({\n            @SystemChar(charsetDef = \"全角文字\") // グループを指定しない場合は、Defaultグループに所属していると見なされる\n            @SystemChar(charsetDef = \"半角英数\", groups = Test1.class),\n    })\n    String name;\n\n    public interface Test1 {}\n}\n```\n\n**バリデーション実行例**:\n\n```java\n// グループを指定しない場合はDefaultグループのルールでバリデーション\nValidatorUtil.validate(form);\n\n// グループを指定する場合は指定グループのルールでバリデーション\nValidatorUtil.validateWithGroup(form, SampleForm.Test1.class);\n```\n\nAPIの詳細は :java:extdoc:`ValidatorUtil#validateWithGroup <nablarch.core.validation.ee.ValidatorUtil.validateWithGroup(java.lang.Object,java.lang.Class...)>` および :java:extdoc:`ValidatorUtil#validateProperty <nablarch.core.validation.ee.ValidatorUtil.validateProperty(java.lang.Object,java.lang.String,java.lang.Class...)>` を参照。\n\n> **補足**: グループ機能を使ってフォームクラスを複数画面・APIで共通化できるが、Nablarchではそのような使用方法を推奨していない（:ref:`フォームクラスは、htmlのform単位に作成する <application_design-form_html>` および :ref:`フォームクラスはAPI単位に作成する <rest-application_design-form_html>` 参照）。フォームクラスを共通化する目的でグループ機能を使用する場合は、プロジェクト側で十分検討の上で使用すること。",
+    "s2": "### プロジェクト固有のアノテーションとバリデーションロジックを追加したい\n\n:ref:`bean_validation-validator` に記載のバリデータで要件を満たせない場合は、プロジェクト側でアノテーションおよびバリデーションロジックを追加すること。\n\n参考:\n- [Hibernate Validator(外部サイト、英語)](https://hibernate.org/validator/)\n- [Jakarta Bean Validation(外部サイト、英語)](https://jakarta.ee/specifications/bean-validation/)"
   }
 }

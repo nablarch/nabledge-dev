@@ -36,8 +36,8 @@
 **アノテーション**: `@Csv`, `@CsvFormat`
 
 - CSVヘッダーとBeanプロパティの紐付けには `@Csv` を使用する。
-- CSVフォーマット指定には `@CsvFormat` を使用する。:ref:`デフォルトフォーマット<data_bind-csv_format_set>` を使用する場合は `@CsvFormat` は不要。
-- アノテーション設定の詳細は :ref:`data_bind-csv_format-beans` を参照。
+- CSVフォーマット指定には `@CsvFormat` を使用する。[デフォルトフォーマット](libraries-data_bind.json) を使用する場合は `@CsvFormat` は不要。
+- アノテーション設定の詳細は [data_bind-csv_format-beans](libraries-data_bind.json) を参照。
 
 ```java
 @Csv(headers = { /** ヘッダを記述 **/},
@@ -57,11 +57,11 @@ public class ProjectDownloadDto implements Serializable {
 **クラス**: `FileResponse`, `ObjectMapper`, `ObjectMapperFactory`, `TempFileUtil`, `DeferredEntityList`, `UniversalDao`  
 **アノテーション**: `@InjectForm`, `@OnError`
 
-- BeanをCSVファイルに出力するには :ref:`データバインド<data_bind>` の `ObjectMapper` を使用する。
-- ファイルをダウンロードレスポンスとして返すには `FileResponse` を使用する（詳細: :ref:`data_bind-file_download`）。
-- 大量データ取得時はメモリ逼迫防止のため `UniversalDao#defer` で :ref:`遅延ロード<universal_dao-lazy_load>` する。
-- レスポンスのContent-Typeは `HttpResponse#setContentType` で設定する（詳細: :ref:`data_format-file_download`）。
-- ダウンロードファイル名は `HttpResponse#setContentDisposition` で設定する（詳細: :ref:`data_format-file_download`）。
+- BeanをCSVファイルに出力するには [データバインド](libraries-data_bind.json) の `ObjectMapper` を使用する。
+- ファイルをダウンロードレスポンスとして返すには `FileResponse` を使用する（詳細: [data_bind-file_download](libraries-data_bind.json)）。
+- 大量データ取得時はメモリ逼迫防止のため `UniversalDao#defer` で [遅延ロード](libraries-universal_dao.json) する。
+- レスポンスのContent-Typeは `HttpResponse#setContentType` で設定する（詳細: [data_format-file_download](libraries-data_format.json)）。
+- ダウンロードファイル名は `HttpResponse#setContentDisposition` で設定する（詳細: [data_format-file_download](libraries-data_format.json)）。
 
 ```java
 @InjectForm(form = ProjectSearchForm.class, prefix = "searchForm", name = "searchForm")

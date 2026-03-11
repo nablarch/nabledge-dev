@@ -12,7 +12,7 @@
   ],
   "index": [
     {
-      "id": "overview",
+      "id": "s1",
       "title": "機能概要",
       "hints": [
         "排他制御",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "id": "module-list",
+      "id": "s2",
       "title": "モジュール一覧",
       "hints": [
         "nablarch-common-exclusivecontrol",
@@ -40,7 +40,7 @@
     }
   ],
   "sections": {
-    "overview": "> **重要**: この機能は**非推奨**。排他制御には :ref:`universal_dao` を使用すること。理由: (1) :ref:`universal_dao` の排他制御の方が簡易（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` を参照）。(2) 主キーが非文字列型（charやvarchar以外）の場合、DBによっては型不一致でSQL実行時例外が発生する。この機能は主キーの値をすべて `java.lang.String` で保持しており、PostgreSQLなど暗黙の型変換を行わないDBでこの問題が発生する。\n\nテーブルにバージョン番号カラムを定義することで楽観的ロック/悲観的ロックを実現。このカラムが定義されたテーブルを**排他制御用テーブル**と呼ぶ。\n\n同一の排他制御用テーブルを使用するため、楽観的ロックと悲観的ロックを並行使用しても同一データの同時更新を防止できる。たとえば、楽観的ロックを使用するウェブと、悲観的ロックを使用するバッチを並行稼働させても、データの整合性を保つことができる。\n\n実現できる機能:\n- :ref:`exclusive_control-optimistic_lock`\n- :ref:`exclusive_control-optimistic_lock-bulk`\n- :ref:`exclusive_control-pessimistic_lock`\n\n排他制御用テーブルは排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。単位を大きくすると競合可能性が高まり、更新失敗（楽観的ロック）や処理遅延（悲観的ロック）を招く。\n\n> **補足**: 排他制御用テーブルの単位は業務的な観点（例：売上処理と入金処理に関連するテーブルをまとめた単位）やテーブルの親子関係（親の単位）で定義する。親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。\n\n> **重要**: 排他制御用テーブル設計後は更新順序を設計すること。更新順序を定めることでデッドロックを防止し、データ整合性を保証する。更新順序が未定義だとデッドロックが発生する可能性が非常に高い。",
-    "module-list": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>\n</dependency>\n<!-- 楽観的ロックを行う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```"
+    "s1": "> **重要**: この機能は**非推奨**。排他制御には :ref:`universal_dao` を使用すること。理由: (1) :ref:`universal_dao` の排他制御の方が簡易（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` を参照）。(2) 主キーが非文字列型（charやvarchar以外）の場合、DBによっては型不一致でSQL実行時例外が発生する。この機能は主キーの値をすべて `java.lang.String` で保持しており、PostgreSQLなど暗黙の型変換を行わないDBでこの問題が発生する。\n\nテーブルにバージョン番号カラムを定義することで楽観的ロック/悲観的ロックを実現。このカラムが定義されたテーブルを**排他制御用テーブル**と呼ぶ。\n\n同一の排他制御用テーブルを使用するため、楽観的ロックと悲観的ロックを並行使用しても同一データの同時更新を防止できる。たとえば、楽観的ロックを使用するウェブと、悲観的ロックを使用するバッチを並行稼働させても、データの整合性を保つことができる。\n\n実現できる機能:\n- :ref:`exclusive_control-optimistic_lock`\n- :ref:`exclusive_control-optimistic_lock-bulk`\n- :ref:`exclusive_control-pessimistic_lock`\n\n排他制御用テーブルは排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。単位を大きくすると競合可能性が高まり、更新失敗（楽観的ロック）や処理遅延（悲観的ロック）を招く。\n\n> **補足**: 排他制御用テーブルの単位は業務的な観点（例：売上処理と入金処理に関連するテーブルをまとめた単位）やテーブルの親子関係（親の単位）で定義する。親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。\n\n> **重要**: 排他制御用テーブル設計後は更新順序を設計すること。更新順序を定めることでデッドロックを防止し、データ整合性を保証する。更新順序が未定義だとデッドロックが発生する可能性が非常に高い。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>\n</dependency>\n<!-- 楽観的ロックを行う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```"
   }
 }
