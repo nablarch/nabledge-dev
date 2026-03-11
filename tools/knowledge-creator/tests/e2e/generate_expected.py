@@ -249,21 +249,22 @@ def generate_split_entries(base_entry: dict, groups: list) -> list:
     type_ = base_entry['type']
     category = base_entry['category']
     total_parts = len(groups)
-    used_ids = set()
 
-    for part_num, group in enumerate(groups, 1):
-        section_id = title_to_section_id(group[0]['title'])
-        original_section_id = section_id
-        counter = 2
-        while section_id in used_ids:
-            section_id = f"{original_section_id}-{counter}"
-            counter += 1
-        used_ids.add(section_id)
-        split_id = f"{base_id}--{section_id}"
+    # Compute globally-sequential start counter for each group (matches production logic)
+    section_counter = 1
+    group_start_counters = []
+    for group in groups:
+        group_start_counters.append(section_counter)
+        section_counter += len(group)
+
+    for part_num, (group, start_counter) in enumerate(zip(groups, group_start_counters), 1):
+        # Split ID uses the first sequential section ID of this group (matches step2_classify.py)
+        split_id = f"{base_id}--s{start_counter}"
 
         start_line = group[0]['start_line']
         end_line = group[-1]['end_line']
         section_titles = [s['title'] for s in group]
+        section_ids = [f"s{start_counter + i}" for i in range(len(group))]
 
         result.append({
             **base_entry,
@@ -275,6 +276,7 @@ def generate_split_entries(base_entry: dict, groups: list) -> list:
                 'start_line': start_line,
                 'end_line': end_line,
                 'sections': section_titles,
+                'section_ids': section_ids,
             },
             'split_info': {
                 'is_split': True,
@@ -425,27 +427,28 @@ def classify_all(sources: list, repo: str, version: str = "6") -> list:
 def mock_phase_b_knowledge(file_id: str, entry: dict) -> dict:
     """Generate expected Phase B knowledge output for a file."""
     if 'section_range' in entry:
-        sections = entry['section_range'].get('sections', [])
-        n_sections = len(sections)  # all sections (including empty strings)
-        if n_sections == 0:
-            n_sections = 5
+        section_ids = entry['section_range'].get('section_ids', [])
+        if not section_ids:
+            # Fallback: derive from sections count
+            sections = entry['section_range'].get('sections', [])
+            n_sections = len(sections) if sections else 5
+            section_ids = [f"s{i+1}" for i in range(n_sections)]
     else:
-        n_sections = 5
+        # Non-split entry: use s1..s5
+        section_ids = [f"s{i+1}" for i in range(5)]
 
-    sec_ids = [f"sec-{i}" for i in range(n_sections)]
     return {
         "id": file_id,
         "title": f"Title for {file_id}",
         "no_knowledge_content": False,
         "official_doc_urls": [f"https://nablarch.github.io/docs/LATEST/doc/{file_id}"],
-        "processing_patterns": [],
         "index": [
             {"id": sid, "title": f"Section {i}", "hints": [f"hint-{file_id}-{i}"]}
-            for i, sid in enumerate(sec_ids)
+            for i, sid in enumerate(section_ids)
         ],
         "sections": {
             sid: f"Content for {file_id} section {sid}"
-            for sid in sec_ids
+            for sid in section_ids
         },
     }
 
@@ -520,17 +523,6 @@ def compute_merged_files(catalog_entries: list, knowledge_fn=None) -> dict:
                     seen_urls.add(url)
                     urls.append(url)
         merged_knowledge["official_doc_urls"] = urls
-
-        # Merge processing_patterns (union, dedup, preserve order)
-        seen_pp = set()
-        pp_list = []
-        for p in parts:
-            pk = knowledge_fn(p['id'], p)
-            for pp in pk.get("processing_patterns", []):
-                if pp not in seen_pp:
-                    seen_pp.add(pp)
-                    pp_list.append(pp)
-        merged_knowledge["processing_patterns"] = pp_list
 
         # Merge index: part-sequential order, dedup by id, merge hints
         merged_index = []
