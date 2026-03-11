@@ -2,7 +2,7 @@ You are an expert in converting Nablarch official documentation to AI-ready know
 
 ## Task
 
-Convert the source file below into a knowledge file (JSON) by following Work Steps 1–8 in order. Record your decisions in the trace log as you go.
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
 
 ## Source File Information
 
@@ -19,13 +19,6 @@ Convert the source file below into a knowledge file (JSON) by following Work Ste
 ```
 
 {ASSETS_SECTION}
-
-## Labels Defined in This File
-
-{INTERNAL_LABELS}
-
-The above lists labels defined as `.. _label_name:` in this source file.
-A `:ref:` target is "internal" if it appears in this list; otherwise it is "external."
 
 ---
 
@@ -57,7 +50,7 @@ Then set `no_knowledge_content: true`. In this case:
 - Set `sections` to empty object `{}`
 - Still set `id`, `title`, `official_doc_urls` normally
 - Skip Work Steps 2–6
-- In trace, set `sections` to `[]` and add `"no_knowledge_content_reason": "..."` explaining why
+- Skip Work Steps 2–6
 
 If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
 
@@ -95,27 +88,11 @@ For each h2 section, estimate the plain text character count. Exclude code block
 | h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
 | h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
 
-### 2-3. Assign section IDs
+### 2-3. Section IDs are pre-assigned
 
-- Use kebab-case: lowercase, hyphen-separated
-- Derive from heading text (e.g., "モジュール一覧" → `module-list`)
-- Examples: `overview`, `setup`, `handler-queue`, `error-handling`
-
-### Trace log for Step 2
-
-Record in `trace.sections`:
-```json
-[
-  {
-    "section_id": "overview",
-    "source_heading": "概要",
-    "heading_level": "h2",
-    "h3_split": false,
-    "h3_split_reason": "plain text 800 chars < 2000 threshold"
-  }
-]
-```
-For h3-promoted sections, set `"h3_split": true` and explain the reason (char count).
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
 
 ---
 
@@ -349,7 +326,7 @@ For each reference found in source:
    → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
    → Add this URL to official_doc_urls (collected in Step 6)
    → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
-   → The RST syntax will be converted to inline code in post-processing (Phase G)
+   → The RST syntax will be converted to inline code in post-processing
    → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
 
 2. Is it an external URL (http:// or https://) ?
@@ -363,7 +340,7 @@ For each reference found in source:
      - :ref:`thread_context_handler` (keep underscore)
      - :ref:`database-connection` (keep hyphen)
      - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
-   → These will be resolved in post-processing (Phase G) after all files are generated
+   → These will be resolved in post-processing after all files are generated
 
 4. Is it :doc:`path` or :doc:`display<path>` ?
    → KEEP THE ORIGINAL RST SYNTAX in section text
@@ -371,29 +348,29 @@ For each reference found in source:
    → Examples to preserve:
      - :doc:`nablarch_batch/index`
      - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
-   → These will be resolved in post-processing (Phase G)
+   → These will be resolved in post-processing
 
 5. Is it :download:`display<path>` ?
    → KEEP THE ORIGINAL RST SYNTAX in section text
    → Examples to preserve:
      - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
      - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
-   → These will be resolved in post-processing (Phase G)
+   → These will be resolved in post-processing
 
 **Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
 
 **Label Preservation Guidelines**:
 - Keep exact label names including underscores/hyphens as found in source
-- Do NOT normalize labels (Phase G handles variants automatically)
-- Phase G will match both `database_connection` and `database-connection` to the same target
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
 - Preserving exact source format prevents mismatches during link resolution
 
 **Malformed RST Handling**:
 If RST syntax appears incomplete or malformed, preserve it as-is:
-- Missing closing backtick: `:ref:`label` → keep as-is (Phase G will handle or leave unchanged)
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
 - Typo in role name: `:reff:`label`` → keep as-is
 - Missing angle bracket: `:doc:`text <path` → keep as-is
-Phase G post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
 ```
 
 ---
@@ -425,32 +402,7 @@ If this section contains consolidated h3 subsections (not split), extract key te
 
 ---
 
-## Work Step 6: Classify processing patterns
-
-Determine which Nablarch processing patterns are relevant to this content.
-
-### Valid patterns
-
-| Pattern | Match if content mentions... |
-|---|---|
-| nablarch-batch | Nablarchバッチ, 都度起動, 常駐型, BatchAction, DataReader, nablarch.fw.action.BatchAction |
-| jakarta-batch | Jakarta Batch, JSR 352, jBatch, Batchlet, Chunk, javax.batch |
-| restful-web-service | RESTful, JAX-RS, REST API, @Produces, @Consumes, JaxRsMethodBinder |
-| http-messaging | HTTPメッセージング, HTTP受信, メッセージ同期応答, HttpMessagingRequestParsingHandler |
-| web-application | Webアプリケーション, サーブレット, JSP, HttpRequest, セッション管理 |
-| mom-messaging | MOMメッセージング, MQ, キュー, 非同期メッセージ, MomMessagingAction |
-| db-messaging | DB連携メッセージング, テーブルキュー, 電文, DatabaseRecordReader |
-
-### Rules
-
-1. Include a pattern only if the content explicitly mentions it.
-2. Generic libraries used across patterns → include ONLY patterns explicitly mentioned. Do NOT assume all apply.
-3. If no pattern is mentioned → empty array `[]`.
-4. If FILE_TYPE is `processing-pattern` → include FILE_CATEGORY as the pattern.
-
----
-
-## Work Step 7: Build official_doc_urls
+## Work Step 6: Build official_doc_urls
 
 1. Start with `{OFFICIAL_DOC_BASE_URL}` as the first URL.
 2. Collect all Javadoc URLs extracted in Step 4.
@@ -458,7 +410,7 @@ Determine which Nablarch processing patterns are relevant to this content.
 
 ---
 
-## Work Step 8: Assemble and output JSON
+## Work Step 7: Assemble and output JSON
 
 Combine all results from Steps 1–6 into the output JSON.
 
@@ -468,83 +420,41 @@ Combine all results from Steps 1–6 into the output JSON.
 ```json
 {
   "type": "object",
-  "required": ["knowledge", "trace"],
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
   "properties": {
-    "knowledge": {
-      "type": "object",
-      "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections", "processing_patterns"],
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Knowledge file identifier. Must equal FILE_ID."
-        },
-        "no_knowledge_content": {
-          "type": "boolean",
-          "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
-        },
-        "title": {
-          "type": "string",
-          "description": "Document title from Step 1"
-        },
-        "official_doc_urls": {
-          "type": "array",
-          "description": "Official documentation URLs from Step 7",
-          "items": { "type": "string" }
-        },
-        "processing_patterns": {
-          "type": "array",
-          "description": "Relevant Nablarch processing patterns. Empty array if none apply.",
-          "items": {
-            "type": "string",
-            "enum": [
-              "nablarch-batch", "jakarta-batch", "restful-web-service",
-              "http-messaging", "web-application", "mom-messaging", "db-messaging"
-            ]
-          }
-        },
-        "index": {
-          "type": "array",
-          "description": "Section table of contents with search hints",
-          "items": {
-            "type": "object",
-            "required": ["id", "title", "hints"],
-            "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
-              "hints": { "type": "array", "items": { "type": "string" } }
-            }
-          }
-        },
-        "sections": {
-          "type": "object",
-          "additionalProperties": { "type": "string" }
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
-    "trace": {
+    "sections": {
       "type": "object",
-      "required": ["sections"],
-      "properties": {
-        "sections": {
-          "type": "array",
-          "description": "Section list decisions from Step 2",
-          "items": {
-            "type": "object",
-            "required": ["section_id", "source_heading", "heading_level"],
-            "properties": {
-              "section_id": { "type": "string" },
-              "source_heading": { "type": "string" },
-              "heading_level": { "type": "string" },
-              "h3_split": { "type": "boolean" },
-              "h3_split_reason": { "type": "string" }
-            }
-          }
-        },
-        "no_knowledge_content_reason": {
-          "type": "string",
-          "description": "Reason for no_knowledge_content=true (required when true)"
-        }
-      }
+      "additionalProperties": { "type": "string" }
     }
   }
 }
@@ -554,18 +464,16 @@ Combine all results from Steps 1–6 into the output JSON.
 
 - [ ] `id` equals `{FILE_ID}`
 - [ ] Every `index[].id` has a matching key in `sections` and vice versa
-- [ ] All section IDs are kebab-case (`^[a-z0-9]+(-[a-z0-9]+)*$`)
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
 - [ ] No section content is empty or under 50 characters (unless genuinely "なし")
 - [ ] No hints array is empty
 - [ ] All internal references `(#section-id)` point to existing section IDs in this file
-- [ ] No raw RST markup remains unconverted
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
 - [ ] No information was added that is not in the source
 - [ ] All URLs from source are preserved
 - [ ] If Expected Sections was provided, section count equals expected count
 - [ ] `no_knowledge_content` is set to `true` or `false`
 - [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
-- [ ] If `no_knowledge_content: true`, trace has `no_knowledge_content_reason`
 - [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
-- [ ] `processing_patterns` is an array (empty `[]` if no patterns apply)
 
 Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

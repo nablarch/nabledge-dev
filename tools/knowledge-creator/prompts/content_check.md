@@ -83,6 +83,7 @@ For each fabrication found, record:
 - Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
 - Check if any section has < 50 characters.
 - For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
 
 ### V4: Hints Completeness (severity: minor)
 
@@ -103,18 +104,6 @@ If the knowledge file has `no_knowledge_content: true`:
 
 If `no_knowledge_content: false`:
 - Skip this check (V1/V2 handle normal content validation)
-
-### V6: Processing Patterns Check (severity: minor)
-
-Check that `processing_patterns` in the knowledge file is correct:
-
-1. If `processing_patterns` field is missing → report: category "processing_patterns_invalid", description "processing_patterns field is missing"
-2. For each pattern in the array, confirm the content actually mentions that pattern (use the indicators table from generate.md Step 6).
-3. If content mentions a pattern not in the array → report as finding.
-4. If FILE_TYPE is `processing-pattern`, confirm `processing_patterns` includes FILE_CATEGORY.
-
-For each issue found, record:
-"PROCESSING_PATTERNS_INVALID: {description}"
 
 ---
 
