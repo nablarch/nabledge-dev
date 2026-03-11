@@ -70,10 +70,6 @@ class Context:
 
     # Phase B: Generate
     @property
-    def trace_dir(self) -> str:
-        return f"{self.cache_dir}/traces"
-
-    @property
     def phase_b_executions_dir(self) -> str:
         return f"{self.log_dir}/phase-b/executions"
 
@@ -100,11 +96,6 @@ class Context:
     @property
     def phase_f_executions_dir(self) -> str:
         return f"{self.log_dir}/phase-f/executions"
-
-    # Phase G: Resolve Links
-    @property
-    def knowledge_resolved_dir(self) -> str:
-        return f"{self.log_dir}/phase-g/resolved"
 
     # Output
     @property
@@ -455,13 +446,6 @@ def _run_pipeline(ctx, args):
         else:
             logger.info("\n📝 catalog.json 更新")
             update_knowledge_meta(ctx, dry_run=args.dry_run)
-
-    # Phase G (backward compat: only when explicitly specified without M)
-    if "G" in phases and "M" not in phases:
-        logger.info("\n🔗Phase G: Resolve Links")
-        logger.info("   └─ Resolving RST cross-references...")
-        from phase_g_resolve_links import PhaseGResolveLinks
-        PhaseGResolveLinks(ctx).run()
 
     # Phase F (backward compat: only when explicitly specified without M)
     if "F" in phases and "M" not in phases:

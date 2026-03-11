@@ -332,112 +332,6 @@ class TestMergeSplitFiles:
         assert "split--section-1" not in ids
         assert "split--section-2" not in ids
 
-    def test_merge_consolidates_trace_files(self, ctx):
-        """Merge consolidates internal_labels from part trace files."""
-        from merge import MergeSplitFiles
-
-        # Setup: 2 split parts with trace files containing internal_labels
-        part1 = {
-            "id": "test--section-1",
-            "title": "Test",
-            "official_doc_urls": ["https://example.com"],
-            "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
-            "sections": {"section1": "Content 1"}
-        }
-        part2 = {
-            "id": "test--section-2",
-            "title": "Test",
-            "official_doc_urls": ["https://example.com"],
-            "index": [{"id": "section2", "title": "Section 2", "hints": ["s2"]}],
-            "sections": {"section2": "Content 2"}
-        }
-
-        trace1 = {
-            "file_id": "test--section-1",
-            "generated_at": "2026-01-01T00:00:00Z",
-            "internal_labels": ["test-label-1", "section1"],
-            "sections": [
-                {"section_id": "section1", "source_heading": "Section 1",
-                 "heading_level": "h2", "h3_split": False}
-            ]
-        }
-        trace2 = {
-            "file_id": "test--section-2",
-            "generated_at": "2026-01-01T00:00:00Z",
-            "internal_labels": ["test-label-2", "section2"],
-            "sections": [
-                {"section_id": "section2", "source_heading": "Section 2",
-                 "heading_level": "h2", "h3_split": False}
-            ]
-        }
-
-        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
-
-        os.makedirs(f"{ctx.trace_dir}", exist_ok=True)
-        write_json(f"{ctx.trace_dir}/test--section-1.json", trace1)
-        write_json(f"{ctx.trace_dir}/test--section-2.json", trace2)
-
-        classified = {
-            "version": "6",
-            "generated_at": "2026-01-01T00:00:00Z",
-            "files": [
-                {
-                    "id": "test--section-1",
-                    "source_path": "test/test.rst",
-                    "format": "rst",
-                    "filename": "test.rst",
-                    "type": "component",
-                    "category": "test",
-                    "output_path": "component/test/test--section-1.json",
-                    "assets_dir": "component/test/assets/test--section-1/",
-                    "split_info": {"is_split": True, "original_id": "test", "part": 1, "total_parts": 2}
-                },
-                {
-                    "id": "test--section-2",
-                    "source_path": "test/test.rst",
-                    "format": "rst",
-                    "filename": "test.rst",
-                    "type": "component",
-                    "category": "test",
-                    "output_path": "component/test/test--section-2.json",
-                    "assets_dir": "component/test/assets/test--section-2/",
-                    "split_info": {"is_split": True, "original_id": "test", "part": 2, "total_parts": 2}
-                }
-            ]
-        }
-        write_json(ctx.classified_list_path, classified)
-
-        # Execute
-        MergeSplitFiles(ctx).run()
-
-        # Verify: Merged trace file exists
-        merged_trace_path = f"{ctx.trace_dir}/test.json"
-        assert os.path.exists(merged_trace_path)
-
-        merged_trace = load_json(merged_trace_path)
-        assert merged_trace["file_id"] == "test"
-
-        # Verify: internal_labels consolidated (deduplicated, ordered)
-        assert "internal_labels" in merged_trace
-        labels = merged_trace["internal_labels"]
-        assert "test-label-1" in labels
-        assert "test-label-2" in labels
-        assert "section1" in labels
-        assert "section2" in labels
-
-        # Verify: sections array merged
-        assert "sections" in merged_trace
-        assert len(merged_trace["sections"]) == 2
-        section_ids = [s["section_id"] for s in merged_trace["sections"]]
-        assert "section1" in section_ids
-        assert "section2" in section_ids
-
-        # Verify: Part trace files deleted
-        assert not os.path.exists(f"{ctx.trace_dir}/test--section-1.json")
-        assert not os.path.exists(f"{ctx.trace_dir}/test--section-2.json")
-
     def test_merge_warns_on_index_section_mismatch(self, ctx, caplog):
         """Merge must log warning when merged result has index-section mismatch."""
         import logging
@@ -447,7 +341,6 @@ class TestMergeSplitFiles:
             "id": "libs-bind--p1",
             "title": "Data Bind",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
             "index": [
                 {"id": "ext", "title": "拡張", "hints": ["extension"]}
             ],
@@ -457,7 +350,6 @@ class TestMergeSplitFiles:
             "id": "libs-bind--p2",
             "title": "Data Bind",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
             "index": [
                 {"id": "csv", "title": "CSV", "hints": ["csv"]}
             ],
@@ -504,7 +396,6 @@ class TestMergeSplitFiles:
             "id": "libraries-tag--p1",
             "title": "タグ",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
             "index": [
                 {"id": "section-a", "title": "A", "hints": ["a"]},
                 {"id": "section-b", "title": "B", "hints": ["b"]}
@@ -515,7 +406,6 @@ class TestMergeSplitFiles:
             "id": "libraries-tag--p2",
             "title": "タグ",
             "official_doc_urls": ["https://example.com"],
-            "processing_patterns": [],
             "index": [
                 {"id": "section-b", "title": "B", "hints": ["b", "extra"]},
                 {"id": "section-c", "title": "C", "hints": ["c"]},
@@ -606,75 +496,3 @@ class TestMergeSplitFiles:
         assert not os.path.exists(merged_path), "Merged file must not exist when cache is incomplete"
         assert any("SKIP" in r.message and "libs-comp" in r.message for r in caplog.records)
 
-    def test_merge_trace_with_partial_missing(self, ctx):
-        """片方のパートにだけtraceがある場合、存在するtraceのみで統合する。"""
-        from merge import MergeSplitFiles
-
-        # Setup: 2パートだがpart2のtraceだけ存在
-        part1 = {
-            "id": "test--section-1", "title": "Test",
-            "official_doc_urls": ["https://example.com"],
-            "index": [{"id": "section1", "title": "Section 1", "hints": ["s1"]}],
-            "sections": {"section1": "Content 1"}
-        }
-        part2 = {
-            "id": "test--section-2", "title": "Test",
-            "official_doc_urls": ["https://example.com"],
-            "index": [{"id": "section2", "title": "Section 2", "hints": ["s2"]}],
-            "sections": {"section2": "Content 2"}
-        }
-
-        trace2 = {
-            "file_id": "test--section-2",
-            "generated_at": "2026-01-01T00:00:00Z",
-            "internal_labels": ["label-2", "section2"],
-            "sections": [
-                {"section_id": "section2", "source_heading": "Section 2",
-                 "heading_level": "h2", "h3_split": False}
-            ]
-        }
-
-        os.makedirs(f"{ctx.knowledge_cache_dir}/component/test", exist_ok=True)
-        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-1.json", part1)
-        write_json(f"{ctx.knowledge_cache_dir}/component/test/test--section-2.json", part2)
-
-        os.makedirs(f"{ctx.trace_dir}", exist_ok=True)
-        # part1のtraceは作らない（欠損）
-        write_json(f"{ctx.trace_dir}/test--section-2.json", trace2)
-
-        classified = {
-            "version": "6", "generated_at": "2026-01-01T00:00:00Z",
-            "files": [
-                {
-                    "id": "test--section-1", "source_path": "test/test.rst",
-                    "format": "rst", "filename": "test.rst",
-                    "type": "component", "category": "test",
-                    "output_path": "component/test/test--section-1.json",
-                    "assets_dir": "component/test/assets/test--section-1/",
-                    "split_info": {"is_split": True, "original_id": "test", "part": 1, "total_parts": 2}
-                },
-                {
-                    "id": "test--section-2", "source_path": "test/test.rst",
-                    "format": "rst", "filename": "test.rst",
-                    "type": "component", "category": "test",
-                    "output_path": "component/test/test--section-2.json",
-                    "assets_dir": "component/test/assets/test--section-2/",
-                    "split_info": {"is_split": True, "original_id": "test", "part": 2, "total_parts": 2}
-                }
-            ]
-        }
-        write_json(ctx.classified_list_path, classified)
-
-        # Execute: エラーにならず完了すること
-        MergeSplitFiles(ctx).run()
-
-        # Verify: マージ自体は成功
-        merged_path = f"{ctx.knowledge_dir}/component/test/test.json"
-        assert os.path.exists(merged_path)
-
-        # Verify: traceは存在するパートの情報のみで統合される
-        merged_trace_path = f"{ctx.trace_dir}/test.json"
-        assert os.path.exists(merged_trace_path)
-        merged_trace = load_json(merged_trace_path)
-        assert "label-2" in merged_trace["internal_labels"]
-        assert "section2" in merged_trace["internal_labels"]

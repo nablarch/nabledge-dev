@@ -30,7 +30,7 @@ class PhaseFFinalize:
         entries = []
 
         # Use resolved knowledge directory if Phase G has run
-        knowledge_dir = self.ctx.knowledge_resolved_dir if os.path.exists(self.ctx.knowledge_resolved_dir) else self.ctx.knowledge_dir
+        knowledge_dir = self.ctx.knowledge_dir
 
         for fi in classified["files"]:
             json_path = f"{knowledge_dir}/{fi['output_path']}"
@@ -126,7 +126,7 @@ class PhaseFFinalize:
         generated = 0
 
         # Use resolved knowledge directory if Phase G has run
-        knowledge_dir = self.ctx.knowledge_resolved_dir if os.path.exists(self.ctx.knowledge_resolved_dir) else self.ctx.knowledge_dir
+        knowledge_dir = self.ctx.knowledge_dir
 
         for fi in classified["files"]:
             json_path = f"{knowledge_dir}/{fi['output_path']}"
