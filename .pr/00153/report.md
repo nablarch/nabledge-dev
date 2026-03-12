@@ -1,294 +1,207 @@
-# Fabrication Verification Report: R2 Phase D Findings
+# 捏造検証レポート：Phase D R2 ファインディング
 
-**Date**: 2026-03-12
+**日付**: 2026-03-12
 **Issue**: #153
-**Methodology**: Re-run kc Phase D (`--phase D`) on a sample of files that had issues in Phase D R2 of run `20260309T232615`
+**手法**: Phase D R2（run `20260309T232615`）でISSUEだったファイルのサンプルに対して `kc --phase D` を再実行
 
 ---
 
-## Background
+## 背景
 
-The large kc run `20260309T232615` (work1, phases ACDEM, max_rounds=2) produced:
-- Phase D R1: 48 fabrication findings across 289 "has_issues" files
-- Phase E R1: Fixed all 289 files, deleted their findings files
-- Phase D R2: 30 fabrication findings across 205 "has_issues" files
-- Phase E R2: Fixed all 205 files, deleted their findings files
+大規模kc実行 `20260309T232615`（work1、フェーズ ACDEM、max_rounds=2）の結果：
 
-The Phase D R2 findings files were deleted by Phase E R2 (`os.remove(findings_path)` in phase_e_fix.py:100).
-Direct inspection of R2 findings is not possible.
+- Phase D R1: 289件のISSUEファイル中に fabrication 48件
+- Phase E R1: 289ファイルを修正 → finidngsファイルを削除
+- Phase D R2: 205件のISSUEファイル中に fabrication 30件
+- Phase E R2: 205ファイルを修正 → findingsファイルを削除
 
-**Approach**: Re-run Phase D on a representative sample of the 205 Phase D R2 ISSUE files (from execution log analysis). The current knowledge files reflect the post-Phase E R2 state.
+Phase D R2のfindingsファイルは Phase E R2 によって削除済み（`phase_e_fix.py:100` の `os.remove(findings_path)`）。R2ファインディングの直接参照は不可能。
 
----
-
-## Sampling
-
-- **Total R2 ISSUE files**: 205 (from execution log lines 889-1097 of `20260309T232615/execution.log`)
-- **Files sampled**: 40 (2 batches of 20, diverse categories)
-- **Run IDs**: `20260312T102320` (batch 1), `20260312T103251` (batch 2)
-
-### Batch 1 Files (20)
-adapters-jaxrs_adaptor--sec-3835c739, adapters-lettuce_adaptor, adapters-micrometer_adaptor--mbean,
-migration-migration--jakarta-ee-10, nablarch-batch-batch, nablarch-batch-getting_started,
-jakarta-batch-jsr352, jakarta-batch-database_reader, libraries-log--sec-7521ea21,
-libraries-bean_validation--sec-2a05b0f0, libraries-tag_reference--popupsubmit,
-libraries-format_definition--sec-1c203f82, web-application-feature_details--nablarch,
-web-application-application_design, handlers-body_convert_handler--sec-2a8f8aeb,
-restful-web-service-feature_details--nablarch, http-messaging-feature_details--nablarch,
-testing-framework-batch--csv, about-nablarch-nablarch, releases-nablarch6u3-releasenote
-
-### Batch 2 Files (20)
-testing-framework-batch--sec-d41d8cd9, testing-framework-send_sync--sec-d41d8cd9,
-testing-framework-02_entityUnitTestWithNablarchValidation--sec-d41d8cd9,
-testing-framework-03_Tips--sec-e9b44039,
-testing-framework-02_entityUnitTestWithNablarchValidation--sec-1a3c0d5c,
-testing-framework-JUnit5_Extension--sec-d41d8cd9, testing-framework-02_DbAccessTest--sec-c0a96a9f,
-testing-framework-01_Abstract--excel, testing-framework-02_RequestUnitTest--sec-dfb6ecf5,
-about-nablarch-05--sec-d41d8cd9, about-nablarch-12--sec-ec09647d,
-libraries-universal_dao--sec-90be4121, handlers-SessionStoreHandler--sec-2a8f8aeb,
-handlers-thread_context_clear_handler--sec-2a8f8aeb, release-notes-releases,
-nablarch-patterns-Nablarchバッチ処理パターン, blank-project-setup_WebService--restful,
-toolbox-NablarchOpenApiGenerator--sec-a5f21170, adapters-micrometer_adaptor--sec-8ce6778b,
-handlers-loop_handler--sec-2a8f8aeb
+**アプローチ**: execution.log からPhase D R2のISSUEファイル205件を特定し、40件をサンプリングして `kc --phase D` を再実行。現在の知識ファイルは Phase E R2 修正後の状態。
 
 ---
 
-## Results Summary
+## サンプリング
 
-| Batch | Files Sampled | Files Clean | Files with Issues | Fabrication Found |
-|-------|--------------|-------------|-------------------|-------------------|
-| 1     | 20           | 7           | 13                | 2                 |
-| 2     | 20           | 5           | 15                | 7                 |
-| **Total** | **40**   | **12**      | **28**            | **9**             |
-
-### Finding Categories (combined)
-
-| Category     | Count |
-|--------------|-------|
-| fabrication  | 9     |
-| section_issue| ~16   |
-| omission     | ~11   |
-| hints_missing| ~8    |
+- **R2 ISSUEファイル総数**: 205件（execution.log 889-1097行から特定）
+- **サンプル数**: 40件（20件×2バッチ、カテゴリ多様）
+- **Run ID**: `20260312T102320`（バッチ1）、`20260312T103251`（バッチ2）
 
 ---
 
-## Fabrication Findings Analysis (9 findings)
+## 結果サマリー
 
-### F1: `testing-framework-batch--csv` — Fabricated header row
+| バッチ | サンプル | Clean | Issues | 捏造件数 |
+|--------|---------|-------|--------|---------|
+| 1      | 20      | 7     | 13     | 2件     |
+| 2      | 20      | 5     | 15     | 7件     |
+| **合計** | **40** | **12** | **28** | **9件** |
 
-- **Description**: Markdown table has fabricated header row `| 区分 | フィールド1 | フィールド2 | フィールド3 |` not present in RST source.
-- **Source evidence**: RST grid table has no header row — first row is `|text-encoding | Windows-31J |`. Column labels "区分", "フィールド1" etc. appear nowhere in the source section.
-- **Knowledge file (relevant)**:
-  ```
-  | 区分 | フィールド1 | フィールド2 | フィールド3 |
-  |---|---|---|---|
-  | text-encoding | Windows-31J | | |
-  ```
-- **RST source (relevant)**:
-  ```
-  +-----------------+-------------+-------------+-----------+
-  |text-encoding    |Windows-31J                            |
-  +-----------------+-------------+-------------+-----------+
-  ```
-- **Classification**: **real**
-- **Reasoning**: Column header row has absolutely no basis in RST source. The knowledge creator invented column headers for a headerless grid table.
+### ファインディングカテゴリ内訳（合計）
+
+| カテゴリ       | 件数 |
+|---------------|------|
+| fabrication   | 9    |
+| section_issue | 約16 |
+| omission      | 約11 |
+| hints_missing | 約8  |
 
 ---
 
-### F2: `testing-framework-batch--csv` — Fabricated explanatory sentence
+## 捏造ファインディング一覧（9件）
 
-- **Description**: Statement `messageカラムは空でも可（FATALの例ではmessage3が空）。` not present in source.
-- **Source evidence**: RST shows a FATAL row with empty message3 cell (by example only). No sentence states that leaving messageN columns empty is permitted.
-- **Knowledge file (relevant)**:
-  ```
-  messageカラムは空でも可（FATALの例ではmessage3が空）。
-  ```
-- **RST source (relevant)**:
-  ```
-  ======== ============= ====================== ==============
-  logLevel   message1     message2               message3
-   FATAL     NB11AA0109  エラーが発生しました。
-  ======== ============= ====================== ==============
-  ```
-- **Classification**: **real**
-- **Reasoning**: An inference from a data example was presented as an explicitly stated rule. The RST never states this as a rule or explanation.
+### F1: `testing-framework-batch--csv` — テーブルヘッダの捏造
+
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | ヘッダ行なしのグリッドテーブル。最初の行は `\|text-encoding \| Windows-31J \|`。「区分」「フィールド1」という文字列はソース内に存在しない |
+| **知識ファイルの内容** | `\| 区分 \| フィールド1 \| フィールド2 \| フィールド3 \|` というヘッダ行が追加されている |
+| **捏造根拠** | RSTはヘッダなしのグリッドテーブル。列名「区分」「フィールド1〜3」はソース内のどこにも存在しない |
+| **ユーザー影響** | 存在しない列ラベルで意味が変わる。ユーザーがCSVフォーマットを誤解する可能性がある |
+| **分類** | **real** |
 
 ---
 
-### F3: `testing-framework-02_entityUnitTestWithNablarchValidation--sec-d41d8cd9` — Added outcome wording
+### F2: `testing-framework-batch--csv` — 説明文の捏造
 
-- **Description**: Test execution table adds "許容/不許容の設定に従い精査成功/失敗を検証" in the 備考 column for character-type rows. RST 備考 for these rows only describes input string construction.
-- **Knowledge file (relevant)**:
-  ```
-  | 文字種（各12種） | 各文字種でmax長の文字列 | 許容/不許容の設定に従い精査成功/失敗を検証 |
-  ```
-- **RST source (relevant)**:
-  ```
-  | 文字種 |半角英字 | max(最大文字列長)欄に記載した長さの文字列で構成される。
-  ```
-- **Classification**: **real**
-- **Reasoning**: Source 備考 column only describes input construction. The knowledge file added outcome verification wording with no basis in the source.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | FATALログのmessage3セルが空の例が表で示されているだけ。「空でも可」という説明文は存在しない |
+| **知識ファイルの内容** | `messageカラムは空でも可（FATALの例ではmessage3が空）。` という説明文がある |
+| **捏造根拠** | RSTは例を示しているだけで、「空でも可」というルールを明示していない。例からの推論を事実として記述している |
+| **ユーザー影響** | ドキュメント化されていないルールとして受け取られる。実際の仕様と異なる場合にテストが通過しない設定を導く可能性がある |
+| **分類** | **real** |
 
 ---
 
-### F4: `testing-framework-03_Tips--sec-e9b44039` — Generated content for empty-body split
+### F3: `testing-framework-02_entityUnitTestWithNablarchValidation--sec-d41d8cd9` — 検証結果の記述追加
 
-- **Description**: Knowledge file contains explanatory sentence for a section whose split boundary contains only an RST anchor and heading separator (no body text).
-- **Source evidence**: section_range ends at line 730. Content at lines 728-730: `.. _how_to_change_test_data_dir:` + heading separator only. No body text in split.
-- **Knowledge file (relevant)**:
-  ```
-  テストデータの配置ディレクトリを変更する方法については、ソースドキュメントの当該セクションを確認すること。
-  ```
-- **RST source (relevant)**:
-  ```
-  .. _how_to_change_test_data_dir:
-
-  ——————————————————————————————
-  ```
-- **Classification**: **real**
-- **Reasoning**: Knowledge file generated explanatory content when the source split contained zero body text. Content is entirely fabricated.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | 文字種行の備考欄には `max(最大文字列長)欄に記載した長さの文字列で構成される。`（入力文字列の構成説明のみ） |
+| **知識ファイルの内容** | `許容/不許容の設定に従い精査成功/失敗を検証` という結果検証の記述が備考欄に追加されている |
+| **捏造根拠** | ソースの備考欄は入力値の構成説明のみ。検証の成否についての記述はソースに存在しない |
+| **ユーザー影響** | テスト実行時に期待する検証内容を誤解する可能性がある |
+| **分類** | **real** |
 
 ---
 
-### F5: `testing-framework-02_entityUnitTestWithNablarchValidation--sec-1a3c0d5c` — Removed abbreviation marker
+### F4: `testing-framework-03_Tips--sec-e9b44039` — 本文なしsplitへのコンテンツ生成
 
-- **Description**: XML example removes `<!-- 中略 -->` and adds explicit `</list>` closing tag, making an intentionally abbreviated snippet appear complete.
-- **Knowledge file (relevant)**:
-  ```
-    </list>
-  </property>
-  ```
-- **RST source (relevant)**:
-  ```
-      <!-- 中略 -->
-  </property>
-  ```
-- **Classification**: **real**
-- **Reasoning**: Removing `<!-- 中略 -->` and adding `</list>` transforms an explicitly-marked-incomplete snippet into one that appears complete, misleading users about required validator configuration.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | section_rangeの範囲（～730行目）にはRSTアンカー `.. _how_to_change_test_data_dir:` と見出し区切り線のみ。本文ゼロ |
+| **知識ファイルの内容** | `テストデータの配置ディレクトリを変更する方法については、ソースドキュメントの当該セクションを確認すること。` という説明文がある |
+| **捏造根拠** | ソースsplitに本文が一切ないにもかかわらず説明文を生成している。根拠となる本文が存在しない |
+| **ユーザー影響** | 架空のガイダンスを提示。実在しない手順への誘導になる可能性がある |
+| **分類** | **real** |
 
 ---
 
-### F6: `testing-framework-02_DbAccessTest--sec-c0a96a9f` — Invented term and placement rule
+### F5: `testing-framework-02_entityUnitTestWithNablarchValidation--sec-1a3c0d5c` — 省略マーカーの除去
 
-- **Description**: Adds label "コメント行" and placement rule "カラム名行とデータ行の間に置く" for a `//` row in test data tables. RST source only shows the format by example with no such explanation.
-- **Knowledge file (relevant)**:
-  ```
-  3行目以降: 期待値（コメント行 `// データ型` でデータ型指定可。コメント行はカラム名行とデータ行の間に置く）
-  ```
-- **RST source (relevant)**:
-  ```
-  | // CHAR(5) VARCHAR(64) BOOLEAN |
-  ```
-  (no accompanying label or placement rule)
-- **Classification**: **real**
-- **Reasoning**: Both the term "コメント行" and the placement rule "カラム名行とデータ行の間に置く" are absent from the source. The source only shows the format by example.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | XMLコード例に `<!-- 中略 -->` があり、listが意図的に省略されていることを明示。`</list>` の閉じタグはない |
+| **知識ファイルの内容** | `<!-- 中略 -->` が削除され、`</list>` 閉じタグが追加されており、完全なXMLに見える |
+| **捏造根拠** | 意図的な省略マーカーを削除し、架空の閉じタグを追加することで、不完全なスニペットを完全に見せている |
+| **ユーザー影響** | RequiredValidatorとLengthValidatorだけで設定完了と誤解する可能性がある。実際には他のValidatorも必要な場合に設定漏れが発生する |
+| **分類** | **real** |
 
 ---
 
-### F7: `testing-framework-01_Abstract--excel` — Altered notation in example
+### F6: `testing-framework-02_DbAccessTest--sec-c0a96a9f` — 用語と配置ルールの捏造
 
-- **Description**: Example `${半角数字,2}-${半角数字,4}` in knowledge file does not match source `${半角数字,2}-{半角数字4}` (second segment differs: source has no `$` prefix and no comma).
-- **Knowledge file (relevant)**:
-  ```
-  ${半角数字,2}-${半角数字,4}
-  ```
-- **RST source (relevant)**:
-  ```
-  ${半角数字,2}-{半角数字4}
-  ```
-- **Classification**: **real**
-- **Reasoning**: The knowledge file "normalized" an inconsistent notation in the source, changing both the `$` prefix and comma separator in the second segment. The source is authoritative regardless of apparent inconsistency.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | テストデータ表の `// CHAR(5) VARCHAR(64) BOOLEAN` 行が例として示されているだけ。ラベルや配置ルールの説明なし |
+| **知識ファイルの内容** | `コメント行 \`// データ型\` でデータ型指定可。コメント行はカラム名行とデータ行の間に置く` という説明がある |
+| **捏造根拠** | 「コメント行」という用語も「カラム名行とデータ行の間に置く」というルールも、ソースには存在しない。例からの創作 |
+| **ユーザー影響** | 架空のルールに従ってテストデータを作成すると、意図しない挙動やエラーが発生する可能性がある |
+| **分類** | **real** |
 
 ---
 
-### F8: `toolbox-NablarchOpenApiGenerator--sec-a5f21170` — Corrected source typo
+### F7: `testing-framework-01_Abstract--excel` — 記法の改変
 
-- **Description**: Knowledge file states `nablarch-jaxrs` but source configuration table (line 152) reads `nablarch-jarxrs` (typo). Other locations in the same RST use `nablarch-jaxrs` correctly.
-- **Knowledge file (relevant)**:
-  ```
-  | `generatorName` | Generatorの名前。`nablarch-jaxrs` を指定 | 必須 | なし |
-  ```
-- **RST source (relevant)**:
-  ```
-  本ツールでは ``nablarch-jarxrs`` と指定すること。  (line 152, typo)
-  generatorName には nablarch-jaxrs を指定することで  (line 111, correct)
-  ```
-- **Classification**: **ambiguous**
-- **Reasoning**: Source table row has an obvious typo (`jarxrs` vs `jaxrs`). Knowledge file used the correct spelling consistent with line 111 and all code examples. This corrects a source typo rather than fabricating information, but technically deviates from the literal table text.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | `${半角数字,2}-{半角数字4}`（2番目のセグメントは `$` なし、カンマなし） |
+| **知識ファイルの内容** | `${半角数字,2}-${半角数字,4}`（2番目のセグメントに `$` とカンマを追加） |
+| **捏造根拠** | ソースの記法が一貫していないように見えるため「正規化」したと思われるが、ソースが正とすべき |
+| **ユーザー影響** | ソースと異なる記法を正として学習する。実際の動作と異なる記述になる可能性がある |
+| **分類** | **real** |
 
 ---
 
-### F9: `handlers-loop_handler--sec-2a8f8aeb` — Added use-case description
+### F8: `toolbox-NablarchOpenApiGenerator--sec-a5f21170` — ソース誤植の補正（あいまい）
 
-- **Description**: Adds "スタンドアロンバッチ処理で使用する" — phrase not present in source body text.
-- **Source evidence**: RST body text describes handler function without naming the use-case. Maven artifact is `nablarch-fw-standalone` but no body text states this handler is for standalone batch processing.
-- **Knowledge file (relevant)**:
-  ```
-  スタンドアロンバッチ処理で使用する。
-  ```
-- **RST source (relevant)**:
-  ```
-  ハンドラクラス名 / * nablarch.fw.handler.LoopHandler
-  ```
-  (no use-case description)
-- **Classification**: **real**
-- **Reasoning**: Inferred from Maven artifact ID `nablarch-fw-standalone` but stated as fact. RST body text does not contain this statement.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | 設定表の152行目に `nablarch-jarxrs`（誤植: `jar` のはず `jax`）。111行目と全コード例は `nablarch-jaxrs`（正しい） |
+| **知識ファイルの内容** | `nablarch-jaxrs`（正しいスペル） |
+| **捏造根拠** | 技術的には設定表の誤植から逸脱しているが、同一ドキュメント内の他箇所（111行目）と整合している |
+| **ユーザー影響** | 実害なし（むしろ正しい）。ただしPhase Dが捏造として検知するのは正しい挙動 |
+| **分類** | **ambiguous**（ソース誤植の補正） |
 
 ---
 
-## False Positive Rate
+### F9: `handlers-loop_handler--sec-2a8f8aeb` — ユースケース説明の捏造
 
-| Classification | Count | Percentage |
-|----------------|-------|------------|
-| real           | 8     | 88.9%      |
-| ambiguous      | 1     | 11.1%      |
-| false_positive | 0     | 0.0%       |
-
-**False positive rate: 0%** (excluding ambiguous)
-**Fabrication rate in sampled files**: 9 findings across 8 files out of 40 sampled (20% of sampled files had fabrication)
-
----
-
-## Patterns Observed
-
-Three distinct fabrication patterns emerged:
-
-1. **RST grid-table header invention** (F1): When RST uses headerless grid tables, knowledge creator invents column headers. Systematic risk for any file with this table format.
-
-2. **Inference-as-fact** (F2, F9): Knowledge creator draws inferences from examples or context and presents them as explicitly documented rules/descriptions.
-
-3. **Content generation for empty splits** (F4): When a split section's range contains only an anchor/heading with no body text, knowledge creator generates explanatory content from nothing.
-
-4. **Example alteration** (F5, F7): Abbreviated examples are completed (`<!-- 中略 -->` removal) or notation is "normalized" without source basis.
-
-5. **Invented terms and rules** (F3, F6): Knowledge creator adds explanatory terminology and structural rules not present in source.
+| 項目 | 内容 |
+|------|------|
+| **RSTの内容** | ハンドラクラス名 `nablarch.fw.handler.LoopHandler` の記載のみ。用途説明なし（Mavenアーティファクト名は `nablarch-fw-standalone`） |
+| **知識ファイルの内容** | `スタンドアロンバッチ処理で使用する。` という用途説明がある |
+| **捏造根拠** | Mavenアーティファクト名 `nablarch-fw-standalone` から推測して事実として記述。本文に記載なし |
+| **ユーザー影響** | 誤った用途理解につながる可能性がある。他のバッチ処理方式での利用可否を誤解させる可能性がある |
+| **分類** | **real** |
 
 ---
 
-## Conclusions
+## 集計
 
-**1. Phase D R2 fabrication findings were real (not false positives)**: All 8 unambiguous fabrication findings identified in this re-run are genuine. False positive rate is 0%. This answers the primary question in issue #153: the R2 fabrications were real content quality problems.
+| 分類 | 件数 | 割合 |
+|------|------|------|
+| real（本物の捏造） | 8 | 88.9% |
+| ambiguous（あいまい） | 1 | 11.1% |
+| false_positive（誤検知） | 0 | 0% |
 
-**2. Phase E R2 was partially effective**: In the initial 20-file batch, 18 files with no fabrication findings suggests Phase E R2 successfully removed many fabrications. However, 8 files still had fabrication findings in the current (post-Phase E R2) state, indicating Phase E R2 did not fully fix the fabrication problem.
-
-**3. Systematic patterns exist**: The fabrication patterns observed (grid-table headers, empty-split generation, inference-as-fact) suggest systematic prompting or generation issues that may affect other knowledge files beyond the sampled set.
-
-**4. Follow-up work needed**: The 8 files with real fabrication findings require manual fix or targeted `kc fix` (not committed per this verification-only task). A separate fix PR should be created.
+**False Positive率: 0%**（ambiguous除く）
+**捏造ファイル率**: 40サンプル中8ファイル（20%）に捏造あり
 
 ---
 
-## Recommendations
+## 捏造パターンの分類
 
-1. **Fix the 8 files** with confirmed real fabrications via targeted `kc fix`:
-   - testing-framework-batch--csv
-   - testing-framework-02_entityUnitTestWithNablarchValidation--sec-d41d8cd9
-   - testing-framework-03_Tips--sec-e9b44039
-   - testing-framework-02_entityUnitTestWithNablarchValidation--sec-1a3c0d5c
-   - testing-framework-02_DbAccessTest--sec-c0a96a9f
-   - testing-framework-01_Abstract--excel
-   - toolbox-NablarchOpenApiGenerator--sec-a5f21170 (ambiguous — review manually)
-   - handlers-loop_handler--sec-2a8f8aeb
+| パターン | 該当 | 説明 |
+|----------|------|------|
+| グリッドテーブルへのヘッダ捏造 | F1 | ヘッダなしRSTグリッドテーブルに架空の列名を生成 |
+| 推論を事実として記述 | F2, F9 | 例やコンテキストからの推論を明示的なルール・説明として記述 |
+| 空splitへのコンテンツ生成 | F4 | 本文ゼロのsplit範囲に説明文を生成 |
+| 例の改変 | F5, F7 | 省略マーカーの削除や記法の「正規化」 |
+| 用語・ルールの創作 | F3, F6 | ソースに存在しない用語や構造ルールを追加 |
 
-2. **Improve Phase B generation prompt** to address the three systematic patterns (grid-table headers, empty-split handling, inference-as-fact).
+---
 
-3. **Consider expanding verification** to all 205 Phase D R2 ISSUE files to get a complete fabrication count.
+## 結論
+
+1. **R2 fabricationは本物だった**: 8件の明確な捏造はすべて本物。False Positive率0%。Issue #153の主要な問いへの回答：R2の捏造は実際のコンテンツ品質問題だった。
+
+2. **Phase E R2は部分的にしか機能しなかった**: バッチ1の18ファイルがcleanになったことから、Phase E R2は多くの捏造を修正できた。しかし8ファイルは現在も捏造が残存しており、Phase E R2は完全には対処できていない。
+
+3. **体系的なパターンが存在する**: 発見された捏造パターン（テーブルヘッダ捏造・空split生成・推論as-fact）は、サンプル外のファイルにも同様の問題がある可能性を示唆する。
+
+---
+
+## 対応が必要なファイル（8件）
+
+| ファイルID | 捏造 | 分類 |
+|-----------|------|------|
+| testing-framework-batch--csv | F1, F2 | real |
+| testing-framework-02_entityUnitTestWithNablarchValidation--sec-d41d8cd9 | F3 | real |
+| testing-framework-03_Tips--sec-e9b44039 | F4 | real |
+| testing-framework-02_entityUnitTestWithNablarchValidation--sec-1a3c0d5c | F5 | real |
+| testing-framework-02_DbAccessTest--sec-c0a96a9f | F6 | real |
+| testing-framework-01_Abstract--excel | F7 | real |
+| toolbox-NablarchOpenApiGenerator--sec-a5f21170 | F8 | ambiguous（手動確認推奨） |
+| handlers-loop_handler--sec-2a8f8aeb | F9 | real |
