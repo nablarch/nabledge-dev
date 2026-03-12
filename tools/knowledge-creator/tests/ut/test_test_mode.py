@@ -8,10 +8,12 @@ import sys
 import json
 
 # Get real repository path
-TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPO_ROOT = os.path.dirname(os.path.dirname(TOOL_DIR))
+# __file__ = tests/ut/test_test_mode.py → knowledge-creator is 2 levels up
+KC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+REPO_ROOT = os.path.dirname(os.path.dirname(KC_DIR))
+TOOL_DIR = KC_DIR
 
-sys.path.insert(0, TOOL_DIR)
+sys.path.insert(0, os.path.join(TOOL_DIR, "scripts"))
 from run import Context
 from step1_list_sources import Step1ListSources
 from step2_classify import Step2Classify
@@ -38,11 +40,6 @@ def real_ctx(tmp_path):
     os.makedirs(ctx.log_dir, exist_ok=True)
     return ctx
 
-
-pytestmark = pytest.mark.skipif(
-    not os.path.exists(f"{REPO_ROOT}/.lw/nab-official/v6"),
-    reason="Requires real repository with source files"
-)
 
 
 class TestTop3Mode:
@@ -120,7 +117,7 @@ class TestComprehensiveMode:
         real_ctx.test_file = "batch.json"
 
         # Load test file
-        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/mode/batch.json"
+        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/e2e/mode/batch.json"
         with open(test_file_path) as f:
             test_config = json.load(f)
         expected_ids = set(test_config["files"])
@@ -175,7 +172,7 @@ class TestTestModeEdgeCases:
         real_ctx.test_file = "largest3.json"
 
         # Modify test file to include non-existent ID
-        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/mode/largest3.json"
+        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/e2e/mode/largest3.json"
         with open(test_file_path) as f:
             original = f.read()
 
