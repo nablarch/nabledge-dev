@@ -220,7 +220,12 @@ class PhaseFFinalize:
         """Build a link from one file to another."""
         anchor = f"#{section_id}" if section_id else ""
         if output_type == 'skill_json':
-            return f"{to_file_id}.json{anchor}"
+            from_type, from_cat = self.file_type_category.get(from_file_id, ('', ''))
+            to_type, to_cat = self.file_type_category.get(to_file_id, ('', ''))
+            from_dir = f"{self.ctx.knowledge_dir}/{from_type}/{from_cat}"
+            to_path = f"{self.ctx.knowledge_dir}/{to_type}/{to_cat}/{to_file_id}.json"
+            rel = os.path.relpath(to_path, from_dir)
+            return f"{rel}{anchor}"
         else:
             # docs_md: relative path between two MD files
             from_type, from_cat = self.file_type_category.get(from_file_id, ('', ''))

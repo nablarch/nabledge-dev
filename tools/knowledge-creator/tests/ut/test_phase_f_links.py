@@ -198,13 +198,13 @@ class TestResolveRstLinks:
         """:ref: to different file → file_id.json#section_id."""
         pf = self._make_pf(ctx)
         result = pf._resolve_rst_links(":ref:`external_label`", "current-file", "skill_json")
-        assert result == "[external_label](other-file.json#s2)"
+        assert result == "[external_label](../adapters/other-file.json#s2)"
 
     def test_ref_external_skill_json_no_section(self, ctx):
         """:ref: to different file with no section → file_id.json."""
         pf = self._make_pf(ctx)
         result = pf._resolve_rst_links(":ref:`external_no_section`", "current-file", "skill_json")
-        assert result == "[external_no_section](other-file.json)"
+        assert result == "[external_no_section](../adapters/other-file.json)"
 
     def test_ref_external_docs_md(self, ctx):
         """:ref: to different file in docs_md → relative MD path."""
@@ -224,13 +224,13 @@ class TestResolveRstLinks:
         """:doc: resolves to file_id.json."""
         pf = self._make_pf(ctx)
         result = pf._resolve_rst_links(":doc:`path/to/other`", "current-file", "skill_json")
-        assert result == "[path/to/other](other-file.json)"
+        assert result == "[path/to/other](../adapters/other-file.json)"
 
     def test_doc_link_with_display_text(self, ctx):
         """:doc:`display <path>` uses custom display text."""
         pf = self._make_pf(ctx)
         result = pf._resolve_rst_links(":doc:`Other Doc <path/to/other>`", "current-file", "skill_json")
-        assert result == "[Other Doc](other-file.json)"
+        assert result == "[Other Doc](../adapters/other-file.json)"
 
     def test_doc_link_unresolved(self, ctx):
         """Unresolvable :doc: is kept as-is."""
