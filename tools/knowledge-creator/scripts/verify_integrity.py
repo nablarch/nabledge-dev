@@ -255,6 +255,124 @@ def check_v15_no_trace_references(repo_root, results):
     results["V15"] = ("FAIL", fails) if fails else ("OK", [])
 
 
+def check_v2_doc_anchors(docs_dir, results):
+    """V2: docs内 [text](file.md#anchor) のanchor先が実在する"""
+    fails = []
+    link_re = re.compile(r'(?<!\[)\[([^\]]+)\]\(([^)#]+\.md)#([^)]+)\)')
+    for md_path in glob.glob(f"{docs_dir}/**/*.md", recursive=True):
+        content = open(md_path, encoding="utf-8").read()
+        src_dir = os.path.dirname(md_path)
+        for m in link_re.finditer(content):
+            file_part, anchor = m.group(2), m.group(3)
+            if file_part.startswith("http"):
+                continue
+            target_path = os.path.normpath(os.path.join(src_dir, file_part))
+            if not os.path.exists(target_path):
+                continue
+            target_content = open(target_path, encoding="utf-8").read()
+            heading_ids = set()
+            for hm in re.finditer(r'^##\s+(.+)$', target_content, re.MULTILINE):
+                h = hm.group(1).strip()
+                hid = re.sub(r'[^\w\s-]', '', h).strip().lower().replace(' ', '-')
+                heading_ids.add(hid)
+            if anchor not in heading_ids:
+                rel = os.path.relpath(md_path, docs_dir)
+                fails.append(f"  {rel} -> {file_part}#{anchor}: anchor not in target")
+    results["V2"] = ("FAIL", fails) if fails else ("OK", [])
+
+
+def check_v4_skill_asset_links(knowledge_dir, results):
+    """V4: skill JSON内 assets/ リンク先が実在する"""
+    fails = []
+    for p in glob.glob(f"{knowledge_dir}/**/*.json", recursive=True):
+        if "/assets/" in p:
+            continue
+        data = load_json(p)
+        json_dir = os.path.dirname(p)
+        for sid, content in data.get("sections", {}).items():
+            for m in re.finditer(r'[!\[]\[?[^\]]*\]\((assets/[^)]+)\)', content):
+                if not os.path.exists(os.path.join(json_dir, m.group(1))):
+                    fails.append(f"  {data.get('id', '')}#{sid}: {m.group(1)}")
+    results["V4"] = ("FAIL", fails) if fails else ("OK", [])
+
+
+def check_v5_skill_internal_anchors(knowledge_dir, results):
+    """V5: skill JSON内 (#section_id) が同一ファイル内に存在する"""
+    fails = []
+    for p in glob.glob(f"{knowledge_dir}/**/*.json", recursive=True):
+        if "/assets/" in p:
+            continue
+        data = load_json(p)
+        sids = set(data.get("sections", {}).keys())
+        for sid, content in data.get("sections", {}).items():
+            for m in re.finditer(r'\(#([^)]+)\)', content):
+                if m.group(1) not in sids:
+                    fails.append(f"  {data.get('id', '')}#{sid} -> #{m.group(1)}")
+    results["V5"] = ("FAIL", fails) if fails else ("OK", [])
+
+
+def check_v6_skill_crossfile_links(knowledge_dir, results):
+    """V6: skill JSON内 [text](path/file.json#sid) のターゲットが実在する"""
+    fails = []
+    link_re = re.compile(r'\[([^\]]*)\]\(([^)]+\.json)(?:#([^)]*))?\)')
+    for p in glob.glob(f"{knowledge_dir}/**/*.json", recursive=True):
+        if "/assets/" in p:
+            continue
+        data = load_json(p)
+        json_dir = os.path.dirname(p)
+        for sid, content in data.get("sections", {}).items():
+            for m in link_re.finditer(content):
+                target_file, anchor = m.group(2), m.group(3)
+                if target_file.startswith("http"):
+                    continue
+                target_abs = os.path.normpath(os.path.join(json_dir, target_file))
+                if not os.path.exists(target_abs):
+                    fails.append(f"  {data.get('id', '')}#{sid} -> {target_file}: not found")
+                elif anchor:
+                    td = load_json(target_abs)
+                    if anchor not in td.get("sections", {}):
+                        fails.append(f"  {data.get('id', '')}#{sid} -> {target_file}#{anchor}: section missing")
+    results["V6"] = ("FAIL", fails[:20]) if fails else ("OK", [])
+    if fails and len(fails) > 20:
+        results["V6"] = ("FAIL", fails[:20] + [f"  ... and {len(fails)-20} more"])
+
+
+def check_v16_biz_samples(catalog_path, results):
+    """V16: biz_samplesがguide/biz-samplesに配置されている"""
+    if not os.path.exists(catalog_path):
+        results["V16"] = ("FAIL", ["  catalog.json not found"])
+        return
+    catalog = load_json(catalog_path)
+    fails = []
+    for fi in catalog.get("files", []):
+        if "biz_samples" in fi.get("source_path", ""):
+            if fi["type"] != "guide" or fi["category"] != "biz-samples":
+                fails.append(f"  {fi['id']}: in {fi['type']}/{fi['category']}")
+    results["V16"] = ("FAIL", fails) if fails else ("OK", [])
+
+
+def check_v17_catalog_labels(catalog_path, repo_root, results):
+    """V17: section_mapのrst_labelsがソースRSTに実在する"""
+    if not os.path.exists(catalog_path):
+        results["V17"] = ("FAIL", ["  catalog.json not found"])
+        return
+    catalog = load_json(catalog_path)
+    fails = []
+    checked = 0
+    for fi in catalog.get("files", []):
+        source = os.path.join(repo_root, fi.get("source_path", ""))
+        if not os.path.exists(source):
+            continue
+        src_content = open(source, encoding="utf-8").read()
+        src_labels = set(re.findall(r'^\.\.\s+_([a-z0-9_-]+):', src_content, re.MULTILINE))
+        for sm in fi.get("section_map", []):
+            for label in sm.get("rst_labels", []):
+                checked += 1
+                if label not in src_labels:
+                    fails.append(f"  {fi['id']}: '{label}' not in source")
+    results["V17"] = ("FAIL", fails[:10]) if fails else ("OK", [f"  {checked} labels verified"])
+
+
 def main():
     parser = argparse.ArgumentParser(description="Verify integrity of nabledge knowledge files")
     parser.add_argument("--check-urls", action="store_true", help="Also check URL reachability (V18, V19)")
@@ -273,7 +391,11 @@ def main():
     print("Running integrity checks...\n")
 
     check_v1_doc_links(knowledge_dir, docs_dir, results)
+    check_v2_doc_anchors(docs_dir, results)
     check_v3_doc_asset_links(knowledge_dir, docs_dir, results)
+    check_v4_skill_asset_links(knowledge_dir, results)
+    check_v5_skill_internal_anchors(knowledge_dir, results)
+    check_v6_skill_crossfile_links(knowledge_dir, results)
     check_v7_index_toon(knowledge_dir, results)
     check_v8_index_section_consistency(knowledge_dir, results)
     check_v9_cache_section_ids(knowledge_cache_dir, results)
@@ -283,6 +405,9 @@ def main():
     check_v13_cache_no_processing_patterns(knowledge_cache_dir, results)
     check_v14_no_phase_g_trace(repo_root, results)
     check_v15_no_trace_references(repo_root, results)
+    catalog_path = os.path.join(kc_root, ".cache/v6/catalog.json")
+    check_v16_biz_samples(catalog_path, results)
+    check_v17_catalog_labels(catalog_path, repo_root, results)
 
     total = len(results)
     failed = 0
