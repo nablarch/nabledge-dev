@@ -1,0 +1,188 @@
+{
+  "id": "biz-samples-03--s1",
+  "title": "検索結果の一覧表示",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/03/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/support/ListSearchInfo.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/EntityList.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "提供パッケージ",
+      "hints": [
+        "listSearchResult",
+        "タグファイル提供パッケージ",
+        "resources/META-INF/tags",
+        "nablarch-biz-sample-all",
+        "nablarch-list-search-result"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "検索結果件数表示",
+        "ページング",
+        "universal_dao連携",
+        "一覧表示タグファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "構成",
+      "hints": [
+        "UniversalDao",
+        "ListSearchInfo",
+        "Pagination",
+        "EntityList",
+        "listSearchResult",
+        "listSearchPaging",
+        "listSearchSubmit",
+        "table",
+        "クラス構成",
+        "タグファイル一覧"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "UniversalDaoクラス",
+      "hints": [
+        "UniversalDao",
+        "nablarch.common.dao.UniversalDao",
+        "EntityList",
+        "ページング機能",
+        "検索結果取得"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ListSearchInfoクラス",
+      "hints": [
+        "ListSearchInfo",
+        "nablarch.core.db.support.ListSearchInfo",
+        "一覧検索情報",
+        "ページネーション情報",
+        "抽象クラス"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Paginationクラス",
+      "hints": [
+        "Pagination",
+        "ListSearchInfo",
+        "ページネーション情報参照"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "EntityListクラス",
+      "hints": [
+        "EntityList",
+        "Pagination",
+        "java.util.ArrayList",
+        "検索結果リスト保持"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "listSearchResultタグ",
+      "hints": [
+        "listSearchResult",
+        "検索結果一覧表示",
+        "resultSetName",
+        "リクエストスコープ",
+        "初期表示"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "全体",
+      "hints": [
+        "searchFormName",
+        "検索フォーム",
+        "リクエストスコープ取得",
+        "ページ番号",
+        "検索条件"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "検索結果件数",
+      "hints": [
+        "useResultCount",
+        "検索結果件数表示",
+        "デフォルトtrue",
+        "resultCountCss",
+        "resultCountFragment",
+        "resultCountプロパティ"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "ページング",
+      "hints": [
+        "usePaging",
+        "searchUri",
+        "ページング表示",
+        "サブミット要素URI",
+        "pagingPosition",
+        "pagingCss",
+        "pageNumber",
+        "ページング",
+        "ページネーション",
+        "検索条件URI",
+        "前へ",
+        "次へ",
+        "ページ切り替え"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "検索結果",
+      "hints": [
+        "listSearchResult",
+        "検索結果表示",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "EntityList",
+        "JSPフラグメント",
+        "ボディ行",
+        "ヘッダ行"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "全体ラッパーCSS",
+      "hints": [
+        "listSearchResultWrapperCss",
+        "全体ラッパー属性",
+        "ラッパーCSS",
+        "nablarch_listSearchResultWrapper"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "提供パッケージ: `resources/META-INF/tags/listSearchResult`\n\n[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-list-search-result)",
+    "s2": ":ref:`universal_dao` の検索機能と連携する一覧表示タグファイルが提供する機能:\n\n1. 検索結果件数の表示\n2. 検索結果を指定件数毎に表示するページング機能\n\n![一覧画面の出力例](assets/biz-samples-03--s1/ListSearchResult_Example.jpg)",
+    "s3": "ページングの実現に必要なクラスとタグファイルの構成。アプリケーションプログラマはページングを作り込みせずに実現できる。\n\n**フレームワーク提供クラス**:\n\n| クラス名 | 概要 |\n|---|---|\n| UniversalDao | 汎用的なDAO機能を提供するクラス。基本的な使い方は :ref:`universal_dao` を参照。 |\n| ListSearchInfo | 一覧検索用の情報を保持する抽象クラス。 |\n| Pagination | ListSearchInfoを継承した具象クラス。 |\n| EntityList | ユニバーサルDAOから返される結果リストの保持クラス。 |\n\n**タグファイル**:\n\n| タグ名 | 概要 |\n|---|---|\n| listSearchResult | 検索結果の一覧表示を行うタグ。 |\n| listSearchPaging | ページングを出力するタグ。 |\n| listSearchSubmit | ページングのサブミット要素を出力するタグ。 |\n| table | テーブルを出力するタグ。 |",
+    "s4": ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>` は複数件の検索結果をEntityListとして返すAPIを持つ。ページング機能の使用は :ref:`universal_dao-paging` を参照。",
+    "s5": ":java:extdoc:`nablarch.core.db.support.ListSearchInfo` は一覧検索用情報を保持する抽象クラス。ページネーションのページ数・検索条件一致件数などのフィールドおよびアクセッサメソッドを定義。",
+    "s6": "**クラス**: `Pagination` はListSearchInfoを継承し、ページネーション情報の参照に使用される。",
+    "s7": "**クラス**: `EntityList` はUniversalDaoから返される結果リストの保持クラス。`java.util.ArrayList` を継承し、`Pagination` インスタンスをフィールドに持つ。",
+    "s8": ":ref:`ListSearchResult_Tag` は検索結果リストを表示するタグ。\n\n> **注意**: `resultSetName` 属性で指定された検索結果がリクエストスコープに存在しない場合、listSearchResultタグは何も出力しない（検索画面の初期表示が何も出力されないケースに該当）。\n\n![listSearchResultタグの出力画面要素](assets/biz-samples-03--s1/ListSearchResult_PagingTableFull.jpg)\n\n全属性の詳細は :ref:`ListSearchResult_Tag` を参照。",
+    "s9": "| 属性 | 説明 |\n|---|---|\n| searchFormName | 検索フォームをリクエストスコープから取得する際の名前。検索条件とページング用ページ番号を保持。一覧表示のみの場合（一括削除確認画面等）は指定不要。 |",
+    "s10": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |\n\n検索結果件数はuseResultCount=true（デフォルト）かつリクエストスコープに検索結果が存在する場合に表示される。\n\nデフォルト書式: `検索結果 <paginationのresultCountプロパティ>件`\n\nデフォルト書式を変更する場合はresultCountFragment属性にJSPフラグメントを指定する：\n\n```jsp\n<app:listSearchResult resultSetName=\"searchResult\" useResultCount=\"true\">\n    <jsp:attribute name=\"resultCountFragment\">\n      [サーチ結果 <n:write name=\"searchResult.pagination.resultCount\" />件]\n    </jsp:attribute>\n</app:listSearchResult>\n```\n\n上記指定後の書式: `[サーチ結果 <paginationのresultCountプロパティ>件]`\n\n属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |\n| resultCountCss | \"nablarch_resultCount\" | 検索結果件数をラップするdivタグのclass属性 |\n| resultCountFragment | | 検索結果件数を出力するJSPフラグメント |",
+    "s11": "| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePaging |  | true | ページングを表示するか否か |\n| searchUri | ○ |  | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること。 |\n\nページングはusePaging=true（デフォルト）の場合に表示される。\n\nsearchFormNameで指定するフォームは `pageNumber` という名前でページ番号を受け取るよう実装すること：\n\n```java\npublic class ProjectSearchForm {\n    @Required\n    @Domain(\"pageNumber\")\n    private String pageNumber;\n    public String getPageNumber(){ return this.pageNumber; }\n    public void setPageNumber(String pageNumber){ this.pageNumber = pageNumber; }\n}\n```\n\nページング全体は検索結果件数が1件以上の場合に表示される。ページングの画面要素：\n\n| 画面要素 | 表示条件 |\n|---|---|\n| 現在のページ番号 | useCurrentPageNumber=trueの場合 |\n| 最初・前へ・次へ・最後 | 遷移可能な場合はサブミット、不可の場合はラベルで表示 |\n| ページ番号（1..n） | 総ページ数が2以上の場合のみ表示 |\n\n**ページング時の検索条件**: 検索条件をパラメータにセットしたURIをsearchUri属性に渡す：\n\n```jsp\n<%@ taglib prefix=\"c\" uri=\"jakarta.tags.core\" %>\n<%@ taglib prefix=\"app\" tagdir=\"/WEB-INF/tags/listSearchResult\" %>\n<c:url value=\"/action/project/list\" var=\"uri\" context=\"/\">\n    <c:param name=\"searchForm.projectName\" value=\"${searchForm.projectName}\"/>\n</c:url>\n<app:listSearchResult resultSetName=\"searchResult\" searchUri=\"${uri}\" ...>\n```\n\n**ページング中に検索結果が減少した場合**: 指定されたページ番号に基づき検索を実施し各画面要素を表示する。現在のページ番号とサブミット要素の対応が取れており操作不能な状態にならない。\n\n属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| usePaging | true | ページングを表示するか否か |\n| pagingPosition | top | ページングの表示位置。top（上側のみ）/ bottom（下側のみ）/ both（両方）/ none（表示なし） |\n| pagingCss | \"nablarch_paging\" | ページングのサブミット要素全体をラップするdivタグのclass属性 |\n| searchUri | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること |",
+    "s13": "全体ラッパーCSSに関する属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| listSearchResultWrapperCss | \"nablarch_listSearchResultWrapper\" | ページング付きテーブル全体（検索結果件数・ページング・検索結果）をラップするdivタグのclass属性 |",
+    "s12": "検索結果タグの主要属性：\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| resultSetName | ○ | :java:extdoc:`EntityList<nablarch.common.dao.EntityList>` をリクエストスコープから取得する名前。ページネーション情報（ページ数・件数等）も含む |\n| headerRowFragment | | ヘッダ行のJSPフラグメント（:ref:`ListSearchResult_TableElement` 参照） |\n| bodyRowFragment | | ボディ行のJSPフラグメント（:ref:`ListSearchResult_TableElement` 参照） |\n\n検索結果はヘッダ行（headerRowFragment）とボディ行（bodyRowFragment）で構成される。検索結果が0件の場合はヘッダ行のみ表示される。ボディ行フラグメントはJSTLの `c:forEach` タグのループ内で呼び出される。\n\nボディ行フラグメントで行データ・ステータスにアクセスするための属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| varRowName | \"row\" | 行データ（c:forEachのvar属性）を参照する変数名 |\n| varStatusName | \"status\" | ステータス（c:forEachのstatus属性）を参照する変数名 |\n| varCountName | \"count\" | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | \"rowCount\" | 検索結果のカウント（取得開始位置＋ステータスのcount）を参照する変数名 |\n\n> **補足**: n:writeタグでステータスにアクセスするとn:writeとEL式のアクセス方法の違いによりエラーが発生する。n:setタグを使用してステータスにアクセスすること。例: `<n:set var=\"rowCount\" value=\"${status.count}\" /><n:write name=\"rowCount\" />`\n\n1行おきの背景色変更用属性：\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| varOddEvenName | \"oddEvenCss\" | ボディ行のclass属性を参照する変数名 |\n| oddValue | \"nablarch_odd\" | 奇数行のclass属性値 |\n| evenValue | \"nablarch_even\" | 偶数行のclass属性値 |\n\nJSP指定例（プロジェクト検索、タグファイルプレフィックスは `app`）：\n\n```jsp\n<app:listSearchResult resultSetName=\"searchResult\">\n    <jsp:attribute name=\"headerRowFragment\">\n        <tr>\n            <th>プロジェクトID</th>\n            <th>プロジェクト名</th>\n            <th>プロジェクト種別</th>\n            <th>開始日</th>\n            <th>終了日</th>\n        </tr>\n    </jsp:attribute>\n    <jsp:attribute name=\"bodyRowFragment\">\n        <tr class=\"info\">\n            <td>\n                <n:a href=\"/action/project/show/${row.projectId}\">\n                    <n:write name=\"row.projectId\"/>\n                </n:a>\n            </td>\n            <td><n:write name=\"row.projectName\" /></td>\n            <td>\n                <c:forEach var=\"projectType\" items=\"<%= ProjectType.values() %>\">\n                    <c:if test=\"${projectType.code == row.projectType}\">\n                        <n:write name=\"projectType.label\" />\n                    </c:if>\n                </c:forEach>\n            </td>\n            <td><n:write value=\"${n:formatByDefault('dateTime', row.projectStartDate)}\" /></td>\n            <td><n:write value=\"${n:formatByDefault('dateTime', row.projectEndDate)}\" /></td>\n        </tr>\n    </jsp:attribute>\n</app:listSearchResult>\n```"
+  }
+}

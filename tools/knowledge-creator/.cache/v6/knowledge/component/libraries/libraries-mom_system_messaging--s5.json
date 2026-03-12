@@ -1,0 +1,65 @@
+{
+  "id": "libraries-mom_system_messaging--s5",
+  "title": "MOMメッセージング",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/system_messaging/mom_system_messaging.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessagingProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/provider/JmsMessagingProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/reader/MessageReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/reader/FwHeaderReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageSendAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageSendActionSettings.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSender.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/SyncMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSenderSettings.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/SyncMessageConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessagingException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageReceiveAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageReceiveActionSettings.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/RequestMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/MessagingAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/FwHeaderDefinition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/StandardFwHeaderDefinition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/handler/MessageReplyHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "同期応答でメッセージを送信する(同期応答メッセージ送信)",
+      "hints": [
+        "MessageSender",
+        "SyncMessage",
+        "MessageSenderSettings",
+        "SyncMessageConvertor",
+        "MessagingException",
+        "TransactionAbnormalEnd",
+        "同期応答メッセージ送信",
+        "応答待機",
+        "タイムアウト処理",
+        "フォーマット定義ファイル",
+        "messaging.properties"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "応答不要でメッセージを受信する(応答不要メッセージ受信)",
+      "hints": [
+        "AsyncMessageReceiveAction",
+        "AsyncMessageReceiveActionSettings",
+        "RequestMessage",
+        "RequestPathJavaPackageMapping",
+        "LpadFormatter",
+        "DataRecord",
+        "応答不要メッセージ受信",
+        "電文受信テーブル",
+        "一時テーブル保存",
+        "INSERT_MESSAGE"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "外部システムにメッセージを送信し応答を待機する（応答受信またはタイムアウトまでブロック）。:ref:`mom_system_messaging-async_message_send` と異なり応答電文を受信するため、通信先の処理がある程度保証される。タイムアウトした場合は、電文の再試行や障害通知などのエラー処理が必要。\n\n**送信電文の共通プロトコルヘッダ** (:ref:`mom_system_messaging-common_protocol_header`)\n\n| ヘッダ | 値 |\n|---|---|\n| メッセージID | 設定不要（送信後に採番） |\n| 関連メッセージID | 設定不要 |\n| 送信宛先 | 送信宛先の論理名 |\n| 応答宛先 | 応答宛先の論理名 |\n| 有効期間 | 任意 |\n\n送信宛先ヘッダに加え、応答時の送信宛先となる応答宛先ヘッダを設定しておく必要がある。\n\n**応答電文の共通プロトコルヘッダ**（外部システムが作成）\n\nアプリケーションは送信電文のメッセージIDと同じ関連メッセージIDを持つ電文が応答宛先で受信されるまで待機するため、外部システムは応答電文に関連メッセージIDを設定する必要がある。\n\n| ヘッダ | 値 |\n|---|---|\n| メッセージID | 設定不要（送信後に採番） |\n| 関連メッセージID | 送信電文のメッセージIDヘッダの値 |\n| 送信宛先 | 送信電文の応答宛先ヘッダの値 |\n| 応答宛先 | 設定不要 |\n| 有効期間 | 任意 |\n\n**クラス**: `nablarch.fw.messaging.MessageSender`\n\nフォーマット定義ファイル命名規則:\n- 送信用: `<電文のリクエストID>_SEND.fmt`\n- 受信用: `<電文のリクエストID>_RECEIVE.fmt`\n- レコードタイプ名は `data` 固定\n\nProjectInsertMessage_SEND.fmt:\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    2120\nrecord-separator: \"\\r\\n\"\n\n[data]\n```\n\nProjectInsertMessage_RECEIVE.fmt:\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    130\nrecord-separator: \"\\r\\n\"\n\n[data]\n```\n\nMessageSenderを使った送受信処理:\n- 要求電文は :java:extdoc:`SyncMessage<nablarch.fw.messaging.SyncMessage>` で作成\n- 送信は :java:extdoc:`MessageSender#sendSync<nablarch.fw.messaging.MessageSender.sendSync(nablarch.fw.messaging.SyncMessage)>` を使用\n- `MessagingException` をキャッチして `TransactionAbnormalEnd` をスローする送信エラー処理が必要\n\n```java\nSyncMessage responseMessage = null;\ntry {\n    responseMessage = MessageSender.sendSync(\n        new SyncMessage(\"ProjectInsertMessage\").addDataRecord(inputData));\n} catch (MessagingException e) {\n    // 送信エラー\n    throw new TransactionAbnormalEnd(100, e, \"error.sendServer.fail\");\n}\nMap<String, Object> responseDataRecord = responseMessage.getDataRecord();\n```\n\n**MessageSender設定** (messaging.properties):\n```properties\nmessageSender.DEFAULT.messagingProviderName=defaultMessagingProvider\nmessageSender.DEFAULT.destination=TEST.REQUEST\nmessageSender.DEFAULT.replyTo=TEST.RESPONSE\nmessageSender.DEFAULT.retryCount=10\nmessageSender.DEFAULT.formatDir=format\nmessageSender.DEFAULT.headerFormatName=HEADER\n```\n\n設定は :ref:`repository-environment_configuration` により行う。設定項目は :java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.<init>(java.lang.String)>` を参照。\n\n```xml\n<config-file file=\"messaging/messaging.properties\"/>\n```\n\n電文の変換処理を変更する場合は、:java:extdoc:`SyncMessageConvertor<nablarch.fw.messaging.SyncMessageConvertor>` を継承したクラスをコンポーネント定義に追加し、コンポーネント名を `messageSender.DEFAULT.messageConvertorName` に指定する。詳細は :ref:`mom_system_messaging-change_fw_header_sync_ex` を参照。",
+    "s2": "特定の宛先に送信されるメッセージを受信する（受信またはタイムアウトまでブロック）。\n\n**受信電文の共通プロトコルヘッダ**\n\n| ヘッダ | 値 |\n|---|---|\n| メッセージID | 設定不要（送信後に採番） |\n| 関連メッセージID | 設定不要 |\n| 送信宛先 | 宛先の論理名 |\n| 応答宛先 | 設定不要 |\n| 有効期間 | 任意 |\n\n**クラス**: `nablarch.fw.messaging.action.AsyncMessageReceiveAction`\n\n`AsyncMessageReceiveAction` は :ref:`mom_messaging` で動作するアクションクラス。受信した電文を一時テーブル（電文受信テーブル）に保存する。\n\n> **補足**: 一時テーブルに保存したデータは、:ref:`batch_application` を用いてシステムの本テーブルに取り込む想定。\n\n`AsyncMessageReceiveAction` 使用時に作成が必要な成果物:\n- 電文を登録するための一時テーブル\n- フォーマット定義ファイル\n- SQL文（INSERTファイル）\n- フォームクラス\n\n**一時テーブル設計ルール**:\n- 受信電文は電文の種類ごとに専用の一時テーブルに保存\n- 主キーは :ref:`generator` でフレームワークが採番するID格納カラム\n- テーブルの属性情報には受信電文の各項目に対応するカラムを定義する\n- 各プロジェクトの方式に合わせて共通項目（登録ユーザIDや登録日時など）を定義する\n\n**一時テーブル例 (INS_PROJECT_RECEIVE_MESSAGE)**:\n\n| 論理名 | カラム名 |\n|---|---|\n| 受信メッセージ連番(PK) | RECEIVED_MESSAGE_SEQUENCE |\n| プロジェクト名 | PROJECT_NAME |\n| プロジェクト種別 | PROJECT_TYPE |\n| プロジェクト分類 | PROJECT_CLASS |\n| ステータス | STATUS |\n| 登録ユーザID | INSERT_USER_ID |\n| 登録日時 | INSERT_DATE |\n\n**フォーマット定義ファイル命名規則**: `<受信電文のリクエストID>_RECEIVE.fmt`\n\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    2120\n\n[userData]\n```\n\n**SQLファイル**:\n- ファイル名: `<受信電文のリクエストID>.sql`\n- SQL_IDは `INSERT_MESSAGE` 固定\n\n**フォームクラス**:\n- クラス名: `<受信電文のリクエストID>Form`\n- `(String receivedMessageSequence, RequestMessage message)` の2引数コンストラクタが必要\n  - `String` → 受信電文連番\n  - `RequestMessage` → 受信電文\n\n```java\npublic class ProjectInsertMessageForm {\n    public ProjectInsertMessageForm(\n            String receivedMessageSequence, RequestMessage message) {\n        this.receivedMessageSequence = receivedMessageSequence;\n        DataRecord data = message.getRecordOf(\"userData\");\n        projectName = data.getString(\"projectName\");\n    }\n}\n```\n\n**AsyncMessageReceiveAction設定**: :java:extdoc:`AsyncMessageReceiveActionSettings<nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings>` をコンポーネント定義に追加。\n\n```xml\n<component name=\"asyncMessageReceiveActionSettings\"\n           class=\"nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings\">\n  <property name=\"formClassPackage\" value=\"com.nablarch.example.form\" />\n  <property name=\"receivedSequenceFormatter\">\n    <component class=\"nablarch.common.idgenerator.formatter.LpadFormatter\">\n      <property name=\"length\" value=\"10\" />\n      <property name=\"paddingChar\" value=\"0\" />\n    </component>\n  </property>\n  <property name=\"receivedSequenceGenerator\" ref=\"idGenerator\" />\n  <property name=\"targetGenerateId\" value=\"9991\" />\n  <property name=\"sqlFilePackage\" value=\"com.nablarch.example.sql\" />\n</component>\n```\n\n`AsyncMessageReceiveAction` を :ref:`mom_messaging` で動作させるには、:ref:`request_path_java_package_mapping` のコンポーネント定義（`nablarch.fw.handler.RequestPathJavaPackageMapping`）で指定する。\n\n```xml\n<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\"\n            value=\"nablarch.fw.messaging.action.AsyncMessageReceiveAction\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```"
+  }
+}

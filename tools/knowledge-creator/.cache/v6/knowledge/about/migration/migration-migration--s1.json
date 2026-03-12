@@ -1,0 +1,141 @@
+{
+  "id": "migration-migration--s1",
+  "title": "Nablarch 5から6への移行ガイド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/migration/index.html",
+    "https://nablarch.github.io/docs/5-LATEST/doc/releases/index.html",
+    "https://nablarch.github.io/docs/5-LATEST/doc/application_framework/application_framework/blank_project/FirstStep.html",
+    "https://jakarta.ee/specifications/servlet/6.0/#details"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarch 5と6で大きく異なる点",
+      "hints": [
+        "Nablarch 5から6への移行",
+        "移行ガイド概要",
+        "6u2",
+        "先行リリース",
+        "gsp-dba-maven-plugin"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Jakarta EE 10に対応",
+      "hints": [
+        "Jakarta EE 10",
+        "javax から jakarta 名前空間変更",
+        "Java EE後継",
+        "アプリケーションサーバ要件",
+        "後方互換性なし"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "動作に必要なJavaの最低バージョンを17に変更",
+      "hints": [
+        "Java 17",
+        "最低Javaバージョン要件",
+        "Java 17以上",
+        "コンパイル要件"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "前提条件",
+      "hints": [
+        "前提条件",
+        "Nablarch 5最新版へのバージョンアップ",
+        "Java 17以上",
+        "Jakarta EE 10対応アプリケーションサーバ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "移行手順の概要",
+      "hints": [
+        "移行手順概要",
+        "Nablarchバージョンアップ",
+        "Jakarta EE対応",
+        "移行に必要な2つの修正"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "移行手順の詳細",
+      "hints": [
+        "移行手順詳細",
+        "ウェブプロジェクト固有手順",
+        "バッチプロジェクト",
+        "waitt-to-jetty",
+        "update-ntf-jetty"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "Nablarchのバージョンアップ",
+      "hints": [
+        "nablarch-bom",
+        "pom.xml BOM",
+        "6u2",
+        "Nablarchバージョンアップ手順",
+        "com.nablarch.profile"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "Jakarta EE対応",
+      "hints": [
+        "Jakarta EE BOM",
+        "jakarta.jakartaee-bom",
+        "jakarta.platform",
+        "Java EE依存関係変更方針",
+        "BOM推奨"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "Java EEの依存関係をJakarta EEに変更する",
+      "hints": [
+        "javax.servlet",
+        "jakarta.servlet",
+        "javax.servlet.jsp",
+        "jakarta.persistence",
+        "javax.ws.rs",
+        "jakarta.ws.rs",
+        "javax.annotation",
+        "jakarta.annotation",
+        "Jakarta Servlet",
+        "Jakarta Server Pages",
+        "JSTL",
+        "JPA",
+        "JAX-RS",
+        "Jakarta Annotations"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "付録",
+      "hints": [
+        "付録",
+        "Java EE",
+        "Jakarta EE",
+        "java_ee_jakarta_ee_comparation",
+        "仕様対応表参照"
+      ]
+    }
+  ],
+  "sections": {
+    "s2": "Nablarch 6はJakarta EE 10に対応している。Jakarta EEはJava EEがEclipse Foundationに移管された後の名前。Jakarta EE 9で名前空間が`javax.*`から`jakarta.*`に変更された。\n\nNablarch 5からNablarch 6へ移行するためには、NablarchのバージョンアップだけでなくプロジェクトのJakarta EE 10対応が必要。名前空間変更により後方互換性が維持されないため、動作にはJakarta EE 10対応のアプリケーションサーバが必要。",
+    "s3": "Nablarch 6のモジュールはJava 17でコンパイルされているため、動作させるにはJava 17以上が必要となる。",
+    "s7": "`pom.xml`のNablarch BOMの`<version>`を`6u2`に変更する：\n\n```xml\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>com.nablarch.profile</groupId>\n      <artifactId>nablarch-bom</artifactId>\n      <version>6u2</version>\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n  </dependencies>\n</dependencyManagement>\n```",
+    "s8": "Java EEのAPI依存関係（`dependency`）をJakarta EEのものに変更する必要がある。Java EEのAPIの`dependency`は提供元やバージョンによって統一されていないため、`groupId`などから機械的に判断できない。どの`dependency`がJava EEのAPIなのかは`groupId`や`artifactId`、jarに含まれるクラスから判断する必要がある。\n\nバージョン管理簡素化のためJakarta EE BOMの使用を推奨する（個別バージョン指定が不要になる）：\n\n```xml\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>jakarta.platform</groupId>\n      <artifactId>jakarta.jakartaee-bom</artifactId>\n      <version>10.0.0</version>\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n  </dependencies>\n</dependencyManagement>\n```\n\nここに記載されていない依存関係については、付録のJava EE/Jakarta EE対応表を参照。各仕様のページにMaven coordinatesが記載されている（例: [Jakarta Servlet 6.0仕様ページ](https://jakarta.ee/specifications/servlet/6.0/#details)）。",
+    "s9": "Java EEのAPIをJakarta EEに変更する際の`groupId`/`artifactId`の対応（Jakarta EE BOMを使用する場合はバージョン指定不要）：\n\n| API | 修正前 (groupId:artifactId) | 修正後 (groupId:artifactId) | scope |\n|---|---|---|---|\n| Java Servlet → Jakarta Servlet | `javax.servlet:javax.servlet-api` | `jakarta.servlet:jakarta.servlet-api` | provided |\n| JSP → Jakarta Server Pages | `javax.servlet.jsp:javax.servlet.jsp-api` | `jakarta.servlet.jsp:jakarta.servlet.jsp-api` | provided |\n| JSTL → Jakarta Standard Tag Library | `javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api` | `jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api` | |\n| JPA → Jakarta Persistence | `org.apache.geronimo.specs:geronimo-jpa_2.0_spec` | `jakarta.persistence:jakarta.persistence-api` | |\n| JAX-RS → Jakarta RESTful Web Services | `javax.ws.rs:javax.ws.rs-api` | `jakarta.ws.rs:jakarta.ws.rs-api` | |\n| Common Annotations → Jakarta Annotations | `javax.annotation:javax.annotation-api` | `jakarta.annotation:jakarta.annotation-api` | |",
+    "s6": "プロジェクトによっては不要な手順が含まれる場合がある。例えば、waitt-to-jettyセクションやupdate-ntf-jettyセクションはウェブプロジェクト固有の手順なので、バッチプロジェクトでは読み飛ばして問題ない。",
+    "s4": "手順はNablarch 5の最新版へのバージョンアップ済みであることを前提としている。古いバージョンのプロジェクトは先にNablarch 5の最新版へバージョンアップすること。Nablarch 5の最新版へのバージョンアップに必要な修正内容は[Nablarch 5のリリースノート](https://nablarch.github.io/docs/5-LATEST/doc/releases/index.html)を参照。\n\n動作にはJava 17以上およびJakarta EE 10対応のアプリケーションサーバが必要。\n\n> **補足**: Nablarch 5の最新版バージョンアップの他に、Java 17以上で使用するための対応も必要。対応内容は[Nablarch 5のセットアップ手順](https://nablarch.github.io/docs/5-LATEST/doc/application_framework/application_framework/blank_project/FirstStep.html)を参照。",
+    "s10": "Java EEとJakarta EEの仕様の対応表（`java_ee_jakarta_ee_comparation`）を含む付録セクション。ここに記載されていない依存関係の変更を調べる際の参考として記載されている。",
+    "s5": "Nablarch 5のプロジェクトをNablarch 6へ移行するために必要な修正：\n\n1. **Nablarchのバージョンアップ**: NablarchのバージョンをBOMで5から6に変更\n2. **Jakarta EE対応**: Jakarta EE 10対応。Jakarta EE 9の名前空間変更（`javax.*`→`jakarta.*`）対応と、Java EE依存ライブラリのJakarta EE対応版への変更を含む",
+    "s1": "Nablarch 5プロジェクトのNablarch 6への移行方法について説明する。\n\n> **重要**: Nablarch 6のバージョン6/6u1は先行リリースバージョンであり、6u2が正式リリース後の最初のバージョンとなる。ここで説明する手順はNablarch 5の最新バージョンからNablarch **6u2**へのバージョンアップを前提としている。アーキタイプから作ったプロジェクトに組み込まれているgsp-dba-maven-pluginは6u2と合わせてリリースされた**5.1.0**の使用を前提としている。6u3以降へバージョンアップする場合は、6u3以降のリリースノートを順に参照してバージョンアップ手順を確認すること。"
+  }
+}
