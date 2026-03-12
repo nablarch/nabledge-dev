@@ -37,8 +37,8 @@ nablarch-fw-web, com.nablarch.framework, モジュール依存関係
 
 ## 制約
 
-- [http_response_handler](handlers-http_response_handler.json#s1) より後ろに配置すること: JSPへのフォワード処理を行う [http_response_handler](handlers-http_response_handler.json#s1) より後に配置する必要がある。
-- [thread_context_handler](handlers-thread_context_handler.json#s2) より前に配置すること: URIを決定する処理があるため、URIを使用する [thread_context_handler](handlers-thread_context_handler.json#s2) より前に配置する必要がある。
+- [http_response_handler](handlers-http_response_handler.md) より後ろに配置すること: JSPへのフォワード処理を行う [http_response_handler](handlers-http_response_handler.md) より後に配置する必要がある。
+- [thread_context_handler](handlers-thread_context_handler.md) より前に配置すること: URIを決定する処理があるため、URIを使用する [thread_context_handler](handlers-thread_context_handler.md) より前に配置する必要がある。
 
 <details>
 <summary>keywords</summary>
@@ -51,12 +51,12 @@ nablarch-fw-web, com.nablarch.framework, モジュール依存関係
 
 携帯端末アクセスハンドラを使用したURLにアクセスした際、下記NablarchタグライブラリのJavaScript出力が抑制される:
 
-- [n:form タグ](../libraries/libraries-tag_reference.json#s3)
-- [n:script タグ](../libraries/libraries-tag_reference.json)
-- [サブミット関連のタグ](../libraries/libraries-tag_reference.json#s1)
+- [n:form タグ](../libraries/libraries-tag_reference.md)
+- [n:script タグ](../libraries/libraries-tag_reference.md)
+- [サブミット関連のタグ](../libraries/libraries-tag_reference.md)
 
 > **重要**: 下記タグは機能が実現できないため使用不可。
-> - [n:submitLink タグ](../libraries/libraries-tag_reference.json)
+> - [n:submitLink タグ](../libraries/libraries-tag_reference.md)
 >
 > n:submitLink タグの代替として n:a タグを使用すること。リクエストパラメータはGETメソッドのパラメータで送信する必要がある。
 

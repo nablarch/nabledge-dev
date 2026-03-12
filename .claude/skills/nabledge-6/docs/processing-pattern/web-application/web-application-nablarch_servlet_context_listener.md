@@ -6,8 +6,8 @@
 
 サーブレットコンテキストリスナーとして定義されており、ウェブアプリケーションの起動時・終了時に以下の処理を行う。
 
-- 起動時: [repository](../../component/libraries/libraries-repository.json#s1) の初期化処理、[log](../../component/libraries/libraries-log.json#s1) の初期化処理
-- 終了時: [log](../../component/libraries/libraries-log.json#s1) の終了処理
+- 起動時: [repository](../../component/libraries/libraries-repository.md) の初期化処理、[log](../../component/libraries/libraries-log.md) の初期化処理
+- 終了時: [log](../../component/libraries/libraries-log.md) の終了処理
 
 **モジュール**:
 ```xml

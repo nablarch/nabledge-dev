@@ -101,7 +101,7 @@ try {
 }
 ```
 
-バッチとメッセージングで障害検知時に処理を終了したい場合は、`TransactionAbnormalEnd` または `ProcessAbnormalEnd` を送出し、例外ハンドラ（[global_error_handler](../handlers/handlers-global_error_handler.json#s1) や [request_thread_loop_handler](../handlers/handlers-request_thread_loop_handler.json#s1)）に障害ログの出力を委譲する。
+バッチとメッセージングで障害検知時に処理を終了したい場合は、`TransactionAbnormalEnd` または `ProcessAbnormalEnd` を送出し、例外ハンドラ（[global_error_handler](../handlers/handlers-global_error_handler.md) や [request_thread_loop_handler](../handlers/handlers-request_thread_loop_handler.md)）に障害ログの出力を委譲する。
 
 ```java
 // 自ら例外を生成する場合
@@ -119,7 +119,7 @@ try {
 
 > **補足**: 上記例のように、障害ログの出力ではログから障害内容を特定するために障害コードを指定する。障害コードのコード体系は、プロジェクト毎に規定すること。
 
-**障害ログに出力されるメッセージ**: [message](libraries-message.json#s1) を使用して障害コードに対応するメッセージを取得する。メッセージが見つからない場合は例外が発生し、その例外をWARNレベルでログ出力した上で、障害ログには以下を出力する:
+**障害ログに出力されるメッセージ**: [message](libraries-message.md) を使用して障害コードに対応するメッセージを取得する。メッセージが見つからない場合は例外が発生し、その例外をWARNレベルでログ出力した上で、障害ログには以下を出力する:
 ```
 failed to get the message to output the failure log. failureCode = [<障害コード>]
 ```
@@ -152,7 +152,7 @@ FailureLogUtil, TransactionAbnormalEnd, ProcessAbnormalEnd, 障害コード, 障
 
 ## 障害ログの設定
 
-障害ログの設定は [log-app_log_setting](libraries-log.json) で説明したプロパティファイルに行う。
+障害ログの設定は [log-app_log_setting](libraries-log.md) で説明したプロパティファイルに行う。
 
 **クラス**: `nablarch.core.log.app.FailureLogFormatter`
 
@@ -271,7 +271,7 @@ failureLogFormatter.contactFilePath=classpath:failure-log-contact.properties
 
 リクエストIDに対応する連絡先情報が見つからない場合は`null`が出力される。
 
-[log-json_log_setting](libraries-log.json) でJSON形式ログを設定した場合、`FailureLogFormatter` では障害ログ各項目はmessageの値に文字列として出力される。各項目もJSONの値として出力するには `FailureJsonLogFormatter` を使用する。
+[log-json_log_setting](libraries-log.md) でJSON形式ログを設定した場合、`FailureLogFormatter` では障害ログ各項目はmessageの値に文字列として出力される。各項目もJSONの値として出力するには `FailureJsonLogFormatter` を使用する。
 
 | プロパティ名 | 必須 | 説明 |
 |---|---|---|
@@ -294,7 +294,7 @@ failureLogFormatter.contactFilePath=classpath:failure-log-contact.properties
 | 処理対象データ | data | |
 | 連絡先 | contact | |
 
-> **重要**: `structuredMessagePrefix` を変更する場合、LogWriterの `structuredMessagePrefix` プロパティで `JsonLogFormatter` にも同じ値を設定すること（[log-basic_setting](libraries-log.json#s3) 参照）。
+> **重要**: `structuredMessagePrefix` を変更する場合、LogWriterの `structuredMessagePrefix` プロパティで `JsonLogFormatter` にも同じ値を設定すること（[log-basic_setting](libraries-log.md) 参照）。
 
 **記述例**:
 ```properties

@@ -161,7 +161,7 @@ DIコンテナ, シングルトン, setterインジェクション, オブジェ
 
 アノテーションをActionクラスに付与するとDIコンテナで管理可能になる。
 
-Nablarchのディスパッチハンドラ（[router_adaptor](../adapters/adapters-router_adaptor.json#s1)、[request_path_java_package_mapping](../handlers/handlers-request_path_java_package_mapping.json#s1)、[http_request_java_package_mapping](../handlers/handlers-http_request_java_package_mapping.json#s2)）ではディスパッチ先クラスはハンドラ内でインスタンス化される。ActionクラスをDIコンテナに登録する場合は `DelegateFactory` を差し替え、`DispatchHandler#setDelegateFactory` で設定する必要がある。
+Nablarchのディスパッチハンドラ（[router_adaptor](../adapters/adapters-router_adaptor.md)、[request_path_java_package_mapping](../handlers/handlers-request_path_java_package_mapping.md)、[http_request_java_package_mapping](../handlers/handlers-http_request_java_package_mapping.md)）ではディスパッチ先クラスはハンドラ内でインスタンス化される。ActionクラスをDIコンテナに登録する場合は `DelegateFactory` を差し替え、`DispatchHandler#setDelegateFactory` で設定する必要がある。
 
 ```xml
 <component name="packageMapping" class="nablarch.integration.router.RoutesMapping">

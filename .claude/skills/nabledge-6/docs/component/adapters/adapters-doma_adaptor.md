@@ -273,7 +273,7 @@ Jakarta Batchに準拠したバッチアプリケーションでDomaを使用す
 </list>
 ```
 
-> **重要**: [Chunkステップ](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.json#s2) のItemWriterでバッチ更新（バッチinsert/updateなど）を行う場合、バッチサイズを明示的に指定すること。Chunkステップのitem-countのサイズがバッチサイズになるわけではない。指定しない場合はDomaのデフォルト値が適用されパフォーマンスが向上しない可能性がある。
+> **重要**: [Chunkステップ](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md) のItemWriterでバッチ更新（バッチinsert/updateなど）を行う場合、バッチサイズを明示的に指定すること。Chunkステップのitem-countのサイズがバッチサイズになるわけではない。指定しない場合はDomaのデフォルト値が適用されパフォーマンスが向上しない可能性がある。
 
 1000件ごとにバッチinsertする例:
 ```java
@@ -471,7 +471,7 @@ CustomConfig, Config, DomaDaoRepository, nablarch.integration.doma.DomaDaoReposi
 
 ## DomaとNablarchのデータベースアクセスを併用する
 
-DomaとNablarchのデータベースアクセスを併用する場合（例: [メール送信ライブラリ](../libraries/libraries-mail.json#s1) の利用）、NablarchのDBアクセスをDomaと同じトランザクション（DB接続）配下で実行できる。
+DomaとNablarchのデータベースアクセスを併用する場合（例: [メール送信ライブラリ](../libraries/libraries-mail.md) の利用）、NablarchのDBアクセスをDomaと同じトランザクション（DB接続）配下で実行できる。
 
 コンポーネント設定ファイルに `ConnectionFactoryFromDomaConnection` を定義する。コンポーネント名は `connectionFactoryFromDoma` とすること。Jakarta Batchで使用する場合は、Domaのトランザクション制御リスナーに `connectionFactoryFromDoma` を設定する。
 

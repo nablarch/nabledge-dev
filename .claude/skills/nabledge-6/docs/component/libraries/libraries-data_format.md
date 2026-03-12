@@ -6,7 +6,7 @@
 
 標準でサポートするフォーマット: 固定長、可変長（CSV/TSVなど）、JSON、XML。固定長と可変長はマルチレイアウトデータ（レコードごとに異なるレイアウト）にも対応。
 
-> **重要**: 本機能には以下のデメリットがあるため、原則**非推奨**（やむを得ない場合を除く）。[messaging](../../processing-pattern/db-messaging/db-messaging-messaging.json) は内部で本機能を使用しているため代替機能使用不可。
+> **重要**: 本機能には以下のデメリットがあるため、原則**非推奨**（やむを得ない場合を除く）。[messaging](../../processing-pattern/db-messaging/db-messaging-messaging.md) は内部で本機能を使用しているため代替機能使用不可。
 > - 複雑な [data_format-format_definition_file](#s3) の作成が必要
 > - 入出力が `Map` に限定。フィールド名を文字列指定のためIDEの補完不可・ダウンキャストが必要（誤ると実行時例外）
 > - `BeanUtil` を不使用のため他機能とマッピング方法が異なる
@@ -18,14 +18,14 @@
 
 | フォーマット | 代替機能 |
 |---|---|
-| 固定長 | [data_bind](libraries-data_bind.json#s1) |
-| 可変長 | [data_bind](libraries-data_bind.json#s1) |
+| 固定長 | [data_bind](libraries-data_bind.md) |
+| 可変長 | [data_bind](libraries-data_bind.md) |
 | XML | [Jakarta XML Binding](https://jakarta.ee/specifications/xml-binding/) |
 | JSON | OSSを推奨（例: [Jackson(外部サイト、英語)](https://github.com/FasterXML/jackson)） |
 
 文字列・10進数数値に加え、パック数値・ゾーン10進数形式に対応。UTF-8、Shift_JIS、EBCDICなどに対応（JVMがサポートする文字セットが使用可能）。
 
-固定長ファイルのスペース・ゼロ(0)パディングおよびトリミングに対応。アプリケーション側での処理不要。詳細は [data_format-field_convertor_list](libraries-format_definition.json) 参照。
+固定長ファイルのスペース・ゼロ(0)パディングおよびトリミングに対応。アプリケーション側での処理不要。詳細は [data_format-field_convertor_list](libraries-format_definition.md) 参照。
 
 JSONやXMLの階層構造データをMapで読み書きする際、各階層の要素名をドット(`.`)で連結したキー値を使用する。
 
@@ -91,7 +91,7 @@ data.put("user[1].age", 31);
 
 ## フィールドタイプを追加する
 
-[data_format-field_type_list](libraries-format_definition.json) で要件を満たせない場合（例: 文字列タイプのパディング文字がバイナリの場合）、プロジェクト固有のフィールドタイプを定義して対応する。
+[data_format-field_type_list](libraries-format_definition.md) で要件を満たせない場合（例: 文字列タイプのパディング文字がバイナリの場合）、プロジェクト固有のフィールドタイプを定義して対応する。
 
 **手順:**
 1. `DataType` を実装したクラスを作成する
@@ -210,7 +210,7 @@ nablarch-core-dataformat, nablarch-fw-web-extension, モジュール依存関係
 
 ## 入出力データのフォーマットを定義する
 
-フォーマット定義ファイルはテキストファイル形式で作成する。詳細仕様は [data_format/format_definition](libraries-format_definition.json) 参照。
+フォーマット定義ファイルはテキストファイル形式で作成する。詳細仕様は [data_format/format_definition](libraries-format_definition.md) 参照。
 
 ```bash
 file-type:        "Variable" # 可変長
@@ -296,9 +296,9 @@ FileRecordWriterHolder.open("users.csv", "user_csv_format");
 FileRecordWriterHolder.write(user, "user.csv");
 ```
 
-> **補足**: `FileRecordWriterHolder` を使用するには、フォーマット定義ファイルの配置ディレクトリや出力先ディレクトリを [file_path_management](libraries-file_path_management.json#s1) に設定すること。
+> **補足**: `FileRecordWriterHolder` を使用するには、フォーマット定義ファイルの配置ディレクトリや出力先ディレクトリを [file_path_management](libraries-file_path_management.md) に設定すること。
 
-> **重要**: `FileRecordWriterHolder` で開いたファイルリソースは [file_record_writer_dispose_handler](../handlers/handlers-file_record_writer_dispose_handler.json#s2) で自動開放される。[file_record_writer_dispose_handler](../handlers/handlers-file_record_writer_dispose_handler.json#s2) を必ずハンドラキュー上に設定すること。
+> **重要**: `FileRecordWriterHolder` で開いたファイルリソースは [file_record_writer_dispose_handler](../handlers/handlers-file_record_writer_dispose_handler.md) で自動開放される。[file_record_writer_dispose_handler](../handlers/handlers-file_record_writer_dispose_handler.md) を必ずハンドラキュー上に設定すること。
 
 > **重要**: 出力データに不正な値が設定されている場合に正しく処理できない可能性があるため、事前にアプリケーション側でバリデーションを行うこと。
 
@@ -371,7 +371,7 @@ public HttpResponse download(HttpRequest request, ExecutionContext context) {
 }
 ```
 
-> **補足**: フォーマット定義ファイルの格納パスは [file_path_management](libraries-file_path_management.json#s1) に設定すること。
+> **補足**: フォーマット定義ファイルの格納パスは [file_path_management](libraries-file_path_management.md) に設定すること。
 
 寄せ字機能により、外部データ読み込み時にシステムで使用可能な文字に置き換えられる。
 
@@ -474,7 +474,7 @@ public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
 ### アップロードヘルパーを使った読み込み（非推奨）
 
 `UploadHelper` を使用すると読み込み・バリデーション・DB保存を簡易実行できるが、以下の制限があるため**非推奨**:
-- 入力値チェックは [nablarch_validation](libraries-nablarch_validation.json#s1) のみ（推奨される [bean_validation](libraries-bean_validation.json#s1) が使用不可）
+- 入力値チェックは [nablarch_validation](libraries-nablarch_validation.md) のみ（推奨される [bean_validation](libraries-bean_validation.md) が使用不可）
 - 拡張難易度が高い
 
 ```java

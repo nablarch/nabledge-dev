@@ -421,7 +421,7 @@ ExcelシートにBeanのプロパティ名と期待値を記載し、`assertProp
 
 これにより、多数のプロパティを持つBeanのアサーションを簡潔に記述できる。
 
-[04_MasterDataRestore](testing-framework-04_MasterDataRestore.json) を参照。
+[04_MasterDataRestore](testing-framework-04_MasterDataRestore.md) を参照。
 
 <details>
 <summary>keywords</summary>

@@ -11,7 +11,7 @@
 | テストクラス | テストロジックを実装する。`DbAccessTestSupport`を継承する | テスト対象クラスにつき1つ |
 | テストデータ（Excelファイル） | 準備データや期待値などのテストデータを記載する | テストクラスにつき1つ |
 | テスト対象クラス | テストされるクラス | — |
-| `DbAccessTestSupport` | 準備データ投入などDB操作機能を提供。テスト実行前後にDBトランザクションの開始・終了処理を行う（[using_transactions](testing-framework-03_Tips.json)） | — |
+| `DbAccessTestSupport` | 準備データ投入などDB操作機能を提供。テスト実行前後にDBトランザクションの開始・終了処理を行う（[using_transactions](testing-framework-03_Tips.md)） | — |
 
 テストケースに関係のあるカラムのみをExcelに記載することで可読性・保守性が向上する。テーブル定義変更時も、無関係なカラムであれば影響を受けない。
 
@@ -172,7 +172,7 @@ ID    | EMP_NAME | DEPT_NAME
 ## 登録・更新系テストの注意点
 
 - 自動設定項目を利用してDBに登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前に設定すること。（:ref:`using_ThreadContext`）
-- デフォルト以外のトランザクションを使用する場合は、本フレームワークにトランザクション制御を行わせる必要がある。（[using_transactions](testing-framework-03_Tips.json)）
+- デフォルト以外のトランザクションを使用する場合は、本フレームワークにトランザクション制御を行わせる必要がある。（[using_transactions](testing-framework-03_Tips.md)）
 
 ## 外部キーテーブルへのデータセットアップ
 

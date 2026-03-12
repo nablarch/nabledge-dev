@@ -28,7 +28,7 @@ Logbook, HTTPリクエストログ, レスポンスログ, ログ出力サンプ
 
 本サンプルで取り扱う範囲:
 - Logbookのログ出力にはNablarchのログ出力機能を使用する
-  - Nablarchとの連携は [SLF4Jアダプタ](../../component/adapters/adapters-slf4j_adaptor.json#s1) を使用して実現する
+  - Nablarchとの連携は [SLF4Jアダプタ](../../component/adapters/adapters-slf4j_adaptor.md) を使用して実現する
   - ログは標準出力に出力する
 - リクエスト送信にはJAX-RSクライアントを使用し、メッセージ形式はJSON
   - JAX-RSクライアントの実装としてJerseyを使用する
@@ -121,7 +121,7 @@ loggers.LOGBOOK.level=TRACE
 loggers.LOGBOOK.writerNames=stdout
 ```
 
-Nablarchのログ出力設定については [log-basic_setting](../../component/libraries/libraries-log.json#s3) を参照。
+Nablarchのログ出力設定については [log-basic_setting](../../component/libraries/libraries-log.md) を参照。
 
 <details>
 <summary>keywords</summary>

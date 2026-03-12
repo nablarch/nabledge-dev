@@ -4,7 +4,7 @@
 
 ## 機能概要
 
-メール送信機能は、ディレードオンライン処理方式を採用している。メール送信を即時に行うのではなく、メール送信要求をDBに格納し、[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.json#s1) で非同期にメール送信する。
+メール送信機能は、ディレードオンライン処理方式を採用している。メール送信を即時に行うのではなく、メール送信要求をDBに格納し、[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) で非同期にメール送信する。
 
 この方式の理由:
 - メール送信をアプリケーションの業務トランザクションに含められる
@@ -23,9 +23,9 @@
 テンプレートとプレースホルダ変換で件名・本文を作成できる。詳細は :ref:`mail-request` を参照。
 
 > **重要**: Nablarch 5u13からテンプレートエンジンを使用した定型メールがサポートされた。5u12までの `TinyTemplateEngineMailProcessor` は機能が限定的（単純な文字列置換のみ、条件分岐・繰り返し非対応）。以下の高機能テンプレートエンジンの使用を推奨:
-> - [mail_sender_freemarker_adaptor](../adapters/adapters-mail_sender_freemarker_adaptor.json#s1)
-> - [mail_sender_thymeleaf_adaptor](../adapters/adapters-mail_sender_thymeleaf_adaptor.json#s1)
-> - [mail_sender_velocity_adaptor](../adapters/adapters-mail_sender_velocity_adaptor.json#s1)
+> - [mail_sender_freemarker_adaptor](../adapters/adapters-mail_sender_freemarker_adaptor.md)
+> - [mail_sender_thymeleaf_adaptor](../adapters/adapters-mail_sender_thymeleaf_adaptor.md)
+> - [mail_sender_velocity_adaptor](../adapters/adapters-mail_sender_velocity_adaptor.md)
 
 ## 大量メール一斉送信非対応
 
@@ -134,7 +134,7 @@
 `MailRequester` と `MailRequestConfig` をコンポーネント定義に追加する。
 
 - `MailRequester`は名前でルックアップされるため、コンポーネント名を`mailRequester`とすること。
-- `MailRequester`はメール送信要求IDの生成に [採番](libraries-generator.json#s1) を使用するため、[採番](libraries-generator.json#s1) の設定も別途必要。
+- `MailRequester`はメール送信要求IDの生成に [採番](libraries-generator.md) を使用するため、[採番](libraries-generator.md) の設定も別途必要。
 
 ```xml
 <component name="mailRequester" class="nablarch.common.mail.MailRequester">
@@ -176,15 +176,15 @@
 
 **クラス**: `nablarch.common.mail.MailSender`
 
-`MailSender` は [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.json#s1) として動作するバッチアクション。障害発生時に同一メールが複数送信されないよう、メール送信成功時にステータスが確実に送信済みとなる処理フローにより二重送信を防止する。
+`MailSender` は [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) として動作するバッチアクション。障害発生時に同一メールが複数送信されないよう、メール送信成功時にステータスが確実に送信済みとなる処理フローにより二重送信を防止する。
 
 ![メール送信バッチの処理フロー](../../../knowledge/component/libraries/assets/libraries-mail/mail_sender_flow.png)
 
 > **重要**: 送信失敗時のステータス更新（送信失敗への変更）で例外（例: DB/ネットワーク障害時）が発生した場合、ステータスが送信済みのままになる。この場合は該当データにパッチを適用（ステータスを送信失敗へ変更）する必要がある。なお、例外にはパッチ適用を促すメッセージが付加されている。
 
-> **補足**: ステータス更新処理は別トランザクションで実行される。このトランザクションのコンポーネント名は `statusUpdateTransaction` としてコンポーネント設定ファイルに登録する必要がある。詳細は [database-new_transaction](libraries-database.json) を参照。
+> **補足**: ステータス更新処理は別トランザクションで実行される。このトランザクションのコンポーネント名は `statusUpdateTransaction` としてコンポーネント設定ファイルに登録する必要がある。詳細は [database-new_transaction](libraries-database.md) を参照。
 
-実行例（`requestPath` オプションに `MailSender` を指定）。詳細は [main-run_application](../handlers/handlers-main.json#s2) を参照。
+実行例（`requestPath` オプションに `MailSender` を指定）。詳細は [main-run_application](../handlers/handlers-main.md) を参照。
 
 ```bash
 java nablarch.fw.launcher.Main \
@@ -299,7 +299,7 @@ nablarch-mail-sender, nablarch-common-idgenerator, nablarch-common-idgenerator-j
 以下の設定が必要:
 1. メール送信要求テーブルにメール送信バッチのプロセスIDのカラムを定義する
 2. `MailRequestTable` の `sendProcessIdColumnName` プロパティにプロセスIDのカラム名を設定し、コンポーネント定義に追加する
-3. プロセスID更新用のトランザクションを `mailMultiProcessTransaction` の名前でコンポーネント定義に追加する（[database-new_transaction](libraries-database.json) 参照）
+3. プロセスID更新用のトランザクションを `mailMultiProcessTransaction` の名前でコンポーネント定義に追加する（[database-new_transaction](libraries-database.md) 参照）
 
 > **重要**: 2. の設定がされていない場合、排他制御がされないため1件のメール送信要求を複数プロセスが処理する可能性がある。見かけ上メール送信バッチが動作するため設定漏れを検知しづらい。メール送信をマルチプロセス化する場合は上記の設定を漏れなく行うこと。
 
@@ -345,7 +345,7 @@ InvalidCharacterException, メールヘッダインジェクション, セキュ
 
 **メール送信要求時のトランザクション指定**
 
-`MailRequester` の `mailTransactionManager` プロパティにトランザクションマネージャを設定する。トランザクションマネージャと [採番](libraries-generator.json#s1) で指定するトランザクション名を同じにする。
+`MailRequester` の `mailTransactionManager` プロパティにトランザクションマネージャを設定する。トランザクションマネージャと [採番](libraries-generator.md) で指定するトランザクション名を同じにする。
 
 ```xml
 <!-- メール送信要求コンポーネント -->

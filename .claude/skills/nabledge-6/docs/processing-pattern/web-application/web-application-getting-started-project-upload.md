@@ -34,10 +34,10 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) {
 
 ## ファイルをバインドするBeanの作成
 
-CSVファイルとBeanプロパティの紐付けは `@Csv` で設定する。CSVフォーマット指定は `@CsvFormat` を使用する（[デフォルトのフォーマットの指定](../../component/libraries/libraries-data_bind.json) を使用する場合は不要）。詳細は [CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法](../../component/libraries/libraries-data_bind.json) を参照。
+CSVファイルとBeanプロパティの紐付けは `@Csv` で設定する。CSVフォーマット指定は `@CsvFormat` を使用する（[デフォルトのフォーマットの指定](../../component/libraries/libraries-data_bind.md) を使用する場合は不要）。詳細は [CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法](../../component/libraries/libraries-data_bind.md) を参照。
 
-- ファイルからの入力値を受け付けるため、プロパティは [String型で定義](../../component/libraries/libraries-bean_validation.json#s5) する。適切な型への変換はバリデーションを通過した安全な値に対して行う
-- `@Required` や `@Domain` などのバリデーション用アノテーションを付与して [Bean Validation](../../component/libraries/libraries-bean_validation.json#s1) を実行する
+- ファイルからの入力値を受け付けるため、プロパティは [String型で定義](../../component/libraries/libraries-bean_validation.md) する。適切な型への変換はバリデーションを通過した安全な値に対して行う
+- `@Required` や `@Domain` などのバリデーション用アノテーションを付与して [Bean Validation](../../component/libraries/libraries-bean_validation.md) を実行する
 - 行数プロパティのゲッタに `LineNumber` を付与することで、対象データの行番号が自動設定される
 
 > **補足**: 入力必須項目のバリデーションエラーメッセージをファイルアップロード向けのメッセージに変更する場合は :ref:`入力値のチェックルールを設定する<client_create_validation_rule>` を参照。
@@ -65,11 +65,11 @@ public class ProjectUploadDto implements Serializable {
 
 ## CSVのバインドとバリデーション
 
-ファイルのBeanバインドには [データバインド](../../component/libraries/libraries-data_bind.json#s1) の `ObjectMapper` を使用する。`ObjectMapper#read()` でバインド済みBeanを取得できる。
+ファイルのBeanバインドには [データバインド](../../component/libraries/libraries-data_bind.md) の `ObjectMapper` を使用する。`ObjectMapper#read()` でバインド済みBeanを取得できる。
 
-- `ValidatorUtil#getValidator` で `Validator` オブジェクトを生成し、任意のBeanに [Bean Validation](../../component/libraries/libraries-bean_validation.json#s1) を実行できる
-- エラー発生時もバリデーションを中止せず最終行まで検証する場合は、全エラーメッセージを `Message` のリストに収集し、`ApplicationException` を送出することで [tag-errors_tag](../../component/libraries/libraries-tag_reference.json) で画面出力できる
-- バリデーションメッセージへのプロパティ名付与については [バリデーションエラー時のメッセージに項目名を含めたい](../../component/libraries/libraries-bean_validation.json#s15) を参照
+- `ValidatorUtil#getValidator` で `Validator` オブジェクトを生成し、任意のBeanに [Bean Validation](../../component/libraries/libraries-bean_validation.md) を実行できる
+- エラー発生時もバリデーションを中止せず最終行まで検証する場合は、全エラーメッセージを `Message` のリストに収集し、`ApplicationException` を送出することで [tag-errors_tag](../../component/libraries/libraries-tag_reference.md) で画面出力できる
+- バリデーションメッセージへのプロパティ名付与については [バリデーションエラー時のメッセージに項目名を含めたい](../../component/libraries/libraries-bean_validation.md) を参照
 
 ```java
 private List<Project> readFileAndValidate(final PartInfo partInfo, final LoginUserPrincipal userContext) {

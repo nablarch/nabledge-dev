@@ -50,7 +50,7 @@ nablarch-core, モジュール依存関係, com.nablarch.framework
 | getValue | idに対応するデータをロード。キャッシュにデータが存在しない場合に呼び出される |
 | 上記以外 | `return null` で良い（インデックス毎の管理機能は原則使用しない） |
 
-> **重要**: `BasicStaticDataCache` は必ず初期化対象に設定すること（[repository-initialize_object](libraries-repository.json) 参照）。
+> **重要**: `BasicStaticDataCache` は必ず初期化対象に設定すること（[repository-initialize_object](libraries-repository.md) 参照）。
 
 キャッシュを使用するクラスの例:
 

@@ -147,7 +147,7 @@ OnlineStatisticsDefinition, please.change.me.statistics.action.settings.OnlineSt
 
 ## 実行方法（解析バッチ）
 
-本バッチは [Nablarchのバッチ方式](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch_batch.json) で実装。
+本バッチは [Nablarchのバッチ方式](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch_batch.md) で実装。
 
 | パラメータ | 値 |
 |---|---|
@@ -175,7 +175,7 @@ OnlineAccessLogParseAction, statistics-batch.xml, バッチ実行パラメータ
 
 ## 実行方法（集計バッチ）
 
-本バッチは [Nablarchのバッチ方式](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch_batch.json) で実装。
+本バッチは [Nablarchのバッチ方式](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch_batch.md) で実装。
 
 | パラメータ | 値 |
 |---|---|

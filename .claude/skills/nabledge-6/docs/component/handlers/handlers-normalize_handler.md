@@ -32,7 +32,7 @@ nablarch-fw-web, com.nablarch.framework, モジュール依存関係
 
 ## 制約
 
-- [multipart_handler](handlers-multipart_handler.json#s1) より後ろに配置すること。このハンドラはリクエストパラメータにアクセスするため、[multipart_handler](handlers-multipart_handler.json#s1) よりも後ろに設定する必要がある。
+- [multipart_handler](handlers-multipart_handler.md) より後ろに配置すること。このハンドラはリクエストパラメータにアクセスするため、[multipart_handler](handlers-multipart_handler.md) よりも後ろに設定する必要がある。
 
 <details>
 <summary>keywords</summary>

@@ -4,7 +4,7 @@
 
 ## アプリケーションの起動方法
 
-[アプリケーションの起動方法](../../component/handlers/handlers-main.json#s2)
+[アプリケーションの起動方法](../../component/handlers/handlers-main.md)
 
 <details>
 <summary>keywords</summary>
@@ -15,7 +15,7 @@
 
 ## システムリポジトリの初期化
 
-アプリケーション起動時にシステムリポジトリの設定ファイルのパスを指定することで初期化する。詳細は [アプリケーションの起動方法](../../component/handlers/handlers-main.json#s2) を参照。
+アプリケーション起動時にシステムリポジトリの設定ファイルのパスを指定することで初期化する。詳細は [アプリケーションの起動方法](../../component/handlers/handlers-main.md) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -26,7 +26,7 @@
 
 ## データベースアクセス
 
-- [データベースアクセス](../../component/libraries/libraries-database_management.json)
+- [データベースアクセス](../../component/libraries/libraries-database_management.md)
 - 標準提供のデータリーダ: `DatabaseTableQueueReader (データベースのテーブルをキューとして扱うリーダ)`
 
 <details>
@@ -38,7 +38,7 @@
 
 ## 入力値のチェック
 
-[入力値のチェック](../../component/libraries/libraries-validation.json)
+[入力値のチェック](../../component/libraries/libraries-validation.md)
 
 <details>
 <summary>keywords</summary>
@@ -49,10 +49,10 @@
 
 ## 排他制御
 
-排他制御は2種類提供されているが、[UniversalDaoを推奨する理由](../../component/libraries/libraries-exclusive_control.json#s1) に記載の通り、[universal_dao](../../component/libraries/libraries-universal_dao.json#s1) の使用を推奨する。
+排他制御は2種類提供されているが、[UniversalDaoを推奨する理由](../../component/libraries/libraries-exclusive_control.md) に記載の通り、[universal_dao](../../component/libraries/libraries-universal_dao.md) の使用を推奨する。
 
-- [exclusive_control](../../component/libraries/libraries-exclusive_control.json#s1)
-- [universal_dao](../../component/libraries/libraries-universal_dao.json#s1)
+- [exclusive_control](../../component/libraries/libraries-exclusive_control.md)
+- [universal_dao](../../component/libraries/libraries-universal_dao.md)
   - :ref:`universal_dao_jpa_pessimistic_lock`
 
 <details>
@@ -64,10 +64,10 @@
 
 ## 実行制御
 
-- [プロセス終了コード](../../component/handlers/handlers-status_code_convert_handler.json#s3)
-- [エラー発生データを除外して処理を継続する](db-messaging-error_processing.json#s1)
-- [メッセージングプロセスを異常終了させる](db-messaging-error_processing.json#s1)
-- [処理の並列実行(マルチスレッド化)](../../component/handlers/handlers-multi_thread_execution_handler.json#s2)
+- [プロセス終了コード](../../component/handlers/handlers-status_code_convert_handler.md)
+- [エラー発生データを除外して処理を継続する](db-messaging-error_processing.md)
+- [メッセージングプロセスを異常終了させる](db-messaging-error_processing.md)
+- [処理の並列実行(マルチスレッド化)](../../component/handlers/handlers-multi_thread_execution_handler.md)
 
 <details>
 <summary>keywords</summary>
@@ -78,7 +78,7 @@
 
 ## マルチプロセス化
 
-[db_messaging-multiple_process](db-messaging-multiple_process.json)
+[db_messaging-multiple_process](db-messaging-multiple_process.md)
 
 <details>
 <summary>keywords</summary>

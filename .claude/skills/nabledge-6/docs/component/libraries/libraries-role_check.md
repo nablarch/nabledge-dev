@@ -4,7 +4,7 @@
 
 ## 機能概要
 
-アノテーションによる認可チェックでは、ユーザにロール(役割)を割り当て、機能にも実行に必要なロールを割り当て、ユーザが機能のロールを持つかどうかで認可判定を行う。機能とロールの割り当てはアノテーションで行い、ユーザとロールの割り当て方法はフレームワークでは規定しない。[permission_check](libraries-permission_check.json) より単純なデータ構造で権限管理できる。
+アノテーションによる認可チェックでは、ユーザにロール(役割)を割り当て、機能にも実行に必要なロールを割り当て、ユーザが機能のロールを持つかどうかで認可判定を行う。機能とロールの割り当てはアノテーションで行い、ユーザとロールの割り当て方法はフレームワークでは規定しない。[permission_check](libraries-permission_check.md) より単純なデータ構造で権限管理できる。
 
 **アノテーション**: `@CheckRole`
 
@@ -16,7 +16,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 ## ハンドラによる認可チェックとの使い分け
 
 - **本認可チェックが適している場合**: ロール自体の増減やロールに割り当てる機能の変更が頻繁に発生しない場合。ロールと機能の組み合わせが固定されており今後大きく変化しない場合。
-- **[permission_check](libraries-permission_check.json) を推奨する場合**: 組織変更でロールや機能の組み合わせが頻繁に変わるシステム（例: 部署によって権限が変わる場合）。本認可チェックでは変更のたびにアノテーションの書き換えが必要になるため、[permission_check](libraries-permission_check.json) を使って権限の組み合わせをデータで管理することを推奨する。
+- **[permission_check](libraries-permission_check.md) を推奨する場合**: 組織変更でロールや機能の組み合わせが頻繁に変わるシステム（例: 部署によって権限が変わる場合）。本認可チェックでは変更のたびにアノテーションの書き換えが必要になるため、[permission_check](libraries-permission_check.md) を使って権限の組み合わせをデータで管理することを推奨する。
 
 <details>
 <summary>keywords</summary>

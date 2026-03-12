@@ -4,7 +4,7 @@
 
 ## 機能概要
 
-ログ出力は3コンポーネント（LogWriter・LogFormatter・Logger/LoggerFactory）で構成され、それぞれの実装を差し替えられる。オープンソースのログ出力ライブラリを使用したい場合は `Logger` / `LoggerFactory` を差し替える。既存ロギングフレームワーク向けの専用アダプタについては [log_adaptor](../adapters/adapters-log_adaptor.json#s2) を参照。
+ログ出力は3コンポーネント（LogWriter・LogFormatter・Logger/LoggerFactory）で構成され、それぞれの実装を差し替えられる。オープンソースのログ出力ライブラリを使用したい場合は `Logger` / `LoggerFactory` を差し替える。既存ロギングフレームワーク向けの専用アダプタについては [log_adaptor](../adapters/adapters-log_adaptor.md) を参照。
 
 **デフォルト提供クラス**
 
@@ -30,15 +30,15 @@ RotatePolicy:
 
 | ログの種類 | 説明 |
 |---|---|
-| [障害通知ログ](libraries-failure_log.json#s1) | 障害発生時に1次切り分け担当者の特定に必要な情報を出力する。 |
-| [障害解析ログ](libraries-failure_log.json#s1) | 障害原因の特定に必要な情報を出力する。 |
-| [SQLログ](libraries-sql_log.json#s1) | SQL文の実行時間とSQL文を出力する（パフォーマンスチューニング用）。 |
-| [パフォーマンスログ](libraries-performance_log.json#s1) | 任意の処理の実行時間とメモリ使用量を出力する（パフォーマンスチューニング用）。 |
-| [HTTPアクセスログ](libraries-http_access_log.json#s1) | Webアプリケーションの実行状況、性能・負荷測定情報、全リクエスト/レスポンスの証跡ログを出力する。 |
-| [HTTPアクセスログ（RESTfulウェブサービス用）](libraries-jaxrs_access_log.json) | RESTfulウェブサービスの実行状況、性能・負荷測定情報、全リクエスト/レスポンスの証跡ログを出力する。 |
-| [メッセージングログ](libraries-messaging_log.json#s1) | メッセージング処理のメッセージ送受信状況を出力する。 |
+| [障害通知ログ](libraries-failure_log.md) | 障害発生時に1次切り分け担当者の特定に必要な情報を出力する。 |
+| [障害解析ログ](libraries-failure_log.md) | 障害原因の特定に必要な情報を出力する。 |
+| [SQLログ](libraries-sql_log.md) | SQL文の実行時間とSQL文を出力する（パフォーマンスチューニング用）。 |
+| [パフォーマンスログ](libraries-performance_log.md) | 任意の処理の実行時間とメモリ使用量を出力する（パフォーマンスチューニング用）。 |
+| [HTTPアクセスログ](libraries-http_access_log.md) | Webアプリケーションの実行状況、性能・負荷測定情報、全リクエスト/レスポンスの証跡ログを出力する。 |
+| [HTTPアクセスログ（RESTfulウェブサービス用）](libraries-jaxrs_access_log.md) | RESTfulウェブサービスの実行状況、性能・負荷測定情報、全リクエスト/レスポンスの証跡ログを出力する。 |
+| [メッセージングログ](libraries-messaging_log.md) | メッセージング処理のメッセージ送受信状況を出力する。 |
 
-> **補足**: 本フレームワークでは、[障害通知ログ](libraries-failure_log.json#s1) と [障害解析ログ](libraries-failure_log.json#s1) を合わせて**障害ログ**と呼ぶ。
+> **補足**: 本フレームワークでは、[障害通知ログ](libraries-failure_log.md) と [障害解析ログ](libraries-failure_log.md) を合わせて**障害ログ**と呼ぶ。
 
 システムプロパティを使用して、プロパティファイルと同じキー名で値を指定することにより設定を上書きできる。共通プロパティファイルを用意しておき、プロセス毎にログ出力設定を変更できる。
 
@@ -115,7 +115,7 @@ LOGGER.logInfo("addition fields", structuredArgs);
 {"date":"2021-02-04 12:34:56.789","logLevel":"INFO","message":"addition fields","key1":"value1","key2":123,"key3":true,"key5":"2021-02-04 12:34:56.789"}
 ```
 
-> **重要**: `SynchronousFileLogWriter` は複数プロセスからの書き込み用に作成されたものだが、[障害通知ログ](libraries-failure_log.json#s1) のように出力頻度が低いログ出力にのみ使用すること。頻繁にログを出力する場面で使用するとロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性がある。アプリケーションログやアクセスログのように出力頻度の高いログに使用してはいけない。
+> **重要**: `SynchronousFileLogWriter` は複数プロセスからの書き込み用に作成されたものだが、[障害通知ログ](libraries-failure_log.md) のように出力頻度が低いログ出力にのみ使用すること。頻繁にログを出力する場面で使用するとロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性がある。アプリケーションログやアクセスログのように出力頻度の高いログに使用してはいけない。
 
 > **重要**: 以下の制約があるため、使用にあたっては十分検討すること。
 > - ログのローテーションができない。
@@ -240,7 +240,7 @@ ID体系:
 起動プロセス（指定時のみ付加）＋システム日時(yyyyMMddHHmmssSSS)＋連番(4桁)
 ```
 
-> **重要**: リクエストID、実行時ID、ユーザIDを出力する場合、取得元が `ThreadContext` のため、ハンドラ構成に [thread_context_handler](../handlers/handlers-thread_context_handler.json#s2) が含まれている必要がある。ユーザIDについては [thread_context_handler-user_id_attribute_setting](../handlers/handlers-thread_context_handler.json#s5) を参照しセッションへの値設定が必要。
+> **重要**: リクエストID、実行時ID、ユーザIDを出力する場合、取得元が `ThreadContext` のため、ハンドラ構成に [thread_context_handler](../handlers/handlers-thread_context_handler.md) が含まれている必要がある。ユーザIDについては [thread_context_handler-user_id_attribute_setting](../handlers/handlers-thread_context_handler.md) を参照しセッションへの値設定が必要。
 
 **改行コード・タブ文字**: フォーマットに含める場合は `\n`（改行）、`\t`（タブ）をJavaと同様に記述する。改行コードはシステムプロパティ `line.separator` から取得（変更しなければOSの改行コード）。
 
@@ -250,12 +250,12 @@ ID体系:
 
 | ログの種類 | フォーマッタ |
 |---|---|
-| [障害ログ](libraries-failure_log.json) | `FailureJsonLogFormatter` |
-| [SQLログ](libraries-sql_log.json) | `SqlJsonLogFormatter` |
-| [パフォーマンスログ](libraries-performance_log.json) | `PerformanceJsonLogFormatter` |
-| [HTTPアクセスログ](libraries-http_access_log.json) | `HttpAccessJsonLogFormatter` |
-| [HTTPアクセスログ（RESTfulウェブサービス用）](libraries-jaxrs_access_log.json) | `JaxRsAccessJsonLogFormatter` |
-| [メッセージングログ](libraries-messaging_log.json) | `MessagingJsonLogFormatter` |
+| [障害ログ](libraries-failure_log.md) | `FailureJsonLogFormatter` |
+| [SQLログ](libraries-sql_log.md) | `SqlJsonLogFormatter` |
+| [パフォーマンスログ](libraries-performance_log.md) | `PerformanceJsonLogFormatter` |
+| [HTTPアクセスログ](libraries-http_access_log.md) | `HttpAccessJsonLogFormatter` |
+| [HTTPアクセスログ（RESTfulウェブサービス用）](libraries-jaxrs_access_log.md) | `JaxRsAccessJsonLogFormatter` |
+| [メッセージングログ](libraries-messaging_log.md) | `MessagingJsonLogFormatter` |
 
 `LogPublisher` は、出力されたログ情報(`LogContext`)を登録された `LogListener` に連携する機能。出力されたログ情報に対してプログラム的に処理を行いたい場合に使用する。
 
@@ -332,7 +332,7 @@ if (LOGGER.isDebugEnabled()) {
 
 > **補足**: SQLログや監視ログなど特定用途向けのログ出力では、その用途を表す名前（SQL、MONITORなど）をロガー名に指定し、それ以外はクラスのFQCNを指定する。
 
-各種ログの出力機能（[failure_log-setting](libraries-failure_log.json#s2)、[sql_log-setting](libraries-sql_log.json) など）を使用するには、[log-basic_setting](#s3) に加えて各種ログの設定が必要。設定はプロパティファイルに記述する。
+各種ログの出力機能（[failure_log-setting](libraries-failure_log.md)、[sql_log-setting](libraries-sql_log.md) など）を使用するには、[log-basic_setting](#s3) に加えて各種ログの設定が必要。設定はプロパティファイルに記述する。
 
 **プロパティファイルの場所**: クラスパス直下の `app-log.properties` を使用。場所を変更する場合はシステムプロパティ `nablarch.appLog.filePath` でファイルパスを指定する（ファイルパスの指定方法は `FileUtil#getResource` を参照）。
 
@@ -341,12 +341,12 @@ java -Dnablarch.appLog.filePath=file:/var/log/app/app-log.properties ...
 ```
 
 各種ログの設定は各ドキュメントを参照:
-- [failure_log-setting](libraries-failure_log.json#s2)
-- [sql_log-setting](libraries-sql_log.json)
-- [performance_log-setting](libraries-performance_log.json)
-- [http_access_log-setting](libraries-http_access_log.json)
-- [jaxrs_access_log-setting](libraries-jaxrs_access_log.json)
-- [messaging_log-setting](libraries-messaging_log.json)
+- [failure_log-setting](libraries-failure_log.md)
+- [sql_log-setting](libraries-sql_log.md)
+- [performance_log-setting](libraries-performance_log.md)
+- [http_access_log-setting](libraries-http_access_log.md)
+- [jaxrs_access_log-setting](libraries-jaxrs_access_log.md)
+- [messaging_log-setting](libraries-messaging_log.md)
 
 Nablarchバッチでは上述のフォーマッタ設定に加えて以下の3つの設定が必要。
 
@@ -576,7 +576,7 @@ log.properties, nablarch.log.filePath, loggerFactory.className, writerNames, ava
 | メッセージングログを出力できる | ○ | — |
 
 [1] Nablarchのログ出力はファイルの世代管理を提供していないので、一部提供ありとしている。
-[2] [log_adaptor](../adapters/adapters-log_adaptor.json#s2) を使用する。または、プロジェクトで作成する。作成方法は [log-add_log_writer](#) を参照。
+[2] [log_adaptor](../adapters/adapters-log_adaptor.md) を使用する。または、プロジェクトで作成する。作成方法は [log-add_log_writer](#) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -649,7 +649,7 @@ BasicLogFormatter, LogItem, ObjectSettings, LogContext, プレースホルダ追
 
 ## ログの初期化メッセージを出力しないようにする
 
-初期化メッセージが不要な場合は、提供するWriterを元に初期化メッセージを出力しないWriterを作成して対応する。[log_adaptor](../adapters/adapters-log_adaptor.json#s2) を使用した場合は初期化メッセージが出力されないため本対応は不要。
+初期化メッセージが不要な場合は、提供するWriterを元に初期化メッセージを出力しないWriterを作成して対応する。[log_adaptor](../adapters/adapters-log_adaptor.md) を使用した場合は初期化メッセージが出力されないため本対応は不要。
 
 対応手順:
 1. ベースWriterクラスのソースをプロジェクト側にコピーする（例: `FileLogWriter`）

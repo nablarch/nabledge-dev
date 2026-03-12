@@ -4,7 +4,7 @@
 
 ## 機能概要
 
-> **重要**: この機能は**非推奨**。排他制御には [universal_dao](libraries-universal_dao.json#s1) を使用すること。理由: (1) [universal_dao](libraries-universal_dao.json#s1) の排他制御の方が簡易（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` を参照）。(2) 主キーが非文字列型（charやvarchar以外）の場合、DBによっては型不一致でSQL実行時例外が発生する。この機能は主キーの値をすべて `java.lang.String` で保持しており、PostgreSQLなど暗黙の型変換を行わないDBでこの問題が発生する。
+> **重要**: この機能は**非推奨**。排他制御には [universal_dao](libraries-universal_dao.md) を使用すること。理由: (1) [universal_dao](libraries-universal_dao.md) の排他制御の方が簡易（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` を参照）。(2) 主キーが非文字列型（charやvarchar以外）の場合、DBによっては型不一致でSQL実行時例外が発生する。この機能は主キーの値をすべて `java.lang.String` で保持しており、PostgreSQLなど暗黙の型変換を行わないDBでこの問題が発生する。
 
 テーブルにバージョン番号カラムを定義することで楽観的ロック/悲観的ロックを実現。このカラムが定義されたテーブルを**排他制御用テーブル**と呼ぶ。
 

@@ -39,10 +39,10 @@ Firefox, Chrome, ブラウザ, 事前準備, 起動確認
 | プロジェクト種別 | Mavenプロジェクト |
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Database Engine（アプリケーションに組み込み） |
-| 組み込まれているアダプタ | Jersey用アダプタ（[jaxrs_adaptor](../../component/adapters/adapters-jaxrs_adaptor.json#s1)）、ルーティングアダプタ（[router_adaptor](../../component/adapters/adapters-router_adaptor.json#s1)） |
-| 含まれるもの | NablarchのRESTfulウェブサービス用基本設定、疎通確認用RESTfulウェブサービス、Mavenと連動するツールの初期設定（[about_maven_parent_module](blank-project-MavenModuleStructures.json)） |
+| 組み込まれているアダプタ | Jersey用アダプタ（[jaxrs_adaptor](../../component/adapters/adapters-jaxrs_adaptor.md)）、ルーティングアダプタ（[router_adaptor](../../component/adapters/adapters-router_adaptor.md)） |
+| 含まれるもの | NablarchのRESTfulウェブサービス用基本設定、疎通確認用RESTfulウェブサービス、Mavenと連動するツールの初期設定（[about_maven_parent_module](blank-project-MavenModuleStructures.md)） |
 
-他のプロジェクトとの関係・ディレクトリ構成: [../MavenModuleStructures/index](blank-project-MavenModuleStructures.json)
+他のプロジェクトとの関係・ディレクトリ構成: [../MavenModuleStructures/index](blank-project-MavenModuleStructures.md)
 
 <details>
 <summary>keywords</summary>
@@ -173,9 +173,9 @@ SampleActionTest, SampleAction, mvn test, mvn jetty:run, 疎通確認, 起動確
 
 ## データベースに関する設定を行う
 
-ブランクプロジェクトはデフォルトでH2 Database Engineを使用するよう設定されている。RDBMSを変更する場合は [customize-db](blank-project-CustomizeDB.json) を参照して設定すること。
+ブランクプロジェクトはデフォルトでH2 Database Engineを使用するよう設定されている。RDBMSを変更する場合は [customize-db](blank-project-CustomizeDB.md) を参照して設定すること。
 
-ER図からのDDL生成・実行、Entityクラスの自動生成を行う場合は、gsp-dba-maven-pluginの初期設定および実行が必要。詳細は [gsp-maven-plugin](blank-project-addin_gsp.json#s3) を参照。
+ER図からのDDL生成・実行、Entityクラスの自動生成を行う場合は、gsp-dba-maven-pluginの初期設定および実行が必要。詳細は [gsp-maven-plugin](blank-project-addin_gsp.md) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -186,7 +186,7 @@ H2 Database Engine, RDBMS変更, gsp-dba-maven-plugin, customize-db, DDL生成, 
 
 ## 補足
 
-H2のデータ確認方法およびブランクプロジェクトに組み込まれているツールについては [../firstStep_appendix/firststep_complement](blank-project-firststep_complement.json) を参照。
+H2のデータ確認方法およびブランクプロジェクトに組み込まれているツールについては [../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照。
 
 <details>
 <summary>keywords</summary>

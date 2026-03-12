@@ -4,11 +4,11 @@
 
 ## インターセプタクラス名
 
-業務アクションでの例外発生時に、指定したレスポンスを返却するインターセプタ。[inject_form_interceptor](handlers-InjectForm.json#s1) と組み合わせる場合、このインターセプタを [inject_form_interceptor](handlers-InjectForm.json#s1) より前に実行されるよう設定することで、バリデーションエラーに対するレスポンスを指定できる。
+業務アクションでの例外発生時に、指定したレスポンスを返却するインターセプタ。[inject_form_interceptor](handlers-InjectForm.md) と組み合わせる場合、このインターセプタを [inject_form_interceptor](handlers-InjectForm.md) より前に実行されるよう設定することで、バリデーションエラーに対するレスポンスを指定できる。
 
 業務アクションのメソッドに対して `OnError` アノテーションを設定することで有効となる。
 
-> **補足**: 複数の例外に対するレスポンスを指定したい場合は、[on_errors_interceptor](handlers-on_errors.json#s1) を使用すること。
+> **補足**: 複数の例外に対するレスポンスを指定したい場合は、[on_errors_interceptor](handlers-on_errors.md) を使用すること。
 
 > **重要**: 単一の例外に対して複数のレスポンスは指定できない。複数のレスポンスを指定したい場合は、[on_error-multiple](#s4) を参照。
 

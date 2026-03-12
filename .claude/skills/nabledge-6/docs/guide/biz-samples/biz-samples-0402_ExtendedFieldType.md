@@ -4,7 +4,7 @@
 
 ## イントロダクション
 
-本サンプルはフォーマッタ機能のフィールドタイプ拡張仕様を提供する。基本となる汎用データフォーマット機能の詳細は [data_format](../../component/libraries/libraries-data_format.json#s1) を参照すること。
+本サンプルはフォーマッタ機能のフィールドタイプ拡張仕様を提供する。基本となる汎用データフォーマット機能の詳細は [data_format](../../component/libraries/libraries-data_format.md) を参照すること。
 
 <details>
 <summary>keywords</summary>
@@ -60,7 +60,7 @@ EbcdicDoubleByteCharacterString, EbcdicNoShiftCodeDoubleByteCharacterString, EBC
 
 ## フィールドタイプの使用方法
 
-フィールドタイプの追加方法は [data_format-field_type_add](../../component/libraries/libraries-data_format.json) を参照。Fixed(固定長)フォーマットのファクトリクラス実装例:
+フィールドタイプの追加方法は [data_format-field_type_add](../../component/libraries/libraries-data_format.md) を参照。Fixed(固定長)フォーマットのファクトリクラス実装例:
 
 ```java
 public class EbcdicFixedLengthConvertorFactory extends FixedLengthConvertorFactory {

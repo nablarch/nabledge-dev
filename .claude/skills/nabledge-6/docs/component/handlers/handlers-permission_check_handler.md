@@ -34,9 +34,9 @@ nablarch-common-auth, com.nablarch.framework, モジュール, 依存関係
 
 ## 制約
 
-- [thread_context_handler](handlers-thread_context_handler.json#s2) より後ろに配置すること。スレッドコンテキスト上のリクエストIDとユーザIDをもとに認可チェックを行うため。
-- [forwarding_handler](handlers-forwarding_handler.json#s1) より後ろに配置すること。内部フォーワード先の [内部リクエストID](handlers-forwarding_handler.json#s5) をもとに認可チェックしたい場合。この場合、[thread_context_handler](handlers-thread_context_handler.json#s2) の `attributes` に `InternalRequestIdAttribute` を追加すること。
-- [http_error_handler](handlers-HttpErrorHandler.json#s1) より後ろに配置すること。認可チェックエラー時に表示するエラーページを指定するため。
+- [thread_context_handler](handlers-thread_context_handler.md) より後ろに配置すること。スレッドコンテキスト上のリクエストIDとユーザIDをもとに認可チェックを行うため。
+- [forwarding_handler](handlers-forwarding_handler.md) より後ろに配置すること。内部フォーワード先の [内部リクエストID](handlers-forwarding_handler.md) をもとに認可チェックしたい場合。この場合、[thread_context_handler](handlers-thread_context_handler.md) の `attributes` に `InternalRequestIdAttribute` を追加すること。
+- [http_error_handler](handlers-HttpErrorHandler.md) より後ろに配置すること。認可チェックエラー時に表示するエラーページを指定するため。
 
 <details>
 <summary>keywords</summary>
@@ -63,7 +63,7 @@ PermissionCheckHandler, Permission, nablarch.common.permission.Permission, Forbi
 
 ## 権限がない場合に表示するエラーページを指定する
 
-権限がない場合に表示するエラーページは、[http_error_handler](handlers-HttpErrorHandler.json#s1) （HTTPエラー制御ハンドラ）で指定する。指定方法は :ref:`HttpErrorHandler_DefaultPage` 参照。
+権限がない場合に表示するエラーページは、[http_error_handler](handlers-HttpErrorHandler.md) （HTTPエラー制御ハンドラ）で指定する。指定方法は :ref:`HttpErrorHandler_DefaultPage` 参照。
 
 <details>
 <summary>keywords</summary>

@@ -34,7 +34,7 @@ bcjmail-jdk18on, org.bouncycastle, bouncycastle, 電子署名, 証明書準備, 
 
 メール送信パターンIDを元に証明書を特定し、電子署名を付加する。本機能を使用する場合、必ずメール送信パターンIDを使用できるテーブル設計とすること。
 
-詳細は [メール送信機能](../../component/libraries/libraries-mail.json#s1) を参照。
+詳細は [メール送信機能](../../component/libraries/libraries-mail.md) を参照。
 
 <details>
 <summary>keywords</summary>

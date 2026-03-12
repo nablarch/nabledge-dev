@@ -159,7 +159,7 @@ execute(new BasicAdvice() {
 - `assertEntity(sheetName, expectedId, actual)`: エンティティ/Formの検証。期待値の書式は :ref:`entityUnitTest_SetterGetterCase` と同様（setterの欄は不要）
 - `assertListMapEquals(expected, actual)`: `List<Map<String, String>>` の検証
 
-Excelからデータを取得する場合: `getListMap(sheetName, dataId)` で `List<Map<String, String>>` を取得。詳細: [how_to_get_data_from_excel](testing-framework-03_Tips.json)
+Excelからデータを取得する場合: `getListMap(sheetName, dataId)` で `List<Map<String, String>>` を取得。詳細: [how_to_get_data_from_excel](testing-framework-03_Tips.md)
 
 FormにSqlResultSet/SqlRow以外が格納されている場合は `assertEntity()` を使用する。FormプロパティのFormを検証する場合は、そのFormを取得して `assertEntity()` で検証する。
 
@@ -191,9 +191,9 @@ FormにSqlResultSet/SqlRow以外が格納されている場合は `assertEntity(
 
 １リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開いて目視確認する。
 
-> **補足**: 自動テストフレームワークが [../../08_TestTools/03_HtmlCheckTool/index](testing-framework-guide-development-guide-08-TestTools-03-HtmlCheckTool.json) を用いてHTMLファイルを自動チェックする。HTMLファイル内に違反があった場合は違反内容に応じた例外が発生し、テストケースが失敗となる。
+> **補足**: 自動テストフレームワークが [../../08_TestTools/03_HtmlCheckTool/index](testing-framework-guide-development-guide-08-TestTools-03-HtmlCheckTool.md) を用いてHTMLファイルを自動チェックする。HTMLファイル内に違反があった場合は違反内容に応じた例外が発生し、テストケースが失敗となる。
 
-**HTMLダンプ出力先**: プロジェクトのルートディレクトリ配下の `tmp/html_dump/` ディレクトリ。詳細: [dump-dir-label](testing-framework-02_RequestUnitTest.json#s7)
+**HTMLダンプ出力先**: プロジェクトのルートディレクトリ配下の `tmp/html_dump/` ディレクトリ。詳細: [dump-dir-label](testing-framework-02_RequestUnitTest.md)
 
 **ダンプファイル名**: `testShots` の `description` 欄の記述が使用される。
 

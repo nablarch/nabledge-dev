@@ -32,7 +32,7 @@ nablarch-fw-batch, com.nablarch.framework, Maven依存関係, モジュール依
 
 ## 制約
 
-[thread_context_handler](handlers-thread_context_handler.json#s2) よりも後ろに設定すること。本ハンドラはスレッドコンテキスト上のリクエストIDを元にプロセス多重起動チェックを行うため。
+[thread_context_handler](handlers-thread_context_handler.md) よりも後ろに設定すること。本ハンドラはスレッドコンテキスト上のリクエストIDを元にプロセス多重起動チェックを行うため。
 
 <details>
 <summary>keywords</summary>

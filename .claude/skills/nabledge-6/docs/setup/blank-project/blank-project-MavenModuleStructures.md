@@ -48,7 +48,7 @@ nablarch-web-archetypeで `pj-web`（war）、nablarch-batch-archetypeで `pj-ba
 | pj-web | war | ウェブアプリケーション実行制御基盤を使用するアプリケーション。warファイルとしてアプリケーションサーバにデプロイ。 |
 | pj-batch | jar | Nablarch独自のバッチアプリケーション実行制御基盤を使用するアプリケーション。 |
 
-> **補足**: 自動生成エンティティは[gsp-dba-maven-plugin](https://github.com/coastland/gsp-dba-maven-plugin)を使用した場合に生成される。使用する場合は [../addin_gsp](blank-project-addin_gsp.json) の設定が必要。
+> **補足**: 自動生成エンティティは[gsp-dba-maven-plugin](https://github.com/coastland/gsp-dba-maven-plugin)を使用した場合に生成される。使用する場合は [../addin_gsp](blank-project-addin_gsp.md) の設定が必要。
 
 ウェブアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。
 
@@ -299,7 +299,7 @@ myapp-web
 
 > **補足**: `pom.xml` 中のdevプロファイルに `activeByDefault` 要素が記述されており、デフォルトでdevプロファイルが使用される。
 
-> **注意**: コンテナ用プロジェクトでは、環境ごとの違いはプロファイルではなくOS環境変数を使って切り替える。コンテナ用プロジェクトにはプロファイルが定義されていない。詳細は [container_production_config](blank-project-CustomizeDB.json#s15) を参照。
+> **注意**: コンテナ用プロジェクトでは、環境ごとの違いはプロファイルではなくOS環境変数を使って切り替える。コンテナ用プロジェクトにはプロファイルが定義されていない。詳細は [container_production_config](blank-project-CustomizeDB.md) を参照。
 
 本番環境用WARファイルを作成する場合、`pj-web` モジュール配下で本番環境用プロファイルを指定して実行する:
 

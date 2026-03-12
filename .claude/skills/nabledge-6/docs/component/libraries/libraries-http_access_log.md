@@ -5,9 +5,9 @@
 ## HTTPアクセスログの出力方針
 
 HTTPアクセスログの出力に必要なハンドラ:
-- [http_access_log_handler](../handlers/handlers-http_access_log_handler.json#s1): リクエスト処理開始時と終了時のログ出力
-- [nablarch_tag_handler](../handlers/handlers-nablarch_tag_handler.json#s1): hiddenパラメータ復号後のログ出力（:ref:`hidden暗号化<tag-hidden_encryption>` 参照）
-- [http_request_java_package_mapping](../handlers/handlers-http_request_java_package_mapping.json#s2): ディスパッチ先クラス決定後のログ出力
+- [http_access_log_handler](../handlers/handlers-http_access_log_handler.md): リクエスト処理開始時と終了時のログ出力
+- [nablarch_tag_handler](../handlers/handlers-nablarch_tag_handler.md): hiddenパラメータ復号後のログ出力（:ref:`hidden暗号化<tag-hidden_encryption>` 参照）
+- [http_request_java_package_mapping](../handlers/handlers-http_request_java_package_mapping.md): ディスパッチ先クラス決定後のログ出力
 
 リクエストパラメータを含むリクエスト情報を出力することで証跡ログの要件を満たせる場合は、HTTPアクセスログと証跡ログを兼用できる。
 
@@ -70,7 +70,7 @@ httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userI
                                     \n\tfree_memory    = [$freeMemory$]
 ```
 
-設定は [log-app_log_setting](libraries-log.json) で説明したプロパティファイルに行う。
+設定は [log-app_log_setting](libraries-log.md) で説明したプロパティファイルに行う。
 
 **クラス**: `HttpAccessLogFormatter`
 
@@ -105,7 +105,7 @@ beginFormatデフォルト値:
 
 > **補足**: リクエストパラメータは :ref:`hidden暗号化<tag-hidden_encryption>` の復号前の状態となる。
 
-> **重要**: リクエストIDとユーザIDは、`BasicLogFormatter` が出力する項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために設けている。リクエストID、ユーザIDの取得元は `ThreadContext` のため、ハンドラ構成に [thread_context_handler](../handlers/handlers-thread_context_handler.json#s2) が含まれている必要がある。ユーザIDは [thread_context_handler-user_id_attribute_setting](../handlers/handlers-thread_context_handler.json#s5) を参照してセッションに値を設定すること。
+> **重要**: リクエストIDとユーザIDは、`BasicLogFormatter` が出力する項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために設けている。リクエストID、ユーザIDの取得元は `ThreadContext` のため、ハンドラ構成に [thread_context_handler](../handlers/handlers-thread_context_handler.md) が含まれている必要がある。ユーザIDは [thread_context_handler-user_id_attribute_setting](../handlers/handlers-thread_context_handler.md) を参照してセッションに値を設定すること。
 
 **parametersFormatのデフォルト値**:
 ```bash
@@ -132,7 +132,7 @@ endFormatデフォルト値:
     \n\tfree_memory    = [$freeMemory$]
 ```
 
-> **補足**: ステータスコード(内部)は [http_access_log_handler](../handlers/handlers-http_access_log_handler.json#s1) の復路時点のコード。ステータスコード(クライアント)は [http_response_handler](../handlers/handlers-http_response_handler.json#s1) でクライアントに返却するコード。ステータスコード(クライアント)はログ出力時点では未確定だが [http_response_handler](../handlers/handlers-http_response_handler.json#s1) と同じ機能で導出する。変換ルールは [http_response_handler-convert_status_code](../handlers/handlers-http_response_handler.json#s4) 参照。
+> **補足**: ステータスコード(内部)は [http_access_log_handler](../handlers/handlers-http_access_log_handler.md) の復路時点のコード。ステータスコード(クライアント)は [http_response_handler](../handlers/handlers-http_response_handler.md) でクライアントに返却するコード。ステータスコード(クライアント)はログ出力時点では未確定だが [http_response_handler](../handlers/handlers-http_response_handler.md) と同じ機能で導出する。変換ルールは [http_response_handler-convert_status_code](../handlers/handlers-http_response_handler.md) 参照。
 
 > **重要**: ステータスコード(クライアント)は、HTTPアクセスログハンドラ処理後にJSPエラー等のシステムエラーが発生した場合、実際の内部コードと異なることがある。障害監視ログが発生した際はこの値が正しくない可能性を考慮してログを検証すること。
 
@@ -163,7 +163,7 @@ HTTPアクセスログ, HttpAccessLogFormatter, HTTP_ACCESS, http_access_log_han
 
 ## JSON形式の構造化ログとして出力する
 
-[log-json_log_setting](libraries-log.json) でJSON形式のログ出力が可能だが、`HttpAccessLogFormatter` ではHTTPアクセスログ各項目はmessageに文字列として出力される。各項目もJSONの値として出力するには `HttpAccessJsonLogFormatter` を使用する。設定は [log-app_log_setting](libraries-log.json) で説明したプロパティファイルに行う。
+[log-json_log_setting](libraries-log.md) でJSON形式のログ出力が可能だが、`HttpAccessLogFormatter` ではHTTPアクセスログ各項目はmessageに文字列として出力される。各項目もJSONの値として出力するには `HttpAccessJsonLogFormatter` を使用する。設定は [log-app_log_setting](libraries-log.md) で説明したプロパティファイルに行う。
 
 | プロパティ名 | 必須 | デフォルト値 | 説明 |
 |---|---|---|---|
@@ -183,7 +183,7 @@ HTTPアクセスログ, HttpAccessLogFormatter, HTTP_ACCESS, http_access_log_han
 | httpAccessLogFormatter.parametersLabel | | `"PARAMETERS"` | hiddenパラメータ復号後ログのlabel値 |
 | httpAccessLogFormatter.dispatchingClassLabel | | `"DISPATCHING CLASS"` | ディスパッチ先クラス決定後ログのlabel値 |
 | httpAccessLogFormatter.endLabel | | `"HTTP ACCESS END"` | リクエスト処理終了時ログのlabel値 |
-| httpAccessLogFormatter.structuredMessagePrefix | | `"$JSON$"` | JSON形式であることを識別するメッセージ先頭マーカー。変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して `JsonLogFormatter` にも同じ値を設定すること（LogWriterのプロパティについては [log-basic_setting](libraries-log.json#s3) を参照） |
+| httpAccessLogFormatter.structuredMessagePrefix | | `"$JSON$"` | JSON形式であることを識別するメッセージ先頭マーカー。変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して `JsonLogFormatter` にも同じ値を設定すること（LogWriterのプロパティについては [log-basic_setting](libraries-log.md) を参照） |
 
 **beginTargetsの指定可能項目**（デフォルト: `label`, `requestId`, `userId`, `sessionId`, `url`, `port`, `method`, `clientIpAddress`, `clientHost`）:
 `label`, `requestId`, `userId`, `sessionId`, `sessionStoreId`, `url`, `port`, `method`, `queryString`, `parameters`, `sessionScope`, `clientIpAddress`, `clientHost`, `clientUserAgent`
@@ -217,9 +217,9 @@ HttpAccessJsonLogFormatter, JsonLogFormatter, SimpleDateFormat, httpAccessLogFor
 
 ## セッションストアIDについて
 
-セッションストアIDを出力に含めた場合、:ref:`session_store` が発行するセッション識別IDが出力される。この値は [session_store_handler](../handlers/handlers-SessionStoreHandler.json#s2) の往路で記録されたものが使用される。
+セッションストアIDを出力に含めた場合、:ref:`session_store` が発行するセッション識別IDが出力される。この値は [session_store_handler](../handlers/handlers-SessionStoreHandler.md) の往路で記録されたものが使用される。
 
-> **重要**: セッションストアIDをログに出力する場合、[http_access_log_handler](../handlers/handlers-http_access_log_handler.json#s1) は [session_store_handler](../handlers/handlers-SessionStoreHandler.json#s2) より後に配置しなければならない。
+> **重要**: セッションストアIDをログに出力する場合、[http_access_log_handler](../handlers/handlers-http_access_log_handler.md) は [session_store_handler](../handlers/handlers-SessionStoreHandler.md) より後に配置しなければならない。
 
 セッションストアIDはリクエスト処理開始時の状態で固定されるため、以下の仕様になる:
 

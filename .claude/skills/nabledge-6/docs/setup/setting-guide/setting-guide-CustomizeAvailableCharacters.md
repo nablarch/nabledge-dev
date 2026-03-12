@@ -49,7 +49,7 @@ charset-definition.config, charset-definition.xml, 文字集合定義, halfWidth
 
 プレースホルダは :download:`デフォルト設定一覧 <../../configuration/デフォルト設定一覧.xlsx>` を参照。
 
-メッセージID及びメッセージ内容の変更手順は [./CustomizeMessageIDAndMessage](setting-guide-CustomizeMessageIDAndMessage.json) を参照。
+メッセージID及びメッセージ内容の変更手順は [./CustomizeMessageIDAndMessage](setting-guide-CustomizeMessageIDAndMessage.md) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -143,7 +143,7 @@ Nablarchの設定ファイル（ウェブプロジェクトでは `web-component
 </component>
 ```
 
-メッセージID及びメッセージ内容の変更手順は [./CustomizeMessageIDAndMessage](setting-guide-CustomizeMessageIDAndMessage.json) を参照。
+メッセージID及びメッセージ内容の変更手順は [./CustomizeMessageIDAndMessage](setting-guide-CustomizeMessageIDAndMessage.md) を参照。
 
 <details>
 <summary>keywords</summary>

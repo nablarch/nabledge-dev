@@ -56,7 +56,7 @@ nablarch.test.core.db.EntityTestSupport, EntityTestSupport, SystemAccountEntityT
 
 ### 精査対象確認
 
-[nablarch_validation](../../component/libraries/libraries-nablarch_validation.json#s1) で精査対象プロパティを指定した場合、その指定の正しさを確認するケースを作成する。
+[nablarch_validation](../../component/libraries/libraries-nablarch_validation.md) で精査対象プロパティを指定した場合、その指定の正しさを確認するケースを作成する。
 
 全プロパティに対して単項目精査でエラーとなるデータを用意する。テストケース表には全精査対象プロパティのプロパティ名と単項目精査エラーメッセージIDを記載する。
 
@@ -180,7 +180,7 @@ testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);
 | 文字列長不足 | min-1長の文字列 | — |
 | 文字列長超過 | max+1長の文字列 | — |
 
-Nablarch Validationで入力値チェックを実施しているEntityには `Map<String, Object>` を引数にとるコンストラクタが実装されており（[nablarch_validation-execute](../../component/libraries/libraries-nablarch_validation.json#s6) 参照）、このコンストラクタに対するテストを作成する必要がある。対象プロパティはEntityに定義されている全プロパティ。テストデータにはプロパティ名・設定値・期待値（getterで取得した値）を用意する。
+Nablarch Validationで入力値チェックを実施しているEntityには `Map<String, Object>` を引数にとるコンストラクタが実装されており（[nablarch_validation-execute](../../component/libraries/libraries-nablarch_validation.md) 参照）、このコンストラクタに対するテストを作成する必要がある。対象プロパティはEntityに定義されている全プロパティ。テストデータにはプロパティ名・設定値・期待値（getterで取得した値）を用意する。
 
 > **補足**: Entityは自動生成されるため、アプリケーションで使用されないコンストラクタが生成される可能性がある。その場合リクエスト単体テストではテストできないため、Entity単体テストで必ずコンストラクタのテストを行うこと。一般的なFormについてはクラス単体テストでコンストラクタのテストを行う必要はない。
 

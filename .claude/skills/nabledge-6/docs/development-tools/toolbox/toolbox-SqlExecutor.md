@@ -70,7 +70,7 @@ SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール
 - IN句の条件に`,`を含むSQL
 - DATETIMEリテラルを条件とした検索
 
-> **補足**: NablarchはDomaのアダプタを提供している（[doma_adaptor](../../component/adapters/adapters-doma_adaptor.json#s1)）。Domaを使用すると、本ツールのような複雑なセットアップ不要で本番環境用SQLをテスト実行できる（動的条件構築でもSQLの書き換え不要）。Domaの使用を検討することを推奨する。[Doma](https://doma.readthedocs.io/en/stable/)
+> **補足**: NablarchはDomaのアダプタを提供している（[doma_adaptor](../../component/adapters/adapters-doma_adaptor.md)）。Domaを使用すると、本ツールのような複雑なセットアップ不要で本番環境用SQLをテスト実行できる（動的条件構築でもSQLの書き換え不要）。Domaの使用を検討することを推奨する。[Doma](https://doma.readthedocs.io/en/stable/)
 
 ## FAQ
 

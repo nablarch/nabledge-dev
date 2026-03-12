@@ -39,7 +39,7 @@
 | プロジェクト種別 | Mavenプロジェクト |
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Database Engine（アプリケーションに組み込み） |
-| 組み込まれているアダプタ | Jersey用アダプタ（[jaxrs_adaptor](../../component/adapters/adapters-jaxrs_adaptor.json#s1)）、ルーティングアダプタ（[router_adaptor](../../component/adapters/adapters-router_adaptor.json#s1)） |
+| 組み込まれているアダプタ | Jersey用アダプタ（[jaxrs_adaptor](../../component/adapters/adapters-jaxrs_adaptor.md)）、ルーティングアダプタ（[router_adaptor](../../component/adapters/adapters-router_adaptor.md)） |
 | 生成するプロジェクトに含まれるもの | NablarchのRESTfulウェブサービス用の基本的な設定、疎通確認用RESTfulウェブサービス、Mavenと連動して動作するツールの初期設定 |
 
 <details>
@@ -133,9 +133,9 @@ mvn archetype:generate, nablarch-container-jaxrs-archetype, groupId, artifactId,
 
 ## データベースに関する設定を行う
 
-ブランクプロジェクトの初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、[customize-db](blank-project-CustomizeDB.json) を参照。
+ブランクプロジェクトの初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、[customize-db](blank-project-CustomizeDB.md) を参照。
 
-ER図からのDDL生成や実行、Entityクラスの自動生成には、gsp-dba-maven-pluginの初期設定および実行が必要。詳細は [gsp-maven-plugin](blank-project-addin_gsp.json#s3) を参照。
+ER図からのDDL生成や実行、Entityクラスの自動生成には、gsp-dba-maven-pluginの初期設定および実行が必要。詳細は [gsp-maven-plugin](blank-project-addin_gsp.md) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -146,7 +146,7 @@ H2 Database Engine, データベース設定, RDBMS変更, gsp-dba-maven-plugin,
 
 ## 補足
 
-H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、[../firstStep_appendix/firststep_complement](blank-project-firststep_complement.json) を参照。
+H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、[../firstStep_appendix/firststep_complement](blank-project-firststep_complement.md) を参照。
 
 <details>
 <summary>keywords</summary>

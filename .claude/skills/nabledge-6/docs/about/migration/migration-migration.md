@@ -307,7 +307,7 @@ Jakarta EE 10, javax から jakarta 名前空間変更, Java EE後継, アプリ
 
 Nablarch 6のモジュールはJava 17でコンパイルされているため、動作させるにはJava 17以上が必要となる。
 
-Micrometerアダプタが組み込まれ監視サービスと連携している場合、依存関係に追加しているMicrometerモジュールのバージョン更新が必要。詳細は [micrometer_collaboration](../../component/adapters/adapters-micrometer_adaptor.json) を参照。
+Micrometerアダプタが組み込まれ監視サービスと連携している場合、依存関係に追加しているMicrometerモジュールのバージョン更新が必要。詳細は [micrometer_collaboration](../../component/adapters/adapters-micrometer_adaptor.md) を参照。
 
 JSR352バッチアプリケーションの実行時エラーへの対処方法。Nablarch 6移行後に発生する可能性があるエラーのうち、`NoClassDefFoundError` については次のセクションで説明する。
 

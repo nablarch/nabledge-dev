@@ -38,21 +38,27 @@ SECTION_ID_PATTERN = re.compile(r'^s\d+$')
 
 
 def check_v1_doc_links(knowledge_dir, docs_dir, results):
-    """V1: docs内 [text](file.md) リンク先が実在する"""
+    """V1: docs内の全リンク先ファイルが実在する"""
     fails = []
     md_files = glob.glob(f"{docs_dir}/**/*.md", recursive=True)
-    link_re = re.compile(r'(?<!!)\[([^\]]+)\]\(([^)#]+\.md)\)')
+    # Match all links [text](path) and ![text](path), excluding anchor-only (#xxx)
+    link_re = re.compile(r'!?\[[^\]]*?\]\(([^)#][^)]*)\)')
     for md_path in md_files:
         content = open(md_path, encoding="utf-8").read()
         for m in link_re.finditer(content):
-            target = m.group(2)
+            target = m.group(1)
             if target.startswith("http"):
                 continue
+            # Strip anchor fragment before file existence check
+            file_path = target.split('#')[0]
             # Resolve relative to the MD file's directory
-            abs_target = os.path.normpath(os.path.join(os.path.dirname(md_path), target))
+            abs_target = os.path.normpath(os.path.join(os.path.dirname(md_path), file_path))
             if not os.path.exists(abs_target):
-                fails.append(f"  {os.path.relpath(md_path, docs_dir)}: broken link to {target}")
-    results["V1"] = ("FAIL", fails) if fails else ("OK", [])
+                rel = os.path.relpath(md_path, docs_dir)
+                fails.append(f"  {rel}: broken link to {target}")
+    results["V1"] = ("FAIL", fails[:20]) if fails else ("OK", [])
+    if fails and len(fails) > 20:
+        results["V1"] = ("FAIL", fails[:20] + [f"  ... and {len(fails) - 20} more"])
 
 
 def check_v3_doc_asset_links(knowledge_dir, docs_dir, results):

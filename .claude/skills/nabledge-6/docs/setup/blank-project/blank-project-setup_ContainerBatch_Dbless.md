@@ -24,9 +24,9 @@
 |---|---|
 | プロジェクト種別 | Mavenプロジェクト |
 | プロジェクト構成 | 単一プロジェクト構成 |
-| 生成プロジェクトに含まれるもの | Nablarchバッチアプリケーション用の基本的な設定、疎通確認用の都度起動バッチアプリケーション、Mavenと連動して動作するツールの初期設定（[about_maven_parent_module](blank-project-MavenModuleStructures.json) を参照） |
+| 生成プロジェクトに含まれるもの | Nablarchバッチアプリケーション用の基本的な設定、疎通確認用の都度起動バッチアプリケーション、Mavenと連動して動作するツールの初期設定（[about_maven_parent_module](blank-project-MavenModuleStructures.md) を参照） |
 
-他プロジェクトとの関係およびディレクトリ構成は [../MavenModuleStructures/index](blank-project-MavenModuleStructures.json) を参照。
+他プロジェクトとの関係およびディレクトリ構成は [../MavenModuleStructures/index](blank-project-MavenModuleStructures.md) を参照。
 
 <details>
 <summary>keywords</summary>

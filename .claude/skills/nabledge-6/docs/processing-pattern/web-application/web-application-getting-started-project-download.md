@@ -36,8 +36,8 @@
 **アノテーション**: `@Csv`, `@CsvFormat`
 
 - CSVヘッダーとBeanプロパティの紐付けには `@Csv` を使用する。
-- CSVフォーマット指定には `@CsvFormat` を使用する。[デフォルトフォーマット](../../component/libraries/libraries-data_bind.json) を使用する場合は `@CsvFormat` は不要。
-- アノテーション設定の詳細は [data_bind-csv_format-beans](../../component/libraries/libraries-data_bind.json) を参照。
+- CSVフォーマット指定には `@CsvFormat` を使用する。[デフォルトフォーマット](../../component/libraries/libraries-data_bind.md) を使用する場合は `@CsvFormat` は不要。
+- アノテーション設定の詳細は [data_bind-csv_format-beans](../../component/libraries/libraries-data_bind.md) を参照。
 
 ```java
 @Csv(headers = { /** ヘッダを記述 **/},
@@ -57,11 +57,11 @@ public class ProjectDownloadDto implements Serializable {
 **クラス**: `FileResponse`, `ObjectMapper`, `ObjectMapperFactory`, `TempFileUtil`, `DeferredEntityList`, `UniversalDao`  
 **アノテーション**: `@InjectForm`, `@OnError`
 
-- BeanをCSVファイルに出力するには [データバインド](../../component/libraries/libraries-data_bind.json#s1) の `ObjectMapper` を使用する。
-- ファイルをダウンロードレスポンスとして返すには `FileResponse` を使用する（詳細: [data_bind-file_download](../../component/libraries/libraries-data_bind.json#s8)）。
-- 大量データ取得時はメモリ逼迫防止のため `UniversalDao#defer` で [遅延ロード](../../component/libraries/libraries-universal_dao.json#s5) する。
-- レスポンスのContent-Typeは `HttpResponse#setContentType` で設定する（詳細: [data_format-file_download](../../component/libraries/libraries-data_format.json#s4)）。
-- ダウンロードファイル名は `HttpResponse#setContentDisposition` で設定する（詳細: [data_format-file_download](../../component/libraries/libraries-data_format.json#s4)）。
+- BeanをCSVファイルに出力するには [データバインド](../../component/libraries/libraries-data_bind.md) の `ObjectMapper` を使用する。
+- ファイルをダウンロードレスポンスとして返すには `FileResponse` を使用する（詳細: [data_bind-file_download](../../component/libraries/libraries-data_bind.md)）。
+- 大量データ取得時はメモリ逼迫防止のため `UniversalDao#defer` で [遅延ロード](../../component/libraries/libraries-universal_dao.md) する。
+- レスポンスのContent-Typeは `HttpResponse#setContentType` で設定する（詳細: [data_format-file_download](../../component/libraries/libraries-data_format.md)）。
+- ダウンロードファイル名は `HttpResponse#setContentDisposition` で設定する（詳細: [data_format-file_download](../../component/libraries/libraries-data_format.md)）。
 
 ```java
 @InjectForm(form = ProjectSearchForm.class, prefix = "searchForm", name = "searchForm")

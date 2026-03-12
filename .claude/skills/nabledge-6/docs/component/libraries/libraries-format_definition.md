@@ -111,7 +111,7 @@ address [1..*]    # 1以上
 | SP | BigDecimal | 符号付きパック数値(バイト長=(桁数+1)÷2[端数切り上げ])。デフォルト: 0で左トリム・パディング。引数1: バイト長(必須)、引数2: 小数点以下桁数(任意, デフォルト0)、引数3: 符号ビット正符号(16進, 任意)、引数4: 符号ビット負符号(16進, 任意)。引数3/4は :ref:`data_format-positive_pack_sign_nibble` および :ref:`data_format-negative_pack_sign_nibble` を上書きする場合に設定。null/バイト数0扱いは :ref:`data_format-field_type-zoned_decimal` と同じ |
 | B | byte[] | バイナリ列。パディング・トリムなし。引数: バイト長(必須)。null時は値変換を行わず `InvalidDataFormatException` を送出。アプリ側で明示的に値を設定すること |
 | X9 | BigDecimal | 符号無し数値文字列(バイト長=文字数)。フィールド中のシングルバイト文字列(X)を数値として扱う。デフォルト: 0で左トリム・パディング。文字列中に小数点記号(.)を含められる。引数1: バイト長(必須)、引数2: 固定小数点の小数点以下桁数(任意, デフォルト0)。null扱いは :ref:`data_format-field_type-zoned_decimal` と同じ。空文字扱いは :ref:`data_format-field_type-single_byte_character_string` と同じ |
-| SX9 | BigDecimal | 符号付き数値文字列(バイト長=文字数)。フィールド中のシングルバイト文字列(X)を符号付き数値として扱う。デフォルト: 0で左トリム・パディング。引数1: バイト長(必須)、引数2: 固定小数点の小数点以下桁数(任意, デフォルト0)。null扱いは :ref:`data_format-field_type-zoned_decimal` と同じ。空文字扱いは :ref:`data_format-field_type-single_byte_character_string` と同じ。符号文字を変更する場合は `SignedNumberStringDecimal` を参考にプロジェクト固有フィールドタイプを作成( [data_format-field_type_add](libraries-data_format.json) 参照) |
+| SX9 | BigDecimal | 符号付き数値文字列(バイト長=文字数)。フィールド中のシングルバイト文字列(X)を符号付き数値として扱う。デフォルト: 0で左トリム・パディング。引数1: バイト長(必須)、引数2: 固定小数点の小数点以下桁数(任意, デフォルト0)。null扱いは :ref:`data_format-field_type-zoned_decimal` と同じ。空文字扱いは :ref:`data_format-field_type-single_byte_character_string` と同じ。符号文字を変更する場合は `SignedNumberStringDecimal` を参考にプロジェクト固有フィールドタイプを作成( [data_format-field_type_add](libraries-data_format.md) 参照) |
 
 ## Variable(可変長)データ形式のフィールドタイプ
 
@@ -185,7 +185,7 @@ XML入出力データ:
 | リテラル値 | 型変換なし | 出力時のデフォルト値を設定する。出力時に値が未設定の場合に指定されたリテラル値を出力する。入力時は使用しない。 |
 | number | String <-> BigDecimal | 数字文字列をBigDecimalに変換する。入力時: 符号なし数値形式であることをチェックしBigDecimalに変換。出力時: 文字列に変換し符号なし数値形式であることをチェック後に出力。 |
 | signed_number | String <-> BigDecimal | 符号付きの数字文字列をBigDecimalに変換する。符号が許可される点以外は :ref:`numberコンバータ <data_format-number_convertor>` と同じ仕様。 |
-| replacement | 型変換なし | 入出力とも置換対象文字を変換先の文字に置換して返す。引数: 置き換えタイプ名（任意）。詳細は [data_format-replacement](libraries-data_format.json#s10) を参照。 |
+| replacement | 型変換なし | 入出力とも置換対象文字を変換先の文字に置換して返す。引数: 置き換えタイプ名（任意）。詳細は [data_format-replacement](libraries-data_format.md) を参照。 |
 
 <details>
 <summary>keywords</summary>

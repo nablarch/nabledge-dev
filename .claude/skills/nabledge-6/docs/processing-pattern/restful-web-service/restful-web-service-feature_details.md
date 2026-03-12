@@ -4,7 +4,7 @@
 
 ## Nablarchの初期化
 
-[ウェブアプリケーションのNablarchの初期化](../web-application/web-application-feature_details.json#s1) を参照。
+[ウェブアプリケーションのNablarchの初期化](../web-application/web-application-feature_details.md) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -15,7 +15,7 @@ Nablarch初期化, ウェブアプリケーション初期化, web_feature_detai
 
 ## 入力値のチェック
 
-- [入力値のチェック](../../component/libraries/libraries-validation.json)
+- [入力値のチェック](../../component/libraries/libraries-validation.md)
 
 <details>
 <summary>keywords</summary>
@@ -26,7 +26,7 @@ Nablarch初期化, ウェブアプリケーション初期化, web_feature_detai
 
 ## データベースアクセス
 
-- [データベースアクセス](../../component/libraries/libraries-database_management.json)
+- [データベースアクセス](../../component/libraries/libraries-database_management.md)
 
 <details>
 <summary>keywords</summary>
@@ -37,13 +37,13 @@ Nablarch初期化, ウェブアプリケーション初期化, web_feature_detai
 
 ## 排他制御
 
-- [universal_dao](../../component/libraries/libraries-universal_dao.json#s1)
+- [universal_dao](../../component/libraries/libraries-universal_dao.md)
   - :ref:`universal_dao_jpa_optimistic_lock`
   - :ref:`universal_dao_jpa_pessimistic_lock`
 
 > **重要**: RESTfulウェブサービスでは `ETag` や `If-Match` を使用した楽観的ロックには対応していない。RESTfulウェブサービスで楽観的ロックを行う際は、リクエストボディに直接バージョン番号を含めること。
 
-> **重要**: [exclusive_control](../../component/libraries/libraries-exclusive_control.json#s1) 機能はクライアント(taglib)との連動が前提であるため、RESTfulウェブサービスでは使用できない。
+> **重要**: [exclusive_control](../../component/libraries/libraries-exclusive_control.md) 機能はクライアント(taglib)との連動が前提であるため、RESTfulウェブサービスでは使用できない。
 
 <details>
 <summary>keywords</summary>
@@ -54,8 +54,8 @@ Nablarch初期化, ウェブアプリケーション初期化, web_feature_detai
 
 ## URIとリソース(アクション)クラスのマッピング
 
-- [router_adaptor](../../component/adapters/adapters-router_adaptor.json#s1)
-- [リソースクラスのメソッドのシグネチャ](restful-web-service-resource_signature.json#s1)
+- [router_adaptor](../../component/adapters/adapters-router_adaptor.md)
+- [リソースクラスのメソッドのシグネチャ](restful-web-service-resource_signature.md)
 
 <details>
 <summary>keywords</summary>
@@ -66,8 +66,8 @@ URIマッピング, リソースクラス, router_adaptor, メソッドシグネ
 
 ## パスパラメータやクエリーパラメータ
 
-- [rest_feature_details-path_param](restful-web-service-resource_signature.json#s1)
-- [rest_feature_details-query_param](restful-web-service-resource_signature.json#s2)
+- [rest_feature_details-path_param](restful-web-service-resource_signature.md)
+- [rest_feature_details-query_param](restful-web-service-resource_signature.md)
 
 <details>
 <summary>keywords</summary>
@@ -78,8 +78,8 @@ URIマッピング, リソースクラス, router_adaptor, メソッドシグネ
 
 ## レスポンスヘッダ
 
-- [リソースクラスのメソッドで個別にレスポンスヘッダを設定する](restful-web-service-resource_signature.json#s3)
-- [jaxrs_response_handler-response_finisher](../../component/handlers/handlers-jaxrs_response_handler.json)
+- [リソースクラスのメソッドで個別にレスポンスヘッダを設定する](restful-web-service-resource_signature.md)
+- [jaxrs_response_handler-response_finisher](../../component/handlers/handlers-jaxrs_response_handler.md)
 
 <details>
 <summary>keywords</summary>
@@ -92,8 +92,8 @@ URIマッピング, リソースクラス, router_adaptor, メソッドシグネ
 
 静的リソースの多言語化対応:
 
-- [メッセージの多言語化](../../component/libraries/libraries-message.json)
-- [コード名称の多言語化](../../component/libraries/libraries-code.json)
+- [メッセージの多言語化](../../component/libraries/libraries-message.md)
+- [コード名称の多言語化](../../component/libraries/libraries-code.md)
 
 <details>
 <summary>keywords</summary>
@@ -126,8 +126,8 @@ URIマッピング, リソースクラス, router_adaptor, メソッドシグネ
 
 ## エラー時に返却するレスポンス
 
-- [jaxrs_response_handler-error_response_body](../../component/handlers/handlers-jaxrs_response_handler.json)
-- [jaxrs_response_handler-individually_error_response](../../component/handlers/handlers-jaxrs_response_handler.json)
+- [jaxrs_response_handler-error_response_body](../../component/handlers/handlers-jaxrs_response_handler.md)
+- [jaxrs_response_handler-individually_error_response](../../component/handlers/handlers-jaxrs_response_handler.md)
 
 <details>
 <summary>keywords</summary>
@@ -149,7 +149,7 @@ URIマッピング, リソースクラス, router_adaptor, メソッドシグネ
 
 ## CSRF対策
 
-- [CSRF対策](../../component/handlers/handlers-csrf_token_verification_handler.json#s1)
+- [CSRF対策](../../component/handlers/handlers-csrf_token_verification_handler.md)
 
 <details>
 <summary>keywords</summary>
@@ -160,7 +160,7 @@ CSRF, CSRF対策, csrf_token_verification_handler
 
 ## CORS
 
-- [CORS](../../component/handlers/handlers-cors_preflight_request_handler.json#s1)
+- [CORS](../../component/handlers/handlers-cors_preflight_request_handler.md)
 
 <details>
 <summary>keywords</summary>
@@ -171,7 +171,7 @@ CORS, プリフライトリクエスト, cors_preflight_request_handler
 
 ## OpenAPIドキュメントからのソースコード生成
 
-- [nablarch_openapi_generator](../../development-tools/toolbox/toolbox-NablarchOpenApiGenerator.json#s1)
+- [nablarch_openapi_generator](../../development-tools/toolbox/toolbox-NablarchOpenApiGenerator.md)
 
 <details>
 <summary>keywords</summary>

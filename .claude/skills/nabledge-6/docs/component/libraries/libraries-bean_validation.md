@@ -324,7 +324,7 @@ public class SampleForm {
 }
 ```
 
-ウェブアプリケーションのユーザ入力値チェックには [inject_form_interceptor](../handlers/handlers-InjectForm.json#s1) を使用する。Bean Validationを使用するにはコンポーネント設定ファイルに `BeanValidationStrategy` を `validationStrategy` という名前で定義すること。
+ウェブアプリケーションのユーザ入力値チェックには [inject_form_interceptor](../handlers/handlers-InjectForm.md) を使用する。Bean Validationを使用するにはコンポーネント設定ファイルに `BeanValidationStrategy` を `validationStrategy` という名前で定義すること。
 
 ```xml
 <component name="validationStrategy" class="nablarch.common.web.validator.BeanValidationStrategy" />
@@ -412,7 +412,7 @@ public class SampleForm {
 </component>
 ```
 
-RESTfulウェブサービスのユーザ入力値チェックは、入力値を受け取るリソースクラスのメソッドに `@Valid` アノテーションを設定することで行う。詳細は [jaxrs_bean_validation_handler_perform_validation](../handlers/handlers-jaxrs_bean_validation_handler.json#s3) を参照。
+RESTfulウェブサービスのユーザ入力値チェックは、入力値を受け取るリソースクラスのメソッドに `@Valid` アノテーションを設定することで行う。詳細は [jaxrs_bean_validation_handler_perform_validation](../handlers/handlers-jaxrs_bean_validation_handler.md) を参照。
 
 <details>
 <summary>keywords</summary>
@@ -440,7 +440,7 @@ public boolean isEqualsMailAddress() {
 }
 ```
 
-[inject_form_interceptor](../handlers/handlers-InjectForm.json#s1) を使用した場合、バリデーション成功時のみリクエストスコープにバリデーション済みフォームが格納される。JSTLタグ（EL式）を使用する場合、Nablarchカスタムタグとは異なりリクエストパラメータを暗黙的に参照できないため、バリデーションエラー時にリクエストパラメータにアクセスするには次のいずれかの処理を追加する必要がある。
+[inject_form_interceptor](../handlers/handlers-InjectForm.md) を使用した場合、バリデーション成功時のみリクエストスコープにバリデーション済みフォームが格納される。JSTLタグ（EL式）を使用する場合、Nablarchカスタムタグとは異なりリクエストパラメータを暗黙的に参照できないため、バリデーションエラー時にリクエストパラメータにアクセスするには次のいずれかの処理を追加する必要がある。
 
 - Nablarchタグ `<n:set>` を使用してリクエストパラメータの値を変数に格納する
 - 暗黙オブジェクト `param` を使用してリクエストパラメータにアクセスする

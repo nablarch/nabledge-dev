@@ -33,7 +33,7 @@
 </component>
 ```
 
-LettuceRedisClientの設定については [redisstore_redis_client_config_client_classes](adapters-redisstore_lettuce_adaptor.json#s2) を参照。
+LettuceRedisClientの設定については [redisstore_redis_client_config_client_classes](adapters-redisstore_lettuce_adaptor.md) を参照。
 
 <details>
 <summary>keywords</summary>

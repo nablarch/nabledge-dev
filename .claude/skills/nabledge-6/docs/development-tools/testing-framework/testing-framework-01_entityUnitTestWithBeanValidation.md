@@ -165,7 +165,7 @@ messageIdWhenInvalidLength省略時のデフォルト値:
 - メッセージをそのまま記載: `入力必須です。`
 - 埋め込み文字あり: `{min}文字以上{max}文字以下で入力してください。`
 - メッセージIDとして記載（メッセージ全体を `{}` で囲む）: `{nablarch.core.validation.ee.SystemChar.message}`
-- `{}` で囲まれた部分は [message-format-spec](../../component/libraries/libraries-message.json) の埋め込み文字として扱われる
+- `{}` で囲まれた部分は [message-format-spec](../../component/libraries/libraries-message.md) の埋め込み文字として扱われる
 
 ![文字種・文字列長テストケース例](../../../knowledge/development-tools/testing-framework/assets/testing-framework-01_entityUnitTestWithBeanValidation/entityUnitTest_CharsetAndLengthExample_BeanValidation.png)
 

@@ -27,7 +27,7 @@
 
 > **重要**: `redisstore-lettuce.config` はアプリの環境設定ファイル（`env.properties` 等）より**前**に読み込むこと。これによりアプリ側でデフォルト値を上書きできる。
 
-[repository-overwrite_environment_configuration_by_os_env_var](../libraries/libraries-repository.json) の方法を用いることで、実行環境ごとに接続先のRedisを切り替えられる。
+[repository-overwrite_environment_configuration_by_os_env_var](../libraries/libraries-repository.md) の方法を用いることで、実行環境ごとに接続先のRedisを切り替えられる。
 
 > **補足**: デフォルトでは `localhost:6379` の単一Redisインスタンスに接続する設定になっている。
 
@@ -46,7 +46,7 @@
 </component>
 ```
 
-`BasicApplicationDisposer` の `disposableList` にも追加する（[repository-dispose_object](../libraries/libraries-repository.json) 参照）:
+`BasicApplicationDisposer` の `disposableList` にも追加する（[repository-dispose_object](../libraries/libraries-repository.md) 参照）:
 
 ```xml
 <component name="disposer"

@@ -52,7 +52,7 @@ listSearchResult, タグファイル提供パッケージ, resources/META-INF/ta
 
 ## 概要
 
-[universal_dao](../../component/libraries/libraries-universal_dao.json#s1) の検索機能と連携する一覧表示タグファイルが提供する機能:
+[universal_dao](../../component/libraries/libraries-universal_dao.md) の検索機能と連携する一覧表示タグファイルが提供する機能:
 
 1. 検索結果件数の表示
 2. 検索結果を指定件数毎に表示するページング機能
@@ -149,7 +149,7 @@ public class ProjectSearchForm {
 
 | クラス名 | 概要 |
 |---|---|
-| UniversalDao | 汎用的なDAO機能を提供するクラス。基本的な使い方は [universal_dao](../../component/libraries/libraries-universal_dao.json#s1) を参照。 |
+| UniversalDao | 汎用的なDAO機能を提供するクラス。基本的な使い方は [universal_dao](../../component/libraries/libraries-universal_dao.md) を参照。 |
 | ListSearchInfo | 一覧検索用の情報を保持する抽象クラス。 |
 | Pagination | ListSearchInfoを継承した具象クラス。 |
 | EntityList | ユニバーサルDAOから返される結果リストの保持クラス。 |
@@ -246,7 +246,7 @@ UniversalDao, ListSearchInfo, Pagination, EntityList, listSearchResult, listSear
 
 ## UniversalDaoクラス
 
-`UniversalDao` は複数件の検索結果をEntityListとして返すAPIを持つ。ページング機能の使用は [universal_dao-paging](../../component/libraries/libraries-universal_dao.json#s8) を参照。
+`UniversalDao` は複数件の検索結果をEntityListとして返すAPIを持つ。ページング機能の使用は [universal_dao-paging](../../component/libraries/libraries-universal_dao.md) を参照。
 
 listSearchResultパッケージを業務アプリケーションに配置する：
 

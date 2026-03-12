@@ -17,7 +17,7 @@
 
 > **重要**: この機能を使用すると、コードの名称を持つテーブルとコード値を持つテーブルにRDBMSの参照整合性制約を設定できない。制約チェックには [code-validation](#) を使用すること。
 
-> **補足**: 静的なコード情報はenumで表現した方が良い。理由：(1) DBを使用したコード定義は大掛かりでメンテナンスコストが高い (2) Javaでコード値を扱うための数値型定数定義と二重メンテナンスが発生する。NablarchはenumとDBの相互変換機能を持っていないが、Domaを使用することでenumの値をDB登録できる。設定は [doma_adaptor](../adapters/adapters-doma_adaptor.json#s1) を参照。
+> **補足**: 静的なコード情報はenumで表現した方が良い。理由：(1) DBを使用したコード定義は大掛かりでメンテナンスコストが高い (2) Javaでコード値を扱うための数値型定数定義と二重メンテナンスが発生する。NablarchはenumとDBの相互変換機能を持っていないが、Domaを使用することでenumの値をDB登録できる。設定は [doma_adaptor](../adapters/adapters-doma_adaptor.md) を参照。
 
 **国際化対応**: 言語ごとに名称を管理可能。詳細は [code-use_multilingualization](#) を参照。
 
@@ -42,7 +42,7 @@
 
 **設定ポイント**:
 - `BasicCodeManager` のコンポーネント名は **codeManager** とすること
-- `BasicStaticDataCache` の `loadOnStartup` 設定は [static_data_cache-cache_timing](libraries-static_data_cache.json) を参照すること
+- `BasicStaticDataCache` の `loadOnStartup` 設定は [static_data_cache-cache_timing](libraries-static_data_cache.md) を参照すること
 - `BasicCodeLoader` および `BasicStaticDataCache` は初期化が必要なため初期化リストに設定すること
 
 ```xml
@@ -200,14 +200,14 @@ CodeUtil, getOptionalName, オプション名称, OPTIONAL_NAME, optionColumnNam
 
 **アノテーション**: `nablarch.common.code.validator.ee.CodeValue`（Bean Validation用）、`nablarch.common.code.validator.CodeValue`（Nablarch Validation用）
 
-Bean Validation（[bean_validation](libraries-bean_validation.json#s1)）:
+Bean Validation（[bean_validation](libraries-bean_validation.md)）:
 
 ```java
 @CodeValue(codeId = "GENDER")
 private String gender;
 ```
 
-Nablarch Validation（[nablarch_validation](libraries-nablarch_validation.json#s1)）:
+Nablarch Validation（[nablarch_validation](libraries-nablarch_validation.md)）:
 
 ```java
 @CodeValue(codeId = "GENDER")
@@ -223,7 +223,7 @@ public void setGender(String gender) {
 private String gender;
 ```
 
-> **補足**: [ドメインバリデーション](libraries-bean_validation.json#s5) を使用した場合、1つのドメインに対して1つのパターンしか指定できない。複数パターンに対応するには、パターンごとにドメインを定義する必要がある（バリデーションで必要なドメインのみ定義すればよい）。
+> **補足**: [ドメインバリデーション](libraries-bean_validation.md) を使用した場合、1つのドメインに対して1つのパターンしか指定できない。複数パターンに対応するには、パターンごとにドメインを定義する必要がある（バリデーションで必要なドメインのみ定義すればよい）。
 
 ```java
 public class SampleDomainBean {

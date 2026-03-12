@@ -43,7 +43,7 @@ public void プロジェクト更新取引() {
 
 **提供実装クラス**:
 - `RequestResponseCookieManager`: `Set-Cookie`ヘッダからプロパティで指定した名前のクッキーを抽出し、`Cookie`ヘッダに引き継ぐ
-- `NablarchSIDManager`: [session_store_handler](../../component/handlers/handlers-SessionStoreHandler.json#s2) のデフォルトクッキー名 `NABLARCH_SID` でセッションIDを抽出。クッキー名をデフォルトから変更した場合は `RequestResponseCookieManager` を使用してクッキー名を明示する
+- `NablarchSIDManager`: [session_store_handler](../../component/handlers/handlers-SessionStoreHandler.md) のデフォルトクッキー名 `NABLARCH_SID` でセッションIDを抽出。クッキー名をデフォルトから変更した場合は `RequestResponseCookieManager` を使用してクッキー名を明示する
 
 > **重要**: NablarchのDIコンテナではインスタンスはシングルトンになるため、明示的に状態を初期化しないと複数テストケース間で状態が引き継がれる。フレームワークはテストケースごとに `RequestResponseProcessor#reset` を呼び出す。複数テストケース間で状態を引き継ぎたくない場合は `reset()` に初期化処理を実装する。内部状態を持たない場合や複数のテストケース間で状態を共有したい場合は、`reset()` を何もしないメソッドにしてよい。
 

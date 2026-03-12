@@ -4,7 +4,7 @@
 
 ## ハンドラクラス名
 
-特定のリクエストパスのみ委譲先のハンドラを呼び出す特殊なハンドラ。ハンドラを修正せずに「特定のURLのみハンドラの処理を行う」機能を実現できる。[resource_mapping](handlers-resource_mapping.json#s1) との組み合わせで静的コンテンツの一括ダウンロード、[database_connection_management_handler](handlers-database_connection_management_handler.json#s1) や [transaction_management_handler](handlers-transaction_management_handler.json#s1) との組み合わせで特定URLのみDB接続を変える用途にも使用できる。
+特定のリクエストパスのみ委譲先のハンドラを呼び出す特殊なハンドラ。ハンドラを修正せずに「特定のURLのみハンドラの処理を行う」機能を実現できる。[resource_mapping](handlers-resource_mapping.md) との組み合わせで静的コンテンツの一括ダウンロード、[database_connection_management_handler](handlers-database_connection_management_handler.md) や [transaction_management_handler](handlers-transaction_management_handler.md) との組み合わせで特定URLのみDB接続を変える用途にも使用できる。
 
 処理: リクエストパスがマッチするか判定し、対象であれば委譲先のハンドラを呼び出す。
 

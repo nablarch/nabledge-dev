@@ -36,7 +36,7 @@ ProgressManager, TPS, 進捗ログ, ジョブ開始終了ログ, ステップ進
 
 進捗ログはログカテゴリ名 `progress` として出力される。このカテゴリ名を使用して専用ファイルへの出力が可能。
 
-[log](../../component/libraries/libraries-log.json#s1) を使用した場合の `log.properties` 設定例:
+[log](../../component/libraries/libraries-log.md) を使用した場合の `log.properties` 設定例:
 
 ```properties
 # progress log file
@@ -55,7 +55,7 @@ loggers.PROGRESS.level=INFO
 loggers.PROGRESS.writerNames=progressLog
 ```
 
-[log_adaptor](../../component/adapters/adapters-log_adaptor.json#s2) を使用している場合は、アダプタに対応したログライブラリのマニュアルを参照して設定すること。
+[log_adaptor](../../component/adapters/adapters-log_adaptor.md) を使用している場合は、アダプタに対応したログライブラリのマニュアルを参照して設定すること。
 
 <details>
 <summary>keywords</summary>

@@ -48,7 +48,7 @@ nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Mav
 
 ## 制約
 
-> **重要**: 本ハンドラは [retry_handler](handlers-retry_handler.json#s1) よりも後ろに設定すること。実行時例外を捕捉した場合、`RetryableException` でラップして再送出し、プロセスの継続制御を [retry_handler](handlers-retry_handler.json#s1) に委譲するため。
+> **重要**: 本ハンドラは [retry_handler](handlers-retry_handler.md) よりも後ろに設定すること。実行時例外を捕捉した場合、`RetryableException` でラップして再送出し、プロセスの継続制御を [retry_handler](handlers-retry_handler.md) に委譲するため。
 
 <details>
 <summary>keywords</summary>
@@ -79,7 +79,7 @@ dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デ
 
 プロセスの正常終了を示す例外が送出された場合、後続ハンドラの呼び出しを止め処理を終了する。
 
-デフォルトの正常終了例外: `ProcessStop` とそのサブクラス（ [process_stop_handler](handlers-process_stop_handler.json#s1) が送出）。
+デフォルトの正常終了例外: `ProcessStop` とそのサブクラス（ [process_stop_handler](handlers-process_stop_handler.md) が送出）。
 
 正常終了例外を変更する場合は `normalEndExceptions` プロパティに例外クラスリストを設定する。
 

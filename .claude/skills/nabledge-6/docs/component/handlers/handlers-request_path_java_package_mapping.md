@@ -6,7 +6,7 @@
 
 **クラス**: `nablarch.fw.handler.RequestPathJavaPackageMapping`
 
-リクエストパスを元にアクションへ処理を委譲するハンドラ。主に [messaging](../../processing-pattern/db-messaging/db-messaging-messaging.json) でアクションにディスパッチする目的で使用する。
+リクエストパスを元にアクションへ処理を委譲するハンドラ。主に [messaging](../../processing-pattern/db-messaging/db-messaging-messaging.md) でアクションにディスパッチする目的で使用する。
 
 リクエストパスは `Request#getRequestPath()` から取得する。
 

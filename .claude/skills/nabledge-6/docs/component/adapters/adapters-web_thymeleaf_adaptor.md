@@ -46,7 +46,7 @@ nablarch-web-thymeleaf-adaptor, com.nablarch.integration, Thymeleafアダプタ,
 </component>
 ```
 
-> **補足**: `org.thymeleaf.templateresolver.ServletContextTemplateResolver` は [repository](../libraries/libraries-repository.json#s1) にコンポーネントとして登録できない。コンストラクタ引数に `jakarta.servlet.ServletContext` が必須（デフォルトコンストラクタなし）であり、システムリポジトリ構築時には `jakarta.servlet.ServletContext` にアクセスできず [ファクトリ](../libraries/libraries-repository.json) によるオブジェクト生成もできないため。`ITemplateResolver` インタフェースの実装クラスとして `ServletContextTemplateResolver` の代わりに `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。
+> **補足**: `org.thymeleaf.templateresolver.ServletContextTemplateResolver` は [repository](../libraries/libraries-repository.md) にコンポーネントとして登録できない。コンストラクタ引数に `jakarta.servlet.ServletContext` が必須（デフォルトコンストラクタなし）であり、システムリポジトリ構築時には `jakarta.servlet.ServletContext` にアクセスできず [ファクトリ](../libraries/libraries-repository.md) によるオブジェクト生成もできないため。`ITemplateResolver` インタフェースの実装クラスとして `ServletContextTemplateResolver` の代わりに `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。
 
 <details>
 <summary>keywords</summary>

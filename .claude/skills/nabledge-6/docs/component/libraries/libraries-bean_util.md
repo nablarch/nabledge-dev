@@ -110,7 +110,7 @@ BeanUtil, nablarch.core.beans.BeanUtil, getProperty, setProperty, createAndCopy,
 
 型変換ルールは `Converter` 実装クラス（`nablarch.core.beans.converter` パッケージ配下）を参照。
 
-> **重要**: デフォルトの型変換ルールでは、精度の小さい型へ変換した場合（例: LongからIntegerへの変換）に変換先の精度を超える値でも正常終了する。BeanUtilでコピーする前に [validation](libraries-validation.json) で値を事前に検証すること。検証しなかった場合、不正な値がシステムに取り込まれ障害の原因となる可能性がある。
+> **重要**: デフォルトの型変換ルールでは、精度の小さい型へ変換した場合（例: LongからIntegerへの変換）に変換先の精度を超える値でも正常終了する。BeanUtilでコピーする前に [validation](libraries-validation.md) で値を事前に検証すること。検証しなかった場合、不正な値がシステムに取り込まれ障害の原因となる可能性がある。
 
 > **重要**: 型変換ルールはアプリケーション共通の設定。特定の処理のみ異なる型変換ルールを適用したい場合は [bean_util-format_logical](#s5) を参照し、特定のプロパティや型に対して `Converter` 実装を適用すること。
 

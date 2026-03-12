@@ -33,7 +33,7 @@ HTTP同期応答メッセージ送信処理, リクエスト単体テスト, mes
 
 複数回電文を送信する場合のテスト記述ルール:
 
-- 同一データタイプ（例: `RESPONSE_HEADER_MESSAGES`と`RESPONSE_BODY_MESSAGES`）はまとめて記述する（詳細: :ref:`tips_groupId` および [auto-test-framework_multi-datatype](testing-framework-01_Abstract.json)）
+- 同一データタイプ（例: `RESPONSE_HEADER_MESSAGES`と`RESPONSE_BODY_MESSAGES`）はまとめて記述する（詳細: :ref:`tips_groupId` および [auto-test-framework_multi-datatype](testing-framework-01_Abstract.md)）
 - 同一リクエストIDの電文は`no`の値を変えてまとめて記述する
 - 同一リクエストIDの電文は長さを合わせること（合わせられない場合は手動テストを行う）
 

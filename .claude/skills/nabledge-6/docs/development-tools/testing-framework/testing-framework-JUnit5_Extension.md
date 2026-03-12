@@ -6,7 +6,7 @@
 
 JUnit 5で書かれたテストの中で自動テストフレームワークを使用するための拡張機能。パラメータ化テストなどJUnit 5が提供する機能と自動テストフレームワークを組み合わせて使用できる。
 
-> **補足**: 本拡張機能を導入してもJUnit 4で書かれた既存テストを修正する必要はない。JUnit Vintageを使うことで既存のJUnit 4テストはJUnit 5上で引き続き実行可能（[run_ntf_on_junit5_with_vintage_engine](testing-framework-01_Abstract.json) 参照）。既存テストはJUnit 4のままにしておき、新規テストのみJUnit 5で実装できる。
+> **補足**: 本拡張機能を導入してもJUnit 4で書かれた既存テストを修正する必要はない。JUnit Vintageを使うことで既存のJUnit 4テストはJUnit 5上で引き続き実行可能（[run_ntf_on_junit5_with_vintage_engine](testing-framework-01_Abstract.md) 参照）。既存テストはJUnit 4のままにしておき、新規テストのみJUnit 5で実装できる。
 
 自動テストフレームワークが提供するクラスを継承し、独自の拡張を加える場合の対応方法について説明する。
 

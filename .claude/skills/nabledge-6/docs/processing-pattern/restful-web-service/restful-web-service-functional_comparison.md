@@ -10,20 +10,20 @@
 
 | 機能 | Jakarta RESTful Web Servicesサポート | HTTPメッセージング | Jakarta RESTful Web Services |
 |---|---|---|---|
-| リクエストとリソースメソッドのマッピング | [△](restful-web-service-feature_details.json#s4) | [○](../http-messaging/http-messaging-feature_details.json#s4) | ○ |
-| リクエストとパラメータのマッピング | [△](restful-web-service-feature_details.json#s5) | × [1] | ○ |
-| HTTPメソッドのマッチング | [△](restful-web-service-feature_details.json#s4) | × [1] | ○ |
-| メディアタイプに応じたリクエスト/レスポンスの変換 | [△](../../component/handlers/handlers-body_convert_handler.json#s1) | × [1] | ○ |
-| エンティティのバリデーション | [○](restful-web-service-feature_details.json#s1) | [○](../http-messaging/http-messaging-feature_details.json#s1) | ○ |
+| リクエストとリソースメソッドのマッピング | [△](restful-web-service-feature_details.md) | [○](../http-messaging/http-messaging-feature_details.md) | ○ |
+| リクエストとパラメータのマッピング | [△](restful-web-service-feature_details.md) | × [1] | ○ |
+| HTTPメソッドのマッチング | [△](restful-web-service-feature_details.md) | × [1] | ○ |
+| メディアタイプに応じたリクエスト/レスポンスの変換 | [△](../../component/handlers/handlers-body_convert_handler.md) | × [1] | ○ |
+| エンティティのバリデーション | [○](restful-web-service-feature_details.md) | [○](../http-messaging/http-messaging-feature_details.md) | ○ |
 | リソースクラスへのインジェクション（Jakarta Contexts and Dependency Injection） | × [2] | × [2] | ○ |
 | リクエスト/レスポンスに対するフィルタ | × [3] | × [3] | ○ |
 | ボディの読み書きに対するインターセプタ | × [4] | × [5] | ○ |
-| クライアントAPI | × [6] | [○](../../component/libraries/libraries-http_system_messaging.json#s3) | ○ |
+| クライアントAPI | × [6] | [○](../../component/libraries/libraries-http_system_messaging.md) | ○ |
 | 非同期処理 | × [7] | × [7] | ○ |
-| エラー時ログ出力 | [○](../../component/handlers/handlers-jaxrs_response_handler.json#s5) | [○](../../component/handlers/handlers-http_messaging_error_handler.json#s3) | — |
-| リクエストボディの最大容量チェック | × [8] | [○](../../component/handlers/handlers-http_messaging_request_parsing_handler.json#s4) | — |
-| 証跡ログの出力 | × [9] | [○](../../component/libraries/libraries-messaging_log.json#s1) | — |
-| 再送制御 | × [9] | [○](../../component/handlers/handlers-message_resend_handler.json#s1) | — |
+| エラー時ログ出力 | [○](../../component/handlers/handlers-jaxrs_response_handler.md) | [○](../../component/handlers/handlers-http_messaging_error_handler.md) | — |
+| リクエストボディの最大容量チェック | × [8] | [○](../../component/handlers/handlers-http_messaging_request_parsing_handler.md) | — |
+| 証跡ログの出力 | × [9] | [○](../../component/libraries/libraries-messaging_log.md) | — |
+| 再送制御 | × [9] | [○](../../component/handlers/handlers-message_resend_handler.md) | — |
 | サービス提供の可否チェック | × [10] | × [10] | — |
 | トランザクション制御 | × [11] | × [11] | — |
 | 業務処理エラー時のコールバック | × [12] | `○` | — |

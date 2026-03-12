@@ -377,6 +377,25 @@ class PhaseFFinalize:
 
         return content
 
+    @staticmethod
+    def _convert_json_to_md_links(content):
+        """Convert .json cross-file links to .md for browsable docs.
+
+        Skill JSON contains links like [text](path/file.json#anchor).
+        Docs MD should link to [text](path/file.md#anchor) instead.
+        Asset paths (containing 'assets/') are not converted.
+        """
+        def replacer(m):
+            prefix = m.group(1)   # [text](
+            path = m.group(2)     # path/file.json
+            # anchor (m.group(3)) is dropped: section IDs (s1, s2, ...) do not
+            # map to heading anchors in docs MD, so links work without anchor.
+            if 'assets/' in path:
+                return m.group(0)
+            return f"{prefix}{path[:-5]}.md)"
+
+        return re.sub(r'(\[[^\]]*?\]\()([^)]*?\.json)((?:#[^)]*)?)\)', replacer, content)
+
     def _generate_docs(self):
         classified = load_json(self.ctx.classified_list_path)
         generated = 0
@@ -390,6 +409,25 @@ class PhaseFFinalize:
 
             knowledge = load_json(json_path)
             if knowledge.get("no_knowledge_content") is True:
+                # Generate minimal MD with title and official URL for link targets
+                md_lines = [f"# {knowledge['title']}", ""]
+                urls = knowledge.get("official_doc_urls", [])
+                if urls:
+                    if len(urls) == 1:
+                        link = f"[{knowledge['title']}]({urls[0]})"
+                    else:
+                        link = " ".join(f"[{i + 1}]({u})" for i, u in enumerate(urls))
+                    md_lines.append(f"**公式ドキュメント**: {link}")
+                    md_lines.append("")
+                md_content = "\n".join(md_lines)
+                type_ = fi["type"]
+                category = fi["category"]
+                file_id = fi["id"]
+                md_dir = f"{self.ctx.docs_dir}/{type_}/{category}"
+                os.makedirs(md_dir, exist_ok=True)
+                if not self.dry_run:
+                    write_file(f"{md_dir}/{file_id}.md", md_content)
+                generated += 1
                 continue
             md_lines = [f"# {knowledge['title']}", ""]
 
@@ -412,6 +450,7 @@ class PhaseFFinalize:
                 section_content = knowledge.get("sections", {}).get(sid, "")
                 section_content = self._convert_asset_paths(section_content, fi)
                 section_content = self._resolve_rst_links(section_content, fi["id"], 'docs_md')
+                section_content = self._convert_json_to_md_links(section_content)
                 md_lines.append(section_content)
                 md_lines.append("")
 

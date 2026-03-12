@@ -4,11 +4,11 @@
 
 ## 機能概要
 
-Jakarta Persistenceアノテーションを使った簡易的なO/Rマッパー。内部で [database](libraries-database.json#s1) を使用しているため、 [database](libraries-database.json#s1) の設定が必要。
+Jakarta Persistenceアノテーションを使った簡易的なO/Rマッパー。内部で [database](libraries-database.md) を使用しているため、 [database](libraries-database.md) の設定が必要。
 
-> **補足**: 簡易的なO/Rマッパーであり、すべてのDBアクセスをユニバーサルDAOで実現することを想定していない。実現できない場合は [database](libraries-database.json#s1) を使うこと。主キー以外の条件での更新/削除は [database](libraries-database.json#s1) を使用する必要がある。
+> **補足**: 簡易的なO/Rマッパーであり、すべてのDBアクセスをユニバーサルDAOで実現することを想定していない。実現できない場合は [database](libraries-database.md) を使うこと。主キー以外の条件での更新/削除は [database](libraries-database.md) を使用する必要がある。
 
-> **補足**: 共通項目（登録ユーザ、更新ユーザ等）への値の自動設定機能は提供しない。自動設定が必要な場合は [doma_adaptor](../adapters/adapters-doma_adaptor.json#s1) を適用し、Domaのエンティティリスナー機能を使用すること。どうしてもユニバーサルDAOを使用する場合は、アプリケーションで明示的に共通項目を設定すること。
+> **補足**: 共通項目（登録ユーザ、更新ユーザ等）への値の自動設定機能は提供しない。自動設定が必要な場合は [doma_adaptor](../adapters/adapters-doma_adaptor.md) を適用し、Domaのエンティティリスナー機能を使用すること。どうしてもユニバーサルDAOを使用する場合は、アプリケーションで明示的に共通項目を設定すること。
 
 ## SQLを書かなくても単純なCRUDができる
 
@@ -21,7 +21,7 @@ Jakarta PersistenceアノテーションをEntityに付けるだけで以下のC
 
 使用できるJakarta Persistenceアノテーションは :ref:`universal_dao_jpa_annotations` を参照。
 
-> **補足**: `@Table` アノテーションでスキーマ指定可能。ただし [database](libraries-database.json#s1) の [database-replace_schema](libraries-database.json) 機能はユニバーサルDAOのCRUD機能では使用不可。環境毎にスキーマを切り替える用途には [database](libraries-database.json#s1) を使うこと。
+> **補足**: `@Table` アノテーションでスキーマ指定可能。ただし [database](libraries-database.md) の [database-replace_schema](libraries-database.md) 機能はユニバーサルDAOのCRUD機能では使用不可。環境毎にスキーマを切り替える用途には [database](libraries-database.md) を使うこと。
 
 ## 検索結果をBeanにマッピングできる
 
@@ -31,7 +31,7 @@ SQLファイルとSQL IDを指定した検索で、結果をBean（Entity、Form
 
 データサイズの大きいバイナリデータ（例：OracleのBLOB）は、ユニバーサルDAOではデータをすべてメモリに展開しないと登録・更新できない。データベースが提供する機能を使ってファイルなどから直接登録・更新すること。
 
-詳細: [database-binary_column](libraries-database.json)
+詳細: [database-binary_column](libraries-database.md)
 
 > **重要**: ここに記載のないデータタイプに対して、検索結果をマッピングできない（実行時例外となる）。
 
@@ -69,7 +69,7 @@ SQLファイルとSQL IDを指定した検索で、結果をBean（Entity、Form
 
 データサイズの大きいテキストデータ（例：OracleのCLOB）は、ユニバーサルDAOではデータをすべてメモリに展開しないと登録・更新できない。データベースが提供する機能を使ってファイルなどから直接登録・更新すること。
 
-詳細: [database-clob_column](libraries-database.json)
+詳細: [database-clob_column](libraries-database.md)
 
 <details>
 <summary>keywords</summary>
@@ -80,7 +80,7 @@ nablarch-common-dao, com.nablarch.framework, Maven依存関係, CLOBデータ登
 
 ## ユニバーサルDAOを使うための設定を行う
 
-[database](libraries-database.json#s1) の設定に加えて、 `BasicDaoContextFactory` をコンポーネント定義に追加する。コンポーネント名は `daoContextFactory` で設定すること。
+[database](libraries-database.md) の設定に加えて、 `BasicDaoContextFactory` をコンポーネント定義に追加する。コンポーネント名は `daoContextFactory` で設定すること。
 
 ```xml
 <component name="daoContextFactory" class="nablarch.common.dao.BasicDaoContextFactory" />
@@ -97,7 +97,7 @@ nablarch-common-dao, com.nablarch.framework, Maven依存関係, CLOBデータ登
 
 ## コンポーネント設定
 
-`connectionFactory` プロパティに `ConnectionFactory` 実装クラスを設定する（詳細は [database-connect](libraries-database.json#s3) 参照）。`transactionFactory` プロパティに `TransactionFactory` 実装クラスを設定する（詳細は [transaction-database](libraries-transaction.json) 参照）。`dbTransactionName` プロパティにはトランザクションを識別するための名前を設定する。
+`connectionFactory` プロパティに `ConnectionFactory` 実装クラスを設定する（詳細は [database-connect](libraries-database.md) 参照）。`transactionFactory` プロパティに `TransactionFactory` 実装クラスを設定する（詳細は [transaction-database](libraries-transaction.md) 参照）。`dbTransactionName` プロパティにはトランザクションを識別するための名前を設定する。
 
 ```xml
 <component name="find-persons-transaction"
@@ -322,14 +322,14 @@ try (DeferredEntityList<User> users
 シーケンス採番を使用する場合に設定。
 - `name` 属性: `@GeneratedValue` の `generator` 属性と同じ値を設定
 - `sequenceName` 属性: DBに作成されているシーケンスオブジェクト名を設定
-- 別途 [採番用の設定](libraries-generator.json#s3) が必要
+- 別途 [採番用の設定](libraries-generator.md) が必要
 
 **アノテーション**: `@TableGenerator` (`jakarta.persistence.TableGenerator`)
 
 テーブル採番を使用する場合に設定。
 - `name` 属性: `@GeneratedValue` の `generator` 属性と同じ値を設定
 - `pkColumnValue` 属性: 採番テーブルのレコードを識別するための値を設定
-- 別途 [採番用の設定](libraries-generator.json#s3) が必要
+- 別途 [採番用の設定](libraries-generator.md) が必要
 
 <details>
 <summary>keywords</summary>
@@ -363,12 +363,12 @@ findAllBySqlFile, 検索条件, 条件検索, 専用Bean
 
 **自動生成SQLを実行する場合の型変換**:
 
-- DBへの出力時: `@Temporal` 設定プロパティは指定された型へ変換。それ以外は [database](libraries-database.json#s1) に委譲。
+- DBへの出力時: `@Temporal` 設定プロパティは指定された型へ変換。それ以外は [database](libraries-database.md) に委譲。
 - DBからの取得時: `@Temporal` 設定プロパティは指定された型から変換。それ以外はEntityの情報を元に変換。
 
 **任意のSQLで検索する場合の型変換**:
 
-- DBへの出力時: [database](libraries-database.json#s1) に処理を委譲。
+- DBへの出力時: [database](libraries-database.md) に処理を委譲。
 - DBからの取得時: 自動生成SQLの場合と同様の処理。
 
 > **重要**: DBの型とプロパティの型が不一致の場合、実行時に型変換エラーが発生する場合がある。また暗黙的型変換によるインデックス未使用で性能劣化が発生する可能性がある。DBとJavaのデータタイプのマッピングはJDBCドライバのマニュアルを参照すること（例: DBがdate型の場合プロパティ型は `java.sql.Date`、数値型(integer/bigint/number)の場合は `int`/`long`）。
@@ -395,7 +395,7 @@ EntityList<User> users = UniversalDao.per(3).page(1)
 Pagination pagination = users.getPagination();
 ```
 
-> **補足**: ページング用の検索処理は [データベースアクセス(JDBCラッパー)の範囲指定検索機能](libraries-database.json#s7) を使用する。
+> **補足**: ページング用の検索処理は [データベースアクセス(JDBCラッパー)の範囲指定検索機能](libraries-database.md) を使用する。
 
 > **補足**: 実際の範囲指定レコード取得の前に件数取得SQLが発行される。件数取得SQLによる性能劣化が発生した場合は [universal_dao-customize_sql_for_counting](#) を参照して件数取得SQLを変更すること。
 
@@ -453,7 +453,7 @@ public Long getId() { return id; }
 public Long getId() { return id; }
 ```
 
-> **補足**: シーケンス及びテーブルを使用したサロゲートキーの採番処理は [generator](libraries-generator.json#s1) を使用する。設定値（テーブル名やカラム名など）はリンク先を参照。
+> **補足**: シーケンス及びテーブルを使用したサロゲートキーの採番処理は [generator](libraries-generator.md) を使用する。設定値（テーブル名やカラム名など）はリンク先を参照。
 
 <details>
 <summary>keywords</summary>
