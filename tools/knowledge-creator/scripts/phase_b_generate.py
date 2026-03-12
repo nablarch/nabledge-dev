@@ -83,9 +83,6 @@ class PhaseBGenerate:
             return "https://fintan.jp/page/252/"
         return ""
 
-    def _extract_rst_labels(self, source_content):
-        return re.compile(r'^\.\.\s+_([a-z0-9_-]+):', re.MULTILINE).findall(source_content)
-
     def _build_prompt(self, file_info, source_content, assets):
         prompt = self.prompt_template
         prompt = prompt.replace("{FILE_ID}", file_info["id"])
@@ -94,12 +91,7 @@ class PhaseBGenerate:
         prompt = prompt.replace("{CATEGORY}", file_info["category"])
         prompt = prompt.replace("{OFFICIAL_DOC_BASE_URL}", self._compute_official_url(file_info))
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
-
-        if file_info["format"] == "rst":
-            labels = self._extract_rst_labels(source_content)
-            prompt = prompt.replace("{INTERNAL_LABELS}", json.dumps(labels, ensure_ascii=False))
-        else:
-            prompt = prompt.replace("{INTERNAL_LABELS}", "[]")
+        prompt = prompt.replace("{INTERNAL_LABELS}", "[]")
 
         # Pass detected section list to prevent Claude from missing sections (especially for large split files)
         if "section_range" in file_info and "sections" in file_info["section_range"]:
@@ -126,13 +118,13 @@ class PhaseBGenerate:
         return prompt
 
     def _extract_json(self, output):
-        """Extract knowledge and trace from output. Returns (knowledge, trace)."""
+        """Extract knowledge from output. Returns knowledge dict."""
         parsed = json.loads(output.strip())
-        knowledge = parsed.get("knowledge")
-        trace = parsed.get("trace")
-        if not knowledge:
-            raise ValueError("No 'knowledge' field in output")
-        return knowledge, trace
+        # Handle both formats: {"knowledge": {...}, "trace": {...}} and direct knowledge JSON
+        knowledge = parsed.get("knowledge") or parsed
+        if not isinstance(knowledge, dict) or "id" not in knowledge:
+            raise ValueError("No valid knowledge data in output")
+        return knowledge
 
     def _extract_section_range(self, content, section_range):
         lines = content.splitlines()
@@ -179,7 +171,7 @@ class PhaseBGenerate:
             return {"status": "error", "id": file_id, "error": result.stderr}
 
         try:
-            knowledge_json, trace_json = self._extract_json(result.stdout)
+            knowledge_json = self._extract_json(result.stdout)
         except (json.JSONDecodeError, ValueError) as e:
             if not self.dry_run:
                 write_json(log_path, {"file_id": file_id, "status": "error", "error": str(e)})
@@ -187,13 +179,6 @@ class PhaseBGenerate:
 
         if not self.dry_run:
             write_json(output_path, knowledge_json)
-
-            if trace_json and trace_json.get("sections"):
-                write_json(f"{self.ctx.trace_dir}/{file_id}.json", {
-                    "file_id": file_id,
-                    "generated_at": started_at,
-                    "sections": trace_json["sections"]
-                })
 
         finished_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         duration = (datetime.fromisoformat(finished_at.rstrip("Z"))

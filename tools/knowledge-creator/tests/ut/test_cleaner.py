@@ -38,17 +38,14 @@ class TestListPhaseDWithTarget:
 class TestListPhaseBWithTarget:
     """_list_phase_b_artifacts: target_ids 指定"""
 
-    def test_returns_knowledge_json_and_trace(self, ctx):
+    def test_returns_knowledge_json(self, ctx):
         # knowledge JSON
         json_path = f"{ctx.knowledge_cache_dir}/component/handlers/handlers-sample-handler.json"
         os.makedirs(os.path.dirname(json_path), exist_ok=True)
         write_json(json_path, {"id": "handlers-sample-handler"})
-        # trace
-        os.makedirs(ctx.trace_dir, exist_ok=True)
-        write_json(f"{ctx.trace_dir}/handlers-sample-handler.json", {})
 
         result = _list_phase_b_artifacts(ctx, target_ids=["handlers-sample-handler"])
-        assert len(result) == 2
+        assert len(result) == 1
         assert any("handlers-sample-handler.json" in p for p in result)
 
 

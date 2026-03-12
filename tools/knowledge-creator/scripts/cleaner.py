@@ -51,7 +51,7 @@ def clean_phase_artifacts(ctx, phases: str, target_ids: list = None, yes: bool =
 
 
 def _list_phase_b_artifacts(ctx, target_ids):
-    """List Phase B artifacts (knowledge JSON + trace).
+    """List Phase B artifacts (knowledge JSON).
 
     When target_ids is None, uses classified.json to find all output files.
     When target_ids is specified, uses glob to find matching files.
@@ -61,9 +61,6 @@ def _list_phase_b_artifacts(ctx, target_ids):
         for file_id in target_ids:
             pattern = f"{ctx.knowledge_cache_dir}/**/{file_id}.json"
             paths.extend(glob.glob(pattern, recursive=True))
-            trace = f"{ctx.trace_dir}/{file_id}.json"
-            if os.path.exists(trace):
-                paths.append(trace)
     else:
         if os.path.exists(ctx.classified_list_path):
             classified = load_json(ctx.classified_list_path)
@@ -71,8 +68,6 @@ def _list_phase_b_artifacts(ctx, target_ids):
                 p = f"{ctx.knowledge_cache_dir}/{f['output_path']}"
                 if os.path.exists(p):
                     paths.append(p)
-        if os.path.isdir(ctx.trace_dir):
-            paths.append(ctx.trace_dir)
     return paths
 
 

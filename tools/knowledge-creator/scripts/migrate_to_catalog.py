@@ -3,8 +3,6 @@
 import os
 import sys
 import json
-import glob
-import shutil
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
@@ -50,19 +48,7 @@ def migrate(version):
         files = classified.get("files", [])
         file_version = classified.get("version", version)
 
-    # 3. Load patterns
-    patterns_dir = f"{run_dir}/phase-f/patterns"
-    patterns_map = {}
-    for p in glob.glob(f"{patterns_dir}/*.json"):
-        with open(p) as f:
-            d = json.load(f)
-        pp = d.get("patterns", "")
-        patterns_map[d["file_id"]] = pp.split() if pp else []
-
-    for fi in files:
-        fi["processing_patterns"] = patterns_map.get(fi["id"], [])
-
-    # 4. Write catalog.json
+    # 3. Write catalog.json
     catalog = {
         "generated_at": generated_at,
         "sources": sources,
@@ -73,15 +59,7 @@ def migrate(version):
     with open(catalog_path, "w", encoding="utf-8") as f:
         json.dump(catalog, f, ensure_ascii=False, indent=2)
 
-    # 5. Copy traces
-    src_traces = f"{run_dir}/phase-b/traces"
-    dst_traces = f"{cache_dir}/traces"
-    if os.path.isdir(src_traces):
-        shutil.copytree(src_traces, dst_traces, dirs_exist_ok=True)
-        print(f"  Traces: {len(os.listdir(dst_traces))} files copied")
-
-    pp_count = sum(1 for f in files if f.get("processing_patterns"))
-    print(f"v{version}: Migrated {len(files)} files ({pp_count} with patterns) -> {catalog_path}")
+    print(f"v{version}: Migrated {len(files)} files -> {catalog_path}")
 
 
 if __name__ == "__main__":

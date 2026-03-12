@@ -36,7 +36,7 @@ class TestComputeContentWarnings:
     def test_s7_empty_section_content(self, checker):
         """S7: Empty section content triggers warning."""
         k = load_fixture("sample_knowledge.json")
-        k["sections"]["overview"] = ""
+        k["sections"]["s1"] = ""
         source = load_fixture("sample_source.rst")
         warnings = checker._compute_content_warnings(k, source, "rst", None)
         assert any("S7" in w for w in warnings)
@@ -44,8 +44,8 @@ class TestComputeContentWarnings:
     def test_s9_section_count_less_than_headings(self, checker):
         """S9: Fewer sections than source headings triggers warning."""
         k = load_fixture("sample_knowledge.json")
-        del k["sections"]["module-list"]
-        k["index"] = [e for e in k["index"] if e["id"] != "module-list"]
+        del k["sections"]["s2"]
+        k["index"] = [e for e in k["index"] if e["id"] != "s2"]
         source = load_fixture("sample_source.rst")
         warnings = checker._compute_content_warnings(k, source, "rst", None)
         assert any("S9" in w for w in warnings)
@@ -66,7 +66,7 @@ class TestComputeContentWarnings:
     def test_s13_short_section(self, checker):
         """S13: Section shorter than 20 chars triggers warning."""
         k = load_fixture("sample_knowledge.json")
-        k["sections"]["overview"] = "短い"
+        k["sections"]["s1"] = "短い"
         source = load_fixture("sample_source.rst")
         warnings = checker._compute_content_warnings(k, source, "rst", None)
         assert any("S13" in w for w in warnings)
@@ -74,7 +74,7 @@ class TestComputeContentWarnings:
     def test_s13_nashi_excluded(self, checker):
         """S13: 'なし。' is allowed even though < 20 chars."""
         k = load_fixture("sample_knowledge.json")
-        k["sections"]["overview"] = "なし。"
+        k["sections"]["s1"] = "なし。"
         source = load_fixture("sample_source.rst")
         warnings = checker._compute_content_warnings(k, source, "rst", None)
         assert not any("S13" in w for w in warnings)
@@ -83,7 +83,7 @@ class TestComputeContentWarnings:
         """Multiple issues produce multiple warnings."""
         k = load_fixture("sample_knowledge.json")
         k["index"][0]["hints"] = []      # S6
-        k["sections"]["overview"] = ""   # S7
+        k["sections"]["s1"] = ""   # S7
         source = load_fixture("sample_source.rst")
         warnings = checker._compute_content_warnings(k, source, "rst", None)
         assert any("S6" in w for w in warnings)

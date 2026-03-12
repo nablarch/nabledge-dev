@@ -290,8 +290,34 @@ class Step2Classify:
         # Step 2: セクションを行数でグループ化
         groups = self._group_sections_by_lines(expanded_sections)
 
-        # Step 3: 各グループからエントリを生成
-        result = self._generate_entries_from_groups(base_entry, groups)
+        # Step 3: 全セクション（展開後）を通しカウントし、各グループの開始番号を計算
+        section_counter = 1
+        group_start_counters = []
+        for group in groups:
+            group_start_counters.append(section_counter)
+            section_counter += len(group)
+
+        # Step 4: RST ラベルを抽出
+        rst_labels = self._extract_rst_labels_with_positions(content)
+
+        # Step 5: 各グループからエントリを生成（section に assigned_id が付与される）
+        result = self._generate_entries_from_groups(base_entry, groups, group_start_counters)
+
+        # Step 6: section_map を構築（全グループ横断）
+        section_map = []
+        for group in groups:
+            for section in group:
+                labels = [label for label, line in rst_labels
+                          if section['start_line'] <= line < section['end_line']]
+                section_map.append({
+                    "section_id": section['assigned_id'],
+                    "heading": section['title'],
+                    "rst_labels": labels
+                })
+
+        # Step 7: 各エントリに section_map を付与
+        for entry in result:
+            entry['section_map'] = section_map
 
         return result
 
@@ -364,36 +390,38 @@ class Step2Classify:
 
         return groups
 
-    def _generate_entries_from_groups(self, base_entry: dict, groups: list) -> list:
-        """Generate split entries from section groups.
+    def _generate_entries_from_groups(self, base_entry: dict, groups: list,
+                                       group_start_counters: list) -> list:
+        """Generate split entries from section groups using sequential section IDs.
 
         Args:
             base_entry: Original classified entry
             groups: List of section groups
+            group_start_counters: Start counter for each group (sequential across parts)
 
         Returns:
-            List of split entries
+            List of split entries (sections have 'assigned_id' set as side effect)
         """
         result = []
         base_id = base_entry['id']
         type_ = base_entry['type']
         category = base_entry['category']
         total_parts = len(groups)
-        used_ids = set()  # 同一ファイル内のID重複を回避
 
-        for part_num, group in enumerate(groups, 1):
-            # Use first section's ID for the group ID
-            first_section = group[0]
-            section_id = self._title_to_section_id(first_section['title'])
-
-            # 重複回避: 同じsection_idが既出なら連番を付与
-            original_section_id = section_id
-            counter = 2
-            while section_id in used_ids:
-                section_id = f"{original_section_id}-{counter}"
+        for part_num, (group, start_counter) in enumerate(
+            zip(groups, group_start_counters), 1
+        ):
+            counter = start_counter
+            section_id_list = []
+            for section in group:
+                sid = f"s{counter}"
+                section['assigned_id'] = sid  # section_map 構築用
+                section_id_list.append(sid)
                 counter += 1
-            used_ids.add(section_id)
-            split_id = f"{base_id}--{section_id}"
+
+            # パートIDは最初のセクションIDを使用
+            first_sid = section_id_list[0]
+            split_id = f"{base_id}--{first_sid}"
 
             # Calculate group line range
             start_line = group[0]['start_line']
@@ -412,7 +440,8 @@ class Step2Classify:
                 'section_range': {
                     'start_line': start_line,
                     'end_line': end_line,
-                    'sections': section_titles
+                    'sections': section_titles,
+                    'section_ids': section_id_list
                 },
                 'split_info': {
                     'is_split': True,
@@ -425,28 +454,18 @@ class Step2Classify:
 
         return result
 
-    @staticmethod
-    def _title_to_section_id(title: str) -> str:
-        """Convert section title to a safe, deterministic ID string.
+    def _extract_rst_labels_with_positions(self, content: str) -> list:
+        """Extract RST label definitions with their line positions.
 
-        ASCII英数字部分を抽出。十分な長さがなければmd5ハッシュを使う。
-
-        Examples:
-            "HTMLエスケープ漏れを防げる" -> "html"
-            "module-list" -> "module-list"
-            "モジュール一覧" -> "sec-xxxxxxxx" (md5ハッシュ)
-            "DefaultMeterBinderListProvider" -> "defaultmeterbinderlistprovider"
+        Returns:
+            List of (label, line_number) tuples
         """
-        import hashlib
-        # ASCII英数字とハイフンのみ残す
-        ascii_id = re.sub(r'[^a-zA-Z0-9-]', '', title.replace(' ', '-')).lower().strip('-')
-        # 連続ハイフンを1つに
-        ascii_id = re.sub(r'-+', '-', ascii_id)
-        if ascii_id and len(ascii_id) >= 3:
-            return ascii_id[:50]
-        # 日本語タイトル等: md5ハッシュの先頭8文字
-        h = hashlib.md5(title.encode('utf-8')).hexdigest()[:8]
-        return f"sec-{h}"
+        results = []
+        for i, line in enumerate(content.splitlines()):
+            m = re.match(r'^\.\.\s+_([a-z0-9_-]+):', line)
+            if m:
+                results.append((m.group(1), i))
+        return results
 
     def run(self):
         """Execute Step 2: Classify all source files"""
@@ -526,6 +545,30 @@ class Step2Classify:
                 split_count += 1
                 self.logger.info(f"   ✂️Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
             else:
+                # 非分割ファイルにも section_map を生成（RSTのみ）
+                if entry['format'] == 'rst':
+                    full_path = os.path.join(self.ctx.repo, entry['source_path'])
+                    content = read_file(full_path)
+                    rst_labels = self._extract_rst_labels_with_positions(content)
+                    counter = 1
+                    section_map = []
+                    for sec in sections:
+                        labels = [label for label, line in rst_labels
+                                  if sec['start_line'] <= line < sec['end_line']]
+                        section_map.append({
+                            "section_id": f"s{counter}",
+                            "heading": sec['title'],
+                            "rst_labels": labels
+                        })
+                        counter += 1
+                    # h2 がないファイルでもラベルがあれば記録
+                    if not sections and rst_labels:
+                        section_map.append({
+                            "section_id": "s1",
+                            "heading": "",
+                            "rst_labels": [label for label, _ in rst_labels]
+                        })
+                    entry['section_map'] = section_map
                 final_classified.append(entry)
 
         if split_count > 0:
@@ -611,23 +654,13 @@ class Step2Classify:
                 for mid in sorted(missing):
                     self.logger.warning(f"      - {mid}")
 
-        # Generate output — preserve sources and processing_patterns from existing catalog
+        # Generate output — preserve sources from existing catalog
         existing = {}
         if os.path.exists(self.ctx.classified_list_path):
             try:
                 existing = load_json(self.ctx.classified_list_path)
             except (json.JSONDecodeError, OSError):
                 pass
-
-        # Preserve processing_patterns from existing files
-        existing_pp = {}
-        for fi in existing.get("files", []):
-            pp = fi.get("processing_patterns")
-            if pp is not None:
-                existing_pp[fi["id"]] = pp
-        for fi in classified:
-            if fi["id"] in existing_pp:
-                fi["processing_patterns"] = existing_pp[fi["id"]]
 
         output = {
             "version": self.ctx.version,

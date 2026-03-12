@@ -1,0 +1,63 @@
+{
+  "id": "adapters-router_adaptor--s1",
+  "title": "ルーティングアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/router_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/router/RoutesMapping.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-router-adaptor",
+        "com.nablarch.integration",
+        "ルーティングアダプタ",
+        "モジュール依存関係",
+        "http-request-router"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ルーティングアダプタを使用するための設定を行う",
+      "hints": [
+        "RoutesMapping",
+        "nablarch.integration.router.RoutesMapping",
+        "packageMapping",
+        "basePackage",
+        "ディスパッチハンドラ設定",
+        "ルート定義ファイル",
+        "routes.xml",
+        "ハンドラキュー設定",
+        "アクションクラスマッピング",
+        "WebFrontController",
+        "nablarch.fw.web.servlet.WebFrontController",
+        "BasicApplicationInitializer",
+        "nablarch.core.repository.initialization.BasicApplicationInitializer",
+        "handlerQueue",
+        "initializeList"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "業務アクションとURLを自動的にマッピングする",
+      "hints": [
+        "NablarchControllerDetector",
+        "nablarch.integration.router.NablarchControllerDetector",
+        "routes.properties",
+        "自動マッピング",
+        "JBoss",
+        "WildFly",
+        ":controller",
+        ":action",
+        "router.controllerDetector"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-router-adaptor</artifactId>\n</dependency>\n```\n\n> **補足**: http-request-routerのバージョン0.1.1でテスト済み。バージョン変更時はプロジェクト側でテストを実施すること。",
+    "s2": "### ディスパッチハンドラを設定する\n\n`RoutesMapping` をハンドラキューの最後に設定する。\n\n設定ポイント:\n- コンポーネント名は **packageMapping** とする\n- `basePackage` 属性にアクションクラスのパッケージを設定（複数パッケージの場合は共通親パッケージを設定）\n- `RoutesMapping` を初期化対象リストに設定する\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"basePackage\" value=\"sample.web.action\" />\n</component>\n\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component-ref name=\"packageMapping\" />\n    </list>\n  </property>\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"packageMapping\"/>\n    </list>\n  </property>\n</component>\n```\n\n### ルート定義ファイルを作成する\n\nクラスパス直下に `routes.xml` を作成し、URLと業務アクションのマッピングを設定する。設定方法は[ライブラリのREADMEドキュメント(外部サイト)](https://github.com/kawasima/http-request-router/blob/master/README.ja.md)を参照。",
+    "s3": "`match` タグの `path` 属性に `:controller` や `:action` パラメータを使用することで、業務アクションとURLの自動マッピングが可能。\n\n> **重要**: JBossまたはWildFlyを使用している場合、この機能は使用できない。`get` タグ等で個別にマッピングを定義すること。\n\n> **重要**: `get` タグ等による個別定義とこの機能の併用は推奨しない。ルート定義ファイルからマッピングが読み取りづらくなるため。\n\n有効化: クラスパス直下の `net/unit8/http/router` ディレクトリに `routes.properties` を作成し、以下を設定する。\n\n```bash\nrouter.controllerDetector=nablarch.integration.router.NablarchControllerDetector\n```\n\nルート定義ファイル例:\n```xml\n<routes>\n  <match path=\"/action/:controller/:action\" />\n</routes>\n```\n\nマッピング例:\n\n| 業務アクション | URL |\n|---|---|\n| PersonAction#index | /action/person/index |\n| PersonAction#search | /action/person/search |\n| LoginAction#index | /action/login/index |\n| ProjectUploadAction#index | /action/projectUpload/index |"
+  }
+}

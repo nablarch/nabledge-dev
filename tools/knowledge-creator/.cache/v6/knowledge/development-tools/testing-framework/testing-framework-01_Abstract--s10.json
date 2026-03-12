@@ -1,0 +1,42 @@
+{
+  "id": "testing-framework-01_Abstract--s10",
+  "title": "自動テストフレームワーク",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "注意事項",
+      "hints": [
+        "テスト実行順序独立性",
+        "テストデータExcel管理",
+        "マスタデータ事前準備",
+        "複数データタイプ混在禁止",
+        "EXPECTED_TABLE",
+        "EXPECTED_COMPLETE_TABLE",
+        "master_data_setup_tool",
+        "auto-test-framework_multi-datatype"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "JUnit 5で自動テストフレームワークを動かす",
+      "hints": [
+        "JUnit Vintage",
+        "junit-vintage-engine",
+        "junit-jupiter",
+        "maven-surefire-plugin",
+        "JUnit5移行",
+        "JUnit4テスト実行",
+        "ntf_junit5_extension",
+        "junit-bom"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "### テストメソッドの実行順序に依存しないテストを作成する\n\n- テストメソッドの実行順序によってテスト結果が変わらないこと（単体・複数まとめて、どちらでも同じ結果）\n- 本フレームワークはテスト中にコミットが行われるため、自テストクラスで必要な事前条件は全て自テストクラス内で準備すること\n\nこれにより、以下のような効果が得られる。\n\n- テストの実行順序によって偶然テストが失敗したり偶然成功する、という事態を防ぐ。\n- そのテストのデータまたはソースコードだけで、事前条件が分かる。\n\n### マスタデータの共通Excelファイル準備\n\nマスタデータ（基本的に読み取り専用テーブル）の準備は共通Excelファイルで行い、テスト実行前に1回だけ実行するか事前に準備済みを前提とする。\n\nこの手法には、以下のようなメリットがある。\n\n- マスタ系のデータを、プロジェクト全体で再利用できる。\n- テストデータのメンテナンスが容易になる。\n- テスト実行速度が上がる。\n\n> **補足**: マスタデータの投入には :ref:`master_data_setup_tool` を使用する。:doc:`04_MasterDataRestore` により、テスト内で発生したマスタデータの変更をテスト終了時に自動的に元の状態に戻すことができる。マスタデータに変更が必要なテストケースでも他のテストケースへの影響なく実行可能。\n\n### テストデータは全てExcelシートに記述する\n\nテストソースコード中にはテストデータを記載せず、全てExcelシートに記載すること。\n\n- Excelシートを見れば、テストケースのバリエーションを把握できる。\n- テストデータはExcelシート、テストロジックはテストソースコードと役割分担が明確になる。\n- Excelシートを読み込む構造にしておくことで、容易にテストケースを追加できる。\n- テストソースコードの重複を大幅に削減できる（テストソースコード中に単純にリテラル値でデータを記載すると、データのバリエーションが増加すると重複したコードが作られてしまう）。\n\n### 複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する\n\n複数のデータタイプを混在させると、データの読み込みが途中で終了しテストが正しく実行されない。データタイプごとにまとめて記述すること。\n\n**誤り**（`TABLE2`までしか評価されず、`TABLE3`以降に誤りがあってもテストが成功してしまう）:\n\n```text\nEXPECTED_TABLE=TABLE1\n:\nEXPECTED_COMPLETE_TABLE=TABLE2\n:\nEXPECTED_TABLE=TABLE3\n:\nEXPECTED_COMPLETE_TABLE=TABLE4\n:\n```\n\n**正しい記述**（データタイプごとにまとめる）:\n\n```text\nEXPECTED_TABLE=TABLE1\n:\nEXPECTED_TABLE=TABLE3\n:\nEXPECTED_COMPLETE_TABLE=TABLE2\n:\nEXPECTED_COMPLETE_TABLE=TABLE4\n:\n```",
+    "s2": "JUnit VintageはJUnit 5上でJUnit 4のテストを実行できる機能を提供するプロジェクト。この機能を利用して自動テストフレームワークをJUnit 5上で動かすことができる。\n\n> **重要**: JUnit VintageはJUnit 4のテストをJUnit 4として動かすだけであり、JUnit 4のテスト内でJUnit 5の機能は使えない。JUnit 4からJUnit 5への移行を段階的に進める補助として利用できる。移行手順については[公式のガイド(外部サイト、英語)](https://junit.org/junit5/docs/5.11.0/user-guide/#migrating-from-junit4)を参照。\n\n> **補足**: JUnit 5のテストで自動テストフレームワークを使用する方法については :ref:`ntf_junit5_extension` を参照。\n\n**前提条件**: `maven-surefire-plugin` 2.22.0以上\n\n`pom.xml`に以下の依存関係を追加:\n- `org.junit.jupiter:junit-jupiter`\n- `org.junit.vintage:junit-vintage-engine`\n\n```xml\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>org.junit</groupId>\n      <artifactId>junit-bom</artifactId>\n      <version>5.8.2</version>\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n  </dependencies>\n</dependencyManagement>\n\n<dependencies>\n  <dependency>\n    <groupId>org.junit.jupiter</groupId>\n    <artifactId>junit-jupiter</artifactId>\n    <scope>test</scope>\n  </dependency>\n  <dependency>\n    <groupId>org.junit.vintage</groupId>\n    <artifactId>junit-vintage-engine</artifactId>\n    <scope>test</scope>\n  </dependency>\n</dependencies>\n```"
+  }
+}

@@ -36,10 +36,6 @@ class TestContext(Context):
         return f"{self.log_dir}/catalog.json"
 
     @property
-    def trace_dir(self) -> str:
-        return f"{self.log_dir}/traces"
-
-    @property
     def knowledge_cache_dir(self) -> str:
         return f"{self.log_dir}/knowledge-cache"
 
@@ -92,10 +88,6 @@ def _copy_state(src_ctx, dst_ctx):
     # knowledge_cache_dir
     if os.path.exists(src_ctx.knowledge_cache_dir):
         shutil.copytree(src_ctx.knowledge_cache_dir, dst_ctx.knowledge_cache_dir)
-
-    # trace_dir
-    if os.path.exists(src_ctx.trace_dir):
-        shutil.copytree(src_ctx.trace_dir, dst_ctx.trace_dir)
 
     # knowledge_dir
     if os.path.exists(src_ctx.knowledge_dir):
@@ -199,29 +191,6 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
             f"Merged file mismatch for {merged_id}"
         )
 
-    # traces: merged exist, parts deleted
-    split_groups_by_oid = {}
-    for e in catalog_entries:
-        if "split_info" in e:
-            oid = e["split_info"]["original_id"]
-            split_groups_by_oid.setdefault(oid, []).append(e["id"])
-    for oid, part_ids in split_groups_by_oid.items():
-        merged_trace = f"{ctx.trace_dir}/{oid}.json"
-        assert os.path.exists(merged_trace), (
-            f"Missing merged trace for {oid}"
-        )
-        for part_id in part_ids:
-            part_trace = f"{ctx.trace_dir}/{part_id}.json"
-            assert not os.path.exists(part_trace), (
-                f"Part trace should be deleted after merge: {part_trace}"
-            )
-
-    # resolved
-    assert _count_json_files(ctx.knowledge_resolved_dir) == M, (
-        f"Expected {M} resolved files, "
-        f"got {_count_json_files(ctx.knowledge_resolved_dir)}"
-    )
-
     # index.toon
     index_toon = f"{ctx.knowledge_dir}/index.toon"
     assert os.path.exists(index_toon), "Missing index.toon"
@@ -245,7 +214,7 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
         f"Expected {M} doc files, got {docs_count}"
     )
 
-    # final catalog: split state + processing_patterns
+    # final catalog: split state
     final_catalog = _load_json(ctx.classified_list_path)
     final_ids = {f["id"] for f in final_catalog["files"]}
     assert final_ids == {e["id"] for e in catalog_entries}, (
@@ -254,13 +223,13 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
     assert len(final_catalog["files"]) == U
     for f in final_catalog["files"]:
         entry = next(e for e in catalog_entries if e["id"] == f["id"])
-        f_no_pp = {k: v for k, v in f.items() if k != "processing_patterns"}
-        assert f_no_pp == entry, (
-            f"Split catalog entry mismatch for {f['id']} "
-            f"(excluding processing_patterns)"
+        # Exclude section_map (added by production classify but not in test fixtures)
+        f_cmp = {k: v for k, v in f.items() if k != "section_map"}
+        assert f_cmp == entry, (
+            f"Split catalog entry mismatch for {f['id']}"
         )
-        assert "processing_patterns" in f, (
-            f"processing_patterns missing for {f['id']}"
+        assert "processing_patterns" not in f, (
+            f"processing_patterns should not be in catalog for {f['id']}"
         )
 
 
@@ -271,36 +240,22 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M):
 def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
     """Create CC mock for E2E tests.
 
-    Phase B ("trace" in schema): returns expected_knowledge_cache[file_id]
+    Phase B ("phase-b" in log_dir): returns expected_knowledge_cache[file_id]
     Phase D ("findings" in schema): always returns has_issues
-    Phase F ("patterns" in schema): returns empty patterns
     Phase E (fallback): returns expected_fixed_cache[file_id]
     """
     def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
         schema_str = json.dumps(json_schema) if json_schema else ""
+        log_dir_str = log_dir or ""
 
-        if "trace" in schema_str:
-            # Phase B: generate knowledge + trace
+        if "phase-b" in log_dir_str:
+            # Phase B: generate knowledge (direct JSON output, no trace wrapper)
             counter["B"].append(file_id)
             knowledge = expected_knowledge_cache[file_id]
-            trace = {
-                "file_id": file_id,
-                "generated_at": "2026-01-01T00:00:00Z",
-                "sections": [
-                    {
-                        "section_id": e["id"],
-                        "source_heading": e["title"],
-                        "heading_level": "h2",
-                        "h3_split": False,
-                        "h3_split_reason": "mock",
-                    }
-                    for e in knowledge["index"]
-                ],
-            }
             return subprocess.CompletedProcess(
                 args=["claude"],
                 returncode=0,
-                stdout=json.dumps({"knowledge": knowledge, "trace": trace}),
+                stdout=json.dumps(knowledge),
                 stderr="",
             )
 
@@ -316,24 +271,9 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
                     "findings": [{
                         "category": "omission",
                         "severity": "minor",
-                        "location": "sec-0",
+                        "location": "s1",
                         "description": "Missing detail",
                     }],
-                }),
-                stderr="",
-            )
-
-        elif "patterns" in schema_str:
-            # Phase F: classify processing patterns
-            counter["F"].append(file_id)
-            return subprocess.CompletedProcess(
-                args=["claude"],
-                returncode=0,
-                stdout=json.dumps({
-                    "patterns": [],
-                    "reasoning": [
-                        {"pattern": "nablarch-batch", "matched": False, "evidence": "N/A"}
-                    ],
                 }),
                 stderr="",
             )
@@ -362,7 +302,6 @@ def _build_expected(repo, version):
         list_sources,
         classify_all,
         mock_phase_b_knowledge,
-        mock_phase_b_trace,
         mock_phase_e_knowledge,
         compute_merged_files,
     )
@@ -407,9 +346,6 @@ def _build_expected(repo, version):
     expected_knowledge_cache = {
         e["id"]: mock_phase_b_knowledge(e["id"], e) for e in catalog_entries
     }
-    expected_traces = {
-        e["id"]: mock_phase_b_trace(e["id"], e) for e in catalog_entries
-    }
     expected_fixed_cache = {
         e["id"]: mock_phase_e_knowledge(e["id"], e) for e in catalog_entries
     }
@@ -435,7 +371,6 @@ def _build_expected(repo, version):
         },
         "catalog_entries": catalog_entries,
         "expected_knowledge_cache": expected_knowledge_cache,
-        "expected_traces": expected_traces,
         "expected_fixed_cache": expected_fixed_cache,
         "expected_merged_knowledge": expected_merged_b,
         "expected_merged_fixed": expected_merged_fixed,
@@ -581,13 +516,6 @@ class TestGenResume:
             pre_knowledge = expected["expected_knowledge_cache"][preplace_entry["id"]]
             with open(pre_path, "w", encoding="utf-8") as f:
                 json.dump(pre_knowledge, f)
-
-            # Pre-place trace for the same file (Phase B skips → trace not generated)
-            pre_trace = expected["expected_traces"][preplace_entry["id"]]
-            trace_path = f"{ctx.trace_dir}/{preplace_entry['id']}.json"
-            os.makedirs(os.path.dirname(trace_path), exist_ok=True)
-            with open(trace_path, "w", encoding="utf-8") as f:
-                json.dump(pre_trace, f)
 
             # ABCDEM (Phase B should skip the pre-placed file)
             _run_with_mock(kc_gen, ctx, mock)
