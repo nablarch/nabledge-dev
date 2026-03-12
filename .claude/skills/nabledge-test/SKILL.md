@@ -20,7 +20,7 @@ nabledge-test 6 "知識検索系を全部実行して"        # Free-form instru
 nabledge-test 6 --baseline                      # Baseline mode: run all, save baseline, generate comparison report
 ```
 
-**Trial count**: Use `--trials N` to run each scenario N times (default: 1). Results are averaged across trials.
+**Trial count**: Use `--trials N` to run each scenario N times (default: 1). In `--baseline` mode, `--trials` is ignored — non-benchmark scenarios run 1 trial, benchmark scenarios run 10 trials (fixed).
 
 ## Key Principles
 
@@ -95,7 +95,9 @@ Total: <total_count> scenarios
 | `--baseline` | baseline | 全件 | Yes |
 | `"free text"` | free-form | AI判断 | No |
 
-**`--baseline` implies `--all`**: Baseline mode always runs all scenarios. `--trials N` can be combined.
+**`--baseline` execution plan** (fixed, `--trials` ignored):
+- **Non-benchmark scenarios** (`"benchmark": false/absent`): 1 trial each — wide coverage, regression detection
+- **Benchmark scenarios** (`"benchmark": true`): 10 trials each — quality measurement with statistical rigor
 
 ### Step 2: Resolve PR number
 
@@ -268,6 +270,13 @@ When complete, output the following clearly delimited sections:
 - Wait for each Task to complete before starting the next
 - This is because Task tool results must be parsed and saved per scenario
 
+**In `--baseline` mode — execution order**:
+
+1. Run all **non-benchmark** scenarios × 1 trial (wide coverage pass)
+2. Run **benchmark scenarios** (`"benchmark": true` in scenarios.json) × 10 trials each
+
+For benchmark scenarios, each of the 10 trials is a separate Task invocation. Trial 1 result serves as the canonical wide-coverage result (grading.json / metrics.json). All 10 trials are used for benchmark statistics.
+
 **For multiple trials** (`--trials N`):
 
 - Run each scenario N times sequentially
@@ -300,6 +309,39 @@ For each completed scenario:
 **Save metrics.json**: Parse JSON from between `### METRICS_START` and `### METRICS_END`. If parsing fails (sub-agent didn't output clean JSON), extract what's available and note the error.
 
 **Save output files** (ca-* scenarios only): Copy files listed in OUTPUT_FILES section to `output/` directory.
+
+**For benchmark scenarios** (in `--baseline` mode): After saving the canonical grading.json and metrics.json (trial 1):
+
+1. Save each trial under `trials/<N>/`:
+   ```
+   .tmp/nabledge-test/run-<RUN_TIMESTAMP>/<scenario-id>/
+     grading.json          # trial 1 (canonical for wide comparison)
+     metrics.json          # trial 1 (canonical for wide comparison)
+     trials/
+       1/grading.json
+       1/metrics.json
+       2/grading.json
+       2/metrics.json
+       ...
+       10/grading.json
+       10/metrics.json
+   ```
+
+2. Compute and save `benchmark.json`:
+   - Collect per-trial detection rate: `rate_i = grading[i]["summary"]["detection_rate"]`
+   - Compute statistics (t-distribution, df=9, t=2.262 for 95% CI):
+   ```json
+   {
+     "scenario_id": "<id>",
+     "trials": 10,
+     "detection_rates": [0.875, 1.0, 0.875, ...],
+     "mean": 0.xxx,
+     "std": 0.xxx,
+     "ci_95_low": 0.xxx,
+     "ci_95_high": 0.xxx
+   }
+   ```
+   Formula: `margin = 2.262 × std / sqrt(10)`, `ci_95_low = mean - margin`, `ci_95_high = mean + margin` (clamp to [0, 1])
 
 ### Step 6: Check detection items
 
@@ -452,6 +494,16 @@ for scenario_id in $(ls "${WORKSPACE}/"); do
     cp "${WORKSPACE}/${scenario_id}/output"/* \
        "${TARGET_DIR}/${scenario_id}/"
   fi
+
+  # Copy benchmark data (benchmark scenarios only)
+  if [ -f "${WORKSPACE}/${scenario_id}/benchmark.json" ]; then
+    cp "${WORKSPACE}/${scenario_id}/benchmark.json" \
+       "${TARGET_DIR}/${scenario_id}/benchmark.json"
+    if [ -d "${WORKSPACE}/${scenario_id}/trials" ]; then
+      cp -r "${WORKSPACE}/${scenario_id}/trials" \
+            "${TARGET_DIR}/${scenario_id}/trials"
+    fi
+  fi
 done
 ```
 
@@ -494,9 +546,10 @@ If `PREV` is empty (initial baseline), omit `--previous`. The script generates a
 
 After the script completes, open `${TARGET_DIR}/comparison-report.md` and replace `<!-- AGENT: ... -->` placeholders:
 
-1. **総合評価**: Evaluate improvement effects from a third-party perspective. State what improved and what did not, citing specific numbers.
-2. **実測データからの分析**: Analyze overall trends, type-specific patterns (QA vs CA), anomalous scenarios, and variability.
-3. **分析を受けた仮説**: Propose hypotheses based on the data analysis, with data evidence, relevant implementation reference, and predictions.
+1. **前回からの変更点**: Read `${PREV}/meta.json` and `${TARGET_DIR}/meta.json` to get full `commit` SHAs. Run `git log --oneline <prev_commit>..<curr_commit>`. For each user-facing commit (skip tests/CI/infra/dev tools), write a bullet: `- <change description> (nablarch/nabledge-dev#xx)`. Extract issue/PR numbers from commit messages (e.g. `(#123)` patterns). Use `(issue不明)` if none found.
+2. **総合評価**: Evaluate improvement effects from a third-party perspective. State what improved and what did not, citing specific numbers.
+3. **実測データからの分析**: Analyze overall trends, type-specific patterns (QA vs CA), anomalous scenarios, and variability.
+4. **分析を受けた仮説**: Propose hypotheses based on the data analysis, with data evidence, relevant implementation reference, and predictions.
 
 ### Step 10: Display summary
 

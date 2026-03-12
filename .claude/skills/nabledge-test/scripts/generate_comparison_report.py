@@ -17,8 +17,10 @@ Usage:
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
+from statistics import mean as stat_mean, stdev
 
 
 def load_json(path):
@@ -106,6 +108,44 @@ def change_mark_numeric(prev, curr, higher_is_worse=True):
     return "\u2192"
 
 
+def ci_95(rates):
+    """Compute (mean, std, ci_low, ci_high) for a list of detection rates (0-1)."""
+    n = len(rates)
+    m = stat_mean(rates)
+    if n < 2:
+        return m, 0.0, m, m
+    s = stdev(rates)
+    # t critical values for 95% CI (two-tailed), df = n-1
+    t_crit = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
+              6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262}
+    t = t_crit.get(n - 1, 1.960)
+    margin = t * s / math.sqrt(n)
+    return m, s, max(0.0, m - margin), min(1.0, m + margin)
+
+
+def change_mark_benchmark(prev_ci_low, prev_ci_high, curr_ci_low, curr_ci_high):
+    """Return change mark based on CI overlap. Non-overlap = significant change."""
+    if curr_ci_low > prev_ci_high:
+        return "\U0001f7e2"   # clear improvement
+    elif curr_ci_high < prev_ci_low:
+        return "\U0001f534"   # clear regression
+    return "\u2192"           # CIs overlap = within noise
+
+
+def load_benchmark_data(baseline_dir):
+    """Load benchmark.json for each benchmark scenario in a baseline dir."""
+    result = {}
+    for item in sorted(baseline_dir.iterdir()):
+        if not item.is_dir():
+            continue
+        bm_path = item / "benchmark.json"
+        if bm_path.exists():
+            data = load_json(bm_path)
+            if data:
+                result[item.name] = data
+    return result
+
+
 def format_time_diff(prev, curr):
     """Format time difference string like '↓6秒' or '↑12秒'."""
     diff = curr - prev
@@ -186,7 +226,8 @@ def generate_initial_report(curr_meta, curr_run_id, curr_branch, curr_commit):
     return "\n".join(lines)
 
 
-def generate_comparison_report(curr_meta, curr_scenarios, prev_meta, prev_scenarios):
+def generate_comparison_report(curr_meta, curr_scenarios, prev_meta, prev_scenarios,
+                               curr_benchmark=None, prev_benchmark=None):
     """Generate full comparison report with placeholders for analysis."""
     curr_run_id = curr_meta.get("run_id", "unknown")
     curr_branch = curr_meta.get("branch", "unknown")
@@ -291,27 +332,92 @@ def generate_comparison_report(curr_meta, curr_scenarios, prev_meta, prev_scenar
         f"| {curr_stats['avg_tok']:,.0f} | {tok_diff_fmt(prev_stats['avg_tok'], curr_stats['avg_tok'])} |",
     ]
 
+    # Build benchmark section
+    benchmark_lines = []
+    if curr_benchmark and prev_benchmark:
+        bm_ids = sorted(
+            set(list(curr_benchmark.keys()) + list(prev_benchmark.keys())),
+            key=lambda x: (0 if x.startswith("qa") else 1, x),
+        )
+        bm_rows = []
+        for sc_id in bm_ids:
+            prev_bm = prev_benchmark.get(sc_id)
+            curr_bm = curr_benchmark.get(sc_id)
+            if prev_bm and curr_bm:
+                pm, ps = prev_bm["mean"], prev_bm["std"]
+                pcl, pch = prev_bm["ci_95_low"], prev_bm["ci_95_high"]
+                cm, cs = curr_bm["mean"], curr_bm["std"]
+                ccl, cch = curr_bm["ci_95_low"], curr_bm["ci_95_high"]
+                mark = change_mark_benchmark(pcl, pch, ccl, cch)
+                delta = (cm - pm) * 100
+                sign = "+" if delta >= 0 else ""
+                delta_str = f"{sign}{delta:.1f}pp {mark}"
+                bm_rows.append(
+                    f"| {sc_id} | {pm*100:.1f}% \u00b1{ps*100:.1f}%"
+                    f" | [{pcl*100:.1f}%-{pch*100:.1f}%]"
+                    f" | {cm*100:.1f}% \u00b1{cs*100:.1f}%"
+                    f" | [{ccl*100:.1f}%-{cch*100:.1f}%]"
+                    f" | {delta_str} |"
+                )
+            elif curr_bm:
+                cm, cs = curr_bm["mean"], curr_bm["std"]
+                ccl, cch = curr_bm["ci_95_low"], curr_bm["ci_95_high"]
+                bm_rows.append(
+                    f"| {sc_id} | - | -"
+                    f" | {cm*100:.1f}% \u00b1{cs*100:.1f}%"
+                    f" | [{ccl*100:.1f}%-{cch*100:.1f}%] | NEW |"
+                )
+        if bm_rows:
+            benchmark_lines = [
+                "## \u30d9\u30f3\u30c1\u30de\u30fc\u30af\u6bd4\u8f03\uff08\u54c1\u8cea\u6e2c\u5b9a\uff09",
+                "",
+                "*\u5404\u30b7\u30ca\u30ea\u30aa10\u8a66\u884c\u306e\u7d71\u8a08\u3002"
+                "95%\u4fe1\u983c\u533a\u9593\u304c\u91cd\u306a\u3089\u306a\u3044\u5834\u5408\u306e\u307f\u5909\u5316\u3092\u6709\u610f\u3068\u307f\u306a\u3059\u3002*",
+                "",
+                "| Scenario | \u524d\u56de mean\u00b1SD | \u524d\u56de 95%CI"
+                " | \u4eca\u56de mean\u00b1SD | \u4eca\u56de 95%CI | \u5909\u5316 |",
+                "|----------|--------------|-----------|--------------|-----------|------|",
+                *bm_rows,
+                "",
+                "**\u5224\u5b9a**: \U0001f7e2 CI\u975e\u91cd\u8907\u306e\u6539\u5584"
+                " / \U0001f534 CI\u975e\u91cd\u8907\u306e\u52a3\u5316"
+                " / \u2192 CI\u91cd\u8907\uff08\u8aa4\u5dee\u7bc4\u56f2\u5185\uff09",
+                "",
+                "---",
+                "",
+            ]
+
     lines = [
         "# \u30d9\u30fc\u30b9\u30e9\u30a4\u30f3\u6bd4\u8f03\u30ec\u30dd\u30fc\u30c8",
         "",
         "## \u6982\u8981",
         "",
-        "| \u9805\u76ee | \u524d\u56de | \u4eca\u56de | \u5dee\u5206 |",
-        "|------|------|------|------|",
-        f"| Run ID | {prev_run_id} | {curr_run_id} | |",
-        f"| Branch | {prev_branch} | {curr_branch} | |",
-        f"| Commit | {prev_commit} | {curr_commit} | |",
-        f"| \u65e5\u6642 | {prev_ts} | {curr_ts} | |",
+        "| \u9805\u76ee | \u524d\u56de | \u4eca\u56de |",
+        "|------|------|------|",
+        f"| Run ID | {prev_run_id} | {curr_run_id} |",
+        f"| Branch | {prev_branch} | {curr_branch} |",
+        f"| Commit | {prev_commit} | {curr_commit} |",
+        f"| \u65e5\u6642 | {prev_ts} | {curr_ts} |",
+        "",
+        "## \u524d\u56de\u304b\u3089\u306e\u5909\u66f4\u70b9",
+        "",
+        f"<!-- AGENT: Run `git log --oneline {prev_full_commit}..{curr_full_commit}` and list"
+        " user-facing changes as bullet points."
+        " Format: `- <change description> (nablarch/nabledge-dev#xx)`."
+        " Extract issue/PR numbers from commit messages (e.g. `(#123)` patterns)."
+        " Use `(issue\u4e0d\u660e)` if no number found."
+        " Skip non-user-facing commits (tests, CI, infra, dev tools). -->",
         "",
         "---",
         "",
+        *benchmark_lines,
         "## \u7dcf\u5408\u8a55\u4fa1",
         "",
         "<!-- AGENT: Evaluate improvement effects from a third-party perspective using the numerical data above. -->",
         "",
         "---",
         "",
-        "## \u30b7\u30ca\u30ea\u30aa\u5225\u6bd4\u8f03\u8868",
+        "## \u5e83\u57df\u30c1\u30a7\u30c3\u30af\uff08\u5168\u30b7\u30ca\u30ea\u30aa\u00d71\u8a66\u884c\uff09",
         "",
         "| # | Scenario | \u691c\u51fa\u7387 (\u524d\u56de) | \u691c\u51fa\u7387 (\u4eca\u56de) | \u5909\u5316 "
         "| \u6642\u9593 (\u524d\u56de) | \u6642\u9593 (\u4eca\u56de) | \u5909\u5316 "
@@ -417,7 +523,10 @@ def main():
             print(f"Error: Could not load meta.json from {prev_dir}", file=sys.stderr)
             sys.exit(1)
 
-        content = generate_comparison_report(curr_meta, curr_scenarios, prev_meta, prev_scenarios)
+        curr_benchmark = load_benchmark_data(curr_dir)
+        prev_benchmark = load_benchmark_data(prev_dir)
+        content = generate_comparison_report(curr_meta, curr_scenarios, prev_meta, prev_scenarios,
+                                             curr_benchmark, prev_benchmark)
 
     with open(output_path, "w") as f:
         f.write(content)
