@@ -346,9 +346,10 @@ class PhaseFFinalize:
 
         # Compile patterns on first use per file_id (performance optimization)
         if file_id not in self._pattern_cache:
+            # Use .*? for alt text to handle nested brackets like ![text with [no] inside](...)
             self._pattern_cache[file_id] = {
-                'image': re.compile(r'!\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)'),
-                'link': re.compile(r'(?<!\!)\[([^\]]*)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)')
+                'image': re.compile(r'!\[(.*?)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)'),
+                'link': re.compile(r'(?<!\!)\[(.*?)\]\(assets/' + re.escape(file_id) + r'/([^)]+)\)')
             }
 
         # Convert image references: ![text](assets/file-id/filename) -> ![text](../../../knowledge/.../assets/file-id/filename)

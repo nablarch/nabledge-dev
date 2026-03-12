@@ -309,7 +309,7 @@ queryParams, クエリパラメータ, LIST_MAP
 
 ![requestParamsとテストケース一覧の対応例](../../../knowledge/development-tools/testing-framework/assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest/testcase_and_request.png)
 
-![パラメータなしの場合（[no]列のみの例）](assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest/dummy_request_param.png)
+![パラメータなしの場合（[no]列のみの例）](../../../knowledge/development-tools/testing-framework/assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest/dummy_request_param.png)
 
 <details>
 <summary>keywords</summary>

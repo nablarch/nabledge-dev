@@ -97,10 +97,12 @@ def check_v7_index_toon(knowledge_dir, results):
             fails.append(f"  index.toon entry path not found: {path}")
             continue
         data = load_json(json_path)
-        expected_title = parts[0].replace("、", ",")
-        actual_title = data.get("title", "")
-        if expected_title != actual_title:
-            fails.append(f"  title mismatch for {path}: '{expected_title}' != '{actual_title}'")
+        # _build_index_toon writes: title.replace(",", "、")
+        # So to compare, apply the same normalization to JSON title
+        toon_title = parts[0]
+        actual_title = data.get("title", "").replace(",", "、")
+        if toon_title != actual_title:
+            fails.append(f"  title mismatch for {path}: '{toon_title}' != '{actual_title}'")
     results["V7"] = ("FAIL", fails) if fails else ("OK", [])
 
 
