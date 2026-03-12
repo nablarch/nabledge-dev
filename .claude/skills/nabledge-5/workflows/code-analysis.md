@@ -101,7 +101,7 @@ Output directory: .nabledge/20260210
    - UniversalDao, ValidationUtil, ExecutionContext, Handler chain, etc.
 
 10. **Extract key concepts** for knowledge search:
-    - Technical terms: DAO, トランザクション、ハンドラ
+    - Technical terms: DAO, トランザクション, ハンドラ
     - Operations: 検索, 登録, 更新, バリデーション
     - Patterns: CRUD, pagination, error handling
 

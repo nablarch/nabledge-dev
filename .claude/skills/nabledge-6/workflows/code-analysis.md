@@ -607,7 +607,6 @@ mapper.close();
    - If sed fails (permission error, file locked, etc.), inform user of the calculated duration so they can manually edit the file
 
 6. **Inform user**: Show output path and actual duration
-6. **Inform user**: Show output path and actual duration
 
 **Output**: Documentation file at .nabledge/YYYYMMDD/code-analysis-<target-name>.md
 
