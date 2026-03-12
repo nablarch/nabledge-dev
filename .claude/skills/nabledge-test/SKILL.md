@@ -308,7 +308,7 @@ For each completed scenario:
 
 **Save metrics.json**: Parse JSON from between `### METRICS_START` and `### METRICS_END`. If parsing fails (sub-agent didn't output clean JSON), extract what's available and note the error.
 
-**Save output files** (ca-* scenarios only): Copy files listed in OUTPUT_FILES section to `output/` directory.
+**Save output files** (ca-* scenarios only): Copy files listed in OUTPUT_FILES section to `output/` directory. For benchmark trials, also copy to `trials/<N>/output/` directory.
 
 **For benchmark scenarios** (in `--baseline` mode): After saving the canonical grading.json and metrics.json (trial 1):
 
@@ -320,11 +320,14 @@ For each completed scenario:
      trials/
        1/grading.json
        1/metrics.json
+       1/output/           # ca-* only: output files for this trial
        2/grading.json
        2/metrics.json
+       2/output/           # ca-* only: output files for this trial
        ...
        10/grading.json
        10/metrics.json
+       10/output/          # ca-* only: output files for this trial
    ```
 
 2. Compute and save `benchmark.json`:
@@ -503,6 +506,18 @@ for scenario_id in $(ls "${WORKSPACE}/"); do
       cp -r "${WORKSPACE}/${scenario_id}/trials" \
             "${TARGET_DIR}/${scenario_id}/trials"
     fi
+  fi
+
+  # Copy per-trial output files (ca-* benchmark scenarios only)
+  if [ -d "${WORKSPACE}/${scenario_id}/trials" ]; then
+    for trial_dir in "${WORKSPACE}/${scenario_id}/trials"/*/; do
+      trial_num=$(basename "${trial_dir}")
+      if [ -d "${trial_dir}output" ]; then
+        mkdir -p "${TARGET_DIR}/${scenario_id}/trials/${trial_num}/output"
+        cp "${trial_dir}output"/* \
+           "${TARGET_DIR}/${scenario_id}/trials/${trial_num}/output/"
+      fi
+    done
   fi
 done
 ```
