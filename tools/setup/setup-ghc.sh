@@ -92,7 +92,7 @@ NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-main}"
 
 # Build repository URL
-REPO_URL="https://github.com/${NABLEDGE_REPO}"
+REPO_URL="${NABLEDGE_REPO_URL:-https://github.com/${NABLEDGE_REPO}}"
 REPO_NAME="${NABLEDGE_REPO##*/}"
 BRANCH="$NABLEDGE_BRANCH"
 TEMP_DIR=$(mktemp -d)
