@@ -106,8 +106,8 @@ class TestComprehensiveMode:
 
         classified = load_json(real_ctx.classified_list_path)
 
-        # Expected: source files, some split into multiple parts
-        assert len(classified["files"]) == 46
+        # Expected: 37 source files, some split into multiple parts
+        assert len(classified["files"]) == 51
 
     def test_comprehensive_original_ids_match(self, real_ctx):
         """batch.json: 指定した17個のoriginal_idが全て含まれる"""
