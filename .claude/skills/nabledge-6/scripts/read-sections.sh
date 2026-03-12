@@ -1,12 +1,12 @@
 #!/bin/bash
-# 複数セクションの内容を一括読み出し
+# Read multiple sections in bulk
 #
-# 引数: "ファイル相対パス:セクションID" のペアをスペース区切り
-# 出力: 各セクションの内容を区切り付きで出力
+# Arguments: "relative-file-path:section-id" pairs separated by spaces
+# Output: content of each section with delimiters
 #
-# 出力形式:
-#   === ファイル相対パス : セクションID ===
-#   [セクション内容]
+# Output format:
+#   === relative-file-path : section-id ===
+#   [section content]
 #   === END ===
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

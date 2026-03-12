@@ -1,84 +1,84 @@
 # QA Workflow
 
-質問応答ワークフロー。ユーザーの質問に対して知識ファイルから関連情報を検索し、日本語で回答する。
+Question-answering workflow. Searches knowledge files for information relevant to the user's question and responds in Japanese.
 
-## 入力
+## Input
 
-ユーザーの質問（日本語の自然文）
+User's question (natural Japanese text)
 
-## 出力
+## Output
 
-日本語の回答
+Answer in Japanese
 
-## 手順
+## Steps
 
-### Step 1: 知識検索の呼び出し
+### Step 1: Call knowledge search
 
-**ツール**: workflows/_knowledge-search.md
+**Tool**: workflows/_knowledge-search.md
 
-**やること**: `workflows/_knowledge-search.md` を実行する。入力はユーザーの質問をそのまま渡す。
+**Action**: Execute `workflows/_knowledge-search.md`. Pass the user's question as-is as input.
 
-**出力**: ポインタJSON
+**Output**: Pointer JSON
 
-**分岐**: ポインタJSONが空（`results: []`）の場合は Step 3の「該当なしの応答」へ進む。
+**Branch**: If pointer JSON is empty (`results: []`), proceed to "No match response" in Step 3.
 
-### Step 2: セクション内容の読み出し
+### Step 2: Read section content
 
-**ツール**: Bash（scripts/read-sections.sh）
+**Tool**: Bash (scripts/read-sections.sh)
 
-**やること**: ポインタJSONの `results` を上から順に、セクション内容を取り出す。
+**Action**: Read section content from `results` in pointer JSON, in order from the top.
 
-**コマンド**:
+**Command**:
 ```bash
 bash scripts/read-sections.sh \
   "features/handlers/common/db-connection-management-handler.json:setup" \
   "features/libraries/universal-dao.json:paging"
 ```
 
-**出力形式**:
+**Output format**:
 ```
 === features/handlers/common/db-connection-management-handler.json : setup ===
-[セクション内容]
+[section content]
 === END ===
 === features/libraries/universal-dao.json : paging ===
-[セクション内容]
+[section content]
 === END ===
 ```
 
-**読み出しルール**:
-- relevanceがhighのものから先に読み出す
-- 最大件数: **10件**
+**Reading rules**:
+- Read high relevance sections first
+- Max count: **10**
 
-### Step 3: 回答の生成
+### Step 3: Generate answer
 
-**ツール**: メモリ内（LLM生成）
+**Tool**: In-memory (LLM generation)
 
-**やること**: Step 2で取得したセクション内容を基に、以下のフォーマットで回答を生成する。
+**Action**: Generate an answer in the following format based on the section content obtained in Step 2.
 
-**回答フォーマット**:
+**Answer format** (output in Japanese to user):
 ```
-**結論**: [質問への直接的な回答]
+**結論**: [direct answer to the question]
 
-**根拠**: [知識ファイルから得たコード例・設定例・仕様情報]
+**根拠**: [code examples, configuration examples, specification information from knowledge files]
 
-**注意点**: [制約、制限事項、よくある落とし穴]
+**注意点**: [constraints, limitations, common pitfalls]
 
-参照: [知識ファイルID#セクションID]
+参照: [knowledge-file-id#section-id]
 ```
 
-**回答ルール**:
-- 知識ファイルの情報**のみ**に基づいて回答する
-- 知識ファイルに書いてない情報を推測で補完しない
-- 参照元を明示する（例: `universal-dao.json#paging`）
-- 目安の長さ: 500トークン以内（複雑な質問は800トークンまで許容）
+**Answer rules**:
+- Answer based **only** on information from knowledge files
+- Do not fill in information not in knowledge files with inference
+- Cite sources explicitly (e.g., `universal-dao.json#paging`)
+- Target length: within 500 tokens (up to 800 tokens for complex questions)
 
-**該当なしの応答**（ポインタJSONが空の場合）:
+**No match response** (when pointer JSON is empty):
 ```
 この情報は知識ファイルに含まれていません。
 
 関連する知識ファイル:
-- [index.toonから関連しそうなエントリのtitleとpathを列挙]
-- [pathが "not yet created" のものはその旨を表示]
+- [list title and path of entries from index.toon that may be related]
+- [for entries with path "not yet created", show that fact]
 ```
 
-**重要**: LLM学習データでの代替回答は**行わない**。
+**Important**: Do **not** provide alternative answers from LLM training data.

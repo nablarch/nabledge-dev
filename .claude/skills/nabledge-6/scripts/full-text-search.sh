@@ -1,9 +1,9 @@
 #!/bin/bash
-# 全知識ファイルの全セクションに対してキーワードOR検索を実行
+# Run keyword OR search across all sections of all knowledge files
 #
-# 引数: キーワード（1つ以上）
-# 出力: ヒットしたファイルとセクションIDの一覧（スコア降順、上位15件）
-# 出力形式: ファイル相対パス|セクションID
+# Arguments: keywords (one or more)
+# Output: list of matching files and section IDs (score descending, top 15)
+# Output format: relative-file-path|section-id
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -15,7 +15,7 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-# 引数からjqの個別カウント式を組み立てる
+# Build jq count expression for each keyword argument
 count_exprs=""
 for kw in "$@"; do
   if [ -n "$count_exprs" ]; then
@@ -25,7 +25,7 @@ for kw in "$@"; do
   count_exprs="${count_exprs}(if test(\"$escaped\"; \"i\") then 1 else 0 end)"
 done
 
-# 全JSONファイルに対して検索し、スコア付きで出力 → スコア降順ソート → 上位N件
+# Search all JSON files, output with score → sort descending by score → take top N
 find "$KNOWLEDGE_DIR" -name "*.json" | sort | while read -r filepath; do
   relpath="${filepath#$KNOWLEDGE_DIR/}"
   jq -r --arg file "$relpath" \

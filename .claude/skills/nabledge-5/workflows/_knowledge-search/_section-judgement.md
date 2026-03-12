@@ -1,34 +1,34 @@
 # Section Judgement
 
-候補セクションの内容を読み、検索クエリとの関連度を判定する。全文検索（経路1）とインデックス検索（経路2）の両方から呼び出される共通ワークフロー。
+Read candidate section content and judge relevance to the search query. Common workflow called from both full-text search (route 1) and index-based search (route 2).
 
-## 入力
+## Input
 
-- 候補セクションのリスト（file, section_id）
-- 検索キーワードリスト（呼び出し元のメモリ内にある。Step 0で使用）
+- List of candidate sections (file, section_id)
+- Search keyword list (in caller's memory; used in Step 0)
 
-## 出力
+## Output
 
-関連セクションのリスト（file, section_id, relevance）
+List of relevant sections (file, section_id, relevance)
 
-### 出力形式
+### Output format
 
 ```
 file: features/libraries/universal-dao.json, section_id: paging, relevance: high
 file: features/libraries/universal-dao.json, section_id: overview, relevance: partial
 ```
 
-呼び出し元がポインタJSONに変換する。
+Caller converts to pointer JSON.
 
-## 手順
+## Steps
 
-### Step 0: hintsベースのpre-filter
+### Step 0: hints-based pre-filter
 
-**ツール**: Bash（jq）
+**Tool**: Bash (jq)
 
-**やること**: 候補セクションのindex.hintsを取得し、検索キーワードとの関連度を簡易判定する。明らかに無関係なセクションを本文読み込み前に除外する。
+**Action**: Retrieve index.hints for candidate sections and perform a quick relevance check against search keywords. Exclude clearly irrelevant sections before reading their content.
 
-**コマンド**:
+**Command**:
 ```bash
 KNOWLEDGE_DIR=".claude/skills/nabledge-5/knowledge"
 
@@ -44,20 +44,20 @@ for pair in "component/libraries/libraries-universal_dao.json:paging" \
 done
 ```
 
-**判定ルール**（エージェントがメモリ内の検索キーワードと照合）:
-- hintsに検索キーワードが1つ以上含まれる（部分一致、大文字小文字区別なし）→ **候補として残す**
-- hintsに検索キーワードが1つも含まれない → **除外**
-- hintsが空またはindex内にセクションが見つからない → **候補として残す**（安全側に倒す）
+**Judgment rules** (agent matches against search keywords in memory):
+- hints contains one or more search keywords (partial match, case-insensitive) → **keep as candidate**
+- hints contains no search keywords → **exclude**
+- hints is empty or section not found in index → **keep as candidate** (err on the safe side)
 
-**出力**: フィルタ済みの候補セクションリスト → Step A に渡す
+**Output**: Filtered candidate section list → pass to Step A
 
-### Step A: 候補セクションの内容を一括読み出し
+### Step A: Bulk read candidate section content
 
-**ツール**: Bash（`scripts/read-sections.sh`）
+**Tool**: Bash (`scripts/read-sections.sh`)
 
-**やること**: 候補セクションの内容を一括で読み出す。1回のツールコールで全セクションの内容を取得する。候補が多い場合は2〜3回に分割（1回あたり最大10セクション程度）。
+**Action**: Read candidate section content in bulk. Retrieve all section content in a single tool call. Split into 2-3 calls if there are many candidates (max ~10 sections per call).
 
-**コマンド**:
+**Command**:
 ```bash
 bash scripts/read-sections.sh \
   "features/libraries/universal-dao.json:paging" \
@@ -65,53 +65,53 @@ bash scripts/read-sections.sh \
   "features/libraries/database-access.json:query"
 ```
 
-**出力**: 各セクションの本文テキスト
+**Output**: Body text of each section
 
-### Step B: 各セクションの関連度を判定
+### Step B: Judge relevance of each section
 
-**ツール**: メモリ内（エージェント判断）
+**Tool**: In-memory (agent judgment)
 
-**やること**: セクション内容を読んで判定する。
+**Action**: Read section content and judge.
 
-**判定基準**:
+**Judgment criteria**:
 
-| 判定 | 条件 | 具体例 |
+| Judgment | Condition | Example |
 |---|---|---|
-| **High** | 検索クエリに**直接回答できる情報**を含む。メソッド名、設定例、コード例、手順など実行可能な具体的情報がある | 「ページングの実装方法」に対して `per()`, `page()` メソッドの使い方とコード例があるセクション |
-| **Partial** | **前提知識、関連機能、コンテキスト情報**を含む。直接の回答ではないが理解に必要 | 「ページングの実装方法」に対してUniversalDaoの基本的な使い方（前提知識）を説明するセクション |
-| **None** | 検索クエリと**無関係** | 「ページングの実装方法」に対してログ出力の設定を説明するセクション |
+| **High** | Contains information that **directly answers** the search query. Has concrete actionable content such as method names, configuration examples, code examples, or procedures | For "how to implement paging": a section with usage examples of `per()`, `page()` methods and code |
+| **Partial** | Contains **prerequisite knowledge, related features, or contextual information**. Not a direct answer but necessary for understanding | For "how to implement paging": a section explaining basic UniversalDao usage (prerequisite knowledge) |
+| **None** | **Unrelated** to the search query | For "how to implement paging": a section explaining log output configuration |
 
-**判定手順**:
-1. このセクションは検索クエリに直接回答する情報を含んでいるか？ → YES: **High** / NO: 次へ
-2. このセクションは検索クエリの理解に必要な前提知識・関連情報を含んでいるか？ → YES: **Partial** / NO: **None**
+**Judgment procedure**:
+1. Does this section contain information that directly answers the search query? → YES: **High** / NO: next
+2. Does this section contain prerequisite knowledge or related information needed to understand the query? → YES: **Partial** / NO: **None**
 
-**迷った場合**: HighとPartialで迷ったら**Partial**を選ぶ（保守的に判定）。
+**When uncertain**: If torn between High and Partial, choose **Partial** (conservative judgment).
 
-### Step C: フィルタ・ソート
+### Step C: Filter and sort
 
-**ツール**: メモリ内（エージェント判断）
+**Tool**: In-memory (agent judgment)
 
-**やること**: 判定結果をフィルタ・ソートする。
+**Action**: Filter and sort judgment results.
 
-**処理**:
-- Noneを除外
-- High → Partial の順でソート
-- 同一relevance内はファイルパスでソート
+**Processing**:
+- Exclude None
+- Sort High → Partial
+- Within same relevance, sort by file path
 
-**出力**: 関連セクションのリスト
+**Output**: List of relevant sections
 
-## 打ち切り条件
+## Early termination conditions
 
-| 条件 | 動作 |
+| Condition | Behavior |
 |---|---|
-| 読み込みセクション数が **20件** に達した | 残りの候補は処理しない |
-| Highが **5件** 見つかった | 残りの候補は処理しない |
-| いずれかの条件に先に到達した方 | 処理を停止 |
+| Sections read reaches **20** | Stop processing remaining candidates |
+| **5** High sections found | Stop processing remaining candidates |
+| Whichever condition is reached first | Stop processing |
 
-## エラーハンドリング
+## Error handling
 
-| 状態 | 対応 |
+| State | Action |
 |---|---|
-| 候補セクションが0件 | 空リストを返す |
-| セクション内容が `SECTION_NOT_FOUND` | そのセクションをスキップ |
-| 全セクションがNone判定 | 空リストを返す |
+| 0 candidate sections | Return empty list |
+| Section content is `SECTION_NOT_FOUND` | Skip that section |
+| All sections judged None | Return empty list |

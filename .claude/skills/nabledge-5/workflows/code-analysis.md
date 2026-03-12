@@ -62,8 +62,8 @@ Output directory: .nabledge/20260210
 
 1. **Parse user request** to understand target scope:
    - Specific class (e.g., "LoginAction")
-   - Specific feature (e.g., "ログイン機能")
-   - Package (e.g., "web.action配下")
+   - Specific feature (e.g., "login feature")
+   - Package (e.g., "under web.action")
 
 2. **Ask clarifying questions** if scope is unclear
 
@@ -101,8 +101,8 @@ Output directory: .nabledge/20260210
    - UniversalDao, ValidationUtil, ExecutionContext, Handler chain, etc.
 
 10. **Extract key concepts** for knowledge search:
-    - Technical terms: DAO, トランザクション, ハンドラ
-    - Operations: 検索, 登録, 更新, バリデーション
+    - Technical terms: DAO, transaction, handler
+    - Operations: search, register, update, validation
     - Patterns: CRUD, pagination, error handling
 
 **Output**: Target files list, dependency graph, component list with Nablarch components identified
@@ -118,12 +118,12 @@ Output directory: .nabledge/20260210
 1. **Collect search keywords** from Step 1 analysis:
    - Use Nablarch component names identified in Step 1 as search keywords
    - Include class names, Japanese feature names, and related technical terms
-   - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "バリデーション", "トランザクション"]
+   - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "validation", "transaction"]
 
 2. **Execute full-text search**:
    ```bash
    bash .claude/skills/nabledge-5/scripts/full-text-search.sh \
-     "UniversalDao" "ExecutionContext" "ValidationUtil" "バリデーション" "トランザクション"
+     "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
    ```
    - Output: Scored and ranked candidate sections (max 15 results)
 
@@ -191,7 +191,7 @@ echo "Output file: $OUTPUT_PATH"
 
 **Parameters**:
 - `target-name`: Target code name (e.g., "LoginAction")
-- `target-desc`: One-line description (e.g., "ログイン認証処理")
+- `target-desc`: One-line description (e.g., "login authentication processing")
 - `modules`: Affected modules (e.g., "proman-web, proman-common")
 - `source-files`: Comma-separated source file basenames from Step 1
   - Example: "LoginAction.java,LoginForm.java"
@@ -294,22 +294,22 @@ echo "Output file: $OUTPUT_PATH"
 
 **Output budget** (MANDATORY):
 
-Total output: **10-15 KB** (10,000-15,000文字)
+Total output: **10-15 KB** (10,000-15,000 characters)
 
 | Section | Budget | Guideline |
 |---------|--------|-----------|
-| overview_content | 200-400文字 | 目的と構成を簡潔に |
-| dependency_graph | 15-30行 | クラス名のみ、メソッド/フィールド不要 |
-| component_summary_table | コンポーネント数×1行 | Role は5-10語 |
-| flow_content | 300-500文字 | 主要フローのみ、例外フローは省略可 |
-| flow_sequence_diagram | 20-40行 | 主要パスのみ、alt/loop は重要なもの1-2個まで |
-| components_details | コンポーネントあたり300-500文字 | キーメソッド3個以内 |
-| nablarch_usage | コンポーネントあたり200-400文字 | 重要ポイント3個以内 |
+| overview_content | 200-400 chars | Purpose and structure, concise |
+| dependency_graph | 15-30 lines | Class names only, no methods/fields |
+| component_summary_table | 1 line per component | Role in 5-10 words |
+| flow_content | 300-500 chars | Main flow only, exception flows optional |
+| flow_sequence_diagram | 20-40 lines | Main path only, max 1-2 important alt/loop |
+| components_details | 300-500 chars per component | Max 3 key methods |
+| nablarch_usage | 200-400 chars per component | Max 3 important points |
 
-**超過時の対応**: 合計が15KBを超えそうな場合、以下の優先度で削減する：
-1. components_details の詳細度を下げる（メソッド説明を短縮）
-2. nablarch_usage の重要ポイントを3個に絞る
-3. flow_sequence_diagram の alt/loop を削減
+**When over budget**: If total is likely to exceed 15 KB, reduce in this priority:
+1. Reduce detail in components_details (shorten method descriptions)
+2. Limit nablarch_usage important points to 3
+3. Reduce alt/loop in flow_sequence_diagram
 
 **CRITICAL**: All diagram work REFINES skeletons from Step 3.3. REFINE, not REGENERATE.
 
@@ -393,7 +393,7 @@ classDiagram
 ```markdown
 | Component | Role | Type | Dependencies |
 |-----------|------|------|--------------|
-| LoginAction | ログイン処理 | Action | LoginForm, UniversalDao |
+| LoginAction | Login processing | Action | LoginForm, UniversalDao |
 ```
 
 **Flow description with sequence diagram** (Mermaid sequenceDiagram):
@@ -447,8 +447,8 @@ sequenceDiagram
 ```markdown
 | Component | Role | Type | Dependencies |
 |-----------|------|------|--------------|
-| LoginAction | ログイン処理 | Action | LoginForm, UniversalDao |
-| LoginForm | ログイン入力検証 | Form | なし |
+| LoginAction | Login processing | Action | LoginForm, UniversalDao |
+| LoginForm | Login input validation | Form | none |
 ```
 
 **Important Points prefixes**:
@@ -462,28 +462,28 @@ sequenceDiagram
 ```markdown
 ### ObjectMapper
 
-**クラス**: `nablarch.common.databind.ObjectMapper`
+**Class**: `nablarch.common.databind.ObjectMapper`
 
-**説明**: CSVやTSV、固定長データをJava Beansとして扱う機能を提供する
+**Description**: Provides functionality to handle CSV, TSV, and fixed-length data as Java Beans
 
-**使用方法**:
+**Usage**:
 \```java
 ObjectMapper<ProjectDto> mapper = ObjectMapperFactory.create(ProjectDto.class, outputStream);
 mapper.write(dto);
 mapper.close();
 \```
 
-**重要ポイント**:
-- ✅ **必ず`close()`を呼ぶ**: バッファをフラッシュし、リソースを解放する
-- ⚠️ **大量データ処理時**: メモリに全データを保持しないため、大量データでも問題なく処理可能
-- 💡 **アノテーション駆動**: `@Csv`, `@CsvFormat`でフォーマットを宣言的に定義できる
+**Important points**:
+- ✅ **Always call `close()`**: Flushes the buffer and releases resources
+- ⚠️ **Large data processing**: Does not hold all data in memory, so large volumes are handled safely
+- 💡 **Annotation-driven**: Formats can be declared with `@Csv`, `@CsvFormat`
 
-**このコードでの使い方**:
-- `initialize()`でObjectMapperを生成（Line 25-28）
-- `handle()`で各レコードを`mapper.write(dto)`で出力（Line 52）
-- `terminate()`で`mapper.close()`してリソース解放（Line 60）
+**Usage in this code**:
+- ObjectMapper created in `initialize()` (Line 25-28)
+- Each record output via `mapper.write(dto)` in `handle()` (Line 52)
+- Resources released via `mapper.close()` in `terminate()` (Line 60)
 
-**詳細**: [データバインド](../../.claude/skills/nabledge-5/docs/features/libraries/data-bind.md)
+**Details**: [Data Bind](../../.claude/skills/nabledge-5/docs/features/libraries/data-bind.md)
 ```
 
 #### 3.5: Fill remaining placeholders and output
@@ -568,19 +568,19 @@ mapper.close();
    # Calculate duration with error handling
    START_TIME_FILE="$OUTPUT_DIR/.nabledge-code-analysis-start-$UNIQUE_ID"
    if [ -z "$UNIQUE_ID" ] || [ ! -f "$START_TIME_FILE" ]; then
-     echo "WARNING: Start time file not found. Duration will be set to '不明'."
-     duration_text="不明"
+     echo "WARNING: Start time file not found. Duration will be set to 'unknown'."
+     duration_text="unknown"
    else
      start_time=$(cat "$START_TIME_FILE")
      duration_seconds=$((end_time - start_time))
 
-     # Format as Japanese text
+     # Format duration text
      if [ $duration_seconds -lt 60 ]; then
-       duration_text="約${duration_seconds}秒"
+       duration_text="approx. ${duration_seconds}s"
      else
        minutes=$((duration_seconds / 60))
        seconds=$((duration_seconds % 60))
-       duration_text="約${minutes}分${seconds}秒"
+       duration_text="approx. ${minutes}m ${seconds}s"
      fi
    fi
 
@@ -602,7 +602,7 @@ mapper.close();
    **IMPORTANT**:
    - Execute immediately after Step 4 with no other operations between them
    - This script handles: session ID retrieval, duration calculation, and file update
-   - **Error handling**: If start time file is missing, duration is set to "不明" (unknown) with warning message
+   - **Error handling**: If start time file is missing, duration is set to "unknown" with warning message
    - Script continues execution even if duration calculation fails, ensuring placeholder is always replaced
    - If sed fails (permission error, file locked, etc.), inform user of the calculated duration so they can manually edit the file
 
@@ -667,7 +667,7 @@ Key scenarios:
 
 ## Example execution
 
-**User request**: "LoginActionを理解したい"
+**User request**: "I want to understand LoginAction"
 
 **Step 1**: Identify target and analyze
 - Target: LoginAction.java
@@ -687,4 +687,4 @@ Key scenarios:
 - Apply template with all placeholders
 - Output: .nabledge/20260210/code-analysis-login-action.md
 
-**Summary**: 5 components, 2 diagrams, 2 Nablarch knowledge sections, duration ~2分
+**Summary**: 5 components, 2 diagrams, 2 Nablarch knowledge sections, duration ~2m

@@ -12,7 +12,7 @@ Usage: $0 --target-name <name> --target-desc <description> --modules <modules> -
 Pre-fill deterministic placeholders in code analysis template.
 
 Required arguments:
-  --target-name <name>        Target name (e.g., "LoginAction", "ログイン機能")
+  --target-name <name>        Target name (e.g., "LoginAction", "login feature")
   --target-desc <description> One-line description of the target
   --modules <modules>         Affected modules (e.g., "proman-web, proman-common")
   --source-files <files>      Comma-separated source file basenames (e.g., "LoginAction.java,LoginForm.java")
@@ -31,7 +31,7 @@ Note:
 
 Example:
   $0 --target-name "LoginAction" \\
-     --target-desc "ログイン認証処理" \\
+     --target-desc "login authentication processing" \\
      --modules "proman-web" \\
      --source-files "LoginAction.java,LoginForm.java" \\
      --knowledge-files "universal-dao,web-application"

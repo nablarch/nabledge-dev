@@ -1,16 +1,16 @@
 # Knowledge Search Workflow
 
-知識検索パイプライン全体を制御するワークフロー。検索クエリからポインタJSONを生成する。
+Controls the entire knowledge search pipeline. Generates pointer JSON from a search query.
 
-## 入力
+## Input
 
-検索クエリ（ユーザーの質問 or ワークフローからの検索要求）
+Search query (user's question or search request from a workflow)
 
-## 出力
+## Output
 
-ポインタJSON
+Pointer JSON
 
-### ポインタJSON スキーマ
+### Pointer JSON schema
 
 ```json
 {
@@ -29,99 +29,99 @@
 }
 ```
 
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
-| file | string | knowledgeディレクトリからの相対パス |
-| section_id | string | セクション識別子 |
-| relevance | "high" \| "partial" | high: 直接回答できる / partial: 部分的に関連 |
+| file | string | Relative path from knowledge directory |
+| section_id | string | Section identifier |
+| relevance | "high" \| "partial" | high: can directly answer / partial: partially relevant |
 
-resultsはrelevance降順（high → partial）でソート。空配列は該当なし。
+results sorted by relevance descending (high → partial). Empty array means no match.
 
-## 手順
+## Steps
 
-### Step 1: キーワード抽出
+### Step 1: Keyword extraction
 
-**ツール**: メモリ内（エージェント判断）
+**Tool**: In-memory (agent judgment)
 
-**やること**: 検索クエリから検索に有効なキーワードを抽出する。
+**Action**: Extract keywords effective for searching from the search query.
 
-**抽出観点**:
-- 日本語の機能名・概念名（例: ページング、トランザクション、バッチ処理）
-- 英語の技術用語（例: UniversalDao、DbConnectionManagementHandler）
-- クラス名、アノテーション名、プロパティ名
-- 略語・別名（例: DAO、DB、NTF）
+**Extraction criteria**:
+- Japanese feature names and concept names (e.g., paging, transaction, batch processing)
+- English technical terms (e.g., UniversalDao, DbConnectionManagementHandler)
+- Class names, annotation names, property names
+- Abbreviations and aliases (e.g., DAO, DB, NTF)
 
-**例**:
+**Example**:
 ```
-質問: "ページングを実装したい"
-→ キーワード: ["ページング", "paging", "UniversalDao", "DAO", "per", "page"]
+Question: "want to implement paging"
+→ Keywords: ["paging", "paging", "UniversalDao", "DAO", "per", "page"]
 ```
 
-**ルール**:
-- 日本語と英語の両方を含める
-- 質問の意図から連想される技術用語も含める
-- 3〜10個を目安
+**Rules**:
+- Include both Japanese and English
+- Include technical terms associated with the query intent
+- Target 3-10 keywords
 
-**出力**: キーワードリスト
+**Output**: Keyword list
 
-### Step 2: 全文検索（経路1）
+### Step 2: Full-text search (route 1)
 
-**ツール**: _knowledge-search/_full-text-search.md
+**Tool**: _knowledge-search/_full-text-search.md
 
-**やること**: `_knowledge-search/_full-text-search.md` を実行する。入力はStep 1のキーワードリスト。
+**Action**: Execute `_knowledge-search/_full-text-search.md`. Input is the keyword list from Step 1.
 
-**出力**: ヒットしたセクションのリスト（file, section_id）
+**Output**: List of matched sections (file, section_id)
 
-### Step 3: 分岐判定
+### Step 3: Branch decision
 
-**ツール**: メモリ内（エージェント判断）
+**Tool**: In-memory (agent judgment)
 
-**やること**: Step 2の結果を評価し、次のステップを決定する。
+**Action**: Evaluate Step 2 results and decide next step.
 
-**判断基準**:
+**Decision criteria**:
 
-| ヒット件数 | 判定 | 次のステップ |
+| Hit count | Decision | Next step |
 |---|---|---|
-| 1件以上 | ヒットあり | Step 6（セクション判定） |
-| 0件 | ヒットなし | Step 4（ファイル選定 → インデックス検索） |
+| 1 or more | Has hits | Step 6 (section judgement) |
+| 0 | No hits | Step 4 (file selection → index-based search) |
 
-### Step 4: ファイル選定（経路2）
+### Step 4: File selection (route 2)
 
-**ツール**: _knowledge-search/_file-search.md
+**Tool**: _knowledge-search/_file-search.md
 
-**やること**: `_knowledge-search/_file-search.md` を実行する。入力は検索クエリとindex.toon。
+**Action**: Execute `_knowledge-search/_file-search.md`. Input is the search query and index.toon.
 
-**出力**: 候補ファイルのリスト
+**Output**: List of candidate files
 
-**分岐**: 候補ファイルが0件の場合は空のポインタJSONを返して終了。
+**Branch**: If 0 candidate files, return empty pointer JSON and exit.
 
-空のポインタJSON: `{"results": []}`
+Empty pointer JSON: `{"results": []}`
 
-### Step 5: セクション選定（経路2）
+### Step 5: Section selection (route 2)
 
-**ツール**: _knowledge-search/_section-search.md
+**Tool**: _knowledge-search/_section-search.md
 
-**やること**: `_knowledge-search/_section-search.md` を実行する。入力はStep 4の候補ファイルのリストとStep 1のキーワードリスト。
+**Action**: Execute `_knowledge-search/_section-search.md`. Input is the candidate file list from Step 4 and the keyword list from Step 1.
 
-**出力**: 候補セクションのリスト
+**Output**: List of candidate sections
 
-### Step 6: セクション判定（共通）
+### Step 6: Section judgement (common)
 
-**ツール**: _knowledge-search/_section-judgement.md
+**Tool**: _knowledge-search/_section-judgement.md
 
-**やること**: `_knowledge-search/_section-judgement.md` を実行する。入力は候補セクションのリスト（Step 2またはStep 5から）。
+**Action**: Execute `_knowledge-search/_section-judgement.md`. Input is the candidate section list (from Step 2 or Step 5).
 
-**出力**: 関連セクション（High/Partial）
+**Output**: Relevant sections (High/Partial)
 
-### Step 7: ポインタJSON返却
+### Step 7: Return pointer JSON
 
-**ツール**: メモリ内（エージェントがJSON組み立て）
+**Tool**: In-memory (agent assembles JSON)
 
-**やること**: Step 6の関連セクションをポインタJSON形式に変換する。
+**Action**: Convert relevant sections from Step 6 to pointer JSON format.
 
-**組み立てルール**:
-- relevance降順でソート（high → partial）
-- 同一relevance内はファイルパスでソート（安定順序）
-- 件数上限: なし（Step 6で絞り込み済み）
+**Assembly rules**:
+- Sort by relevance descending (high → partial)
+- Within same relevance, sort by file path (stable order)
+- No count limit (already filtered in Step 6)
 
-**出力**: ポインタJSON
+**Output**: Pointer JSON

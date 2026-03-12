@@ -1,53 +1,53 @@
 # Full-Text Search
 
-全知識ファイルの全セクションに対してキーワードOR検索を実行する。
+Run keyword OR search across all sections of all knowledge files.
 
-## 入力
+## Input
 
-キーワードリスト
+Keyword list
 
-## 出力
+## Output
 
-ヒットしたセクションのリスト（file, section_id）
+List of matched sections (file, section_id)
 
-### 出力形式
+### Output format
 
 ```
 features/libraries/universal-dao.json|paging
 features/libraries/universal-dao.json|overview
 ```
 
-各行: `ファイル相対パス|セクションID`
+Each line: `relative-file-path|section-id`
 
-## 手順
+## Steps
 
-### Step 1: 全文検索の実行
+### Step 1: Run full-text search
 
-**ツール**: Bash（`scripts/full-text-search.sh`）
+**Tool**: Bash (`scripts/full-text-search.sh`)
 
-**やること**: `scripts/full-text-search.sh` スクリプトを実行し、キーワードリストを引数として渡す。
+**Action**: Execute `scripts/full-text-search.sh` and pass the keyword list as arguments.
 
-**コマンド**:
+**Command**:
 ```bash
-bash scripts/full-text-search.sh "ページング" "paging" "UniversalDao"
+bash scripts/full-text-search.sh "paging" "paging" "UniversalDao"
 ```
 
-**検索ルール**:
+**Search rules**:
 
-| ルール | 設定 |
+| Rule | Setting |
 |---|---|
-| 結合方式 | OR（いずれかのキーワードを含むセクションがヒット） |
-| 大文字小文字 | 区別しない |
-| マッチ方式 | 部分一致 |
-| 検索対象 | 全知識ファイルの全セクション |
-| ヒット上限 | なし（section-judgementで絞り込む） |
+| Combination | OR (sections containing any keyword match) |
+| Case sensitivity | Case-insensitive |
+| Match type | Partial match |
+| Search target | All sections of all knowledge files |
+| Hit limit | None (filtered in section-judgement) |
 
-**出力**: ヒットしたセクションのリスト
+**Output**: List of matched sections
 
-## エラーハンドリング
+## Error handling
 
-| 状態 | 対応 |
+| State | Action |
 |---|---|
-| ヒット0件 | 空の結果を返す（呼び出し元が経路2にフォールバック） |
-| jqエラー | stderrにログ出力、該当ファイルをスキップして継続 |
-| 知識ファイルが0件 | 空の結果を返す |
+| 0 hits | Return empty result (caller falls back to route 2) |
+| jq error | Log to stderr, skip that file and continue |
+| 0 knowledge files | Return empty result |

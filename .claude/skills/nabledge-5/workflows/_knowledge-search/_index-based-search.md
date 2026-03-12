@@ -1,35 +1,35 @@
 # Index-Based Search
 
-全文検索でヒットしなかった場合のフォールバック経路。file-search.md → section-search.md の順で実行する。
+Fallback route when full-text search returns no hits. Executes file-search.md followed by section-search.md.
 
-## 入力
+## Input
 
-検索クエリ + キーワードリスト
+Search query + keyword list
 
-## 出力
+## Output
 
-候補セクションのリスト
+List of candidate sections
 
-## 手順
+## Steps
 
-### Step 1: ファイル選定
+### Step 1: File selection
 
-**ツール**: _knowledge-search/_file-search.md
+**Tool**: _knowledge-search/_file-search.md
 
-**やること**: `_knowledge-search/_file-search.md` を実行する。入力は検索クエリとindex.toon。
+**Action**: Execute `_knowledge-search/_file-search.md`. Input is the search query and index.toon.
 
-**出力**: 候補ファイルのリスト
+**Output**: List of candidate files
 
-**分岐**: 候補ファイルが0件の場合は空のリストを返して終了。
+**Branch**: If 0 candidate files, return empty list and exit.
 
-### Step 2: セクション選定
+### Step 2: Section selection
 
-**ツール**: _knowledge-search/_section-search.md
+**Tool**: _knowledge-search/_section-search.md
 
-**やること**: `_knowledge-search/_section-search.md` を実行する。入力はStep 1の候補ファイルのリストとキーワードリスト。
+**Action**: Execute `_knowledge-search/_section-search.md`. Input is the candidate file list from Step 1 and the keyword list.
 
-**出力**: 候補セクションのリスト
+**Output**: List of candidate sections
 
-### Step 3: 結果の返却
+### Step 3: Return results
 
-**やること**: Step 2の候補セクションのリストを呼び出し元に返す。
+**Action**: Return the candidate section list from Step 2 to the caller.

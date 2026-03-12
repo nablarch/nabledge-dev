@@ -1,35 +1,35 @@
 # Section Search
 
-候補ファイルの `index[].hints` とキーワードをマッチングし、候補セクションを選定する。
+Match `index[].hints` of candidate files against keywords and select candidate sections.
 
-## 入力
+## Input
 
-候補ファイルのリスト + キーワードリスト
+List of candidate files + keyword list
 
-## 出力
+## Output
 
-候補セクションのリスト（file, section_id）
+List of candidate sections (file, section_id)
 
-### 出力形式
+### Output format
 
 ```
 features/libraries/universal-dao.json|paging
 features/libraries/universal-dao.json|overview
 ```
 
-全文検索の出力形式と同一。
+Same format as full-text search output.
 
-## 手順
+## Steps
 
-### Step 1: セクションのhints一括抽出
+### Step 1: Bulk extraction of section hints
 
-**ツール**: Bash（jq）
+**Tool**: Bash (jq)
 
-**やること**: 候補ファイルの `index[].hints` を一括で抽出する。
+**Action**: Extract `index[].hints` from candidate files in bulk.
 
-**コマンド**:
+**Command**:
 ```bash
-KNOWLEDGE_DIR="$(cd "$(dirname "$0")/.." && pwd)/knowledge"  # スクリプトから呼ぶ場合
+KNOWLEDGE_DIR="$(cd "$(dirname "$0")/.." && pwd)/knowledge"  # when called from script
 
 for file in features/libraries/universal-dao.json \
             features/libraries/database-access.json; do
@@ -39,34 +39,34 @@ for file in features/libraries/universal-dao.json \
 done
 ```
 
-**出力例**:
+**Output example**:
 ```
-features/libraries/universal-dao.json|overview|UniversalDao,DAO,O/Rマッパー,CRUD
-features/libraries/universal-dao.json|paging|ページング,paging,per,page,Pagination
+features/libraries/universal-dao.json|overview|UniversalDao,DAO,O/R mapper,CRUD
+features/libraries/universal-dao.json|paging|paging,paging,per,page,Pagination
 ```
 
-### Step 2: マッチングとスコアリング
+### Step 2: Matching and scoring
 
-**ツール**: メモリ内（エージェント判断）
+**Tool**: In-memory (agent judgment)
 
-**やること**: 各セクションのhintsに対して、キーワードリストの各キーワードを部分一致で照合する。
+**Action**: For each section's hints, perform partial match against each keyword in the keyword list.
 
-**マッチングロジック**:
-- 部分一致（hintsの要素にキーワードが含まれる、またはキーワードにhints要素が含まれる）
-- 大文字小文字区別なし
-- マッチしたキーワード1つにつき +1点
-- スコアが **1点以上** のセクションを候補とする
+**Matching logic**:
+- Partial match (hints element contains keyword, or keyword contains hints element)
+- Case-insensitive
+- +1 point per matched keyword
+- Sections with score **1 or more** become candidates
 
-**選定ルール**:
-- 最大セクション数: **20件**
-- スコア降順で選定
+**Selection rules**:
+- Max sections: **20**
+- Select by descending score
 
-**出力**: 候補セクションのリスト
+**Output**: List of candidate sections
 
-## エラーハンドリング
+## Error handling
 
-| 状態 | 対応 |
+| State | Action |
 |---|---|
-| 候補ファイルが0件 | 空リストを返す |
-| hintsが空のセクション | スキップ |
-| JSON読み込みエラー | 該当ファイルをスキップ |
+| 0 candidate files | Return empty list |
+| Section with empty hints | Skip |
+| JSON read error | Skip that file |

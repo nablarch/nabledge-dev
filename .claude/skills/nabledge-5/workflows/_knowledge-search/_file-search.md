@@ -1,16 +1,16 @@
 # File Search
 
-index.toonから検索クエリに関連するファイルを選定する。
+Select files relevant to the search query from index.toon.
 
-## 入力
+## Input
 
-検索クエリ + index.toon
+Search query + index.toon
 
-## 出力
+## Output
 
-候補ファイルのリスト（パス、最大10件）
+List of candidate files (paths, max 10)
 
-### 出力形式
+### Output format
 
 ```
 features/libraries/universal-dao.json
@@ -18,65 +18,65 @@ features/libraries/database-access.json
 features/handlers/common/db-connection-management-handler.json
 ```
 
-## 手順
+## Steps
 
-### Step 1: index.toonの読み込み
+### Step 1: Load index.toon
 
-**ツール**: Read（index.toon読み込み）
+**Tool**: Read (load index.toon)
 
-**やること**: index.toonを読み込む。
+**Action**: Load index.toon.
 
-**コマンド**:
+**Command**:
 ```bash
-# Read tool を使用
+# Use Read tool
 Read knowledge/index.toon
 ```
 
-### Step 2: 候補ファイルの選定
+### Step 2: Select candidate files
 
-**ツール**: メモリ内（エージェント判断）
+**Tool**: In-memory (agent judgment)
 
-**やること**: index.toonの内容と検索クエリを照合し、候補ファイルを選定する。
+**Action**: Match index.toon content against the search query and select candidate files.
 
-**判断基準（3軸で評価、いずれかにマッチすれば候補とする）**:
+**Selection criteria (evaluate on 3 axes, any match qualifies as a candidate)**:
 
-**軸1: titleとの意味的マッチング**
+**Axis 1: Semantic matching with title**
 
-検索クエリの意図とtitleが意味的に関連するかを判断する。
-- 例: 「ページングを実装したい」→ 「ユニバーサルDAO」はページング機能を持つので候補
-- 例: 「バッチの起動方法」→ 「Nablarchバッチ（都度起動型・常駐型）」が候補
+Determine if the query intent is semantically related to the title.
+- Example: "want to implement paging" → "UniversalDAO" has paging functionality, so it's a candidate
+- Example: "how to launch batch" → "Nablarch Batch (on-demand/resident)" is a candidate
 
-**軸2: Type/Categoryによる絞り込み**
+**Axis 2: Filtering by Type/Category**
 
-検索クエリの意図からType/Categoryを推定し、該当するファイルを候補とする。
+Infer Type/Category from query intent and select matching files as candidates.
 
-| 意図パターン | 推定Type/Category |
+| Intent pattern | Inferred Type/Category |
 |---|---|
-| 「〜を実装したい」「〜の使い方」 | component/libraries |
-| 「〜ハンドラの設定」「〜の制御」 | component/handlers |
-| 「バッチの構成」「RESTの設計」 | processing-pattern |
-| 「テストの方法」 | development-tools/testing-framework |
-| 「プロジェクトの作り方」 | setup/blank-project |
-| 「セキュリティチェック」 | check/security-check |
+| "want to implement ~" / "how to use ~" | component/libraries |
+| "~ handler configuration" / "~ control" | component/handlers |
+| "batch configuration" / "REST design" | processing-pattern |
+| "how to test" | development-tools/testing-framework |
+| "how to create a project" | setup/blank-project |
+| "security check" | check/security-check |
 
-**軸3: processing_patternsによる絞り込み**
+**Axis 3: Filtering by processing_patterns**
 
-検索クエリに処理パターンの文脈が含まれる場合、該当するprocessing_patternsを持つファイルを候補とする。
-- 例: 「バッチでのDB接続」→ `nablarch-batch` を含むファイル
-- 例: 「RESTのバリデーション」→ `restful-web-service` を含むファイル
+When the query contains processing pattern context, select files with matching processing_patterns.
+- Example: "DB connection in batch" → files containing `nablarch-batch`
+- Example: "REST validation" → files containing `restful-web-service`
 
-**選定ルール**:
-- 最大ファイル数: **10件**
-- `not yet created` のファイルは**除外**
-- 3軸の合計で関連度が高い順に選定
-- 明らかに無関係なファイルは含めない
+**Selection rules**:
+- Max files: **10**
+- Exclude `not yet created` files
+- Select by total relevance across 3 axes, highest first
+- Do not include clearly unrelated files
 
-**出力**: 候補ファイルのリスト
+**Output**: List of candidate files
 
-## エラーハンドリング
+## Error handling
 
-| 状態 | 対応 |
+| State | Action |
 |---|---|
-| index.toonが存在しない | エラーメッセージを返す |
-| 候補が0件 | 空リストを返す |
-| 全候補が `not yet created` | 空リストを返し、該当エントリのtitleを付記 |
+| index.toon does not exist | Return error message |
+| 0 candidates | Return empty list |
+| All candidates are `not yet created` | Return empty list and append title of matching entries |
