@@ -10,7 +10,7 @@ class TestListPhaseDAllFiles:
 
     def test_returns_findings_dir_when_exists(self, ctx):
         os.makedirs(ctx.findings_dir, exist_ok=True)
-        write_json(f"{ctx.findings_dir}/a.json", {})
+        write_json(f"{ctx.findings_dir}/a_r1.json", {})
         result = _list_phase_d_artifacts(ctx, target_ids=None)
         assert ctx.findings_dir in result
 
@@ -24,11 +24,11 @@ class TestListPhaseDWithTarget:
 
     def test_returns_target_file_only(self, ctx):
         os.makedirs(ctx.findings_dir, exist_ok=True)
-        write_json(f"{ctx.findings_dir}/target.json", {})
-        write_json(f"{ctx.findings_dir}/other.json", {})
+        write_json(f"{ctx.findings_dir}/target_r1.json", {})
+        write_json(f"{ctx.findings_dir}/other_r1.json", {})
         result = _list_phase_d_artifacts(ctx, target_ids=["target"])
         assert len(result) == 1
-        assert result[0].endswith("target.json")
+        assert result[0].endswith("target_r1.json")
 
     def test_returns_empty_for_nonexistent_target(self, ctx):
         result = _list_phase_d_artifacts(ctx, target_ids=["nonexistent"])
@@ -80,20 +80,20 @@ class TestCleanPhaseArtifacts:
 
     def test_clean_d_all_removes_findings_dir(self, ctx):
         os.makedirs(ctx.findings_dir, exist_ok=True)
-        write_json(f"{ctx.findings_dir}/a.json", {})
-        write_json(f"{ctx.findings_dir}/b.json", {})
+        write_json(f"{ctx.findings_dir}/a_r1.json", {})
+        write_json(f"{ctx.findings_dir}/b_r1.json", {})
 
         clean_phase_artifacts(ctx, "D", target_ids=None, yes=True)
         assert not os.path.isdir(ctx.findings_dir)
 
     def test_clean_d_target_preserves_others(self, ctx):
         os.makedirs(ctx.findings_dir, exist_ok=True)
-        write_json(f"{ctx.findings_dir}/target.json", {})
-        write_json(f"{ctx.findings_dir}/keep.json", {})
+        write_json(f"{ctx.findings_dir}/target_r1.json", {})
+        write_json(f"{ctx.findings_dir}/keep_r1.json", {})
 
         clean_phase_artifacts(ctx, "D", target_ids=["target"], yes=True)
-        assert not os.path.exists(f"{ctx.findings_dir}/target.json")
-        assert os.path.exists(f"{ctx.findings_dir}/keep.json")
+        assert not os.path.exists(f"{ctx.findings_dir}/target_r1.json")
+        assert os.path.exists(f"{ctx.findings_dir}/keep_r1.json")
 
     def test_clean_bd_removes_both_phases(self, ctx):
         """BD 指定で Phase B と D 両方の成果物を削除。"""
@@ -118,7 +118,7 @@ class TestCleanPhaseArtifacts:
 
         # Phase D artifact
         os.makedirs(ctx.findings_dir, exist_ok=True)
-        write_json(f"{ctx.findings_dir}/handlers-sample-handler.json", {})
+        write_json(f"{ctx.findings_dir}/handlers-sample-handler_r1.json", {})
 
         clean_phase_artifacts(ctx, "BD", target_ids=None, yes=True)
         assert not os.path.exists(json_path)

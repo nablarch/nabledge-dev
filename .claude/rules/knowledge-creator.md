@@ -94,3 +94,14 @@ Each Phase B/D/E/F execution saves metrics to `executions/` directory:
 - Test only complex logic that is hard to verify through E2E
 - Write for: split criteria, merge edge cases, validation rules, link resolution, boundary values, error cases not reachable via E2E
 - Skip: Context properties, simple delegation, E2E happy path coverage
+
+### Pre-PR Requirement
+
+Before requesting PR review for any kc change, all automated tests must pass:
+
+```bash
+cd tools/knowledge-creator
+pytest
+```
+
+If any test fails, fix all failures — including pre-existing ones — before creating the PR. Do not leave known failures unresolved.

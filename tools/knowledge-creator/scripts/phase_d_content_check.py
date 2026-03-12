@@ -43,6 +43,7 @@ class PhaseDContentCheck:
         self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
+        self.round_num = 1  # default; overridden by run()
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/content_check.md"
         )
@@ -96,7 +97,7 @@ class PhaseDContentCheck:
 
     def check_one(self, file_info) -> dict:
         file_id = file_info["id"]
-        findings_path = f"{self.ctx.findings_dir}/{file_id}.json"
+        findings_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num}.json"
 
         self.logger = get_logger()
         if os.path.exists(findings_path):
@@ -137,7 +138,7 @@ class PhaseDContentCheck:
 
         return {"file_id": file_id, "status": "error", "findings": []}
 
-    def run(self, target_ids=None) -> dict:
+    def run(self, target_ids=None, round_num=1) -> dict:
         classified = load_json(self.ctx.classified_list_path)
         files = classified["files"]
 
@@ -149,6 +150,7 @@ class PhaseDContentCheck:
             self.logger.info(f"Would check {len(files)} files")
             return {"issues_count": 0, "issue_file_ids": []}
 
+        self.round_num = round_num
         os.makedirs(self.ctx.findings_dir, exist_ok=True)
 
         with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:

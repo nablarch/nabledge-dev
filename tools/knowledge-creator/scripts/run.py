@@ -393,9 +393,9 @@ def _run_pipeline(ctx, args):
             else:
                 effective_ids = pass_ids
             d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
-                target_ids=effective_ids
+                target_ids=effective_ids, round_num=round_num
             )
-            findings_summary = _aggregate_findings(ctx)
+            findings_summary = _aggregate_findings(ctx, round_num=round_num)
             d_round = {
                 "round":      round_num,
                 "total":      d_result.get("clean", 0) + len(d_result.get("issue_file_ids", [])),
@@ -419,7 +419,7 @@ def _run_pipeline(ctx, args):
                 logger.info("   └─ Applying fixes to knowledge files...")
                 from phase_e_fix import PhaseEFix
                 e_result = PhaseEFix(ctx, dry_run=args.dry_run).run(
-                    target_ids=d_result["issue_file_ids"]
+                    target_ids=d_result["issue_file_ids"], round_num=round_num
                 )
                 if e_result:
                     report["phase_e_rounds"].append({
@@ -465,14 +465,37 @@ def _run_pipeline(ctx, args):
     logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
 
 
-def _aggregate_findings(ctx) -> dict:
-    """phase-d/findings/*.json を走査して findings サマリーを集計する。"""
-    import glob
+def _aggregate_findings(ctx, round_num=None) -> dict:
+    """phase-d/findings/*_r{N}.json を走査して findings サマリーを集計する。
+
+    round_num指定時: そのラウンドのファイルのみ集計。
+    round_num未指定時: ファイルごとに最新ラウンドのみ集計。
+    """
+    import glob as _g
+    import re as _re
     findings_dir = ctx.findings_dir
     total = critical = minor = 0
     by_category = {}
 
-    for path in glob.glob(os.path.join(findings_dir, "*.json")):
+    if round_num is not None:
+        pattern = os.path.join(findings_dir, f"*_r{round_num}.json")
+        paths = _g.glob(pattern)
+    else:
+        # Collect latest round per file_id
+        all_paths = _g.glob(os.path.join(findings_dir, "*_r*.json"))
+        latest = {}  # file_id -> (round_num, path)
+        for path in all_paths:
+            m = _re.search(r'_r(\d+)\.json$', path)
+            if not m:
+                continue
+            rn = int(m.group(1))
+            base = os.path.basename(path)
+            fid = base[:base.rfind(f"_r{rn}")]
+            if fid not in latest or rn > latest[fid][0]:
+                latest[fid] = (rn, path)
+        paths = [path for _, path in latest.values()]
+
+    for path in paths:
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -550,16 +573,28 @@ def _collect_file_details(ctx) -> list:
         except (json.JSONDecodeError, OSError):
             pass
 
-    # Phase D findings (latest state per file)
+    # Phase D findings (latest round per file)
     d_findings_map = {}
-    for path in _glob.glob(os.path.join(ctx.findings_dir, '*.json')):
+    import re as _re
+    for path in _glob.glob(os.path.join(ctx.findings_dir, '*_r*.json')):
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 fdata = json.load(f)
-            fid = fdata.get('file_id') or os.path.splitext(os.path.basename(path))[0]
-            d_findings_map[fid] = fdata
+            # Extract file_id and round number from filename
+            base = os.path.splitext(os.path.basename(path))[0]
+            m = _re.search(r'^(.+)_r(\d+)$', base)
+            if m:
+                fid = m.group(1)
+                rn = int(m.group(2))
+            else:
+                fid = fdata.get('file_id', base)
+                rn = 0
+            # Keep only the latest round per file_id
+            if fid not in d_findings_map or rn > d_findings_map[fid][0]:
+                d_findings_map[fid] = (rn, fdata)
         except (json.JSONDecodeError, OSError):
             pass
+    d_findings_map = {fid: fdata for fid, (_, fdata) in d_findings_map.items()}
 
     def load_exec_rounds(executions_dir, file_id):
         """指定ファイルのexecution logsをタイムスタンプ順に返す（ラウンド順）。"""

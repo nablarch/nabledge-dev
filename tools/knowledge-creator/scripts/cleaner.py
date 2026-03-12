@@ -79,11 +79,14 @@ def _list_phase_d_artifacts(ctx, target_ids):
     """
     paths = []
     if target_ids:
+        import glob
         for file_id in target_ids:
-            p = f"{ctx.findings_dir}/{file_id}.json"
-            if os.path.exists(p):
-                paths.append(p)
+            matches = sorted(glob.glob(f"{ctx.findings_dir}/{file_id}_r*.json"))
+            paths.extend(matches)
     else:
         if os.path.isdir(ctx.findings_dir):
             paths.append(ctx.findings_dir)
     return paths
+
+
+list_d_artifacts = _list_phase_d_artifacts

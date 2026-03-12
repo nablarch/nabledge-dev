@@ -43,7 +43,7 @@ def _load_mappings(repo: str, version: str) -> dict:
 
 def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
     """Load test file IDs from specified test file"""
-    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/tests/mode", test_file_name)
+    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/tests/e2e/mode", test_file_name)
 
     if not os.path.exists(test_file_path):
         raise FileNotFoundError(f"Test file set not found: {test_file_path}")
@@ -654,20 +654,15 @@ class Step2Classify:
                 for mid in sorted(missing):
                     self.logger.warning(f"      - {mid}")
 
-        # Generate output — preserve sources from existing catalog
-        existing = {}
+        # Update only the files field in existing catalog
         if os.path.exists(self.ctx.classified_list_path):
             try:
-                existing = load_json(self.ctx.classified_list_path)
+                output = load_json(self.ctx.classified_list_path)
             except (json.JSONDecodeError, OSError):
-                pass
-
-        output = {
-            "version": self.ctx.version,
-            "generated_at": existing.get("generated_at", datetime.utcnow().isoformat() + "Z"),
-            "sources": existing.get("sources", []),
-            "files": classified
-        }
+                output = {"version": self.ctx.version, "sources": []}
+        else:
+            output = {"version": self.ctx.version, "sources": []}
+        output["files"] = classified
 
         # Category emoji mapping
         category_emoji = {
