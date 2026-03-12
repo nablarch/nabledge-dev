@@ -43,7 +43,7 @@ def _load_mappings(repo: str, version: str) -> dict:
 
 def load_test_file_ids(repo_path: str, test_file_name: str) -> set:
     """Load test file IDs from specified test file"""
-    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/tests/mode", test_file_name)
+    test_file_path = os.path.join(repo_path, "tools/knowledge-creator/tests/ut/mode", test_file_name)
 
     if not os.path.exists(test_file_path):
         raise FileNotFoundError(f"Test file set not found: {test_file_path}")

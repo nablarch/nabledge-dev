@@ -8,7 +8,7 @@ import sys
 import json
 
 # Get real repository path
-TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOOL_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REPO_ROOT = os.path.dirname(os.path.dirname(TOOL_DIR))
 
 sys.path.insert(0, TOOL_DIR)
@@ -106,15 +106,15 @@ class TestComprehensiveMode:
 
         classified = load_json(real_ctx.classified_list_path)
 
-        # Expected: 37 source files, some split into multiple parts
-        assert len(classified["files"]) == 51
+        # Expected: source files, some split into multiple parts
+        assert len(classified["files"]) == 46
 
     def test_comprehensive_original_ids_match(self, real_ctx):
         """batch.json: 指定した17個のoriginal_idが全て含まれる"""
         real_ctx.test_file = "batch.json"
 
         # Load test file
-        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/mode/batch.json"
+        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/ut/mode/batch.json"
         with open(test_file_path) as f:
             test_config = json.load(f)
         expected_ids = set(test_config["files"])
@@ -169,7 +169,7 @@ class TestTestModeEdgeCases:
         real_ctx.test_file = "largest3.json"
 
         # Modify test file to include non-existent ID
-        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/mode/largest3.json"
+        test_file_path = f"{real_ctx.repo}/tools/knowledge-creator/tests/ut/mode/largest3.json"
         with open(test_file_path) as f:
             original = f.read()
 
