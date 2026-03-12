@@ -9,7 +9,7 @@
 **ポイント**:
 - データリーダでは処理対象レコードの主キーのみ取得する
 - `handle` メソッド内で悲観的ロックを行う
-- [universal_dao](libraries-universal_dao.json) を使用した悲観的ロックについては :ref:`universal_dao_jpa_pessimistic_lock` を参照
+- [universal_dao](../../component/libraries/libraries-universal_dao.json#s1) を使用した悲観的ロックについては :ref:`universal_dao_jpa_pessimistic_lock` を参照
 
 ```java
 public class SampleAction extends BatchAction<SqlRow> {

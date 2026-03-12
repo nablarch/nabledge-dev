@@ -8,17 +8,17 @@
 
 | 機能 | Jakarta Batchに準拠 | Nablarchバッチ |
 |---|---|---|
-| 起動時に任意のパラメータを設定できる | ◎ [1] | ○ [解説書へ](handlers-main.json) |
-| 同一バッチアプリケーションの同時実行を防止できる | ○ `DuplicateJobRunningCheckListener` | ○ [解説書へ](handlers-duplicate_process_check_handler.json) |
-| 実行中のバッチアプリケーションを外部から安全に停止できる | ◎ [1] | ○ [解説書へ](handlers-process_stop_handler.json) |
-| 1回の実行で処理する最大の件数を指定できる | × [2] | ○ [解説書へ](handlers-data_read_handler.json) |
-| 一定件数単位のコミットができる | ◎ [1] | ○ [解説書へ](handlers-loop_handler.json) |
+| 起動時に任意のパラメータを設定できる | ◎ [1] | ○ [解説書へ](../../component/handlers/handlers-main.json#s3) |
+| 同一バッチアプリケーションの同時実行を防止できる | ○ `DuplicateJobRunningCheckListener` | ○ [解説書へ](../../component/handlers/handlers-duplicate_process_check_handler.json#s1) |
+| 実行中のバッチアプリケーションを外部から安全に停止できる | ◎ [1] | ○ [解説書へ](../../component/handlers/handlers-process_stop_handler.json#s1) |
+| 1回の実行で処理する最大の件数を指定できる | × [2] | ○ [解説書へ](../../component/handlers/handlers-data_read_handler.json#s4) |
+| 一定件数単位のコミットができる | ◎ [1] | ○ [解説書へ](../../component/handlers/handlers-loop_handler.json#s5) |
 | 障害発生ポイントから再実行できる | ◎ [1] | △ [3] |
-| 業務処理を複数スレッドで並列実行できる | ◎ [1] | ○ [解説書へ](handlers-multi_thread_execution_handler.json) |
+| 業務処理を複数スレッドで並列実行できる | ◎ [1] | ○ [解説書へ](../../component/handlers/handlers-multi_thread_execution_handler.json#s2) |
 | 特定の例外を無視して処理を継続できる（ロールバック後に処理を継続できる） | ◎ [1] | × [4] |
 | 特定の例外発生時に処理をリトライできる | ◎ [1] | △ [5] |
 | バッチアプリケーションの結果を元に次に実行する処理を切り替えられる | ◎ [1] | × [6] |
-| 入力データソースを一定間隔で監視しバッチを実行出来る | × [7] | ○ [解説書へ](nablarch-batch-architecture.json) |
+| 入力データソースを一定間隔で監視しバッチを実行出来る | × [7] | ○ [解説書へ](nablarch-batch-architecture.json#s1) |
 
 [1] ◎の箇所は、Jakarta Batchで規定されている仕様に従う。詳細は [Jakarta Batch仕様](https://jakarta.ee/specifications/batch/) を参照。
 
@@ -28,11 +28,11 @@
 
 [4] 特定例外を無視して処理を継続したい場合は、ハンドラを追加して対応すること。
 
-[5] [retry_handler](handlers-retry_handler.json) でリトライ可能例外の場合にリトライできるが、Jakarta Batchのように例外が発生したデータの単純なリトライはできない。[retry_handler](handlers-retry_handler.json) では、リトライ対象の例外を柔軟に指定できない。[retry_handler](handlers-retry_handler.json) で要件を満たすことができない（例外が発生したデータの単純なリトライや柔軟に例外を指定したい）場合は、ハンドラを追加して対応すること。
+[5] [retry_handler](../../component/handlers/handlers-retry_handler.json#s1) でリトライ可能例外の場合にリトライできるが、Jakarta Batchのように例外が発生したデータの単純なリトライはできない。[retry_handler](../../component/handlers/handlers-retry_handler.json#s1) では、リトライ対象の例外を柔軟に指定できない。[retry_handler](../../component/handlers/handlers-retry_handler.json#s1) で要件を満たすことができない（例外が発生したデータの単純なリトライや柔軟に例外を指定したい）場合は、ハンドラを追加して対応すること。
 
 [6] ジョブスケジューラなどで対応すること。例えば、終了コードを元に次に実行するジョブを切り替える等の対応が必要。
 
-[7] Jakarta Batchに準拠したバッチアプリケーションでは、一定間隔で入力データソースを監視するようなバッチ処理は実現できない。このようなバッチアプリケーションが必要となった場合は、[Nablarchバッチアプリケーションの常駐バッチ](nablarch-batch-architecture.json) を使用して実現すること。
+[7] Jakarta Batchに準拠したバッチアプリケーションでは、一定間隔で入力データソースを監視するようなバッチ処理は実現できない。このようなバッチアプリケーションが必要となった場合は、[Nablarchバッチアプリケーションの常駐バッチ](nablarch-batch-architecture.json#s1) を使用して実現すること。
 
 <details>
 <summary>keywords</summary>

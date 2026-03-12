@@ -10,7 +10,7 @@
 
 - フォームクラスには必ずセッタ及びゲッタを作成する
 - `@InjectForm` を使用したバリデーション実行のため、フォームは `Serializable` インタフェースを実装する
-- 入力値プロパティは全てString型で宣言する（[bean_validation-form_property](libraries-bean_validation.json) 参照）
+- 入力値プロパティは全てString型で宣言する（[bean_validation-form_property](../../component/libraries/libraries-bean_validation.json#s5) 参照）
 
 ```java
 public class ClientForm implements Serializable {
@@ -24,10 +24,10 @@ public class ClientForm implements Serializable {
 
 登録画面JSP（`/src/main/webapp/WEB-INF/view/client/create.jsp`）に以下の修正を行う：
 
-- [tag-text_tag](libraries-tag_reference.json) の `name` 属性に顧客名プロパティ名を指定する（:ref:`tag-access_rule` 参照）
-- [tag-select_tag](libraries-tag_reference.json) の `name` 属性に業種コードプロパティ名を指定する
+- [tag-text_tag](../../component/libraries/libraries-tag_reference.json#s4) の `name` 属性に顧客名プロパティ名を指定する（:ref:`tag-access_rule` 参照）
+- [tag-select_tag](../../component/libraries/libraries-tag_reference.json) の `name` 属性に業種コードプロパティ名を指定する
 - 各タグに `errorCss` 属性を追加して入力エラー時のCSSクラスを設定する
-- [tag-button_tag](libraries-tag_reference.json) の `uri` 属性に確認画面へのURIを指定する（:ref:`tag-specify_uri` 参照）
+- [tag-button_tag](../../component/libraries/libraries-tag_reference.json) の `uri` 属性に確認画面へのURIを指定する（:ref:`tag-specify_uri` 参照）
 - `n:error` タグで入力エラー時のエラーメッセージ表示領域を追加する
 
 ```jsp
@@ -66,8 +66,8 @@ public class ClientForm implements Serializable {
 
 **アノテーション**: `@Required`, `@Domain`
 
-- [bean_validation](libraries-bean_validation.json) には `nablarch.core.validation.ee` 配下のアノテーションを使用する（`nablarch.core.validation.validator` 配下の同名アノテーションと混同しないこと）
-- [ドメインバリデーション](libraries-bean_validation.json) でプロパティにバリデーションルールを定義する
+- [bean_validation](../../component/libraries/libraries-bean_validation.json#s1) には `nablarch.core.validation.ee` 配下のアノテーションを使用する（`nablarch.core.validation.validator` 配下の同名アノテーションと混同しないこと）
+- [ドメインバリデーション](../../component/libraries/libraries-bean_validation.json#s5) でプロパティにバリデーションルールを定義する
 - プルダウン等に適したメッセージは `Required` の `message` 属性で独自定義する
 
 ```java
@@ -87,7 +87,7 @@ private String industryCode;
 nablarch.core.validation.ee.Required.select.message=選択してください。
 ```
 
-メッセージ定義の詳細は [message-property_definition](libraries-message.json) を参照。
+メッセージ定義の詳細は [message-property_definition](../../component/libraries/libraries-message.json) を参照。
 
 ## confirmメソッドとバリデーション設定
 
@@ -109,7 +109,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 }
 ```
 
-- 業務アクションメソッドに `InjectForm` を付与して [bean_validation](libraries-bean_validation.json) を実行する
+- 業務アクションメソッドに `InjectForm` を付与して [bean_validation](../../component/libraries/libraries-bean_validation.json#s1) を実行する
 - `OnError` の `path` 属性でバリデーションエラー時のフォワード先を指定する（確認画面遷移前に業種リスト設定が必要なため、inputメソッドへ内部フォワードする）
 - バリデーション通過後はリクエストスコープから `context.getRequestScopedVar("form")` でバリデーション済みオブジェクトを取得できる
 - 登録画面の表示処理時と同様、業種情報をデータベースから取得してリクエストスコープに設定する
@@ -121,7 +121,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 **ファイル**: `/src/main/webapp/WEB-INF/view/client/confirm.jsp`
 
-[tag-confirmation_page_tag](libraries-tag_reference.json) を使用することで登録画面のJSPを流用して確認画面を作成できる（:ref:`tag-make_common` 参照）。
+[tag-confirmation_page_tag](../../component/libraries/libraries-tag_reference.json) を使用することで登録画面のJSPを流用して確認画面を作成できる（:ref:`tag-make_common` 参照）。
 
 ```jsp
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
@@ -132,8 +132,8 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 ## 登録画面・確認画面の表示切り替え
 
-- 登録画面のみで表示する項目は [tag-for_input_page_tag](libraries-tag_reference.json) の内部に記述する
-- 確認画面のみで表示する項目は [tag-for_confirmation_page_tag](libraries-tag_reference.json) の内部に記述する
+- 登録画面のみで表示する項目は [tag-for_input_page_tag](../../component/libraries/libraries-tag_reference.json) の内部に記述する
+- 確認画面のみで表示する項目は [tag-for_confirmation_page_tag](../../component/libraries/libraries-tag_reference.json) の内部に記述する
 
 ```jsp
 <n:forInputPage>

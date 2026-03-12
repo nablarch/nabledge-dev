@@ -20,7 +20,7 @@ Nablarchでは2種類のバリデーション機能を提供している。
 1. Jakarta Bean ValidationはJakarta EEで仕様が定められており情報が豊富
 2. 開発者がNablarch独自のバリデーションの使い方などを覚える必要がない
 
-> **補足**: [bean_validation](libraries-bean_validation.json) と [nablarch_validation](libraries-nablarch_validation.json) で提供している機能の違いは、 :ref:`validation-functional_comparison` を参照。
+> **補足**: [bean_validation](libraries-bean_validation.json#s1) と [nablarch_validation](libraries-nablarch_validation.json#s1) で提供している機能の違いは、 :ref:`validation-functional_comparison` を参照。
 
 バリデーションエラー時に表示するメッセージの定義方法は、 [message](libraries-message.json) を参照。
 

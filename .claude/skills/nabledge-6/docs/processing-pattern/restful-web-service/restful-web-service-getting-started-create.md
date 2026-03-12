@@ -54,7 +54,7 @@
 
 **クラス**: `public class ProjectForm implements Serializable`
 
-- プロパティは全てString型で宣言すること（[bean_validation-form_property](libraries-bean_validation.json) 参照）
+- プロパティは全てString型で宣言すること（[bean_validation-form_property](../../component/libraries/libraries-bean_validation.json#s5) 参照）
 
 ```java
 @Required
@@ -66,13 +66,13 @@ private String projectName;
 
 実装ポイント:
 - `Consumes` アノテーションに `MediaType.APPLICATION_JSON` を指定してJSON形式のリクエストを受け付ける
-- `Valid` アノテーションでリクエストのバリデーションを実行する（[jaxrs_bean_validation_handler](handlers-jaxrs_bean_validation_handler.json) 参照）
-- `BeanUtil` でフォームをエンティティに変換し、[universal_dao](libraries-universal_dao.json) でDB登録する
+- `Valid` アノテーションでリクエストのバリデーションを実行する（[jaxrs_bean_validation_handler](../../component/handlers/handlers-jaxrs_bean_validation_handler.json#s1) 参照）
+- `BeanUtil` でフォームをエンティティに変換し、[universal_dao](../../component/libraries/libraries-universal_dao.json#s1) でDB登録する
 - 戻り値はリソース作成完了（ステータスコード `201`）を表す `HttpResponse` を返却する
 
 ## URLとのマッピングを定義
 
-[router_adaptor](adapters-router_adaptor.json) を使用し、[router_adaptor_path_annotation](adapters-router_adaptor.json) でURLマッピングを定義する。
+[router_adaptor](../../component/adapters/adapters-router_adaptor.json#s1) を使用し、[router_adaptor_path_annotation](../../component/adapters/adapters-router_adaptor.json#s3) でURLマッピングを定義する。
 
 ```java
 @Path("/projects")
