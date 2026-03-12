@@ -39,12 +39,6 @@ def real_ctx(tmp_path):
     return ctx
 
 
-pytestmark = pytest.mark.skipif(
-    not os.path.exists(f"{REPO_ROOT}/.lw/nab-official/v6"),
-    reason="Requires real repository with source files"
-)
-
-
 class TestTop3Mode:
     """Tests for largest3.json filtering."""
 
