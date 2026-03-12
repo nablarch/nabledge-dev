@@ -363,7 +363,10 @@ def check_v17_catalog_labels(catalog_path, repo_root, results):
         source = os.path.join(repo_root, fi.get("source_path", ""))
         if not os.path.exists(source):
             continue
-        src_content = open(source, encoding="utf-8").read()
+        try:
+            src_content = open(source, encoding="utf-8").read()
+        except UnicodeDecodeError:
+            continue
         src_labels = set(re.findall(r'^\.\.\s+_([a-z0-9_-]+):', src_content, re.MULTILINE))
         for sm in fi.get("section_map", []):
             for label in sm.get("rst_labels", []):
