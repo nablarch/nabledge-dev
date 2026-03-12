@@ -67,8 +67,8 @@ flowchart LR
 
 1. セットアップスクリプトをダウンロードして実行：
    ```bash
-   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-cc.sh > /tmp/setup-6-cc.sh
-   NABLEDGE_BRANCH=develop bash /tmp/setup-6-cc.sh
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-cc.sh > /tmp/setup-cc.sh
+   NABLEDGE_BRANCH=develop bash /tmp/setup-cc.sh -v 6
    ```
 
 2. インストールを確認：
@@ -82,8 +82,8 @@ flowchart LR
 
 1. セットアップスクリプトをダウンロードして実行：
    ```bash
-   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-6-ghc.sh > /tmp/setup-6-ghc.sh
-   NABLEDGE_BRANCH=develop bash /tmp/setup-6-ghc.sh
+   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-ghc.sh > /tmp/setup-ghc.sh
+   NABLEDGE_BRANCH=develop bash /tmp/setup-ghc.sh -v 6
    ```
 
 2. インストールを確認：

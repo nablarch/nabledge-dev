@@ -17,7 +17,7 @@ Nabledge-5を GitHub Copilot で使用するためのガイドです。
 プロジェクトルートで以下のコマンドを実行：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-5-ghc.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-ghc.sh | bash -s -- -v 5
 ```
 
 実行後、以下のファイルが自動的に作成されます：
@@ -60,7 +60,7 @@ Nablarchに関する質問やコード分析を実行するには、`/n5` プロ
 セットアップスクリプトを再実行すると、常に最新版がインストールされます：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-5-ghc.sh | bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-ghc.sh | bash -s -- -v 5
 ```
 
 更新後、`.claude/` と `.github/` ディレクトリの変更をGitにコミット・プッシュしてください。
@@ -71,8 +71,8 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-5-ghc.s
 
 ```bash
 # バージョン 0.2 にする場合
-curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-5-ghc.sh -o setup.sh
-NABLEDGE_BRANCH=0.2 bash setup.sh
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-ghc.sh -o setup.sh
+NABLEDGE_BRANCH=0.2 bash setup.sh -v 5
 ```
 
 更新後、`.claude/` と `.github/` ディレクトリの変更をGitにコミット・プッシュしてください。
