@@ -472,6 +472,42 @@ class PhaseFFinalize:
 
         self.logger.info(f"  Generated {generated} docs")
 
+    def _generate_docs_readme(self):
+        """Generate README.md for docs directory as a table of contents.
+
+        Headings use directory names as-is.
+        Link text is taken from the H1 of each MD file.
+        """
+        docs_dir = self.ctx.docs_dir
+        md_files = sorted(glob(f"{docs_dir}/**/*.md", recursive=True))
+
+        # Build tree: {type: {category: [(rel_path, title)]}}
+        tree = {}
+        for md_path in md_files:
+            rel = os.path.relpath(md_path, docs_dir)
+            parts = rel.split(os.sep)
+            type_, category = parts[0], parts[1]
+            with open(md_path, encoding="utf-8") as f:
+                first_line = f.readline().strip()
+            title = re.sub(r"^#+\s*", "", first_line)
+            tree.setdefault(type_, {}).setdefault(category, []).append((rel, title))
+
+        lines = ["# Nablarch 6 ドキュメント", "", f"{len(md_files)} ページ", ""]
+        for type_, cats in sorted(tree.items()):
+            lines.append(f"## {type_}")
+            lines.append("")
+            for category, entries in sorted(cats.items()):
+                lines.append(f"### {category}")
+                lines.append("")
+                for rel_path, title in entries:
+                    lines.append(f"- [{title}]({rel_path})")
+                lines.append("")
+
+        readme_path = f"{docs_dir}/README.md"
+        if not self.dry_run:
+            write_file(readme_path, "\n".join(lines))
+        self.logger.info(f"  Generated docs README ({len(md_files)} pages)")
+
     def _generate_summary(self):
         log_dir = self.ctx.log_dir
 
@@ -524,6 +560,9 @@ class PhaseFFinalize:
 
         self.logger.info("  Generating docs...")
         self._generate_docs()
+
+        self.logger.info("  Generating docs README...")
+        self._generate_docs_readme()
 
         self.logger.info("  Generating summary...")
         self._generate_summary()
