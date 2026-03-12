@@ -1,0 +1,201 @@
+{
+  "scenario_id": "ca-002",
+  "detection_items": [
+    {
+      "text": "Overview includes 'LoginAction'",
+      "detected": true,
+      "evidence": "Found in Overview section: '`LoginAction` は、プロマネシステムのWebアプリケーションにおけるログイン・ログアウト認証処理を担うアクションクラスである'"
+    },
+    {
+      "text": "Overview includes 'AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found in Overview section: '`AuthenticationUtil` を介した `SystemAccountAuthenticator` による二段階認証'"
+    },
+    {
+      "text": "Overview includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in Overview section: '`SessionUtil.changeId()` でセッションID変更'"
+    },
+    {
+      "text": "Overview includes 'InjectForm'",
+      "detected": true,
+      "evidence": "Found in Overview section: '`@InjectForm` アノテーションによるBean Validationと'"
+    },
+    {
+      "text": "Overview includes 'UniversalDao'",
+      "detected": false,
+      "evidence": "Not found in ## Overview section text"
+    },
+    {
+      "text": "Class diagram includes class 'LoginAction'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class LoginAction'"
+    },
+    {
+      "text": "Class diagram includes class 'LoginForm'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class LoginForm'"
+    },
+    {
+      "text": "Class diagram includes class 'AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class AuthenticationUtil'"
+    },
+    {
+      "text": "Class diagram includes class 'UniversalDao'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class UniversalDao'"
+    },
+    {
+      "text": "Class diagram includes class 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class SessionUtil'"
+    },
+    {
+      "text": "Class diagram includes class 'CsrfTokenUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class CsrfTokenUtil'"
+    },
+    {
+      "text": "Class diagram includes class 'LoginUserPrincipal'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'class LoginUserPrincipal'"
+    },
+    {
+      "text": "Class diagram includes relationship 'LoginAction ..> AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'LoginAction ..> AuthenticationUtil : authenticates'"
+    },
+    {
+      "text": "Class diagram includes relationship 'LoginAction ..> UniversalDao'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'LoginAction ..> UniversalDao : queries'"
+    },
+    {
+      "text": "Class diagram includes relationship 'LoginAction ..> SessionUtil'",
+      "detected": true,
+      "evidence": "Found in classDiagram block: 'LoginAction ..> SessionUtil : manages session'"
+    },
+    {
+      "text": "Component Summary includes 'LoginAction'",
+      "detected": true,
+      "evidence": "Found in Component Summary table: 'LoginAction | ログイン・ログアウト処理コントローラ'"
+    },
+    {
+      "text": "Component Summary includes 'LoginForm'",
+      "detected": true,
+      "evidence": "Found in Component Summary table: 'LoginForm | ログイン入力値のバリデーション用フォーム'"
+    },
+    {
+      "text": "Component Summary includes 'AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found in Component Summary table: 'AuthenticationUtil | 認証処理のファサードユーティリティ'"
+    },
+    {
+      "text": "Component Summary includes 'LoginUserPrincipal'",
+      "detected": true,
+      "evidence": "Found in Component Summary table: 'LoginUserPrincipal | 認証後セッションに格納するログインユーザ情報'"
+    },
+    {
+      "text": "Processing Flow includes 'authenticate'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`AuthenticationUtil.authenticate(loginId, password)` を呼び出し'"
+    },
+    {
+      "text": "Processing Flow includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`SessionUtil.changeId()` でセッションID変更'"
+    },
+    {
+      "text": "Processing Flow includes 'CsrfTokenUtil'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`CsrfTokenUtil.regenerateCsrfToken()` でCSRFトークン再生成'"
+    },
+    {
+      "text": "Processing Flow includes 'LoginUserPrincipal'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`createLoginUserContext()` でユーザ情報をDBから取得して `LoginUserPrincipal` に格納'"
+    },
+    {
+      "text": "Processing Flow includes 'invalidate'",
+      "detected": true,
+      "evidence": "Found in Processing Flow section: '`SessionUtil.invalidate(context)` でセッション無効化'"
+    },
+    {
+      "text": "Sequence diagram includes object 'LoginAction'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'participant LoginAction'"
+    },
+    {
+      "text": "Sequence diagram includes object 'AuthenticationUtil'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'participant AuthUtil as AuthenticationUtil'"
+    },
+    {
+      "text": "Sequence diagram includes object 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'participant SessionUtil as SessionUtil'"
+    },
+    {
+      "text": "Sequence diagram includes object 'CsrfTokenUtil'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'participant CsrfTokenUtil as CsrfTokenUtil'"
+    },
+    {
+      "text": "Sequence diagram includes message 'authenticate'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'LoginAction->>AuthUtil: authenticate(loginId, password)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'changeId'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'LoginAction->>SessionUtil: changeId(context)'"
+    },
+    {
+      "text": "Sequence diagram includes message 'regenerateCsrfToken'",
+      "detected": true,
+      "evidence": "Found in sequenceDiagram block: 'LoginAction->>CsrfTokenUtil: regenerateCsrfToken(context)'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'UniversalDao'",
+      "detected": true,
+      "evidence": "Found as heading in Nablarch Framework Usage section: '### UniversalDao'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'InjectForm'",
+      "detected": true,
+      "evidence": "Found as heading in Nablarch Framework Usage section: '### @InjectForm / @OnError'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'OnError'",
+      "detected": true,
+      "evidence": "Found as heading in Nablarch Framework Usage section: '### @InjectForm / @OnError'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'SessionUtil'",
+      "detected": true,
+      "evidence": "Found as heading in Nablarch Framework Usage section: '### SessionUtil / CsrfTokenUtil'"
+    },
+    {
+      "text": "Output includes 'Component Summary'",
+      "detected": true,
+      "evidence": "Found in output: '### Component Summary' table present"
+    },
+    {
+      "text": "Output includes 'Nablarch Framework Usage'",
+      "detected": true,
+      "evidence": "Found in output: '## Nablarch Framework Usage' section header"
+    },
+    {
+      "text": "Output includes '.nabledge/'",
+      "detected": true,
+      "evidence": "Output file path: '.nabledge/20260312/code-analysis-LoginAction.md'"
+    }
+  ],
+  "summary": {
+    "detected": 37,
+    "not_detected": 1,
+    "total": 38,
+    "detection_rate": 0.974
+  }
+}
