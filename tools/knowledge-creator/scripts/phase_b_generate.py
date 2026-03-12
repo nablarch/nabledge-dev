@@ -24,6 +24,8 @@ class PhaseBGenerate:
             f"{ctx.repo}/tools/knowledge-creator/prompts/generate.md"
         )
         self.json_schema = self._extract_json_schema()
+        catalog = load_json(ctx.classified_list_path) if os.path.exists(ctx.classified_list_path) else {}
+        self.base_doc_url = catalog.get("base_doc_url", f"https://nablarch.github.io/docs/LATEST/doc")
 
     def _extract_json_schema(self) -> dict:
         """Extract JSON Schema from the first ```json block in the prompt."""
@@ -78,7 +80,7 @@ class PhaseBGenerate:
             idx = path.find(marker)
             if idx >= 0:
                 relative = path[idx + len(marker):].replace(".rst", ".html")
-                return f"https://nablarch.github.io/docs/LATEST/doc/{relative}"
+                return f"{self.base_doc_url}/{relative}"
         elif file_info["format"] in ("md", "xlsx"):
             return "https://fintan.jp/page/252/"
         return ""
