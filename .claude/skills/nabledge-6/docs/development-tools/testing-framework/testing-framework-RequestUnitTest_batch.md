@@ -95,7 +95,7 @@ TestShot, テストショット, データベースセットアップ, ステー
 
 本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、テストソース記述量を大きく削減できる。
 
-具体的な使用方法は [../05_UnitTestGuide/02_RequestUnitTest/batch](testing-framework-batch-02_RequestUnitTest.json) を参照。
+具体的な使用方法は [../05_UnitTestGuide/02_RequestUnitTest/batch](testing-framework-batch.json) を参照。
 
 <details>
 <summary>keywords</summary>

@@ -27,6 +27,7 @@ class PhaseFFinalize:
         self.label_map = {}       # label -> (file_id, section_id_or_None)
         self.doc_map = {}         # source_path_partial -> file_id
         self.file_type_category = {}  # file_id -> (type, category)
+        self.file_source_dirs = {}  # effective_id -> [source_dir, ...] (for :doc: resolution)
 
     def _build_link_maps(self):
         """Build link resolution maps from catalog and knowledge files.
@@ -60,18 +61,21 @@ class PhaseFFinalize:
 
             self.file_type_category[effective_id] = (fi["type"], fi["category"])
 
-            # Build doc_map from source_path (only once per effective_id)
+            # Build doc_map: full source_path (without extension) -> effective_id
             source_path = fi.get("source_path", "")
             if source_path and not effective_id_data[effective_id]["source_path"].strip():
                 effective_id_data[effective_id]["source_path"] = source_path
 
             rst_path = re.sub(r'\.(rst|md|xlsx?)$', '', source_path) if source_path else ""
             if rst_path:
-                self.doc_map.setdefault(rst_path, effective_id)
-                parts = rst_path.split("/")
-                for i in range(1, len(parts)):
-                    partial = "/".join(parts[i:])
-                    self.doc_map.setdefault(partial, effective_id)
+                self.doc_map[rst_path] = effective_id
+                # Store all source directories for this effective_id
+                # (some files have multiple source dirs due to split across directories)
+                source_dir = os.path.dirname(source_path)
+                if effective_id not in self.file_source_dirs:
+                    self.file_source_dirs[effective_id] = [source_dir]
+                elif source_dir not in self.file_source_dirs[effective_id]:
+                    self.file_source_dirs[effective_id].append(source_dir)
 
             section_map = fi.get("section_map", [])
             if section_map:
@@ -168,9 +172,16 @@ class PhaseFFinalize:
             else:
                 return full
 
-            # Normalize: strip leading ./ and ../
-            norm = re.sub(r'^(\.\.?/)+', '', doc_path)
-            target_file_id = self.doc_map.get(doc_path) or self.doc_map.get(norm)
+            # Resolve relative to the source file's directory
+            target_file_id = None
+            for source_dir in self.file_source_dirs.get(current_file_id, []):
+                target_full = os.path.normpath(
+                    os.path.join(source_dir, doc_path)
+                )
+                target_file_id = self.doc_map.get(target_full)
+                if target_file_id:
+                    break
+
             if not target_file_id:
                 return full  # unresolved
 
@@ -224,7 +235,7 @@ class PhaseFFinalize:
             to_type, to_cat = self.file_type_category.get(to_file_id, ('', ''))
             from_dir = f"{self.ctx.knowledge_dir}/{from_type}/{from_cat}"
             to_path = f"{self.ctx.knowledge_dir}/{to_type}/{to_cat}/{to_file_id}.json"
-            rel = os.path.relpath(to_path, from_dir)
+            rel = os.path.relpath(to_path, from_dir).replace('\\', '/')
             return f"{rel}{anchor}"
         else:
             # docs_md: relative path between two MD files
@@ -232,7 +243,7 @@ class PhaseFFinalize:
             to_type, to_cat = self.file_type_category.get(to_file_id, ('', ''))
             from_dir = f"{self.ctx.docs_dir}/{from_type}/{from_cat}"
             to_path = f"{self.ctx.docs_dir}/{to_type}/{to_cat}/{to_file_id}.md"
-            rel = os.path.relpath(to_path, from_dir)
+            rel = os.path.relpath(to_path, from_dir).replace('\\', '/')
             return f"{rel}{anchor}"
 
     def _generate_skill_json(self):

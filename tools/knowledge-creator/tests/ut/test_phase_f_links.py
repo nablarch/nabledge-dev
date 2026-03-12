@@ -124,9 +124,9 @@ class TestBuildLinkMaps:
 
         assert "application_framework/config/database" in pf.doc_map
         assert pf.doc_map["application_framework/config/database"] == "file-d"
-        # Partial path
-        assert "config/database" in pf.doc_map
-        assert "database" in pf.doc_map
+        # Partial paths are no longer indexed (source-relative resolution used instead)
+        assert "config/database" not in pf.doc_map
+        assert "database" not in pf.doc_map
 
     def test_file_type_category_populated(self, ctx):
         """file_type_category maps file_id to (type, category)."""
@@ -174,11 +174,15 @@ class TestResolveRstLinks:
             "external_label-hyphen": ("other-file", "s2"),
         }
         pf.doc_map = {
-            "path/to/other": "other-file",
+            "src/component/handlers/path/to/other": "other-file",
         }
         pf.file_type_category = {
             "current-file": ("component", "handlers"),
             "other-file": ("component", "adapters"),
+        }
+        pf.file_source_dirs = {
+            "current-file": ["src/component/handlers"],
+            "other-file": ["src/component/adapters"],
         }
         return pf
 

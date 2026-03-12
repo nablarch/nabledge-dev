@@ -95,7 +95,7 @@ def test_repo(tmp_path):
     src_dir.mkdir(parents=True)
     shutil.copy(os.path.join(FIXTURES_DIR, "sample_source.rst"), src_dir / "sample_source.rst")
 
-    # classified.json (required by Phase G for doc index building)
+    # classified.json (required by Phase F for doc/index generation)
     # Use Context with run_id="test" to get the correct path
     from pathlib import Path as _Path
     sys.path.insert(0, TOOL_DIR)
