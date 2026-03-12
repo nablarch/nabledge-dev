@@ -1,6 +1,8 @@
 # CHANGELOG Management
 
-**File**: `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
+**Files**:
+- `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-5/plugin/CHANGELOG.md`
 **Format**: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Repository Responsibilities

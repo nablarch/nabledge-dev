@@ -44,10 +44,12 @@ For each commit, determine user impact by checking whether changed files fall un
 
 **Deployed content scope:**
 - `.claude/skills/nabledge-6/` — skill content, knowledge files, workflows
+- `.claude/skills/nabledge-5/` — skill content, knowledge files, workflows
 - `.claude/marketplace/` — marketplace metadata
-- `.claude/commands/n6.md`
-- `.github/prompts/n6.prompt.md`
+- `.claude/commands/n6.md`, `.claude/commands/n5.md`
+- `.github/prompts/n6.prompt.md`, `.github/prompts/n5.prompt.md`
 - `tools/setup/setup-6-cc.sh`, `tools/setup/setup-6-ghc.sh`
+- `tools/setup/setup-5-cc.sh`, `tools/setup/setup-5-ghc.sh`
 
 **Not deployed (no user impact):**
 - `.github/workflows/`, `.github/scripts/` — CI/CD infra
