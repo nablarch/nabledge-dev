@@ -40,6 +40,7 @@ class PhaseEFix:
         self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
+        self.round_num = 1  # default; overridden by run()
         self.prompt_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/fix.md"
         )
@@ -56,7 +57,7 @@ class PhaseEFix:
 
     def fix_one(self, file_info) -> dict:
         file_id = file_info["id"]
-        findings_path = f"{self.ctx.findings_dir}/{file_id}.json"
+        findings_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num}.json"
 
         self.logger = get_logger()
         if not os.path.exists(findings_path):
@@ -97,18 +98,18 @@ class PhaseEFix:
                     write_json(
                         f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed
                     )
-                    os.remove(findings_path)
                 return {"status": "fixed", "id": file_id}
         except Exception as e:
             return {"status": "error", "id": file_id, "error": str(e)}
 
         return {"status": "error", "id": file_id}
 
-    def run(self, target_ids) -> dict:
+    def run(self, target_ids, round_num=1) -> dict:
         classified = load_json(self.ctx.classified_list_path)
         target_set = set(target_ids)
         targets = [f for f in classified["files"] if f["id"] in target_set]
 
+        self.round_num = round_num
         self.logger.info(f"Fixing {len(targets)} files...")
 
         with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
