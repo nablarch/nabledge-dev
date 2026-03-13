@@ -103,6 +103,16 @@ xychart-beta
 > Scripts: statement lines (blank and comment lines excluded)  
 > Prompts: non-blank lines
 
+### Total SLOC Trend
+
+```mermaid
+xychart-beta
+  title "Total SLOC"
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
+  y-axis "Lines" 0 --> 16436
+  line [0, 789, 1503, 1293, 10339, 13696]
+```
+
 ### Current Breakdown by Category
 
 ```mermaid
@@ -112,6 +122,19 @@ xychart-beta
   y-axis "Lines" 0 --> 6077
   bar [1452, 1966, 4705, 5064, 509]
 ```
+
+### KC Scripts: Production vs Test Trend
+
+```mermaid
+xychart-beta
+  title "KC Scripts SLOC"
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
+  y-axis "Lines" 0 --> 6077
+  line [0, 0, 0, 0, 3183, 4705]
+  line [0, 0, 0, 0, 4802, 5064]
+```
+
+_Top line: production · Bottom line: test_
 
 ### Summary
 
