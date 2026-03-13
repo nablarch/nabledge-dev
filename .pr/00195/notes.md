@@ -37,6 +37,10 @@ Required files: 4 core files
 - `.claude/marketplace/.claude-plugin/marketplace.json` ✓
 - `.claude/marketplace/CHANGELOG.md` ✓
 
-This release adds nabledge-5 first release, so also:
-- `.claude/skills/nabledge-5/plugin/CHANGELOG.md` (add v0.1 entries)
-- `.claude/skills/nabledge-5/plugin/plugin.json` (already at 0.1, no change needed)
+**Result**: All 4 core files present in PR #196 ✓
+
+This release adds nabledge-5 first release, so also included:
+- `.claude/skills/nabledge-5/plugin/CHANGELOG.md` ✓ (add v0.1 entries)
+- `.claude/skills/nabledge-5/plugin/plugin.json` — already at 0.1, no change needed ✓
+
+`.claude/rules/release.md` and `.pr/00154/notes.md` in #156 are not release-specific, ignored.
