@@ -295,9 +295,12 @@ print_header "9. Cloning Nablarch Official Repositories"
 
 NAB_OFFICIAL_V6_DIR=".lw/nab-official/v6"
 NAB_OFFICIAL_V5_DIR=".lw/nab-official/v5"
+NAB_OFFICIAL_V14_DIR=".lw/nab-official/v1.4"
+NAB_OFFICIAL_V13_DIR=".lw/nab-official/v1.3"
+NAB_OFFICIAL_V12_DIR=".lw/nab-official/v1.2"
 
 # Create directories
-for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" ".lw/research"; do
+for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" "$NAB_OFFICIAL_V14_DIR" "$NAB_OFFICIAL_V13_DIR" "$NAB_OFFICIAL_V12_DIR" ".lw/research"; do
     if [ ! -d "$dir" ]; then
         print_status info "Creating $dir directory..."
         mkdir -p "$dir"
@@ -362,6 +365,21 @@ clone_repos_from_meta() {
 
 clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
 clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
+clone_repos_from_meta "1.4" "$NAB_OFFICIAL_V14_DIR"
+clone_repos_from_meta "1.3" "$NAB_OFFICIAL_V13_DIR"
+clone_repos_from_meta "1.2" "$NAB_OFFICIAL_V12_DIR"
+
+# Create version-named symlinks for v1.x (e.g. 1.4_maintain -> nablarch-document)
+# This allows both nablarch-document/ and 1.4_maintain/ path conventions to work.
+for ver in "1.4" "1.3" "1.2"; do
+    ver_dir=".lw/nab-official/v${ver}"
+    symlink_name="${ver}_maintain"
+    if [ -d "${ver_dir}/nablarch-document" ] && [ ! -e "${ver_dir}/${symlink_name}" ]; then
+        print_status info "Creating symlink ${ver_dir}/${symlink_name} -> nablarch-document"
+        ln -sf nablarch-document "${ver_dir}/${symlink_name}"
+        print_status ok "Symlink created"
+    fi
+done
 
 # Final summary
 print_header "Setup Completed Successfully!"

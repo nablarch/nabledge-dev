@@ -115,7 +115,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Knowledge Creator - Convert Nablarch documentation to AI-ready JSON"
     )
-    parser.add_argument("--version", required=True, choices=["6", "5", "all"])
+    parser.add_argument("--version", required=True, choices=["6", "5", "1.4", "1.3", "1.2", "all"],
+                        help="Version to process. 'all' processes v6 and v5 only (not v1.x).")
     parser.add_argument("--phase", type=str, default=None,
                         help="Phases to run (e.g. 'B', 'CD', 'BCDEF'). Default: all")
     parser.add_argument("--concurrency", type=int, default=4)

@@ -89,6 +89,43 @@ class TestFixCommand:
         assert "--target test-id" in lines[0]
 
 
+class TestV1xVersions:
+
+    @pytest.mark.parametrize("version", ["1.4", "1.3", "1.2"])
+    def test_gen_v1x_calls_clean_then_run(self, stub_env, version):
+        result = _run_nc(["gen", version], stub_env)
+        lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
+        assert len(lines) == 2, f"Expected 2 commands for version {version}, got: {lines}"
+        assert "scripts/clean.py" in lines[0] and f"--version {version}" in lines[0]
+        assert "scripts/run.py" in lines[1] and f"--version {version}" in lines[1]
+
+    @pytest.mark.parametrize("version", ["1.4", "1.3", "1.2"])
+    def test_gen_v1x_resume_skips_clean(self, stub_env, version):
+        result = _run_nc(["gen", version, "--resume"], stub_env)
+        lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
+        assert len(lines) == 1, f"Expected 1 command for version {version} --resume, got: {lines}"
+        assert "scripts/run.py" in lines[0]
+        assert f"--version {version}" in lines[0]
+
+    @pytest.mark.parametrize("version", ["1.4", "1.3", "1.2"])
+    def test_regen_v1x_uses_command_regen(self, stub_env, version):
+        result = _run_nc(["regen", version], stub_env)
+        lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
+        assert len(lines) == 1
+        assert "scripts/run.py" in lines[0]
+        assert "--command regen" in lines[0]
+        assert f"--version {version}" in lines[0]
+
+    @pytest.mark.parametrize("version", ["1.4", "1.3", "1.2"])
+    def test_fix_v1x_uses_command_fix(self, stub_env, version):
+        result = _run_nc(["fix", version], stub_env)
+        lines = [l for l in result.stdout.splitlines() if l.startswith("CMD:")]
+        assert len(lines) == 1
+        assert "scripts/run.py" in lines[0]
+        assert "--command fix" in lines[0]
+        assert f"--version {version}" in lines[0]
+
+
 class TestErrorHandling:
 
     def test_unknown_command_exits_nonzero(self, stub_env):

@@ -19,7 +19,10 @@ class Step1ListSources:
         sources = []
 
         # 1. Official documentation (RST)
+        # Try nablarch-document first (v5/v6 pattern), then {version}_maintain (v1.x symlink pattern)
         rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/nablarch-document/ja/"
+        if not os.path.exists(rst_base):
+            rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/{self.ctx.version}_maintain/ja/"
         if os.path.exists(rst_base):
             for root, dirs, files in os.walk(rst_base):
                 dirs[:] = [d for d in dirs if not d.startswith("_")]
@@ -27,6 +30,13 @@ class Step1ListSources:
                     if f.endswith(".rst"):
                         rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
                         sources.append({"path": rel_path, "format": "rst", "filename": f})
+        else:
+            self.logger.warning(
+                f"RST source directory not found for version {self.ctx.version}. "
+                f"Run setup.sh or manually create a symlink at "
+                f".lw/nab-official/v{self.ctx.version}/nablarch-document or "
+                f".lw/nab-official/v{self.ctx.version}/{self.ctx.version}_maintain"
+            )
 
         # 2. Pattern documents (MD)
         pattern_dir = (
@@ -57,9 +67,9 @@ class Step1ListSources:
                 "filename": "Nablarch機能のセキュリティ対応表.xlsx"
             })
 
-        # 4. Release notes (Excel) - scan releases directory
-        releases_dir = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/nablarch-document/ja/releases/"
-        if os.path.exists(releases_dir):
+        # 4. Release notes (Excel) - scan releases directory (derive from rst_base)
+        releases_dir = os.path.join(rst_base, "releases/") if os.path.exists(rst_base) else ""
+        if releases_dir and os.path.exists(releases_dir):
             for f in os.listdir(releases_dir):
                 if f.endswith(".xlsx"):
                     rel_path = os.path.relpath(os.path.join(releases_dir, f), self.ctx.repo)

@@ -62,7 +62,10 @@ def list_sources(repo: str, version: str) -> list:
     sources = []
 
     # RST
+    # Try nablarch-document first (v5/v6 pattern), then {version}_maintain (v1.x symlink pattern)
     rst_base = os.path.join(repo, f".lw/nab-official/v{version}/nablarch-document/ja/")
+    if not os.path.exists(rst_base):
+        rst_base = os.path.join(repo, f".lw/nab-official/v{version}/{version}_maintain/ja/")
     if os.path.exists(rst_base):
         for root, dirs, files in os.walk(rst_base):
             dirs[:] = [d for d in dirs if not d.startswith("_")]
@@ -88,9 +91,9 @@ def list_sources(repo: str, version: str) -> list:
         sources.append({"path": os.path.relpath(xlsx_path, repo),
                         "format": "xlsx", "filename": "Nablarch機能のセキュリティ対応表.xlsx"})
 
-    # Release notes Excel
-    releases_dir = os.path.join(repo, f".lw/nab-official/v{version}/nablarch-document/ja/releases/")
-    if os.path.exists(releases_dir):
+    # Release notes Excel (derive from rst_base)
+    releases_dir = os.path.join(rst_base, "releases/") if os.path.exists(rst_base) else ""
+    if releases_dir and os.path.exists(releases_dir):
         for f in sorted(os.listdir(releases_dir)):
             if f.endswith(".xlsx"):
                 sources.append({"path": os.path.relpath(os.path.join(releases_dir, f), repo),
@@ -104,11 +107,11 @@ def list_sources(repo: str, version: str) -> list:
 # ============================================================
 
 def classify_rst(path: str, rst_mapping: list):
-    marker = "nablarch-document/ja/"
-    idx = path.find(marker)
-    if idx < 0:
+    # Match either nablarch-document/ja/ or {anything}_maintain/ja/
+    m = re.search(r'/(?:nablarch-document|[^/]+_maintain)/ja/', path)
+    if not m:
         return None, None, None
-    rel_path = path[idx + len(marker):]
+    rel_path = path[m.end():]
 
     if rel_path == "index.rst":
         return "about", "about-nablarch", ""
@@ -145,10 +148,10 @@ def generate_id(filename: str, format: str, category: str = None,
         base_name = filename
 
     if base_name == "index" and source_path and matched_pattern is not None:
-        marker = "nablarch-document/ja/"
-        marker_idx = source_path.find(marker)
-        if marker_idx >= 0:
-            rst_rel = source_path[marker_idx + len(marker):]
+        # Match either nablarch-document/ja/ or {anything}_maintain/ja/
+        m = re.search(r'/(?:nablarch-document|[^/]+_maintain)/ja/', source_path)
+        if m:
+            rst_rel = source_path[m.end():]
             pattern_clean = matched_pattern.rstrip("/")
             if not pattern_clean:
                 base_name = "top"

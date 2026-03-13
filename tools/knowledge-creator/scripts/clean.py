@@ -104,8 +104,8 @@ def main():
     parser.add_argument(
         "--version",
         required=True,
-        choices=["6", "5", "all"],
-        help="Version to clean (6, 5, or all)"
+        choices=["6", "5", "1.4", "1.3", "1.2", "all"],
+        help="Version to clean (6, 5, 1.4, 1.3, 1.2, or all). 'all' cleans v6 and v5 only."
     )
     parser.add_argument("--yes", action="store_true",
                         help="Skip confirmation prompt")

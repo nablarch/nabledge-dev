@@ -31,6 +31,24 @@ cp .env.example .env
 # .env を編集して認証情報を設定する
 ```
 
+### Nablarch 1.x ドキュメントのセットアップ
+
+`setup.sh` は Nablarch 1.4、1.3、1.2 用のドキュメントを自動クローンします。クローン後、各バージョンのディレクトリに `{version}_maintain` シンボリックリンクが作成されます：
+
+```
+.lw/nab-official/v1.4/
+  nablarch-document/   # クローンされたドキュメント
+  1.4_maintain -> nablarch-document   # シンボリックリンク（自動作成）
+```
+
+手動でシンボリックリンクを作成する場合：
+
+```bash
+ln -sf nablarch-document .lw/nab-official/v1.4/1.4_maintain
+ln -sf nablarch-document .lw/nab-official/v1.3/1.3_maintain
+ln -sf nablarch-document .lw/nab-official/v1.2/1.2_maintain
+```
+
 ## 使い方
 
 ```bash
