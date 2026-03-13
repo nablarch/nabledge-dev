@@ -12,11 +12,13 @@ from common import load_json, write_json, read_file
 from logger import get_logger
 
 
-def _rst_doc_root(version: str) -> str:
-    """RST path segment that separates the repo prefix from the doc-relative path."""
-    if '.' in version:  # e.g. 1.4, 1.3, 1.2
-        return f"{version}_maintain/"
-    return "nablarch-document/ja/"
+def _rst_doc_roots(version: str) -> list:
+    """RST path segments that separate the repo prefix from the doc-relative path."""
+    if version == "1.4":
+        return ["document/", "workflow/", "biz_sample/", "ui_dev/"]
+    if '.' in version:  # e.g. 1.3, 1.2
+        return [f"{version}_maintain/"]
+    return ["nablarch-document/ja/"]
 
 
 def _load_mappings(repo: str, version: str) -> dict:
@@ -133,10 +135,13 @@ class Step2Classify:
         #   handlers/index.rst matched by "handlers/" -> remainder "index.rst" -> pattern basename "handlers"
         #   top-level index.rst matched by "" -> "top"
         if base_name == "index" and source_path is not None and matched_pattern is not None:
-            marker = _rst_doc_root(self.ctx.version)
-            marker_idx = source_path.find(marker)
-            if marker_idx >= 0:
-                rst_rel = source_path[marker_idx + len(marker):]
+            rst_rel = None
+            for marker in _rst_doc_roots(self.ctx.version):
+                marker_idx = source_path.find(marker)
+                if marker_idx >= 0:
+                    rst_rel = source_path[marker_idx + len(marker):]
+                    break
+            if rst_rel is not None:
                 pattern_clean = matched_pattern.rstrip("/")
                 if not pattern_clean:
                     # Top-level index.rst (matched by "")
@@ -164,12 +169,14 @@ class Step2Classify:
     def classify_rst(self, path: str) -> tuple:
         """Classify RST file based on path pattern"""
         # Extract path after nablarch-document/ja/ (or version_maintain/ for v1.x)
-        marker = _rst_doc_root(self.ctx.version)
-        idx = path.find(marker)
-        if idx < 0:
+        rel_path = None
+        for marker in _rst_doc_roots(self.ctx.version):
+            idx = path.find(marker)
+            if idx >= 0:
+                rel_path = path[idx + len(marker):]
+                break
+        if rel_path is None:
             return None, None, None
-
-        rel_path = path[idx + len(marker):]
 
         # Top-level index.rst: no RST_MAPPING pattern can match "index.rst" alone
         # because "" would match everything. Handle explicitly.
