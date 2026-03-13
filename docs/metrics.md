@@ -4,6 +4,14 @@
 
 ## DORA Scorecard
 
+```mermaid
+xychart-beta
+  title "DORA Score (4=Elite  3=High  2=Medium  1=Low)"
+  x-axis ["Deploy Freq", "Lead Time", "CFR", "MTTR"]
+  y-axis "Score" 0 --> 4
+  bar [4, 3, 4, 3]
+```
+
 | Metric | Latest | Level | Elite | High | Medium | Low |
 |--------|-------:|:-----:|:-----:|:----:|:------:|:---:|
 | Deployment Frequency | 20 PRs/week | **Elite** | ≥7/week | ≥1/week | ≥1/month | <1/month |
@@ -13,151 +21,124 @@
 
 ## Development Productivity
 
-### Deployment Frequency (PRs merged to main / week)
-
 ```mermaid
 xychart-beta
-  title "Deployment Frequency"
+  title "Deployment Frequency (PRs merged to main per week)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "PRs / week" 0 --> 30
   bar [0, 0, 0, 0, 2, 25, 9, 20]
 ```
 
-### Lead Time for Changes (avg hours: first commit → merge)
-
 ```mermaid
 xychart-beta
-  title "Lead Time for Changes"
+  title "Lead Time for Changes (avg hours: first commit to merge)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Hours" 0 --> 24
   line [0, 0, 0, 0, 2.7, 8.9, 14.8, 19.6]
 ```
 
-### Change Failure Rate (%)
-
 ```mermaid
 xychart-beta
-  title "Change Failure Rate"
+  title "Change Failure Rate (bug or fix labeled PRs / all merged PRs %)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "% of PRs" 0 --> 5
   bar [0, 0, 0, 0, 0, 0, 0, 0]
 ```
 
-### Mean Time to Recovery (avg hours)
+> **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100
 
 ```mermaid
 xychart-beta
-  title "Mean Time to Recovery"
+  title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Hours" 0 --> 11
   line [0, 0, 0, 0, 0, 2.5, 4.3, 8.9]
 ```
 
+> **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）
+
 ## Activity
 
-### Issues
+> Issues/PRs の開閉ペース・コントリビューター数を週次で追跡します。
+> 開いた数と閉じた数のバランスが崩れていると、未解決の積み残しが増えているサインです。
 
 ```mermaid
 xychart-beta
-  title "Issues (bar: opened / line: closed)"
+  title "Issues Opened (count per week)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Count" 0 --> 32
   bar [0, 0, 0, 0, 6, 26, 3, 25]
-  line [0, 0, 0, 0, 3, 24, 5, 21]
 ```
-
-### Pull Requests
 
 ```mermaid
 xychart-beta
-  title "Pull Requests (bar: opened / line: merged)"
+  title "Issues Closed (count per week)"
+  x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
+  y-axis "Count" 0 --> 29
+  bar [0, 0, 0, 0, 3, 24, 5, 21]
+```
+
+```mermaid
+xychart-beta
+  title "PRs Opened (count per week)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Count" 0 --> 45
   bar [0, 0, 0, 0, 13, 37, 9, 27]
-  line [0, 0, 0, 0, 2, 25, 9, 20]
 ```
-
-### Active Contributors
 
 ```mermaid
 xychart-beta
-  title "Active Contributors"
+  title "PRs Merged (count per week)"
+  x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
+  y-axis "Count" 0 --> 30
+  bar [0, 0, 0, 0, 2, 25, 9, 20]
+```
+
+```mermaid
+xychart-beta
+  title "Active Contributors (unique PR authors per week)"
   x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Contributors" 0 --> 2
   bar [0, 0, 0, 0, 1, 1, 1, 1]
 ```
 
-| Week | Issues Opened | Issues Closed | PRs Opened | PRs Merged | Contributors |
-|------|:---:|:---:|:---:|:---:|:---:|
-| 01/12 | 0 | 0 | 0 | 0 | 0 |
-| 01/19 | 0 | 0 | 0 | 0 | 0 |
-| 01/26 | 0 | 0 | 0 | 0 | 0 |
-| 02/02 | 0 | 0 | 0 | 0 | 0 |
-| 02/09 | 6 | 3 | 13 | 2 | 1 |
-| 02/16 | 26 | 24 | 37 | 25 | 1 |
-| 02/23 | 3 | 5 | 9 | 9 | 1 |
-| 03/02 | 25 | 21 | 27 | 20 | 1 |
-
 ## Code Size (SLOC)
 
-> Scripts: statement lines (blank and comment lines excluded)  
-> Prompts: non-blank lines
-
-### Total SLOC Trend
+> Scripts: statement lines (blank and comment lines excluded) / Prompts: non-blank lines
 
 ```mermaid
 xychart-beta
-  title "Total SLOC"
+  title "Total SLOC Trend (all categories)"
   x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
-  y-axis "Lines" 0 --> 15720
-  line [0, 789, 1503, 1293, 10339, 13100]
+  y-axis "Lines" 0 --> 13936
+  line [0, 789, 1503, 1293, 10339, 11613]
 ```
 
-### Current Breakdown by Category
+### Nabledge v6
+
+```mermaid
+pie title "Nabledge v6 SLOC (Scripts vs Prompts)"
+  "Scripts (.sh)" : 948
+  "Prompts (.md)" : 983
+```
+
+### Knowledge Creator
+
+```mermaid
+pie title "Knowledge Creator SLOC (Production / Test / Prompts)"
+  "Production (.py)" : 4109
+  "Test (.py)" : 5064
+  "Prompts (.md)" : 509
+```
 
 ```mermaid
 xychart-beta
-  title "SLOC by Category"
-  x-axis ["Nabledge scripts", "Nabledge prompts", "KC prod", "KC test", "KC prompts"]
-  y-axis "Lines" 0 --> 6077
-  bar [1452, 1966, 4109, 5064, 509]
-```
-
-### KC Scripts: Production vs Test Trend
-
-```mermaid
-xychart-beta
-  title "KC Scripts SLOC"
+  title "KC Scripts Trend (upper=Production  lower=Test)"
   x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
   y-axis "Lines" 0 --> 6077
   line [0, 0, 0, 0, 3183, 4109]
   line [0, 0, 0, 0, 4802, 5064]
 ```
-
-_Top line: production · Bottom line: test_
-
-### Summary
-
-| Category | Lines | Change |
-|----------|------:|-------:|
-| Nabledge scripts | 1,452 | — |
-| Nabledge prompts | 1,966 | — |
-| KC scripts (prod) | 4,109 | -596 |
-| KC scripts (test) | 5,064 | — |
-| KC prompts | 509 | — |
-| **Total** | **13,100** | **-596** |
-
-### Nabledge Scripts by Extension
-
-| Extension | Lines | Change |
-|-----------|------:|-------:|
-| `.sh` | 1,452 | — |
-
-### KC Scripts by Extension
-
-| Extension | Prod | Prod Change | Test | Test Change |
-|-----------|-----:|:-----------:|-----:|:-----------:|
-| `.py` | 4,109 | -596 | 5,064 | — |
 
 ## Nabledge Adoption (nablarch/nabledge)
 

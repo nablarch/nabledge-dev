@@ -371,22 +371,18 @@ def _sloc_by_ext(files: list[str], is_prompt: bool = False) -> dict[str, int]:
 def collect_sloc(repo_root: str) -> dict:
     """Collect SLOC for all tracked categories."""
 
-    # --- Nabledge scripts ---
+    # --- Nabledge scripts (v6 only; v5 is a copy) ---
     nabledge_script_files = _glob_files(repo_root, [
         ".claude/skills/nabledge-6/scripts/**/*.sh",
-        ".claude/skills/nabledge-5/scripts/**/*.sh",
         "tools/setup/setup-*.sh",
     ])
     nabledge_scripts = _sloc_by_ext(nabledge_script_files, is_prompt=False)
 
-    # --- Nabledge prompts ---
+    # --- Nabledge prompts (v6 only) ---
     nabledge_prompt_files = _glob_files(repo_root, [
         ".claude/skills/nabledge-6/SKILL.md",
         ".claude/skills/nabledge-6/workflows/**/*.md",
-        ".claude/skills/nabledge-5/SKILL.md",
-        ".claude/skills/nabledge-5/workflows/**/*.md",
         ".claude/commands/n6.md",
-        ".claude/commands/n5.md",
     ])
     nabledge_prompts = sum(count_sloc(f, is_prompt=True) for f in nabledge_prompt_files)
 
@@ -464,127 +460,70 @@ def _delta_str(current: int, previous: int) -> str:
     return "—"
 
 
+def _pie_chart(title: str, slices: list[tuple[str, int]]) -> str:
+    """Render a Mermaid pie chart. slices = [(label, value), ...]"""
+    inner = "\n".join(f'  "{label}" : {value}' for label, value in slices if value > 0)
+    return f"```mermaid\npie title \"{title}\"\n{inner}\n```"
+
+
 def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> list[str]:
-    """Render SLOC charts and tables."""
+    """Render SLOC charts (no tables)."""
     lines = []
     lines.append("## Code Size (SLOC)")
     lines.append("")
-    lines.append("> Scripts: statement lines (blank and comment lines excluded)  ")
-    lines.append("> Prompts: non-blank lines")
+    lines.append("> Scripts: statement lines (blank and comment lines excluded) / Prompts: non-blank lines")
     lines.append("")
 
     def total(d: dict | int) -> int:
         return sum(d.values()) if isinstance(d, dict) else (d or 0)
-
-    prev_nabledge = previous.get("nabledge", {})
-    prev_kc = previous.get("kc", {})
 
     cur_ns = total(current["nabledge"]["scripts"])
     cur_np = current["nabledge"]["prompts"]
     cur_kp = total(current["kc"]["scripts_prod"])
     cur_kt = total(current["kc"]["scripts_test"])
     cur_kpr = current["kc"]["prompts"]
-    grand_cur = cur_ns + cur_np + cur_kp + cur_kt + cur_kpr
 
-    prv_ns = total(prev_nabledge.get("scripts", {}))
-    prv_np = prev_nabledge.get("prompts", 0)
-    prv_kp = total(prev_kc.get("scripts_prod", {}))
-    prv_kt = total(prev_kc.get("scripts_test", {}))
-    prv_kpr = prev_kc.get("prompts", 0)
-    grand_prv = prv_ns + prv_np + prv_kp + prv_kt + prv_kpr
-
-    # --- Total SLOC trend (line chart from history) ---
+    # --- Total SLOC trend ---
     if len(history) >= 2:
-        lines.append("### Total SLOC Trend")
-        lines.append("")
-        hist_labels = [h["date"][5:] for h in history]  # MM-DD
-        hist_totals = [h["total"] for h in history]
-        lines.append(mermaid_xychart_line("Total SLOC", hist_labels, "Lines", hist_totals))
+        hist_labels = [h["date"][5:] for h in history]
+        lines.append(mermaid_xychart_line("Total SLOC Trend (all categories)", hist_labels, "Lines", [h["total"] for h in history]))
         lines.append("")
 
-    # --- Current breakdown (bar chart by category) ---
-    lines.append("### Current Breakdown by Category")
+    # --- Nabledge v6 ---
+    lines.append("### Nabledge v6")
     lines.append("")
-    cat_labels = ["Nabledge scripts", "Nabledge prompts", "KC prod", "KC test", "KC prompts"]
-    cat_vals = [cur_ns, cur_np, cur_kp, cur_kt, cur_kpr]
-    lines.append(mermaid_xychart_bar("SLOC by Category", cat_labels, "Lines", cat_vals))
+    lines.append(_pie_chart("Nabledge v6 SLOC (Scripts vs Prompts)", [
+        ("Scripts (.sh)", cur_ns),
+        ("Prompts (.md)", cur_np),
+    ]))
     lines.append("")
 
-    # --- KC prod vs test trend (line chart from history) ---
+    # --- Knowledge Creator ---
+    lines.append("### Knowledge Creator")
+    lines.append("")
+    lines.append(_pie_chart("Knowledge Creator SLOC (Production / Test / Prompts)", [
+        ("Production (.py)", cur_kp),
+        ("Test (.py)", cur_kt),
+        ("Prompts (.md)", cur_kpr),
+    ]))
+    lines.append("")
+
+    # KC trend (prod vs test)
     if len(history) >= 2:
-        lines.append("### KC Scripts: Production vs Test Trend")
-        lines.append("")
         hist_labels = [h["date"][5:] for h in history]
         kc_prod_hist = [h["kc_prod"] for h in history]
         kc_test_hist = [h["kc_test"] for h in history]
         ymax = y_axis_max(kc_prod_hist + kc_test_hist)
         x_str = "[" + ", ".join(f'"{l}"' for l in hist_labels) + "]"
-        p_str = "[" + ", ".join(str(v) for v in kc_prod_hist) + "]"
-        t_str = "[" + ", ".join(str(v) for v in kc_test_hist) + "]"
         lines.append("```mermaid")
         lines.append("xychart-beta")
-        lines.append('  title "KC Scripts SLOC"')
+        lines.append('  title "KC Scripts Trend (upper=Production  lower=Test)"')
         lines.append(f"  x-axis {x_str}")
         lines.append(f'  y-axis "Lines" 0 --> {ymax}')
-        lines.append(f"  line {p_str}")
-        lines.append(f"  line {t_str}")
+        lines.append(f"  line {kc_prod_hist}")
+        lines.append(f"  line {kc_test_hist}")
         lines.append("```")
         lines.append("")
-        lines.append("_Top line: production · Bottom line: test_")
-        lines.append("")
-
-    # --- Summary table ---
-    lines.append("### Summary")
-    lines.append("")
-    lines.append("| Category | Lines | Change |")
-    lines.append("|----------|------:|-------:|")
-    rows = [
-        ("Nabledge scripts", cur_ns, prv_ns),
-        ("Nabledge prompts", cur_np, prv_np),
-        ("KC scripts (prod)", cur_kp, prv_kp),
-        ("KC scripts (test)", cur_kt, prv_kt),
-        ("KC prompts", cur_kpr, prv_kpr),
-    ]
-    for name, cur, prv in rows:
-        d = _delta_str(cur, prv) if prv else "—"
-        lines.append(f"| {name} | {cur:,} | {d} |")
-    d_grand = _delta_str(grand_cur, grand_prv) if grand_prv else "—"
-    lines.append(f"| **Total** | **{grand_cur:,}** | **{d_grand}** |")
-    lines.append("")
-
-    # --- Nabledge scripts by extension ---
-    lines.append("### Nabledge Scripts by Extension")
-    lines.append("")
-    lines.append("| Extension | Lines | Change |")
-    lines.append("|-----------|------:|-------:|")
-    all_exts = sorted(set(list(current["nabledge"]["scripts"].keys()) + list(prev_nabledge.get("scripts", {}).keys())))
-    for ext in all_exts:
-        cur = current["nabledge"]["scripts"].get(ext, 0)
-        prv = prev_nabledge.get("scripts", {}).get(ext, 0)
-        d = _delta_str(cur, prv) if prv else "—"
-        lines.append(f"| `{ext}` | {cur:,} | {d} |")
-    lines.append("")
-
-    # --- KC scripts by extension (prod + test) ---
-    lines.append("### KC Scripts by Extension")
-    lines.append("")
-    lines.append("| Extension | Prod | Prod Change | Test | Test Change |")
-    lines.append("|-----------|-----:|:-----------:|-----:|:-----------:|")
-    all_kc_exts = sorted(set(
-        list(current["kc"]["scripts_prod"].keys()) +
-        list(current["kc"]["scripts_test"].keys()) +
-        list(prev_kc.get("scripts_prod", {}).keys()) +
-        list(prev_kc.get("scripts_test", {}).keys())
-    ))
-    for ext in all_kc_exts:
-        cp = current["kc"]["scripts_prod"].get(ext, 0)
-        ct = current["kc"]["scripts_test"].get(ext, 0)
-        pp = prev_kc.get("scripts_prod", {}).get(ext, 0)
-        pt = prev_kc.get("scripts_test", {}).get(ext, 0)
-        dp = _delta_str(cp, pp) if pp else "—"
-        dt = _delta_str(ct, pt) if pt else "—"
-        lines.append(f"| `{ext}` | {cp:,} | {dp} | {ct:,} | {dt} |")
-    lines.append("")
 
     return lines
 
@@ -651,9 +590,11 @@ def dora_level(metric: str, value: float, has_data: bool = True) -> str:
         return "Low"
 
 
+LEVEL_SCORE = {"Elite": 4, "High": 3, "Medium": 2, "Low": 1, "N/A": 0}
+
+
 def render_scorecard(weekly: list[dict]) -> str:
-    """Render a DORA scorecard table using the most recent week's values."""
-    # Use last non-zero week for each metric, fallback to latest
+    """Render DORA scorecard: score bar chart + detail table."""
     def latest_nonzero(vals: list[float]) -> float:
         for v in reversed(vals):
             if v > 0:
@@ -662,8 +603,6 @@ def render_scorecard(weekly: list[dict]) -> str:
 
     dep = latest_nonzero([w["deployment_frequency"] for w in weekly])
     lt = latest_nonzero([w["lead_time_hours"] for w in weekly])
-    cfr_vals = [w["change_failure_rate"] for w in weekly]
-    # CFR: use latest week that had any merges
     cfr = 0.0
     for w in reversed(weekly):
         if w["deployment_frequency"] > 0:
@@ -671,22 +610,37 @@ def render_scorecard(weekly: list[dict]) -> str:
             break
     mttr = latest_nonzero([w["mttr_hours"] for w in weekly])
 
-    rows = [
-        ("Deployment Frequency", f"{dep:.0f} PRs/week" if dep > 0 else "—", dora_level("deployment_frequency", dep),
-         "≥7/week", "≥1/week", "≥1/month", "<1/month"),
-        ("Lead Time for Changes", f"{lt:.1f}h" if lt > 0 else "—", dora_level("lead_time_hours", lt),
-         "<1h", "<1 week", "<1 month", "≥1 month"),
-        ("Change Failure Rate", f"{cfr:.0f}%" if dep > 0 else "—", dora_level("change_failure_rate", cfr, has_data=dep > 0),
-         "≤5%", "≤10%", "≤15%", ">15%"),
-        ("MTTR", f"{mttr:.1f}h" if mttr > 0 else "—", dora_level("mttr_hours", mttr),
-         "<1h", "<1 day", "<1 week", "≥1 week"),
-    ]
+    dep_lvl = dora_level("deployment_frequency", dep)
+    lt_lvl = dora_level("lead_time_hours", lt)
+    cfr_lvl = dora_level("change_failure_rate", cfr, has_data=dep > 0)
+    mttr_lvl = dora_level("mttr_hours", mttr)
 
-    lines = ["| Metric | Latest | Level | Elite | High | Medium | Low |",
-             "|--------|-------:|:-----:|:-----:|:----:|:------:|:---:|"]
+    scores = [LEVEL_SCORE[dep_lvl], LEVEL_SCORE[lt_lvl], LEVEL_SCORE[cfr_lvl], LEVEL_SCORE[mttr_lvl]]
+    score_labels = ["Deploy Freq", "Lead Time", "CFR", "MTTR"]
+
+    lines = []
+    # Score bar chart (4=Elite, 3=High, 2=Medium, 1=Low)
+    x_str = "[" + ", ".join(f'"{l}"' for l in score_labels) + "]"
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "DORA Score (4=Elite  3=High  2=Medium  1=Low)"')
+    lines.append(f"  x-axis {x_str}")
+    lines.append('  y-axis "Score" 0 --> 4')
+    lines.append(f"  bar {scores}")
+    lines.append("```")
+    lines.append("")
+
+    # Detail table
+    rows = [
+        ("Deployment Frequency", f"{dep:.0f} PRs/week" if dep > 0 else "—", dep_lvl, "≥7/week", "≥1/week", "≥1/month", "<1/month"),
+        ("Lead Time for Changes", f"{lt:.1f}h" if lt > 0 else "—", lt_lvl, "<1h", "<1 week", "<1 month", "≥1 month"),
+        ("Change Failure Rate", f"{cfr:.0f}%" if dep > 0 else "—", cfr_lvl, "≤5%", "≤10%", "≤15%", ">15%"),
+        ("MTTR", f"{mttr:.1f}h" if mttr > 0 else "—", mttr_lvl, "<1h", "<1 day", "<1 week", "≥1 week"),
+    ]
+    lines += ["| Metric | Latest | Level | Elite | High | Medium | Low |",
+              "|--------|-------:|:-----:|:-----:|:----:|:------:|:---:|"]
     for name, val, level, e, h, m, lo in rows:
-        badge = LEVEL_BADGE[level]
-        lines.append(f"| {name} | {val} | {badge} | {e} | {h} | {m} | {lo} |")
+        lines.append(f"| {name} | {val} | {LEVEL_BADGE[level]} | {e} | {h} | {m} | {lo} |")
     return "\n".join(lines)
 
 
@@ -726,87 +680,37 @@ def render_metrics_md(
     lines.append("## Development Productivity")
     lines.append("")
 
-    # Deployment Frequency
-    lines.append("### Deployment Frequency (PRs merged to main / week)")
+    lines.append(mermaid_xychart_bar("Deployment Frequency (PRs merged to main per week)", labels, "PRs / week", dep_freq_vals))
     lines.append("")
-    lines.append(mermaid_xychart_bar("Deployment Frequency", labels, "PRs / week", dep_freq_vals))
+    lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
     lines.append("")
-
-    # Lead Time
-    lines.append("### Lead Time for Changes (avg hours: first commit → merge)")
+    lines.append(mermaid_xychart_bar("Change Failure Rate (bug or fix labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
     lines.append("")
-    lines.append(mermaid_xychart_line("Lead Time for Changes", labels, "Hours", lead_time_vals))
+    lines.append("> **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100")
     lines.append("")
-
-    # Change Failure Rate
-    lines.append("### Change Failure Rate (%)")
+    lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
     lines.append("")
-    lines.append(mermaid_xychart_bar("Change Failure Rate", labels, "% of PRs", cfr_vals))
-    lines.append("")
-
-    # MTTR
-    lines.append("### Mean Time to Recovery (avg hours)")
-    lines.append("")
-    lines.append(mermaid_xychart_line("Mean Time to Recovery", labels, "Hours", mttr_vals))
+    lines.append("> **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）")
     lines.append("")
 
     # --- Activity ---
     lines.append("## Activity")
     lines.append("")
-
-    # Issues chart: bar=opened, line=closed
-    issues_opened_vals = [w["issues_opened"] for w in weekly]
-    issues_closed_vals = [w["issues_closed"] for w in weekly]
-    issues_ymax = y_axis_max(issues_opened_vals + issues_closed_vals)
-    issues_x = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
-    lines.append("### Issues")
-    lines.append("")
-    lines.append("```mermaid")
-    lines.append("xychart-beta")
-    lines.append('  title "Issues (bar: opened / line: closed)"')
-    lines.append(f"  x-axis {issues_x}")
-    lines.append(f'  y-axis "Count" 0 --> {issues_ymax}')
-    lines.append(f"  bar {[w['issues_opened'] for w in weekly]}")
-    lines.append(f"  line {[w['issues_closed'] for w in weekly]}")
-    lines.append("```")
+    lines.append("> Issues/PRs の開閉ペース・コントリビューター数を週次で追跡します。")
+    lines.append("> 開いた数と閉じた数のバランスが崩れていると、未解決の積み残しが増えているサインです。")
     lines.append("")
 
-    # PRs chart: bar=opened, line=merged
-    prs_opened_vals = [w["prs_opened"] for w in weekly]
-    prs_merged_vals = [w["prs_merged"] for w in weekly]
-    prs_ymax = y_axis_max(prs_opened_vals + prs_merged_vals)
-    prs_x = issues_x
-    lines.append("### Pull Requests")
-    lines.append("")
-    lines.append("```mermaid")
-    lines.append("xychart-beta")
-    lines.append('  title "Pull Requests (bar: opened / line: merged)"')
-    lines.append(f"  x-axis {prs_x}")
-    lines.append(f'  y-axis "Count" 0 --> {prs_ymax}')
-    lines.append(f"  bar {prs_opened_vals}")
-    lines.append(f"  line {prs_merged_vals}")
-    lines.append("```")
-    lines.append("")
+    x_str = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
 
-    # Contributors chart
-    contributors_vals = [w["contributors"] for w in weekly]
-    lines.append("### Active Contributors")
+    lines.append(mermaid_xychart_bar("Issues Opened (count per week)", labels, "Count", [w["issues_opened"] for w in weekly]))
     lines.append("")
-    lines.append(mermaid_xychart_bar("Active Contributors", labels, "Contributors", contributors_vals))
+    lines.append(mermaid_xychart_bar("Issues Closed (count per week)", labels, "Count", [w["issues_closed"] for w in weekly]))
     lines.append("")
-
-    # Activity table
-    lines.append("| Week | Issues Opened | Issues Closed | PRs Opened | PRs Merged | Contributors |")
-    lines.append("|------|:---:|:---:|:---:|:---:|:---:|")
-    for w in weekly:
-        lines.append(
-            f"| {w['label']} "
-            f"| {w['issues_opened']} "
-            f"| {w['issues_closed']} "
-            f"| {w['prs_opened']} "
-            f"| {w['prs_merged']} "
-            f"| {w['contributors']} |"
-        )
+    lines.append(mermaid_xychart_bar("PRs Opened (count per week)", labels, "Count", [w["prs_opened"] for w in weekly]))
+    lines.append("")
+    lines.append(mermaid_xychart_bar("PRs Merged (count per week)", labels, "Count", [w["prs_merged"] for w in weekly]))
+    lines.append("")
+    lines.append(mermaid_xychart_bar("Active Contributors (unique PR authors per week)", labels, "Contributors", [w["contributors"] for w in weekly]))
     lines.append("")
 
     # --- SLOC ---
@@ -926,8 +830,6 @@ def main() -> None:
         dev_repo, weekly, nabledge_stats, traffic_views, traffic_clones, today,
         sloc_current=sloc_current, sloc_previous=sloc_previous, sloc_history=sloc_history,
     )
-
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

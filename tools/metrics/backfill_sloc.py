@@ -22,16 +22,12 @@ from datetime import datetime, timedelta, timezone
 PATTERNS = {
     "nabledge_scripts": [
         ".claude/skills/nabledge-6/scripts/**/*.sh",
-        ".claude/skills/nabledge-5/scripts/**/*.sh",
         "tools/setup/setup-*.sh",
     ],
     "nabledge_prompts": [
         ".claude/skills/nabledge-6/SKILL.md",
         ".claude/skills/nabledge-6/workflows/**/*.md",
-        ".claude/skills/nabledge-5/SKILL.md",
-        ".claude/skills/nabledge-5/workflows/**/*.md",
         ".claude/commands/n6.md",
-        ".claude/commands/n5.md",
     ],
     "kc_prod": [
         "tools/knowledge-creator/scripts/**/*.py",
