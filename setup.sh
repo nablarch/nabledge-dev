@@ -363,6 +363,17 @@ clone_repos_from_meta() {
 clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
 clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
 
+# Clone example repositories for code-analysis scenarios
+print_status info "Cloning example repositories for code-analysis scenarios..."
+
+clone_or_update_repo "https://github.com/nablarch/nablarch-example-batch.git" "$NAB_OFFICIAL_V6_DIR" "main"
+clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$NAB_OFFICIAL_V6_DIR" "main"
+clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V6_DIR" "main"
+
+clone_or_update_repo "https://github.com/nablarch/nablarch-example-batch.git" "$NAB_OFFICIAL_V5_DIR" "v5-main"
+clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$NAB_OFFICIAL_V5_DIR" "v5-main"
+clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V5_DIR" "v5-main"
+
 # Final summary
 print_header "Setup Completed Successfully!"
 

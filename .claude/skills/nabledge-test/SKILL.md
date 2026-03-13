@@ -20,7 +20,7 @@ nabledge-test 6 "知識検索系を全部実行して"        # Free-form instru
 nabledge-test 6 --baseline                      # Baseline mode: run all, save baseline, generate comparison report
 ```
 
-**Trial count**: Use `--trials N` to run each scenario N times (default: 1). In `--baseline` mode, `--trials` is ignored — non-benchmark scenarios run 1 trial, benchmark scenarios run 10 trials (fixed).
+**Trial count**: Use `--trials N` to run each scenario N times (default: 1). In `--baseline` mode, `--trials` is ignored — coverage scenarios run 1 trial, benchmark scenarios run 3 trials (fixed).
 
 ## Key Principles
 
@@ -96,8 +96,8 @@ Total: <total_count> scenarios
 | `"free text"` | free-form | AI判断 | No |
 
 **`--baseline` execution plan** (fixed, `--trials` ignored):
-- **Non-benchmark scenarios** (`"benchmark": false/absent`): 1 trial each — wide coverage, regression detection
-- **Benchmark scenarios** (`"benchmark": true`): 10 trials each — quality measurement with statistical rigor
+- **Coverage scenarios** (`"benchmark": false/absent`): 1 trial each — coverage run, regression detection
+- **Benchmark scenarios** (`"benchmark": true`): 3 trials each — quality measurement with statistical rigor
 
 ### Step 2: Resolve PR number
 
@@ -264,28 +264,34 @@ When complete, output the following clearly delimited sections:
 ### OUTPUT_FILES_END
 ```
 
-**Execution strategy**:
+**Execution strategy — parallel batches**:
 
-- Launch scenarios **one at a time** (sequential), not in parallel
-- Wait for each Task to complete before starting the next
-- This is because Task tool results must be parsed and saved per scenario
+Run scenarios in two parallel batches to minimize total execution time:
+
+**Batch 1 — Coverage run** (all coverage scenarios in parallel):
+- Launch ALL coverage scenarios (`"benchmark": false/absent`) simultaneously as separate Task tools
+- Wait for all to complete, then save results and run detection checks
+
+**Batch 2 — Benchmark run** (all benchmark trials in parallel):
+- Launch ALL trials for ALL benchmark scenarios simultaneously
+  - e.g., qa-001 trial 1, qa-001 trial 2, qa-001 trial 3, ca-003 trial 1, ca-003 trial 2, ca-003 trial 3 — all 6 at once
+- Wait for all to complete, then save results and compute statistics
 
 **In `--baseline` mode — execution order**:
 
-1. Run all **non-benchmark** scenarios × 1 trial (wide coverage pass)
-2. Run **benchmark scenarios** (`"benchmark": true` in scenarios.json) × 10 trials each
+1. Run all **coverage scenarios** × 1 trial (parallel batch)
+2. Run all **benchmark scenarios** × 3 trials (parallel batch — all trials for all benchmark scenarios at once)
 
-For benchmark scenarios, each of the 10 trials is a separate Task invocation. Trial 1 result serves as the canonical wide-coverage result (grading.json / metrics.json). All 10 trials are used for benchmark statistics.
+Trial 1 of each benchmark scenario serves as the canonical result (grading.json / metrics.json). All 3 trials are used for benchmark statistics.
 
 **For multiple trials** (`--trials N`):
 
-- Run each scenario N times sequentially
-- Each trial is a separate Task tool invocation
-- Collect all trial results, then average metrics
+- Launch all N trials for a scenario simultaneously as separate Task tools
+- Wait for all to complete, then collect results
 
-**After each Task completes**:
+**After all Tasks in a batch complete**:
 
-1. Parse the delimited output sections (RESPONSE, METRICS, OUTPUT_FILES)
+1. For each Task result: parse the delimited output sections (RESPONSE, METRICS, OUTPUT_FILES)
 2. Save results to the workspace (see Step 5)
 3. Run detection check (see Step 6)
 
@@ -324,27 +330,26 @@ For each completed scenario:
        2/grading.json
        2/metrics.json
        2/output/           # ca-* only: output files for this trial
-       ...
-       10/grading.json
-       10/metrics.json
-       10/output/          # ca-* only: output files for this trial
+       3/grading.json
+       3/metrics.json
+       3/output/           # ca-* only: output files for this trial
    ```
 
 2. Compute and save `benchmark.json`:
    - Collect per-trial detection rate: `rate_i = grading[i]["summary"]["detection_rate"]`
-   - Compute statistics (t-distribution, df=9, t=2.262 for 95% CI):
+   - Compute statistics (t-distribution, df=2, t=4.303 for 95% CI):
    ```json
    {
      "scenario_id": "<id>",
-     "trials": 10,
-     "detection_rates": [0.875, 1.0, 0.875, ...],
+     "trials": 3,
+     "detection_rates": [0.875, 1.0, 0.875],
      "mean": 0.xxx,
      "std": 0.xxx,
      "ci_95_low": 0.xxx,
      "ci_95_high": 0.xxx
    }
    ```
-   Formula: `margin = 2.262 × std / sqrt(10)`, `ci_95_low = mean - margin`, `ci_95_high = mean + margin` (clamp to [0, 1])
+   Formula: `margin = 4.303 × std / sqrt(3)`, `ci_95_low = mean - margin`, `ci_95_high = mean + margin` (clamp to [0, 1])
 
 ### Step 6: Check detection items
 
@@ -449,7 +454,7 @@ Open the report file and replace `<!-- AGENT: ... -->` placeholders with actual 
 BASELINE_DIR=".claude/skills/nabledge-test/baseline"
 # Use RUN_TIMESTAMP (captured in Step 4) for the baseline directory name
 # This ensures the baseline timestamp matches the workspace timestamp
-TARGET_DIR="${BASELINE_DIR}/${RUN_TIMESTAMP}"
+TARGET_DIR="${BASELINE_DIR}/v${VERSION}/${RUN_TIMESTAMP}"
 mkdir -p "${TARGET_DIR}"
 ```
 
@@ -525,7 +530,8 @@ done
 #### 9d: Update latest symlink
 
 ```bash
-cd "${BASELINE_DIR}"
+mkdir -p "${BASELINE_DIR}/v${VERSION}"
+cd "${BASELINE_DIR}/v${VERSION}"
 rm -f latest
 ln -s "${RUN_TIMESTAMP}" latest
 ```
@@ -535,14 +541,14 @@ ln -s "${RUN_TIMESTAMP}" latest
 **Determine previous baseline**:
 
 ```bash
-# Count baseline directories (excluding 'latest' symlink)
-BASELINE_COUNT=$(ls -d ${BASELINE_DIR}/2* 2>/dev/null | wc -l)
+# Count baseline directories for this version (excluding 'latest' symlink)
+BASELINE_COUNT=$(ls -d ${BASELINE_DIR}/v${VERSION}/2* 2>/dev/null | wc -l)
 
 if [ "${BASELINE_COUNT}" -le 1 ]; then
   PREV=""
 else
-  # Get second-to-last (= previous) baseline directory
-  PREV=$(ls -d ${BASELINE_DIR}/2* | sort | tail -2 | head -1)
+  # Get second-to-last (= previous) baseline directory for this version
+  PREV=$(ls -d ${BASELINE_DIR}/v${VERSION}/2* | sort | tail -2 | head -1)
 fi
 ```
 
@@ -582,9 +588,9 @@ Workspace: .tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/
 **For baseline mode** (append to above):
 
 ```
-Baseline saved: .claude/skills/nabledge-test/baseline/<TIMESTAMP>/
-Latest symlink: .claude/skills/nabledge-test/baseline/latest → <TIMESTAMP>/
-Comparison report: .claude/skills/nabledge-test/baseline/<TIMESTAMP>/comparison-report.md
+Baseline saved: .claude/skills/nabledge-test/baseline/v<VERSION>/<TIMESTAMP>/
+Latest symlink: .claude/skills/nabledge-test/baseline/v<VERSION>/latest → <TIMESTAMP>/
+Comparison report: .claude/skills/nabledge-test/baseline/v<VERSION>/<TIMESTAMP>/comparison-report.md
 ```
 
 ## Dependencies

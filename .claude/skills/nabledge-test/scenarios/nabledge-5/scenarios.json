@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "version": "6.0.0",
-    "created": "2026-02-09",
+    "version": "5.0.0",
+    "created": "2026-03-13",
     "updated": "2026-03-13",
-    "description": "Test scenarios for nabledge-6: Detects expected keywords/components in responses. No performance targets.",
-    "total_scenarios": 8,
+    "description": "Test scenarios for nabledge-5: Detects expected keywords/components in responses. No performance targets.",
+    "total_scenarios": 7,
     "by_type": {
       "qa": 5,
-      "code-analysis": 3
+      "code-analysis": 2
     },
     "evaluation_method": "Keyword/component detection via string search. Performance metrics measured but not used for pass/fail."
   },
@@ -74,7 +74,7 @@
       "id": "ca-001",
       "type": "code-analysis",
       "question": "code-analysis ProjectAction",
-      "target_file": ".lw/nab-official/v6/nablarch-example-web/src/main/java/com/nablarch/example/app/web/action/ProjectAction.java",
+      "target_file": ".lw/nab-official/v5/nablarch-example-web/src/main/java/com/nablarch/example/app/web/action/ProjectAction.java",
       "expectations": {
         "overview": [
           "ProjectAction",
@@ -140,8 +140,9 @@
     {
       "id": "ca-002",
       "type": "code-analysis",
+      "benchmark": true,
       "question": "code-analysis ImportZipCodeFileAction",
-      "target_file": ".lw/nab-official/v6/nablarch-example-batch/src/main/java/com/nablarch/example/app/batch/action/ImportZipCodeFileAction.java",
+      "target_file": ".lw/nab-official/v5/nablarch-example-batch/src/main/java/com/nablarch/example/app/batch/action/ImportZipCodeFileAction.java",
       "expectations": {
         "overview": [
           "ImportZipCodeFileAction",
@@ -191,74 +192,6 @@
           "UniversalDao",
           "BeanUtil",
           "DataReader"
-        ],
-        "output": [
-          "Component Summary",
-          "Nablarch Framework Usage",
-          ".nabledge/"
-        ]
-      }
-    },
-    {
-      "id": "ca-003",
-      "type": "code-analysis",
-      "benchmark": true,
-      "question": "code-analysis ExportProjectsInPeriodAction",
-      "target_file": ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java",
-      "expectations": {
-        "overview": [
-          "ExportProjectsInPeriodAction",
-          "BatchAction",
-          "DatabaseRecordReader",
-          "ObjectMapper",
-          "BusinessDateUtil"
-        ],
-        "class_diagram": {
-          "classes": [
-            "ExportProjectsInPeriodAction",
-            "BatchAction",
-            "DatabaseRecordReader",
-            "ObjectMapper",
-            "FilePathSetting",
-            "BusinessDateUtil",
-            "ProjectDto"
-          ],
-          "relationships": [
-            "ExportProjectsInPeriodAction --|> BatchAction"
-          ]
-        },
-        "component_summary": [
-          "ExportProjectsInPeriodAction",
-          "ProjectDto"
-        ],
-        "processing_flow": [
-          "initialize",
-          "createReader",
-          "handle",
-          "terminate",
-          "BusinessDateUtil",
-          "FilePathSetting"
-        ],
-        "sequence_diagram": {
-          "objects": [
-            "ExportProjectsInPeriodAction",
-            "DatabaseRecordReader",
-            "FilePathSetting",
-            "BusinessDateUtil"
-          ],
-          "messages": [
-            "initialize",
-            "createReader",
-            "handle",
-            "terminate"
-          ]
-        },
-        "nablarch_usage": [
-          "BatchAction",
-          "DatabaseRecordReader",
-          "ObjectMapper",
-          "FilePathSetting",
-          "BusinessDateUtil"
         ],
         "output": [
           "Component Summary",
