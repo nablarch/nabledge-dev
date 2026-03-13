@@ -385,15 +385,16 @@ if [ ${#V1X_MISSING[@]} -gt 0 ]; then
     echo ""
     echo "  Nablarch 1.x documents are not hosted on GitHub."
     echo "  To generate knowledge files for v1.4/1.3/1.2, create symlinks manually."
+    echo "  (Claude Code cannot run these commands due to security restrictions on paths outside the repository.)"
     echo ""
-    echo "  How to set up (tell Claude Code the local path and it will run the command):"
+    echo "  Run the following yourself from the repository root (replace /path/to/ with actual local paths):"
     echo ""
     echo "    ln -s /path/to/1.4_maintain .lw/nab-official/v1.4/1.4_maintain"
     echo "    ln -s /path/to/1.3_maintain .lw/nab-official/v1.3/1.3_maintain"
     echo "    ln -s /path/to/1.2_maintain .lw/nab-official/v1.2/1.2_maintain"
     echo ""
     echo "  Then generate knowledge files:"
-    echo "    cd tools/knowledge-creator && ./kc.sh gen 1.4"
+    echo "    ./tools/knowledge-creator/kc.sh gen 1.4"
     echo ""
 fi
 
