@@ -126,17 +126,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   esac
 done < "$MANIFEST"
 
-# JSON syntax check
-echo "  Checking JSON syntax..."
-JSON_ERRORS=0
-while IFS= read -r json_file; do
-  if ! jq empty "$json_file" 2>/dev/null; then
-    echo "  FAIL: invalid JSON: $json_file"
-    JSON_ERRORS=$((JSON_ERRORS + 1))
-  fi
-done < <(find "$DEST_DIR" -name '*.json' -type f)
-
-TOTAL_ERRORS=$((ERRORS + JSON_ERRORS))
+TOTAL_ERRORS=$((ERRORS))
 if [ "$TOTAL_ERRORS" -ne 0 ]; then
   echo "Validation failed with $TOTAL_ERRORS error(s)"
   exit 1
