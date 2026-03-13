@@ -2,6 +2,15 @@
 
 > Last updated: 2026-03-13 (auto-generated weekly — [view source](tools/metrics/collect.py))
 
+## DORA Scorecard
+
+| Metric | Latest | Level | Elite | High | Medium | Low |
+|--------|-------:|:-----:|:-----:|:----:|:------:|:---:|
+| Deployment Frequency | 20 PRs/week | **Elite** | ≥7/week | ≥1/week | ≥1/month | <1/month |
+| Lead Time for Changes | 19.6h | High | <1h | <1 week | <1 month | ≥1 month |
+| Change Failure Rate | 0% | **Elite** | ≤5% | ≤10% | ≤15% | >15% |
+| MTTR | 8.9h | High | <1h | <1 day | <1 week | ≥1 week |
+
 ## Development Productivity
 
 ### Deployment Frequency (PRs merged to main / week)

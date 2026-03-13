@@ -330,6 +330,103 @@ def collect_prs_opened(repo: str, weeks: list[datetime], token: str | None) -> d
 # Markdown rendering
 # ---------------------------------------------------------------------------
 
+DORA_BENCHMARKS = {
+    "deployment_frequency": [
+        # (threshold_per_week, level)  — threshold = minimum PRs/week for this level
+        (7, "Elite"),   # ~once/day or more
+        (1, "High"),    # once/week or more
+        (0.25, "Medium"),  # once/month or more
+    ],
+    "lead_time_hours": [
+        # threshold = maximum hours for this level
+        (1, "Elite"),
+        (168, "High"),     # 1 week
+        (720, "Medium"),   # ~1 month
+    ],
+    "change_failure_rate": [
+        # threshold = maximum % for this level
+        (5, "Elite"),
+        (10, "High"),
+        (15, "Medium"),
+    ],
+    "mttr_hours": [
+        # threshold = maximum hours for this level
+        (1, "Elite"),
+        (24, "High"),
+        (168, "Medium"),   # 1 week
+    ],
+}
+
+LEVEL_BADGE = {
+    "Elite": "**Elite**",
+    "High": "High",
+    "Medium": "Medium",
+    "Low": "Low",
+    "N/A": "N/A",
+}
+
+
+def dora_level(metric: str, value: float, has_data: bool = True) -> str:
+    """Return DORA performance level for a given metric value."""
+    if not has_data:
+        return "N/A"
+    benchmarks = DORA_BENCHMARKS[metric]
+    if metric == "deployment_frequency":
+        if value == 0:
+            return "Low"
+        for threshold, level in benchmarks:
+            if value >= threshold:
+                return level
+        return "Low"
+    else:
+        # Lower is better; 0 is valid (e.g., 0% CFR = Elite, 0h MTTR = no bugs = N/A)
+        if metric == "mttr_hours" and value == 0:
+            return "N/A"  # No bug issues closed — no data
+        for threshold, level in benchmarks:
+            if value <= threshold:
+                return level
+        return "Low"
+
+
+def render_scorecard(weekly: list[dict]) -> str:
+    """Render a DORA scorecard table using the most recent week's values."""
+    # Use last non-zero week for each metric, fallback to latest
+    def latest_nonzero(vals: list[float]) -> float:
+        for v in reversed(vals):
+            if v > 0:
+                return v
+        return 0.0
+
+    dep = latest_nonzero([w["deployment_frequency"] for w in weekly])
+    lt = latest_nonzero([w["lead_time_hours"] for w in weekly])
+    cfr_vals = [w["change_failure_rate"] for w in weekly]
+    # CFR: use latest week that had any merges
+    cfr = 0.0
+    for w in reversed(weekly):
+        if w["deployment_frequency"] > 0:
+            cfr = w["change_failure_rate"]
+            break
+    mttr = latest_nonzero([w["mttr_hours"] for w in weekly])
+
+    rows = [
+        ("Deployment Frequency", f"{dep:.0f} PRs/week" if dep > 0 else "—", dora_level("deployment_frequency", dep),
+         "≥7/week", "≥1/week", "≥1/month", "<1/month"),
+        ("Lead Time for Changes", f"{lt:.1f}h" if lt > 0 else "—", dora_level("lead_time_hours", lt),
+         "<1h", "<1 week", "<1 month", "≥1 month"),
+        ("Change Failure Rate", f"{cfr:.0f}%" if dep > 0 else "—", dora_level("change_failure_rate", cfr, has_data=dep > 0),
+         "≤5%", "≤10%", "≤15%", ">15%"),
+        ("MTTR", f"{mttr:.1f}h" if mttr > 0 else "—", dora_level("mttr_hours", mttr),
+         "<1h", "<1 day", "<1 week", "≥1 week"),
+    ]
+
+    lines = ["| Metric | Latest | Level | Elite | High | Medium | Low |",
+             "|--------|-------:|:-----:|:-----:|:----:|:------:|:---:|"]
+    for name, val, level, e, h, m, lo in rows:
+        badge = LEVEL_BADGE[level]
+        lines.append(f"| {name} | {val} | {badge} | {e} | {h} | {m} | {lo} |")
+    return "\n".join(lines)
+
+
 def render_metrics_md(
     dev_repo: str,
     weekly: list[dict],
@@ -351,6 +448,12 @@ def render_metrics_md(
     lines.append("# Nabledge Dev Metrics")
     lines.append("")
     lines.append(f"> Last updated: {today} (auto-generated weekly — [view source](tools/metrics/collect.py))")
+    lines.append("")
+
+    # --- DORA Scorecard ---
+    lines.append("## DORA Scorecard")
+    lines.append("")
+    lines.append(render_scorecard(weekly))
     lines.append("")
 
     # --- Development Productivity ---
