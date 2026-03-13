@@ -1,0 +1,607 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/guide/widget_usage/create_with_widget.rst`
+- Format: `rst`
+
+```
+業務画面テンプレートとUI部品を使用して業務画面JSPを作成する
+======================================================================
+
+画面のテンプレートを用意する
+------------------------------------------
+
+作成する業務画面JSPに、業務画面テンプレート・UI部品を使用するために必要な内容を記載する。
+
+業務画面テンプレート・UI部品を使用するために必要な内容は以下の通り。
+
+  * DOCTYPE宣言
+
+    .. code-block:: html
+
+       <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+  * ローカルJSPレンダリング機能を有効にするスクリプトタグ（本番稼働時には出力されないように、コメントアウトする。）
+
+    .. code-block:: jsp
+
+       <!-- <%/* --> <script src="js/devtool.js"></script><meta charset="utf-8"><body> <!-- */%> -->
+
+  * JSPとして必要なディレクティブ
+
+    .. code-block:: jsp
+
+       <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+
+  * 使用するtaglib
+
+    各taglibで提供されるタグの詳細については、それぞれのtaglibで提供されているタグファイルを参照のこと。
+    一覧は :doc:`widget_list` を参照。
+    （IDEを使用している場合、補完やドキュメント参照を行うこともできる。）
+
+    * **業務画面テンプレート** (``/WEB-INF/tags/template``)
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="t" tagdir="/WEB-INF/tags/template" %>
+
+
+    * **fieldウィジェット** (``/WEB-INF/tags/widget/field``)
+       「入力項目」や「表示項目」を表示するUI部品が提供されている。
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="field" tagdir="/WEB-INF/tags/widget/field" %>
+
+
+    * **buttonウィジェット** (``/WEB-INF/tags/widget/button``)
+       「ボタン」を表示するためのUI部品が提供されている。
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="button" tagdir="/WEB-INF/tags/widget/button" %>
+
+
+    * **tableウィジェット** (``/WEB-INF/tags/widget/table``)
+       検索結果などを表形式で表示するためのUI部品が提供されている。
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="table" tagdir="/WEB-INF/tags/widget/table" %>
+
+
+    * **columnウィジェット** (``/WEB-INF/tags/widget/column``)
+       表の列を表示するためのUI部品が提供されている。
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="column" tagdir="/WEB-INF/tags/widget/column" %>
+
+
+    * **tabウィジェット** (``/WEB-INF/tags/widget/tab``)
+       タブ形式でリンクやコンテンツを表示するためのUI部品が提供されている。
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="tab" tagdir="/WEB-INF/tags/widget/tab" %>
+
+
+    * **linkウィジェット** (``/WEB-INF/tags/widget/link``)
+       リンクを表示するためのUI部品が提供されている。
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="link" tagdir="/WEB-INF/tags/widget/link" %>
+
+    * **画面表示パターン定義ウィジェット** (``/WEB-INF/tags/widget/spec``)
+       画面状態を設計情報として記述するためのUI部品が提供されている。
+       詳細については\ :ref:`spec_condition_widget`\ を参照。
+
+       .. code-block:: jsp
+
+          <%@ taglib prefix="spec" tagdir="/WEB-INF/tags/widget/spec" %>
+
+    * **Nablarch タグライブラリ** （ ``nablarch.jar`` に同梱）
+
+       .. code-block:: jsp
+
+          <%@taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+
+
+  * 使用する業務画面テンプレート
+
+    ``t:テンプレート名`` を使用する。
+
+    .. code-block:: jsp
+
+       <t:page_template
+           title="画面タイトル"
+           confirmationPageTitle="確認画面タイトル（入力・確認画面でJSPを共用しない場合は不要）">
+
+         <jsp:attribute name="contentHtml">
+             <%-- 業務領域 --%>
+             ここに、業務領域や、自動生成する設計書に表示する内容を記載する。
+         </jsp:attribute>
+       </t:page_template>
+
+
+上記の内容を記載すると、業務画面JSPファイルは :download:`このファイル <source/sample_template.jsp>` のようになる。
+
+.. tip::
+
+   Nablarchの提供するタグの詳細については、Nablarch Application Framework解説書「タグリファレンス」を参照。
+
+
+画面をブラウザで表示する
+------------------------------------------
+
+作成した業務画面JSPをブラウザを使用して表示する。
+
+作成した業務画面JSPは、業務JSP作成用プロジェクトの、サブシステムIDのディレクトリ配下に配置する。（ :doc:`project_structure` 参照）
+
+ローカル画面確認.batを実行すれば、作成した画面に遷移し、レイアウトを確認できる。
+
+:download:`このファイル <source/sample_template.jsp>` のブラウザ表示のイメージは以下のようになる。
+
+.. image:: _image/view_template.png
+   :align: center
+   :scale: 70
+
+
+
+.. important::
+  IEを使用している場合は、開発者ツールを開き、
+  ブラウザモードおよびドキュメントモードが下記の設定となっていることを確認すること。
+
+    **ブラウザモード:** 使用しているIEのバージョンと同じ
+
+    **ドキュメントモード:** 標準
+
+
+
+  以下の図はIE10での設定例である。
+
+  (なお、開発者ツールを開いた状態では、画面表示が崩れる場合があるので、設定確認後はツールを閉じること。)
+
+  .. image:: _image/display_settings_for_ie.png
+     :align: center
+     :scale: 70
+
+
+UI部品（ウィジェット）を配置していく
+------------------------------------------
+
+ここまでで作成した業務画面テンプレートを表示するJSPに、UI部品（ウィジェット）を配置して業務画面JSPを作成していく。
+
+具体的なウィジェットの使用方法や、ウィジェットと画面項目の対応については、 :ref:`example` を参照のこと。
+
+.. important::
+
+   ウィジェットは以下のようなタグ形式で記述するが、自己終了エレメントとして記述するとブラウザでのレイアウト確認が行えなくなるため注意すること。
+
+   （自己終了エレメントとして記述したタグ以降が表示されなくなる。）
+
+   OK!!
+
+   .. code-block:: jsp
+
+      <field:label title="ログインID" sample="login-id"></field:label>
+
+   NG!!
+
+   .. code-block:: jsp
+
+      <field:label title="ログインID" sample="login-id" />
+
+
+ウィジェットに定義されている属性について
+----------------------------------------------------------------------
+
+ウィジェットに定義されている属性のうち、注意の必要なものについて以下に記載する。
+
+**name属性**
+  name属性については、基本的にはPG・UT工程で定義するものであるため、空として定義しておけばよい。
+
+  ただし、ローカル表示でname属性の指定が必要なウィジェットが一部存在する。
+  各ウィジェットのガイドを参照し、name属性の指定が必要な場合には、name属性を指定すること。
+
+  ※設計時にname属性の物理名を設定することが難しい場合には、その項目の項目論理名を指定すれば良い。
+  この場合、PG担当者がname属性の値を実装開始時に物理名へと変換する必要がある。
+
+**sample属性**
+  sample属性に値を設定することで、JSPをブラウザで表示した際にダミーの値を画面上に表示できる。
+
+  プルダウンやチェックボックス、ラジオボタン、テーブルなどに複数のダミーの値を表示する場合、
+  sample属性に「|」区切りで記載できる。
+
+  それらの値を「[]」で囲むことで、囲まれた値を初期表示時点での選択項目にできる。
+
+  また、sample属性が指定されていない場合に画面に出力されるコード名称は"codeId"属性および"pattern"属性、"optionColumnName"属性に指定された値を元に、
+  「js/devtool/resource/コード値定義.js」から該当する名称が取得される。
+
+**key属性**
+  **key属性** は **<column:label>** などのタグにおいて、表示するレコードセットのキー名を指定する属性である。
+  この属性は基本的にはPG・UT工程で決定するものなので、設計段階では指定不要である。
+
+  ただし、その場合、 **sample属性** が未指定もしくは空文字を指定すると、
+  別の項目のsample属性値が表示される問題がある。
+  そのようなケースでは適当な文字列を **key属性** に指定するか **sample属性** にスペース文字を指定すること。
+
+
+**domain属性**
+  画面項目定義を出力するために、項目のドメイン物理名を記載する。また、下記のウィジェットでは、ドメイン毎に表示レイアウトを制御するために、HTMLのclass属性にドメイン物理名を出力する。
+
+  * field:label
+  * column:label
+  * column:link
+
+  提供している状態では、テーブル内で「Number」というdomain属性が指定されている項目については右寄せで表示されるようになっている。
+
+**dataFrom属性**
+  画面項目定義を出力するために、項目に表示するデータの取得元を「表示情報取得元」.「表示項目名」 の形式で記載する。
+
+
+**hint属性**
+  ここで指定した文言が、項目に対する備考として表示される。
+
+また、ウィジェットの属性として必須となっている項目があったとしても、画面設計段階で決定できない場合には空として定義しておけばよい。
+
+
+画面遷移について
+----------------------------------
+
+buttonウィジェットでは、紙芝居を行うための ``dummyUri`` 属性を指定できる。
+
+JSPを直接ブラウザで開いた場合に、ボタンをクリックすると、 ``dummyUri`` 属性で指定されたJSPファイルに遷移する。
+
+ただし、遷移先リクエストIDを条件によって変化させる、などの実際の遷移を忠実に再現させることはできない。（必要がなければ、 ``dummyUri`` 属性を指定する必要はない。）
+
+あくまでも顧客への説明をより容易に行えるように準備されている属性であり、実際に行われるべき遷移については、PG・UT工程で実装される。
+
+
+ウィジェットの作成について
+----------------------------------
+
+以下のサンプルファイルで使用している内線番号ウィジェットは、field:textウィジェットの組み合わせで作成している。
+「住所」「電話番号」「氏名」など、典型的であり複数画面で使用されうる項目については内線番号ウィジェットのように、各PJで作成することを推奨する。
+
+作成方法の詳細については、UI開発基盤用プロジェクトテンプレートの内線番号ウィジェットの実装を参照のこと。
+
+
+入力画面と確認画面の共用
+----------------------------------
+
+fieldウィジェットを使用して表示する入力項目は、入力画面と確認画面で自動的に切り替わり、入力画面ではテキストボックス、確認画面では単に表示されるだけとなる。
+
+入力画面と確認画面を共用する場合には、確認画面は下記のように作成すればよい。
+
+.. code-block:: jsp
+
+   <!DOCTYPE html>
+   <!-- <%/* --> <script src="js/devtool.js"></script><meta charset="utf-8"><body> <!-- */%> -->
+   <%@ taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+   <n:confirmationPage path="./W11AC0201.jsp" />
+
+
+
+入力画面と確認画面で異なる項目を表示する必要がある場合、以下の実装例のように
+
+* 入力画面で出力する項目は ``<n:forInputPage>`` で囲む。
+
+* 確認画面で出力する項目は ``<n:forConfirmationPage>`` で囲む。
+
+とする。
+
+
+.. _example:
+
+業務画面JSPの例
+----------------------------------
+
+* :ref:`入力画面 <input>`
+* :ref:`確認画面 <confirm>`
+* :ref:`検索・一覧画面 <list_search>`
+* :ref:`詳細画面 <detail>`
+
+---------------------------------
+
+.. _input:
+
+**入力画面**： :download:`W11AC0201.jsp <source/W11AC0201.jsp>`
+
+.. image:: _image/view_input.png
+   :align: center
+   :scale: 70
+
+---------------------------------
+
+.. _confirm:
+
+**確認画面**： :download:`W11AC0202.jsp <source/W11AC0202.jsp>`
+
+.. image:: _image/view_confirm.png
+   :align: center
+   :scale: 70
+
+---------------------------------
+
+.. _list_search:
+
+**一覧・検索画面**： :download:`W11AC0101.jsp <source/W11AC0101.jsp>`
+
+.. image:: _image/view_search.png
+   :align: center
+   :scale: 70
+
+---------------------------------
+
+.. _detail:
+
+**詳細画面**： :download:`W11AC0102.jsp <source/W11AC0102.jsp>`
+
+.. image:: _image/view_detail.png
+   :align: center
+   :scale: 70
+```
+
+## Knowledge File
+
+- ID: `testing-framework-create_with_widget--s1`
+
+```json
+{
+  "id": "testing-framework-create_with_widget--s1",
+  "title": "業務画面テンプレートとUI部品を使用して業務画面JSPを作成する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/guide/widget_usage/create_with_widget.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面のテンプレートを用意する",
+      "hints": [
+        "JSPテンプレート作成",
+        "taglibディレクティブ",
+        "業務画面テンプレート",
+        "DOCTYPE宣言",
+        "page_template",
+        "tagdir",
+        "ローカルJSPレンダリング",
+        "taglib宣言"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "画面をブラウザで表示する",
+      "hints": [
+        "ブラウザ表示確認",
+        "IE設定",
+        "ローカル画面確認",
+        "ブラウザモード",
+        "ドキュメントモード",
+        "project_structure"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "UI部品（ウィジェット）を配置していく",
+      "hints": [
+        "ウィジェット配置",
+        "自己終了エレメント",
+        "field:label",
+        "JSPウィジェット記述"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ウィジェットに定義されている属性について",
+      "hints": [
+        "name属性",
+        "sample属性",
+        "key属性",
+        "domain属性",
+        "dataFrom属性",
+        "hint属性",
+        "column:label",
+        "field:label",
+        "column:link",
+        "コード値定義",
+        "codeId",
+        "pattern",
+        "optionColumnName"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "画面遷移について",
+      "hints": [
+        "dummyUri",
+        "画面遷移",
+        "buttonウィジェット",
+        "紙芝居",
+        "遷移先JSP"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ウィジェットの作成について",
+      "hints": [
+        "カスタムウィジェット作成",
+        "field:text",
+        "内線番号ウィジェット",
+        "共通ウィジェット"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "入力画面と確認画面の共用",
+      "hints": [
+        "入力画面確認画面共用",
+        "n:confirmationPage",
+        "n:forInputPage",
+        "n:forConfirmationPage",
+        "confirmationPage"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "業務画面JSPの例",
+      "hints": [
+        "業務画面JSP例",
+        "入力画面",
+        "確認画面",
+        "一覧検索画面",
+        "詳細画面"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "入力画面",
+      "hints": [
+        "入力画面サンプル",
+        "W11AC0201.jsp",
+        "入力画面JSP例"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "確認画面",
+      "hints": [
+        "確認画面サンプル",
+        "W11AC0202.jsp",
+        "確認画面JSP例"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "一覧・検索画面",
+      "hints": [
+        "一覧検索画面サンプル",
+        "W11AC0101.jsp",
+        "一覧画面JSP例"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "詳細画面",
+      "hints": [
+        "詳細画面サンプル",
+        "W11AC0102.jsp",
+        "詳細画面JSP例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面JSPに業務画面テンプレート・UI部品を使用するための必須記述内容:\n\n1. **DOCTYPE宣言**:\n```html\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n```\n\n2. **ローカルJSPレンダリング機能スクリプトタグ**（本番稼働時はコメントアウトすること）:\n```jsp\n<!-- <%/* --> <script src=\"js/devtool.js\"></script><meta charset=\"utf-8\"><body> <!-- */%> -->\n```\n\n3. **JSPディレクティブ**:\n```jsp\n<%@page language=\"java\" contentType=\"text/html; charset=UTF-8\" pageEncoding=\"UTF-8\" %>\n```\n\n4. **タグライブラリ宣言**:\n\n| prefix | tagdir/uri | 提供されるUI部品 |\n|---|---|---|\n| `t` | `/WEB-INF/tags/template` | 業務画面テンプレート |\n| `field` | `/WEB-INF/tags/widget/field` | 入力項目・表示項目 |\n| `button` | `/WEB-INF/tags/widget/button` | ボタン |\n| `table` | `/WEB-INF/tags/widget/table` | 検索結果等テーブル表示 |\n| `column` | `/WEB-INF/tags/widget/column` | 表の列 |\n| `tab` | `/WEB-INF/tags/widget/tab` | タブ形式 |\n| `link` | `/WEB-INF/tags/widget/link` | リンク |\n| `spec` | `/WEB-INF/tags/widget/spec` | 画面状態設計情報（:ref:`spec_condition_widget` 参照） |\n| `n` | `http://tis.co.jp/nablarch` | Nablarchタグライブラリ（`nablarch.jar`同梱） |\n\n5. **業務画面テンプレートの使用** (`t:テンプレート名`):\n```jsp\n<t:page_template\n    title=\"画面タイトル\"\n    confirmationPageTitle=\"確認画面タイトル（入力・確認画面でJSPを共用しない場合は不要）\">\n  <jsp:attribute name=\"contentHtml\">\n      <%-- 業務領域 --%>\n  </jsp:attribute>\n</t:page_template>\n```\n\nサンプルファイル: :download:`このファイル <source/sample_template.jsp>`",
+    "s2": "作成した業務画面JSPは業務JSP作成用プロジェクトのサブシステムIDのディレクトリ配下に配置する（:doc:`project_structure` 参照）。ローカル画面確認.batを実行すると作成した画面に遷移してレイアウト確認が可能。\n\n> **重要**: IEを使用する場合は開発者ツールで以下の設定を確認すること。\n> - **ブラウザモード**: 使用しているIEのバージョンと同じ\n> - **ドキュメントモード**: 標準\n>\n> 開発者ツールを開いた状態では画面表示が崩れる場合があるため、設定確認後はツールを閉じること。\n\n![IE開発者ツール設定例（IE10）](assets/testing-framework-create_with_widget--s1/display_settings_for_ie.png)",
+    "s3": "業務画面テンプレートのJSPにウィジェットをタグ形式で記述して配置する。具体的なウィジェット使用方法は :ref:`example` を参照。\n\n> **重要**: ウィジェットは自己終了エレメントとして記述しないこと。自己終了エレメントとして記述すると、そのタグ以降の内容がブラウザで表示されなくなる。\n>\n> OK（正しい記述）:\n> ```jsp\n> <field:label title=\"ログインID\" sample=\"login-id\"></field:label>\n> ```\n>\n> NG（自己終了エレメント）:\n> ```jsp\n> <field:label title=\"ログインID\" sample=\"login-id\" />\n> ```",
+    "s4": "**name属性**:\n- PG・UT工程で定義するため設計段階では空で定義可\n- ローカル表示でname属性が必要なウィジェットが一部あるため各ウィジェットのガイドを確認\n- 設計時に物理名の設定が困難な場合は項目論理名を指定（PG担当者が実装開始時に物理名へ変換必要）\n\n**sample属性**:\n- ブラウザ表示時のダミー値を設定\n- 複数値は `|` 区切りで記載（プルダウン・チェックボックス・ラジオボタン・テーブル等）\n- `[]` で囲んだ値は初期表示時の選択状態になる\n- sample属性未指定時: `codeId`・`pattern`・`optionColumnName`属性値を元に `js/devtool/resource/コード値定義.js` からコード名称を取得\n\n**key属性**（`<column:label>` 等）:\n- レコードセットのキー名を指定する属性。PG・UT工程で決定するため設計段階では指定不要\n- key属性未指定かつsample属性が未指定または空文字の場合、別項目のsample値が表示される問題あり → keyに適当な文字列を指定するか、sampleにスペース文字を指定\n\n**domain属性**:\n- 画面項目定義出力のためにドメイン物理名を記載\n- `field:label`・`column:label`・`column:link` ではHTMLのclass属性にドメイン物理名を出力し表示レイアウトを制御\n- デフォルト動作: `Number`ドメインが指定された項目は右寄せ表示\n\n**dataFrom属性**:\n- 表示データ取得元を `表示情報取得元.表示項目名` の形式で記載\n\n**hint属性**:\n- 指定した文言が項目に対する備考として表示\n\n設計段階で決定できない必須属性は空で定義しておけばよい。",
+    "s5": "buttonウィジェットの `dummyUri` 属性を使用して、JSPをブラウザで直接開いた場合のボタンクリック時の遷移先JSPを指定できる。\n\n- 顧客への説明をより容易にするための属性であり、条件によって遷移先を変えるなど実際の遷移の忠実な再現はできない\n- 実際の遷移はPG・UT工程で実装される\n- 不要な場合は `dummyUri` 属性の指定は不要",
+    "s6": "「住所」「電話番号」「氏名」など典型的で複数画面で使用されうる項目については、内線番号ウィジェット（`field:text`ウィジェットの組み合わせで作成）のように各プロジェクトでカスタムウィジェットを作成することを推奨。\n\n作成方法の詳細はUI開発基盤用プロジェクトテンプレートの内線番号ウィジェットの実装を参照。",
+    "s7": "`field`ウィジェットの入力項目は入力画面と確認画面で自動的に切り替わる（入力画面: テキストボックス、確認画面: 表示のみ）。\n\n入力画面と確認画面を同一JSPで共用する場合、確認画面は以下のように作成:\n```jsp\n<!DOCTYPE html>\n<!-- <%/* --> <script src=\"js/devtool.js\"></script><meta charset=\"utf-8\"><body> <!-- */%> -->\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n<n:confirmationPage path=\"./W11AC0201.jsp\" />\n```\n\n入力画面と確認画面で異なる項目を表示する場合:\n- 入力画面専用項目: `<n:forInputPage>` で囲む\n- 確認画面専用項目: `<n:forConfirmationPage>` で囲む",
+    "s8": "業務画面JSPの作成例:\n\n- :ref:`入力画面 <input>`\n- :ref:`確認画面 <confirm>`\n- :ref:`検索・一覧画面 <list_search>`\n- :ref:`詳細画面 <detail>`",
+    "s9": "入力画面サンプル: :download:`W11AC0201.jsp <source/W11AC0201.jsp>`\n\n![入力画面表示例](assets/testing-framework-create_with_widget--s1/view_input.png)",
+    "s10": "確認画面サンプル: :download:`W11AC0202.jsp <source/W11AC0202.jsp>`\n\n![確認画面表示例](assets/testing-framework-create_with_widget--s1/view_confirm.png)",
+    "s11": "一覧・検索画面サンプル: :download:`W11AC0101.jsp <source/W11AC0101.jsp>`\n\n![一覧・検索画面表示例](assets/testing-framework-create_with_widget--s1/view_search.png)",
+    "s12": "詳細画面サンプル: :download:`W11AC0102.jsp <source/W11AC0102.jsp>`\n\n![詳細画面表示例](assets/testing-framework-create_with_widget--s1/view_detail.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

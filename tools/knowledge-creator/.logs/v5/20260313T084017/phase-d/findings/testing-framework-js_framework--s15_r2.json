@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-js_framework--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — プロトタイプ定義の説明",
+      "description": "「Object.merge(new Widget(), {...}) でWidgetコンストラクタのプロトタイプを継承する（sugar.jsのメソッド）」と記述しているが、ソースには Object.merge が sugar.js のメソッドであるとは明示されていない。sugar が依存モジュールとして列挙されているだけで、Object.merge の出典はソースから読み取れない。",
+      "source_evidence": "依存配列に `\"sugar\"` が含まれるのみで、Object.merge と sugar.js を結びつける記述はない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — ウィジェットメソッド・イベントハンドラの定義説明",
+      "description": "ソースはイベントハンドラに関して3点を明示しているが、知識ファイルではいずれも未記載または不完全。① 第一引数にはイベントオブジェクト（jQuery.Event）が渡される。② イベントオブジェクトの target 属性にはイベント発生元の DOMノードオブジェクトが設定されている。③ 明示的に false をリターンすることで、イベントのプロパゲーション**と**デフォルトアクションの実行を抑止できる。知識ファイルのコードコメントは「デフォルトアクションを抑止する」のみで、プロパゲーションの抑止については記載がない。",
+      "source_evidence": "「イベントハンドラとして登録した場合、第一引数にはイベントオブジェクト(jQuery.Event) が渡される。イベントオブジェクトのtarget属性には、イベントの発生元のDOMノードオブジェクトが設定されている。また、明示的にfalseをリターンすることで、イベントのプロパゲーションとデフォルトアクションの実行を抑止することができる。」"
+    }
+  ]
+}

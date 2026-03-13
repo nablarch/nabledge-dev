@@ -1,0 +1,205 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/getting_started/popup/index.rst`
+- Format: `rst`
+
+```
+.. _`client_popup`:
+
+ポップアップ画面の作成
+==========================================
+Exampleアプリケーションを元にポップアップ画面の作成方法を解説する。
+
+ポップアップ画面は、 :ref:`tag-submit_popup` に記載がある通り別ウィンドウ化ではなくダイアログ形式で作成する。
+
+作成する機能の説明
+  1. プロジェクト詳細画面の変更ボタンを押下する。
+
+    .. image:: ../images/popup/popup-project_update_btn.png
+      :scale: 80
+
+  2. 顧客欄の検索ボタンを押下する。
+
+    .. image:: ../images/popup/popup-project_update.png
+      :scale: 75
+
+  3. 顧客検索画面がダイアログで表示される。検索ボタンを押下する。
+
+    .. image:: ../images/popup/popup-popup_init.png
+      :scale: 60
+
+  4. 検索結果の顧客IDのリンクを押下する。
+
+    .. image:: ../images/popup/popup-popup_search.png
+      :scale: 80
+
+  5. 顧客検索画面が閉じられ、プロジェクト変更画面の顧客ID及び顧客名に選択した値が設定される。
+
+    .. image:: ../images/popup/popup-complete.png
+      :scale: 80
+
+ポップアップ(ダイアログ)画面を表示する
+------------------------------------------------
+ポップアップ(ダイアログ)の表示はOSS(Bootstrap)を使用して実現している。
+詳細は、 `Bootstrapのドキュメント(外部サイト、英語) <https://fezvrasta.github.io/bootstrap-material-design/>`_ を参照。
+
+.. _`popup-action`:
+
+業務アクションメソッドの作成
+  顧客を検索し、選択の結果を親画面に引き渡す。
+  
+  本機能は、ダイアログからのAjax呼び出しにより検索処理を実現している。
+  アクションクラスの実装方法については、 :ref:`restful_web_service` を参照。
+
+.. _`popup-popup_jsp`:
+
+ポップアップ画面のJSPの作成
+  jQueryを使用して、Ajax呼び出しの結果を元にDOMを構築し結果を表示する。
+  jQueryを使用しているため、詳細な解説は省略する。
+  
+  jQueryについては、 `ドキュメント(外部サイト、英語) <https://jquery.com/>`_ を参照。
+
+.. _`popup-parent_hand_over`:
+
+ポップアップ画面から親ウィンドウへ値を引き渡すJavaScript関数の作成
+  jQueryを使用してダイアログ内の情報を顧客名と顧客ID部に設定する。
+  jQueryを使用しているため、詳細な解説は省略する。
+  
+  jQueryについては、 `ドキュメント(外部サイト、英語) <https://jquery.com/>`_ を参照。
+  
+ポップアップ画面の解説は以上。
+
+:ref:`Getting Started TOPページへ <getting_started>`
+```
+
+## Knowledge File
+
+- ID: `web-application-getting-started-popup`
+
+```json
+{
+  "id": "web-application-getting-started-popup",
+  "title": "ポップアップ画面の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/popup/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ポップアップ(ダイアログ)画面を表示する",
+      "hints": [
+        "ポップアップ画面",
+        "ダイアログ形式",
+        "別ウィンドウ不使用",
+        "Bootstrap",
+        "Ajax",
+        "jQuery",
+        "DOM構築",
+        "親ウィンドウへの値引き渡し"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ポップアップ画面は別ウィンドウではなくダイアログ形式で作成する（:ref:`tag-submit_popup` 参照）。\n\nダイアログ表示にはBootstrap（OSS）を使用する。詳細は[Bootstrapのドキュメント(外部サイト、英語)](https://fezvrasta.github.io/bootstrap-material-design/)を参照。\n\n**業務アクション**: ダイアログからのAjax呼び出しにより検索処理を実現する。アクションクラスの実装方法は :ref:`restful_web_service` を参照。\n\n**ポップアップ画面JSP**: jQueryを使用してAjax呼び出しの結果を元にDOMを構築し結果を表示する。\n\n**親ウィンドウへの値引き渡し**: jQueryを使用してダイアログ内の情報を顧客名と顧客ID部に設定する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

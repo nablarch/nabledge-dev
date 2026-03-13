@@ -1,0 +1,476 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/web/secure_handler.rst`
+- Format: `rst`
+
+```
+.. _secure_handler:
+
+セキュアハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラでは、Webアプリケーションのセキュリティに関する処理やヘッダ設定を行う。
+
+デフォルトでは、レスポンスオブジェクト(:java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>`)に対して以下のレスポンスヘッダを設定する。
+
+* X-Frame-Options: SAMEORIGIN
+* X-XSS-Protection: 1; mode=block
+* X-Content-Type-Options: nosniff
+* Referrer-Policy: strict-origin-when-cross-origin
+* Cache-Control: no-store
+
+
+本ハンドラでは、以下の処理を行う。
+
+* Content-Security-Policyのnonceの生成
+* セキュリティ関連のレスポンスヘッダの設定処理
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/SecureHandler/flow.png
+  :scale: 85
+  
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.web.handler.SecureHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+
+制約
+------------------------------
+:ref:`http_response_handler` よりも後ろに設定すること
+  本ハンドラで設定したレスポンスヘッダを、 :ref:`http_response_handler` がServlet APIのレスポンスオブジェクトに設定するため。
+
+デフォルトで適用されるヘッダの値を変更したい
+--------------------------------------------------
+要件により、デフォルトで適用されるセキュリティ関連のヘッダの値を変更したい場合がある。
+
+例えば、フレーム内の表示を全て許可しない場合には、 ``X-Frame-Options`` ヘッダの値を ``DENY`` に変更する必要がある。
+このような場合は、コンポーネント設定ファイルに明示的に設定することで対応する。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.handler.SecureHandler">
+    <property name="secureResponseHeaderList">
+      <list>
+        <!-- X-Frame-Optionsの値を明示的に指定 -->
+        <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader">
+          <property name="option" value="DENY" />
+        </component>
+
+        <!-- 上記以外のヘッダはデフォルトのまま -->
+        <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" />
+        <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" />
+        <component class="nablarch.fw.web.handler.secure.CacheControlHeader" />
+      </list>
+    </property>
+  </component>
+
+.. tip::
+
+  値を変更するためのプロパティの詳細は、以下のクラスを参照。
+
+  * :java:extdoc:`FrameOptionsHeader <nablarch.fw.web.handler.secure.FrameOptionsHeader>`
+  * :java:extdoc:`ContentTypeOptionsHeader <nablarch.fw.web.handler.secure.ContentTypeOptionsHeader>`
+  * :java:extdoc:`XssProtectionHeader <nablarch.fw.web.handler.secure.XssProtectionHeader>`
+  * :java:extdoc:`ReferrerPolicyHeader <nablarch.fw.web.handler.secure.ReferrerPolicyHeader>`
+  * :java:extdoc:`CacheControlHeader <nablarch.fw.web.handler.secure.CacheControlHeader>`
+
+
+デフォルト以外のレスポンスヘッダを設定する
+-------------------------------------------------------
+デフォルト以外のセキュリティ関連のレスポンスヘッダを設定する手順を以下に示す。
+
+1. :java:extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` インタフェースの実装クラスで、
+   レスポンスヘッダに設定するフィールド名と値を指定する。
+
+  .. tip::
+    ロジックを含まない単純なレスポンスヘッダを作成する場合は、
+    :java:extdoc:`SecureResponseHeaderSupport <nablarch.fw.web.handler.secure.SecureResponseHeaderSupport>`
+    を継承して作成すればよい。
+
+2. 本ハンドラ(:java:extdoc:`SecureHandler <nablarch.fw.web.handler.SecureHandler>`)に、``No1`` で作成したクラスを設定する。
+
+.. important::
+
+  :java:extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` 実装クラスを設定する際は、
+  デフォルトで適用されていたコンポーネントも設定すること。
+
+  以下に設定ファイルの例を示す。
+
+  .. code-block:: xml
+
+    <component class="nablarch.fw.web.handler.SecureHandler">
+      <property name="secureResponseHeaderList">
+        <list>
+          <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader" />
+          <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" />
+          <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" />
+          <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" />
+          <component class="nablarch.fw.web.handler.secure.CacheControlHeader" />
+
+          <!-- 追加で作成したコンポーネント -->
+          <component class="nablarch.fw.web.handler.secure.SampleSecurityHeader" />
+        </list>
+      </property>
+    </component>
+
+.. _content_security_policy:
+
+Content Security Policy(CSP)に対応する
+-------------------------------------------------------
+本ハンドラの設定と ``ContentSecurityPolicyHeader`` 、そして :ref:`JSPカスタムタグのCSP対応 <tag-content_security_policy>` を組み合わせることでCSPに関する機能を有効にできる。
+
+  .. tip::
+    Content Security Policy(CSP)は、クロスサイトスクリプティングなどのコンテンツへのインジェクションに関する攻撃を検知し影響を
+    軽減するために追加できる仕組みのことである。CSPそのものについては、 `Content Security Policy Level 3(外部サイト、英語) <https://www.w3.org/TR/CSP3/>`_ や
+    `Content Security Policy Level 2(外部サイト、英語) <https://www.w3.org/TR/CSP2/>`_ を参照すること。
+
+:ref:`tag` を使用している場合は一部のカスタムタグでJavaScriptを出力するため、本ハンドラの機能でnonceを生成しレスポンスヘッダやscript要素などに埋め込むことで対応する。
+
+Content-Security-Policyヘッダの出力には、 ``ContentSecurityPolicyHeader`` を使用することで本ハンドラで生成したnonceを
+埋め込むことができる。
+
+固定のContent-Security-Policyヘッダを設定する
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+固定のContent-Security-Policyヘッダを設定する手順を以下に示す。
+
+1. 本ハンドラ(:java:extdoc:`SecureHandler <nablarch.fw.web.handler.SecureHandler>`)に、 ``ContentSecurityPolicyHeader`` を設定する。
+
+2. ``ContentSecurityPolicyHeader`` に ``policy`` を設定する。
+
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.handler.SecureHandler">
+    <property name="secureResponseHeaderList">
+      <list>
+        <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" />
+        <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" />
+        <component class="nablarch.fw.web.handler.secure.CacheControlHeader" />
+
+        <!-- Content-Security-Policyを付与するコンポーネント -->
+        <component class="nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader">
+          <!-- ポリシーを設定する -->
+          <property name="policy" value="default-src 'self'" />
+        </component>
+      </list>
+    </property>
+  </component>
+
+この場合、 ``Content-Security-Policy: default-src 'self'`` といったレスポンスヘッダが書き出される。
+   
+nonceを生成してContent-Security-Policyヘッダに設定する
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+nonceを生成してContent-Security-Policyヘッダに設定する手順を以下に示す。
+
+1. 本ハンドラ(:java:extdoc:`SecureHandler <nablarch.fw.web.handler.SecureHandler>`)の ``generateCspNonce`` プロパティを ``true`` に設定する。
+
+2. 本ハンドラに、``ContentSecurityPolicyHeader`` を設定する。
+
+3. ``ContentSecurityPolicyHeader`` に ``policy`` を設定し、プレースホルダー ``$cspNonceSource$`` を含める。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.handler.SecureHandler">
+    <!-- nonceを生成するように設定する -->
+    <property name="generateCspNonce" value="true" />
+    <property name="secureResponseHeaderList">
+      <list>
+        <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" />
+        <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" />
+        <component class="nablarch.fw.web.handler.secure.CacheControlHeader" />
+
+        <!-- Content-Security-Policyを付与するコンポーネント -->
+        <component class="nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader">
+          <!-- nonceを含んだポリシーを設定する -->
+          <property name="policy" value="default-src 'self' '$cspNonceSource$'" />
+        </component>
+      </list>
+    </property>
+  </component>
+
+この場合プレースホルダー ``$cspNonceSource$`` は ``nonce-[本ハンドラで生成されたnonce]`` に置換され、たとえば ``Content-Security-Policy: default-src 'self' 'nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV'`` のようなレスポンスヘッダとして書き出される。
+
+本ハンドラではnonceをリクエストの都度生成する。
+生成したnonceはリクエストスコープに格納され、 :ref:`tag` の動作を以下のように変更する。
+
+* script要素を生成するカスタムタグの場合、生成したnonceを自動でnonce属性に設定する。
+* onclick属性にサブミット用の関数呼び出しを設定するカスタムタグは、その内容をscript要素に出力するように変更する。
+
+また任意の要素にnonceを設定したい場合に使えるカスタムタグも有効になる。
+
+詳しくは :ref:`JSPカスタムタグのCSP対応 <tag-content_security_policy>` を参照すること。
+
+.. important::
+  Internet Explorer 11はCSPに対応していないため、開発するアプリケーションの動作対象環境にInternet Explorer 11が含まれているかどうかを確認したうえで
+  NablarchのCSPに関する機能を利用すること。
+
+report-only モードで動作させる
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+report-only モードで動作させる場合は ``reportOnly`` を ``true`` に設定する。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.handler.SecureHandler">
+    <property name="secureResponseHeaderList">
+      <list>
+        <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" />
+        <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" />
+        <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" />
+        <component class="nablarch.fw.web.handler.secure.CacheControlHeader" />
+
+        <component class="nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader">
+          <property name="policy" value="default-src 'self'; report-uri http://example.com/report" />
+          <!-- report-onlyモードで動作させる -->
+          <property name="reportOnly" value="true" />
+        </component>
+      </list>
+    </property>
+  </component>
+
+この場合、 ``Content-Security-Policy-Report-Only: default-src 'src'; report-uri http://example.com/report`` といったレスポンスヘッダが書き出される。
+```
+
+## Knowledge File
+
+- ID: `handlers-secure_handler--s1`
+
+```json
+{
+  "id": "handlers-secure_handler--s1",
+  "title": "セキュアハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/secure_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/SecureHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/FrameOptionsHeader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/ContentTypeOptionsHeader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/XssProtectionHeader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/ReferrerPolicyHeader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/CacheControlHeader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/SecureResponseHeader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/secure/SecureResponseHeaderSupport.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "SecureHandler",
+        "nablarch.fw.web.handler.SecureHandler",
+        "セキュアハンドラ",
+        "Webセキュリティハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "http_response_handler",
+        "ハンドラ順序",
+        "配置制約",
+        "レスポンスヘッダ設定順序"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "デフォルトで適用されるヘッダの値を変更したい",
+      "hints": [
+        "X-Frame-Options",
+        "X-XSS-Protection",
+        "X-Content-Type-Options",
+        "Referrer-Policy",
+        "Cache-Control",
+        "FrameOptionsHeader",
+        "XssProtectionHeader",
+        "ContentTypeOptionsHeader",
+        "ReferrerPolicyHeader",
+        "CacheControlHeader",
+        "nablarch.fw.web.handler.secure.FrameOptionsHeader",
+        "nablarch.fw.web.handler.secure.XssProtectionHeader",
+        "nablarch.fw.web.handler.secure.ContentTypeOptionsHeader",
+        "nablarch.fw.web.handler.secure.ReferrerPolicyHeader",
+        "nablarch.fw.web.handler.secure.CacheControlHeader",
+        "デフォルトヘッダ変更",
+        "セキュリティヘッダカスタマイズ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "デフォルト以外のレスポンスヘッダを設定する",
+      "hints": [
+        "SecureResponseHeader",
+        "SecureResponseHeaderSupport",
+        "nablarch.fw.web.handler.secure.SecureResponseHeader",
+        "nablarch.fw.web.handler.secure.SecureResponseHeaderSupport",
+        "secureResponseHeaderList",
+        "カスタムレスポンスヘッダ追加",
+        "独自セキュリティヘッダ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Content Security Policy(CSP)に対応する",
+      "hints": [
+        "ContentSecurityPolicyHeader",
+        "nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader",
+        "generateCspNonce",
+        "CSP",
+        "Content-Security-Policy",
+        "nonce",
+        "$cspNonceSource$",
+        "reportOnly",
+        "Content-Security-Policy-Report-Only",
+        "クロスサイトスクリプティング対策",
+        "CSP nonce生成",
+        "report-onlyモード",
+        "tag-content_security_policy"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.SecureHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+    "s3": ":ref:`http_response_handler` よりも後ろに設定すること。本ハンドラで設定したレスポンスヘッダを、:ref:`http_response_handler` がServlet APIのレスポンスオブジェクトに設定するため。",
+    "s4": "デフォルトで設定されるレスポンスヘッダ:\n\n- X-Frame-Options: SAMEORIGIN\n- X-XSS-Protection: 1; mode=block\n- X-Content-Type-Options: nosniff\n- Referrer-Policy: strict-origin-when-cross-origin\n- Cache-Control: no-store\n\nデフォルト値を変更する場合は、コンポーネント設定ファイルに明示的に設定する。例として `X-Frame-Options` を `DENY` に変更する場合:\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <!-- X-Frame-Optionsの値を明示的に指定 -->\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\">\n        <property name=\"option\" value=\"DENY\" />\n      </component>\n      <!-- 上記以外のヘッダはデフォルトのまま -->\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n    </list>\n  </property>\n</component>\n```\n\n> **補足**: 値を変更するためのプロパティの詳細は以下のクラスを参照: :java:extdoc:`FrameOptionsHeader <nablarch.fw.web.handler.secure.FrameOptionsHeader>`, :java:extdoc:`ContentTypeOptionsHeader <nablarch.fw.web.handler.secure.ContentTypeOptionsHeader>`, :java:extdoc:`XssProtectionHeader <nablarch.fw.web.handler.secure.XssProtectionHeader>`, :java:extdoc:`ReferrerPolicyHeader <nablarch.fw.web.handler.secure.ReferrerPolicyHeader>`, :java:extdoc:`CacheControlHeader <nablarch.fw.web.handler.secure.CacheControlHeader>`",
+    "s5": "1. :java:extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` インタフェースを実装し、レスポンスヘッダのフィールド名と値を指定する。ロジックを含まない単純なヘッダは :java:extdoc:`SecureResponseHeaderSupport <nablarch.fw.web.handler.secure.SecureResponseHeaderSupport>` を継承して作成する。\n2. :java:extdoc:`SecureHandler <nablarch.fw.web.handler.SecureHandler>` の `secureResponseHeaderList` に作成したクラスを設定する。\n\n> **重要**: :java:extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` 実装クラスを設定する際は、デフォルトで適用されていたコンポーネントも合わせて設定すること。\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n      <!-- 追加で作成したコンポーネント -->\n      <component class=\"nablarch.fw.web.handler.secure.SampleSecurityHeader\" />\n    </list>\n  </property>\n</component>\n```",
+    "s6": "本ハンドラの設定と `ContentSecurityPolicyHeader`、および :ref:`JSPカスタムタグのCSP対応 <tag-content_security_policy>` を組み合わせることでCSPを有効にできる。:ref:`tag` を使用している場合、一部カスタムタグがJavaScriptを出力するため、nonceを生成してレスポンスヘッダやscript要素に埋め込む。\n\n> **重要**: Internet Explorer 11はCSPに対応していないため、対象環境にIE11が含まれるか確認したうえで使用すること。\n\n### 固定のContent-Security-Policyヘッダを設定する\n\n1. :java:extdoc:`SecureHandler <nablarch.fw.web.handler.SecureHandler>` に `ContentSecurityPolicyHeader` を設定する。\n2. `ContentSecurityPolicyHeader` の `policy` を設定する。\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <property name=\"policy\" value=\"default-src 'self'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n`Content-Security-Policy: default-src 'self'` というレスポンスヘッダが書き出される。\n\n### nonceを生成してContent-Security-Policyヘッダに設定する\n\n1. :java:extdoc:`SecureHandler <nablarch.fw.web.handler.SecureHandler>` の `generateCspNonce` プロパティを `true` に設定する。\n2. `ContentSecurityPolicyHeader` を設定する。\n3. `policy` にプレースホルダー `$cspNonceSource$` を含める。\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"generateCspNonce\" value=\"true\" />\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <property name=\"policy\" value=\"default-src 'self' '$cspNonceSource$'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n`$cspNonceSource$` は `nonce-[生成されたnonce]` に置換される（例: `Content-Security-Policy: default-src 'self' 'nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV'`）。nonceはリクエストごとに生成されリクエストスコープに格納される。:ref:`tag` の動作変更:\n\n- script要素を生成するカスタムタグ: 生成したnonceがnonce属性に自動設定される\n- onclick属性にサブミット用関数呼び出しを設定するカスタムタグ: 内容をscript要素に出力するよう変更される\n\n任意の要素にnonceを設定するカスタムタグも利用可能。詳しくは :ref:`JSPカスタムタグのCSP対応 <tag-content_security_policy>` を参照。\n\n### report-only モードで動作させる\n\n`ContentSecurityPolicyHeader` の `reportOnly` プロパティを `true` に設定する。\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <property name=\"policy\" value=\"default-src 'self'; report-uri http://example.com/report\" />\n        <property name=\"reportOnly\" value=\"true\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n`Content-Security-Policy-Report-Only: default-src 'src'; report-uri http://example.com/report` というレスポンスヘッダが書き出される。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

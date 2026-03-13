@@ -1,0 +1,34 @@
+{
+  "file_id": "releases-nablarch5u14-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: No.7 JSPカスタムタグ（タグリファレンス）",
+      "description": "No.7「listNameが空の場合に画面に何も出力しない仕様の明記」が完全に欠落している。selectタグ・radioButtonsタグ・checkboxesタグにおいてlistNameプロパティに空のリストをセットすると画面上には何も出力されないという挙動の仕様説明が含まれていない。AIがこれらのタグのlistName動作について質問に答えるために必要な情報。",
+      "source_evidence": "「以下の３つのタグにある'listName'プロパティに空のリストをセットしたときの挙動が解説書から読み取れなかったため解説書に追記しました。空のリストをセットすると、画面上には何も出力されません。- selectタグ / - radioButtonsタグ / - checkboxesタグ」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: No.24 マスタデータ投入ツール（テスティングフレームワーク）",
+      "description": "No.24「マスタデータ投入ツールがマルチスレッド対応していないことをドキュメントに注記」が完全に欠落している。マスタデータ投入ツールとテスティングフレームワークがマルチスレッド未対応であるという制約情報が含まれていない。並列テスト実行環境でこのツールを使おうとする開発者への誤った回答につながる可能性がある。",
+      "source_evidence": "「マスタデータ投入ツールとテスティングフレームワークがマルチスレッド未対応の旨をドキュメントに追記しました。nablarch-document 5u14 / 参照: https://nablarch.github.io/docs/5u14/doc/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.html」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: No.9, No.11, No.12〜No.16, No.18, No.19, No.21〜No.23",
+      "description": "「主な変更点（システム影響なし）」テーブルにNo.1, 2, 8, 10のみが記載されており、以下の項目が欠落している: No.9（RESTfulアーキタイプ Jacksonバージョンアップ）、No.11（ETL Jacksonバージョンアップ）、No.12〜16（Exampleプロジェクト修正）、No.18（UI開発基盤テンプレートのGit対応）、No.19（UI開発基盤展開手順SVN前提の追記）、No.21（UI部品テストコード5u13リリース漏れ取り込み）、No.22（UI開発基盤動作確認環境OSバージョンアップ）、No.23（UI開発基盤導入手順の不要手順修正）。",
+      "source_evidence": "ソースのリリースノートNo.9〜No.23（上記Noを除く）に各修正内容・対象モジュール・バージョン情報が記載されている"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 hints配列",
+      "description": "以下の重要なモジュール名がhints配列に欠落している: `nablarch-jackson-adaptor`、`nablarch-jersey-adaptor`、`nablarch-resteasy-adaptor`（No.10 JAX-RSアダプタ対応モジュール）、`nablarch-main-default-configuration`（No.5 HIDDENストア対応モジュール）。",
+      "source_evidence": "No.10: 「nablarch-jackson-adaptor 1.0.4 / nablarch-jersey-adaptor 1.0.3 / nablarch-resteasy-adaptor 1.0.3」、No.5: 「nablarch-main-default-configuration 1.1.1」"
+    }
+  ]
+}

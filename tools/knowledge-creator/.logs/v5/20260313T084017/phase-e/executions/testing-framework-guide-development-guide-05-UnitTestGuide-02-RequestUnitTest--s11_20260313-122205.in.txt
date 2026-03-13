@@ -1,0 +1,550 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — Formやエンティティがリクエストスコープにある場合の補足 tip",
+      "description": "The tip about testing a Form whose property holds another Form omits the first step: obtaining the outer Form from the request scope (`Object actualForm = context.getRequestScopedVar(\"form\");`). The knowledge file shows only the inner-Form extraction line (`Object actualSystemAccount = actualForm.getSystemAccount();`), leaving the tip's code incomplete and potentially confusing to an AI trying to answer how to test this case.",
+      "source_evidence": "Source tip code example: `Object actualForm = context.getRequestScopedVar(\"form\"); Object actualSystemAccount = actualForm.getSystemAccount(); assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);` — all three lines are present in the source but only the middle line appears in the knowledge file."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+テストメソッドの書き方
+----------------------
+
+スーパクラスについて
+====================
+
+BasicHttpRequestTestTemplateクラスを継承する。
+このクラスでは、準備したテストデータを元に以下の手順でリクエスト単体テストを実行する。
+
+* データシートからテストケースリスト(testShots LIST_MAP）を取得
+* 取得したテストケース分、以下を繰り返し実行
+
+  *  データベース初期化
+  *  ExecutionContext、HTTPリクエストを生成
+  *  業務テストコード用拡張ポイント呼出(beforeExecuteRequestメソッド）
+  *  トークンが必要な場合、トークンを設定
+  *  テスト対象のリクエスト実行
+  *  実行結果の検証
+
+    * HTTPステータスコード および メッセージID
+    * HTTPレスポンス値(リクエストスコープ値)
+    * 検索結果
+    * テーブル更新結果
+
+  *  業務テストコード用拡張ポイント呼出(afterExecuteRequestメソッド）
+
+
+
+
+以下のメソッドが、スーパクラスで抽象メソッドとして定義されているのでオーバーライドする。
+
+
+.. code-block:: java
+
+ public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
+    
+    /**
+     * {@inheritDoc}
+     * 【説明】 URIの共通部分を返却する。
+     */
+    @Override
+    protected String getBaseUri() {
+        return "/action/management/user/UserSearchAction/";
+    }
+
+
+
+テストメソッド作成
+==================
+
+準備したテストシートに対応するメソッドを作成する。
+
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00101() {
+    }
+
+
+
+スーパクラスのメソッド呼び出し
+==============================
+
+
+テストメソッド内で、スーパクラスの以下のいずれかのメソッドを呼び出す。
+
+* void execute()
+* void execute(Advice advice)
+
+通常の場合、execute()を使用する。
+
+.. code-block:: java
+    
+    @Test
+    public void testUsers00101Normal() {
+        execute();
+    }
+
+
+固有の処理を追加する場合
+------------------------
+
+スーパクラスでは、どんなテストケースでも必要となる処理を定型化しているが、
+テストケースによっては固有の処理が必要な場合がある。
+(例えば、リクエストスコープにエンティティが格納されており、その内容を確認したい場合等)。
+
+
+シート固有の準備処理、結果確認処理が必要な場合は、\
+execute(Advice advice)を使用して、リクエスト送信前後に処理を挿し込むことができる。
+BasicAdviceクラスには以下のメソッドが用意されており、それぞれリクエスト送信前、送信後にコールバックされる。
+
+* void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)
+* void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)
+
+.. tip::
+  これらのメソッド両方をオーバーライドする必要はない。必要なものだけをオーバーライドする。
+  また、これらのメソッド内に全ての処理を記述する必要はない。記述が長くなったり、
+  テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと。
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00102Normal() {
+        execute(new BasicAdvice() {
+            // 【説明】本メソッドはリクエスト送信前に呼び出される。
+            @Override
+            public void beforeExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                // 【説明】ここに準備処理を記述する。
+            }
+
+            // 【説明】本メソッドはリクエスト送信後に呼び出される。
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                // 【説明】ここに結果確認処理を記述する。
+            }
+        });
+    }
+
+
+リクエストスコープに複数種類の検索結果が格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープに「ユーザグループ」と「ユースケース」の2種類の検索結果が含まれており、
+それぞれの検索結果が期待通りであることを検証している。
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00103() {
+        execute(new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                
+                String messgae = testCaseInfo.getTestCaseName();   // 【説明】比較失敗時のメッセージ
+                String sheetName = testCaseInfo.getSheetName();    // 【説明】シート名
+                String no = testCaseInfo.getTestCaseNo();          // 【説明】テストケース番号
+                
+                // グループ検索結果の検証
+                SqlResultSet actualGroup =(SqlResultSet) context.getRequestScopedVar("allGroup");
+                assertSqlResultSetEquals(message, sheetName, "expectedUgroup" + no, actualGroup);
+                        
+                // ユースケース検索結果の検証
+                SqlResultSet actualUseCase =(SqlResultSet) context.getRequestScopedVar("allUseCase");
+                assertSqlResultSetEquals(message, sheetName, "expectedUseCase" + no, actualUseCase);
+            }
+        });
+    }
+
+
+
+リクエストスコープに検索結果(SqlResultSet)ではなくFormやエンティティが格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープにエンティティが格納されており、
+それぞれの検索結果が期待通りであることを検証している。
+
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute(new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                String sheetName = testCaseInfo.getSheetName();
+                // システムアカウントを比較
+                // 【説明】期待値のID（接頭辞"systemAccount" + ケース番号）
+                String expectedSystemAccountId = "systemAccount" + testCaseInfo.getTestCaseNo();
+                // 【説明】実際の値をリクエストスコープから取り出す
+                Object actualSystemAccount = context.getRequestScopedVar("systemAccount");
+                // 【説明】エンティティを比較するメソッドを呼び出す。
+                assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);
+
+                // ユーザを比較
+                String expectedUsersId = "users" + testCaseInfo.getTestCaseNo();
+                Object actualUsers = context.getRequestScopedVar("users");
+                assertEntity(sheetName, expectedUsersId, actualUsers);
+            }
+        });
+    }
+
+
+期待値は、エンティティのクラス単体テスト（\ :ref:`entityUnitTest_SetterGetterCase`\ ）と同様の書式で記述する。
+ただし、この場合はsetterの欄は不要である。
+
+.. image:: ./_image/assert_entity.png
+
+
+.. tip::
+   リクエストスコープにFormが格納されている場合、別のFormを設定したプロパティでなければEntityの場合と同様にテストが出来る。
+   
+   別のFormを設定したプロパティの場合、そのFormを取得してEntityと同様にテストをすればよい。以下に例を示す。
+   
+   
+   .. code-block:: java
+   
+       @Test
+       public void testSampleNormal() {
+           execute(new BasicAdvice() {
+               @Override
+               public void afterExecute(TestCaseInfo testCaseInfo,
+                       ExecutionContext context) {
+                   String sheetName = testCaseInfo.getSheetName();
+                   // システムアカウントを比較
+                   // 【説明】期待値のID（接頭辞"systemAccount" + ケース番号）
+                   String expectedSystemAccountId = "systemAccount" + testCaseInfo.getTestCaseNo();
+                   // 【説明】Formをリクエストスコープから取り出す
+                   Object actualForm = context.getRequestScopedVar("form");
+                   // 【説明】Formのプロパティである別のFormを取得
+                   Object actualSystemAccount = actualForm.getSystemAccount();
+                   // 【説明】エンティティを比較するメソッドを呼び出す。
+                   assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);
+               }
+           });
+       }
+
+
+リクエストスコープにSqlResultSetではなくSqlRowが格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープに、検索結果一覧(SqlResultSet)ではなく、
+検索結果1件分(SqlRow)がリクエストスコープに格納されており、
+その検索結果が期待通りであることを検証している。
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute(new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                String message = testCaseInfo.getTestCaseName();   // 【説明】比較失敗時のメッセージ
+                String sheetName = testCaseInfo.getSheetName();    // 【説明】シート名
+                String no = testCaseInfo.getTestCaseNo();          // 【説明】テストケース番号
+                
+                // グループ検索結果の検証
+                SqlRow actual =(SqlRow) context.getRequestScopedVar("user");
+                // 【説明】SqlRowを比較するメソッドを呼び出す。
+                assertSqlRowEquals(message, sheetName, "expectedUser" + no, actual);
+            }
+        });
+    }
+
+
+
+リクエストパラメータの値を検証したい場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+:ref:`ウィンドウスコープ<tag-window_scope>` の値をリセットするために、
+テスト対象機能にてリクエストパラメータを書き換える場合がある。
+
+以下の例では、テスト対象実行後のリクエストパラメータが期待通りであることを検証している。
+
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute(new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+
+                HttpRequest request = testCaseInfo.getHttpRequest();   // 【説明】テスト実行後のHttpRequest
+                // リクエストパラメータがリセットされていること
+                assertEquals("", getParam(request, "resetparameter"));
+            }
+        });
+    }
+
+
+
+その他の場合
+~~~~~~~~~~~~
+
+前述のように、SqlResultSetやSqlRow等のよく使用されるオブジェクトについては、
+Excelに記載した期待値と直接比較するメソッドが用意されているが、
+そうでない場合については、期待値を読み込む処理を記述する必要がある。
+
+具体的には、以下の手順で検証する。
+
+* テストデータをExcelファイルから取得
+* リクエストスコープ等から実際の値を取得
+* 自動テストフレームワークまたはJUnitのAPIを用いて結果を検証する。
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00303Normal() {
+        execute(new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                // 【説明】期待値をExcelファイルから取得
+                List<Map<String, String>> expected = getListMap("doRW25AA0303NormalEnd", "result_1");
+                // 【説明】テスト実行後のリクエストスコープから実際の値を取得
+                List<Map<String, String>> actual = context.getRequestScopedVar("pageData");
+                // 【説明】結果検証
+                assertListMapEquals(expected, actual);
+            }
+        });
+    }
+
+\    
+
+.. tip::
+ テストデータの取得方法については、以下のリンク先を参照。
+  * 「\ :ref:`how_to_get_data_from_excel`\ 」
+
+
+
+
+
+
+ダウンロードファイルのテスト
+============================
+
+ダウンロードファイルをテストする場合は、\
+:ref:`batch_request_test` と同じ方法でファイルの期待値をExcelファイルに記載してテストする。\
+以下にCSVファイルをダウンロードする場合のテスト例を示す。
+
+**期待するファイルの定義例**
+
+ ファイルパスにはダンプファイルを指定する。\
+ ダウンロード処理の場合は、ダウンロードされたファイルがダンプされ、\
+ 下記の命名規則でダンプファイルが出力される。\
+ ダンプ出力結果が格納されるディレクトリの詳細は、 :ref:`html_dump_dir` を参照すること。
+
+  .. code-block:: bash
+
+   ダンプファイルの命名規則：
+     Excelファイルのシート名＋"_"＋テストケース名＋"_"＋ダウンロードされたファイル名
+
+ .. image:: ./_image/expected_download_csv.png
+    :scale: 60
+   
+**テストメソッドの実装例**
+
+ FileSupportクラスのassertFileメソッドを使用してダウンロードファイルのアサートを行う。
+
+ .. code-block:: java
+
+    private FileSupport fileSupport = new FileSupport(getClass());
+    
+    @Test
+    public void testRW11AC0104Download() {
+        execute(new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                String msgOnFail = "ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。";
+                fileSupport.assertFile(msgOnFail, "testRW11AC0104Download");
+            }
+        });
+    }
+
+
+--------------
+テスト起動方法
+--------------
+
+クラス単体テストと同様。通常のJUnitテストと同じように実行する。
+
+
+----------------------
+テスト結果確認（目視）
+----------------------
+
+１リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開き、目視確認する。
+
+.. tip::
+ リクエスト単体テストで生成されたHTMLファイルは自動テストフレームワークにて自動的にチェックされる。\
+ 自動テストフレームワークは、\ :doc:`../../08_TestTools/03_HtmlCheckTool/index`\ を用いて生成されたHTMLファイルをチェックする。
+ HTMLファイル内に構文エラー等の違反があった場合は、その違反内容に応じた例外が発生し、そのテストケースは失敗となる。\
+
+
+
+.. _html_dump_dir:
+
+HTMLダンプ出力結果
+==================
+
+テストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成され、
+その配下にHTMLダンプファイルが出力される。
+HTMLダンプ出力結果が格納されるディレクトリの詳細は、 :ref:`dump-dir-label` の項を参照すること。
+
+ .. image:: ./_image/htmlDumpDir.png
+
+.. tip::
+ HTMLダンプファイル名には、\ `テストケース一覧`_\ のテストケース説明（testShotsのdescription欄）
+ の記述が使用される。
+
+
+----------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--s11",
+  "title": "テストメソッドの書き方",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "スーパクラスについて",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "testShots",
+        "getBaseUri",
+        "リクエスト単体テスト実行フロー",
+        "beforeExecuteRequest",
+        "afterExecuteRequest",
+        "ExecutionContext"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストメソッド作成",
+      "hints": [
+        "テストメソッド作成",
+        "@Test"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "スーパクラスのメソッド呼び出し",
+      "hints": [
+        "execute",
+        "BasicAdvice",
+        "beforeExecute",
+        "afterExecute",
+        "TestCaseInfo",
+        "ExecutionContext",
+        "assertSqlResultSetEquals",
+        "assertEntity",
+        "assertSqlRowEquals",
+        "HttpRequest",
+        "getHttpRequest",
+        "getParam",
+        "getListMap",
+        "assertListMapEquals",
+        "SqlResultSet",
+        "SqlRow",
+        "リクエストスコープ検証",
+        "固有処理"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ダウンロードファイルのテスト",
+      "hints": [
+        "FileSupport",
+        "assertFile",
+        "ダウンロードファイルテスト",
+        "batch_request_test",
+        "html_dump_dir",
+        "ダンプファイル命名規則"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "テスト起動方法",
+      "hints": [
+        "JUnit",
+        "テスト起動方法",
+        "リクエスト単体テスト実行"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "テスト結果確認（目視）",
+      "hints": [
+        "HTMLダンプ",
+        "HTMLCheckTool",
+        "テスト結果確認"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "HTMLダンプ出力結果",
+      "hints": [
+        "html_dump",
+        "dump-dir-label",
+        "HTMLダンプ出力結果",
+        "testShots",
+        "description"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `BasicHttpRequestTestTemplate`\n\n`BasicHttpRequestTestTemplate`を継承する。テスト実行フロー:\n\n1. データシートからtestShots LIST_MAPを取得\n2. 取得したテストケース分、以下を繰り返し実行\n   1. データベース初期化\n   2. `ExecutionContext`、HTTPリクエストを生成\n   3. `beforeExecuteRequest`メソッド呼出（業務テストコード用拡張ポイント）\n   4. トークンが必要な場合、トークンを設定\n   5. テスト対象のリクエスト実行\n   6. 実行結果の検証（HTTPステータスコード/メッセージID、HTTPレスポンス値(リクエストスコープ値)、検索結果、テーブル更新結果）\n   7. `afterExecuteRequest`メソッド呼出（業務テストコード用拡張ポイント）\n\n抽象メソッド`getBaseUri()`をオーバーライドしてURIの共通部分を返却する:\n\n```java\npublic class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {\n    @Override\n    protected String getBaseUri() {\n        return \"/action/management/user/UserSearchAction/\";\n    }\n}\n```",
+    "s2": "準備したテストシートに対応するメソッドを作成する:\n\n```java\n@Test\npublic void testMenus00101() {\n}\n```",
+    "s3": "テストメソッド内でスーパクラスの以下のいずれかのメソッドを呼び出す:\n- `void execute()` — 通常の場合に使用\n- `void execute(Advice advice)` — 固有の処理が必要な場合\n\n```java\n@Test\npublic void testUsers00101Normal() {\n    execute();\n}\n```\n\n固有の処理（リクエストスコープのエンティティ内容確認等）が必要な場合は`execute(Advice advice)`を使用してリクエスト送信前後に処理を挿し込む。\n\n**クラス**: `BasicAdvice`\n- `void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` — リクエスト送信前にコールバック\n- `void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` — リクエスト送信後にコールバック\n\n> **補足**: 両方のオーバーライドは不要。必要なものだけオーバーライドすること。処理が長くなる場合やテストメソッド間で共通する処理はプライベートメソッドに切り出すこと。\n\n### SqlResultSetが複数種類格納されている場合\n\n```java\n@Test\npublic void testMenus00103() {\n    execute(new BasicAdvice() {\n        @Override\n        public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n            String message = testCaseInfo.getTestCaseName();\n            String sheetName = testCaseInfo.getSheetName();\n            String no = testCaseInfo.getTestCaseNo();\n\n            SqlResultSet actualGroup = (SqlResultSet) context.getRequestScopedVar(\"allGroup\");\n            assertSqlResultSetEquals(message, sheetName, \"expectedUgroup\" + no, actualGroup);\n\n            SqlResultSet actualUseCase = (SqlResultSet) context.getRequestScopedVar(\"allUseCase\");\n            assertSqlResultSetEquals(message, sheetName, \"expectedUseCase\" + no, actualUseCase);\n        }\n    });\n}\n```\n\n### Formやエンティティがリクエストスコープにあるとき（assertEntity）\n\n```java\nString expectedSystemAccountId = \"systemAccount\" + testCaseInfo.getTestCaseNo();\nObject actualSystemAccount = context.getRequestScopedVar(\"systemAccount\");\nassertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);\n```\n\n期待値はエンティティのクラス単体テスト（:ref:`entityUnitTest_SetterGetterCase`）と同様の書式で記述する（setterの欄は不要）。\n\n![エンティティ比較の期待値定義例](assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--s11/assert_entity.png)\n\n> **補足**: FormのプロパティにFormが格納されている場合は、そのFormを取得してEntityと同様にテストできる（例: `Object actualSystemAccount = actualForm.getSystemAccount();`）。\n\n### SqlRowが格納されている場合（assertSqlRowEquals）\n\n```java\nSqlRow actual = (SqlRow) context.getRequestScopedVar(\"user\");\nassertSqlRowEquals(message, sheetName, \"expectedUser\" + no, actual);\n```\n\n### リクエストパラメータを検証する場合\n\n:ref:`ウィンドウスコープ<tag-window_scope>`のリセットのためリクエストパラメータを書き換える場合など、テスト対象実行後のリクエストパラメータを検証する:\n\n```java\nHttpRequest request = testCaseInfo.getHttpRequest();\nassertEquals(\"\", getParam(request, \"resetparameter\"));\n```\n\n### その他（SqlResultSet/SqlRow以外のオブジェクト）\n\nExcelからデータを取得して検証する手順: (1) テストデータをExcelファイルから取得 (2) リクエストスコープ等から実際の値を取得 (3) 自動テストフレームワークまたはJUnitのAPIで結果を検証。\n\n```java\nList<Map<String, String>> expected = getListMap(\"doRW25AA0303NormalEnd\", \"result_1\");\nList<Map<String, String>> actual = context.getRequestScopedVar(\"pageData\");\nassertListMapEquals(expected, actual);\n```\n\nテストデータの取得方法は:ref:`how_to_get_data_from_excel`を参照。",
+    "s4": ":ref:`batch_request_test`と同じ方法でExcelファイルに期待値を記載してテストする。ファイルパスにはダンプファイルを指定する。\n\nダウンロード処理の場合のダンプファイル命名規則: `Excelファイルのシート名_テストケース名_ダウンロードされたファイル名`\n\nダンプ出力結果が格納されるディレクトリの詳細は:ref:`html_dump_dir`を参照。\n\n期待値定義例:\n\n![ダウンロードCSVの期待値定義例](assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--s11/expected_download_csv.png)\n\n`FileSupport`クラスの`assertFile`メソッドを使用してダウンロードファイルをアサートする:\n\n```java\nprivate FileSupport fileSupport = new FileSupport(getClass());\n\n@Test\npublic void testRW11AC0104Download() {\n    execute(new BasicAdvice() {\n        @Override\n        public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n            String msgOnFail = \"ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。\";\n            fileSupport.assertFile(msgOnFail, \"testRW11AC0104Download\");\n        }\n    });\n}\n```",
+    "s5": "クラス単体テストと同様。通常のJUnitテストと同じように実行する。",
+    "s6": "1リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開き目視確認する。\n\n> **補足**: リクエスト単体テストで生成されたHTMLファイルは自動テストフレームワークにて自動的にチェックされる。:doc:`../../08_TestTools/03_HtmlCheckTool/index`を用いてHTMLファイルをチェックし、HTMLファイル内に構文エラー等の違反があった場合は違反内容に応じた例外が発生してそのテストケースは失敗となる。",
+    "s7": "テスト用プロジェクトのルートディレクトリに`tmp/html_dump`ディレクトリが作成され、その配下にHTMLダンプファイルが出力される。ダンプ出力結果が格納されるディレクトリの詳細は:ref:`dump-dir-label`を参照。\n\n![HTMLダンプ出力ディレクトリ](assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest--s11/htmlDumpDir.png)\n\n> **補足**: HTMLダンプファイル名には、テストケース一覧（testShots）のdescription欄の記述が使用される。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

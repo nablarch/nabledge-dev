@@ -1,0 +1,167 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-delayed_receive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The knowledge file renders the source instruction 「参照すること」(refer to / consult) as「準拠する」(conform to / comply with). The source says 「テストデータの記述方法は、real_request_test を参照すること」— an explicit directive to look at the referenced section — whereas the knowledge file asserts 「テストデータの記述方法は real_request_test に準拠する」, which instead claims that the method formally follows or complies with that section. These carry different nuances and the word 準拠 does not appear in the source.",
+      "source_evidence": "テストデータの記述方法は、\\ :ref:`real_request_test`\\ を参照すること。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+====================================================================
+リクエスト単体テストの実施方法（応答不要メッセージ受信処理）
+====================================================================
+
+--------------------
+概要
+--------------------
+応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される。
+このため、リクエスト単体テストではこのアクションクラスを使用して、以下の\ `テスト対象の成果物`_ の確認を行う。
+
+**※ 他のテストのようにアクションクラスに対する条件網羅や、限界値テストなどは実施不要である。**
+
+テスト対象の成果物
+===================
+* 電文のレイアウトを定義したフォーマット定義ファイル
+* データベースへ電文を登録する際に使用するFormクラス
+* データベースへ電文を登録するためのINSERT文
+
+--------------------
+テストクラスの書き方
+--------------------
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象機能のパッケージとする。
+* <電文のリクエストID>RequestTestというクラス名でテストクラスを作成する。
+* \ ``nablarch.test.core.messaging.MessagingReceiveTestSupport``\ を継承する。
+
+例えば、テスト対象機能のパッケージがnablarch.sample.ss21AA、電文のリクエストIDがRM21AA100だとすると、テストクラスは以下のようになる。
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  
+  // ～中略～
+
+  public class RM21AA100RequestTest extends MessagingReceiveTestSupport {
+
+--------------------
+テストデータの書き方
+--------------------
+`テスト対象の成果物`_ のテストを行うために必要なテストデータの記述方法を説明する。
+
+テストデータの記述方法は、\ :ref:`real_request_test`\ を参照すること。
+本項では、\ :ref:`real_request_test`\ と記述方法が異なる箇所を解説する。
+
+
+各種期待値
+==============
+
+レスポンスメッセージ
+--------------------
+
+応答不要メッセージ受信処理では、応答電文は存在しないため応答電文が期待値通りであることを確認する必要はない。期待するデータベースの状態のみ確認する。
+
+このため、レスポンスメッセージ(「MESSAGE=expectedMessages」)の記述は不要である。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-delayed_receive--s1",
+  "title": "リクエスト単体テストの実施方法（応答不要メッセージ受信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ受信処理",
+        "リクエスト単体テスト",
+        "テスト対象の成果物",
+        "フォーマット定義ファイル",
+        "Formクラス",
+        "INSERT文",
+        "条件網羅不要",
+        "限界値テスト不要",
+        "Nablarch提供アクションクラス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingReceiveTestSupport",
+        "nablarch.test.core.messaging.MessagingReceiveTestSupport",
+        "テストクラス命名規則",
+        "RequestTest",
+        "テストクラス作成",
+        "RM21AA100RequestTest"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "テストデータ記述方法",
+        "real_request_test",
+        "応答不要メッセージ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "レスポンスメッセージ",
+      "hints": [
+        "レスポンスメッセージ不要",
+        "MESSAGE=expectedMessages",
+        "期待値",
+        "データベース検証",
+        "応答電文なし"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される。このため、リクエスト単体テストではこのアクションクラスを使用して、テスト対象の成果物の確認を行う。\n\n> **重要**: 他のテストのようにアクションクラスに対する条件網羅や限界値テストなどは実施不要。\n\n**テスト対象の成果物**:\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- データベースへ電文を登録する際に使用するFormクラス\n- データベースへ電文を登録するためのINSERT文",
+    "s2": "テストクラス作成ルール: (1) テスト対象機能と同一パッケージ (2) クラス名は`{電文のリクエストID}RequestTest` (3) `MessagingReceiveTestSupport`を継承\n\n**クラス**: `nablarch.test.core.messaging.MessagingReceiveTestSupport`\n\n例（パッケージ`nablarch.sample.ss21AA`、リクエストID`RM21AA100`の場合）:\n```java\npackage nablarch.sample.ss21AA;\n\n// ～中略～\n\npublic class RM21AA100RequestTest extends MessagingReceiveTestSupport {\n```",
+    "s3": "テストデータの記述方法は :ref:`real_request_test` に準拠する。本項では :ref:`real_request_test` と記述方法が異なる箇所を解説する。",
+    "s4": "応答不要メッセージ受信処理では応答電文は存在しないため、レスポンスメッセージ（`MESSAGE=expectedMessages`）の記述は不要。期待するデータベースの状態のみ確認する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

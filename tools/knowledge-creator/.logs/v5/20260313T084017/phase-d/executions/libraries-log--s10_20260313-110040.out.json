@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-log--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The source h2 section contains over 2000 characters of plain text and has multiple h3 subheadings (LogWriterフォーマッタ変更, 各種ログフォーマッタ差し替え, NablarchバッチのログをJSON形式にする), but the knowledge file places all content in a single section s1 without splitting. Per V3 rules, when h2 >= 2000 chars and h3 subheadings exist, the knowledge file should split into multiple sections to enable targeted retrieval. Suggested splits: s1=LogWriterのJsonLogFormatter設定, s2=各種ログのJSON版フォーマッタ, s3=NablarchバッチのJSON設定.",
+      "source_evidence": "RST h3 markers (~~~~~): 'LogWriterで使用するフォーマッタをJsonLogFormatterに変更する', '各種ログで使用するフォーマッタをJSONログ用に差し替える', 'NablarchバッチのログをJSON形式にする'. Each subsection is itself substantial (hundreds of characters)."
+    }
+  ]
+}

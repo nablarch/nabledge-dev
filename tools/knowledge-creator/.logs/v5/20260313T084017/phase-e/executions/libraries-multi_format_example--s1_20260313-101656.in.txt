@@ -1,0 +1,403 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-multi_format_example--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "PascalCase record type names `DataRecord` and `TrailerRecord` appear in the title record code examples but are absent from s2 hints. These are searchable names users may query when working with title record multi-format definitions.",
+      "source_evidence": "Source title record multi-format example defines `[DataRecord]` and `[TrailerRecord]` record types."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "Configuration property `quoting-delimiter` is used in the title record multi-format code example but is missing from s2 hints.",
+      "source_evidence": "Source code block: `quoting-delimiter: \"\\\"\"      # 囲み文字`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+Fixed(固定長)のマルチフォーマット定義のサンプル集
+--------------------------------------------------
+
+単一のフィールドでフォーマットを識別する例
+  単一フィールドが条件の場合、そのフィールド値が各フォーマットに定義した条件と一致した場合に、そのレコード定義で処理される。
+
+  このサンプルでは、以下のルールでレコードが識別される。
+
+  * dataKbnが1の場合、headerレコードタイプとなる。
+  * dataKbnが2の場合、dataレコードタイプとなる。
+
+  .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    40      # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード(crlf)
+
+    # レコード識別フィールドの定義
+    [Classifier]
+    1 dataKbn X(1)
+
+    # ヘッダレコードの定義
+    [header]
+    dataKbn = "1"
+    1 dataKbn X(1)
+    2 data    X(39)
+
+    # データレコードの定義
+    [data]
+    dataKbn = "2"
+    1 dataKbn X(1)
+    2 data    X(39)
+
+複数のフィールドでフォーマットを識別する例
+  複数のフィールドでレコードを識別する場合、全ての条件を満たした場合に、そのレコード定義で処理される。
+
+  このサンプルでは、以下のルールでレコードが識別される。
+
+  * dataKbnが1でtypeが01の場合、parentDataレコードタイプとなる。
+  * dataKbnが2でtypeが02の場合、childDataレコードタイプとなる。
+
+  .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    40      # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード(crlf)
+
+    # レコード識別フィールドの定義
+    [Classifier]
+    1   dataKbn X(1)      # 先頭1バイト
+    10  type    X(2)      # 10バイト目から2バイト
+
+    [parentData]
+    dataKbn = "1"
+    type    = "01"
+    1  dataKbn X(1)
+    2  ?filler X(9)
+    10 type    X(2)
+    13 data    X(28)
+
+    [childData]
+    dataKbn = "1"
+    type    = "02"
+    1  dataKbn X(1)
+    2  ?filler X(9)
+    10 type    X(2)
+    13 data    X(28)
+
+レコード毎に識別項目が異なる場合の例
+  レコード毎に識別に使用する項目が異なる場合、レコード識別フィールドには識別に使用する全てのフィールドを定義する。
+  個別のレコードの条件定義部には、そのレコードを識別する条件を定義する。
+
+  このサンプルでは、以下のルールでレコードが識別される。
+
+  * dataKbnが1の場合、headerレコードタイプとなる。
+  * dataKbnが2でtypeが01の場合、data1レコードタイプとなる。
+  * dataKbnが2でtypeが02の場合、data2レコードタイプとなる。
+
+  .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    40      # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード(crlf)
+
+    # レコード識別フィールドの定義
+    [Classifier]
+    1   dataKbn X(1)      # 先頭1バイト
+    10  type    X(2)      # 10バイト目から2バイト
+
+    # ヘッダ
+    [header]
+    dataKbn = "1"
+    1  dataKbn X(1)
+    2  ?filler X(39)
+
+    [data1]
+    dataKbn = "2"
+    type    = "01"
+    1  dataKbn X(1)
+    2  ?filler X(9)
+    10 type    X(2)
+    13 data    X(28)
+
+    [data2]
+    dataKbn = "2"
+    type    = "02"
+    1  dataKbn X(1)
+    2  ?filler X(9)
+    10 type    X(2)
+    13 data    X(28)
+
+Variable(可変長)でマルチフォーマット定義のサンプル集
+------------------------------------------------------------
+Variable(可変長)データのマルチフォーマットの定義方法について説明する。
+
+単一のフィールドでフォーマットを識別する例
+  単一フィールドが条件の場合、そのフィールド値が各フォーマットに定義した条件と一致した場合に、そのレコード定義で処理される。
+
+  このサンプルでは、以下のルールでレコードが識別される。
+
+  * dataKbnが1の場合、headerレコードタイプとなる。
+  * dataKbnが2の場合、dataレコードタイプとなる。
+
+  .. code-block:: bash
+
+    file-type:        "Variable" # 可変長
+    text-encoding:    "MS932"    # 文字列型フィールドの文字エンコーディング
+    record-separator: "\r\n"     # 改行コード(crlf)
+    field-separator:  ","        # csv
+
+
+    # レコード識別フィールドの定義
+    [Classifier]
+    1 dataKbn X
+
+    # ヘッダレコードの定義
+    [header]
+    dataKbn = "1"
+    1 dataKbn X
+    2 data    X
+
+    # データレコードの定義
+    [data]
+    dataKbn = "2"
+    1 dataKbn X
+    2 data    X
+
+複数のフィールドでフォーマットを識別する例
+  複数のフィールドでレコードを識別する場合、全ての条件を満たした場合に、そのレコード定義で処理される。
+
+  このサンプルでは、以下のルールでレコードが識別される。
+
+  * dataKbnが1でtypeが01の場合、parentDataレコードタイプとなる。
+  * dataKbnが2でtypeが02の場合、childDataレコードタイプとなる。
+
+  .. code-block:: bash
+
+    file-type:        "Variable" # 可変長
+    text-encoding:    "MS932"    # 文字列型フィールドの文字エンコーディング
+    record-separator: "\r\n"     # 改行コード(crlf)
+    field-separator:  ","        # csv
+
+    # レコード識別フィールドの定義
+    [Classifier]
+    1 dataKbn X
+    3 type    X
+
+    [parentData]
+    dataKbn = "1"
+    type    = "01"
+    1 dataKbn X
+    2 ?filler X
+    3 type    X
+    4 data    X
+
+    [childData]
+    dataKbn = "1"
+    type    = "02"
+    1 dataKbn X
+    2 ?filler X
+    3 type    X
+    4 data    X
+ 
+レコード毎に識別項目が異なる場合の例
+  レコード毎に識別に使用する項目が異なる場合、レコード識別フィールドには識別に使用する全てのフィールドを定義する。
+  個別のレコードの条件定義部には、そのレコードを識別する条件を定義する。
+
+  このサンプルでは、以下のルールでレコードが識別される。
+
+  * dataKbnが1の場合、headerレコードタイプとなる。
+  * dataKbnが2でtypeが01の場合、data1レコードタイプとなる。
+  * dataKbnが2でtypeが02の場合、data2レコードタイプとなる。
+
+  .. code-block:: bash
+
+    file-type:        "Variable" # 可変長
+    text-encoding:    "MS932"    # 文字列型フィールドの文字エンコーディング
+    record-separator: "\r\n"     # 改行コード(crlf)
+    field-separator:  ","        # csv
+
+    # レコード識別フィールドの定義
+    [Classifier]
+    1   dataKbn X
+    3   type    X
+
+    # ヘッダ
+    [header]
+    dataKbn = "1"
+    1 dataKbn X
+    2 ?filler X
+
+    [data1]
+    dataKbn = "2"
+    type    = "01"
+    1 dataKbn X
+    2 ?filler X
+    3 type    X
+    4 data    X
+
+    [data2]
+    dataKbn = "2"
+    type    = "02"
+    1 dataKbn X
+    2 ?filler X
+    3 type    X
+    4 data    X
+
+.. _data_format-variable_title_sample:
+
+タイトルレコードを使用した場合の例
+  :ref:`タイトルレコードあり <data_format-requires-title>` の可変長ファイルの場合、タイトルレコードに関してはレコード識別条件を定義する必要が無い。
+
+  タイトルレコード以外のフォーマットがシングルフォーマットの場合には、以下の例のようにレコード識別( ``Classifier`` )の定義は不要となる。
+  タイトルレコードのレイアウト定義は、レコードタイプ名を ``Title`` として定義する。
+
+  .. code-block:: bash
+
+    # requires-titleがtrueの場合、最初の行をタイトルとして読み書きできる。
+    requires-title: true  
+
+    # タイトル固有のレコードタイプ。最初の行はこのレコードタイプで読み書きされる。
+    [Title]               
+    1   Kubun      N
+    2   Name       N
+    3   Publisher  N
+    4   Authors    N
+    5   Price      N
+
+    # データのレコードタイプ。最初の行以降の行はこのレコードタイプで読み書きされる。
+    [DataRecord]          
+    1   Kubun      X
+    2   Name       N
+    3   Publisher  N
+    4   Authors    N
+    5   Price      N
+
+  タイトルレコード以外のフォーマットがマルチフォーマットの場合には、以下の例のようにレコード識別( ``Classifier`` )の定義が必要となる。
+  タイトルレコードを示すレコードタイプが ``Title`` のレコード定義については、マルチフォーマット時に必要となる条件定義は必要ない。
+
+  .. code-block:: bash
+
+    file-type:    "Variable"     # 可変長
+    text-encoding:     "ms932"   # ファイルエンコーディング
+    record-separator:  "\r\n"    # CRLFで改行
+    field-separator:   ","       # フィールド区切り文字
+    quoting-delimiter: "\""      # 囲み文字
+    requires-title: true         # 最初の行をタイトルとして読み書きする
+
+
+    [Classifier]
+    1  Kubun X                   # レコードタイプ識別フィールド（データ区分）
+                                 # 1: データ、2: トレイラ
+
+    # タイトル固有のレコードタイプ。マルチフォーマットでもフォーマットの適用条件は不要。
+    [Title]                      
+    1   Kubun      N  "データ区分"
+    2   Name       N  "書籍名"
+    3   Publisher  N  "出版社"
+    4   Authors    N  "著者"
+    5   Price      N  "価格"
+
+    [DataRecord]                 # データのレコードタイプ
+      Kubun = "1"                # データのフォーマットの適用条件
+    1   Kubun      X             # データ区分
+    2   Name       N             # 書籍名
+    3   Publisher  N             # 出版社
+    4   Authors    N             # 著者
+    5   Price      N             # 価格
+
+    [TrailerRecord]              # トレイラのレコードタイプ
+      Kubun = "2"                # トレイラのフォーマットの適用条件
+    1   Kubun      X             # データ区分
+    2   RecordNum  X             # 総件数
+
+  .. tip::
+    
+    タイトルレコードのレコードタイプ名を ``Title`` から変更したい場合には、 :ref:`data_format-title_type_nameディレクティブ <data_format-title_type_name>` を使用すること。
+    その場合には、タイトルレコードを示すレコードタイプ名を ``Title`` ではなく、:ref:`data_format-title_type_nameディレクティブ <data_format-title_type_name>` で設定した値に変更すること。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-multi_format_example--s1",
+  "title": "マルチフォーマット定義のサンプル集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format/multi_format_example.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Fixed(固定長)のマルチフォーマット定義のサンプル集",
+      "hints": [
+        "固定長",
+        "Fixed",
+        "マルチフォーマット定義",
+        "レコード識別",
+        "Classifier",
+        "単一フィールド識別",
+        "複数フィールド識別",
+        "record-length",
+        "record-separator",
+        "dataKbn"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Variable(可変長)でマルチフォーマット定義のサンプル集",
+      "hints": [
+        "可変長",
+        "Variable",
+        "マルチフォーマット定義",
+        "レコード識別",
+        "Classifier",
+        "タイトルレコード",
+        "requires-title",
+        "field-separator",
+        "Title",
+        "dataKbn"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Fixed(固定長)のマルチフォーマット定義のサンプル集\n\n### 単一フィールドでフォーマットを識別する例\n\n単一フィールドが条件の場合、そのフィールド値が各フォーマットに定義した条件と一致した場合に、そのレコード定義で処理される。\n\n```bash\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    40\nrecord-separator: \"\\r\\n\"\n\n[Classifier]\n1 dataKbn X(1)\n\n[header]\ndataKbn = \"1\"\n1 dataKbn X(1)\n2 data    X(39)\n\n[data]\ndataKbn = \"2\"\n1 dataKbn X(1)\n2 data    X(39)\n```\n\n### 複数フィールドでフォーマットを識別する例\n\n複数フィールドでレコードを識別する場合、**全ての条件を満たした場合**にそのレコード定義で処理される。\n\n```bash\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    40\nrecord-separator: \"\\r\\n\"\n\n[Classifier]\n1   dataKbn X(1)\n10  type    X(2)\n\n[parentData]\ndataKbn = \"1\"\ntype    = \"01\"\n1  dataKbn X(1)\n2  ?filler X(9)\n10 type    X(2)\n13 data    X(28)\n\n[childData]\ndataKbn = \"1\"\ntype    = \"02\"\n1  dataKbn X(1)\n2  ?filler X(9)\n10 type    X(2)\n13 data    X(28)\n```\n\n### レコード毎に識別項目が異なる場合の例\n\nレコード毎に識別に使用する項目が異なる場合、**Classifierには識別に使用する全てのフィールドを定義**し、個別レコードの条件定義部には、そのレコードを識別する条件を定義する。\n\n```bash\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    40\nrecord-separator: \"\\r\\n\"\n\n[Classifier]\n1   dataKbn X(1)\n10  type    X(2)\n\n[header]\ndataKbn = \"1\"\n1  dataKbn X(1)\n2  ?filler X(39)\n\n[data1]\ndataKbn = \"2\"\ntype    = \"01\"\n1  dataKbn X(1)\n2  ?filler X(9)\n10 type    X(2)\n13 data    X(28)\n\n[data2]\ndataKbn = \"2\"\ntype    = \"02\"\n1  dataKbn X(1)\n2  ?filler X(9)\n10 type    X(2)\n13 data    X(28)\n```",
+    "s2": "## Variable(可変長)でマルチフォーマット定義のサンプル集\n\n### 単一フィールドでフォーマットを識別する例\n\n単一フィールドが条件の場合、そのフィールド値が各フォーマットに定義した条件と一致した場合に、そのレコード定義で処理される。\n\n```bash\nfile-type:        \"Variable\"\ntext-encoding:    \"MS932\"\nrecord-separator: \"\\r\\n\"\nfield-separator:  \",\"\n\n[Classifier]\n1 dataKbn X\n\n[header]\ndataKbn = \"1\"\n1 dataKbn X\n2 data    X\n\n[data]\ndataKbn = \"2\"\n1 dataKbn X\n2 data    X\n```\n\n### 複数フィールドでフォーマットを識別する例\n\n複数フィールドでレコードを識別する場合、**全ての条件を満たした場合**にそのレコード定義で処理される。\n\n```bash\nfile-type:        \"Variable\"\ntext-encoding:    \"MS932\"\nrecord-separator: \"\\r\\n\"\nfield-separator:  \",\"\n\n[Classifier]\n1 dataKbn X\n3 type    X\n\n[parentData]\ndataKbn = \"1\"\ntype    = \"01\"\n1 dataKbn X\n2 ?filler X\n3 type    X\n4 data    X\n\n[childData]\ndataKbn = \"1\"\ntype    = \"02\"\n1 dataKbn X\n2 ?filler X\n3 type    X\n4 data    X\n```\n\n### レコード毎に識別項目が異なる場合の例\n\nレコード毎に識別に使用する項目が異なる場合、**Classifierには識別に使用する全てのフィールドを定義**し、個別レコードの条件定義部には、そのレコードを識別する条件を定義する。\n\n```bash\nfile-type:        \"Variable\"\ntext-encoding:    \"MS932\"\nrecord-separator: \"\\r\\n\"\nfield-separator:  \",\"\n\n[Classifier]\n1   dataKbn X\n3   type    X\n\n[header]\ndataKbn = \"1\"\n1 dataKbn X\n2 ?filler X\n\n[data1]\ndataKbn = \"2\"\ntype    = \"01\"\n1 dataKbn X\n2 ?filler X\n3 type    X\n4 data    X\n\n[data2]\ndataKbn = \"2\"\ntype    = \"02\"\n1 dataKbn X\n2 ?filler X\n3 type    X\n4 data    X\n```\n\n### タイトルレコードを使用した場合の例\n\n`requires-title: true` の場合、最初の行をタイトルとして読み書きできる。タイトルレコードのレイアウト定義はレコードタイプ名を `Title` として定義する。\n\nタイトルレコード以外のフォーマットがシングルフォーマットの場合、`Classifier` の定義は不要。\n\n```bash\nrequires-title: true\n\n[Title]\n1   Kubun      N\n2   Name       N\n3   Publisher  N\n4   Authors    N\n5   Price      N\n\n[DataRecord]\n1   Kubun      X\n2   Name       N\n3   Publisher  N\n4   Authors    N\n5   Price      N\n```\n\nタイトルレコード以外のフォーマットがマルチフォーマットの場合、`Classifier` の定義が必要。タイトルレコード（`Title`）については、マルチフォーマット時に必要な条件定義は不要。\n\n```bash\nfile-type:         \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title:    true\n\n[Classifier]\n1  Kubun X\n\n[Title]\n1   Kubun      N  \"データ区分\"\n2   Name       N  \"書籍名\"\n3   Publisher  N  \"出版社\"\n4   Authors    N  \"著者\"\n5   Price      N  \"価格\"\n\n[DataRecord]\n  Kubun = \"1\"\n1   Kubun      X\n2   Name       N\n3   Publisher  N\n4   Authors    N\n5   Price      N\n\n[TrailerRecord]\n  Kubun = \"2\"\n1   Kubun      X\n2   RecordNum  X\n```\n\n> **補足**: タイトルレコードのレコードタイプ名を `Title` から変更したい場合には、:ref:`data_format-title_type_nameディレクティブ <data_format-title_type_name>` を使用すること。その場合、タイトルレコードを示すレコードタイプ名を `Title` ではなく、そのディレクティブで設定した値に変更すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

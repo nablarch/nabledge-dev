@@ -1,0 +1,126 @@
+{
+  "id": "libraries-repository--s17",
+  "title": "コンストラクタインジェクションを使用する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/repository.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/config/externalize/annotation/SystemRepositoryComponent.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/config/externalize/annotation/ConfigValue.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/config/externalize/annotation/ComponentRef.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/config/ConstructorInjectionComponentCreator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/config/externalize/AnnotationComponentDefinitionLoader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/ComponentCreator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DelegateFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DispatchHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/initialization/Initializable.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/initialization/BasicApplicationInitializer.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/disposal/Disposable.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/disposal/BasicApplicationDisposer.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/disposal/DisposableAdaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/SystemRepository.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コンストラクタインジェクションを使用する",
+      "hints": [
+        "SystemRepositoryComponent",
+        "ConfigValue",
+        "ComponentRef",
+        "ConstructorInjectionComponentCreator",
+        "AnnotationComponentDefinitionLoader",
+        "ComponentCreator",
+        "@SystemRepositoryComponent",
+        "@ConfigValue",
+        "@ComponentRef",
+        "コンストラクタインジェクション",
+        "DIコンテナ",
+        "設定値インジェクション",
+        "コンポーネントインジェクション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ActionクラスをDIコンテナで管理する",
+      "hints": [
+        "DelegateFactory",
+        "SystemRepositoryDelegateFactory",
+        "DispatchHandler",
+        "ActionクラスDI管理",
+        "ディスパッチハンドラ",
+        "DelegateFactory差し替え"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "オブジェクトの初期化処理を行う",
+      "hints": [
+        "Initializable",
+        "BasicApplicationInitializer",
+        "initialize",
+        "オブジェクト初期化",
+        "初期化順序",
+        "initializer"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "オブジェクトの廃棄処理を行う",
+      "hints": [
+        "Disposable",
+        "BasicApplicationDisposer",
+        "DisposableAdaptor",
+        "dispose",
+        "addDisposable",
+        "オブジェクト廃棄",
+        "廃棄順序",
+        "disposer",
+        "Closeable廃棄"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "DIコンテナの情報をシステムリポジトリに設定する",
+      "hints": [
+        "SystemRepository",
+        "XmlComponentDefinitionLoader",
+        "DiContainer",
+        "システムリポジトリ設定",
+        "DIコンテナロード"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "システムリポジトリからオブジェクトを取得する",
+      "hints": [
+        "SystemRepository",
+        "システムリポジトリ取得",
+        "コンポーネント取得",
+        "ネストコンポーネント"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "環境設定ファイルの記述ルール",
+      "hints": [
+        "環境設定ファイル",
+        "configファイル",
+        "propertiesファイル",
+        "設定値記述ルール",
+        "行コメント",
+        "複数行設定値",
+        "予約語エスケープ",
+        "空値挙動"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**アノテーション**: `@SystemRepositoryComponent`, `@ConfigValue`, `@ComponentRef`\n\n:java:extdoc:`SystemRepositoryComponent <nablarch.core.repository.di.config.externalize.annotation.SystemRepositoryComponent>` が付与されたクラスにコンストラクタインジェクションが実行される条件:\n- コンストラクタが1つだけ定義されている\n- コンストラクタが引数をもつ\n\nインジェクション仕様:\n- :java:extdoc:`ConfigValue <nablarch.core.repository.di.config.externalize.annotation.ConfigValue>` 付与の引数 → 設定値がインジェクションされる\n- :java:extdoc:`ComponentRef <nablarch.core.repository.di.config.externalize.annotation.ComponentRef>` 付与の引数 → DIコンテナ登録のコンポーネントがインジェクションされる\n- アノテーションなしの場合:\n  - 型一致コンポーネントがDIコンテナ上に1つのみ → 自動インジェクション\n  - 型一致コンポーネントが0または複数 → 何もインジェクションしない\n\n`@ConfigValue`: アノテーションの `value` に設定した値がインジェクションされる。環境依存値は `${キー}` 形式で指定可能。使用可能な型は :ref:`repository-property_type` に準ずる。\n\n```java\n@SystemRepositoryComponent\npublic class ExampleService {\n\n    private final String errorMessageId;\n\n    public ExampleService(@ConfigValue(\"${example.service.errorMessageId}\") String errorMessageId) {\n        this.errorMessageId = errorMessageId;\n    }\n```\n\n`@ComponentRef`: アノテーションの `value` に設定した名前のコンポーネントがインジェクションされる。\n\n```java\n@SystemRepositoryComponent\npublic class ExampleService {\n\n  private LettuceRedisClient client;\n\n  public ExampleService(@ComponentRef(\"lettuceRedisClientProvider\") LettuceRedisClient client) {\n      this.client = client;\n  }\n}\n```\n\n> **補足**: コンストラクタインジェクションは :java:extdoc:`ConstructorInjectionComponentCreator <nablarch.core.repository.di.config.ConstructorInjectionComponentCreator>` で実現。:java:extdoc:`AnnotationComponentDefinitionLoader <nablarch.core.repository.di.config.externalize.AnnotationComponentDefinitionLoader>` の `newComponentCreator` をオーバーライドすることで任意の :java:extdoc:`ComponentCreator <nablarch.core.repository.di.ComponentCreator>` 実装に差し替え可能。\n\n```java\npublic class ExampleComponentDefinitionLoader extends AnnotationComponentDefinitionLoader {\n    @Override\n    protected String getBasePackage() {\n        return \"com.example\";\n    }\n\n    @Override\n    protected ComponentCreator newComponentCreator() {\n        // 任意のComponentCreator実装クラスに変更する。\n        return new ExampleComponentCreator();\n    }\n}\n```",
+    "s2": "ActionクラスにアノテーションをつけることでDIコンテナ管理可能になる。:ref:`router_adaptor`、:ref:`request_path_java_package_mapping`、:ref:`http_request_java_package_mapping` などのディスパッチハンドラではディスパッチ先クラスはハンドラ内でインスタンス化される。ActionクラスをDIコンテナに登録する場合は、:java:extdoc:`DelegateFactory <nablarch.fw.handler.DelegateFactory>` を差し替える必要がある。\n\n:java:extdoc:`DispatchHandler#setDelegateFactory <nablarch.fw.handler.DispatchHandler.setDelegateFactory(nablarch.fw.handler.DelegateFactory)>` で設定する:\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"delegateFactory\">\n    <component class=\"nablarch.fw.handler.SystemRepositoryDelegateFactory\"/>\n  </property>\n</component>\n```",
+    "s3": "**クラス**: `nablarch.core.repository.initialization.Initializable`, `nablarch.core.repository.initialization.BasicApplicationInitializer`\n\n手順:\n1. :java:extdoc:`Initializable <nablarch.core.repository.initialization.Initializable>` インタフェースを実装し、`initialize()` で初期化処理を行う\n2. コンポーネント設定ファイルで :java:extdoc:`BasicApplicationInitializer <nablarch.core.repository.initialization.BasicApplicationInitializer>` に初期化対象を設定する\n\n```java\npublic class SampleComponent implements Initializable {\n    public void initialize() {\n        // 初期化処理\n    }\n}\n```\n\n> **重要**: `BasicApplicationInitializer` のコンポーネント名は必ず **initializer** とすること。\n\n初期化順を制御する場合、先に初期化したいオブジェクトをリストの上に設定する。\n\n```xml\n<component name=\"sampleObject1\" class=\"sample.SampleComponent1\" />\n<component name=\"sampleObject2\" class=\"sample.SampleComponent2\" />\n<component name=\"sampleObject3\" class=\"sample.SampleComponent3\" />\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"sampleObject1\" />\n      <component-ref name=\"sampleObject2\" />\n      <component-ref name=\"sampleObject3\" />\n    </list>\n  </property>\n</component>\n```",
+    "s4": "**クラス**: `nablarch.core.repository.disposal.Disposable`, `nablarch.core.repository.disposal.BasicApplicationDisposer`, `nablarch.core.repository.disposal.DisposableAdaptor`\n\n手順:\n1. :java:extdoc:`Disposable <nablarch.core.repository.disposal.Disposable>` インタフェースを実装し、`dispose()` で廃棄処理を行う\n2. コンポーネント設定ファイルで :java:extdoc:`BasicApplicationDisposer <nablarch.core.repository.disposal.BasicApplicationDisposer>` に廃棄対象を設定する\n\n```java\npublic class SampleComponent implements Disposable {\n    public void dispose() throws Exception {\n        // リソース解放処理\n    }\n}\n```\n\n> **重要**: `BasicApplicationDisposer` のコンポーネント名は必ず **disposer** とすること。\n\n廃棄順を制御する場合、先に廃棄したいオブジェクトをリストの**下に設定**する。`BasicApplicationDisposer` は `disposableList` に設定した順序の逆順で廃棄処理を実行する。\n\n```xml\n<component name=\"sampleObject1\" class=\"sample.SampleComponent1\" />\n<component name=\"sampleObject2\" class=\"sample.SampleComponent2\" />\n<component name=\"sampleObject3\" class=\"sample.SampleComponent3\" />\n\n<component name=\"disposer\"\n    class=\"nablarch.core.repository.disposal.BasicApplicationDisposer\">\n  <property name=\"disposableList\">\n    <list>\n      <component-ref name=\"sampleObject3\" />\n      <component-ref name=\"sampleObject2\" />\n      <component-ref name=\"sampleObject1\" />\n    </list>\n  </property>\n</component>\n```\n\n`addDisposable` メソッドでコンポーネント生成後に任意の :java:extdoc:`Disposable <nablarch.core.repository.disposal.Disposable>` を追加できる。`addDisposable` で追加される `Disposable` はインスタンスが生成された順番で追加されることが予想される。その場合、廃棄処理はインスタンス生成とは逆の順序で行うことが望ましい（例：JDBCの `Connection`、`Statement`、`ResultSet`）。このため、`BasicApplicationDisposer` では `disposableList` に設定されている順序とは逆の順序で廃棄処理を呼ぶようになっている。\n\n`java.io.Closeable` を実装したコンポーネントは :java:extdoc:`DisposableAdaptor <nablarch.core.repository.disposal.DisposableAdaptor>` を用いて廃棄対象リストに設定できる:\n\n```xml\n<component name=\"closeableComponent\" class=\"sample.CloseableComponent\" />\n\n<component name=\"disposer\"\n    class=\"nablarch.core.repository.disposal.BasicApplicationDisposer\">\n  <property name=\"disposableList\">\n    <list>\n      <component class=\"nablarch.core.repository.disposal.DisposableAdaptor\">\n        <property name=\"target\" ref=\"closeableComponent\" />\n      </component>\n    </list>\n  </property>\n</component>\n```",
+    "s5": "**クラス**: `nablarch.core.repository.SystemRepository`\n\n```java\nXmlComponentDefinitionLoader loader = new XmlComponentDefinitionLoader(\"web-boot.xml\");\nSystemRepository.load(new DiContainer(loader));\n```\n\n> **重要**: DIコンテナの情報をシステムリポジトリへ登録する処理はNablarchが提供する以下のクラスで実施される。個別に実装することは基本的にない。\n> - ServletContextListenerの実装クラス\n> - 独立型アプリケーションの起動クラス",
+    "s6": "**クラス**: `nablarch.core.repository.SystemRepository`\n\n:java:extdoc:`SystemRepository <nablarch.core.repository.SystemRepository>` クラスの `get` メソッドでname属性の値を指定してオブジェクトを取得する。事前に :ref:`repository-use_system_repository` でDIコンテナの情報を設定しておく必要がある。\n\nコンポーネント定義:\n```xml\n<component name=\"sampleComponent\" class=\"sample.SampleComponent\" />\n\n<component name=\"component\" class=\"sample.Component\">\n  <property name=\"component2\">\n    <component name=\"component2\" class=\"sample.Component2\" />\n  </property>\n</component>\n```\n\n取得例:\n```java\nSampleComponent sample = SystemRepository.get(\"sampleComponent\");\n\n// ネストしたcomponentは親の名前と自身の名前を\".\"で連結して取得する\nComponent2 component2 = SystemRepository.get(\"component.component2\");\n```",
+    "s7": "環境設定ファイルはconfigファイルとpropertiesファイルの2種類。\n\n**propertiesファイル**: JavaのPropertiesの仕様に基づいて解析される。\n\n**configファイル仕様**:\n- キーと値を `=` で区切る\n- `#` を用いた行コメントのみサポート（行中でも有効）\n- 行末 `\\` で複数行に値を記述できる（行末コメントも可能）\n- 予約語 (`#`, `=`, `\\`) を一般文字として使う場合は `\\` でエスケープ\n\n```bash\nkey1=value1\nkey2=value2\n# コメントです\nkey = value   # コメントです\nkey2 = value,\\\nvalue2\nkey = a\\=a\nkey2 = \\#コメントではない\nkey3 = あ\\\\い\n```\n\n> **補足**: 半角スペースのみの値はconfigファイルでは対応していないが、propertiesファイルでは `\\u0020` の数値参照文字で扱える。\n\n> **補足**: 値が空の場合の挙動の違い:\n> - configファイル: キーごと読み込まれず、`${config.value}` 参照時に例外が送出される（5u18以前はWARNINGログが出力されプレースホルダ文字列がそのまま設定される）\n> - propertiesファイル: 空文字として扱われる"
+  }
+}

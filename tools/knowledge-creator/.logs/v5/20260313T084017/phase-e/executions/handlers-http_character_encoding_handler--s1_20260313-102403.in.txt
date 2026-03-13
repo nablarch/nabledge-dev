@@ -1,0 +1,247 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-http_character_encoding_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "The code example in s6 introduces the PascalCase class `CustomHttpCharacterEncodingHandler`, which is not listed in the hints for that section.",
+      "source_evidence": "Source defines `public class CustomHttpCharacterEncodingHandler extends HttpCharacterEncodingHandler` as the concrete example of a custom handler."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _http_character_encoding_handler:
+
+HTTP文字エンコード制御ハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラではリクエスト( :java:extdoc:`HttpServletRequest <javax.servlet.http.HttpServletRequest>` )
+及びレスポンス( :java:extdoc:`HttpServletResponse <javax.servlet.http.HttpServletResponse>` )に対して規定の文字エンコーディングを設定する。
+
+本ハンドラでは、以下の処理を行う。
+
+* リクエスト及びレスポンスへの規定の文字エンコーディングの設定
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/HttpCharacterEncodingHandler/flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.web.handler.HttpCharacterEncodingHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+
+制約
+------------------------------
+本ハンドラは、どのハンドラよりも前に設定すること。
+  このハンドラより前にハンドラを設定した場合、以下の問題が発生する可能性がある。
+
+  * レスポンスに対する規定の文字エンコーディングが設定されない
+  * リクエストパラメータにアクセスすることで規定の文字エンコーディングの設定が有効とならずサーバサイドで文字化けの原因となる
+
+  このため、本ハンドラはどのハンドラよりも前に配置すること。
+
+規定の文字エンコーディングを設定する
+--------------------------------------------------
+文字エンコーディングは、 :java:extdoc:`defaultEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.setDefaultEncoding(java.lang.String)>` プロパティに対して設定する。
+設定を省略した場合は、 ``UTF-8`` が使用される。
+
+以下に ``Windows-31J`` を設定する例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.handler.HttpCharacterEncodingHandler">
+    <property name="defaultEncoding" value="Windows-31J" />
+  </component>
+
+レスポンスに対する規定の文字エンコーディングの設定を切り替える
+--------------------------------------------------------------------------------
+本ハンドラでレスポンスに対して規定の文字エンコーディングを設定した場合、
+後続のハンドラで処理した全てのレスポンスに対して文字エンコーディングが設定される。
+
+例えば、後続で画像を返却した場合に、Content-Typeヘッダが「image/jpeg;charset=UTF-8」となる。
+このため、本ハンドラのデフォルトの動作では、レスポンスに対しては、規定の文字エンコーディングを設定していない。
+
+WEB APIのように全てのレスポンスに対して規定の文字エンコーディングを設定する必要がある場合には、
+以下の例を参照し :java:extdoc:`appendResponseCharacterEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.setAppendResponseCharacterEncoding(boolean)>` プロパティに ``true`` を設定すること。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.handler.HttpCharacterEncodingHandler">
+    <property name="appendResponseCharacterEncoding" value="true" />
+  </component>
+
+一律ではなくリクエストごとに文字エンコーディングを変更したい
+----------------------------------------------------------------------
+リクエスト毎に文字エンコーディングを変更する場合には、本ハンドラを継承して対応すること。
+
+例えば、外部サイトからのリクエストを処理するシステムで、外部サイト毎にエンコーディングが異なる場合には、この対応が必要となる。
+
+以下に例を示す。
+
+ポイント
+  * リクエストのエンコーディングを変更する場合は、 :java:extdoc:`resolveRequestEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.resolveRequestEncoding(javax.servlet.http.HttpServletRequest)>` をオーバライドする。
+  * レスポンスのエンコーディングを変更する場合は、 :java:extdoc:`resolveResponseEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.resolveResponseEncoding(javax.servlet.http.HttpServletRequest)>` をオーバライドする。
+
+.. code-block:: java
+
+  public class CustomHttpCharacterEncodingHandler extends
+          HttpCharacterEncodingHandler {
+
+    @Override
+    protected Charset resolveRequestEncoding(HttpServletRequest req) {
+      return resolveCharacterEncoding(req);
+    }
+
+    @Override
+    protected Charset resolveResponseEncoding(HttpServletRequest req) {
+      return resolveCharacterEncoding(req);
+    }
+
+    /**
+     * 文字エンコードを解決する。<br />
+     *
+     * URIに{@code /shop1}が含まれている場合は、{@code Windows-31J}として扱う。
+     *
+     * @param req リクエスト
+     * @return 文字エンコード
+     */
+    private Charset resolveCharacterEncoding(HttpServletRequest req) {
+      if (req.getRequestURI().contains("/shop1")) {
+        return Charset.forName("Windows-31J");
+      }
+      return getDefaultEncoding();
+    }
+  }
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-http_character_encoding_handler--s1",
+  "title": "HTTP文字エンコード制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/http_character_encoding_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/servlet/http/HttpServletRequest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/servlet/http/HttpServletResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/HttpCharacterEncodingHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "HttpCharacterEncodingHandler",
+        "nablarch.fw.web.handler.HttpCharacterEncodingHandler",
+        "ハンドラクラス名"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web",
+        "com.nablarch.framework",
+        "モジュール依存関係",
+        "Maven依存"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "ハンドラ配置順序",
+        "制約",
+        "文字化け防止",
+        "最初に配置",
+        "リクエスト文字エンコーディング"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "規定の文字エンコーディングを設定する",
+      "hints": [
+        "defaultEncoding",
+        "文字エンコーディング設定",
+        "UTF-8",
+        "Windows-31J",
+        "デフォルトエンコーディング"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "レスポンスに対する規定の文字エンコーディングの設定を切り替える",
+      "hints": [
+        "appendResponseCharacterEncoding",
+        "レスポンスエンコーディング",
+        "Web API",
+        "Content-Type",
+        "charset"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "一律ではなくリクエストごとに文字エンコーディングを変更したい",
+      "hints": [
+        "resolveRequestEncoding",
+        "resolveResponseEncoding",
+        "リクエストごとのエンコーディング",
+        "カスタムハンドラ",
+        "継承",
+        "エンコーディングカスタマイズ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.HttpCharacterEncodingHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+    "s3": "> **重要**: 本ハンドラは他のすべてのハンドラより前に配置すること。前に別のハンドラを配置した場合、以下の問題が発生する可能性がある。\n> - レスポンスへの規定の文字エンコーディングが設定されない\n> - リクエストパラメータへのアクセスにより規定エンコーディングが有効とならずサーバサイドで文字化けが発生する",
+    "s4": ":java:extdoc:`defaultEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.setDefaultEncoding(java.lang.String)>` プロパティで文字エンコーディングを設定する。省略時は `UTF-8`。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| defaultEncoding | String | | UTF-8 | 設定する文字エンコーディング |\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\">\n  <property name=\"defaultEncoding\" value=\"Windows-31J\" />\n</component>\n```",
+    "s5": "デフォルトでは、レスポンスに対して規定の文字エンコーディングを設定しない。設定すると画像など全レスポンスのContent-Typeに `charset` が付与される（例: `image/jpeg;charset=UTF-8`）ため。\n\nWeb APIのように全レスポンスにエンコーディングを設定する場合は、:java:extdoc:`appendResponseCharacterEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.setAppendResponseCharacterEncoding(boolean)>` プロパティに `true` を設定する。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| appendResponseCharacterEncoding | boolean | | | trueに設定するとレスポンスにも文字エンコーディングを設定する（デフォルトは設定しない） |\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\">\n  <property name=\"appendResponseCharacterEncoding\" value=\"true\" />\n</component>\n```",
+    "s6": "リクエストごとにエンコーディングを変更する場合は本ハンドラを継承してオーバーライドする（例: 外部サイト毎にエンコーディングが異なる場合）。\n\n- リクエストのエンコーディング変更: :java:extdoc:`resolveRequestEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.resolveRequestEncoding(javax.servlet.http.HttpServletRequest)>` をオーバーライド\n- レスポンスのエンコーディング変更: :java:extdoc:`resolveResponseEncoding <nablarch.fw.web.handler.HttpCharacterEncodingHandler.resolveResponseEncoding(javax.servlet.http.HttpServletRequest)>` をオーバーライド\n\n```java\npublic class CustomHttpCharacterEncodingHandler extends HttpCharacterEncodingHandler {\n  @Override\n  protected Charset resolveRequestEncoding(HttpServletRequest req) {\n    return resolveCharacterEncoding(req);\n  }\n  @Override\n  protected Charset resolveResponseEncoding(HttpServletRequest req) {\n    return resolveCharacterEncoding(req);\n  }\n  private Charset resolveCharacterEncoding(HttpServletRequest req) {\n    if (req.getRequestURI().contains(\"/shop1\")) {\n      return Charset.forName(\"Windows-31J\");\n    }\n    return getDefaultEncoding();\n  }\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

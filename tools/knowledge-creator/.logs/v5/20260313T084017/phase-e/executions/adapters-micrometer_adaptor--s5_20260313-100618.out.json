@@ -1,0 +1,50 @@
+{
+  "id": "adapters-micrometer_adaptor--s5",
+  "title": "Micrometerアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/DefaultMeterBinderListProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/jvm/NablarchGcCountMetrics.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/MeterRegistryFactory.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "DefaultMeterBinderListProviderで収集されるメトリクス",
+      "hints": [
+        "DefaultMeterBinderListProvider",
+        "MeterBinder",
+        "NablarchGcCountMetrics",
+        "JvmMemoryMetrics",
+        "JvmGcMetrics",
+        "JvmThreadMetrics",
+        "ClassLoaderMetrics",
+        "ProcessorMetrics",
+        "FileDescriptorMetrics",
+        "UptimeMetrics",
+        "JVMメトリクス収集",
+        "メトリクス一覧",
+        "jvm.gc.count",
+        "jvm.memory.used",
+        "process.cpu.usage"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "共通のタグを設定する",
+      "hints": [
+        "MeterRegistryFactory",
+        "LoggingMeterRegistryFactory",
+        "tags",
+        "共通タグ設定",
+        "メトリクスタグ",
+        "Map<String, String>"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.integration.micrometer.DefaultMeterBinderListProvider`\n\n:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` が生成する `MeterBinder` のリストに含まれるクラス:\n\n- JvmMemoryMetrics\n- JvmGcMetrics\n- JvmThreadMetrics\n- ClassLoaderMetrics\n- ProcessorMetrics\n- FileDescriptorMetrics\n- UptimeMetrics\n- :java:extdoc:`NablarchGcCountMetrics <nablarch.integration.micrometer.instrument.binder.jvm.NablarchGcCountMetrics>`\n\n収集されるメトリクス一覧:\n\n| メトリクス名 | 説明 |\n|---|---|\n| `jvm.buffer.count` | バッファプール内のバッファの数 |\n| `jvm.buffer.memory.used` | バッファプールの使用量 |\n| `jvm.buffer.total.capacity` | バッファプールの合計容量 |\n| `jvm.memory.used` | メモリプールのメモリ使用量 |\n| `jvm.memory.committed` | メモリプールのコミットされたメモリ量 |\n| `jvm.memory.max` | メモリプールの最大メモリ量 |\n| `jvm.gc.max.data.size` | OLD領域の最大メモリ量 |\n| `jvm.gc.live.data.size` | Full GC 後の OLD 領域のメモリ使用量 |\n| `jvm.gc.memory.promoted` | GC 前後で増加した、OLD 領域のメモリ使用量の増分 |\n| `jvm.gc.memory.allocated` | 前回の GC 後から今回の GC までの、Young 領域のメモリ使用量の増分 |\n| `jvm.gc.concurrent.phase.time` | コンカレントフェーズの処理時間 |\n| `jvm.gc.pause` | GC の一時停止に費やされた時間 |\n| `jvm.threads.peak` | スレッド数のピーク数 |\n| `jvm.threads.daemon` | 現在のデーモンスレッドの数 |\n| `jvm.threads.live` | 現在の非デーモンスレッドの数 |\n| `jvm.threads.states` | 現在のスレッドの状態ごとの数 |\n| `jvm.classes.loaded` | 現在ロードされているクラスの数 |\n| `jvm.classes.unloaded` | JVM が起動してから今までにアンロードされたクラスの数 |\n| `system.cpu.count` | JVM で使用できるプロセッサーの数 |\n| `system.load.average.1m` | 最後の1分のシステム負荷平均（[OperatingSystemMXBean](https://docs.oracle.com/javase/jp/11/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage())） |\n| `system.cpu.usage` | システム全体の直近の CPU 使用率 |\n| `process.cpu.usage` | JVM の直近のCPU使用率 |\n| `process.files.open` | 開いているファイルディスクリプタの数 |\n| `process.files.max` | ファイルディスクリプタの最大数 |\n| `process.uptime` | JVM の稼働時間 |\n| `process.start.time` | JVM の起動時刻（UNIX 時間） |\n| `jvm.gc.count` | GC の回数 |\n| `jvm.threads.started` | JVMで起動したスレッド数 |\n| `process.cpu.time` | Java仮想マシン・プロセスによって使用されるCPU時間 |",
+    "s2": "**クラス**: `nablarch.integration.micrometer.MeterRegistryFactory`\n\n:java:extdoc:`tags <nablarch.integration.micrometer.MeterRegistryFactory.setTags(java.util.Map)>` プロパティ（型: `Map<String, String>`）で、すべてのメトリクスに共通するタグを設定できる。ホスト、インスタンス、リージョンなどの識別情報の設定に使用する。\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n  <!-- tags プロパティで共通のタグを設定 -->\n  <property name=\"tags\">\n    <map>\n      <entry key=\"foo\" value=\"FOO\" />\n      <entry key=\"bar\" value=\"BAR\" />\n    </map>\n  </property>\n</component>\n```\n\n`<map>` タグで設定。マップのキーがタグ名、マップの値がタグ値に対応する。\n\n上記設定の場合、収集されるメトリクスは次のようになる。\n\n```\n（省略）\n2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s\n2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.uptime{bar=BAR,foo=FOO} value=27.849s\n2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.count{bar=BAR,foo=FOO} value=8\n2020-09-04 17:30:06.657 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.usage{bar=BAR,foo=FOO} value=0.475654\n```\n\n全てのメトリクスに、`foo=FOO`、`bar=BAR` のタグが設定されていることが確認できる。"
+  }
+}

@@ -1,0 +1,490 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-tag--s37",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — URIの指定方法 / secure属性の実装例",
+      "description": "secure属性使用時にhttp用のポート番号がCustomTagConfigに設定されていない場合、組み立てられるURIにポート番号が出力されないという振る舞いが欠落している。",
+      "source_evidence": "ソースのbashコメント: `# カスタムタグの設定でhttp用のポート番号を指定しなかった場合 / # ポート番号が出力されない。 / https://sample.co.jp/<コンテキストパス>/action/logout`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+カスタムタグが生成する要素に対してJavaScriptで処理を追加する
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+:ref:`tag-onclick_override` で示すように、カスタムタグが生成する要素に対してJavaScriptで処理を追加したい場合がある。
+
+このような場合にonclick属性などを使ってインラインスクリプトを生成される要素に直接指定してしまうと、Content-Security-Policyに指定するポリシーを緩め
+セキュリティレベルを落とすことになってしまう。
+
+Content-Security-Policyに指定するポリシーをセキュアにしつつ、JavaScriptで処理を追加するには以下の手順に沿って実装する。
+
+ * id属性やname属性などを使用し、カスタムタグが生成する要素を特定できるように設定する
+
+ * 生成された要素をセレクタで特定し、追加の処理を実装するスクリプトを外部ファイルまたはnonce付きのscript要素として作成する
+
+ * カスタムタグが :ref:`JavaScriptを生成する<tag-onclick_override>` ものの場合は、 ``suppressDefaultSubmit`` 属性を ``true`` に設定しカスタムタグによるJavaScriptの生成を抑制する
+
+
+  JSP
+   .. code-block:: jsp
+
+    <n:form>
+      <%-- 省略 --%>
+
+      <%-- suppressDefaultSubmitをtrueに設定してカスタムタグによるデフォルトのJavaScriptの生成を抑制する --%>
+      <n:submit id="register_button" type="submit" uri="register" suppressDefaultSubmit="true" value="登録" />
+    </n:form>
+
+  JavaScript
+   .. code-block:: javascript
+
+    function popUpConfirmation(event) {
+      // フォーム本来のサブミット処理をキャンセルする
+      event.preventDefault();
+
+      if (window.confirm('登録します。よろしいですか？')) {
+        // カスタムタグが出力するJavaScript関数を明示的に呼び出す。
+        // 第2引数のelementはnablarch_submit関数内でeventから導出する
+        nablarch_submit(event);
+      }
+    }
+
+    // idを指定して処理を登録する
+    document.querySelector('#register_button').addEventListener('click', popUpConfirmation);
+
+
+拡張例
+---------------------------------------------------------------------
+
+フォーマッタを追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`format` を使用する場合
+フォーマッタの追加方法は、 :ref:`format` のフォーマッタを追加するの項を参照。
+
+valueFormat属性を使用する場合
+フォーマットは、
+:java:extdoc:`ValueFormatter <nablarch.common.web.tag.ValueFormatter>`
+インタフェースを実装したクラスが行う。
+実装したクラスをコンポーネント定義に追加することでフォーマットを変更できる。
+
+コンポーネント定義への追加は、Map型でデータタイプ名をキーに、
+:java:extdoc:`ValueFormatter <nablarch.common.web.tag.ValueFormatter>`
+を実装したクラスを値に指定する。
+
+フレームワークがデフォルトでサポートしているフォーマットに対する設定例を以下に示す。
+
+フォーマッタのマップは、 ``valueFormatters`` という名前でコンポーネント定義に追加する。
+
+.. code-block:: xml
+
+ <map name="valueFormatters">
+   <entry key="yyyymmdd">
+     <value-component class="nablarch.common.web.tag.YYYYMMDDFormatter" />
+   </entry>
+   <entry key="yyyymm">
+     <value-component class="nablarch.common.web.tag.YYYYMMFormatter" />
+   </entry>
+   <entry key="dateTime">
+     <value-component class="nablarch.common.web.tag.DateTimeFormatter" />
+   </entry>
+   <entry key="decimal">
+     <value-component class="nablarch.common.web.tag.DecimalFormatter" />
+   </entry>
+ </map>
+
+.. _`tag-submit_display_control_change`:
+
+ボタン/リンクの表示制御に使う判定処理を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`tag-submit_display_control` に使用する判定処理を変更したい場合は、
+:java:extdoc:`DisplayControlChecker <nablarch.common.web.tag.DisplayControlChecker>`
+インタフェースを実装することで変更できる。
+実装したクラスを :ref:`tag-setting` で
+:java:extdoc:`displayControlCheckersプロパティ<nablarch.common.web.tag.CustomTagConfig.setDisplayControlCheckers(java.util.List)>`
+に指定する。
+
+設定例
+ .. code-block:: xml
+
+  <list name="displayControlCheckers" >
+    <!-- サービス提供可否についてはデフォルトのDisplayControlCheckerを指定する -->
+    <component class="nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker" />
+    <!-- 認可チェックについてはプロジェクトでカスタマイズしたDisplayControlCheckerを指定する -->
+    <component class="com.sample.app.CustomPermissionDisplayControlChecker" />
+  </list>
+
+  <component name="customTagConfig"
+             class="nablarch.common.web.tag.CustomTagConfig">
+     <!-- 判定条件を設定する。 -->
+    <property name="displayControlCheckers" ref="displayControlCheckers" />
+  </component>
+
+.. _`tag-double_submission_client_side_change`:
+
+クライアント側の二重サブミット防止で、二重サブミット発生時の振る舞いを追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`クライアント側の二重サブミット防止 <tag-double_submission_client_side>` を使用していて、
+アプリケーションで二重サブミット発生時の振る舞いを追加する場合は、JavaScriptでコールバック関数を実装する。
+
+フレームワークのJavaScript関数は、2回目以降のサブミット要求が発生した場合、
+コールバック関数が存在していれば、コールバック関数を呼び出す。
+コールバック関数のシグネチャを以下に示す。
+
+.. code-block:: js
+
+ /**
+  * @param element 二重サブミットが行われた対象要素(ボタン又はリンク)
+  */
+ function nablarch_handleDoubleSubmission(element) {
+   // ここに処理を記述する。
+ }
+
+.. _`tag-double_submission_server_side_change`:
+
+サーバ側の二重サブミット防止で、トークンの発行処理を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`サーバ側の二重サブミット防止 <tag-double_submission_server_side>` を使用していて、
+トークンの発行処理を変更したい場合は、
+:java:extdoc:`TokenGenerator <nablarch.common.web.token.TokenGenerator>`
+インタフェースを実装することで変更できる。
+実装したクラスをコンポーネント定義に ``tokenGenerator`` という名前で追加する。
+
+カスタムタグのルール
+---------------------------------------------------------------------
+
+.. _`tag-naming_rule`:
+
+命名ルール
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+カスタムタグでは、CSSのクラス名やJavaScriptの関数名など、カスタムタグが規定する名前については、
+個別アプリケーションと重複しないようにプレフィックス ``nablarch_`` を使用する。
+そのため、個別アプリケーションでは、 ``nablarch_`` から始まる名前を使用しないこと。
+
+この命名ルールの対象を以下に示す。
+
+* HTMLの属性値
+* CSSのクラス名
+* JavaScriptの関数名とグローバル変数名
+* ページスコープ、リクエストスコープ、セッションスコープの変数名
+
+.. _`tag-access_rule`:
+
+入力/出力データへのアクセスルール
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+入力項目や出力項目を出力するカスタムタグ( :ref:`tag-text_tag` や :ref:`tag-write_tag` など)では、
+name属性の値に基づき、出力対象となるデータにアクセスする。
+
+オブジェクトの種類に合わせて、name属性は以下のとおり指定する。
+
+* オブジェクト/Mapのプロパティにアクセスする場合は、ドット区切りを指定する。
+* List/配列の要素にアクセスする場合は、角括弧(括弧内にインデックス)を指定する。
+
+検索順序は次の通りで、最初に見つかった値を使用する。値が取得できない場合は、空文字列を出力する。
+
+1. Pageスコープ
+2. リクエストスコープ
+3. リクエストパラメータ
+4. セッションスコープ
+
+オブジェクトの実装例
+ \
+
+ アクション
+  .. code-block:: java
+
+   // オブジェクトをリクエストスコープに設定する。
+   PersonForm form = new PersonForm();
+   form.setPersonName("名前");
+   context.setRequestScopedVar("form", form);
+   return new HttpResponse("/WEB-INF/view/sample/accessRuleObject.jsp");
+
+ JSP
+  .. code-block:: jsp
+
+   <!-- ドット区切りを使う。 -->
+   <n:text name="form.personName" />
+
+Listの実装例
+ \
+
+ アクション
+  .. code-block:: java
+
+   // Listを持つオブジェクトをリクエストスコープに設定する。
+   PersonsForm form = new PersonsForm();
+   List<Person> persons = UniversalDao.findAll(Person.class);
+   form.setPersons(persons);
+   context.setRequestScopedVar("form", form);
+
+ JSP
+  .. code-block:: jsp
+
+   <!-- インデックスを取得するためループをまわす。 -->
+   <c:forEach items="${form.persons}" varStatus="status">
+     <!--
+       角括弧を使って要素にアクセスする。
+       要素の値はドットを使ってアクセスする。
+     -->
+     <n:text name="form.persons[${status.index}].personName" />
+   </c:forEach>
+
+.. tip::
+ 検索対象にリクエストパラメータが含まれているのは、
+ 入力項目のカスタムタグで、入力フォームを再表示した場合に入力値を復元するためである。
+
+ この動きは、NablarchのカスタムタグとJSTL(c:forEachやc:outなど)で異なるので、実装時に注意すること。
+ JSTLのタグはリクエストパラメータの値にアクセスできないので、
+ JSTLのタグを使用する場合は、アクション側で明示的にリクエストスコープに値を設定するなどの実装が必要になる。
+
+.. tip::
+ リクエストパラメータより先にリクエストスコープを検索するのは、
+ 入力フォームを再表示した場合に入力値を変更できるようにするためである。
+
+ よくある例としては、ユーザが明示的に選択したことをシステム的に保証したいため、
+ 入力フォームを再表示する際に、ラジオボタンを未選択の状態に戻したい場合がある。
+
+ このような場合は、アクション側でリクエストスコープに空文字を設定すると、
+ ラジオボタンを未選択の状態に戻すことができる。
+
+.. _`tag-specify_uri`:
+
+URIの指定方法
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+カスタムタグにおいてURIを指定する属性には、次のいずれかの方法で指定する。
+
+ 絶対URL
+  http/httpsから始まるパス
+
+  .. code-block:: jsp
+
+   <n:a href="https://github.com/coastland">coastland</n:a>
+
+  他システム連携などでアプリケーションとホストが異なるURIを指定する場合に使用する。
+  カスタムタグは、指定されたパスをそのまま使用する。
+
+ コンテキストからの相対パス
+  /(スラッシュ)から始まるパス
+
+  .. code-block:: jsp
+
+   <n:submit type="submit" uri="/action/person/register" value="登録" />
+
+  アプリケーション内のパスを指定する場合に使用する。
+  カスタムタグは、指定されたパスの先頭にコンテキストパスを付加して使用する。
+
+ 現在のパスからの相対パス
+  /(スラッシュ)から始まらないパス(絶対URLを除く)
+
+  .. code-block:: jsp
+
+   <n:submit type="submit" uri="login" value="ログイン" />
+
+  アプリケーション内のパスを指定する場合に使用する。
+  カスタムタグは、指定されたパスをそのまま使用する。
+
+\
+
+httpsとhttpの切り替え
+ コンテキストからの相対パスを指定している場合は、カスタムタグのsecure属性を指定することで、
+ URIのhttpsとhttpを切り替えることができる。
+
+ secure属性が指定された場合は、カスタムタグの設定値(http用のポート番号、https用のポート番号、ホスト)と
+ コンテキストパスを使用してURIを組み立てる。
+ そのため、secure属性を使用するアプリケーションでは、
+ :ref:`tag-setting` で
+ :java:extdoc:`portプロパティ<nablarch.common.web.tag.CustomTagConfig.setPort(int)>` /
+ :java:extdoc:`securePortプロパティ<nablarch.common.web.tag.CustomTagConfig.setSecurePort(int)>` /
+ :java:extdoc:`hostプロパティ<nablarch.common.web.tag.CustomTagConfig.setHost(java.lang.String)>`
+ を指定する。
+
+ .. tip::
+  secure属性は、遷移先のプロトコルを切り替えるボタンやリンクのみで使用する。
+  遷移先のプロトコルが同じ場合(http→http、https→https)は、secure属性を指定しない。
+
+ 実装例
+  secure属性の使用例を示す。
+
+  カスタムタグの設定値
+   :http用のポート番号: 8080
+   :https用のポート番号: 443
+   :ホスト: sample.co.jp
+
+  http→httpsに切り替える場合
+   \
+
+   .. code-block:: jsp
+
+    <!-- secure属性にtrueを指定する。 -->
+    <n:submit type="button" name="login" value="ログイン" uri="/action/login" secure="true" />
+
+   .. code-block:: bash
+
+    # 組み立てられるURI
+    https://sample.co.jp:443/<コンテキストパス>/action/login
+
+  https→httpに切り替える場合
+   \
+
+   .. code-block:: jsp
+
+    <!-- secure属性にfalseを指定する。 -->
+    <n:submitLink name="logout" uri="/action/logout" secure="false">ログアウト</n:submitLink>
+
+   .. code-block:: bash
+
+    # 組み立てられるURI
+    https://sample.co.jp:8080/<コンテキストパス>/action/logout
+
+    # カスタムタグの設定でhttp用のポート番号を指定しなかった場合
+    # ポート番号が出力されない。
+    https://sample.co.jp/<コンテキストパス>/action/logout
+
+.. _`tag-html_escape`:
+
+HTMLエスケープと改行、半角スペース変換
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HTMLエスケープ
+ カスタムタグでは、原則として出力する際に全てのHTMLの属性についてHTMLエスケープする。
+ 以下に変換内容を示す。
+
+ HTMLエスケープの変換内容
+  | ``&`` → ``&amp;``
+  | ``<`` → ``&lt;``
+  | ``>`` → ``&gt;``
+  | ``“`` → ``&#034;``
+  | ``‘`` → ``&#039;``
+
+ .. important::
+  EL式はHTMLエスケープ処理を実施しないため、EL式を使用して値を出力しないこと。
+  値を出力する場合は、 :ref:`tag-write_tag` などのカスタムタグを使用する。
+
+  ただし、JSTLのforEachタグやカスタムタグの属性にオブジェクトを設定する場合など、
+  直接出力しない箇所ではEL式を使用しても問題ない。
+
+改行、半角スペース変換
+ 確認画面などに入力データを出力する際には、HTMLエスケープに加えて、改行と半角スペースを変換する。
+ 以下に変換内容を示す。
+
+ 改行、半角スペースの変換内容
+  | ``改行コード(\n、\r、\r\n)`` → ``<br />``
+  | ``半角スペース`` → ``&nbsp;``
+
+
+:ref:`tag_reference`
+---------------------------------------------------------------------
+:ref:`tag_reference` を参照。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-tag--s37",
+  "title": "カスタムタグが生成する要素に対してJavaScriptで処理を追加する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/ValueFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/DisplayControlChecker.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/CustomTagConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/TokenGenerator.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "カスタムタグが生成する要素に対してJavaScriptで処理を追加する",
+      "hints": [
+        "Content-Security-Policy",
+        "CSP",
+        "suppressDefaultSubmit",
+        "JavaScript処理追加",
+        "インラインスクリプト抑制",
+        "nablarch_submit",
+        "onclick属性"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "拡張例",
+      "hints": [
+        "ValueFormatter",
+        "DisplayControlChecker",
+        "CustomTagConfig",
+        "TokenGenerator",
+        "ServiceAvailabilityDisplayControlChecker",
+        "valueFormatters",
+        "displayControlCheckers",
+        "tokenGenerator",
+        "フォーマッタ追加",
+        "表示制御",
+        "二重サブミット防止",
+        "nablarch_handleDoubleSubmission"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "カスタムタグのルール",
+      "hints": [
+        "命名ルール",
+        "nablarch_プレフィックス",
+        "アクセスルール",
+        "URI指定方法",
+        "secure属性",
+        "HTMLエスケープ",
+        "改行変換",
+        "半角スペース変換",
+        "portプロパティ",
+        "securePortプロパティ",
+        "hostプロパティ",
+        "CustomTagConfig"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "タグリファレンス",
+      "hints": [
+        "タグリファレンス",
+        "tag_reference",
+        "カスタムタグ一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Content-Security-Policyをセキュアに保ちながら、カスタムタグが生成する要素へのJavaScript処理を追加する手順:\n\n1. `id`属性や`name`属性などを使用し、カスタムタグが生成する要素を特定できるように設定する\n2. 生成された要素をセレクタで特定し、追加の処理を実装するスクリプトを外部ファイルまたはnonce付きのscript要素として作成する\n3. カスタムタグが :ref:`JavaScriptを生成する<tag-onclick_override>` ものの場合は、`suppressDefaultSubmit`属性を`true`に設定してカスタムタグによるJavaScriptの生成を抑制する\n\n> **重要**: onclick属性などでインラインスクリプトを要素に直接指定すると、Content-Security-Policyのポリシーを緩めセキュリティレベルが低下する。\n\nJSP例:\n```jsp\n<n:form>\n  <%-- suppressDefaultSubmitをtrueに設定してカスタムタグによるデフォルトのJavaScriptの生成を抑制する --%>\n  <n:submit id=\"register_button\" type=\"submit\" uri=\"register\" suppressDefaultSubmit=\"true\" value=\"登録\" />\n</n:form>\n```\n\nJavaScript例:\n```javascript\nfunction popUpConfirmation(event) {\n  // フォーム本来のサブミット処理をキャンセルする\n  event.preventDefault();\n\n  if (window.confirm('登録します。よろしいですか？')) {\n    // カスタムタグが出力するJavaScript関数を明示的に呼び出す。第2引数のelementはnablarch_submit関数内でeventから導出する\n    nablarch_submit(event);\n  }\n}\n\n// idを指定して処理を登録する\ndocument.querySelector('#register_button').addEventListener('click', popUpConfirmation);\n```",
+    "s2": "### フォーマッタを追加する\n\n:ref:`format` を使用する場合は :ref:`format` の「フォーマッタを追加する」項を参照。\n\n`valueFormat`属性を使用する場合、:java:extdoc:`ValueFormatter <nablarch.common.web.tag.ValueFormatter>` インタフェースを実装したクラスを作成し、`valueFormatters`という名前のMapコンポーネントとしてコンポーネント定義に追加する。\n\n```xml\n<map name=\"valueFormatters\">\n  <entry key=\"yyyymmdd\">\n    <value-component class=\"nablarch.common.web.tag.YYYYMMDDFormatter\" />\n  </entry>\n  <entry key=\"yyyymm\">\n    <value-component class=\"nablarch.common.web.tag.YYYYMMFormatter\" />\n  </entry>\n  <entry key=\"dateTime\">\n    <value-component class=\"nablarch.common.web.tag.DateTimeFormatter\" />\n  </entry>\n  <entry key=\"decimal\">\n    <value-component class=\"nablarch.common.web.tag.DecimalFormatter\" />\n  </entry>\n</map>\n```\n\n### ボタン/リンクの表示制御に使う判定処理を変更する\n\n:ref:`tag-submit_display_control` に使用する判定処理を変更するには、:java:extdoc:`DisplayControlChecker <nablarch.common.web.tag.DisplayControlChecker>` インタフェースを実装し、:ref:`tag-setting` の :java:extdoc:`displayControlCheckersプロパティ<nablarch.common.web.tag.CustomTagConfig.setDisplayControlCheckers(java.util.List)>` に指定する。\n\n```xml\n<list name=\"displayControlCheckers\">\n  <!-- サービス提供可否についてはデフォルトのDisplayControlCheckerを指定する -->\n  <component class=\"nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker\" />\n  <!-- 認可チェックについてはプロジェクトでカスタマイズしたDisplayControlCheckerを指定する -->\n  <component class=\"com.sample.app.CustomPermissionDisplayControlChecker\" />\n</list>\n\n<component name=\"customTagConfig\" class=\"nablarch.common.web.tag.CustomTagConfig\">\n  <property name=\"displayControlCheckers\" ref=\"displayControlCheckers\" />\n</component>\n```\n\n### クライアント側の二重サブミット防止で振る舞いを追加する\n\n:ref:`クライアント側の二重サブミット防止 <tag-double_submission_client_side>` 使用時に二重サブミット発生時の振る舞いを追加する場合は、以下のシグネチャのコールバック関数をJavaScriptで実装する。2回目以降のサブミット要求時にコールバック関数が存在すれば呼び出される。\n\n```js\n/**\n * @param element 二重サブミットが行われた対象要素(ボタン又はリンク)\n */\nfunction nablarch_handleDoubleSubmission(element) {\n  // ここに処理を記述する。\n}\n```\n\n### サーバ側の二重サブミット防止でトークン発行処理を変更する\n\n:ref:`サーバ側の二重サブミット防止 <tag-double_submission_server_side>` 使用時にトークン発行処理を変更するには、:java:extdoc:`TokenGenerator <nablarch.common.web.token.TokenGenerator>` インタフェースを実装し、コンポーネント定義に`tokenGenerator`という名前で追加する。",
+    "s3": "### 命名ルール\n\nカスタムタグが規定する名前にはプレフィックス`nablarch_`を使用する。個別アプリケーションでは`nablarch_`から始まる名前を使用しないこと。\n\n対象:\n- HTMLの属性値\n- CSSのクラス名\n- JavaScriptの関数名とグローバル変数名\n- ページスコープ、リクエストスコープ、セッションスコープの変数名\n\n### 入力/出力データへのアクセスルール\n\n`name`属性の値に基づきデータにアクセスする。\n\n- オブジェクト/Mapのプロパティ: ドット区切り（例: `form.personName`）\n- List/配列の要素: 角括弧でインデックス指定（例: `form.persons[${status.index}].personName`）\n\n検索順序（最初に見つかった値を使用。値が取得できない場合は空文字列を出力）:\n1. Pageスコープ\n2. リクエストスコープ\n3. リクエストパラメータ\n4. セッションスコープ\n\n> **補足**: 検索対象にリクエストパラメータが含まれているのは、入力フォームを再表示した場合に入力値を復元するためである。JSTLタグはリクエストパラメータにアクセスできないため、JSTLタグ使用時はアクション側で明示的にリクエストスコープに値を設定する必要がある。\n\n> **補足**: リクエストパラメータより先にリクエストスコープを検索するのは、入力フォームを再表示した場合に入力値を変更できるようにするためである。例: ラジオボタンを未選択状態に戻したい場合は、アクション側でリクエストスコープに空文字を設定する。\n\n### URIの指定方法\n\n| 種別 | パターン | 動作 |\n|---|---|---|\n| 絶対URL | `http`/`https`から始まるパス | 指定されたパスをそのまま使用 |\n| コンテキストからの相対パス | `/`（スラッシュ）から始まるパス | 先頭にコンテキストパスを付加 |\n| 現在のパスからの相対パス | `/`から始まらないパス（絶対URL除く） | 指定されたパスをそのまま使用 |\n\nコンテキストからの相対パスを指定している場合、`secure`属性でhttps/httpを切り替え可能。`secure`属性を使用する場合は :ref:`tag-setting` で :java:extdoc:`portプロパティ<nablarch.common.web.tag.CustomTagConfig.setPort(int)>` / :java:extdoc:`securePortプロパティ<nablarch.common.web.tag.CustomTagConfig.setSecurePort(int)>` / :java:extdoc:`hostプロパティ<nablarch.common.web.tag.CustomTagConfig.setHost(java.lang.String)>` を指定する。\n\n> **補足**: `secure`属性は、遷移先のプロトコルを切り替えるボタンやリンクのみで使用する。遷移先のプロトコルが同じ場合（http→http、https→https）は`secure`属性を指定しない。\n\n### HTMLエスケープと改行、半角スペース変換\n\nカスタムタグは出力時に全HTML属性をHTMLエスケープする。\n\n変換内容:\n- `&` → `&amp;`\n- `<` → `&lt;`\n- `>` → `&gt;`\n- `\"` → `&#034;`\n- `'` → `&#039;`\n\n> **重要**: EL式はHTMLエスケープを実施しないため、値を出力する場合はEL式を使用せず :ref:`tag-write_tag` などのカスタムタグを使用すること。JSTLのforEachタグやカスタムタグの属性へのオブジェクト設定など直接出力しない箇所ではEL式を使用可能。\n\n確認画面などの入力データ出力時は、HTMLエスケープに加えて改行と半角スペースも変換する:\n- `改行コード(\\n、\\r、\\r\\n)` → `<br />`\n- `半角スペース` → `&nbsp;`",
+    "s4": "カスタムタグの各タグのリファレンスは :ref:`tag_reference` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

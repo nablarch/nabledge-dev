@@ -1,0 +1,456 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/biz_samples/12/index.rst`
+- Format: `rst`
+
+```
+使用方法
+--------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+依存ライブラリの追加
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+IDトークンはJSON Web Tokens（以下JWT）の形式で作成される。
+JWTを扱うためのライブラリはOSSでも多く公開されているが、サンプルではAuth0が公開している java-jwt と jwks-rsa-java を使用する。
+
+.. tip::
+
+  JWTを扱うライブラリは、 `OpenID Foundation <https://openid.net/developers/jwt-jws-jwe-jwk-and-jwa-implementations/>`_ や `jwt.io <https://jwt.io/libraries>`_ でも紹介されている。
+
+ライブラリを使用可能にするため、プロジェクトの依存関係設定に以下の依存関係を追加する。
+
+.. code-block:: xml
+
+  <dependencies>
+    ...
+    <!-- JWTライブラリ -->
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>jwks-rsa</artifactId>
+      <version>0.21.3</version>
+    </dependency>
+    ...
+  </dependencies>
+
+また、ADB2Cのパッケージでは、HTTPクライアントを使用するため、以下の依存関係も追加する。
+
+.. code-block:: xml
+
+  <dependencies>
+    ...
+    <!-- HTTPクライアント -->
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>5.2.1</version>
+    </dependency>
+    ...
+  </dependencies>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+環境依存値の設定
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+IDトークンを検証するための処理はコンポーネントとして作成しており、サービスへアクセスするための情報を設定するために、環境依存値をプロパティとして参照している。
+そのため、以下の環境依存値を実行環境に設定する。
+
+=============================== =================================================================================================
+名前                             説明
+=============================== =================================================================================================
+aws.cognito.region              Cognitoを作成しているリージョンコード（例：ap-northeast-1）
+aws.cognito.userPool.id         ユーザープールID
+aws.cognito.userPool.clientId   ユーザープールに登録したアプリケーションのクライアントID
+=============================== =================================================================================================
+
+
+環境依存値の設定方法については :ref:`repository-overwrite_environment_configuration` や :ref:`repository-overwrite_environment_configuration_by_os_env_var` を参照。
+
+.. tip::
+
+  サービスへのアクセスに必要な情報には、秘匿すべき情報が含まれている場合がある。
+  そのような情報がある場合、外部への漏洩を防ぐため、バージョン管理システムで管理対象となるファイルへの記述は避けるのが望ましい。
+  そのような情報を扱う場合には、システムプロパティやOS環境変数として設定することで、安全に使用できる。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+コンポーネント定義の設定
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+IDトークンを検証するための処理は、プロパティの使用や起動時の初期化を考慮して、コンポーネントとして作成している。
+そのため、それらのコンポーネントをコンポーネント設定ファイルに定義する。
+
+.. code-block:: xml
+
+  <!-- IDトークン検証コンポーネント -->
+  <component name="idTokenVerifier" class="please.change.me.common.oidc.verification.cognito.jwt.CognitoIdTokenVerifier">
+    <property name="region" value="${aws.cognito.region}" />
+    <property name="userPoolId" value="${aws.cognito.userPool.id}" />
+    <property name="clientId" value="${aws.cognito.userPool.clientId}" />
+    <property name="signatureAlgorithmProvider" ref="signatureAlgorithmProvider" />
+  </component>
+  <!-- トークン署名検証用アルゴリズム提供コンポーネント -->
+  <component name="signatureAlgorithmProvider" class="please.change.me.common.oidc.verification.cognito.jwt.CognitoSignatureAlgorithmProvider">
+    <property name="rsaKeyProvider" ref="rsaKeyProvider" />
+  </component>
+  <!-- トークン署名検証用RSA公開鍵提供コンポーネント -->
+  <component name="rsaKeyProvider" class="please.change.me.common.oidc.verification.cognito.jwt.CognitoRSAKeyProvider">
+    <property name="region" value="${aws.cognito.region}" />
+    <property name="userPoolId" value="${aws.cognito.userPool.id}" />
+  </component>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+IDトークンの検証
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+IDトークンの検証を行うコンポーネントでは、IDトークンを発行するサービスが案内している検証方法に従って検証する。
+
+なお、検証方法に含まれる署名の検証では、サービスが提供しているJWKSエンドポイントにアクセスし、公開鍵情報を取得する必要がある。
+サンプルでは、署名検証以外の処理についてローカル開発環境でテストが実装しやすくするため、署名検証に必要な情報を差し替えやすいように別のコンポーネントから提供するものとしている。
+
+.. code-block:: java
+
+  /**
+   * Cognitoが発行するIDトークンが有効であるか検証するための機能を提供する。
+   */
+  public class CognitoIdTokenVerifier implements IdTokenVerifier {
+
+      /** リージョン */
+      private String region;
+
+      /** ユーザープール ID */
+      private String userPoolId;
+
+      /** クライアントID */
+      private String clientId;
+
+      /** 署名アルゴリズムプロバイダ */
+      private SignatureAlgorithmProvider signatureAlgorithmProvider;
+
+      @Override
+      public DecodedJWT verify(String idToken) throws JWTVerificationException {
+          // トークンが有効であるか検証する検証方法はCognitoのガイドに従う
+          //   https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-verifying-a-jwt.html
+          // クライアント側でIDトークン取得後に即時送信されることを想定し、有効期限の許容範囲は60秒とする。
+          JWTVerifier verifier = JWT.require(signatureAlgorithmProvider.get())
+                  .acceptExpiresAt(60)
+                  .withAudience(clientId)
+                  .withIssuer(createUserPoolUrl(region, userPoolId))
+                  .withClaim("token_use", "id")
+                  .build();
+          return verifier.verify(idToken);
+      }
+
+      /**
+       * ユーザープールのURLを作成する。
+       *
+       * @param region リージョン
+       * @param userPoolId ユーザープールID
+       * @return ユーザープールのURL
+       */
+      private String createUserPoolUrl(String region, String userPoolId) {
+          return "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId;
+      }
+      ...
+  }
+
+署名検証に必要な情報を提供するコンポーネントでは、サービスがトークンの署名に使用するアルゴリズムに合わせて、アルゴリズム情報を返却する。
+サンプルではRSA署名を用いるため公開鍵が必要であるが、サービスが提供している公開鍵情報を取得する処理については、別のコンポーネントから提供するものとしている。
+
+.. code-block:: java
+
+  /**
+   * Cognitoが発行するトークンの署名検証に使用するアルゴリズムを提供する。
+   */
+  public class CognitoSignatureAlgorithmProvider implements SignatureAlgorithmProvider {
+
+      /** RSA公開鍵プロバイダ */
+      private RSAKeyProvider rsaKeyProvider;
+
+      @Override
+      public Algorithm get() {
+          return Algorithm.RSA256(rsaKeyProvider);
+      }
+      ...
+  }
+
+RSA署名の公開鍵情報を提供するコンポーネントでは、ライブラリが提供している公開鍵情報を外部から取得するための RSAKeyProvider インタフェースを実装し、サービスが公開しているJson Web Key Set（以下JWKS）のエンドポイントからJson Web Key（以下JWK）および公開鍵情報を取得する。
+
+.. tip::
+
+  サービスによっては、安全性を向上させるために、署名に使用する情報を一定の周期でローテーションしている場合がある。
+  またローテーション以外でも、情報漏洩等の緊急事態では情報が変更されるといったことも考えられる。
+  署名検証を確実に行うため、事前に鍵情報が判明していた場合であっても固定値を使用せず、公開しているエンドポイントで最新情報を取得するのが望ましい。
+
+.. code-block:: java
+
+  /**
+   * Cognitoが発行するトークンの検証に使用するRSA公開鍵を提供する。
+   */
+  public class CognitoRSAKeyProvider implements RSAKeyProvider, Initializable {
+
+      /** リージョン */
+      private String region;
+
+      /** ユーザープール ID */
+      private String userPoolId;
+
+      /** JWKプロバイダ */
+      private JwkProvider provider;
+
+      @Override
+      public RSAPublicKey getPublicKeyById(String keyId) {
+          try {
+              Jwk jwk = provider.get(keyId);
+              return (RSAPublicKey) jwk.getPublicKey();
+          } catch (JwkException e) {
+              return null;
+          }
+      }
+
+      @Override
+      public RSAPrivateKey getPrivateKey() {
+          // 公開鍵のみ取得可能であるため、秘密鍵の取得はサポートしない
+          throw new UnsupportedOperationException("Get private key is not supported");
+      }
+
+      @Override
+      public String getPrivateKeyId() {
+          // 未定義であるためインタフェースの仕様に則り null を返却する
+          return null;
+      }
+
+      @Override
+      public void initialize() {
+          // Cognitoが公開しているJWKSエンドポイントから公開鍵を取得するためのプロバイダを作成する。
+          // プロバイダでは以下の設定をすることができる。
+          // ・キーID（kidクレームの値）ごとの結果をどれだけの期間いくつまでキャッシュするか
+          // ・JWKSエンドポイントへのアクセスをどれだけの期間で何回まで許容するか
+          // ・JWKSエンドポイントへのアクセス時にプロキシを使用するか
+          // ここでは以下のとおり設定している。
+          // ・キーIDは1時間に4つまでキャッシュする（キーのローテーションを跨いだ場合でも通常使用ではキャッシュされる範囲）
+          // ・JWKSエンドポイントへのアクセスは1分で10回まで許容する（キャッシュを考慮すると通常使用では到達しない範囲）
+          // ・プロキシは使用しない
+          this.provider = new JwkProviderBuilder(createUserPoolUrl(region, userPoolId))
+                  .cached(true)
+                  .cached(4, 1, TimeUnit.HOURS)
+                  .rateLimited(true)
+                  .rateLimited(10, 1, TimeUnit.MINUTES)
+                  .proxied(Proxy.NO_PROXY)
+                  .build();
+      }
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+認証用業務アクションのパス設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+サンプルでは、認証用業務アクションのパスをJAX-RSのPathアノテーションで設定している。
+
+.. code-block:: java
+
+  @Path("/cognito/login")
+  public class LoginAction {
+
+JAX-RSのPathアノテーションによるマッピングについては  :ref:`router_adaptor_path_annotation` を参照。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+認証および成功時のログイン状態設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+認証処理を実装する業務アクションでは、IDトークンの検証を呼び出し、異常が検知されなければログインセッションを確立する。
+異常を検知した場合は、エラー情報としてHTTPステータスが401（Unauthorized）のレスポンスを返却する。
+
+.. tip::
+
+  本サンプルでは、CSRF(クロスサイトリクエストフォージェリ)への対策のため、CSRFトークン検証ハンドラの使用を想定している。
+  CSRF対策の詳細については :ref:`csrf_token_verification_handler` を参照。
+
+.. code-block:: java
+
+  /**
+   * IDトークンで認証を行い、成功すればログインセッションを確立する。
+   *
+   * @param context 実行コンテキスト
+   * @param form リクエストボディ
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Valid
+  public void login(ExecutionContext context, LoginRequestForm form) {
+      // IDトークンが有効であるか検証する
+      DecodedJWT decodedJWT = verifyIdToken(form.getIdToken());
+
+      // 安全性向上のため、認証成功後にセッションIDおよびCSRFトークンを変更する
+      SessionUtil.changeId(context);
+      CsrfTokenUtil.regenerateCsrfToken(context);
+
+      // IDトークンで連携された情報からユーザー情報を特定して、認証状態をセッションに保持する
+      String userId = decodedJWT.getSubject();
+      SessionUtil.put(context, "user.id", userId);
+  }
+
+  /**
+   * IDトークンが有効であるか検証する。
+   *
+   * @param idToken IDトークン
+   * @return デコード済みのIDトークン
+   * @throws HttpErrorResponse 無効なIDトークンである場合（HTTPステータスコードは401）
+   */
+  private DecodedJWT verifyIdToken(String idToken) {
+      // プロパティを使用した検証用コンポーネントを定義しているため、システムリポジトリから取得する
+      IdTokenVerifier idTokenVerifier = SystemRepository.get("idTokenVerifier");
+      try {
+          // IDトークンを検証する
+          return idTokenVerifier.verify(idToken);
+      } catch (JWTVerificationException e) {
+          if (LOGGER.isDebugEnabled()) {
+              LOGGER.logDebug("ID token verification failed...", e);
+          }
+          // 検証で異常を検知した場合は、ステータスコードが401(Unauthorized)のエラーレスポンスを返却する
+          throw new HttpErrorResponse(HttpResponse.Status.UNAUTHORIZED.getStatusCode());
+      }
+  }
+```
+
+## Knowledge File
+
+- ID: `biz-samples-12--s8`
+
+```json
+{
+  "id": "biz-samples-12--s8",
+  "title": "使用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/12/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用方法",
+      "hints": [
+        "CognitoIdTokenVerifier",
+        "CognitoSignatureAlgorithmProvider",
+        "CognitoRSAKeyProvider",
+        "IdTokenVerifier",
+        "SignatureAlgorithmProvider",
+        "JWTVerifier",
+        "JwkProvider",
+        "java-jwt",
+        "jwks-rsa",
+        "httpclient5",
+        "IDトークン検証",
+        "Cognito認証",
+        "JWKS公開鍵取得",
+        "セッション管理",
+        "JWT署名検証"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 依存ライブラリの追加\n\nJWTライブラリとしてAuth0の`java-jwt`と`jwks-rsa-java`を使用する。\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>java-jwt</artifactId>\n  <version>4.2.2</version>\n</dependency>\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>jwks-rsa</artifactId>\n  <version>0.21.3</version>\n</dependency>\n```\n\nADB2CパッケージではHTTPクライアントも必要:\n```xml\n<dependency>\n  <groupId>org.apache.httpcomponents.client5</groupId>\n  <artifactId>httpclient5</artifactId>\n  <version>5.2.1</version>\n</dependency>\n```\n\n## 環境依存値の設定\n\n| 名前 | 説明 |\n|---|---|\n| aws.cognito.region | Cognitoを作成しているリージョンコード（例：ap-northeast-1） |\n| aws.cognito.userPool.id | ユーザープールID |\n| aws.cognito.userPool.clientId | ユーザープールに登録したアプリケーションのクライアントID |\n\n環境依存値の設定方法については :ref:`repository-overwrite_environment_configuration` や :ref:`repository-overwrite_environment_configuration_by_os_env_var` を参照。\n\n> **補足**: サービスへのアクセスに必要な情報に秘匿すべき情報が含まれる場合は、バージョン管理システムで管理対象となるファイルへの記述を避け、システムプロパティやOS環境変数として設定すること。\n\n## コンポーネント定義の設定\n\n```xml\n<component name=\"idTokenVerifier\" class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoIdTokenVerifier\">\n  <property name=\"region\" value=\"${aws.cognito.region}\" />\n  <property name=\"userPoolId\" value=\"${aws.cognito.userPool.id}\" />\n  <property name=\"clientId\" value=\"${aws.cognito.userPool.clientId}\" />\n  <property name=\"signatureAlgorithmProvider\" ref=\"signatureAlgorithmProvider\" />\n</component>\n<component name=\"signatureAlgorithmProvider\" class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoSignatureAlgorithmProvider\">\n  <property name=\"rsaKeyProvider\" ref=\"rsaKeyProvider\" />\n</component>\n<component name=\"rsaKeyProvider\" class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoRSAKeyProvider\">\n  <property name=\"region\" value=\"${aws.cognito.region}\" />\n  <property name=\"userPoolId\" value=\"${aws.cognito.userPool.id}\" />\n</component>\n```\n\n## IDトークンの検証\n\n`CognitoIdTokenVerifier`はCognitoのガイドに従ってIDトークンを検証する。クライアント側でIDトークン取得後に即時送信されることを想定し、有効期限の許容範囲は60秒。\n\n```java\nJWTVerifier verifier = JWT.require(signatureAlgorithmProvider.get())\n        .acceptExpiresAt(60)\n        .withAudience(clientId)\n        .withIssuer(createUserPoolUrl(region, userPoolId))\n        .withClaim(\"token_use\", \"id\")\n        .build();\nreturn verifier.verify(idToken);\n```\n\n`CognitoSignatureAlgorithmProvider`はRSA256アルゴリズムを返却:\n```java\npublic Algorithm get() {\n    return Algorithm.RSA256(rsaKeyProvider);\n}\n```\n\n`CognitoRSAKeyProvider`はCognitoが公開するJWKSエンドポイントから公開鍵を取得する。初期化時に以下の設定でプロバイダを構築:\n- キーIDは1時間に4つまでキャッシュ\n- JWKSエンドポイントへのアクセスは1分で10回まで許容\n- プロキシは使用しない\n\n```java\nthis.provider = new JwkProviderBuilder(createUserPoolUrl(region, userPoolId))\n        .cached(true)\n        .cached(4, 1, TimeUnit.HOURS)\n        .rateLimited(true)\n        .rateLimited(10, 1, TimeUnit.MINUTES)\n        .proxied(Proxy.NO_PROXY)\n        .build();\n```\n\n> **補足**: 署名に使用する鍵情報はローテーションされる場合があるため、事前に鍵情報が判明していた場合でも固定値を使用せず、JWKSエンドポイントから最新情報を取得すること。\n\n## 認証用業務アクションのパス設定\n\nJAX-RSの`@Path`アノテーションでパスを設定する:\n```java\n@Path(\"/cognito/login\")\npublic class LoginAction {\n```\n\nJAX-RSの`@Path`アノテーションによるマッピングについては :ref:`router_adaptor_path_annotation` を参照。\n\n## 認証および成功時のログイン状態設定\n\n認証成功後はセッションIDおよびCSRFトークンを変更し、IDトークンのsubjectからユーザーIDを取得してセッションに保持する。検証失敗時はHTTPステータス401（Unauthorized）を返却する。\n\n> **補足**: CSRF対策のため、CSRFトークン検証ハンドラの使用を想定している。詳細は :ref:`csrf_token_verification_handler` を参照。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic void login(ExecutionContext context, LoginRequestForm form) {\n    DecodedJWT decodedJWT = verifyIdToken(form.getIdToken());\n    SessionUtil.changeId(context);\n    CsrfTokenUtil.regenerateCsrfToken(context);\n    String userId = decodedJWT.getSubject();\n    SessionUtil.put(context, \"user.id\", userId);\n}\n```\n\n検証失敗時の処理:\n```java\ntry {\n    return idTokenVerifier.verify(idToken);\n} catch (JWTVerificationException e) {\n    throw new HttpErrorResponse(HttpResponse.Status.UNAUTHORIZED.getStatusCode());\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

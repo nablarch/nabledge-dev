@@ -1,0 +1,392 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/web/csrf_token_verification_handler.rst`
+- Format: `rst`
+
+```
+.. _csrf_token_verification_handler:
+
+CSRFトークン検証ハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラは、トークンを使った一般的なCSRF(クロスサイトリクエストフォージェリ)対策を行うための機能を提供する。
+本ハンドラを使用して、 :ref:`Webアプリケーション<web_application>` と :ref:`RESTfulウェブサービス<restful_web_service>`
+のCSRF対策を実現できる。
+
+本ハンドラをハンドラ構成に含めると、リクエスト処理でCSRFトークンの生成と検証が行われ、 :ref:`tag` を使用している場合は
+CSRFトークンが画面に自動で出力される。
+そのため、アプリケーションプログラマが実装することなく、 :ref:`Webアプリケーション<web_application>`
+のCSRF対策を漏れなく行うことができる。
+
+:ref:`RESTfulウェブサービス<restful_web_service>` においてCSRF対策を実現できるように、
+本ハンドラはリクエストヘッダまたはリクエストパラメータからCSRFトークンを取得する。
+生成されたCSRFトークンを取得するためのユーティリティクラス(
+:java:extdoc:`CsrfTokenUtil <nablarch.common.web.csrf.CsrfTokenUtil>` )を提供しているので、
+プロジェクトのアーキテクチャに合わせてクライアントにCSRFトークンを送る仕組みを実装できる。
+
+本ハンドラはCSRFトークンをセッションストアに格納するため、本ハンドラを使用する場合は :ref:`session_store` の使用が必須となる。
+
+本ハンドラでは、以下の処理を行う。
+
+* セッションストアからCSRFトークンを取得する。
+* 取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する。
+* HTTPリクエストが検証対象か否かを判定する。
+* 検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する。
+* 検証に失敗した場合はBadRequest(400)のレスポンスを返す。
+* 検証に成功した場合は次のハンドラへ処理を移す。
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/CsrfTokenVerificationHandler/flow.png
+  :scale: 80
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.web.handler.CsrfTokenVerificationHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+
+制約
+------------------------------
+:ref:`session_store_handler` より後ろに配置すること
+  CSRFトークンをセッションストアに格納するため、
+  本ハンドラは :ref:`session_store_handler` より後ろに配置する必要がある。
+
+:ref:`tag` を使用する場合は :ref:`nablarch_tag_handler` より後ろに配置すること
+  :ref:`tag` を使用する場合は :ref:`tag-hidden_encryption` を使用して画面にCSRFトークンを出力しているため、
+  本ハンドラは :ref:`nablarch_tag_handler` より後ろに配置する必要がある。
+
+.. _csrf_token_verification_handler-generation_verification:
+
+CSRFトークンの生成と検証
+--------------------------------------------------
+本ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う。
+:ref:`tag` を使用する場合の設定例を以下に示す。
+
+.. code-block:: xml
+
+  <!-- ハンドラ構成 -->
+  <component name="webFrontController" class="nablarch.fw.web.servlet.WebFrontController">
+    <property name="handlerQueue">
+      <list>
+        <!-- 他のハンドラは省略 -->
+
+        <!-- セッションストアハンドラ -->
+        <component-ref name="sessionStoreHandler" />
+
+        <!-- Nablarchカスタムタグ制御ハンドラ -->
+        <component-ref name="nablarchTagHandler"/>
+
+        <!-- CSRFトークン検証ハンドラ -->
+        <component-ref name="csrfTokenVerificationHandler"/>
+      </list>
+    </property>
+  </component>
+
+  <component name="csrfTokenVerificationHandler"
+             class="nablarch.fw.web.handler.CsrfTokenVerificationHandler" />
+
+デフォルトでは以下の処理を行う。
+
+セッションストアからCSRFトークンを取得する
+  * CSRFトークンをセッションストアに格納する際に使用する名前は ``nablarch_csrf-token`` となる。
+
+取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する
+  * CSRFトークンの生成は :java:extdoc:`CsrfTokenGenerator<nablarch.fw.web.handler.csrf.CsrfTokenGenerator>` が行う。
+    デフォルトではバージョン4のUUIDを使用してCSRFトークンを生成する :java:extdoc:`UUIDv4CsrfTokenGenerator<nablarch.fw.web.handler.csrf.UUIDv4CsrfTokenGenerator>` を使用する。
+  * CSRFトークンの格納先となるセッションストアはデフォルトのセッションストアとなる。（セッションストアの名前を指定しないでCSRFトークンを格納する）
+
+HTTPリクエストが検証対象か否かを判定する
+  * 検証対象か否かの判定は :java:extdoc:`VerificationTargetMatcher<nablarch.fw.web.handler.csrf.VerificationTargetMatcher>` が行う。
+    デフォルトではHTTPメソッドからHTTPリクエストが検証対象か否かを判定する :java:extdoc:`HttpMethodVerificationTargetMatcher<nablarch.fw.web.handler.csrf.HttpMethodVerificationTargetMatcher>` を使用する。
+  *  :java:extdoc:`HttpMethodVerificationTargetMatcher<nablarch.fw.web.handler.csrf.HttpMethodVerificationTargetMatcher>` は、HTTPメソッドの ``GET`` ``HEAD`` ``TRACE`` ``OPTIONS`` をCSRFトークンの検証対象 **外** と判定する（つまりPOSTやPUT等は検査対象となる）。
+
+検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する
+  * CSRFトークンをHTTPリクエストに格納する際に使用する名前は以下となる。
+
+    | HTTPリクエストヘッダ ``X-CSRF-TOKEN``
+    | HTTPリクエストパラメータ ``csrf-token``
+
+検証に成功した場合は次のハンドラへ処理を移し、検証に失敗した場合はBadRequest(400)のレスポンスを返す
+  * 検証失敗時の処理は :java:extdoc:`VerificationFailureHandler<nablarch.fw.web.handler.csrf.VerificationFailureHandler>` が行う。
+    デフォルトではBadRequest(400)のレスポンスを生成する :java:extdoc:`BadRequestVerificationFailureHandler<nablarch.fw.web.handler.csrf.BadRequestVerificationFailureHandler>` を使用する。
+
+設定を変えることでデフォルトの動作を変更できる。設定例を以下に示す。
+
+.. code-block:: xml
+
+    <component class="nablarch.fw.web.handler.CsrfTokenVerificationHandler">
+      <!-- CSRFトークンの生成を行うインターフェース -->
+      <property name="csrfTokenGenerator">
+        <component class="com.sample.CustomCsrfTokenGenerator" />
+      </property>
+      <!-- HTTPリクエストがCSRFトークンの検証対象か否かの判定を行うインターフェース -->
+      <property name="verificationTargetMatcher">
+        <component class="com.sample.CustomVerificationTargetMatcher" />
+      </property>
+      <!-- CSRFトークンの検証失敗時の処理を行うインタフェース -->
+      <property name="verificationFailureHandler" />
+        <component class="com.sample.CustomVerificationFailureHandler" />
+      </property>
+    </component>
+
+    <component name="webConfig" class="nablarch.common.web.WebConfig">
+      <!-- CSRFトークンをHTTPリクエストヘッダから取得する際に使用する名前 -->
+      <property name="csrfTokenHeaderName" value="X-CUSTOM-CSRF-TOKEN" />
+      <!-- CSRFトークンをHTTPリクエストパラメータから取得する際に使用する名前 -->
+      <property name="csrfTokenParameterName" value="custom-csrf-token" />
+      <!-- CSRFトークンをセッションスストアに格納する際に使用する名前 -->
+      <property name="csrfTokenSessionStoredVarName" value="custom-csrf-token" />
+      <!-- CSRFトークンを保存するセッションストアの名前 -->
+      <property name="csrfTokenSavedStoreName" value="customStore" />
+    </component>
+
+.. important::
+
+  本ハンドラを使用したアプリケーションに対して、テスティングフレームワークを使用してリクエスト単体テストを実施すると、
+  正しい画面遷移を経由したリクエストとならないためCSRFトークンの検証に失敗する。
+  CSRF対策はアプリケーションプログラマが実装して作り込む部分ではないため、
+  リクエスト単体テストではCSRF対策を無効化してテストを行えばよい。
+  テスト実行時の設定において本ハンドラを何も処理しないハンドラに差し替えることでCSRF対策を無効化できる。
+  以下に設定例を示す。以下ではテスティングフレームワークが提供する何も処理しないハンドラである :java:extdoc:`NopHandler<nablarch.test.NopHandler>` を使用している。
+
+  .. code-block:: xml
+
+    <!-- テストの設定で本ハンドラのコンポーネント定義を上書く。
+         コンポーネント名を合わせることで上書きを行う。 -->
+
+    <!-- CSRF対策の無効化 -->
+    <component name="csrfTokenVerificationHandler" class="nablarch.test.NopHandler" />
+
+.. _csrf_token_verification_handler-regeneration:
+
+CSRFトークンを再生成する
+--------------------------------------------------
+悪意のある人がCSRFトークンとそれを保持しているセッションストアのセッションIDを何らかの方法で利用者に送り込み、
+利用者がこれに気づかずにログインをしたとする。
+このときCSRFトークンが再生成されていないと、悪意のあるウェブサイトにCSRFトークンを仕込んだ罠ページを用意し、
+利用者にリンクのクリックなどの操作をさせることで利用者の意図しない攻撃リクエストを送信させることができてしまう。
+これを防ぐためにはログイン時にCSRFトークンを再生成しなくてはならない。
+
+CSRFトークンの再生成は、アクション等のリクエスト処理の中で
+:java:extdoc:`CsrfTokenUtil.regenerateCsrfToken <nablarch.common.web.csrf.CsrfTokenUtil.regenerateCsrfToken(nablarch.fw.ExecutionContext)>`
+メソッドを呼び出すと、本ハンドラの戻りの処理でCSRFトークンの再生成が行われる。
+
+ログイン時にセッションストアを破棄して再生成する実装であればこのメソッドを使用する必要はない。
+セッションストアの破棄と共にCSRFトークンも破棄され、その後のページ表示時に新しいCSRFトークンが生成されるためである。
+ログイン時にセッションストアそのものの破棄ではなくセッションIDの再生成にとどめる実装の場合は、
+このメソッドを使用してCSRFトークンも再生成すること。
+
+```
+
+## Knowledge File
+
+- ID: `handlers-csrf_token_verification_handler--s1`
+
+```json
+{
+  "id": "handlers-csrf_token_verification_handler--s1",
+  "title": "CSRFトークン検証ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/csrf_token_verification_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/csrf/CsrfTokenUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/csrf/CsrfTokenGenerator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/csrf/UUIDv4CsrfTokenGenerator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/csrf/VerificationTargetMatcher.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/csrf/HttpMethodVerificationTargetMatcher.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/csrf/VerificationFailureHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/csrf/BadRequestVerificationFailureHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/NopHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "CsrfTokenVerificationHandler",
+        "nablarch.fw.web.handler.CsrfTokenVerificationHandler",
+        "CSRFトークン検証ハンドラ",
+        "ハンドラクラス名"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web",
+        "com.nablarch.framework",
+        "モジュール依存関係",
+        "Maven設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "配置制約",
+        "ハンドラ順序",
+        "session_store_handler",
+        "nablarch_tag_handler",
+        "tag-hidden_encryption",
+        "セッションストアハンドラより後"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "CSRFトークンの生成と検証",
+      "hints": [
+        "CSRFトークン生成",
+        "CSRFトークン検証",
+        "UUIDv4CsrfTokenGenerator",
+        "HttpMethodVerificationTargetMatcher",
+        "BadRequestVerificationFailureHandler",
+        "CsrfTokenGenerator",
+        "VerificationTargetMatcher",
+        "VerificationFailureHandler",
+        "NopHandler",
+        "nablarch_csrf-token",
+        "X-CSRF-TOKEN",
+        "csrf-token",
+        "csrfTokenHeaderName",
+        "csrfTokenParameterName",
+        "csrfTokenSessionStoredVarName",
+        "csrfTokenSavedStoreName",
+        "WebConfig",
+        "テスト時無効化",
+        "処理フロー",
+        "CsrfTokenUtil",
+        "RESTfulウェブサービス",
+        "クライアントへのCSRFトークン送信"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "CSRFトークンを再生成する",
+      "hints": [
+        "CSRFトークン再生成",
+        "CsrfTokenUtil",
+        "regenerateCsrfToken",
+        "ログイン時のCSRF対策",
+        "セッションID再生成",
+        "セッションストア破棄"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.CsrfTokenVerificationHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+    "s3": "- :ref:`session_store_handler` より後ろに配置すること（CSRFトークンをセッションストアに格納するため）\n- :ref:`tag` を使用する場合は :ref:`nablarch_tag_handler` より後ろに配置すること（:ref:`tag-hidden_encryption` を使用してCSRFトークンを画面に出力するため）",
+    "s4": ":ref:`session_store` の使用が必須（CSRFトークンをセッションストアに格納するため）。\n\n**RESTfulウェブサービスでのCSRF対策**:\nハンドラはリクエストヘッダまたはリクエストパラメータからCSRFトークンを取得するため、:ref:`RESTfulウェブサービス<restful_web_service>` のCSRF対策にも対応している。生成されたCSRFトークンを取得するためのユーティリティクラス :java:extdoc:`CsrfTokenUtil<nablarch.common.web.csrf.CsrfTokenUtil>` が提供されており、プロジェクトのアーキテクチャに合わせてクライアントにCSRFトークンを送る仕組みを実装できる。\n\n**処理フロー**:\n1. セッションストアからCSRFトークンを取得する\n2. 取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する\n3. HTTPリクエストが検証対象か否かを判定する\n4. 検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する\n5. 検証に失敗した場合はBadRequest(400)のレスポンスを返す\n6. 検証に成功した場合は次のハンドラへ処理を移す\n\n**設定例**（:ref:`tag` 使用時）:\n```xml\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component-ref name=\"sessionStoreHandler\" />\n      <component-ref name=\"nablarchTagHandler\"/>\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\n\n**デフォルト動作**:\n\n| 項目 | デフォルト |\n|---|---|\n| セッションストア格納名 | `nablarch_csrf-token` |\n| トークン生成クラス | :java:extdoc:`UUIDv4CsrfTokenGenerator<nablarch.fw.web.handler.csrf.UUIDv4CsrfTokenGenerator>`（UUID v4使用） |\n| 使用セッションストア | デフォルトのセッションストア（名前指定なし） |\n| 検証対象判定クラス | :java:extdoc:`HttpMethodVerificationTargetMatcher<nablarch.fw.web.handler.csrf.HttpMethodVerificationTargetMatcher>`：GET/HEAD/TRACE/OPTIONSは検証対象外、それ以外（POST/PUT等）は検証対象 |\n| リクエストヘッダ名 | `X-CSRF-TOKEN` |\n| リクエストパラメータ名 | `csrf-token` |\n| 検証失敗時処理 | :java:extdoc:`BadRequestVerificationFailureHandler<nablarch.fw.web.handler.csrf.BadRequestVerificationFailureHandler>`：BadRequest(400)を返す |\n\n**カスタマイズ設定例**:\n```xml\n<component class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\">\n  <property name=\"csrfTokenGenerator\">\n    <component class=\"com.sample.CustomCsrfTokenGenerator\" />\n  </property>\n  <property name=\"verificationTargetMatcher\">\n    <component class=\"com.sample.CustomVerificationTargetMatcher\" />\n  </property>\n  <property name=\"verificationFailureHandler\" />\n    <component class=\"com.sample.CustomVerificationFailureHandler\" />\n  </property>\n</component>\n<component name=\"webConfig\" class=\"nablarch.common.web.WebConfig\">\n  <property name=\"csrfTokenHeaderName\" value=\"X-CUSTOM-CSRF-TOKEN\" />\n  <property name=\"csrfTokenParameterName\" value=\"custom-csrf-token\" />\n  <property name=\"csrfTokenSessionStoredVarName\" value=\"custom-csrf-token\" />\n  <property name=\"csrfTokenSavedStoreName\" value=\"customStore\" />\n</component>\n```\n\n> **重要**: テスティングフレームワークを使用したリクエスト単体テストでは、正しい画面遷移を経由しないためCSRFトークン検証が失敗する。テスト設定でコンポーネントを :java:extdoc:`NopHandler<nablarch.test.NopHandler>` に差し替えてCSRF対策を無効化すること。\n>\n> ```xml\n> <!-- コンポーネント名を合わせることで上書き -->\n> <component name=\"csrfTokenVerificationHandler\" class=\"nablarch.test.NopHandler\" />\n> ```",
+    "s5": "ログイン後もCSRFトークンが再生成されていない場合、悪意のある人がCSRFトークンとセッションIDを利用者に送り込み、ログイン後に罠ページから利用者の意図しない攻撃リクエストを送信させることができる。ログイン時にCSRFトークンを再生成すること。\n\nアクション等のリクエスト処理で :java:extdoc:`CsrfTokenUtil.regenerateCsrfToken<nablarch.common.web.csrf.CsrfTokenUtil.regenerateCsrfToken(nablarch.fw.ExecutionContext)>` を呼び出すと、ハンドラの戻り処理でCSRFトークンが再生成される。\n\n- ログイン時にセッションストアを破棄して再生成する実装: このメソッドは不要（セッションストア破棄と共にCSRFトークンも破棄され、次ページ表示時に新トークンが生成される）\n- ログイン時にセッションIDの再生成のみの実装: このメソッドを使用してCSRFトークンも再生成すること"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

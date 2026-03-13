@@ -1,0 +1,111 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "http-messaging-application_design",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1 — アクションクラス heading",
+      "description": "The knowledge file writes \"**アクションクラス**: `nablarch.fw.messaging.RequestMessage`\", which implies the action class is or is identified as `nablarch.fw.messaging.RequestMessage`. The source does not state this. The action class is a user-implemented class that *receives* a RequestMessage argument; it is not RequestMessage itself. The source lists RequestMessage only as the input parameter type used by the action class.",
+      "source_evidence": "アクションクラスは、リクエストメッセージ(:java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>`)を元に業務ロジックを実行し…"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`http_messaging-design`:
+
+アプリケーションの責務配置
+================================
+HTTPメッセージングを作成する際に実装すべきクラスとその責務について説明する。
+
+**クラスとその責務**
+
+.. image:: images/http_messaging_design.png
+
+アクションクラス(action class)
+  アクションクラスは、リクエストメッセージ(:java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>`)
+  を元に業務ロジックを実行し、レスポンスメッセージ(:java:extdoc:`ResponseMessage<nablarch.fw.messaging.ResponseMessage>`)
+  を作成し返却する。
+
+  例えば、リクエストメッセージの取り込み処理であれば、業務ロジックとして以下の処理を行う。
+
+  - リクエストメッセージからフォームクラスを作成し、バリデーションを行う。
+  - フォームクラスからエンティティクラスを作成して、データベースにデータを追加する。
+  - レスポンスメッセージを作成し返却する。
+
+フォームクラス(form class)
+  リクエストメッセージ(:java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>`)をマッピングするクラス。
+
+  バリデーションするためのアノテーションの設定や相関バリデーションのロジックを持つ。
+
+  フォームクラスのプロパティは全て `String` で定義する
+    プロパティを `String` とすべき理由は、 :ref:`Bean Validation <bean_validation-form_property>` を参照。
+    ただし、バイナリ項目の場合はバイト配列で定義する。
+
+エンティティクラス(entity class)
+  テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "http-messaging-application_design",
+  "title": "アプリケーションの責務配置",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/http_messaging/application_design.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/RequestMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/ResponseMessage.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アプリケーションの責務配置",
+      "hints": [
+        "RequestMessage",
+        "ResponseMessage",
+        "アクションクラス",
+        "フォームクラス",
+        "エンティティクラス",
+        "HTTPメッセージング",
+        "バリデーション",
+        "責務配置"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "HTTPメッセージングのクラス構成と責務:\n\n**アクションクラス**: `nablarch.fw.messaging.RequestMessage`\n\n- :java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>` を受け取り、業務ロジックを実行し :java:extdoc:`ResponseMessage<nablarch.fw.messaging.ResponseMessage>` を返す\n- リクエスト取り込み処理の例: (1) リクエストメッセージからフォームクラスを作成しバリデーション (2) フォームからエンティティを作成しDB登録 (3) レスポンスメッセージを作成して返却\n\n**フォームクラス**: :java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>` をマッピングするクラス\n\n- バリデーションアノテーションの設定・相関バリデーションロジックを持つ\n- プロパティは全て `String` で定義（理由: :ref:`Bean Validation <bean_validation-form_property>` 参照）\n- バイナリ項目の場合はバイト配列で定義\n\n**エンティティクラス**: テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,543 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/tag.rst`
+- Format: `rst`
+
+```
+フォーマットして値を出力する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+カスタムタグでは、日付や金額などの値を人が見やすい形式にフォーマットして出力する機能を提供する。
+
+:ref:`format` を使用してフォーマットする方法と、valueFormat属性を使用してフォーマットする2種類の方法が存在する。
+以下の理由から、 :ref:`format` を使用してフォーマットする方法を推奨する。
+
+ * :ref:`format` を使用してフォーマットする方法は、ファイル出力やメッセージングなどの他の出力機能でのフォーマット処理と共通の部品を使用するため、設定が1箇所に集約できる。
+   また、使用できるタグに制限がない。
+ * valueFormat属性でフォーマットする方法は、カスタムタグが独自で実装しておりカスタムタグのみでしか使用できないため、
+   他の出力機能でフォーマットをしたい場合は別途設定が必要となる。
+   そのため、フォーマットに関する設定が複数箇所に存在することとなり、管理が煩雑になる。
+   また、valueFormat属性は使用できるタグが :ref:`tag-write_tag` と :ref:`tag-text_tag` に限定される。
+
+:ref:`format`
+ :ref:`format` を使用する場合は、EL式内で ``n:formatByDefault`` または ``n:format`` を使用して、フォーマットした文字列をvalue属性に設定する。
+
+ EL式は、JSP上で簡単な記述で演算結果を出力できる記述方法である。 ``${<評価したい式>}`` と記述することで、評価結果がそのまま出力される。
+
+ ``n:formatByDefault`` 及び ``n:format`` をEL式内で使用することで、 :ref:`format` の ``FormatterUtil`` を呼び出して値をフォーマットできる。
+
+ 実装例
+  .. code-block:: html
+
+   <!-- フォーマッタのデフォルトのパターンでフォーマットする場合
+     第一引数に使用するフォーマッタ名を指定する
+     第二引数にフォーマット対象の値を指定する
+     value属性にEL式で n:formatByDefault の呼び出しを記述する -->
+   <n:write value="${n:formatByDefault('dateTime', project.StartDate)}" />
+
+   <!-- 指定したパターンでフォーマットする場合
+     第一引数に使用するフォーマッタ名を指定する
+     第二引数にフォーマット対象の値を指定する
+     第三引数にフォーマットのパターンを指定する
+     value属性にEL式で n:format の呼び出しを記述する -->
+   <n:text name="project.StartDate" value="${n:format('dateTime', project.StartDate, 'yyyy年MM月dd日')}" />
+
+ .. important::
+  EL式では、リクエストパラメータを参照できない。
+  そのため、 :ref:`bean_validation` を使用してウェブアプリケーションのユーザ入力値のチェックを行う場合は
+  以下の設定をすること。
+
+  :ref:`bean_validation_onerror`
+
+  上記の設定が使用できない場合は、 ``n:set`` を使用して、値をリクエストパラメータから取り出してページスコープにセットしてから出力すること。
+
+  実装例
+
+  .. code-block:: jsp
+
+   <n:set var="projectEndDate" name="form.projectEndDate" scope="page" />
+   <n:text name="form.projectEndDate" nameAlias="form.date"
+     value="${n:formatByDefault('dateTime', projectEndDate)}"
+     cssClass="form-control datepicker" errorCss="input-error" />
+
+valueFormat属性
+ valueFormat属性を指定することでフォーマットして値を出力する。valueFormat属性の指定がない場合は、フォーマットせずに値を出力する。
+ 使用できるタグは、:ref:`tag-write_tag` と :ref:`tag-text_tag` のみである。
+
+ フォーマットは、 ``データタイプ{パターン}`` 形式で指定する。
+ カスタムタグでデフォルトで提供しているデータタイプを以下に示す。
+
+ * :ref:`yyyymmdd (年月日)<tag-format_yyyymmdd>`
+ * :ref:`yyyymm (年月)<tag-format_yyyymm>`
+ * :ref:`dateTime (日時)<tag-format_datetime>`
+ * :ref:`decimal (10進数)<tag-format_decimal>`
+
+ .. _`tag-format_yyyymmdd`:
+
+ yyyymmdd
+  年月日のフォーマット。
+
+  値はyyyyMMdd形式またはパターン形式の文字列を指定する。
+  パターンには :java:extdoc:`SimpleDateFormat <java.text.SimpleDateFormat>` が規定している構文を指定する。
+  パターン文字には、y(年)、M(月)、d(月における日)のみ指定可能。
+  パターン文字列を省略した場合は、 :ref:`tag-setting` (yyyymmddPatternプロパティ)に設定されたデフォルトのパターンを使用する。
+
+  また、パターンの後に区切り文字 ``|`` を使用してフォーマットのロケールを指定できる。
+  ロケールを明示的に指定しない場合は、
+  :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` の言語を使用する。
+  :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` が設定されていない場合は、
+  システムデフォルトロケール値を使用する。
+
+  実装例
+   .. code-block:: properties
+
+    # デフォルトのパターンとスレッドコンテキストに設定されたロケールを使用する。
+    valueFormat="yyyymmdd"
+
+    # 明示的に指定されたパターンと、スレッドコンテキストに設定されたロケールを使用する。
+    valueFormat="yyyymmdd{yyyy/MM/dd}"
+
+    # デフォルトのパターンを使用し、ロケールのみ指定する場合。
+    valueFormat="yyyymmdd{|ja}"
+
+    # パターン、ロケールの両方を明示的に指定する場合。
+    valueFormat="yyyymmdd{yyyy年MM月dd日|ja}"
+
+  .. important::
+   :ref:`tag-text_tag` のvalueFormat属性を指定した場合、
+   入力画面にもフォーマットした値が出力される。
+   入力された年月日をアクションで取得する場合は、 :ref:`ウィンドウスコープ <tag-window_scope>` および
+   :java:extdoc:`Nablarch独自のバリデーションが提供する年月日コンバータ <nablarch.common.date.YYYYMMDDConvertor>`
+   を使用する。
+   :ref:`tag-text_tag` と :ref:`ウィンドウスコープ <tag-window_scope>` 、
+   :java:extdoc:`年月日コンバータ <nablarch.common.date.YYYYMMDDConvertor>`
+   が連携し、valueFormat属性に指定されたパターンを使用した値変換とバリデーションを行う。
+
+   なお、 :ref:`bean_validation` は :ref:`tag-text_tag` のvalueFormat属性に対応していない。
+
+  .. important::
+   :ref:`ウィンドウスコープ <tag-window_scope>` を使用しない場合は、 :ref:`tag-text_tag` のvalueFormat属性を指定しても
+   valueFormat属性の値がサーバサイドに送信されないためバリデーションエラーが発生してしまう。
+   その場合は :java:extdoc:`YYYYMMDD <nablarch.common.date.YYYYMMDD>` アノテーションのallowFormat属性を指定することで、
+   入力値のチェックを行うことができる。
+
+ .. _`tag-format_yyyymm`:
+
+ yyyymm
+  年月のフォーマット。
+
+  値はyyyyMM形式またはパターン形式の文字列を指定する。
+  使用方法は、 :ref:`yyyymmdd (年月日)<tag-format_yyyymmdd>` と同じ。
+
+ .. _`tag-format_dateTime`:
+
+ dateTime
+  日時のフォーマット。
+
+  値は :java:extdoc:`Date <java.util.Date>` 型を指定する。
+  パターンには
+  :java:extdoc:`SimpleDateFormat <java.text.SimpleDateFormat>`
+  が規定している構文を指定する。
+  デフォルトでは、 :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` に設定された
+  言語とタイムゾーンに応じた日時が出力される。
+  また、パターン文字列の後に区切り文字 ``|`` を使用してロケールおよびタイムゾーンを明示的に指定できる。
+
+  :ref:`tag-setting` (dateTimePatternプロパティ、patternSeparatorプロパティ)を使用して、
+  パターンのデフォルト値の設定と、区切り文字 ``|`` を変更できる。
+
+  実装例
+   .. code-block:: properties
+
+    # デフォルトのパターンとThreadContextに設定されたロケール、タイムゾーンを使用する場合。
+    valueFormat="dateTime"
+
+    #デフォルトのパターンを使用し、ロケールおよびタイムゾーンのみ指定する場合。
+    valueFormat="dateTime{|ja|Asia/Tokyo}"
+
+    # デフォルトのパターンを使用し、タイムゾーンのみ指定する場合。
+    valueFormat="dateTime{||Asia/Tokyo}"
+
+    # パターン、ロケール、タイムゾーンを全て指定する場合。
+    valueFormat="dateTime{yyyy年MMM月d日(E) a hh:mm|ja|America/New_York}}"
+
+    # パターンとタイムゾーンを指定する場合。
+    valueFormat="dateTime{yy/MM/dd HH:mm:ss||Asia/Tokyo}"
+
+ .. _`tag-format_decimal`:
+
+ decimal
+  10進数のフォーマット。
+
+  値は :java:extdoc:`Number <java.lang.Number>` 型又は数字の文字列を指定する。
+  文字列の場合、3桁ごとの区切り文字(1,000,000のカンマ)を取り除いた後でフォーマットされる。
+  パターンには :java:extdoc:`DecimalFormat <java.text.DecimalFormat>` が規定している構文を指定する。
+
+  デフォルトでは、 :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` に設定された言語を使用して、
+  言語に応じた形式で値が出力される。
+  言語を直接指定することで、指定された言語に応じた形式で値を出力できる。
+  言語の指定は、パターンの末尾に区切り文字 ``|`` を使用して言語を付加することで行う。
+
+  :ref:`tag-setting` (patternSeparatorプロパティ)を使用して、区切り文字 ``|`` を変更できる。
+
+  実装例
+   .. code-block:: properties
+
+    # ThreadContextに設定された言語を使用し、パターンのみ指定する場合。
+    valueFormat="decimal{###,###,###.000}"
+
+    # パターンと言語を指定する場合。
+    valueFormat="decimal{###,###,###.000|ja}"
+    
+  .. important::
+    本機能では値のフォーマットのみを行うため、丸め動作の設定は行わない。(:java:extdoc:`DecimalFormat <java.text.DecimalFormat>` のデフォルトが使用される。)
+    
+    丸め処理を行いたい場合には、アプリケーション側で処理を行い、本機能を用いてフォーマット処理を行うこと。
+
+  .. important::
+   :ref:`tag-text_tag` のvalueFormat属性を指定した場合、入力画面にもフォーマットした値が出力される。
+   入力された数値をアクションで取得する場合は数値コンバータ(
+   :java:extdoc:`BigDecimalConvertor <nablarch.core.validation.convertor.BigDecimalConvertor>` 、
+   :java:extdoc:`IntegerConvertor <nablarch.core.validation.convertor.IntegerConvertor>` 、
+   :java:extdoc:`LongConvertor <nablarch.core.validation.convertor.LongConvertor>`
+   )を使用する。
+   :ref:`tag-text_tag` と数値コンバータが連携し、valueFormat属性に指定された言語に対応する値変換とバリデーションを行う。
+
+   なお、 :ref:`bean_validation` は :ref:`tag-text_tag` のvalueFormat属性に対応していない。
+
+  .. tip::
+   パターンに桁区切りと小数点を指定する場合は、言語に関係なく常に桁区切りにカンマ、小数点にドットを使用すること。
+
+   .. code-block:: properties
+
+    # es(スペイン語)の場合は、桁区切りがドット、小数点がカンマにフォーマットされる。
+    # パターン指定では常に桁区切りにカンマ、小数点にドットを指定する。
+    valueFormat="decimal{###,###,###.000|es}"
+
+    # 下記は不正なパターン指定のため実行時例外がスローされる。
+    valueFormat="decimal{###.###.###,000|es}"
+
+.. _`tag-write_error`:
+
+エラー表示を行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+エラー表示では、以下の機能を提供する。
+
+* :ref:`エラーメッセージの一覧表示 <tag-write_error_errors_tag>`
+* :ref:`エラーメッセージの個別表示 <tag-write_error_error_tag>`
+* :ref:`入力項目のハイライト表示 <tag-write_error_css>`
+
+.. tip::
+ エラー表示に使用するカスタムタグでは、リクエストスコープから
+ :java:extdoc:`ApplicationException<nablarch.core.message.ApplicationException>`
+ を取得してエラーメッセージを出力する。
+ :java:extdoc:`ApplicationException<nablarch.core.message.ApplicationException>` は、
+ :ref:`on_error_interceptor` を使用して、リクエストスコープに設定する。
+
+.. _`tag-write_error_errors_tag`:
+
+エラーメッセージの一覧表示
+ 画面上部にエラーメッセージを一覧表示する場合に :ref:`tag-errors_tag` を使用する。
+
+ すべてのエラーメッセージを表示する場合
+  \
+
+  実装例
+   .. code-block:: jsp
+
+    <!-- filter属性に"all"を指定する。 -->
+    <n:errors filter="all" errorCss="alert alert-danger" />
+
+  出力結果
+   .. image:: images/tag/errors_all.png
+
+ 入力項目に対応しないエラーメッセージのみを表示する場合
+  \
+
+  実装例
+   アクション
+    .. code-block:: java
+
+     // データベースとの相関バリデーションなどで、ApplicationExceptionを送出する。
+     throw new ApplicationException(
+       MessageUtil.createMessage(MessageLevel.ERROR, "errors.duplicateName"));
+
+   JSP
+    .. code-block:: jsp
+
+     <!-- filter属性に"global"を指定する。 -->
+     <n:errors filter="global" errorCss="alert alert-danger" />
+
+  出力結果
+   .. image:: images/tag/errors_global.png
+
+.. _`tag-write_error_error_tag`:
+
+エラーメッセージの個別表示
+ 入力項目ごとにエラーメッセージを表示する場合に :ref:`tag-error_tag` を使用する。
+
+ 実装例
+  .. code-block:: jsp
+
+   <div>
+     <label>名前</label>
+     <n:text name="form.userName" />
+     <!-- 入力項目と同じ名前をname属性に指定する。 -->
+     <n:error name="form.userName" messageFormat="span" errorCss="alert alert-danger" />
+   </div>
+
+ 出力結果
+  .. image:: images/tag/error.png
+
+ :ref:`bean_validation-correlation_validation` のエラーメッセージを特定の項目の近くに表示したい場合も、
+ :ref:`tag-error_tag` を使用する。
+
+ 実装例
+  フォーム
+   .. code-block:: java
+
+    // 相関バリデーションを行うメソッド
+    // このプロパティ名でエラーメッセージが設定される。
+    @AssertTrue(message = "パスワードが一致しません。")
+    public boolean isComparePassword() {
+        return Objects.equals(password, confirmPassword);
+    }
+
+  JSP
+   .. code-block:: jsp
+
+    <div>
+      <label>パスワード</label>
+      <n:password name="form.password" nameAlias="form.comparePassword" />
+      <n:error name="form.password" messageFormat="span" errorCss="alert alert-danger" />
+      <!--
+        相関バリデーションで指定されるプロパティ名をname属性に指定する。
+      -->
+      <n:error name="form.comparePassword" messageFormat="span" errorCss="alert alert-danger" />
+    </div>
+    <div>
+      <label>パスワード(確認用)</label>
+      <n:password name="form.confirmPassword" nameAlias="form.comparePassword" />
+      <n:error name="form.confirmPassword" messageFormat="span" errorCss="alert alert-danger" />
+    </div>
+
+ 出力結果
+  .. image:: images/tag/error_correlation_validation.png
+
+.. _`tag-write_error_css`:
+
+入力項目のハイライト表示
+ 入力項目のカスタムタグは、エラーの原因となった入力項目のclass属性に、
+ 元の値に対してCSSクラス名(デフォルトは”nablarch_error”)を追記する。
+
+ このクラス名にCSSでスタイルを指定することで、エラーがあった入力項目をハイライト表示する。
+
+ さらに、入力項目のカスタムタグでnameAlias属性を指定することで、
+ 複数の入力項目を紐付け、
+ :ref:`bean_validation-correlation_validation` でエラーとなった場合に、
+ 複数の入力項目をハイライト表示できる。
+
+ 実装例
+  CSS
+   .. code-block:: css
+
+    /* エラーがあった場合の入力項目の背景色を指定する。 */
+    input.nablarch_error,select.nablarch_error {
+      background-color: #FFFFB3;
+    }
+
+  JSP
+   .. code-block:: jsp
+
+    <div>
+      <label>パスワード</label>
+      <!-- nameAlias属性に相関バリデーションのプロパティ名を指定する。 -->
+      <n:password name="form.password" nameAlias="form.comparePassword" />
+      <n:error name="form.password" messageFormat="span" errorCss="alert alert-danger" />
+      <n:error name="form.comparePassword" messageFormat="span" errorCss="alert alert-danger" />
+    </div>
+    <div>
+      <label>パスワード(確認用)</label>
+      <!-- nameAlias属性に相関バリデーションのプロパティ名を指定する。 -->
+      <n:password name="form.confirmPassword" nameAlias="form.comparePassword" />
+      <n:error name="form.confirmPassword" messageFormat="span" errorCss="alert alert-danger" />
+    </div>
+
+ 出力結果
+  .. image:: images/tag/error_css.png
+
+
+.. _`tag-code_input_output`:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-tag--s25`
+
+```json
+{
+  "id": "libraries-tag--s25",
+  "title": "カスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/text/SimpleDateFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Date.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/Number.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/text/DecimalFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/date/YYYYMMDDConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/date/YYYYMMDD.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/BigDecimalConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/IntegerConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/LongConvertor.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーマットして値を出力する",
+      "hints": [
+        "フォーマット出力",
+        "valueFormat属性",
+        "n:formatByDefault",
+        "n:format",
+        "EL式",
+        "yyyymmdd",
+        "yyyymm",
+        "dateTime",
+        "decimal",
+        "日付フォーマット",
+        "数値フォーマット",
+        "SimpleDateFormat",
+        "ThreadContext",
+        "FormatterUtil",
+        "YYYYMMDDConvertor",
+        "YYYYMMDD",
+        "BigDecimalConvertor",
+        "IntegerConvertor",
+        "LongConvertor",
+        "DecimalFormat"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "エラー表示を行う",
+      "hints": [
+        "エラー表示",
+        "エラーメッセージ一覧表示",
+        "エラーメッセージ個別表示",
+        "ハイライト表示",
+        "nablarch_error",
+        "errors_tag",
+        "error_tag",
+        "ApplicationException",
+        "nameAlias",
+        "相関バリデーション",
+        "filter属性"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "フォーマット出力には :ref:`format`（推奨）と valueFormat属性の2種類の方法がある。\n\n> **重要**: :ref:`format` を推奨する理由: (1) ファイル出力やメッセージングなど他の出力機能と共通部品を使用するため、フォーマット設定を1箇所に集約でき、使用できるタグに制限がない。(2) valueFormat属性はカスタムタグ独自の実装で :ref:`tag-write_tag` と :ref:`tag-text_tag` にのみ使用でき、他の出力機能では別途設定が必要となりフォーマット設定が複数箇所に存在することになる。\n\n## :ref:`format` を使用する方法\n\nEL式内で `n:formatByDefault`（デフォルトパターン）または `n:format`（パターン指定）を使用して :ref:`format` の `FormatterUtil` を呼び出し、フォーマットした文字列を value 属性に設定する。\n\n```html\n<!-- デフォルトパターンでフォーマット: 第一引数=フォーマッタ名, 第二引数=対象値 -->\n<n:write value=\"${n:formatByDefault('dateTime', project.StartDate)}\" />\n\n<!-- 指定パターンでフォーマット: 第一引数=フォーマッタ名, 第二引数=対象値, 第三引数=パターン -->\n<n:text name=\"project.StartDate\" value=\"${n:format('dateTime', project.StartDate, 'yyyy年MM月dd日')}\" />\n```\n\n> **重要**: EL式ではリクエストパラメータを参照できない。:ref:`bean_validation` でユーザ入力値チェックを行う場合は :ref:`bean_validation_onerror` の設定をすること。設定が使用できない場合は、`n:set` で値をリクエストパラメータからページスコープにセットしてから出力すること。\n\n```jsp\n<n:set var=\"projectEndDate\" name=\"form.projectEndDate\" scope=\"page\" />\n<n:text name=\"form.projectEndDate\" nameAlias=\"form.date\"\n  value=\"${n:formatByDefault('dateTime', projectEndDate)}\"\n  cssClass=\"form-control datepicker\" errorCss=\"input-error\" />\n```\n\n## valueFormat属性を使用する方法\n\n`データタイプ{パターン}` 形式で指定。使用できるタグは :ref:`tag-write_tag` と :ref:`tag-text_tag` のみ。valueFormat属性の指定がない場合はフォーマットせずに値を出力する。\n\n**yyyymmdd（年月日）**\n\n値はyyyyMMdd形式またはパターン形式。:java:extdoc:`SimpleDateFormat <java.text.SimpleDateFormat>` のy/M/dのみ使用可。ロケール未指定時は :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` の言語、未設定時はシステムデフォルトロケール。\n\n```\nvalueFormat=\"yyyymmdd\"                          # デフォルトパターン＋ThreadContextロケール\nvalueFormat=\"yyyymmdd{yyyy/MM/dd}\"              # 明示的パターン＋ThreadContextロケール\nvalueFormat=\"yyyymmdd{|ja}\"                     # デフォルトパターン＋ロケール明示\nvalueFormat=\"yyyymmdd{yyyy年MM月dd日|ja}\"        # パターン＋ロケール両方指定\n```\n\n> **重要**: :ref:`tag-text_tag` のvalueFormat属性指定時、入力画面にもフォーマット値が出力される。アクションで年月日を取得する場合は :ref:`ウィンドウスコープ <tag-window_scope>` と :java:extdoc:`YYYYMMDDConvertor <nablarch.common.date.YYYYMMDDConvertor>` を使用すること。:ref:`bean_validation` は :ref:`tag-text_tag` のvalueFormat属性に対応していない。\n\n> **重要**: :ref:`ウィンドウスコープ <tag-window_scope>` を使用しない場合、valueFormat属性の値がサーバサイドに送信されずバリデーションエラーが発生する。その場合は :java:extdoc:`YYYYMMDD <nablarch.common.date.YYYYMMDD>` アノテーションのallowFormat属性で入力値チェックを行うこと。\n\n**yyyymm（年月）**\n\n値はyyyyMM形式またはパターン形式。使用方法は :ref:`yyyymmdd (年月日)<tag-format_yyyymmdd>` と同じ。\n\n**dateTime（日時）**\n\n値は :java:extdoc:`Date <java.util.Date>` 型。:java:extdoc:`SimpleDateFormat <java.text.SimpleDateFormat>` のパターン構文を使用。デフォルトは :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` の言語・タイムゾーンに応じた日時。`|` 区切りでロケールおよびタイムゾーンを明示指定可能。:ref:`tag-setting` のdateTimePatternプロパティ・patternSeparatorプロパティでデフォルト値と区切り文字を変更可能。\n\n```\nvalueFormat=\"dateTime\"                                                  # デフォルト\nvalueFormat=\"dateTime{|ja|Asia/Tokyo}\"                                  # ロケール＋タイムゾーン指定\nvalueFormat=\"dateTime{||Asia/Tokyo}\"                                    # タイムゾーンのみ指定\nvalueFormat=\"dateTime{yyyy年MMM月d日(E) a hh:mm|ja|America/New_York}\"   # 全指定\nvalueFormat=\"dateTime{yy/MM/dd HH:mm:ss||Asia/Tokyo}\"                  # パターン＋タイムゾーン\n```\n\n**decimal（10進数）**\n\n値は :java:extdoc:`Number <java.lang.Number>` 型または数字文字列（3桁区切りカンマは除去後フォーマット）。:java:extdoc:`DecimalFormat <java.text.DecimalFormat>` のパターン構文を使用。デフォルトは :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` の言語に応じた形式。`|` 区切りで言語を指定可能。:ref:`tag-setting` のpatternSeparatorプロパティで区切り文字変更可能。\n\n```\nvalueFormat=\"decimal{###,###,###.000}\"        # ThreadContextの言語でフォーマット\nvalueFormat=\"decimal{###,###,###.000|ja}\"     # 言語を明示指定\n```\n\n> **重要**: 値のフォーマットのみ行い、丸め動作の設定は行わない（:java:extdoc:`DecimalFormat <java.text.DecimalFormat>` のデフォルトが使用される）。丸め処理はアプリケーション側で行うこと。\n\n> **重要**: :ref:`tag-text_tag` のvalueFormat属性指定時、入力画面にもフォーマット値が出力される。数値をアクションで取得する場合は :java:extdoc:`BigDecimalConvertor <nablarch.core.validation.convertor.BigDecimalConvertor>`、:java:extdoc:`IntegerConvertor <nablarch.core.validation.convertor.IntegerConvertor>`、:java:extdoc:`LongConvertor <nablarch.core.validation.convertor.LongConvertor>` を使用すること。:ref:`bean_validation` は対応していない。\n\n> **補足**: パターンに桁区切りと小数点を指定する場合は、言語に関係なく常に桁区切りにカンマ、小数点にドットを使用すること。`valueFormat=\"decimal{###.###.###,000|es}\"` のような指定は不正なパターンのため実行時例外がスローされる。",
+    "s2": "カスタムタグのエラー表示では以下3機能を提供する。リクエストスコープから :java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` を取得してエラーメッセージを出力する（:ref:`on_error_interceptor` でリクエストスコープに設定）。\n\n**エラーメッセージの一覧表示**\n\n画面上部にエラーメッセージを一覧表示する場合は :ref:`tag-errors_tag` を使用。\n\n- `filter=\"all\"`: すべてのエラーメッセージを表示\n- `filter=\"global\"`: 入力項目に対応しないエラーメッセージのみ表示（データベースとの相関バリデーション等で `ApplicationException` を送出した場合など）\n\n```jsp\n<n:errors filter=\"all\" errorCss=\"alert alert-danger\" />\n<n:errors filter=\"global\" errorCss=\"alert alert-danger\" />\n```\n\n**エラーメッセージの個別表示**\n\n入力項目ごとにエラーメッセージを表示する場合は :ref:`tag-error_tag` を使用。name属性に入力項目と同じ名前を指定する。:ref:`bean_validation-correlation_validation` のエラーメッセージを特定の項目近くに表示する場合も :ref:`tag-error_tag` を使用し、相関バリデーションで指定されるプロパティ名をname属性に指定する。\n\n```jsp\n<n:error name=\"form.userName\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n\n<!-- 相関バリデーション（@AssertTrue等）の場合: バリデーションで指定されるプロパティ名をname属性に指定 -->\n<n:error name=\"form.comparePassword\" messageFormat=\"span\" errorCss=\"alert alert-danger\" />\n```\n\n**入力項目のハイライト表示**\n\nエラー原因の入力項目のclass属性に \"nablarch_error\"（デフォルト）のCSSクラス名が追記される。CSSでスタイルを指定することでエラーがあった入力項目をハイライト表示できる。\n\n```css\ninput.nablarch_error, select.nablarch_error { background-color: #FFFFB3; }\n```\n\nnameAlias属性を指定することで複数の入力項目を紐付け、:ref:`bean_validation-correlation_validation` でエラーとなった場合に複数の入力項目をハイライト表示できる。\n\n```jsp\n<!-- nameAlias属性に相関バリデーションのプロパティ名を指定 -->\n<n:password name=\"form.password\" nameAlias=\"form.comparePassword\" />\n<n:password name=\"form.confirmPassword\" nameAlias=\"form.comparePassword\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

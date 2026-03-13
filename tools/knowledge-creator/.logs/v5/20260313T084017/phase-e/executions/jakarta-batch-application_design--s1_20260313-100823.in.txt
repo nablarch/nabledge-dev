@@ -1,0 +1,153 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "jakarta-batch-application_design--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ItemReader, ItemProcessor, ItemWriter の各説明",
+      "description": "ソースでは ItemReader、ItemProcessor、ItemWriter の各クラスに対して「JSR352で規定されているインタフェースである」という事実と、実装方法の詳細は JSR352 Specification を参照するよう指示している。ナレッジファイルはこの情報を3クラスすべてで省略している。これは単なるナビゲーションではなく、これらが Nablarch 独自クラスではなく標準インタフェースであるという実装上の重要な事実であり、AI が実装判断を行う際に必要な情報である。",
+      "source_evidence": "「アイテムリーダは、JSR352で規定されているインタフェースである。このため実装方法などの詳細は、JSR352 Specification(外部サイト、英語) を参照。」（ItemProcessor・ItemWriter にも同様の記述あり）"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+アプリケーションの責務配置
+================================
+JSR352に準拠したバッチアプリケーションを作成する際に実装すべきクラスとその責務を説明する。
+
+.. _jsr352-batchlet_design:
+
+Batchletステップの場合
+--------------------------------------------------
+Batchletステップの場合の実装すべきクラスとその責務について説明する。
+
+.. image:: images/batchlet-design.png
+  :scale: 80
+  
+
+バッチレット(Batchlet class)
+  バッチレットで業務ロジックを実行し、ステップの処理結果を表す文字列 [#batchlet_status]_ を返却する。
+
+  例えば、インターネット上のファイルをダウンロードしたり、SQL1つだけで完結するような処理 [#insert_select]_ を行う。
+
+.. _jsr352-chunk_design:
+
+Chunkステップの場合
+--------------------------------------------------
+Chunkステップの場合の実装すべきクラスとその責務について説明する。
+
+.. image:: images/chunk-design.png
+  :scale: 80
+
+アイテムリーダ(ItemReader class)
+  データソース(ファイルやデータベース等)から処理対象のデータを読み込む処理を実装する。
+  読み込んだデータは、フォームに変換し返却する。
+
+  アイテムリーダは、JSR352で規定されているインタフェースである。
+  このため実装方法などの詳細は、 `JSR352 Specification(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=352>`_ を参照。
+
+アイテムプロセッサ(ItemProcessor class)
+  アイテムリーダが読み込んだデータを元に業務ロジックを実行し出力対象のデータを生成する。
+
+  出力対象がデータベースの場合には、業務ロジック実行後のデータをエンティティに変換する。
+  データベース以外の場合には、業務ロジック実行後のデータを出力用のフォームに変換する。
+
+  アイテムプロセッサは、JSR352で規定されているインタフェースである。
+  このため実装方法などの詳細は、 `JSR352 Specification(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=352>`_ を参照。
+
+  .. tip::
+    アイテムリーダで読み込んだデータが外部から取得したデータの場合は、業務ロジックの実行前に入力値のチェックを行うこと。
+    入力値のチェックについては、 :ref:`入力値のチェック <validation>` を参照。
+
+アイテムライタ(ItemWriter class)
+  アイテムプロセッサで変換したエンティティ(フォーム)をデータベースやファイルなどに出力する処理を実装する。
+
+  アイテムライタは、JSR352で規定されているインタフェースである。
+  このため実装方法などの詳細は、 `JSR352 Specification(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=352>`_ を参照。
+
+フォーム(form class)
+  アイテムリーダが読み込んだデータを保持するクラス。また出力対象がデータベース以外の場合に、出力するデータを保持するクラス。
+
+  外部から受け付けたファイルなどの信用出来ない値を保持するフォームの場合には、プロパティの型は全てStringとすること。
+  理由は、 :ref:`Bean Validation <bean_validation-form_property>` 参照。
+  ただし、バイナリ項目の場合はバイト配列で定義する。
+
+エンティティ(entity class)
+  テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。
+
+.. [#batchlet_status] バッチレットが返却する文字列(バッチレットの終了ステータス)の詳細は、 `JSR352 Specification(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=352>`_ を参照。
+.. [#insert_select] 例えば、 ``insert～select`` のみで処理が完結するSQLの実行などを指す。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "jakarta-batch-application_design--s1",
+  "title": "アプリケーションの責務配置",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/application_design.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Batchletステップの場合",
+      "hints": [
+        "Batchlet",
+        "バッチレットステップ",
+        "業務ロジック実行",
+        "終了ステータス",
+        "insert～select"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Chunkステップの場合",
+      "hints": [
+        "ItemReader",
+        "ItemProcessor",
+        "ItemWriter",
+        "チャンクステップ",
+        "フォーム",
+        "エンティティ",
+        "入力値チェック",
+        "bean_validation-form_property"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Batchletステップの場合\n\n**Batchlet class**: 業務ロジックを実行し、ステップの処理結果を表す文字列（バッチレットの終了ステータス）を返却する。\n\n用途例: インターネット上のファイルのダウンロード、`insert～select`のみで完結するSQL実行。",
+    "s2": "## Chunkステップの場合\n\n**ItemReader class**: データソース（ファイル・データベース等）からデータを読み込み、フォームに変換して返却する。\n\n**ItemProcessor class**: ItemReaderが読み込んだデータを元に業務ロジックを実行し、出力対象データを生成する。DB出力の場合はエンティティに変換、それ以外は出力用フォームに変換する。\n\n> **補足**: ItemReaderで読み込んだデータが外部から取得したデータの場合は、業務ロジック実行前に入力値のチェック（:ref:`validation`）を行うこと。\n\n**ItemWriter class**: ItemProcessorで変換したエンティティ（フォーム）をデータベースやファイルに出力する。\n\n**フォーム(form class)**: ItemReaderが読み込んだデータを保持するクラス。DB以外の出力の場合に出力データも保持する。外部から受け付けた信用できない値を保持するフォームの場合、プロパティの型は全て`String`とする（:ref:`Bean Validation <bean_validation-form_property>` 参照）。ただし、バイナリ項目はバイト配列で定義する。\n\n**エンティティ(entity class)**: テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

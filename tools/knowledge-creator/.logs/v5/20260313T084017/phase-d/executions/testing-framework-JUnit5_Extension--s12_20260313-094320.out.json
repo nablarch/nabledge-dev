@@ -1,0 +1,33 @@
+{
+  "file_id": "testing-framework-JUnit5_Extension--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 作成手順, step 3",
+      "description": "The knowledge file reads「`@ExtendWith`で独自ExtensionクラスをテストクラスHに適用する」. The character 'H' is not present in the source. The source says simply「独自Extensionクラスをテストクラスに適用する」.",
+      "source_evidence": "Source step 3: ``ExtendWith`` アノテーションを使って独自Extensionクラスをテストクラスに適用する"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — BasicHttpRequestTestTemplateを拡張する場合",
+      "description": "The implementation code for `CustomHttpRequestTestSupport` is completely absent. This code block is the first substantive content under the section and is necessary for implementation: it shows (1) the `private final String baseUri` field, (2) the constructor signature `(Class<?> testClass, String baseUri)`, and (3) the required `getBaseUri()` override that returns the stored `baseUri`. Without this, a developer would not know the concrete implementation pattern needed to wire `baseUri` into the template.",
+      "source_evidence": "Source code block: public class CustomHttpRequestTestSupport extends BasicHttpRequestTestTemplate { private final String baseUri; public CustomHttpRequestTestSupport(Class<?> testClass, String baseUri) { super(testClass); this.baseUri = baseUri; } @Override protected String getBaseUri() { return baseUri; } }"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — BasicHttpRequestTestTemplateを拡張する場合 (end of section)",
+      "description": "The final usage example showing how to apply the custom composite annotation to a test class is absent. The source concludes the section with a code block illustrating `@CustomHttpRequestTest(baseUri = \"/custom/\")` on `YourTest` with a `CustomHttpRequestTestSupport` field. This completes the end-to-end picture of the pattern.",
+      "source_evidence": "Source: @CustomHttpRequestTest(baseUri = \"/custom/\") class YourTest { CustomHttpRequestTestSupport support; @Test void test() { support.customMethod(); } }"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "s1 merges six RST-level subsections (独自拡張クラスを作成する / 独自拡張用のExtensionを作成する / ExtendWithでテストクラスに適用する / BasicHttpRequestTestTemplateを拡張する場合はアノテーションも作成する / 事前処理・事後処理を実装する / JUnit 4のTestRuleを再現する) into a single knowledge section. The plain-text content clearly exceeds 2000 characters and the source has multiple `====` sub-headings within the first `----` section. The automated pre-check also flagged this: section count (2) is below source heading count."
+    }
+  ]
+}

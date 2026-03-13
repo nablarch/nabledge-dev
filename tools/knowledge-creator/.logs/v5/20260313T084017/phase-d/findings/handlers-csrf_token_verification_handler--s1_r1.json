@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-csrf_token_verification_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source introduction / s4",
+      "description": "The source introduction states that CsrfTokenUtil is provided as a utility class to *get* the generated CSRF token, allowing projects to implement custom mechanisms for sending the CSRF token to clients (especially for RESTful web service support). The knowledge file never mentions this use of CsrfTokenUtil — s5 only covers the regenerateCsrfToken method. Developers implementing RESTful CSRF protection need to know CsrfTokenUtil can be used to retrieve the current token for client-side delivery.",
+      "source_evidence": "生成されたCSRFトークンを取得するためのユーティリティクラス(CsrfTokenUtil)を提供しているので、プロジェクトのアーキテクチャに合わせてクライアントにCSRFトークンを送る仕組みを実装できる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "CsrfTokenUtil is missing from s4 hints. Since the source's introduction (which maps conceptually to s4's scope) describes CsrfTokenUtil as the utility for getting the generated CSRF token for client delivery, it should appear as a hint for s4 to allow retrieval of this information.",
+      "source_evidence": "生成されたCSRFトークンを取得するためのユーティリティクラス(CsrfTokenUtil)を提供しているので..."
+    }
+  ]
+}

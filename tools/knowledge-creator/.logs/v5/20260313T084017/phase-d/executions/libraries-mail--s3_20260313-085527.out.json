@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-mail--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "MailConfig の4つのプロパティ名がhints未登録: `mailRequestCountMessageId`, `sendSuccessMessageId`, `sendFailureCode`, `abnormalEndExitCode`。これらはs1のXML設定例に明示されており、検索対象となるプロパティ名。",
+      "source_evidence": "MailConfig設定例: `<property name=\"mailRequestCountMessageId\" value=\"mail.request.count\" />`, `<property name=\"sendSuccessMessageId\" value=\"mail.send.success\" />`, `<property name=\"sendFailureCode\" value=\"mail.send.failure\" />`, `<property name=\"abnormalEndExitCode\" value=\"199\" />`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "`BasicApplicationInitializer` クラス名がhints未登録。s1のXML設定例（initializer設定）で使用されており、PascalCaseクラス名としてhints対象。",
+      "source_evidence": "テーブルスキーマ設定例: `<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">`"
+    }
+  ]
+}

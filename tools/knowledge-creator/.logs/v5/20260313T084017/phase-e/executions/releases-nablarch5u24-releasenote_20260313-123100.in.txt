@@ -1,0 +1,266 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "releases-nablarch5u24-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "PascalCase class name `InjectForm` appears in s1 content (No.3 HTTPリクエスト section: \"InjectFormを使わずActionクラスでバリデーションエラーをハンドリングする場合は...\" ) but is absent from s1 hints.",
+      "source_evidence": "Source No.3 概要: \"InjectFormを使わずActionクラスでバリデーションエラーをハンドリングする場合、HTTPリクエストから直接リクエストパラメータを取り出す必要があります。\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `xlsx`
+
+```
+## 5u24
+
+| ■Nablarch 5u24 リリースノート |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5u23からの変更点を記載しています。 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| コンテンツ |  | No. | 分類 | リリース
+区分 | タイトル | 概要 | 修正後のバージョン
+（※1） | 不具合の起因バージョン
+（※2） |  | システムへの
+影響の可能性
+（※3） | システムへの影響の可能性の内容と対処 | 参照先 | JIRA issue
+(※4) |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  | モジュール | Nablarch |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| アプリケーションフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 1 | ユニバーサルDAO | 変更 | 件数取得SQLをカスタマイズできるようにDialectインターフェースを拡張しました | ユニバーサルDAOでページング処理を行う場合、検索結果件数が必要となります。検索結果件数は、アプリケーションに設定された検索用のSQLを、Nablarchが件数取得SQLに加工し、検索実行前に発行しています。
+検索用のSQLの処理が重く応答に時間がかかる場合、検索用のSQLと、検索用のSQLと同等の性能の件数取得SQLの2回SQLが発行されることで応答時間がより長くなる問題がありました。
+通常、検索用のSQLに比べて件数取得時はソートが不要となるなど性能改善の可能性がありますが、件数取得SQLはNablarchが内部で自動生成しておりチューニングすることができませんでした。
+
+この問題に対応するため、件数取得SQLをカスタマイズできるようにDialectインターフェースを拡張しました
+これにより、性能劣化への対応等で件数取得SQLを変更したい場合に、自動生成されるSQLから任意のSQLに差し替えることができるようになります。 | nablarch-core-jdbc 1.8.0 | - | - | あり | プロジェクト独自のダイアレクトを作成していない場合、または作成しているが解説書に記載の方法（DefaultDialectクラスを継承）で作成している場合、影響はなく従来の件数取得SQLが発行されます。
+
+プロジェクト独自のダイアレクトを作成する際に、解説書に記載の方法ではなく、直接Dialectインタフェースを実装している場合、コンパイルエラーが発生します。
+
+詳細は、「件数取得SQLの拡張ポイント追加」シートをご覧ください。 | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-dialect | NAB-550 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/universal_dao.html#universal_dao-customize_sql_for_counting |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 2 | 汎用データフォーマット | 不具合 | JSON形式のファイルを読み込む際、値の最後がエスケープ文字だとエラーが発生する問題に対応 | 汎用データフォーマットでJSON形式のファイルを読み込む際、JSONの値の最後の文字がエスケープ文字(バックスラッシュ,Windows環境では円マーク:\)の場合、エラーが発生しJSONの解析に失敗する問題がありました。
+例）input1:{ "key" : "value\\"}
+　この場合、"value\"という文字列として解析するべきだが、解析に失敗していた。
+
+今回の対応で、値の最後がエスケープ文字でもエラーなく解析できるようになりました。
+
+また、Unicode形式でエスケープ文字を表す'\u005C'が含まれる場合、エスケープ処理を行わない文字列のバックスラッシュとして解析するべきです。しかし汎用データフォーマットではエスケープ処理の開始文字として読み取られ解析に失敗する不具合があったため対応しました。
+例）input1:{ "key" : "\u005Cvalue"}
+　この場合、"\value"という文字列として解析するべきだが、解析に失敗していた。 | nablarch-core-dataformat 1.3.3 | 1.0.0 | 1.4.0 | なし | - | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/data_io/data_format.html | NAB-566 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 3 | HTTPリクエスト | 変更 | HTTPリクエストからリクエストパラメータを取得するAPIをアーキテクト向け公開APIに変更 | InjectFormを使わずActionクラスでバリデーションエラーをハンドリングする場合、HTTPリクエストから直接リクエストパラメータを取り出す必要があります。しかしHTTPリクエストからリクエストパラメータを取得する処理は、バリデーション前のパラメータを取得できてしまうため非公開APIとしています。
+今回公開APIとして欲しいという要望を受け検討した結果、アーキテクトが基盤部品を作る場合に限定して公開することは有益と考えたため、HTTPリクエストからリクエストパラメータを取得するAPIをアーキテクト向け公開APIに変更しました。
+InjectFormを使わずActionクラスでバリデーションエラーをハンドリングする場合は、このアーキテクト向け公開APIを使ってリクエストパラメータを取り出す時に必ずバリデーションが実行されるよう共通部品を作成してください。
+アーキテクト向け公開APIのため、従来通りActionクラスで直接利用することは想定していません。
+共通部品の作成例はNo.10のExampleを参考にしてください。
+ | nablarch-fw-web 1.13.0 | - | - | なし | - | - | NAB-564 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 4 | RESTfulウェブサービス | 変更 | RESTfulウェブサービス専用のHTTPリクエストクラスを追加 | RESTfulウェブサービスでクエリパラメータ・パスパラメータを取得する場合、No.3同様非公開APIを使用する必要があります。
+そのため、RESTfulウェブサービス向けにリクエストパラメータ取得処理を公開APIとした専用のHTTPリクエストを追加しました。
+RESTfulウェブサービスにおいてはクエリパラメータ・パスパラメータの取得が頻繁に発生し得るためアーキテクト向けに限定せず、Actionなどから利用可能な公開APIとしています。必要に応じて取り出したパラメータをバリデーションするようにしてください。
+なお、従来通り@Consumesアノテーションと@Validアノテーションを使ってパラメータをFormにバインドする場合はバインド時にバリデーションが実行されます。
+ | nablarch-fw-jaxrs 1.4.0 | - | - | なし | - | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html | NAB-564 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | 解説書 | 5 | ブランクプロジェクト | 変更 | ブランクプロジェクトを Java 21 で動かす際に必要になる修正手順を追加 | ブランクプロジェクトを Java 21 で動かす際に必要になる修正手順を、解説書に追加しました。
+具体的な手順は、参照先に記載しているURLをご確認ください。 | nablarch-document 5u24 | - | - | なし | - | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Java21.html | NAB-558 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 6 | 稼働環境 | 変更 | アプリケーションフレームワークのテスト環境を更新 | テスト環境を以下の通り更新しました。赤字部分が変更箇所になります。
+Java
+　・Java SE 6/7/8/11/17/21
+データベース
+　・Oracle Database 12c/19c/21c/23c
+　・IBM Db2 10.5/11.5
+　・SQL Server 2017/2019/2022
+　・PostgreSQL 10.0/11.5/12.2/13.2/14.0/15.2/16.2
+MOM（メッセージ指向ミドルウェア）
+　・IBM MQ 9.3 | nablarch-document 5u24 | - | - | なし | - | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/nablarch/platform.html#id3 | NAB-575 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | ブランクプロジェクト | 7 | 全ブランクプロジェクト | 変更 | Java 21 に対応 | Java 21 でもビルド・実行できるように、使用しているライブラリやMavenプラグインのバージョンを更新しました。
+なお、Java 21で動かす際には、参照先の「Java21で使用する場合のセットアップ方法」を実施する必要があります。 | nablarch-web 5u24
+nablarch-jaxrs 5u24
+nablarch-batch 5u24
+nablarch-batch-ee 5u24
+nablarch-batch-dbless 5u24
+nablarch-container-web 5u24
+nablarch-container-jaxrs 5u24
+nablarch-container-batch 5u24
+nablarch-container-batch-dbless 5u24 | - | - | なし | - | https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/blank_project/index.html | NAB-558 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| アダプタ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 8 | IBM MQアダプタ | 変更 | 使用するIBM MQのバージョンを変更 | IBM MQアダプタではWebSphere MQ 7.5付属のライブラリを使用していました。しかし現在は入手できない状況であるため、IBM MQ 9.3 を使用するように変更しました。
+またバージョンアップに伴い、製品名がIBM WebSphere MQからIBM MQに変更されたため、解説書上のアダプタ名の記載を変更しました。 | nablarch-wmq-adaptor 1.1.0
+nablarch-fw-messaging-mom 1.0.4 | - | - | あり | 古いIBM MQ(IBM WebSphere MQ)では動作しない可能性がありますので、IBM MQ 9.3へバージョンアップしてください。
+バージョンアップができない場合は、解説書に記載のとおりアダプタが使用するライブラリのバージョンを変更してください。 | https://nablarch.github.io/docs/5u24/doc/application_framework/adaptors/webspheremq_adaptor.html | NAB-552 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| Nablarch実装例集 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | 解説書 | 9 | メッセージング基盤テストシミュレータサンプル | 変更 | IBM MQとの通信にIBM MQアダプタを使用するように変更 | IBM MQとの通信処理としてIBM MQアダプタと同一の処理を実装していたため、IBM MQアダプタを使用するように変更しました。
+また、実行モジュールの作成にGradleを使っていましたが、他のNablarchモジュールはビルドにMavenを使用しているため、Mavenで作成できるように実装例を修正しました。 | nablarch-messaging-simulator 1.3.0 | - | - | なし | - | https://nablarch.github.io/docs/5u24/doc/examples/11/index.html | NAB-555 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| Example |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | - | 10 | HTTPリクエスト | 変更 | HTTPリクエストからリクエストパラメータを取得する共通部品を追加 | No.3の使用例として、HTTPリクエストからリクエストパラメータを取得するユーティリティの実装例を追加しました。 | nablarch-example-web 5u24 | - | - | なし | - | - | NAB-564 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| テスティングフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 11 | HTTPリクエスト | 変更 | HTTPリクエストからリクエストパラメータを取得する処理を追加 | 自動テスト内でHTTPリクエストの状態を検証したい場合など、No.3同様非公開APIを使用する必要があります。
+そのため、テスティングフレームワーク向けにHTTPリクエストからリクエストパラメータを取得する公開APIを追加しました。
+HTTPリクエストからリクエストパラメータを取得する場合は、HTTPリクエストのAPIではなく追加したAPIを使用するようにしてください。
+なお、当該APIでは検証を目的としてリクエストパラメータを取り出すためバリデーションは実行しません。
+ | nablarch-testing 1.6.0 | - | - | なし | - | https://nablarch.github.io/docs/5u24/publishedApi/nablarch-testing/publishedApiDoc/programmer/nablarch/test/core/http/HttpRequestTestSupport.html#getParamMap-nablarch.fw.web.HttpRequest- | NAB-564 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  | https://nablarch.github.io/docs/5u24/publishedApi/nablarch-testing/publishedApiDoc/programmer/nablarch/test/core/http/HttpRequestTestSupport.html#getParam-nablarch.fw.web.HttpRequest-java.lang.String- |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+
+## バージョンアップ手順
+
+| ■バージョンアップ手順 |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+| 本リリースの適用手順は、次の通りです。 |  |  |  |  |  |
+|  | No | 適用手順 |  |  |  |
+|  | 1 | pom.xmlの<dependencyManagement>セクションに指定されているnablarch-bomのバージョンを5u24に書き換える |  |  |  |
+|  | 2 | mavenのビルドを再実行する |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+
+## 件数取得SQLの拡張ポイント追加
+
+| ■件数取得SQLの拡張ポイント追加 |  |
+| --- | --- |
+|  |  |
+| 【変更点】 |  |
+|  | ページング処理で使用する件数取得SQLを変更するための拡張ポイントを追加しました。 |
+|  | これにより、性能劣化への対応等で件数取得SQLを変更したい場合に、自動生成されるSQLから任意のSQLに差し替えることが可能になりました。 |
+|  |  |
+|  | この対応を行うため、以下の変更を実施しています。 |
+|  | ●DialectインタフェースにconvertCountSql(String, Object, StatementFactory)メソッドを追加 |
+|  | （参考）https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-dialect |
+|  | ●DefaultDialectクラスに、上記メソッドの実装を追加 |
+|  |  |
+| 【変更による影響有無の確認方法】 |  |
+|  | プロジェクトで独自にダイアレクトを作成しているか、確認してください。 |
+|  | 独自のダイアレクトを作成していない場合は、影響ありません。 |
+|  | 独自のダイアレクトを作成している場合でも、解説書に記載の通りDefaultDialectを継承して実装していれば、影響ありません。 |
+|  | （参考）https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-add-dialect |
+|  |  |
+|  | 一方、DeafultDialectを継承せずにDialectインタフェースを直接実装して独自のダイアレクトを作成している場合は、 |
+|  | Dialectインタフェースに追加したメソッドの実装が存在しないため、コンパイルエラーが発生します。 |
+|  |  |
+| 【影響があった場合の対応方法】 |  |
+|  | プロジェクトで独自に作成したダイアレクトで、以下の通りconvertCountSql(String, Object, StatementFactory)メソッドを実装してください。 |
+|  |  |
+|  |     @Override |
+|  |     public String convertCountSql(String sqlId, Object condition, StatementFactory statementFactory) { |
+|  |         return convertCountSql(statementFactory.getVariableConditionSqlBySqlId(sqlId, condition)); |
+|  |     } |
+|  |  |
+|  | これによりコンパイルエラーが解消され、件数取得SQLはバージョンアップ前と同じになります。 |
+|  | 件数取得SQLを差し替えたい場合は、解説書を参考に上記メソッドの実装を変更してください。 |
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "releases-nablarch5u24-releasenote",
+  "title": "Nablarch 5u24 リリースノート",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-dialect",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/universal_dao.html#universal_dao-customize_sql_for_counting",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/data_io/data_format.html",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Java21.html",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/nablarch/platform.html#id3",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/blank_project/index.html",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/adaptors/webspheremq_adaptor.html",
+    "https://nablarch.github.io/docs/5u24/doc/examples/11/index.html",
+    "https://nablarch.github.io/docs/5u24/publishedApi/nablarch-testing/publishedApiDoc/programmer/nablarch/test/core/http/HttpRequestTestSupport.html#getParamMap-nablarch.fw.web.HttpRequest-",
+    "https://nablarch.github.io/docs/5u24/publishedApi/nablarch-testing/publishedApiDoc/programmer/nablarch/test/core/http/HttpRequestTestSupport.html#getParam-nablarch.fw.web.HttpRequest-java.lang.String-",
+    "https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-add-dialect"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "5u24 変更一覧",
+      "hints": [
+        "Nablarch 5u24",
+        "リリースノート",
+        "変更一覧",
+        "ユニバーサルDAO",
+        "Dialectインターフェース",
+        "IBM MQアダプタ",
+        "汎用データフォーマット",
+        "HTTPリクエスト",
+        "RESTfulウェブサービス",
+        "ブランクプロジェクト",
+        "Java 21",
+        "nablarch-core-jdbc",
+        "nablarch-wmq-adaptor",
+        "nablarch-fw-web",
+        "nablarch-fw-jaxrs",
+        "nablarch-core-dataformat",
+        "nablarch-fw-messaging-mom",
+        "nablarch-messaging-simulator",
+        "nablarch-example-web",
+        "nablarch-testing",
+        "HttpRequestTestSupport",
+        "@Consumes",
+        "@Valid",
+        "破壊的変更",
+        "システムへの影響"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バージョンアップ手順",
+      "hints": [
+        "バージョンアップ手順",
+        "nablarch-bom",
+        "pom.xml",
+        "5u24適用手順",
+        "dependencyManagement",
+        "Mavenビルド"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "件数取得SQLの拡張ポイント追加",
+      "hints": [
+        "件数取得SQL",
+        "Dialectインターフェース",
+        "convertCountSql",
+        "DefaultDialect",
+        "コンパイルエラー",
+        "ページング処理",
+        "StatementFactory",
+        "独自ダイアレクト",
+        "ユニバーサルDAO拡張"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 5u24 変更一覧（5u23からの変更点）\n\n| No. | コンテンツ | 分類 | リリース区分 | タイトル | 修正後バージョン | システムへの影響 |\n|---|---|---|---|---|---|---|\n| 1 | アプリケーションフレームワーク | ユニバーサルDAO | 変更 | 件数取得SQLをカスタマイズできるようにDialectインターフェースを拡張 | nablarch-core-jdbc 1.8.0 | あり |\n| 2 | アプリケーションフレームワーク | 汎用データフォーマット | 不具合 | JSON値末尾エスケープ文字でエラー発生する問題を修正 | nablarch-core-dataformat 1.3.3 | なし |\n| 3 | アプリケーションフレームワーク | HTTPリクエスト | 変更 | リクエストパラメータ取得APIをアーキテクト向け公開APIに変更 | nablarch-fw-web 1.13.0 | なし |\n| 4 | アプリケーションフレームワーク | RESTfulウェブサービス | 変更 | RESTfulウェブサービス専用HTTPリクエストクラスを追加 | nablarch-fw-jaxrs 1.4.0 | なし |\n| 5 | アプリケーションフレームワーク | ブランクプロジェクト | 変更 | Java 21で動かす際の修正手順を解説書に追加 | nablarch-document 5u24 | なし |\n| 6 | アプリケーションフレームワーク | 稼働環境 | 変更 | テスト環境を更新 | nablarch-document 5u24 | なし |\n| 7 | アプリケーションフレームワーク | 全ブランクプロジェクト | 変更 | Java 21に対応 | 各ブランクプロジェクト 5u24 | なし |\n| 8 | アダプタ | IBM MQアダプタ | 変更 | 使用するIBM MQのバージョンをIBM MQ 9.3に変更 | nablarch-wmq-adaptor 1.1.0, nablarch-fw-messaging-mom 1.0.4 | あり |\n| 9 | Nablarch実装例集 | メッセージング基盤テストシミュレータサンプル | 変更 | IBM MQとの通信にIBM MQアダプタを使用するように変更 | nablarch-messaging-simulator 1.3.0 | なし |\n| 10 | Example | HTTPリクエスト | 変更 | リクエストパラメータを取得する共通部品を追加 | nablarch-example-web 5u24 | なし |\n| 11 | テスティングフレームワーク | HTTPリクエスト | 変更 | リクエストパラメータ取得公開APIを追加 | nablarch-testing 1.6.0 | なし |\n\n### システムへの影響がある変更\n\n**No.1 ユニバーサルDAO: Dialectインターフェース拡張**\n\n> **重要**: プロジェクト独自のダイアレクトを作成する際に、`DefaultDialect`を継承せずに`Dialect`インタフェースを直接実装している場合、`convertCountSql(String, Object, StatementFactory)`メソッドの実装が存在しないためコンパイルエラーが発生します。対処方法は「件数取得SQLの拡張ポイント追加」セクションを参照してください。\n\n- `DefaultDialect`クラスを継承して実装している場合は影響なし\n- ページング処理の件数取得SQLを自動生成SQLから任意のSQLに差し替え可能になります\n- 参照: [データベースのDialect設定](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-dialect)\n- 参照: [ユニバーサルDAO 件数取得SQLのカスタマイズ](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/universal_dao.html#universal_dao-customize_sql_for_counting)\n\n**No.8 IBM MQアダプタ: IBM MQ 9.3使用に変更**\n\n> **重要**: 古いIBM MQ（IBM WebSphere MQ）では動作しない可能性があります。IBM MQ 9.3にバージョンアップしてください。バージョンアップできない場合は、解説書に記載のとおりアダプタが使用するライブラリのバージョンを変更してください。\n\n- 参照: [IBM MQアダプタ](https://nablarch.github.io/docs/5u24/doc/application_framework/adaptors/webspheremq_adaptor.html)\n\n### その他の変更\n\n**No.2 汎用データフォーマット: JSON値末尾エスケープ文字バグ修正**\n\n- JSON値の最後がエスケープ文字（`\\`）の場合にエラーが発生する不具合を修正（例: `{ \"key\" : \"value\\\\\"}` が正しく解析されるようになった）\n- Unicode形式エスケープ文字（`\\u005C`）が含まれる場合の解析失敗も修正（例: `{ \"key\" : \"\\u005Cvalue\"}` が `\\value` として正しく解析されるようになった）\n- 参照: [汎用データフォーマット](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/data_io/data_format.html)\n\n**No.3 HTTPリクエスト: リクエストパラメータ取得APIをアーキテクト向け公開APIに変更**\n\n- `InjectForm`を使わず`Action`クラスでバリデーションエラーをハンドリングする場合に利用するアーキテクト向けAPI\n- **アーキテクト向け公開APIのため、従来通りActionクラスで直接利用することは想定していません。** 共通部品を作成し、必ずバリデーションが実行されるよう実装してください\n- バリデーション前のパラメータを取得できるAPIであるため、共通部品なしでの直接利用は危険\n\n**No.4 RESTfulウェブサービス専用HTTPリクエストクラス追加**\n\n- クエリパラメータ・パスパラメータ取得処理を公開APIとした専用HTTPリクエストクラスを追加\n- RESTfulウェブサービスではアーキテクト限定でなく、ActionクラスなどからもAPIを直接利用可能\n- `@Consumes`・`@Valid`アノテーションでFormにバインドする場合は従来通りバインド時にバリデーション実行\n- 参照: [リソースメソッドのシグネチャ](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html)\n\n**No.5 ブランクプロジェクト: Java 21対応手順追加**\n\n- 参照: [Java21セットアップ手順](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Java21.html)\n\n**No.6 稼働環境テスト環境更新**\n\n更新後のテスト環境:\n- Java: Java SE 6/7/8/11/17/21\n- Oracle Database: 12c/19c/21c/23c\n- IBM Db2: 10.5/11.5\n- SQL Server: 2017/2019/2022\n- PostgreSQL: 10.0/11.5/12.2/13.2/14.0/15.2/16.2\n- MOM: IBM MQ 9.3\n\n参照: [稼働環境](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/nablarch/platform.html#id3)\n\n**No.7 全ブランクプロジェクト: Java 21対応**\n\n- Java 21でビルド・実行できるようにライブラリやMavenプラグインのバージョンを更新\n- **Java 21で動かす際には「Java21で使用する場合のセットアップ方法」の実施が必要**\n- 参照: [ブランクプロジェクト](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/blank_project/index.html)\n\n**No.9 メッセージング基盤テストシミュレータサンプル: IBM MQアダプタ使用に変更**\n\n- IBM MQアダプタを使用するように変更（Gradleビルドも廃止しMavenに統一）\n- 参照: [メッセージングシミュレータサンプル](https://nablarch.github.io/docs/5u24/doc/examples/11/index.html)\n\n**No.11 テスティングフレームワーク: HTTPリクエストパラメータ取得API追加**\n\n- 自動テスト内でHTTPリクエスト状態を検証する目的で`HttpRequestTestSupport`にパラメータ取得APIを追加\n- 当該APIはバリデーション検証目的のためバリデーションは実行されません\n- 参照: [HttpRequestTestSupport#getParamMap](https://nablarch.github.io/docs/5u24/publishedApi/nablarch-testing/publishedApiDoc/programmer/nablarch/test/core/http/HttpRequestTestSupport.html#getParamMap-nablarch.fw.web.HttpRequest-)\n- 参照: [HttpRequestTestSupport#getParam](https://nablarch.github.io/docs/5u24/publishedApi/nablarch-testing/publishedApiDoc/programmer/nablarch/test/core/http/HttpRequestTestSupport.html#getParam-nablarch.fw.web.HttpRequest-java.lang.String-)",
+    "s2": "## バージョンアップ手順\n\n1. `pom.xml`の`<dependencyManagement>`セクションに指定されている`nablarch-bom`のバージョンを`5u24`に書き換える\n2. Mavenのビルドを再実行する",
+    "s3": "## 件数取得SQLの拡張ポイント追加\n\n### 変更点\n\n- `Dialect`インタフェースに`convertCountSql(String, Object, StatementFactory)`メソッドを追加\n- `DefaultDialect`クラスに上記メソッドの実装を追加\n- ページング処理で使用する件数取得SQLを変更可能（自動生成SQLから任意のSQLへ差し替え可能）\n\n参照: [Dialectの設定](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-dialect)\n\n### 影響有無の確認方法\n\n| 状況 | 影響 |\n|---|---|\n| 独自ダイアレクトを作成していない | 影響なし |\n| `DefaultDialect`を継承して実装している | 影響なし |\n| `Dialect`インタフェースを直接実装している（`DefaultDialect`非継承） | **コンパイルエラー発生** |\n\n> **重要**: `DefaultDialect`を継承せずに`Dialect`インタフェースを直接実装している場合、新たに追加された`convertCountSql(String, Object, StatementFactory)`メソッドの実装が存在しないためコンパイルエラーが発生します。\n\n参照: [独自ダイアレクトの作成](https://nablarch.github.io/docs/5u24/doc/application_framework/application_framework/libraries/database/database.html#database-add-dialect)\n\n### 影響があった場合の対応方法\n\nプロジェクトで独自に作成したダイアレクトに以下のメソッドを実装するとコンパイルエラーが解消され、バージョンアップ前と同じ件数取得SQLが発行されます。\n\n```java\n@Override\npublic String convertCountSql(String sqlId, Object condition, StatementFactory statementFactory) {\n    return convertCountSql(statementFactory.getVariableConditionSqlBySqlId(sqlId, condition));\n}\n```\n\n件数取得SQLを差し替えたい場合は、解説書を参考に上記メソッドの実装を変更してください。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

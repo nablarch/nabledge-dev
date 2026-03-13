@@ -1,0 +1,20 @@
+{
+  "file_id": "adapters-micrometer_adaptor--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — サーバ起動時の警告ログについて",
+      "description": "The source explicitly states that while the connection pool has not been created, the metric value will be `NaN` (「コネクションプールが生成されていない間、メトリクスの値は `NaN` となる」), including a log output example showing `value=NaN`. This behavior is omitted from the knowledge file. Users may ask why their metrics show NaN at startup and the knowledge file cannot answer correctly without this.",
+      "source_evidence": "「なお、コネクションプールが生成されていない間、メトリクスの値は `NaN` となる。」および対応するログ出力例 `db.pool.active{} value=NaN`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`BasicApplicationInitializer` is a PascalCase class name that appears in the XML component definition example (`nablarch.core.repository.initialization.BasicApplicationInitializer`) but is absent from the hints array.",
+      "source_evidence": "`<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">`"
+    }
+  ]
+}

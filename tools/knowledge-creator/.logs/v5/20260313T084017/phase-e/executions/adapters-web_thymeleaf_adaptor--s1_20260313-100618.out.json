@@ -1,0 +1,61 @@
+{
+  "id": "adapters-web_thymeleaf_adaptor--s1",
+  "title": "ウェブアプリケーション Thymeleafアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/web_thymeleaf_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/responsewriter/thymeleaf/ThymeleafResponseWriter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/HttpResponseHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-web-thymeleaf-adaptor",
+        "com.nablarch.integration",
+        "Thymeleaf",
+        "モジュール依存関係",
+        "Thymeleafアダプタ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ウェブアプリケーション Thymeleafアダプタを使用するための設定を行う",
+      "hints": [
+        "ThymeleafResponseWriter",
+        "nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter",
+        "HttpResponseHandler",
+        "nablarch.fw.web.handler.HttpResponseHandler",
+        "TemplateEngine",
+        "ClassLoaderTemplateResolver",
+        "ServletContextTemplateResolver",
+        "org.thymeleaf.templateresolver.ServletContextTemplateResolver",
+        "pathPattern",
+        "customResponseWriter",
+        "コンポーネント設定",
+        "処理対象判定",
+        "サーブレットフォワード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テンプレートエンジンを使用する",
+      "hints": [
+        "HttpResponse",
+        "nablarch.fw.web.HttpResponse",
+        "ClassLoaderTemplateResolver",
+        "TemplateEngine",
+        "prefix",
+        "テンプレートファイル配置",
+        "レスポンス出力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-web-thymeleaf-adaptor</artifactId>\n</dependency>\n```\n\n> **補足**: テスト済みバージョンはThymeleaf 3.0.9.RELEASE。バージョンを変更する場合はプロジェクト側でテストを行うこと。",
+    "s2": ":java:extdoc:`ThymeleafResponseWriter<nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter>` を :java:extdoc:`HttpResponseHandler<nablarch.fw.web.handler.HttpResponseHandler>` の `customResponseWriter` プロパティに設定する。`ThymeleafResponseWriter` には Thymeleaf の `TemplateEngine` を設定する必要がある。\n\n```xml\n<component name=\"templateEngine\" class=\"org.thymeleaf.TemplateEngine\" autowireType=\"None\">\n  <property name=\"templateResolver\">\n    <component class=\"org.thymeleaf.templateresolver.ClassLoaderTemplateResolver\">\n      <property name=\"prefix\" value=\"template/\"/>\n    </component>\n  </property>\n</component>\n\n<component name=\"thymeleafResponseWriter\"\n           class=\"nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter\"\n           autowireType=\"None\">\n  <property name=\"templateEngine\" ref=\"templateEngine\" />\n</component>\n\n<component name=\"httpResponseHandler\"\n           class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"customResponseWriter\" ref=\"thymeleafResponseWriter\"/>\n</component>\n```\n\n> **補足**: `ServletContextTemplateResolver` は以下の理由により :ref:`repository` にコンポーネントとして登録できない。\n> - コンストラクタ引数に `javax.servlet.ServletContext` が必須（デフォルトコンストラクタなし）\n> - システムリポジトリ構築時には `javax.servlet.ServletContext` にアクセスできず、ファクトリによるオブジェクト生成もできない\n>\n> このため、`ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。\n\n## 処理対象判定\n\n:java:extdoc:`ThymeleafResponseWriter<nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter>` は :java:extdoc:`HttpResponse<nablarch.fw.web.HttpResponse>` のコンテンツパスによってテンプレートエンジン使用を判断する。デフォルトではコンテンツパスが `.html` で終了している場合に処理対象と判定する。処理対象外の場合はサーブレットフォワードが実行される。\n\n`pathPattern` プロパティで判定条件（正規表現）を変更可能（デフォルト値: `.*\\.html`）。\n\n> **重要**: サフィックスを省略した場合（例: `return new HttpResponse(\"index\");`）、セッションストアからリクエストスコープへの移送が行われず、テンプレートからセッションストアの値を参照できなくなる。必ずサフィックスを含めること（例: `return new HttpResponse(\"index.html\");`）。",
+    "s3": "テンプレートファイルの配置場所は `TemplateEngine` の設定による。\n\n`ClassLoaderTemplateResolver` に `prefix` が設定されている場合はプレフィックスを省略したパスを `HttpResponse` に指定する:\n\n```java\nreturn new HttpResponse(\"index.html\");\n```\n\nプレフィックスを指定しない場合はフルパスをそのまま指定する:\n\n```java\nreturn new HttpResponse(\"template/index.html\");\n```"
+  }
+}

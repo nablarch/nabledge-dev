@@ -1,0 +1,201 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/getting_started/client_create/client_create3.rst`
+- Format: `rst`
+
+```
+.. _`client_create_3`:
+
+登録内容確認画面から登録画面へ戻る
+==============================================
+本章では、登録内容確認画面から登録画面へ戻る処理について解説する。
+
+:ref:`前へ<client_create_2>`
+
+登録画面へ戻る処理の実装
+  `ClientAction` に登録画面へ戻る処理を行うメソッドを追加する。
+
+  ClientAction.java
+    .. code-block:: java
+      :emphasize-lines: 1,2,3,4,5,6,7,8,9,13
+
+      public HttpResponse back(HttpRequest request, ExecutionContext context) {
+
+          Client client = SessionUtil.get(context, "client");
+
+          ClientForm form = BeanUtil.createAndCopy(ClientForm.class, client);
+          context.setRequestScopedVar("form", form);
+
+          return new HttpResponse("forward://input");
+      }
+
+      public HttpResponse input(HttpRequest request, ExecutionContext context) {
+
+          SessionUtil.delete(context, "client");
+
+          EntityList<Industry> industries = UniversalDao.findAll(Industry.class);
+          context.setRequestScopedVar("industries", industries);
+
+          return new HttpResponse("/WEB-INF/view/client/create.jsp");
+      }
+
+  この実装のポイント
+    *  :ref:`セッションストア <session_store>` から顧客情報を取得する。
+    * 取得した顧客情報を登録画面に表示するため、:java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` を使用して顧客エンティティをフォームに変換し、リクエストスコープに登録する。
+    * レスポンスオブジェクトの遷移先を、初期表示処理への内部フォーワードとする
+      (登録画面を表示する際、再度プルダウンに表示する業種情報を取得するため)。
+    * 初期表示処理で :ref:`セッションストア <session_store>` へ登録したオブジェクトを削除する(戻るボタンを押下せずにヘッダメニューから直接登録画面に遷移された場合等を考慮)。
+
+動作確認を行う
+  1. 登録画面を表示する。
+
+    .. image:: ../images/client_create/input_display.png
+
+  2. 顧客名に全角文字列、業種に任意の値を選択して「登録」ボタンを押下する。
+
+    .. image:: ../images/client_create/input_valid_value.png
+
+  3. 確認画面にて「入力へ戻る」ボタンを押下する。
+
+    .. image:: ../images/client_create/confirm_display.png
+
+  4. 登録画面が表示され、`2` で入力した値が画面に表示されていることを確認する。
+
+    .. image:: ../images/client_create/input_back.png
+
+:ref:`次へ<client_create_4>`
+```
+
+## Knowledge File
+
+- ID: `web-application-client_create3`
+
+```json
+{
+  "id": "web-application-client_create3",
+  "title": "登録内容確認画面から登録画面へ戻る",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/client_create/client_create3.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/beans/BeanUtil.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "登録画面へ戻る処理の実装",
+      "hints": [
+        "ClientAction",
+        "BeanUtil",
+        "nablarch.core.beans.BeanUtil",
+        "SessionUtil",
+        "HttpResponse",
+        "確認画面から入力画面への戻る処理",
+        "セッションストア操作",
+        "内部フォーワード",
+        "リクエストスコープへのフォーム登録"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 登録画面へ戻る処理の実装\n\n`ClientAction` に `back()` メソッドと `input()` メソッドを追加する。\n\n```java\npublic HttpResponse back(HttpRequest request, ExecutionContext context) {\n    Client client = SessionUtil.get(context, \"client\");\n    ClientForm form = BeanUtil.createAndCopy(ClientForm.class, client);\n    context.setRequestScopedVar(\"form\", form);\n    return new HttpResponse(\"forward://input\");\n}\n\npublic HttpResponse input(HttpRequest request, ExecutionContext context) {\n    SessionUtil.delete(context, \"client\");\n    EntityList<Industry> industries = UniversalDao.findAll(Industry.class);\n    context.setRequestScopedVar(\"industries\", industries);\n    return new HttpResponse(\"/WEB-INF/view/client/create.jsp\");\n}\n```\n\n実装のポイント:\n- :ref:`セッションストア <session_store>` から顧客情報を取得する。\n- :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` を使用して顧客エンティティをフォームに変換し、リクエストスコープに登録する。\n- レスポンスの遷移先は初期表示処理への内部フォーワードとする（登録画面を表示する際、再度プルダウンに表示する業種情報を取得するため）。\n- 初期表示処理で :ref:`セッションストア <session_store>` に登録したオブジェクトを削除する（戻るボタンを押下せずヘッダメニューから直接登録画面に遷移された場合等を考慮）。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

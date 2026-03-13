@@ -1,0 +1,578 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/data_io/data_bind.rst`
+- Format: `rst`
+
+```
+.. _data_bind:
+
+データバインド
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+CSVやTSV、固定長といったデータをJava Beansオブジェクト及びMapオブジェクトとして扱う機能を提供する。
+
+機能概要
+---------------------------------------------------------------------
+
+データをJava Beansオブジェクトとして扱うことができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データファイルのデータをJava Beansオブジェクトとして扱うことができる。
+
+Java Beansオブジェクトへの変換時、Java Beansクラスに定義されたプロパティの型に
+:java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` を使用して自動的に型変換する。
+型変換に失敗した場合は例外が発生し、Java Beansオブジェクトは生成されない。
+
+.. important::
+
+  アップロードファイルなどの外部から受け付けたデータを読み込む場合は、
+  不正なデータの場合でも異常終了とせずに不正な値を業務エラーとして通知する必要があるため、
+  Java Beansクラスのプロパティは全てString型で定義しなければならない。
+
+データをJava Beansオブジェクトとして扱う方法の詳細は以下を参照。
+
+* :ref:`data_bind-file_to_bean`
+* :ref:`data_bind-bean_to_file`
+
+データをMapオブジェクトとして扱うことができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データファイルのデータをMapオブジェクトとして扱うことができる。
+
+Mapオブジェクトへの変換時、値は全てString型で格納される。
+
+詳細は以下を参照。
+
+* :ref:`data_bind-file_to_map`
+* :ref:`data_bind-map_to_file`
+
+データファイルのフォーマットをアノテーションで指定できる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データファイルのフォーマットは設定ファイルに記述するのではなく、
+アノテーションや :java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` を使用して定義できる。
+
+詳細なフォーマットの指定方法は以下を参照。
+
+  * :ref:`data_bind-csv_format`
+  * :ref:`data_bind-fixed_length_format`
+
+モジュール一覧
+---------------------------------------------------------------------
+
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-databind</artifactId>
+  </dependency>
+
+  <!-- ファイルダウンロードを使用する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-extension</artifactId>
+  </dependency>
+
+使用方法
+---------------------------------------------------------------------
+
+.. _data_bind-file_to_bean:
+
+データをJava Beansオブジェクトとして読み込む
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データファイルを先頭から1データずつ読み込み、Java Beansオブジェクトとして取得できる。
+
+データの読み込みは、 :java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.InputStream)>`
+で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` [#thread-unsafe]_ を使用して行い、
+:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に指定した、
+Java Beansクラスに定義されたアノテーションをもとにデータを読み込む。
+
+Java Beansクラスへのアノテーション定義方法の詳細は以下を参照。
+
+  * :ref:`CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法 <data_bind-csv_format-beans>`
+  * :ref:`固定長ファイルをJava Beansクラスにバインドする場合のフォーマット指定方法 <data_bind-fixed_length_format-beans>`
+
+全データを読み込む場合の実装例を以下に示す。
+
+.. code-block:: java
+
+  try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {
+      Person person;
+      while ((person = mapper.read()) != null) {
+          // Java Beansオブジェクトごとの処理を記述(Java Beansオブジェクトへの変換処理など)
+      }
+  } catch (InvalidDataFormatException e) {
+      // 読み込んだデータのフォーマットが不正な場合の処理を記述
+  }
+
+.. important::
+
+  全データの読み込みが完了したら、 :java:extdoc:`ObjectMapper#close <nablarch.common.databind.ObjectMapper.close()>` でリソースを解放すること。
+
+  ただし、Java7以降の環境であれば ``try-with-resources`` を使用することでクローズ処理を省略可能。
+
+.. _data_bind-bean_to_file:
+
+Java Beansオブジェクトの内容をデータファイルに書き込む
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Java Beansオブジェクトの内容をデータファイルに1データずつ書き込むことができる。
+
+データファイルへの書き込みは、 :java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.OutputStream)>`
+で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>`  [#thread-unsafe]_ を使用して行い、
+:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に指定した、
+Java Beansクラスに定義されたアノテーションをもとにデータを書き込む。
+
+Java Beansクラスへのアノテーション定義方法の詳細は以下を参照。
+
+  * :ref:`CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法 <data_bind-csv_format-beans>`
+  * :ref:`固定長ファイルをJava Beansクラスにバインドする場合のフォーマット指定方法 <data_bind-fixed_length_format-beans>`
+
+リスト内の全てのJava Beansオブジェクトをデータファイルに書き込む場合の実装例を以下に示す。
+
+.. code-block:: java
+
+  try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {
+      for (Person person : personList) {
+          mapper.write(person);
+      }
+  }
+
+.. tip::
+
+  プロパティの値が ``null`` の場合は、未入力を表す値が出力される。
+  例えば、CSVファイルに書き込む場合は空文字が出力される。
+
+.. _data_bind-file_to_map:
+
+データをMapオブジェクトとして読み込む
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データファイルを先頭から1データずつ読み込み、Mapオブジェクトとして取得できる。
+
+データの読み込みは、
+:java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.InputStream-nablarch.common.databind.DataBindConfig)>`
+で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` [#thread-unsafe]_ を使用して行い、
+:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に指定した、
+:java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` の設定値をもとにデータを読み込む。
+
+:java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` への設定方法の詳細は以下を参照。
+
+  * :ref:`CSVファイルをMapクラスにバインドする場合のフォーマット指定方法 <data_bind-csv_format-map>`
+  * :ref:`固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法 <data_bind-fixed_length_format-map>`
+
+CSVファイルの全データを読み込む場合の実装例を以下に示す。
+
+.. code-block:: java
+
+  // DataBindConfigオブジェクトを生成
+  DataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "名前")
+                                                   .withProperties("age", "name");
+  try (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {
+      Person person;
+      while ((person = mapper.read()) != null) {
+          // Java Beansオブジェクトごとの処理を記述(Java Beansオブジェクトへの変換処理など)
+      }
+  } catch (InvalidDataFormatException e) {
+      // 読み込んだデータのフォーマットが不正な場合の処理を記述
+  }
+
+.. _data_bind-map_to_file:
+
+Mapオブジェクトの内容をデータファイルに書き込む
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Mapオブジェクトの内容をデータファイルに1データずつ書き込むことができる。
+
+データファイルへの書き込みは、
+:java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.OutputStream-nablarch.common.databind.DataBindConfig)>`
+で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` [#thread-unsafe]_ を使用して行い、
+:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に指定した、
+:java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` の設定値をもとにデータを書き込む。
+
+:java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` への設定方法の詳細は以下を参照。
+
+  * :ref:`CSVファイルをMapクラスにバインドする場合のフォーマット指定方法 <data_bind-csv_format-map>`
+  * :ref:`固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法 <data_bind-fixed_length_format-map>`
+
+リスト内の全てのMapオブジェクトをCSVファイルに書き込む場合の実装例を以下に示す。
+
+.. code-block:: java
+
+  // DataBindConfigオブジェクトを生成
+  DataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "名前")
+                                                   .withProperties("age", "name");
+  try (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config)) {
+      for (Map<String, Object> person : personList) {
+          mapper.write(person);
+      }
+  }
+
+.. tip::
+
+  Mapオブジェクトのvalue値が ``null`` の場合は、未入力を表す値が出力される。
+  例えば、CSVファイルに書き込む場合は空文字が出力される。
+  
+.. _data_bind-line_number:
+
+ファイルのデータの論理行番号を取得する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ファイルのデータをJava Beansオブジェクトとして取得する際、Java Beansクラスにプロパティを定義して
+:java:extdoc:`LineNumber <nablarch.common.databind.LineNumber>` を使用することで、データの論理行番号も一緒に取得できる。
+
+例えば、入力値チェック時にバリデーションエラーが発生したデータの行番号をログに出力したい場合などに使用する。
+
+実装例を以下に示す。
+
+.. code-block:: java
+
+  private Long lineNumber;
+
+  @LineNumber
+  public Long getLineNumber() {
+      return lineNumber;
+  }
+
+.. tip::
+
+  Mapオブジェクトとして取得する場合は、データの行番号を取得できない点に注意すること。
+
+
+.. _data_bind-validation:
+
+データの入力値をチェックする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データをJava Beansオブジェクトとして読み込むことができるため、
+:ref:`bean_validation` による入力値チェックを行うことができる。
+
+実装例を以下に示す。
+
+.. code-block:: java
+
+  try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {
+      Person person;
+      while ((person = mapper.read()) != null) {
+          // 入力値チェックを実行
+          ValidatorUtil.validate(person);
+
+          // 後続の処理は省略
+      }
+  } catch (InvalidDataFormatException e) {
+      // データファイルのフォーマット不正時の処理を記述
+  }
+
+.. _data_bind-file_download:
+
+ファイルダウンロードで使用する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ウェブアプリケーションで、Java Beansオブジェクトの内容をデータファイルとしてダウンロードするための実装例を以下に示す。
+
+ポイント
+  * データをメモリ上に展開すると大量データのダウンロード時などにメモリを圧迫する恐れがあるため、一時ファイルに出力する。
+  * データファイルへの書き込みについては、 :ref:`data_bind-bean_to_file` を参照。
+  * :java:extdoc:`FileResponse <nablarch.common.web.download.FileResponse>` オブジェクト生成時にデータファイルを指定する。
+  * リクエスト処理の終了時に自動的にファイルを削除する場合は、 `FileResponse` のコンストラクタの第二引数に ``true`` を指定する。
+  * レスポンスに `Content-Type` 及び `Content-Disposition` を設定する。
+
+.. code-block:: java
+
+  public HttpResponse download(HttpRequest request, ExecutionContext context) {
+
+      // 業務処理
+
+      final Path path = Files.createTempFile(null, null);
+      try (ObjectMapper<Person> mapper =
+              ObjectMapperFactory.create(Person.class, Files.newOutputStream(path))) {
+          for (Person person : persons) {
+              mapper.write(BeanUtil.createAndCopy(PersonDto.class, person));
+          }
+      }
+
+      // ファイルをボディに設定する。
+      FileResponse response = new FileResponse(path.toFile(), true);
+
+      // Content-Typeヘッダ、Content-Dispositionヘッダを設定する
+      response.setContentType("text/csv; charset=Shift_JIS");
+      response.setContentDisposition("person.csv");
+
+      return response;
+  }
+
+.. _data_bind-upload_file:
+
+アップロードファイルのデータを読み込む
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ウェブアプリケーションで、画面からアップロードされたデータファイルをJava Beansオブジェクトとして読み込むための実装例を以下に示す。
+
+ポイント
+ * :java:extdoc:`PartInfo#getInputStream <nablarch.fw.web.upload.PartInfo.getInputStream()>` を使用して、アップロードファイルのストリームを取得する。
+ * 不正なデータが入力されている可能性があるため、:ref:`bean_validation` を使用して入力チェックを行う。
+
+.. code-block:: java
+
+  List<PartInfo> partInfoList = request.getPart("uploadFile");
+  if (partInfoList.isEmpty()) {
+      // アップロードファイルが見つからない場合の処理を記述
+  }
+
+  PartInfo partInfo = partInfoList.get(0);
+  try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, partInfo.getInputStream())) {
+      Person person;
+      while ((person = mapper.read()) != null) {
+          // 入力値チェックを実行
+          ValidatorUtil.validate(person);
+
+          // 後続の処理は省略
+      }
+  } catch (InvalidDataFormatException e) {
+      // データファイルのフォーマット不正時の処理を記述
+  }
+
+.. _data_bind-csv_format:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-data_bind--s1`
+
+```json
+{
+  "id": "libraries-data_bind--s1",
+  "title": "データバインド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_bind.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/beans/BeanUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/DataBindConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/ObjectMapperFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/ObjectMapper.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/LineNumber.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/download/FileResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/upload/PartInfo.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "BeanUtil",
+        "DataBindConfig",
+        "CSVデータバインド",
+        "Mapオブジェクト変換",
+        "型変換",
+        "フォーマット指定",
+        "アノテーション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-databind",
+        "nablarch-fw-web-extension",
+        "Maven依存関係",
+        "モジュール設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データをJava Beansオブジェクトとして読み込む",
+      "hints": [
+        "ObjectMapperFactory",
+        "ObjectMapper",
+        "InvalidDataFormatException",
+        "Java Beansオブジェクト読み込み",
+        "ファイル読み込み",
+        "try-with-resources"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Java Beansオブジェクトの内容をデータファイルに書き込む",
+      "hints": [
+        "ObjectMapperFactory",
+        "ObjectMapper",
+        "Java Beansオブジェクト書き込み",
+        "ファイル書き込み",
+        "nullプロパティ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "データをMapオブジェクトとして読み込む",
+      "hints": [
+        "ObjectMapperFactory",
+        "ObjectMapper",
+        "DataBindConfig",
+        "CsvDataBindConfig",
+        "Mapオブジェクト読み込み",
+        "InvalidDataFormatException"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Mapオブジェクトの内容をデータファイルに書き込む",
+      "hints": [
+        "ObjectMapperFactory",
+        "ObjectMapper",
+        "DataBindConfig",
+        "CsvDataBindConfig",
+        "Mapオブジェクト書き込み"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ファイルのデータの論理行番号を取得する",
+      "hints": [
+        "LineNumber",
+        "@LineNumber",
+        "論理行番号",
+        "バリデーションエラー行番号"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "データの入力値をチェックする",
+      "hints": [
+        "ValidatorUtil",
+        "InvalidDataFormatException",
+        "bean_validation",
+        "入力値チェック",
+        "バリデーション"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "ファイルダウンロードで使用する",
+      "hints": [
+        "FileResponse",
+        "BeanUtil",
+        "ファイルダウンロード",
+        "Content-Type",
+        "Content-Disposition",
+        "一時ファイル"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "アップロードファイルのデータを読み込む",
+      "hints": [
+        "PartInfo",
+        "getInputStream",
+        "アップロードファイル読み込み",
+        "bean_validation",
+        "入力チェック"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "CSVやTSV、固定長データをJava BeansオブジェクトまたはMapオブジェクトとして扱う機能。\n\n## Java Beansオブジェクトとして扱う\n- :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` による自動型変換。型変換失敗時は例外が発生し、Java Beansオブジェクトは生成されない\n\n> **重要**: アップロードファイルなど外部から受け付けたデータを読み込む場合、不正なデータを業務エラーとして通知するため、Java BeansクラスのプロパティはすべてString型で定義すること\n\n## Mapオブジェクトとして扱う\n- 値はすべてString型で格納される\n\n## フォーマット指定\n- アノテーションまたは :java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` で定義できる（設定ファイル不要）\n- CSV: :ref:`data_bind-csv_format`\n- 固定長: :ref:`data_bind-fixed_length_format`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-databind</artifactId>\n</dependency>\n\n<!-- ファイルダウンロードを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-extension</artifactId>\n</dependency>\n```",
+    "s3": ":java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.InputStream)>` で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` を使用。Java Beansクラスのアノテーション定義に基づきデータを読み込む。\n\nアノテーション定義方法: :ref:`data_bind-csv_format-beans`, :ref:`data_bind-fixed_length_format-beans`\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // Java Beansオブジェクトごとの処理\n    }\n} catch (InvalidDataFormatException e) {\n    // フォーマット不正時の処理\n}\n```\n\n> **重要**: 全データ読み込み後は :java:extdoc:`ObjectMapper#close <nablarch.common.databind.ObjectMapper.close()>` でリソースを解放すること。Java 7以降は `try-with-resources` でクローズ処理を省略可能",
+    "s4": ":java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.OutputStream)>` で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` を使用。Java Beansクラスのアノテーション定義に基づきデータを書き込む。\n\nアノテーション定義方法: :ref:`data_bind-csv_format-beans`, :ref:`data_bind-fixed_length_format-beans`\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {\n    for (Person person : personList) {\n        mapper.write(person);\n    }\n}\n```\n\n> **補足**: プロパティの値が `null` の場合は、未入力を表す値が出力される（例: CSVでは空文字）",
+    "s5": ":java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.InputStream-nablarch.common.databind.DataBindConfig)>` で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` を使用。:java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` の設定値に基づきデータを読み込む。\n\nDataBindConfig設定方法: :ref:`data_bind-csv_format-map`, :ref:`data_bind-fixed_length_format-map`\n\n```java\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {\n    Map person;\n    while ((person = mapper.read()) != null) {\n        // Mapオブジェクトごとの処理\n    }\n} catch (InvalidDataFormatException e) {\n    // フォーマット不正時の処理\n}\n```",
+    "s6": ":java:extdoc:`ObjectMapperFactory#create <nablarch.common.databind.ObjectMapperFactory.create(java.lang.Class-java.io.OutputStream-nablarch.common.databind.DataBindConfig)>` で生成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` を使用。:java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` の設定値に基づきデータを書き込む。\n\nDataBindConfig設定方法: :ref:`data_bind-csv_format-map`, :ref:`data_bind-fixed_length_format-map`\n\n```java\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config)) {\n    for (Map<String, Object> person : personList) {\n        mapper.write(person);\n    }\n}\n```\n\n> **補足**: Mapオブジェクトのvalue値が `null` の場合は、未入力を表す値が出力される（例: CSVでは空文字）",
+    "s7": "Java Beansクラスにプロパティを定義し :java:extdoc:`LineNumber <nablarch.common.databind.LineNumber>` を付与することで、データ読み込み時に論理行番号を取得できる（例: バリデーションエラー発生データの行番号をログ出力）。\n\n```java\nprivate Long lineNumber;\n\n@LineNumber\npublic Long getLineNumber() {\n    return lineNumber;\n}\n```\n\n> **補足**: Mapオブジェクトとして取得する場合は行番号を取得できない",
+    "s8": "データをJava Beansオブジェクトとして読み込むため、:ref:`bean_validation` による入力値チェックが可能。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        ValidatorUtil.validate(person);\n        // 後続の処理\n    }\n} catch (InvalidDataFormatException e) {\n    // データファイルのフォーマット不正時の処理\n}\n```",
+    "s9": "ウェブアプリケーションでのファイルダウンロード実装のポイント:\n- 大量データのメモリ圧迫を避けるため一時ファイルに出力する\n- :java:extdoc:`FileResponse <nablarch.common.web.download.FileResponse>` 生成時にデータファイルを指定する\n- リクエスト処理終了時に自動削除する場合は `FileResponse` コンストラクタの第二引数に `true` を指定する\n- レスポンスに `Content-Type` と `Content-Disposition` を設定する\n\n```java\npublic HttpResponse download(HttpRequest request, ExecutionContext context) {\n    // 業務処理\n\n    final Path path = Files.createTempFile(null, null);\n    try (ObjectMapper<Person> mapper =\n            ObjectMapperFactory.create(Person.class, Files.newOutputStream(path))) {\n        for (Person person : persons) {\n            mapper.write(BeanUtil.createAndCopy(PersonDto.class, person));\n        }\n    }\n\n    FileResponse response = new FileResponse(path.toFile(), true);\n    response.setContentType(\"text/csv; charset=Shift_JIS\");\n    response.setContentDisposition(\"person.csv\");\n\n    return response;\n}\n```",
+    "s10": "ウェブアプリケーションでのアップロードファイル読み込みのポイント:\n- :java:extdoc:`PartInfo#getInputStream <nablarch.fw.web.upload.PartInfo.getInputStream()>` でアップロードファイルのストリームを取得する\n- 不正データの可能性があるため :ref:`bean_validation` で入力チェックを行う\n\n```java\nList<PartInfo> partInfoList = request.getPart(\"uploadFile\");\nif (partInfoList.isEmpty()) {\n    // アップロードファイルが見つからない場合の処理\n}\n\nPartInfo partInfo = partInfoList.get(0);\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, partInfo.getInputStream())) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        ValidatorUtil.validate(person);\n        // 後続の処理\n    }\n} catch (InvalidDataFormatException e) {\n    // フォーマット不正時の処理\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

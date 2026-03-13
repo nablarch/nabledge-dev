@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-js_framework--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — ノードプロパティ初期化の制約説明",
+      "description": "知識ファイルは「コンストラクタ内でノードプロパティ（`$`で始まるプロパティ）の初期化は `Widget.call(this, element)` の呼び出しよりも前に行う必要がある」と記述しているが、ソースは単に「ノードプロパティの初期化Widgetコンストラクタの呼び出しよりも先に行う必要がある」とのみ述べており、`$`で始まるプロパティという限定はない。この限定は対象を狭めてしまう可能性がある。",
+      "source_evidence": "「特に、ノードプロパティの初期化Widgetコンストラクタの呼び出しよりも先に行う必要がある。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — コンストラクタ内のテンプレートファイル使用推奨",
+      "description": "ソースのコンストラクタコメントには「ノードの内容は後でカスタマイズしやすいように、テンプレートファイルを使用すること」というベストプラクティスの注記があるが、知識ファイルに含まれていない。",
+      "source_evidence": "「※  ノードの内容は後でカスタマイズしやすいように、テンプレートファイルを使用すること。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Widget.call() を明示的に呼び出す理由",
+      "description": "ソースには「JavaScriptでは親クラスのコンストラクタは呼ばれないので、明示的に呼び出す必要がある」という重要な補足説明があるが、知識ファイルに含まれていない。コンストラクタ設計を理解する上で有用な情報。",
+      "source_evidence": "「なお、JavaScriptでは親クラスのコンストラクタは呼ばれないので、明示的に呼び出す必要がある。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — beforeSubmit.nablarch カスタムイベントの説明",
+      "description": "ソースには `beforeSubmit.nablarch` が `nablarch/ui/event` 内で定義されたカスタムイベントであり、グローバル関数 `nablarch_submit()` によってサブミット直前に呼ばれるという説明があるが、知識ファイルにはこの文脈が含まれていない。",
+      "source_evidence": "「※  カスタムイベント \"beforeSubmit.nablarch\" は \"nablarch/ui/event\" の中で定義されており、グローバル関数 nablarch_submit() によってサブミットが行われる直前に呼ばれる。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints配列",
+      "description": "以下の重要なAPIがhintsに含まれていない: `Object.merge`（プロトタイプ継承に使用するsugar.jsメソッド）、`Widget.call`（親コンストラクタ呼び出し）、`nablarch_submit`（beforeSubmitイベントをトリガーするグローバル関数）。",
+      "source_evidence": "「ModalDialog.prototype = Object.merge(new Widget(), {...})」「Widget.call(this, element)」「グローバル関数 nablarch_submit() によってサブミットが行われる直前に呼ばれる」"
+    }
+  ]
+}

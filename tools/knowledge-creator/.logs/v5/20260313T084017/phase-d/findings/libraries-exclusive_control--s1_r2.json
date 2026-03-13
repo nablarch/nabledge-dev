@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-exclusive_control--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 排他制御用テーブルの定義単位",
+      "description": "The source states the key design principle: \"排他制御用テーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する\" (define at the maximum unit where conflict is acceptable). This principle is absent from the knowledge file. The knowledge file mentions that larger units increase conflict probability, but omits the actionable guideline that the unit should be the *maximum* where conflict is still acceptable.",
+      "source_evidence": "排他制御用テーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 更新順序の重要性 (important block)",
+      "description": "The source explains the mechanism behind deadlock risk: \"データベースでは、レコードを更新すると行ロックがかかる\" (updating a record causes a row lock). This causal explanation is omitted from the knowledge file. The knowledge file states the conclusion (deadlock risk) but not the underlying reason (row-level locking on update), which aids understanding of why ordering matters.",
+      "source_evidence": "データベースでは、レコードを更新すると行ロックがかかるので、更新順序を定めておかなければデッドロックが発生する可能性が非常に高くなる。"
+    }
+  ]
+}

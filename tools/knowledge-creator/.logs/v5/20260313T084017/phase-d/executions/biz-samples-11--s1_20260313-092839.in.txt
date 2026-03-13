@@ -1,0 +1,382 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/biz_samples/11/index.rst`
+- Format: `rst`
+
+```
+
+メッセージング基盤テストシミュレータサンプル
+================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+`ソースコード <https://github.com/nablarch/nablarch-messaging-simulator>`_
+
+本サンプルは、Nablarchアプリケーションフレームワークの :ref:`mom_system_messaging` 、 :ref:`http_system_messaging` を使用する
+アプリケーションのテストにて、対向先システムをシミュレートするサンプル実装を提供する。
+
+テスト環境構築後の疎通テストやアプリケーションの結合テスト等で、アプリケーションの接続先として、
+使用することを想定している。
+
+シミュレータの動作イメージを以下に示す。
+
+シミュレータがメッセージ受信する場合
+  .. image:: ./_images/behavior_illustration01.png
+    :scale: 70
+
+シミュレータがメッセージ送信する場合
+  .. image:: ./_images/behavior_illustration02.png
+    :scale: 70
+
+.. important::
+
+  本サンプルではMOMとしてIBM MQ 9.3 を使用している。
+  IBM MQ 9.3 はJavaのバージョン 8 以上がサポート対象であるため、本サンプルでは Java 8を使用する。
+
+用途
+----------
+
+疎通テスト
+~~~~~~~~~~~
+
+テスト環境を構築後のNablarchアプリケーションフレームワーク、ミドルウェア、ハードウェア等の設定を確認するための疎通テストにて、
+簡易的に通信する対向先システムとして使用できる。
+
+結合テスト
+~~~~~~~~~~~
+
+アプリケーションの結合テストの際に、システム間通信の擬似的な対向先システムとして使用できる。
+シミュレータに要求電文/応答電文として使用するデータを設定することで、シナリオを用いたテストができる。
+
+シナリオを用いたテストは取引単体テストにて可能であるが、
+シミュレータを使用したテストではOSやミドルウェアも含めた動作を確認できる点が異なる。
+
+負荷テスト
+~~~~~~~~~~~
+
+アプリケーションの負荷テストを行う際に、負荷をかけるための大量のメッセージ送受信ができる。
+
+特徴
+----------
+
+取引単体テストと同じ手順でテストデータを作成できる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+本シミュレータで使用するテストデータは、取引単体テストと同様の手順で作成できる。
+そのため、本シミュレータの使用時に余計な学習コストが発生しない。
+
+特殊および複雑なテストケースにも、カスタマイズすることで対応可能(メッセージ受信)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ソースコード提供しているシミュレータのソースコードを修正することによって、
+特殊および複雑なテストケースに合わせた、以下のようなテストが可能である。
+
+* 要求電文の内容に応じて、応答電文の内容を動的に変更する必要があるテストを行う。
+* 意図的に応答の時間を遅らせることによってタイムアウトを発生させるなど、異常系のテストを行う。
+
+
+マルチスレッドで要求電文を送信することが可能（メッセージ送信）
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Nablarchアプリケーションフレームワークのマルチスレッド実行制御ハンドラをシミュレータ内部で使用しており、
+マルチスレッドで要求電文を送信するこで、大量メッセージを送信した負荷テストが可能である。
+
+要求
+----
+
+シミュレータがメッセージ受信する場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* HTTPメッセージ受信、MOM同期応答メッセージ受信用の応答電文を送信できる。
+* 要求電文のログを出力できる。
+* 任意のHTTPステータスコードを返却できる。
+* シミュレータへの要求順序にあわせた応答電文を送信可能(単体テスト時と同様、Excelファイルに記述された内容を上から順に返却する)。
+
+シミュレータがメッセージ送信する場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* HTTPメッセージ送信、MOM同期応答メッセージ送信、MOM応答不要メッセージ送信用の要求電文を送信できる。
+* 指定回数、同じ電文を送信する。
+* 応答電文のログを出力できる。
+* Excelファイルに記述された内容を順に送信できる。
+
+
+使用方法
+------------------------
+
+シミュレータの実行モジュールを作成する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本サンプルは、利用者が目的とするテストを実施するために、Javaファイル等をカスタマイズすることを想定しているため、
+ソースコードや設定ファイルをサンプル提供する形態としている。
+
+そのため、シミュレータを使用するには、以下の手順に従ってビルドを実行し、実行モジュールを作成する必要がある。
+
+シミュレータの取得
+  以下のコマンドを実行してシミュレータのソースコードを取得する。
+
+  .. code-block:: bash
+
+    git clone https://github.com/nablarch/nablarch-messaging-simulator.git
+
+実行モジュールの作成
+  以下のコマンドを実行し、 ``target/build`` 配下に実行モジュールを作成する。
+
+  .. code-block:: bat
+
+    mvn clean dependency:copy-dependencies -DoutputDirectory=target/build/lib package
+
+  作成した実行モジュールは、シミュレータを実行する環境に配置する。
+
+シミュレータを起動する
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+実行モジュールに含まれる以下のbatファイルを実行することでシミュレータが起動する。
+
+:HTTPメッセージ受信: http-incoming-startup.bat
+:HTTPメッセージ送信: http-outgoing-startup.bat
+:MOMメッセージ受信: mom-incoming-startup.bat
+:MOMメッセージ送信: mom-outgoing-startup.bat
+
+拡張例
+---------------------------
+
+メッセージ送信時にリクエスト送信回数を指定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+デフォルトでは、送信リストファイル(CSV)に記載した行数分のリクエストを送信するが、
+同一のデータを繰り返し送信したい場合などは、 ``sendCount`` オプションでリクエスト送信回数を指定できる。
+
+オプションの指定例を以下に示す。
+
+.. code-block:: bat
+
+  java <省略> nablarch.fw.launcher.Main <省略> -sendCount 10000
+
+メッセージ受信時にリクエストの種類に応じてレスポンスを切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+リクエストの種類に応じてレスポンスを切り替えるには、アクションクラスの ``getRequestId`` メソッドを修正する。
+
+HTTPメッセージの受信時に、リクエストURIによってレスポンスを切り替える場合の実装例を以下に示す。
+
+.. code-block:: java
+
+  public class HttpIncomingSimulateAction implements Handler<HttpRequest, HttpResponse> {
+
+      // 省略
+
+      protected String getRequestId(HttpRequest request) {
+          // リクエストURIをもとに、レスポンスのリクエストIDを切り替える。
+          return request.getRequestUri().endsWith("RM11AC0101") ? "RM11AC0201" : "RM11AC0202";
+      }
+  }
+
+.. tip::
+
+  MOMメッセージの受信時にレスポンスを切り替えたい場合も、HTTPメッセージの受信時と同様に、
+  アクションクラスの ``getRequestId`` メソッドを修正すればよい。
+
+メッセージ受信時に意図的にレスポンスを遅延させる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+メッセージ受信時に意図的にレスポンスを遅延させるには、
+以下の様にアクションクラスの ``handle`` メソッドに直接遅延処理を実装する。
+
+.. code-block:: java
+
+  public class HttpIncomingSimulateAction implements Handler<HttpRequest, HttpResponse> {
+
+    public HttpResponse handle(HttpRequest request, ExecutionContext context) {
+
+        try {
+            // 10秒遅延させる
+            TimeUnit.SECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            // 例外処理
+        }
+
+        // 省略
+    }
+  }
+```
+
+## Knowledge File
+
+- ID: `biz-samples-11--s1`
+
+```json
+{
+  "id": "biz-samples-11--s1",
+  "title": "メッセージング基盤テストシミュレータサンプル",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/11/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "用途",
+      "hints": [
+        "疎通テスト",
+        "結合テスト",
+        "負荷テスト",
+        "メッセージングシミュレータ",
+        "mom_system_messaging",
+        "http_system_messaging",
+        "IBM MQ",
+        "Java 8",
+        "対向先システム"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "テストデータ作成",
+        "マルチスレッド",
+        "異常系テスト",
+        "タイムアウトテスト",
+        "メッセージ受信",
+        "メッセージ送信",
+        "HTTPステータスコード",
+        "シナリオテスト",
+        "取引単体テスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用方法",
+      "hints": [
+        "シミュレータ起動",
+        "http-incoming-startup.bat",
+        "http-outgoing-startup.bat",
+        "mom-incoming-startup.bat",
+        "mom-outgoing-startup.bat",
+        "実行モジュール作成",
+        "Maven",
+        "nablarch-messaging-simulator"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "拡張例",
+      "hints": [
+        "sendCount",
+        "getRequestId",
+        "HttpIncomingSimulateAction",
+        "レスポンス遅延",
+        "TimeUnit",
+        "リクエスト送信回数",
+        "レスポンス切り替え",
+        "handle"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: 本サンプルではMOMとしてIBM MQ 9.3 を使用。IBM MQ 9.3 はJava 8以上がサポート対象のため、本サンプルではJava 8を使用する。\n\n:ref:`mom_system_messaging`、:ref:`http_system_messaging` を使用するアプリケーションのテストで、対向先システムをシミュレートするサンプル実装を提供する。\n\n- **疎通テスト**: テスト環境構築後のNablarchフレームワーク、ミドルウェア、ハードウェア等の設定確認用の簡易通信対向先として使用可能。\n- **結合テスト**: システム間通信の擬似対向先として使用可能。Excelファイルで設定したシナリオによるテストができる。取引単体テストと異なり、OSやミドルウェアも含めた動作確認が可能。\n- **負荷テスト**: 大量メッセージ送受信による負荷テストが可能。",
+    "s2": "**取引単体テストと同じ手順でテストデータ作成可能**: 余計な学習コストが発生しない。\n\n**特殊・複雑なテストケースへの対応（メッセージ受信、カスタマイズが必要）**:\n- 要求電文の内容に応じて応答電文の内容を動的に変更するテスト\n- 意図的な応答遅延によるタイムアウト等の異常系テスト\n\n**マルチスレッドで要求電文送信可能（メッセージ送信）**: Nablarchのマルチスレッド実行制御ハンドラを使用。大量メッセージの負荷テストが可能。\n\n### メッセージ受信時の機能\n\n- HTTPメッセージ受信・MOM同期応答メッセージ受信用の応答電文送信\n- 要求電文のログ出力\n- 任意のHTTPステータスコード返却\n- 要求順序に合わせた応答電文送信（Excelファイルの内容を上から順に返却）\n\n### メッセージ送信時の機能\n\n- HTTPメッセージ送信・MOM同期応答メッセージ送信・MOM応答不要メッセージ送信用の要求電文送信\n- 指定回数の同一電文送信\n- 応答電文のログ出力\n- Excelファイルに記述された内容を順に送信",
+    "s3": "1. シミュレータのソースコードを取得する:\n\n```bash\ngit clone https://github.com/nablarch/nablarch-messaging-simulator.git\n```\n\n2. `target/build` 配下に実行モジュールを作成し、実行環境に配置する:\n\n```bat\nmvn clean dependency:copy-dependencies -DoutputDirectory=target/build/lib package\n```\n\n3. 以下のbatファイルを実行してシミュレータを起動する:\n\n| 種別 | batファイル |\n|---|---|\n| HTTPメッセージ受信 | `http-incoming-startup.bat` |\n| HTTPメッセージ送信 | `http-outgoing-startup.bat` |\n| MOMメッセージ受信 | `mom-incoming-startup.bat` |\n| MOMメッセージ送信 | `mom-outgoing-startup.bat` |",
+    "s4": "**リクエスト送信回数の指定（`sendCount`オプション）**: デフォルトはCSVファイルの行数分。同一データを繰り返し送信する場合に使用。\n\n```bat\njava <省略> nablarch.fw.launcher.Main <省略> -sendCount 10000\n```\n\n**リクエスト種類に応じたレスポンス切り替え（メッセージ受信）**: アクションクラスの `getRequestId` メソッドを修正する。HTTPとMOM共通。\n\n```java\nprotected String getRequestId(HttpRequest request) {\n    return request.getRequestUri().endsWith(\"RM11AC0101\") ? \"RM11AC0201\" : \"RM11AC0202\";\n}\n```\n\n> **補足**: MOMメッセージ受信時のレスポンス切り替えも、HTTPと同様に `getRequestId` メソッドを修正する。\n\n**意図的なレスポンス遅延（メッセージ受信）**: アクションクラスの `handle` メソッドに遅延処理を直接実装する。\n\n```java\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    try {\n        TimeUnit.SECONDS.sleep(10); // 10秒遅延\n    } catch (InterruptedException e) {\n        // 例外処理\n    }\n    // ...\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

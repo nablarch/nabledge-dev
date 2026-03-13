@@ -1,0 +1,482 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-tag--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — サブミット前に処理を追加する",
+      "description": "The source includes a concrete JSP→HTML output example showing what the custom tag generates: a `<script type=\"text/javascript\">` block containing `nablarch_submit`, and a form with `<input>` whose onclick is set to `return window.nablarch_submit(event, this);`. This illustrates the exact generated HTML structure (including the form/button naming pattern like `nablarch_form1` / `nablarch_form1_1` and the precise onclick attribute value). The knowledge file explains the mechanism conceptually but omits this generated-HTML output example.",
+      "source_evidence": "Source contains a JSP input block and a corresponding HTML output block under `出力例を以下に示す。`, showing the generated `<script>` tag with `nablarch_submit` function and the resulting `<input onclick=\"return window.nablarch_submit(event, this);\">` element."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+複合キーのラジオボタンやチェックボックスを作る
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+一覧画面でデータを選択する場合などは、ラジオボタンやチェックボックスを使用する。
+データを識別する値が単一であれば、 :ref:`tag-radio_tag` や :ref:`tag-checkbox_tag` を使用すればよいが、
+複合キーの場合は単純に実装できない。
+
+カスタムタグでは、複合キーに対応したラジオボタンやチェックボックスを提供する。
+
+* :ref:`tag-composite_key_radio_button_tag` (複合キーに対応したラジオボタン)
+* :ref:`tag-composite_key_checkbox_tag` (複合キーに対応したチェックボックス)
+
+.. important::
+ この機能を使用するには、
+ :java:extdoc:`CompositeKeyConvertor <nablarch.common.web.compositekey.CompositeKeyConvertor>` と
+ :java:extdoc:`CompositeKeyArrayConvertor <nablarch.common.web.compositekey.CompositeKeyArrayConvertor>`
+ をコンポーネント定義に追加しておく必要がある。
+ 設定方法については、 :ref:`nablarch_validation-definition_validator_convertor` を参照。
+
+.. important::
+ この機能は、
+ :java:extdoc:`CompositeKeyConvertor <nablarch.common.web.compositekey.CompositeKeyConvertor>` と
+ :java:extdoc:`CompositeKeyArrayConvertor <nablarch.common.web.compositekey.CompositeKeyArrayConvertor>`
+ を使用するため、 :ref:`nablarch_validation` でのみ使用できる。
+ :ref:`bean_validation` は対応していない。
+
+実装例
+ 一覧表示で複合キーをもつチェックボックスを使用する例を元に、実装方法を説明する。
+
+ フォーム
+  フォームでは、複合キーを保持するプロパティを
+  :java:extdoc:`CompositeKey<nablarch.common.web.compositekey.CompositeKey>`
+  として定義する。
+
+  .. code-block:: java
+
+   public class OrderItemsForm {
+
+       // 今回は、一覧表示で複数データに対する複合キーを受け付けるので、
+       // 配列として定義する。
+       public CompositeKey[] orderItems;
+
+       // getter, コンストラクタ等は省略。
+
+       // CompositeKeyTypeアノテーションで複合キーのサイズを指定する。
+       @CompositeKeyType(keySize = 2)
+       public void setOrderItems(CompositeKey[] orderItems) {
+           this.orderItems = orderItems;
+       }
+   }
+
+ JSP
+  .. code-block:: jsp
+
+   <table>
+     <thead>
+       <tr>
+         <!-- ヘッダ出力は省略。 -->
+       </tr>
+     </thead>
+     <tbody>
+       <c:forEach var="orderItem" items="${orderItems}">
+       <tr>
+         <td>
+           <!--
+             以下の属性を指定する。
+             name属性: フォームのプロパティ名に合わせて指定する。
+             valueObject属性: 複合キーの値を持つオブジェクトを指定する。
+             keyNames属性: valueObject属性で指定したオブジェクトから
+                           複合キーの値を取得する際に使用するプロパティ名を指定する。
+                           ここに指定した順番でCompositeKeyに設定される。
+             namePrefix属性: 複合キーの値をリクエストパラメータに展開する際に使用する
+                             プレフィクスを指定する。
+                             name属性と異なる値を指定する必要がある。
+           -->
+           <n:compositeKeyCheckbox
+             name="form.orderItems"
+             label=""
+             valueObject="${orderItem}"
+             keyNames="orderId,productId"
+             namePrefix="orderItems" />
+         </td>
+         <!-- 以下略 -->
+       </tr>
+       </c:forEach>
+     </tbody>
+   </table>
+
+.. _`tag-submit`:
+
+複数のボタン/リンクからフォームをサブミットする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+フォームのサブミットは、ボタンとリンクに対応しており、次のカスタムタグを使用して行う。
+1つのフォームに複数のボタンとリンクを配置できる。
+
+フォームのサブミット
+ | :ref:`tag-submit_tag` (inputタグのボタン)
+ | :ref:`tag-button_tag` (buttonタグのボタン)
+ | :ref:`tag-submit_link_tag` (リンク)
+
+別ウィンドウを開いてサブミット(ポップアップ)
+ | :ref:`tag-popup_submit_tag` (inputタグのボタン)
+ | :ref:`tag-popup_button_tag` (buttonタグのボタン)
+ | :ref:`tag-popup_link_tag` (リンク)
+
+ダウンロード用のサブミット
+ | :ref:`tag-download_submit_tag` (inputタグのボタン)
+ | :ref:`tag-download_button_tag` (buttonタグのボタン)
+ | :ref:`tag-download_link_tag` (リンク)
+
+タグ名が ``popup`` から始まるタグは、新しいウィンドウをオープンし、
+オープンしたウィンドウに対してサブミットを行う。
+タグ名が ``download`` から始まるタグは、ダウンロード用のサブミットを行う。
+それぞれ詳細は、以下を参照。
+
+* :ref:`tag-submit_popup`
+* :ref:`tag-submit_download`
+
+これらのカスタムタグでは、ボタン/リンクとURIを関連付けるためにname属性とuri属性を指定する。
+name属性は、フォーム内で一意な名前を指定する。name属性の指定がない場合は、カスタムタグで一意な名前が自動で出力される。
+uri属性の指定方法については、 :ref:`tag-specify_uri` を参照。
+
+実装例
+ .. code-block:: jsp
+
+  <!-- name属性は自動で出力されるので指定しなくてよい。 -->
+  <n:submit type="submit" uri="login" value="ログイン" />
+
+.. _`tag-onclick_override`:
+
+サブミット前に処理を追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+フォームのサブミットは、JavaScriptを使用してボタン/リンク毎のURIを組み立てることで実現している。
+カスタムタグは、グローバル領域にこのJavaScript関数を出力し、
+ボタン/リンクのonclick属性にその関数呼び出しを設定した状態でHTMLを出力する。
+
+.. _`tag-submit_function`:
+
+カスタムタグが出力するJavaScript関数のシグネチャ
+ .. code-block:: javascript
+
+  /**
+   * @param event イベントオブジェクト
+   * @param element イベント元の要素(ボタン又はリンク)。未指定の場合は第1引数のeventからcurrentTarget、targetプロパティの優先順位でイベント元の要素を取得する。
+   * @return イベントを伝搬させないため常にfalse
+   */
+  function nablarch_submit(event, element)
+
+出力例を以下に示す。
+
+JSP
+ .. code-block:: jsp
+
+  <n:form>
+    <!-- 省略 -->
+    <n:submit type="submit" uri="login" value="ログイン" />
+  </n:form>
+
+HTML
+ .. code-block:: html
+
+  <script type="text/javascript">
+  <!--
+  function nablarch_submit(event, element) {
+    // 省略
+  }
+  -->
+  </script>
+  <form name="nablarch_form1" method="post">
+    <!-- onclick属性にサブミット制御を行うJavaScript関数が設定される。 -->
+    <input type="submit" name="nablarch_form1_1" value="ログイン"
+           onclick="return window.nablarch_submit(event, this);" />
+  </form>
+
+サブミット前に処理を追加したい場合は、onclick属性にアプリケーションで作成したJavaScript関数を指定する。
+カスタムタグは、onclick属性が指定された場合、サブミット用のJavaScript関数を呼び出さない。
+この場合、アプリケーションで作成したJavaScriptで、カスタムタグが設定する :ref:`JavaScript関数 <tag-submit_function>` を呼び出す必要がある。
+
+ .. important::
+  Content Security Policy(CSP)に対応する場合は、onclick属性にインラインでJavaScriptを記述してしまうとCSPに対応しようとしているにも
+  関わらず ``unsafe-inline`` を使いセキュリティレベルを低下させてしまう、  もしくは ``unsafe-hashes`` を利用することになってしまう。
+  このため、 :ref:`tag-content_security_policy` の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に追加の処理を実装を
+  行うことを推奨する。
+ 
+
+実装例
+ サブミット前に確認ダイアログを表示する。
+
+ JavaScript
+  .. code-block:: javascript
+
+   function popUpConfirmation(event, element) {
+     if (window.confirm("登録します。よろしいですか？")) {
+       // カスタムタグが出力するJavaScript関数を明示的に呼び出す。
+       return nablarch_submit(event, element);
+     } else {
+       // キャンセル
+       return false;
+     }
+   }
+
+ JSP
+  .. code-block:: jsp
+
+   <n:submit type="submit" uri="register" value="登録"
+             onclick="return popUpConfirmation(event, this);" />
+
+.. _`tag-onchange_submit`:
+
+プルダウン変更などの画面操作でサブミットする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+カスタムタグは、サブミット制御にJavaScriptを使用しており、
+サブミット制御するJavaScript関数が、ボタンやリンクのイベントハンドラ(onclick属性)に指定されることを前提に動作する。
+JavaScriptの詳細については、 :ref:`tag-onclick_override` を参照。
+
+そのため、プルダウン変更などの画面操作でサブミットを行いたい場合は、サブミットさせたいボタンのクリックイベントを発生させる。
+
+ .. important::
+  Content Security Policy(CSP)に対応する場合は、onclick属性にインラインでJavaScriptを記述してしまうとCSPに対応しようとしているにも
+  関わらず ``unsafe-inline`` を使いセキュリティレベルを低下させてしまう、  もしくは ``unsafe-hashes`` を利用することになってしまう。
+  このためは、 :ref:`tag-content_security_policy` の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に追加の処理を実装を
+  行うことを推奨する。
+
+プルダウン変更でサブミットを行う場合の実装例を示す。
+
+実装例
+ .. code-block:: jsp
+
+  <!-- onchange属性にて、サブミットしたいボタン要素のclick関数を呼ぶ。 -->
+  <n:select name="form.plan"
+            listName="plans"
+            elementLabelProperty="planName"
+            elementValueProperty="planId"
+            onchange="window.document.getElementById('register').click(); return false;" />
+
+  <n:submit id="register" type="submit" uri="register" value="登録" />
+
+ .. important::
+  上記の実装例では、説明がしやすいので、onchangeイベントハンドラに直接JavaScriptを記載しているが、
+  実際のプロジェクトでは、オープンソースのJavaScriptライブラリを使うなどして、処理を動的にバインドすることを推奨する。
+
+
+.. _`tag-submit_change_parameter`:
+
+ボタン/リンク毎にパラメータを追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+更新機能などにおいて、一覧画面から詳細画面に遷移するケースでは、
+同じURLだけどパラメータが異なるリンクを表示したい場合がある。
+
+カスタムタグでは、フォームのボタンやリンク毎にパラメータを追加するためのカスタムタグを提供する。
+
+* :ref:`tag-param_tag` (サブミット時に追加するパラメータの指定)
+
+実装例
+ 検索結果から一覧画面でリンク毎にパラメータを追加する。
+
+ .. code-block:: jsp
+
+  <n:form>
+    <table>
+      <!-- テーブルのヘッダ行は省略 -->
+      <c:forEach var="person" items="${persons}">
+        <tr>
+          <td>
+            <n:submitLink uri="/action/person/show">
+              <n:write name="person.personName" />
+              <!-- パラメータ名に"personId"を指定している。 -->
+              <n:param paramName="personId" name="person.personId" />
+            </n:submitLink>
+          </td>
+        </tr>
+      </c:forEach>
+    </table>
+  </n:form>
+
+.. important::
+ パラメータを追加する場合は、その数に応じてリクエストのデータ量は増大する。
+ そのため、一覧画面で詳細画面へのリンク毎にパラメータを追加する場合は、
+ パラメータをプライマリキーだけにするなど、必要最小限のパラメータのみ追加する。
+
+.. _`tag-submit_display_control`:
+
+認可チェック/サービス提供可否に応じてボタン/リンクの表示/非表示を切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`permission_check` と :ref:`service_availability` の結果に応じて、
+:ref:`フォームのサブミットを行うボタン/リンク<tag_reference_submit>` の表示を切り替える機能を提供する。
+これにより、ユーザが実際にボタン/リンクを選択する前に該当機能が使用可能かどうかが分かるため、ユーザビリティの向上につながる。
+
+:ref:`フォームのサブミットを行うボタン/リンク<tag_reference_submit>`
+に指定されたリクエストIDに対して、 :ref:`permission_check` と :ref:`service_availability` を行い、
+``権限なし`` または ``サービス提供不可`` の場合に表示切り替えを行う。
+
+切り替え時の表示方法には次の3パターンがある。
+
+非表示
+ タグを出力しない。
+
+非活性
+ タグを非活性にする。
+ ボタンの場合は、disabled属性を有効にする。
+ リンクの場合は、ラベルのみ表示するか、非活性リンク描画用JSPをインクルードする。
+ JSPインクルードを行うには、 :ref:`tag-setting` で
+ :java:extdoc:`submitLinkDisabledJspプロパティ<nablarch.common.web.tag.CustomTagConfig.setSubmitLinkDisabledJsp(java.lang.String)>`
+ を指定する。
+
+通常表示
+ 通常どおりタグが出力される。
+ 表示方法の切り替えを行わない。
+
+デフォルトは、 ``通常表示`` である。
+:ref:`tag-setting` で
+:java:extdoc:`displayMethodプロパティ<nablarch.common.web.tag.CustomTagConfig.setDisplayMethod(java.lang.String)>`
+を指定することで、デフォルトを変更できる。
+
+個別に表示方法を変更したい場合は、displayMethod属性に指定する。
+
+実装例
+ .. code-block:: jsp
+
+  <!--
+    NODISPLAY(非表示)、DISABLED(非活性)、NORMAL(通常表示)のいずれかを指定する。
+    このタグは常に表示する。
+  -->
+  <n:submit type="button" uri="login" value="ログイン" displayMethod="NORMAL" />
+
+.. tip::
+ アプリケーションで表示制御に使用する判定処理を変更したい場合は、
+ :ref:`tag-submit_display_control_change` を参照。
+
+.. _`tag-submit_popup`:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-tag--s10",
+  "title": "カスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKeyConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKeyArrayConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/compositekey/CompositeKey.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/CustomTagConfig.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複合キーのラジオボタンやチェックボックスを作る",
+      "hints": [
+        "CompositeKeyConvertor",
+        "CompositeKeyArrayConvertor",
+        "CompositeKey",
+        "@CompositeKeyType",
+        "compositeKeyCheckbox",
+        "compositeKeyRadio",
+        "複合キー",
+        "nablarch_validation専用",
+        "bean_validation非対応"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "複数のボタン/リンクからフォームをサブミットする",
+      "hints": [
+        "フォームサブミット",
+        "ポップアップサブミット",
+        "ダウンロードサブミット",
+        "name属性",
+        "uri属性",
+        "submitタグ",
+        "buttonタグ",
+        "submitLinkタグ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "サブミット前に処理を追加する",
+      "hints": [
+        "nablarch_submit",
+        "onclick属性",
+        "サブミット前処理",
+        "Content Security Policy",
+        "CSP",
+        "確認ダイアログ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "プルダウン変更などの画面操作でサブミットする",
+      "hints": [
+        "プルダウン変更サブミット",
+        "onchange",
+        "画面操作サブミット",
+        "clickイベント",
+        "Content Security Policy",
+        "CSP",
+        "JavaScriptライブラリ",
+        "動的バインド"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ボタン/リンク毎にパラメータを追加する",
+      "hints": [
+        "n:param",
+        "paramタグ",
+        "ボタンパラメータ追加",
+        "リンクパラメータ",
+        "一覧画面パラメータ",
+        "submitLink"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "認可チェック/サービス提供可否に応じてボタン/リンクの表示/非表示を切り替える",
+      "hints": [
+        "CustomTagConfig",
+        "displayMethod",
+        "submitLinkDisabledJsp",
+        "認可チェック",
+        "サービス提供可否",
+        "ボタン表示制御",
+        "NODISPLAY",
+        "DISABLED",
+        "NORMAL"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複合キーに対応したラジオボタン・チェックボックスを提供する。\n\n- :ref:`tag-composite_key_radio_button_tag` （複合キーに対応したラジオボタン）\n- :ref:`tag-composite_key_checkbox_tag` （複合キーに対応したチェックボックス）\n\n> **重要**: この機能を使用するには、:java:extdoc:`CompositeKeyConvertor <nablarch.common.web.compositekey.CompositeKeyConvertor>` と :java:extdoc:`CompositeKeyArrayConvertor <nablarch.common.web.compositekey.CompositeKeyArrayConvertor>` をコンポーネント定義に追加する必要がある。設定方法は :ref:`nablarch_validation-definition_validator_convertor` を参照。\n\n> **重要**: この機能は :ref:`nablarch_validation` でのみ使用可能。:ref:`bean_validation` は対応していない。\n\n**フォーム**: :java:extdoc:`CompositeKey <nablarch.common.web.compositekey.CompositeKey>` の配列プロパティに `@CompositeKeyType(keySize = N)` アノテーションを指定する。\n\n```java\npublic class OrderItemsForm {\n    public CompositeKey[] orderItems;\n\n    @CompositeKeyType(keySize = 2)\n    public void setOrderItems(CompositeKey[] orderItems) {\n        this.orderItems = orderItems;\n    }\n}\n```\n\n**JSP**: `<n:compositeKeyCheckbox>` タグの属性：\n\n| 属性 | 説明 |\n|---|---|\n| name | フォームのプロパティ名 |\n| valueObject | 複合キーの値を持つオブジェクト |\n| keyNames | valueObjectから複合キー値を取得するプロパティ名（カンマ区切り、この順でCompositeKeyに設定） |\n| namePrefix | リクエストパラメータ展開時のプレフィクス（name属性と異なる値を指定） |\n\n```jsp\n<n:compositeKeyCheckbox\n  name=\"form.orderItems\"\n  label=\"\"\n  valueObject=\"${orderItem}\"\n  keyNames=\"orderId,productId\"\n  namePrefix=\"orderItems\" />\n```",
+    "s2": "フォームのサブミットに使用するカスタムタグ。name属性（フォーム内で一意）とuri属性を指定する。name属性未指定時はカスタムタグが自動生成する。URIの指定方法は :ref:`tag-specify_uri` を参照。\n\n**通常サブミット**:\n- :ref:`tag-submit_tag` （inputタグのボタン）\n- :ref:`tag-button_tag` （buttonタグのボタン）\n- :ref:`tag-submit_link_tag` （リンク）\n\n**別ウィンドウへのサブミット（ポップアップ）**:\n- :ref:`tag-popup_submit_tag` （inputタグのボタン）\n- :ref:`tag-popup_button_tag` （buttonタグのボタン）\n- :ref:`tag-popup_link_tag` （リンク）\n\n**ダウンロード用サブミット**:\n- :ref:`tag-download_submit_tag` （inputタグのボタン）\n- :ref:`tag-download_button_tag` （buttonタグのボタン）\n- :ref:`tag-download_link_tag` （リンク）\n\n詳細: :ref:`tag-submit_popup`、:ref:`tag-submit_download`\n\n```jsp\n<!-- name属性は自動で出力されるので指定しなくてよい。 -->\n<n:submit type=\"submit\" uri=\"login\" value=\"ログイン\" />\n```",
+    "s3": "カスタムタグは `nablarch_submit(event, element)` JavaScript関数をグローバル領域に出力し、ボタン/リンクのonclick属性に設定する。\n\nonclick属性にカスタムJavaScript関数を指定した場合、カスタムタグはサブミット用JavaScript関数を呼び出さない。この場合、アプリケーション側で :ref:`tag-submit_function` を明示的に呼び出す必要がある。\n\n> **重要**: CSP（Content Security Policy）対応時は、onclick属性へのインラインJavaScript記述は `unsafe-inline` または `unsafe-hashes` が必要になりセキュリティレベルが低下する。:ref:`tag-content_security_policy` の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に実装することを推奨する。\n\n**JavaScript関数シグネチャ**:\n\n```javascript\n/**\n * @param event イベントオブジェクト\n * @param element イベント元の要素。未指定時はeventのcurrentTarget/targetプロパティから取得\n * @return 常にfalse（イベント伝搬させない）\n */\nfunction nablarch_submit(event, element)\n```\n\n**確認ダイアログ付きサブミットの実装例**:\n\n```javascript\nfunction popUpConfirmation(event, element) {\n  if (window.confirm(\"登録します。よろしいですか？\")) {\n    // カスタムタグが出力するJavaScript関数を明示的に呼び出す\n    return nablarch_submit(event, element);\n  } else {\n    return false;\n  }\n}\n```\n\n```jsp\n<n:submit type=\"submit\" uri=\"register\" value=\"登録\"\n          onclick=\"return popUpConfirmation(event, this);\" />\n```",
+    "s4": "カスタムタグのサブミット制御はボタン/リンクのonclick属性を前提に動作するため、プルダウン変更などでサブミットする場合はサブミットボタンのクリックイベントを発生させる。JavaScriptの詳細は :ref:`tag-onclick_override` を参照。\n\n> **重要**: CSP対応時は、onchangeイベントハンドラへのインラインJavaScript記述は `unsafe-inline` または `unsafe-hashes` が必要になりセキュリティレベルが低下する。:ref:`tag-content_security_policy` の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に実装することを推奨する。\n\n```jsp\n<!-- onchange属性にて、サブミットしたいボタン要素のclick関数を呼ぶ。 -->\n<n:select name=\"form.plan\"\n          listName=\"plans\"\n          elementLabelProperty=\"planName\"\n          elementValueProperty=\"planId\"\n          onchange=\"window.document.getElementById('register').click(); return false;\" />\n\n<n:submit id=\"register\" type=\"submit\" uri=\"register\" value=\"登録\" />\n```\n\n> **重要**: 上記の実装例ではonchangeイベントハンドラに直接JavaScriptを記載しているが、実際のプロジェクトではオープンソースのJavaScriptライブラリを使うなどして、処理を動的にバインドすることを推奨する。",
+    "s5": "ボタン/リンク毎に異なるパラメータを追加するには :ref:`tag-param_tag` を使用する。\n\n```jsp\n<n:form>\n  <c:forEach var=\"person\" items=\"${persons}\">\n    <tr>\n      <td>\n        <n:submitLink uri=\"/action/person/show\">\n          <n:write name=\"person.personName\" />\n          <!-- パラメータ名に\"personId\"を指定 -->\n          <n:param paramName=\"personId\" name=\"person.personId\" />\n        </n:submitLink>\n      </td>\n    </tr>\n  </c:forEach>\n</n:form>\n```\n\n> **重要**: パラメータを追加するとリクエストのデータ量が増大する。一覧画面での詳細リンクにパラメータを追加する場合は、プライマリキーのみなど必要最小限のパラメータに限定すること。",
+    "s6": ":ref:`permission_check` と :ref:`service_availability` の結果に応じて、サブミット用ボタン/リンク（:ref:`tag_reference_submit`）の表示を切り替える機能。`権限なし` または `サービス提供不可` の場合に表示切り替えを行う。\n\n**表示方法の3パターン**:\n\n| 表示方法 | 動作 |\n|---|---|\n| NODISPLAY（非表示） | タグを出力しない |\n| DISABLED（非活性） | ボタンはdisabled属性有効化、リンクはラベルのみ表示または非活性リンク描画用JSPをインクルード |\n| NORMAL（通常表示） | 通常どおりタグ出力（表示切り替えなし） |\n\n- デフォルトは `NORMAL`\n- :ref:`tag-setting` の :java:extdoc:`displayMethodプロパティ <nablarch.common.web.tag.CustomTagConfig.setDisplayMethod(java.lang.String)>` でデフォルト変更可\n- 非活性リンクのJSPインクルードには :ref:`tag-setting` の :java:extdoc:`submitLinkDisabledJspプロパティ <nablarch.common.web.tag.CustomTagConfig.setSubmitLinkDisabledJsp(java.lang.String)>` を指定\n- 個別変更は `displayMethod` 属性で指定（NODISPLAY / DISABLED / NORMAL）\n\n```jsp\n<!-- NODISPLAY(非表示)、DISABLED(非活性)、NORMAL(通常表示)のいずれかを指定する。 -->\n<n:submit type=\"button\" uri=\"login\" value=\"ログイン\" displayMethod=\"NORMAL\" />\n```\n\n表示制御の判定処理を変更する場合は :ref:`tag-submit_display_control_change` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

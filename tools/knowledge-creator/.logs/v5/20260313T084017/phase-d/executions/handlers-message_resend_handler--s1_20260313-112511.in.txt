@@ -1,0 +1,343 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/mom_messaging/message_resend_handler.rst`
+- Format: `rst`
+
+```
+.. _message_resend_handler:
+
+再送電文制御ハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラでは、同一の電文を繰り返し受信した際の再送制御を行う。
+
+具体的には、同一の電文を繰り返し受信した際に、その電文に対する処理が終わっているかどうか(応答電文が作成されているかどうか)を判断する。
+もし、既に処理が終わっていた場合(応答電文が作成されていた場合)には、業務処理を再度行うのではなく作成済みの応答電文を自動的に送信する。
+
+同一電文かの判定方法は :ref:`message_resend_handler-resent_message` を参照。
+
+.. tip::
+  本ハンドラを適用するメリットは以下のとおり。
+
+  * 既に応答電文が作成済みの場合、業務処理が省略出来るため、システム負荷を低減できる。
+  * データベースへ登録する処理の場合に、業務処理を省略できるため2重取り込みの防止ロジックなどを実装する必要がない。
+
+本ハンドラでは、以下の処理を行う。
+
+* 応答電文の保存処理
+* 再送電文の場合は、保存した応答電文の送信処理
+* 再送電文以外及び保存済み応答電文がない場合は、後続ハンドラへの処理の委譲
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/MessageResendHandler/flow.png
+  :scale: 75
+  
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.messaging.handler.MessageResendHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-messaging</artifactId>
+  </dependency>
+
+制約
+------------------------------
+:ref:`message_reply_handler` よりも後ろに設定すること
+  本ハンドラで作成した応答電文を送信する必要がある。
+  このため、電文を送信するための :ref:`message_reply_handler` よりも後ろに本ハンドラを設定する必要がある。
+
+:ref:`transaction_management_handler` よりも後ろに設定すること
+  本ハンドラでは、応答電文をデータベースに保存する。
+  このため、データベースへのトランザクション制御を実現する :ref:`transaction_management_handler` よりも後ろに本ハンドラを設定する必要がある。
+
+
+応答電文の保存先について
+--------------------------------------------------
+後続ハンドラで作成された応答電文は、データベース上のテーブルに格納する。
+このため、予め応答電文の保存用テーブルを作成しておく必要がある。
+
+応答電文を格納するテーブルの定義は以下の通り。
+デフォルトのテーブル名や物理名の値は、 :java:extdoc:`SentMessageTableSchema <nablarch.fw.messaging.tableschema.SentMessageTableSchema>` を参照。
+
+.. list-table::
+  :header-rows: 1
+  :class: white-space-normal
+  :widths: 30 30 40
+
+  * - カラム名
+    - 制約等
+    - 格納する値
+
+  * - リクエストID
+    - 主キー |br| 文字列型
+    - 要求電文のリクエストID
+
+  * - メッセージID
+    - 主キー |br| 文字列型
+    - 要求電文のメッセージID
+
+      再送電文の場合には、メッセージIDではなく相関メッセージIDを使用する。
+
+      詳細は、 :ref:`message_resend_handler-resent_message` を参照
+
+  * - 宛先キューの論理名
+    - 文字列型
+    - 応答電文を送信するための宛先キューの論理名 |br|
+      (:java:extdoc:`InterSystemMessage#getDestination() <nablarch.fw.messaging.InterSystemMessage.getDestination()>`)
+
+  * - 処理結果コード
+    - 文字列型
+    - 応答電文の処理結果コード |br| 
+      (:java:extdoc:`ResponseMessage#getStatusCode() <nablarch.fw.messaging.ResponseMessage.getStatusCode()>`)
+
+  * - 応答電文
+    - バイナリ型
+    - 応答電文の内容 |br|
+      (:java:extdoc:`ResponseMessage#getBodyBytes() <nablarch.fw.messaging.ResponseMessage.getBodyBytes()>`)
+
+デフォルトのテーブル名やカラム名を変更したい場合には、設定により変更できる。
+詳細は、 :java:extdoc:`SentMessageTableSchema <nablarch.fw.messaging.tableschema.SentMessageTableSchema>` 及び
+:java:extdoc:`sentMessageTableSchemaプロパティ <nablarch.fw.messaging.handler.MessageResendHandler.setSentMessageTableSchema(nablarch.fw.messaging.tableschema.SentMessageTableSchema)>` を参照。
+
+.. _message_resend_handler-resent_message:
+
+同一電文(再送電文)の判定方法
+--------------------------------------------------
+本ハンドラが受信した電文が以下の条件を満たす場合、既に処理済みの要求電文を受信したと判断し、保存した応答電文を処理結果として返却する。
+
+* フレームワーク制御ヘッダの再送要求フラグに値が設定されている
+* 受信した要求電文のリクエストIDとメッセージIDに紐づくデータが、応答電文を保存したテーブルに存在している
+
+フレームワーク制御ヘッダの詳細は、 :ref:`フレームワーク制御ヘッダ <mom_system_messaging-fw_header>` を参照。
+
+.. important::
+
+  相手先システムが要求電文を再送する際には、以下の制約を満たす必要がある。
+  この制約を満たせない場合、本ハンドラを使用できないので、プロジェクト側で再送制御を実現するハンドラを新たに作成する必要がある。
+
+  * 再送電文の相関メッセージIDには、初回送信時の要求電文のメッセージIDを設定すること
+  * フレームワーク制御ヘッダの再送要求フラグに値を設定すること
+
+フレームワーク制御ヘッダの設定
+--------------------------------------------------
+応答電文内のフレームワーク制御ヘッダの定義を変更する場合には、プロジェクトで拡張したフレームワーク制御ヘッダの定義を設定する必要がある。
+設定しない場合は、デフォルトの :java:extdoc:`StandardFwHeaderDefinition <nablarch.fw.messaging.StandardFwHeaderDefinition>` が使用される。
+
+フレームワーク制御ヘッダの詳細は、 :ref:`フレームワーク制御ヘッダ <mom_system_messaging-fw_header>` を参照。
+
+以下に設定例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.messaging.handler.MessageResendHandler">
+    <!-- フレームワーク制御ヘッダの設定 -->
+    <property name="fwHeaderDefinition">
+      <component class="sample.SampleFwHeaderDefinition" />
+    </property>
+  </component> 
+
+.. |br| raw:: html
+
+  <br />
+
+```
+
+## Knowledge File
+
+- ID: `handlers-message_resend_handler--s1`
+
+```json
+{
+  "id": "handlers-message_resend_handler--s1",
+  "title": "再送電文制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/mom_messaging/message_resend_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/handler/MessageResendHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/tableschema/SentMessageTableSchema.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/InterSystemMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/ResponseMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/StandardFwHeaderDefinition.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "MessageResendHandler",
+        "nablarch.fw.messaging.handler.MessageResendHandler",
+        "再送電文制御",
+        "応答電文自動送信",
+        "2重取り込み防止"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-messaging",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "message_reply_handler",
+        "transaction_management_handler",
+        "ハンドラ設定順序",
+        "ハンドラ制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "応答電文の保存先について",
+      "hints": [
+        "SentMessageTableSchema",
+        "nablarch.fw.messaging.tableschema.SentMessageTableSchema",
+        "sentMessageTableSchema",
+        "応答電文保存テーブル",
+        "InterSystemMessage",
+        "ResponseMessage"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "同一電文(再送電文)の判定方法",
+      "hints": [
+        "再送要求フラグ",
+        "相関メッセージID",
+        "フレームワーク制御ヘッダ",
+        "同一電文判定",
+        "再送電文条件"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "フレームワーク制御ヘッダの設定",
+      "hints": [
+        "fwHeaderDefinition",
+        "StandardFwHeaderDefinition",
+        "nablarch.fw.messaging.StandardFwHeaderDefinition",
+        "フレームワーク制御ヘッダ定義カスタマイズ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "再送電文制御ハンドラは、同一の電文を繰り返し受信した際の再送制御を行う。応答電文が既に作成済みの場合、業務処理をスキップして保存済み応答電文を自動送信する。\n\n> **補足**: (1) 既に応答電文が作成済みの場合、業務処理を省略しシステム負荷を低減できる。(2) DB登録処理の場合、業務処理省略により2重取り込み防止ロジックの実装が不要になる。\n\n処理の流れ:\n1. 応答電文の保存処理\n2. 再送電文の場合: 保存した応答電文を送信\n3. 再送電文以外または保存済み応答電文がない場合: 後続ハンドラへ処理を委譲\n\n**クラス名**: `nablarch.fw.messaging.handler.MessageResendHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n```",
+    "s3": "- :ref:`message_reply_handler` よりも後ろに設定すること: 本ハンドラで作成した応答電文を送信するために :ref:`message_reply_handler` が必要なため。\n- :ref:`transaction_management_handler` よりも後ろに設定すること: 本ハンドラはDBに応答電文を保存するため、トランザクション制御を行う :ref:`transaction_management_handler` よりも後ろに設定が必要。",
+    "s4": "後続ハンドラで作成された応答電文はDBテーブルに保存する。デフォルトのテーブル名・カラム名は :java:extdoc:`SentMessageTableSchema<nablarch.fw.messaging.tableschema.SentMessageTableSchema>` を参照。\n\n| カラム名 | 制約等 | 格納する値 |\n|---|---|---|\n| リクエストID | 主キー、文字列型 | 要求電文のリクエストID |\n| メッセージID | 主キー、文字列型 | 要求電文のメッセージID（再送電文の場合は相関メッセージIDを使用。詳細は :ref:`message_resend_handler-resent_message`） |\n| 宛先キューの論理名 | 文字列型 | 応答電文の宛先キュー論理名（:java:extdoc:`InterSystemMessage#getDestination()<nablarch.fw.messaging.InterSystemMessage.getDestination()>`） |\n| 処理結果コード | 文字列型 | :java:extdoc:`ResponseMessage#getStatusCode()<nablarch.fw.messaging.ResponseMessage.getStatusCode()>` |\n| 応答電文 | バイナリ型 | :java:extdoc:`ResponseMessage#getBodyBytes()<nablarch.fw.messaging.ResponseMessage.getBodyBytes()>` |\n\nテーブル名・カラム名の変更は :java:extdoc:`SentMessageTableSchema<nablarch.fw.messaging.tableschema.SentMessageTableSchema>` および :java:extdoc:`sentMessageTableSchemaプロパティ<nablarch.fw.messaging.handler.MessageResendHandler.setSentMessageTableSchema(nablarch.fw.messaging.tableschema.SentMessageTableSchema)>` で設定可能。",
+    "s5": "以下の条件を両方満たす電文を処理済み要求電文（再送電文）と判断し、保存済み応答電文を返却する:\n1. フレームワーク制御ヘッダの再送要求フラグに値が設定されている\n2. 受信した要求電文のリクエストIDとメッセージIDに紐づくデータが応答電文保存テーブルに存在する\n\nフレームワーク制御ヘッダの詳細は :ref:`フレームワーク制御ヘッダ <mom_system_messaging-fw_header>` を参照。\n\n> **重要**: 相手先システムが電文を再送する際は以下の制約を満たすこと。満たせない場合、本ハンドラは使用不可のため、プロジェクト側で再送制御ハンドラを新たに作成すること。\n> - 再送電文の相関メッセージIDに初回送信時の要求電文のメッセージIDを設定すること\n> - フレームワーク制御ヘッダの再送要求フラグに値を設定すること",
+    "s6": "フレームワーク制御ヘッダの定義を変更する場合は `fwHeaderDefinition` プロパティにプロジェクト拡張の定義を設定する。未設定時はデフォルトの :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>` が使用される。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageResendHandler\">\n  <property name=\"fwHeaderDefinition\">\n    <component class=\"sample.SampleFwHeaderDefinition\" />\n  </property>\n</component>\n```\n\nフレームワーク制御ヘッダの詳細は :ref:`フレームワーク制御ヘッダ <mom_system_messaging-fw_header>` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

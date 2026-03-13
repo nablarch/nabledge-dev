@@ -1,0 +1,363 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/releases/nablarch5u7-releasenote.xlsx`
+- Format: `xlsx`
+
+```
+## 5u7
+
+| ■Nablarch 5u7 リリースノート |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5u6からの変更点を記載しています。 |  |  |  |  |  |  | ※1 バージョンアップする手順は、本書「バージョンアップ手順」シートを参照ください。 |  | ※2 変更点により、Nablarchの動作に変更がある場合に「あり」とします。
+　　　Nablarchバージョンアップ時の影響確認は、「あり」の変更点のみ確認してください。 |  |  | ※3 チケット番号がないものはNablarch開発チーム内部検知したものです。 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| コンテンツ |  | No. | 分類 | リリース
+区分 | タイトル | 概要 | 修正後のバージョン（※1） | 不具合の起因バージョン | アプリケーション
+への影響（※2） | アプリケーションへの影響内容と対処 | 参照先 | FBシステム
+チケット番号（※3） | GitHub issue |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| アプリケーションフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 1 | ウェブアプリケーション | 不具合 | ResourceLocatorで発生する可能性のあるStackOverflowErrorへの対応 | ResourceLocatorに対して長いパスを設定した場合、StackOverflowErrorが発生する可能性がありました。このため、複雑な正規表現を使用するのをやめ、長いパス指定時でもStackOverflowErrorが発生しないように対応しました。 | nablarch-fw-web 1.2.3 | 1.0.0 | あり | 複雑な正規表現を削除したため、幾つかの機能を削除(仕様変更)しています。尚、これらの機能はNablarch内では使用していない機能となります。
+
+不具合原因となった複雑な正規表現を持つ、以下のpublicフィールドを削除しました。
+* SYNTAX
+
+また、上記正規表現を使用していた以下のメソッドを削除しました。
+* isValidPath
+
+削除されたSYNTAX及びisValidを使用している場合には、旧バージョンのソースコードから実装をプロジェクト側に移植するなどして対応してください。
+
+ | - | 14604 | nablarch-fw-web/issues/2
+nablarch-fw-web/issues/13 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 2 | ログ出力 | 不具合 | プリミティブ配列を値に持つMapをログにダンプできるように変更 | プリミティブ配列を値に持つMapをLogUtilを使ってダンプ(ログ出力)すると、ClassCastExceptionが発生する問題がありました。
+このため、プリミティブ配列を持つMapの場合でも、ログに出力できるように修正しました。
+
+ | nabalrch-core 1.2.3 | 1.0.0 | なし | - | - | 14625 | nablarch-core/issues/3 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 3 | JSPカスタムタグ | 不具合 | 複数の値を出力するタグでプリミティブ配列を扱えるように修正 | 複数の値を出力するタグで、対象の値がプリミティブ配列として保持されている場合に、ClassCastExceptionが発生する問題がありました。
+このため、プリミティブ配列の場合でも、値が出力されるよう修正しました。
+
+ | nablarch-fw-web-tag 1.0.4 | 1.0.0 | なし | - | - | - | nablarch-fw-web-tag/issues/5 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 4 | JSPカスタムタグ | 不具合 | n:textareaで表示するデータの先頭改行が削除されないように修正 | 先頭が改行文字のデータをn:textareaタグで表示すると、先頭の改行文字が削除されてブラウザで表示される問題がありました。
+このため、ブラウザで表示した際に先頭の改行が削除されずにそのまま表示されるよう修正しました。 | nablarch-fw-web-tag 1.0.4 | 1.0.0 | あり | 「概要」を参照。
+
+n:textareaタグで先頭の改行が削除されることを前提に、アプリケーションで何らかの処理を入れている場合は、その処理を削除する必要があります。
+
+ | - | 14618 | nablarch-fw-web-tag/issues/1 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 5 | 汎用データフォーマット | 不具合 | 配列要素の孫要素を出力できない問題に対応 | 「element(配列)->child->grandchild」のように、配列要素からみて孫要素があるXMLを出力すると、子要素(child)が見つからないエラーが発生していました。このため、修正を行いこのような構造のXMLでも出力出来るようにしました。
+
+★出力時に問題が発生するXMLの例
+<root>
+  <element>
+     <child><grandchild /></child>
+  <element>
+  <element>
+     <child><grandchild /></child>
+  <element>
+</root>
+
+ | nablarch-core-dataformat 1.0.2 | 1.0.0 | なし | - | - | 14638 | nablarch-core-dataformat/issues/11 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 6 | 汎用データフォーマット | 不具合 | 属性を持つ要素にコンテンツを定義できない問題に対応 | XMLの入出力時、属性を持つ要素に対しコンテンツを定義できない問題に対応しました。
+
+フォーマット定義ファイルにて、コンテンツを表すフィールドのフィールド名を"body"とすることで属性を持つ要素にコンテンツを定義することができます。
+
+★フォーマット定義ファイルの例
+[root]
+1 child OB
+[child]
+1 @attr X
+2 body X
+
+★上記フォーマット定義に対応するXMLの例
+<root>
+  <child attr="value1">value2</child>
+</root>
+
+ | nablarch-core-dataformat 1.0.2 | 1.0.0 | あり | 「概要」を参照。
+
+以下の様な、要素名が"body"となる要素を持つXMLの入出力を想定している場合に対処が必要になります。
+
+★対処が必要となるXMLの例
+<root>
+  <child>
+    <body>value</body>
+  </child>
+</root>
+
+変更方法は「参照先」を参照。 | Nablarchアプリケーションフレームワーク:Nablarchが提供するライブラリ:様々なフォーマットのデータへのアクセス:汎用データフォーマット:XMLで属性を持つ要素にコンテンツを定義する | 14601 | nablarch-core-dataformat/issues/6
+nablarch-core-dataformat/issues/8 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 7 | 汎用ユーティリティ | 不具合 | BeanUtilでnullの要素を１つだけ持つプロパティの値をコピーできない不具合に対応 | BeanUtilを使用してJava Beanにプロパティの値をコピーした際に、下記の条件に該当する値がコピーできない問題がありました。
+このため、下記の条件に該当する場合には、コピー先にはnullをコピーするよう対応を行いました。
+
+【コピーできない条件】
+・コピー元の型が配列型
+・コピー先が非配列型
+・コピー元の配列の値が、サイズ1でnull
+
+ | nablarch-core-beans 1.1.3 | 1.0.0 | なし | 「概要」に記載した条件に合致する使い方をしている場合は、影響を受けます。
+
+また、今回の不具合は、リクエストパラメータ（String型配列）からFormへのコピーを想定した実装が起因となっています。
+
+そのため、BeanUtilを使用しており、アプリケーションでリクエストパラメータの値をnullに変更している処理がある場合は影響を受けます。影響を受ける処理がある場合は処理を見直してください。
+
+
+ | - | - | nablarch-core-beans/issues/13 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 8 | インターセプタ | 変更 | Interceptor.Implを公開APIに変更 | Inteceptor.Implは非公開APIとなっていましたが、アプリケーションでInterceptorを作成する際に継承する必要があるため、公開APIに変更しました。
+
+ | nabalrch-core 1.2.3 | - | なし | - | - | 14610 | nablarch-core/issues/5 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 9 | Mavenプロファイル | 不具合 | nablarch-bomに定義されているnablarch-wmq-adaptorのバージョンが誤っていたので修正
+
+ | nablarch-bomに定義されているnablarch-wmq-adaptorのバージョンが誤っていたので修正しました。
+
+修正前：1.0.0
+修正後：1.0.1
+
+ | nablarch-profiles 5u7 | 5u6 | なし | - | - | 14627 | nablarch-profiles/issues/1 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 10 | フレームワーク | 不具合 | モジュールのバイトコードをJava6に準拠するように修正 | 以下のモジュールのJavaのバイトコードがJava7に準拠していたので、Java6に準拠するように修正しました。
+
+nablarch-core-validation-ee
+nablarch-etl
+nablarch-fw-batch-ee
+nablarch-fw-jaxrs
+nablarch-jackson-adaptor
+nablarch-jersey-adaptor
+nablarch-resteasy-adaptor
+ | nablarch-core-validation-ee 1.0.4
+nablarch-etl 1.0.2
+nablarch-fw-batch-ee 1.0.2
+nablarch-fw-jaxrs 1.0.2
+nablarch-jackson-adaptor 1.0.2
+nablarch-jersey-adaptor 1.0.2
+nablarch-resteasy-adaptor 1.0.2 | 1.0.3
+1.0.1
+1.0.1
+1.0.1
+1.0.1
+1.0.1
+1.0.1 | あり | 「概要」を参照。
+
+アプリケーションへの対処は必要ありません。 | - | - | nablarch-core-validation-ee/issues/1
+nablarch-etl/issues/3
+nablarch-fw-batch-ee/issues/2
+nablarch-fw-jaxrs/issues/4
+nablarch-jaxrs-adaptor/issues/1 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | 解説書 | 11 | 汎用データフォーマット | 不具合 | XML、JSONで使用可能なデータタイプ名が誤っていたので修正
+ | 以下の通りXML及びJSONで使用可能なデータタイプの記載を修正しています。
+
+誤: タイプ名 -> XS9 
+正: タイプ名 -> SX9
+
+ | - | 5u6 | なし | - | - | 14624 | nablarch-document/issues/7 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 12 | ファイルパス管理 | 不具合 | 空白を含むパスを使用できない仕様を追記
+ | 空白を含むパスを使用できない仕様を追記しました。 | - | 5u6 | なし | - | Nablarchアプリケーションフレームワーク:Nablarchが提供するライブラリ:ファイルパス管理:ディレクトリと拡張子を設定する
+→ポイントに追記しました。
+
+ | 13591 | nablarch-document/issues/5 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| テスティングフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 13 | テスティングフレームワーク | 不具合 | アクションの返すパスのアサート方法を変更 | Webアプリケーションのアクションが返すHttpResponseのパスのアサート方法を変更しました。
+
+変更前:http(https)を示すパスの場合、ホスト名を除いた部分をアサートしていました。
+変更後:ホスト名を含む全体をアサートするように変更しました。 | nablarch-testing 1.0.7 | 1.0.0 | あり | 期待値のパスだけではなくホストを含む完全なパスに変更してください。
+
+例：
+★アクション
+return new HttpResponse("https://calendar.google.com/calendar");
+
+★期待値
+上記アクションの実装の場合、以下のように完全なパスを期待値に設定します。
+https://calendar.google.com/calendar
+
+ | - | - | nablarch-testing/issues/4 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+
+## バージョンアップ手順
+
+| ■バージョンアップ手順 |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+| 本リリースの適用手順は、次の通りです。 |  |  |  |  |  |
+|  | No | 適用手順 |  |  |  |
+|  | 1 | pom.xmlの<dependencyManagement>セクションに指定されているnablarch-bomのバージョンを5u7に書き換える |  |  |  |
+|  | 2 | mavenのビルドを再実行する |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+
+```
+
+## Knowledge File
+
+- ID: `releases-nablarch5u7-releasenote`
+
+```json
+{
+  "id": "releases-nablarch5u7-releasenote",
+  "title": "Nablarch 5u7 リリースノート",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://fintan.jp/page/252/"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アプリケーションフレームワーク 変更点",
+      "hints": [
+        "5u7",
+        "リリースノート",
+        "ResourceLocator",
+        "StackOverflowError",
+        "SYNTAX",
+        "isValidPath",
+        "LogUtil",
+        "ClassCastException",
+        "プリミティブ配列",
+        "n:textarea",
+        "先頭改行",
+        "汎用データフォーマット",
+        "bodyフィールド",
+        "BeanUtil",
+        "null配列コピー",
+        "Interceptor.Impl",
+        "バイトコード",
+        "Java6",
+        "nablarch-fw-web",
+        "nablarch-fw-web-tag",
+        "nablarch-core-dataformat",
+        "nablarch-core-beans",
+        "アプリケーションへの影響",
+        "ウェブアプリケーション",
+        "ログ出力",
+        "JSPカスタムタグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テスティングフレームワーク 変更点",
+      "hints": [
+        "5u7",
+        "テスティングフレームワーク",
+        "HttpResponse",
+        "パスアサート",
+        "ホスト名",
+        "nablarch-testing",
+        "アプリケーションへの影響",
+        "期待値"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "バージョンアップ手順",
+      "hints": [
+        "5u7",
+        "バージョンアップ",
+        "pom.xml",
+        "nablarch-bom",
+        "dependencyManagement",
+        "Maven"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Nablarch 5u7 アプリケーションフレームワーク 変更点\n\n5u6からの変更点。アプリケーションへの影響が「あり」の項目は個別に対処が必要。\n\n### 1. ResourceLocatorで発生する可能性のあるStackOverflowErrorへの対応\n\n- **分類**: ウェブアプリケーション / 不具合\n- **修正モジュール**: nablarch-fw-web 1.2.3（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: あり\n\n> **重要**: 複雑な正規表現を削除したため以下が削除（仕様変更）された。\n> - publicフィールド `SYNTAX` を削除\n> - メソッド `isValidPath` を削除\n>\n> これらを使用している場合は、旧バージョンのソースコードから実装をプロジェクト側に移植すること。\n\n### 2. プリミティブ配列を値に持つMapをログにダンプできるように変更\n\n- **分類**: ログ出力 / 不具合\n- **修正モジュール**: nablarch-core 1.2.3（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: なし\n\nLogUtilを使ってプリミティブ配列を値に持つMapをダンプすると`ClassCastException`が発生する問題を修正。\n\n### 3. 複数の値を出力するタグでプリミティブ配列を扱えるように修正\n\n- **分類**: JSPカスタムタグ / 不具合\n- **修正モジュール**: nablarch-fw-web-tag 1.0.4（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: なし\n\n複数値出力タグで対象がプリミティブ配列として保持されている場合に`ClassCastException`が発生する問題を修正。\n\n### 4. n:textareaで表示するデータの先頭改行が削除されないように修正\n\n- **分類**: JSPカスタムタグ / 不具合\n- **修正モジュール**: nablarch-fw-web-tag 1.0.4（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: あり\n\n> **重要**: n:textareaタグで先頭の改行が削除されることを前提にアプリケーションで何らかの処理を入れている場合は、その処理を削除する必要がある。\n\n### 5. 配列要素の孫要素を出力できない問題に対応\n\n- **分類**: 汎用データフォーマット / 不具合\n- **修正モジュール**: nablarch-core-dataformat 1.0.2（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: なし\n\n`element(配列)->child->grandchild` のように配列要素から孫要素があるXMLを出力すると子要素が見つからないエラーが発生していた問題を修正。\n\n### 6. 属性を持つ要素にコンテンツを定義できない問題に対応\n\n- **分類**: 汎用データフォーマット / 不具合\n- **修正モジュール**: nablarch-core-dataformat 1.0.2（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: あり\n\nフォーマット定義ファイルでコンテンツを表すフィールドのフィールド名を `body` とすることで属性を持つ要素にコンテンツを定義できるようになった。\n\n> **重要**: 要素名が `body` となる要素を持つXMLの入出力を想定している場合に対処が必要。例：\n> ```xml\n> <root>\n>   <child>\n>     <body>value</body>\n>   </child>\n> </root>\n> ```\n> このようなXMLを扱う場合は参照先ドキュメント（汎用データフォーマット: XMLで属性を持つ要素にコンテンツを定義する）を参照して変更すること。\n\nフォーマット定義ファイル例:\n```\n[root]\n1 child OB\n[child]\n1 @attr X\n2 body X\n```\n\n対応するXML例:\n```xml\n<root>\n  <child attr=\"value1\">value2</child>\n</root>\n```\n\n### 7. BeanUtilでnullの要素を１つだけ持つプロパティの値をコピーできない不具合に対応\n\n- **分類**: 汎用ユーティリティ / 不具合\n- **修正モジュール**: nablarch-core-beans 1.1.3（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: なし（条件によっては影響あり）\n\n以下の条件に該当する場合にコピーできない問題を修正（コピー先にnullをコピーするよう対応）:\n- コピー元の型が配列型\n- コピー先が非配列型\n- コピー元の配列の値がサイズ1でnull\n\n> **注意**: BeanUtilを使用しており、アプリケーションでリクエストパラメータの値をnullに変更している処理がある場合は影響を受ける可能性がある。影響を受ける処理がある場合は処理を見直すこと。\n\n### 8. Interceptor.Implを公開APIに変更\n\n- **分類**: インターセプタ / 変更\n- **修正モジュール**: nablarch-core 1.2.3\n- **アプリケーションへの影響**: なし\n\n`Interceptor.Impl`は非公開APIだったが、アプリケーションでInterceptorを作成する際に継承が必要なため公開APIに変更した。\n\n### 9. nablarch-bomに定義されているnablarch-wmq-adaptorのバージョンが誤っていたので修正\n\n- **分類**: Mavenプロファイル / 不具合\n- **修正モジュール**: nablarch-profiles 5u7（起因バージョン: 5u6）\n- **アプリケーションへの影響**: なし\n\n修正前: nablarch-wmq-adaptor 1.0.0 → 修正後: 1.0.1\n\n### 10. モジュールのバイトコードをJava6に準拠するように修正\n\n- **分類**: フレームワーク / 不具合\n- **アプリケーションへの影響**: あり（アプリケーション側の対処は不要）\n\n以下モジュールのバイトコードがJava7準拠だったためJava6準拠に修正:\n\n| モジュール | 修正後バージョン | 起因バージョン |\n|---|---|---|\n| nablarch-core-validation-ee | 1.0.4 | 1.0.3 |\n| nablarch-etl | 1.0.2 | 1.0.1 |\n| nablarch-fw-batch-ee | 1.0.2 | 1.0.1 |\n| nablarch-fw-jaxrs | 1.0.2 | 1.0.1 |\n| nablarch-jackson-adaptor | 1.0.2 | 1.0.1 |\n| nablarch-jersey-adaptor | 1.0.2 | 1.0.1 |\n| nablarch-resteasy-adaptor | 1.0.2 | 1.0.1 |\n\n### 11. XML、JSONで使用可能なデータタイプ名が誤っていたので修正（解説書）\n\n- **分類**: 汎用データフォーマット / 不具合（解説書）\n- **起因バージョン**: 5u6\n- **アプリケーションへの影響**: なし\n\nXML及びJSONで使用可能なデータタイプ名の記載を修正: 誤 `XS9` → 正 `SX9`\n\n### 12. 空白を含むパスを使用できない仕様を追記（解説書）\n\n- **分類**: ファイルパス管理 / 不具合（解説書）\n- **起因バージョン**: 5u6\n- **アプリケーションへの影響**: なし\n\n空白を含むパスを使用できない仕様をドキュメントに追記（「ディレクトリと拡張子を設定する」のポイントに追記）。",
+    "s2": "## Nablarch 5u7 テスティングフレームワーク 変更点\n\n### 13. アクションの返すパスのアサート方法を変更\n\n- **分類**: テスティングフレームワーク / 不具合\n- **修正モジュール**: nablarch-testing 1.0.7（起因バージョン: 1.0.0）\n- **アプリケーションへの影響**: あり\n\nWebアプリケーションのアクションが返す`HttpResponse`のパスアサート方法を変更:\n- **変更前**: http(https)を示すパスの場合、ホスト名を除いた部分をアサート\n- **変更後**: ホスト名を含む全体をアサート\n\n> **重要**: 期待値のパスだけではなくホストを含む完全なパスに変更すること。\n>\n> 例: アクションが `return new HttpResponse(\"https://calendar.google.com/calendar\");` を返す場合、期待値は `https://calendar.google.com/calendar` と完全なパスで設定する。",
+    "s3": "## Nablarch 5u7 バージョンアップ手順\n\n1. `pom.xml`の`<dependencyManagement>`セクションに指定されている`nablarch-bom`のバージョンを`5u7`に書き換える\n2. Mavenのビルドを再実行する"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,43 @@
+{
+  "file_id": "db-messaging-multiple_process",
+  "timestamp": "20260313-100942",
+  "subtype": "success",
+  "cc_metrics": {
+    "duration_ms": 12192,
+    "duration_api_ms": 12136,
+    "num_turns": 2,
+    "total_cost_usd": 0.09734084999999999,
+    "usage": {
+      "input_tokens": 3,
+      "cache_creation_input_tokens": 16355,
+      "cache_read_input_tokens": 50152,
+      "output_tokens": 1397,
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 16355
+      },
+      "inference_geo": "",
+      "iterations": [],
+      "speed": "standard"
+    }
+  },
+  "stop_reason": "end_turn",
+  "tool_calls": [
+    {
+      "tool_name": "StructuredOutput",
+      "input_summary": {
+        "id": "db-messaging-multiple_process",
+        "title": "マルチプロセス化",
+        "no_knowledge_content": "False",
+        "official_doc_urls": "['https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/db/feature_details/multiple_process.html']",
+        "index": "[{'id': 's1', 'title': 'マルチプロセス化の実装手順', 'hints': ['マルチプロセス化', '2重取り込み防止', '悲観ロック', 'PROCESS_ID', 'DatabaseRecordReader', 'DatabaseRecordListener', 'DatabaseTableQueueReader', 'SimpleDbTransactionManag...",
+        "sections": "{'s1': 'マルチプロセス化の実装手順（同一DBキューのメッセージングを複数プロセスで起動する場合）:\\n\\n> **警告**: 対応なしで同一データベースをキューとしたメッセージングを複数起動すると、複数プロセスが同一データを処理し2重取り込みが発生する。\\n\\n1. **悲観ロック用カラムを処理対象テーブルに追加する**\\n\\n   通常のステータスカラムのみでは複数プロセスが同一データを..."
+      }
+    }
+  ]
+}

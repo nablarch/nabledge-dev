@@ -1,0 +1,55 @@
+{
+  "file_id": "releases-nablarch5u18-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source No.21 — JSR352に準拠したバッチプロジェクト / Guavaのバージョンアップ",
+      "description": "Guava脆弱性対応（CVE-2018-10237）が完全に欠落している。nablarch-batch-ee 5u18でGuavaを脆弱性対応済みバージョンに変更したこと、Nablarchでは脆弱性が検知された機能を使用していないためプロジェクトで個別に該当機能を使用していなければ影響はない旨の情報が含まれていない。",
+      "source_evidence": "No.21: JSR352に準拠したバッチプロジェクトが依存するモジュールのGuavaに脆弱性が検知されたため、脆弱性対応済みのバージョンに変更しました。CVE-2018-10237 / nablarch-batch-ee 5u18"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source No.23 — 全てのブランクプロジェクト / Hibernate Validatorのバージョンアップ",
+      "description": "Hibernate Validator脆弱性対応（CVE-2017-7536）が完全に欠落している。全ブランクプロジェクト（nablarch-web, nablarch-jaxrs, nablarch-batch, nablarch-batch-ee, nablarch-container-web, nablarch-container-jaxrs 5u18）でHibernate Validatorを脆弱性対応済みバージョンに変更した情報がない。",
+      "source_evidence": "No.23: 全てのブランクプロジェクトが依存するモジュールのHibernate Validatorに脆弱性が検知されたため、脆弱性対応済みのバージョンに変更しました。CVE-2017-7536"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source No.30 — UI開発基盤 / jQueryのバージョンアップ",
+      "description": "UI開発基盤のjQuery脆弱性対応（jQuery 3.5.0 Released）が完全に欠落している。nablarch-plugins-bundle 1.0.5でjQueryを脆弱性対応済みバージョンに変更したこと、Nablarchでは脆弱性が検知された機能を使用していないため個別に使用していなければ影響はない旨の情報がない。",
+      "source_evidence": "No.30: UI開発基盤が依存するモジュールのjQueryに脆弱性が検知されたため、脆弱性対応済みのバージョンに変更しました。jQuery 3.5.0 Released! / nablarch-plugins-bundle 1.0.5"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source No.2 — ログ出力 / BasicCommitLogger#initializeメソッドをsynchronizedに変更",
+      "description": "BasicCommitLogger#initializeメソッドのsynchronized化変更が完全に欠落している。nablarch-core-applog 1.1.1での変更で、セキュリティチェック等での指摘対応のため対称性を持たせたこと、マルチスレッドバッチでもinitializeは複数スレッドから呼ばれないため既存システムへの影響はないことが記載されていない。",
+      "source_evidence": "No.2: BasicCommitLogger#terminateメソッドはsynchronizedになっていますが、initializeメソッドはsynchronizedにしていませんでした。対称性がないためにセキュリティチェック等で指摘を受ける可能性があるため、initializeメソッドをsynchronizedに変更しました。nablarch-core-applog 1.1.1"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source No.15 — データリーダ / DataReader#readメソッドのJavadocを変更",
+      "description": "DataReader#readメソッドが入力データが存在しない場合にnullを返す仕様をJavadocに追記した変更が欠落している。nablarch-core 1.5.1。APIの仕様（null返却）に関する情報。",
+      "source_evidence": "No.15: DataReader#readメソッドは入力データが存在しない場合にnullを返す仕様です。この仕様をDataReader#readメソッドのJavadocに追記しました。nablarch-core 1.5.1"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source No.20 — ブランクプロジェクト / Eclipseで開いた場合に発生するエラーの対応方法を追記",
+      "description": "ブランクプロジェクトをEclipseで開いた際のMavenライフサイクルエラーの対応方法（プラグインインストールで解消）がドキュメントに追記された変更が欠落している。開発環境セットアップに関する実用的な情報。nablarch-document 5u18。",
+      "source_evidence": "No.20: 作成したブランクプロジェクトをEclipseで開くとMavenのライフサイクルに関するエラーが出力されることがあります。このエラーが発生した場合はEclipseがプラグインのインストールを提案するので、提案に従いプラグインをインストールすることで解消される旨を追記しました。nablarch-document 5u18"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "知識ファイルのコンテンツで言及されているモジュール名が hints に含まれていない: nablarch-core-dataformat（No.1 バッファサイズ設定で使用）、nablarch-core-beans（No.19 BeanUtilで使用）、nablarch-mail-sender-velocity-adaptor（No.24 E-mailアダプタで使用）。既存の hints には他のモジュール名が含まれており、これらも同様に追加すべき。",
+      "source_evidence": "No.1: nablarch-core-dataformat 1.3.0 / No.19: nablarch-core-beans 1.4.1 / No.24: nablarch-mail-sender-velocity-adaptor 1.0.1"
+    }
+  ]
+}

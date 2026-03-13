@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-send_sync-03_DealUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — 要求電文のログ出力",
+      "description": "Log output examples (concrete code blocks showing actual log message format) are missing. The source contains two code-block samples — one for Map format and one for CSV format — that show the logger name prefix (MESSAGING_SEND_MAP / MESSAGING_SEND_CSV), the request ID notation, and the message body structure. These examples help users verify that logging is working correctly and understand the expected output format.",
+      "source_evidence": "Source section '要求電文のログ出力' includes:\n```\n2011-10-26 13:16:10.958 MESSAGING_SEND_MAP request id=[RM11AD0101]. following message has been sent:\n  message fw header = {requestId=RM11AD0101, ...}\n  message body      = {authors=test3, ...}\n```\nand the corresponding CSV format example. Neither appears in the knowledge file."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The single h2 section 'モックアップクラスを使用した取引単体テストの実施方法' is large (well over 2000 chars of plain text) and contains eight distinct h3 subsections (Excelファイルの書き方, 電文のフォーマットおよびデータの記載方法, Excelファイルの再読み込み, 障害系のテスト, 要求電文のログ出力, フレームワークで使用するクラスの設定, and h4 sub-items beneath it), yet all content is collapsed into a single knowledge section s2 without any further splits.",
+      "source_evidence": "Source has h2 '----' section containing h3 '~~~~' subsections: Excelファイルの書き方, 電文のフォーマットおよびデータの記載方法, Excelファイルの再読み込み, 障害系のテスト, 要求電文のログ出力, フレームワークで使用するクラスの設定."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "Two PascalCase class names referenced in the log.properties configuration section are missing from s2 hints: `FileLogWriter` (nablarch.core.log.basic.FileLogWriter) and `BasicLogFormatter` (nablarch.core.log.basic.BasicLogFormatter).",
+      "source_evidence": "Source log.properties config block:\n`writer.MESSAGING_CSV.className=nablarch.core.log.basic.FileLogWriter`\n`writer.MESSAGING_CSV.formatter.className=nablarch.core.log.basic.BasicLogFormatter`"
+    }
+  ]
+}

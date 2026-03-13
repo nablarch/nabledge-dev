@@ -1,0 +1,495 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/batch/jsr352/getting_started/chunk/index.rst`
+- Format: `rst`
+
+```
+.. _`getting_started_chunk`:
+
+データを導出するバッチの作成(Chunkステップ)
+===============================================================
+Exampleアプリケーションを元に、既存データから計算を行い新たにデータを導出する :ref:`Chunkステップ<jsr352-batch_type_chunk>` 方式のバッチを解説する。
+
+作成する機能の概要
+  .. image:: ../images/chunk/overview.png
+
+動作確認手順
+  1. 登録対象テーブル(賞与テーブル)のデータを削除
+
+     H2のコンソールから下記SQLを実行し、賞与テーブルのデータを削除する。
+
+     .. code-block:: sql
+
+       TRUNCATE TABLE BONUS;
+
+  2. 賞与計算バッチを実行
+
+     コマンドプロンプトから賞与計算バッチを実行する。
+
+    .. code-block:: bash
+
+      $cd {nablarch-example-batch-eeシステムリポジトリ}
+      $mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
+          -Dexec.args=bonus-calculate
+
+  5. バッチ実行後の状態の確認
+
+    H2のコンソールから下記SQLを実行し、賞与情報が登録されたことを確認する。
+
+    .. code-block:: sql
+
+        SELECT * FROM BONUS;
+
+データを導出する
+-------------------
+既存データから新たにデータを導出するバッチの実装方法を以下の順に説明する。
+
+#. :ref:`getting_started_chunk-read`
+#. :ref:`getting_started_chunk-business_logic`
+#. :ref:`getting_started_chunk-persistence`
+#. :ref:`getting_started_chunk-job`
+
+処理フローについては、 :ref:`Chunkステップのバッチの処理フロー<jsr352-batch_flow_chunk>` を参照。
+責務配置については :ref:`Chunkステップの責務配置<jsr352-chunk_design>` を参照。
+
+バッチ処理は、 |jsr352| で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
+リスナーの詳細は :ref:`バッチアプリケーションで使用するリスナー<jsr352-listener>` 及び :ref:`リスナーの指定方法<jsr352-listener>` を参照。
+
+.. _`getting_started_chunk-read`:
+
+入力データソースからデータを読み込む
++++++++++++++++++++++++++++++++++++++
+計算に必要なデータを取得する処理を実装する。
+
+#. :ref:`フォームの作成<getting_started_chunk-form>`
+#. :ref:`ItemReaderの作成<getting_started_chunk-reader>`
+
+.. _`getting_started_chunk-form`:
+
+フォームの作成
+  Chunkステップでは、 :java:extdoc:`ItemReader<javax.batch.api.chunk.ItemReader>` と
+  :java:extdoc:`ItemProcessor<javax.batch.api.chunk.ItemProcessor>` とのデータ連携にフォームを使用する。
+
+  EmployeeForm.java
+    .. code-block:: java
+
+      public class EmployeeForm {
+
+          //一部のみ抜粋
+
+          /** 社員ID */
+          private Long employeeId;
+
+          /**
+           * 社員IDを返します。
+           *
+           * @return 社員ID
+           */
+          public Long getEmployeeId() {
+              return employeeId;
+          }
+
+          /**
+           * 社員IDを設定します。
+           *
+           * @param employeeId 社員ID
+           */
+          public void setEmployeeId(Long employeeId) {
+              this.employeeId = employeeId;
+          }
+      }
+
+.. _`getting_started_chunk-reader`:
+
+ItemReaderの作成
+  :java:extdoc:`AbstractItemReader<javax.batch.api.chunk.AbstractItemReader>` を継承し、データの読み込みを行う。
+
+    ==================================================================   =============================================================================================
+    インタフェース名                                                       責務
+    ==================================================================   =============================================================================================
+    :java:extdoc:`ItemReader<javax.batch.api.chunk.ItemReader>`          データの読み込みを行う。
+
+                                                                         空実装を提供する :java:extdoc:`AbstractItemReader<javax.batch.api.chunk.AbstractItemReader>` を継承する。
+
+                                                                           * `ItemReader#open`
+                                                                           * `ItemReader#readItem`
+                                                                           * `ItemReader#close`
+    ==================================================================   =============================================================================================
+
+  EmployeeSearchReader.java
+    .. code-block:: java
+
+      @Dependent
+      @Named
+      public class EmployeeSearchReader extends AbstractItemReader {
+
+          /** 社員情報のリスト */
+          private DeferredEntityList<EmployeeForm> list;
+
+          /** 社員情報を保持するイテレータ */
+          private Iterator<EmployeeForm> iterator;
+
+          @Override
+          public void open(Serializable checkpoint) throws Exception {
+              list = (DeferredEntityList<EmployeeForm>) UniversalDao.defer()
+                      .findAllBySqlFile(EmployeeForm.class, "SELECT_EMPLOYEE");
+              iterator = list.iterator();
+          }
+
+          @Override
+          public Object readItem() {
+              if (iterator.hasNext()) {
+                  return iterator.next();
+              }
+              return null;
+          }
+
+          @Override
+          public void close() throws Exception {
+              list.close();
+          }
+      }
+
+  EmployeeForm.sql
+    .. code-block:: java
+
+      SELECT_EMPLOYEE=
+      SELECT
+          EMPLOYEE.EMPLOYEE_ID,
+          EMPLOYEE.FULL_NAME,
+          EMPLOYEE.BASIC_SALARY,
+          EMPLOYEE.GRADE_CODE,
+          GRADE.BONUS_MAGNIFICATION,
+          GRADE.FIXED_BONUS
+      FROM
+          EMPLOYEE
+      INNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE
+
+  この実装のポイント
+    * :java:extdoc:`Named<javax.inject.Named>` と :java:extdoc:`Dependent<javax.enterprise.context.Dependent>` をクラスに付与する。
+      詳細は、 :ref:`BatchletのNamedとDependentの説明 <getting_started_batchlet-cdi>` を参照。
+    * `open` メソッドで処理対象のデータを読み込む。
+    * SQLファイルの配置場所や作成方法などは、 :ref:`universal_dao-sql_file` を参照。
+    * 大量のデータを読み込む場合は、メモリの逼迫を防ぐために :java:extdoc:`UniversalDao#defer <nablarch.common.dao.UniversalDao.defer()>` を使用して
+      検索結果を :ref:`遅延ロード<universal_dao-lazy_load>` する。
+    * `readItem` メソッドで読み込んだデータから一行分のデータを返却する。
+      このメソッドで返却したオブジェクトが、後続する :java:extdoc:`ItemProcessor<javax.batch.api.chunk.ItemProcessor>` の `processItem` メソッドの引数として与えられる。
+
+.. _`getting_started_chunk-business_logic`:
+
+業務ロジックを実行する
+++++++++++++++++++++++
+賞与の計算等の業務ロジックを実装する。
+
+ItemProcessorの作成
+  :java:extdoc:`ItemProcessor<javax.batch.api.chunk.ItemProcessor>` を実装し、
+  業務ロジックを行う(永続化処理は :java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>` の責務であるため実施しない)。
+
+    ==================================================================   =============================================================================================
+    インタフェース名                                                       責務
+    ==================================================================   =============================================================================================
+    :java:extdoc:`ItemProcessor<javax.batch.api.chunk.ItemProcessor>`    一行分のデータに対する業務処理を行う。
+
+                                                                           * `ItemProcessor#processItem`
+    ==================================================================   =============================================================================================
+
+  BonusCalculateProcessor.java
+    .. code-block:: java
+
+      @Dependent
+      @Named
+      public class BonusCalculateProcessor implements ItemProcessor {
+
+          @Override
+          public Object processItem(Object item) {
+
+              EmployeeForm form = (EmployeeForm) item;
+              Bonus bonus = new Bonus();
+              bonus.setEmployeeId(form.getEmployeeId());
+              bonus.setPayments(calculateBonus(form));
+
+              return bonus;
+          }
+
+          /**
+           * 社員情報をもとに賞与計算を行う。
+           *
+           * @param form 社員情報Form
+           * @return 賞与
+           */
+          private static Long calculateBonus(EmployeeForm form) {
+              if (form.getFixedBonus() == null) {
+                  return form.getBasicSalary() * form.getBonusMagnification() / 100;
+              } else {
+                  return form.getFixedBonus();
+              }
+          }
+      }
+
+  この実装のポイント
+    * `processItem` メソッドで一定数( :ref:`getting_started_chunk-job` にて設定方法を解説)のエンティティを返却した時点で、
+      後続する :java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>` の `writeItems` メソッドが実行される。
+
+.. _`getting_started_chunk-persistence`:
+
+永続化処理を行う
+++++++++++++++++++++
+DB更新等の、永続化処理を実装する。
+
+ItemWriterの作成
+  :java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>` を実装し、データの永続化を行う。
+
+    ==================================================================   =============================================================================================
+    インタフェース名                                                        責務
+    ==================================================================   =============================================================================================
+    :java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>`          データを永続化する。
+
+                                                                           * `ItemWriter#writeItems`
+    ==================================================================   =============================================================================================
+
+  BonusWriter.java
+    .. code-block:: java
+
+      @Dependent
+      @Named
+      public class BonusWriter extends AbstractItemWriter {
+
+          @Override
+          public void writeItems(List<Object> items) {
+              UniversalDao.batchInsert(items);
+          }
+      }
+
+  この実装のポイント
+    * :java:extdoc:`UniversalDao#batchInsert <nablarch.common.dao.UniversalDao.batchInsert(java.util.List)>` を使用してエンティティのリストを一括登録する。
+    * `writeItems` メソッド実行後にトランザクションがコミットされ、新たなトランザクションが開始される。
+    * `writeItems` メソッド実行後、バッチ処理が `readItem` メソッド実行から繰り返される。
+
+.. _`getting_started_chunk-job`:
+
+JOB設定ファイルを作成する
++++++++++++++++++++++++++
+JOBの実行設定を記載したファイルを作成する。
+
+  bonus-calculate.xml
+    .. code-block:: xml
+
+     <job id="bonus-calculate" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+       <listeners>
+         <listener ref="nablarchJobListenerExecutor" />
+       </listeners>
+
+       <step id="step1">
+         <listeners>
+           <listener ref="nablarchStepListenerExecutor" />
+           <listener ref="nablarchItemWriteListenerExecutor" />
+         </listeners>
+
+         <chunk item-count="1000">
+           <reader ref="employeeSearchReader" />
+           <processor ref="bonusCalculateProcessor" />
+           <writer ref="bonusWriter" />
+         </chunk>
+       </step>
+     </job>
+
+  この実装のポイント
+    * ジョブ定義ファイルは `/src/main/resources/META-INF/batch-jobs/` 配下に配置する。
+    * `job` 要素 の `id` 属性で、ジョブ名称を指定する。
+    * `chunk` 要素の `item-count` 属性で `writeItems` 一回当たりで処理する件数を設定する。
+    * 設定ファイルの詳細な記述方法は `JSR352 Specificationを参照(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=352>`_ を参照。
+
+.. |jsr352| raw:: html
+
+  <a href="https://jcp.org/en/jsr/detail?id=352" target="_blank">JSR352(外部サイト、英語)</a>
+
+```
+
+## Knowledge File
+
+- ID: `jakarta-batch-getting-started-chunk`
+
+```json
+{
+  "id": "jakarta-batch-getting-started-chunk",
+  "title": "データを導出するバッチの作成(Chunkステップ)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/getting_started/chunk/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/api/chunk/ItemReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/api/chunk/AbstractItemReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/inject/Named.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/enterprise/context/Dependent.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/api/chunk/ItemProcessor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/api/chunk/ItemWriter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/api/chunk/AbstractItemWriter.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力データソースからデータを読み込む",
+      "hints": [
+        "AbstractItemReader",
+        "ItemReader",
+        "DeferredEntityList",
+        "UniversalDao",
+        "@Named",
+        "@Dependent",
+        "ItemReader実装",
+        "遅延ロード",
+        "大量データ読み込み",
+        "フォーム",
+        "Chunkステップ入力",
+        "open",
+        "readItem",
+        "close"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務ロジックを実行する",
+      "hints": [
+        "ItemProcessor",
+        "業務ロジック実装",
+        "Chunkステップ処理",
+        "processItem",
+        "BonusCalculateProcessor"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "永続化処理を行う",
+      "hints": [
+        "ItemWriter",
+        "AbstractItemWriter",
+        "UniversalDao",
+        "batchInsert",
+        "一括登録",
+        "トランザクションコミット",
+        "永続化処理",
+        "writeItems"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "JOB設定ファイルを作成する",
+      "hints": [
+        "ジョブ定義XML",
+        "batch-jobs",
+        "item-count",
+        "META-INF/batch-jobs",
+        "chunk要素",
+        "nablarchJobListenerExecutor",
+        "nablarchStepListenerExecutor",
+        "nablarchItemWriteListenerExecutor",
+        "ジョブ名称"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フォームの作成\n\nItemReaderとItemProcessorとのデータ連携にはフォームを使用する。\n\n## ItemReaderの作成\n\n:java:extdoc:`AbstractItemReader<javax.batch.api.chunk.AbstractItemReader>` を継承して実装する。**アノテーション**: `@Named`, `@Dependent` をクラスに付与する。\n\n実装するメソッド:\n\n| メソッド | 責務 |\n|---|---|\n| `open` | 処理対象データの読み込み |\n| `readItem` | 一行分のデータを返却（nullを返すと処理終了） |\n| `close` | リソースのクローズ |\n\n```java\n@Dependent\n@Named\npublic class EmployeeSearchReader extends AbstractItemReader {\n    private DeferredEntityList<EmployeeForm> list;\n    private Iterator<EmployeeForm> iterator;\n\n    @Override\n    public void open(Serializable checkpoint) throws Exception {\n        list = (DeferredEntityList<EmployeeForm>) UniversalDao.defer()\n                .findAllBySqlFile(EmployeeForm.class, \"SELECT_EMPLOYEE\");\n        iterator = list.iterator();\n    }\n\n    @Override\n    public Object readItem() {\n        if (iterator.hasNext()) {\n            return iterator.next();\n        }\n        return null;\n    }\n\n    @Override\n    public void close() throws Exception {\n        list.close();\n    }\n}\n```\n\nSQLファイル例 (EmployeeForm.sql):\n\n```sql\nSELECT_EMPLOYEE=\nSELECT\n    EMPLOYEE.EMPLOYEE_ID, EMPLOYEE.FULL_NAME, EMPLOYEE.BASIC_SALARY,\n    EMPLOYEE.GRADE_CODE, GRADE.BONUS_MAGNIFICATION, GRADE.FIXED_BONUS\nFROM EMPLOYEE\nINNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE\n```\n\n- 大量データの場合は :java:extdoc:`UniversalDao#defer <nablarch.common.dao.UniversalDao.defer()>` で :ref:`遅延ロード<universal_dao-lazy_load>` する（メモリ逼迫防止）\n- `readItem` で返却したオブジェクトが後続の :java:extdoc:`ItemProcessor<javax.batch.api.chunk.ItemProcessor>` の `processItem` の引数になる",
+    "s2": ":java:extdoc:`ItemProcessor<javax.batch.api.chunk.ItemProcessor>` を実装して業務ロジックを実行する。永続化処理は :java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>` の責務のため、ItemProcessorでは実施しない。\n\n実装するメソッド:\n\n| メソッド | 責務 |\n|---|---|\n| `processItem` | 一行分のデータに対する業務処理 |\n\n```java\n@Dependent\n@Named\npublic class BonusCalculateProcessor implements ItemProcessor {\n    @Override\n    public Object processItem(Object item) {\n        EmployeeForm form = (EmployeeForm) item;\n        Bonus bonus = new Bonus();\n        bonus.setEmployeeId(form.getEmployeeId());\n        bonus.setPayments(calculateBonus(form));\n        return bonus;\n    }\n}\n```\n\n- `processItem` で一定数（`item-count` 属性で設定）のエンティティを返却した時点で、後続の :java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>` の `writeItems` が実行される",
+    "s3": ":java:extdoc:`ItemWriter<javax.batch.api.chunk.ItemWriter>` を実装してデータを永続化する。\n\n実装するメソッド:\n\n| メソッド | 責務 |\n|---|---|\n| `writeItems` | データの永続化 |\n\n```java\n@Dependent\n@Named\npublic class BonusWriter extends AbstractItemWriter {\n    @Override\n    public void writeItems(List<Object> items) {\n        UniversalDao.batchInsert(items);\n    }\n}\n```\n\n- :java:extdoc:`UniversalDao#batchInsert <nablarch.common.dao.UniversalDao.batchInsert(java.util.List)>` でエンティティリストを一括登録する\n- `writeItems` 実行後にトランザクションがコミットされ、新たなトランザクションが開始される\n- `writeItems` 実行後、バッチ処理は `readItem` から繰り返される",
+    "s4": "ジョブ定義XMLファイルを `/src/main/resources/META-INF/batch-jobs/` に配置する。\n\n- `job` 要素の `id` 属性でジョブ名称を指定する\n- `chunk` 要素の `item-count` 属性で `writeItems` 一回当たりの処理件数を設定する\n\n```xml\n<job id=\"bonus-calculate\" xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\" version=\"1.0\">\n  <listeners>\n    <listener ref=\"nablarchJobListenerExecutor\" />\n  </listeners>\n  <step id=\"step1\">\n    <listeners>\n      <listener ref=\"nablarchStepListenerExecutor\" />\n      <listener ref=\"nablarchItemWriteListenerExecutor\" />\n    </listeners>\n    <chunk item-count=\"1000\">\n      <reader ref=\"employeeSearchReader\" />\n      <processor ref=\"bonusCalculateProcessor\" />\n      <writer ref=\"bonusWriter\" />\n    </chunk>\n  </step>\n</job>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

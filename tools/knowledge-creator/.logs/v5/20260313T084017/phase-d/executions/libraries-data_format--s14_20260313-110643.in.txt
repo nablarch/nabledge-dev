@@ -1,0 +1,299 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/data_io/data_format.rst`
+- Format: `rst`
+
+```
+拡張例
+--------------------------------------------------
+
+.. _data_format-field_type_add:
+
+フィールドタイプを追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`Nablarchが提供する標準データタイプ <data_format-field_type_list>` では要件を満たせない場合がある。
+例えば、文字列タイプのパディング文字がバイナリの場合などが該当する。
+
+このような場合は、プロジェクト固有のフィールドタイプを定義することで対応する。
+
+以下に手順を示す。
+
+#. フィールドタイプを処理するための :java:extdoc:`DataType<nablarch.core.dataformat.convertor.datatype.DataType>` 実装クラスを作成する。
+#. 追加したフィールドタイプを有効にするため、フォーマットに応じたファクトリの継承クラスを作成する。
+#. 作成したファクトリクラスを、フォーマットに応じた設定クラスのプロパティに設定する。
+
+詳細な手順は以下のとおり。
+
+フィールドタイプに対応したデータタイプ実装の追加
+  :java:extdoc:`DataType<nablarch.core.dataformat.convertor.datatype.DataType>` を実装したクラスを作成する。
+
+  .. tip::
+    
+    標準のフィールドタイプ実装は、 :java:extdoc:`nablarch.core.dataformat.convertor.datatype` パッケージ配下に配置されている。
+    実装を追加する際には、これらのクラスを参考にすると良い。
+
+フォーマットに応じたファクトリの継承クラスの作成
+  追加したフィールドタイプを有効にするためには、
+  フォーマットに応じたファクトリの継承クラスを作成する。
+
+  以下にフォーマット毎のファクトリクラスを示す。
+
+  .. list-table::
+    :class: white-space-normal
+    :header-rows: 1
+
+    * - フォーマット
+      - ファクトリクラス名
+
+    * - Fixed(固定長)
+      - :java:extdoc:`FixedLengthConvertorFactory <nablarch.core.dataformat.convertor.FixedLengthConvertorFactory>`
+    * - Variable(可変長)
+      - :java:extdoc:`VariableLengthConvertorFactory <nablarch.core.dataformat.convertor.VariableLengthConvertorFactory>`
+    * - JSON
+      - :java:extdoc:`JsonDataConvertorFactory <nablarch.core.dataformat.convertor.JsonDataConvertorFactory>`
+    * - XML
+      - :java:extdoc:`XmlDataConvertorFactory <nablarch.core.dataformat.convertor.XmlDataConvertorFactory>`
+
+  Fixed(固定長)の場合の実装例を以下に示す。
+
+  .. code-block:: java
+
+    public class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
+        @Override
+        protected Map<String, Class<?>> getDefaultConvertorTable() {
+            final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(
+                    new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
+            defaultConvertorTable.put("custom", CustomType.class);
+            return Collections.unmodifiableMap(defaultConvertorTable);
+        }
+    }
+
+フォーマットに応じた設定クラスのプロパティに設定
+  フォーマットに応じた設定クラスのプロパティに、先ほど作成したファクトリクラスを設定する。
+
+  以下にフォーマット毎の設定クラスとプロパティを示す。
+
+  .. list-table::
+    :class: white-space-normal
+    :header-rows: 1
+
+    * - フォーマット
+      - 設定クラス名(コンポーネント名)
+      - プロパティ名
+
+    * - Fixed(固定長)
+      - :java:extdoc:`FixedLengthConvertorSetting <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting>`
+        (fixedLengthConvertorSetting)
+      - :java:extdoc:`fixedLengthConvertorFactory <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setFixedLengthConvertorFactory(nablarch.core.dataformat.convertor.FixedLengthConvertorFactory)>`
+    * - Variable(可変長)
+      - :java:extdoc:`VariableLengthConvertorSetting <nablarch.core.dataformat.convertor.VariableLengthConvertorSetting>`
+        (variableLengthConvertorSetting)
+      - :java:extdoc:`variableLengthConvertorFactory <nablarch.core.dataformat.convertor.VariableLengthConvertorSetting.setVariableLengthConvertorFactory(nablarch.core.dataformat.convertor.VariableLengthConvertorFactory)>`
+    * - JSON
+      - :java:extdoc:`JsonDataConvertorSetting <nablarch.core.dataformat.convertor.JsonDataConvertorSetting>`
+        (jsonDataConvertorSetting)
+      - :java:extdoc:`jsonDataConvertorFactory <nablarch.core.dataformat.convertor.JsonDataConvertorSetting.setJsonDataConvertorFactory(nablarch.core.dataformat.convertor.JsonDataConvertorFactory)>`
+    * - XML
+      - :java:extdoc:`XmlDataConvertorSetting <nablarch.core.dataformat.convertor.XmlDataConvertorSetting>`
+        (xmlDataConvertorSetting)
+      - :java:extdoc:`xmlDataConvertorFactory <nablarch.core.dataformat.convertor.XmlDataConvertorSetting.setXmlDataConvertorFactory(nablarch.core.dataformat.convertor.XmlDataConvertorFactory)>`
+
+  Fixed(固定長)の場合の設定例を以下に示す。
+
+  .. code-block:: xml
+
+    <component name="fixedLengthConvertorSetting"
+        class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
+      <property name="fixedLengthConvertorFactory">
+        <component class="com.sample.CustomFixedLengthConvertorFactory" />
+      </property>
+    </component>
+
+.. important::
+
+  フォーマットに応じた設定クラスの `convertorTable` プロパティを使用してフィールドタイプを追加できるが、
+  以下の理由により使用は推奨しない。
+
+  * 追加したいフィールドタイプだけでなく、元々デフォルトで定義されていたフィールドタイプも全て設定する必要がある。
+    そのため、もしバージョンアップによりデフォルトのフィールドタイプが変更となった場合、
+    自動的に変更が適用されず手動で設定を修正しなければならないため手間が掛かる。
+  * デフォルト定義はファクトリクラスに実装されており、ソースコードをもとにコンポーネント設定ファイルに定義を追加していく必要があるため、
+    設定ミスを起こしやすい。
+
+.. _data_format-xml_content_name_change:
+
+XMLで属性を持つ要素のコンテンツ名を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+属性を持つ要素のコンテンツ名を変更するには、
+以下のクラスをコンポーネント設定ファイルに設定し、``contentName`` プロパティに変更後のコンテンツ名をそれぞれ設定する。
+
+* :java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>`
+* :java:extdoc:`XmlDataBuilder<nablarch.core.dataformat.XmlDataBuilder>`
+
+コンポーネント設定ファイルの設定例を以下に示す。
+
+ポイント
+ * :java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>` のコンポーネント名は ``XmlDataParser`` とすること
+ * :java:extdoc:`XmlDataBuilder<nablarch.core.dataformat.XmlDataBuilder>` のコンポーネント名は ``XmlDataBuilder`` とすること
+
+.. code-block:: xml
+
+  <component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+    <property name="contentName" value="change" />
+  </component>
+
+  <component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
+    <property name="contentName" value="change" />
+  </component>
+```
+
+## Knowledge File
+
+- ID: `libraries-data_format--s14`
+
+```json
+{
+  "id": "libraries-data_format--s14",
+  "title": "拡張例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/datatype/DataType.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/FixedLengthConvertorFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/VariableLengthConvertorFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/JsonDataConvertorFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/XmlDataConvertorFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/FixedLengthConvertorSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/VariableLengthConvertorSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/JsonDataConvertorSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/XmlDataConvertorSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/XmlDataParser.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/XmlDataBuilder.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "拡張例",
+      "hints": [
+        "フィールドタイプ追加",
+        "カスタムデータタイプ",
+        "DataType",
+        "FixedLengthConvertorFactory",
+        "VariableLengthConvertorFactory",
+        "JsonDataConvertorFactory",
+        "XmlDataConvertorFactory",
+        "FixedLengthConvertorSetting",
+        "VariableLengthConvertorSetting",
+        "JsonDataConvertorSetting",
+        "XmlDataConvertorSetting",
+        "XmlDataParser",
+        "XmlDataBuilder",
+        "コンバータファクトリ拡張",
+        "XMLコンテンツ名変更",
+        "convertorTable非推奨"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フィールドタイプを追加する\n\n:ref:`Nablarchが提供する標準データタイプ <data_format-field_type_list>` では要件を満たせない場合（例：文字列タイプのパディング文字がバイナリの場合）は、プロジェクト固有のフィールドタイプを定義する。\n\n手順:\n1. :java:extdoc:`DataType<nablarch.core.dataformat.convertor.datatype.DataType>` 実装クラスを作成する\n2. フォーマットに応じたファクトリの継承クラスを作成して追加フィールドタイプを登録する\n3. 作成したファクトリクラスをフォーマットに応じた設定クラスのプロパティに設定する\n\n> **補足**: 標準フィールドタイプ実装は `nablarch.core.dataformat.convertor.datatype` パッケージ配下にある。実装追加時の参考にすること。\n\nフォーマット別ファクトリクラス:\n\n| フォーマット | ファクトリクラス |\n|---|---|\n| Fixed(固定長) | :java:extdoc:`FixedLengthConvertorFactory<nablarch.core.dataformat.convertor.FixedLengthConvertorFactory>` |\n| Variable(可変長) | :java:extdoc:`VariableLengthConvertorFactory<nablarch.core.dataformat.convertor.VariableLengthConvertorFactory>` |\n| JSON | :java:extdoc:`JsonDataConvertorFactory<nablarch.core.dataformat.convertor.JsonDataConvertorFactory>` |\n| XML | :java:extdoc:`XmlDataConvertorFactory<nablarch.core.dataformat.convertor.XmlDataConvertorFactory>` |\n\nFixed(固定長)のファクトリ継承クラス実装例:\n\n```java\npublic class CustomFixedLengthConvertorFactory extends FixedLengthConvertorFactory {\n    @Override\n    protected Map<String, Class<?>> getDefaultConvertorTable() {\n        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(\n                new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));\n        defaultConvertorTable.put(\"custom\", CustomType.class);\n        return Collections.unmodifiableMap(defaultConvertorTable);\n    }\n}\n```\n\nフォーマット別設定クラスとプロパティ:\n\n| フォーマット | 設定クラス名(コンポーネント名) | プロパティ名 |\n|---|---|---|\n| Fixed(固定長) | :java:extdoc:`FixedLengthConvertorSetting<nablarch.core.dataformat.convertor.FixedLengthConvertorSetting>` (fixedLengthConvertorSetting) | fixedLengthConvertorFactory |\n| Variable(可変長) | :java:extdoc:`VariableLengthConvertorSetting<nablarch.core.dataformat.convertor.VariableLengthConvertorSetting>` (variableLengthConvertorSetting) | variableLengthConvertorFactory |\n| JSON | :java:extdoc:`JsonDataConvertorSetting<nablarch.core.dataformat.convertor.JsonDataConvertorSetting>` (jsonDataConvertorSetting) | jsonDataConvertorFactory |\n| XML | :java:extdoc:`XmlDataConvertorSetting<nablarch.core.dataformat.convertor.XmlDataConvertorSetting>` (xmlDataConvertorSetting) | xmlDataConvertorFactory |\n\nFixed(固定長)の設定例:\n\n```xml\n<component name=\"fixedLengthConvertorSetting\"\n    class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">\n  <property name=\"fixedLengthConvertorFactory\">\n    <component class=\"com.sample.CustomFixedLengthConvertorFactory\" />\n  </property>\n</component>\n```\n\n> **重要**: 設定クラスの `convertorTable` プロパティを使ったフィールドタイプ追加は推奨しない。理由: (1) 追加したいフィールドタイプだけでなくデフォルトで定義されたフィールドタイプも全て設定する必要があり、バージョンアップ時にデフォルトが変更されても自動適用されず手動修正が必要になる (2) デフォルト定義はファクトリクラスのソースコードに実装されており、コンポーネント設定ファイルへの転記時に設定ミスを起こしやすい。\n\n## XMLで属性を持つ要素のコンテンツ名を変更する\n\n属性を持つ要素のコンテンツ名を変更するには、:java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>` と :java:extdoc:`XmlDataBuilder<nablarch.core.dataformat.XmlDataBuilder>` をコンポーネント設定ファイルに設定し、`contentName` プロパティに変更後のコンテンツ名を設定する。\n\n- :java:extdoc:`XmlDataParser<nablarch.core.dataformat.XmlDataParser>` のコンポーネント名は `XmlDataParser` とすること\n- :java:extdoc:`XmlDataBuilder<nablarch.core.dataformat.XmlDataBuilder>` のコンポーネント名は `XmlDataBuilder` とすること\n\n```xml\n<component name=\"XmlDataParser\" class=\"nablarch.core.dataformat.XmlDataParser\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n\n<component name=\"XmlDataBuilder\" class=\"nablarch.core.dataformat.XmlDataBuilder\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

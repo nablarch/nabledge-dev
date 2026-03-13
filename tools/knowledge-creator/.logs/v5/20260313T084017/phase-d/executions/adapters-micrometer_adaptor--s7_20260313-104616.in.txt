@@ -1,0 +1,537 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/adaptors/micrometer_adaptor.rst`
+- Format: `rst`
+
+```
+監視サービスと連携する
+--------------------------------------------------
+
+監視サービスと連携するためには、大きく次のとおり設定する必要がある。
+
+#. 監視サービスや連携方法ごとに用意された Micrometer のモジュールを依存関係に追加する
+#. 使用するレジストリファクトリをコンポーネントとして定義する
+#. その他、監視サービスごとに独自に設定する
+
+ここでは、それぞれの監視サービスと連携する方法について説明する。
+
+
+Datadog と連携する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+依存関係を追加する
+  .. code-block:: xml
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-datadog</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+
+レジストリファクトリを宣言する
+  .. code-block:: xml
+  
+    <component name="meterRegistry" class="nablarch.integration.micrometer.datadog.DatadogMeterRegistryFactory">
+      <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+      <property name="applicationDisposer" ref="disposer" />
+    </component>
+
+APIキーを設定する
+  .. code-block:: text
+
+    nablarch.micrometer.datadog.apiKey=XXXXXXXXXXXXXXXX
+
+  APIキーは ``nablarch.micrometer.datadog.apiKey`` で設定できる。
+
+サイトURLを設定する
+  .. code-block:: text
+
+    nablarch.micrometer.datadog.uri=<サイトURL>
+
+  サイトURLは ``nablarch.micrometer.datadog.uri`` で設定できる。
+
+  その他の設定については `DatadogConfig(外部サイト、英語)`_ を参照。
+
+連携を無効にする
+  .. code-block:: text
+
+    nablarch.micrometer.datadog.enabled=false
+    nablarch.micrometer.datadog.apiKey=XXXXXXXXXXXXXXXX
+
+  ``micrometer.properties`` で ``nablarch.micrometer.datadog.enabled`` に ``false`` を設定することで、メトリクスの連携を無効にできる。
+  この設定は環境変数で上書きできるので、本番環境のみ環境変数で ``true`` に上書きして連携を有効にできる。
+
+  .. important::
+    連携を無効にした場合も、 ``nablarch.micrometer.datadog.apiKey`` には何らかの値を設定しておく必要がある。
+    値はダミーで問題ない。
+
+CloudWatch と連携する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+依存関係を追加する
+  .. code-block:: xml
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-cloudwatch2</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+
+レジストリファクトリを宣言する
+  .. code-block:: xml
+  
+    <component name="meterRegistry" class="nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory">
+      <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+      <property name="applicationDisposer" ref="disposer" />
+    </component>
+
+リージョンやアクセスキーを設定する
+  .. code-block:: bash
+    
+    $ export AWS_REGION=ap-northeast-1
+
+    $ export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXXXX
+
+    $ export AWS_SECRET_ACCESS_KEY=YYYYYYYYYYYYYYYYYYYYY
+
+  ``micrometer-registry-cloudwatch2`` モジュールは AWS SDK を使用している。
+  したがって、リージョンやアクセスキーなどの設定は AWS SDK の方法に準拠する。
+
+  上記は、LinuxでOS環境変数を使って設定する場合の例を記載している。
+  より詳細な情報は、 `AWSのドキュメント(外部サイト) <https://docs.aws.amazon.com/ja_jp/sdk-for-java/v1/developer-guide/setup-credentials.html>`_ を参照。
+
+名前空間を設定する
+  .. code-block:: text
+
+    nablarch.micrometer.cloudwatch.namespace=test
+
+  メトリクスのカスタム名前空間は ``nablarch.micrometer.cloudwatch.namespace`` で設定できる。
+
+  その他の設定については `CloudWatchConfig(外部サイト、英語)`_ を参照。
+
+より詳細な設定
+  OS環境変数や設定ファイルでは指定できない、より詳細に設定したい場合は、 :java:extdoc:`CloudWatchAsyncClientProvider <nablarch.integration.micrometer.cloudwatch.CloudWatchAsyncClientProvider>` を実装したカスタムプロバイダを作ることで対応できる。
+
+  .. code-block:: java
+
+      package example.micrometer.cloudwatch;
+
+      import nablarch.integration.micrometer.cloudwatch.CloudWatchAsyncClientProvider;
+      import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
+
+      public class CustomCloudWatchAsyncClientProvider implements CloudWatchAsyncClientProvider {
+          @Override
+          public CloudWatchAsyncClient provide() {
+              return CloudWatchAsyncClient
+                      .builder()
+                      .asyncConfiguration(...) // 任意の設定を行う
+                      .build();
+          }
+      }
+
+  :java:extdoc:`CloudWatchAsyncClientProvider <nablarch.integration.micrometer.cloudwatch.CloudWatchAsyncClientProvider>` は ``CloudWatchAsyncClient`` を提供する ``provide()`` メソッドを持つ。
+  カスタムプロバイダでは、任意の設定を行った ``CloudWatchAsyncClient`` を構築して返すように ``provide()`` メソッドを実装する。
+
+  .. code-block:: xml
+
+    <component name="meterRegistry" class="nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory">
+      <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+      <property name="applicationDisposer" ref="disposer" />
+
+      <!-- cloudWatchAsyncClientProvider プロパティにカスタムプロバイダを設定する -->
+      <property name="cloudWatchAsyncClientProvider">
+        <component class="example.micrometer.cloudwatch.CustomCloudWatchAsyncClientProvider" />
+      </property>
+    </component>
+
+  作成したカスタムプロバイダは、 ``CloudWatchMeterRegistryFactory`` の :java:extdoc:`cloudWatchAsyncClientProvider <nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory.setCloudWatchAsyncClientProvider(nablarch.integration.micrometer.cloudwatch.CloudWatchAsyncClientProvider)>` プロパティに設定する。
+
+  これにより、カスタムプロバイダが生成した ``CloudWatchAsyncClient`` がメトリクスの連携で使用されるようになる。
+
+  .. tip::
+
+    デフォルトでは、 `CloudWatchAsyncClient.create() (外部サイト、英語) <https://javadoc.io/static/software.amazon.awssdk/cloudwatch/2.13.4/software/amazon/awssdk/services/cloudwatch/CloudWatchAsyncClient.html#create-->`_ で作成されたインスタンスが使用される。
+
+連携を無効にする
+  .. code-block:: text
+
+    nablarch.micrometer.cloudwatch.enabled=false
+    nablarch.micrometer.cloudwatch.namespace=test
+
+  ``micrometer.properties`` で ``nablarch.micrometer.cloudwatch.enabled`` に ``false`` を設定することで、メトリクスの連携を無効にできる。
+  この設定は環境変数で上書きできるので、本番環境のみ環境変数で ``true`` に上書きして連携を有効にできる。
+
+  .. important::
+    連携を無効にした場合も、 ``nablarch.micrometer.cloudwatch.namespace`` には何らかの値を設定しておく必要がある。
+    また、環境変数 ``AWS_REGION`` を設定しておく必要がある。
+
+    いずれも、値はダミーで問題ない。
+
+Azure と連携する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MicrometerでメトリクスをAzureに連携する方法
+  Azureは、JavaアプリケーションからAzureにメトリクスを連携するための仕組みとして、Javaエージェントを用いた方法(**Java 3.0 エージェント**)を提供している。
+
+  * `Azure Monitor Application Insights を監視する Java のコード不要のアプリケーション(外部サイト) <https://learn.microsoft.com/ja-jp/azure/azure-monitor/app/opentelemetry-enable?tabs=java>`_
+
+  このJava 3.0 エージェントは、Micrometerの `グローバルレジストリ(外部サイト、英語) <https://docs.micrometer.io/micrometer/reference/concepts/registry.html#_global_registry>`_ に出力したメトリクスを自動的に収集し、Azureに連携する仕組みを提供している。
+
+  * `アプリケーションからカスタム テレメトリを送信する(外部サイト) <https://learn.microsoft.com/ja-jp/azure/azure-monitor/app/opentelemetry-enable?tabs=java>`_
+
+  .. important::
+    Java 3.0 エージェントは、初期化処理中に大量のjarファイルをロードする。
+    これにより、Java 3.0 エージェントの初期化処理中はGCが頻発することがある。
+
+    このため、アプリケーション起動後しばらくは、GCの影響により性能が一時的に劣化する可能性がある点に注意すること。
+
+    また、高負荷時は Java 3.0 エージェントの処理によるオーバーヘッドが性能に影響を与える可能性がある。
+    したがって、性能試験では本番同様に Java 3.0 エージェントを導入し、想定内の性能になることを確認すること。
+
+
+  Java 3.0 エージェントの設定方法は :ref:`Azureにおける分散トレーシング <azure_distributed_tracing>` 参照。
+
+MicrometerアダプタでメトリクスをAzureに連携するための設定
+  MicrometerアダプタでメトリクスをAzureに連携するためには、以下のとおり設定する必要がある。
+
+  * アプリケーションの起動オプションに、Java 3.0 エージェントを追加する
+  * ``MeterRegistry`` にグローバルレジストリを使うようにコンポーネントを定義する
+
+  1つ目の起動オプションの設定方法については、 `Azureのドキュメント <https://learn.microsoft.com/ja-jp/azure/azure-monitor/app/opentelemetry-enable?tabs=java#modify-your-application>`_ を参照のこと。
+
+  2つ目のグローバルレジストリを使う方法について、本アダプタではグローバルレジストリのファクトリクラスとして :java:extdoc:`GlobalMeterRegistryFactory <nablarch.integration.micrometer.GlobalMeterRegistryFactory>` を用意している。
+  以下に、このファクトリクラスのコンポーネント定義の例を示す。
+
+  .. code-block:: xml
+
+    <component name="meterRegistry" class="nablarch.integration.micrometer.GlobalMeterRegistryFactory">
+      <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+      <property name="applicationDisposer" ref="disposer" />
+    </component>
+
+  この設定により、メトリクスの収集はグローバルレジストリによって行われるようになる。
+  そして、グローバルレジストリで収集されたメトリクスは、Java 3.0 エージェントによってAzureに連携されるようになる。
+
+  .. tip::
+    Java 3.0 エージェントを使うこの方法では、Azure用の ``MeterRegistry`` は使用しない。
+    したがって、Azure用のモジュールを依存関係に追加しなくてもメトリクスを連携できる。
+
+
+詳細設定について
+  メトリクスの連携は、Azureが提供するJava 3.0 エージェントによって行われる。
+  このため、メトリクスの連携に関する設定は全てJava 3.0 エージェントが提供する方法で行う必要がある。
+
+  Java 3.0 エージェントの設定の詳細については、 `構成オプション(外部サイト) <https://learn.microsoft.com/ja-jp/azure/azure-monitor/app/java-standalone-config>`_ を参照のこと。
+
+  .. important::
+    本アダプタ用の設定ファイルである ``micrometer.properties`` は使用できないが、ファイルは配置しておく必要がある（内容は空で構わない）。
+
+連携を無効にする
+  Java 3.0 エージェントを使用せずにアプリケーションを起動することで、メトリクスの連携を無効にできる。
+
+StatsD で連携する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Datadog は `DogStatsD(外部サイト) <https://docs.datadoghq.com/ja/developers/dogstatsd/?tab=hostagent>`_ という `StatsD(外部サイト、英語) <https://github.com/statsd/statsd>`_ プロトコルを使った連携をサポートしている。
+したがって、 ``micrometer-registry-statsd`` モジュールを用いることで、 StatsD で Datadog と連携することもできる。
+
+ここでは、 Datadog に StatsD プロトコルで連携する場合を例にして説明する。
+なお、DogStatsD のインストール方法などについては `Datadogのサイト(外部サイト) <https://docs.datadoghq.com/ja/agent/>`_ を参照。
+
+依存関係を追加する
+  .. code-block:: xml
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-statsd</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+
+レジストリファクトリを宣言する
+  .. code-block:: xml
+  
+    <component name="meterRegistry" class="nablarch.integration.micrometer.statsd.StatsdMeterRegistryFactory">
+      <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+      <property name="applicationDisposer" ref="disposer" />
+    </component>
+
+必要に応じて設定ファイルを記述する
+  StatsD デーモンと連携するための設定は、デフォルト値が DogStatsD をデフォルト構成でインストールした場合と一致するように調整されている。
+  
+  したがって、 DogStatsD をデフォルトの構成でインストールしている場合は、特に設定を明示しなくても DogStatsD による連携が動作する。
+
+  もしデフォルト構成以外でインストールしている場合は、 `StatsdConfig(外部サイト、英語)`_ を参照して、実際の環境に合わせた設定を行うこと。
+
+  .. code-block:: text
+
+    # ポートを変更
+    nablarch.micrometer.statsd.port=9999
+
+連携を無効にする
+  .. code-block:: text
+
+    nablarch.micrometer.statsd.enabled=false
+
+  ``micrometer.properties`` で ``nablarch.micrometer.statsd.enabled`` に ``false`` を設定することで、メトリクスの連携を無効にできる。
+  この設定は環境変数で上書きできるので、本番環境のみ環境変数で ``true`` に上書きして連携を有効にできる。
+
+OpenTelemetry Protocol (OTLP) で連携する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+多くの監視サービスでは `OpenTelemetry(外部サイト) <https://opentelemetry.io/ja>`_ をサポートしており、通信プロトコルに OpenTelemetry Protocol (以下、OTLP) を使用してメトリクスを収集できる。
+``micrometer-registry-otlp`` モジュールを用いることで、 OTLP で様々な監視サービスと連携できる。
+
+  .. important::
+     OpenTelemetry によるメトリクスの収集では、どういった連携方法が適しているか（利用可能か）は監視サービスによって異なるため、使用する監視サービスの情報を確認すること。
+     例として、いくつかの監視サービスの情報を以下に示す。
+
+     * `Datadog の OpenTelemetry(外部サイト) <https://docs.datadoghq.com/ja/opentelemetry/>`_
+     * `New RelicによるOpenTelemetryの紹介(外部サイト) <https://docs.newrelic.com/jp/docs/opentelemetry/opentelemetry-introduction>`_
+     * `Prometheus | HTTP API | OTLP Receiver(外部サイト、英語) <https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver>`_
+
+ここでは、localhost の 9090 ポートで起動している Prometheus に OTLP で連携する場合を例にして説明する。
+
+依存関係を追加する
+  .. code-block:: xml
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-otlp</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+
+レジストリファクトリを宣言する
+  .. code-block:: xml
+  
+    <component name="meterRegistry" class="nablarch.integration.micrometer.otlp.OtlpMeterRegistryFactory">
+      <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+      <property name="applicationDisposer" ref="disposer" />
+    </component>
+
+設定ファイルを記述する
+  .. code-block:: text
+
+    # 送信先を変更
+    nablarch.micrometer.otlp.url=http://localhost:9090/api/v1/otlp/v1/metrics
+
+ヘッダ情報を設定する
+  .. code-block:: text
+
+    nablarch.micrometer.otlp.headers=key1=value1,key2=value2
+
+  認証で使用するAPIキー等のヘッダ情報が必要な場合、 ``nablarch.micrometer.otlp.headers`` で設定できる。
+
+連携を無効にする
+  .. code-block:: text
+
+    nablarch.micrometer.otlp.enabled=false
+
+  ``micrometer.properties`` で ``nablarch.micrometer.otlp.enabled`` に ``false`` を設定することで、メトリクスの連携を無効にできる。
+  この設定は環境変数で上書きできるので、本番環境のみ環境変数で ``true`` に上書きして連携を有効にできる。
+
+```
+
+## Knowledge File
+
+- ID: `adapters-micrometer_adaptor--s7`
+
+```json
+{
+  "id": "adapters-micrometer_adaptor--s7",
+  "title": "監視サービスと連携する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/cloudwatch/CloudWatchAsyncClientProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/cloudwatch/CloudWatchMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/GlobalMeterRegistryFactory.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "監視サービスと連携する（概要）",
+      "hints": [
+        "監視サービス連携",
+        "Micrometerモジュール",
+        "レジストリファクトリ",
+        "DatadogMeterRegistryFactory",
+        "CloudWatchMeterRegistryFactory",
+        "StatsdMeterRegistryFactory",
+        "OtlpMeterRegistryFactory",
+        "GlobalMeterRegistryFactory"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Datadog と連携する",
+      "hints": [
+        "DatadogMeterRegistryFactory",
+        "Datadogメトリクス連携",
+        "micrometer-registry-datadog",
+        "nablarch.micrometer.datadog.apiKey",
+        "nablarch.micrometer.datadog.uri",
+        "nablarch.micrometer.datadog.enabled"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "CloudWatch と連携する",
+      "hints": [
+        "CloudWatchMeterRegistryFactory",
+        "CloudWatchメトリクス連携",
+        "micrometer-registry-cloudwatch2",
+        "CloudWatchAsyncClientProvider",
+        "CustomCloudWatchAsyncClientProvider",
+        "cloudWatchAsyncClientProvider",
+        "nablarch.micrometer.cloudwatch.namespace",
+        "nablarch.micrometer.cloudwatch.enabled",
+        "AWS_REGION",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Azure と連携する",
+      "hints": [
+        "Azureメトリクス連携",
+        "GlobalMeterRegistryFactory",
+        "Java 3.0エージェント",
+        "グローバルレジストリ",
+        "Azure Monitor Application Insights"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "StatsD で連携する",
+      "hints": [
+        "StatsdMeterRegistryFactory",
+        "StatsDメトリクス連携",
+        "micrometer-registry-statsd",
+        "DogStatsD",
+        "nablarch.micrometer.statsd.enabled",
+        "nablarch.micrometer.statsd.port"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "OpenTelemetry Protocol (OTLP) で連携する",
+      "hints": [
+        "OtlpMeterRegistryFactory",
+        "OTLPメトリクス連携",
+        "micrometer-registry-otlp",
+        "OpenTelemetry",
+        "nablarch.micrometer.otlp.url",
+        "nablarch.micrometer.otlp.headers",
+        "nablarch.micrometer.otlp.enabled"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "各監視サービスとのMicrometer連携設定。共通手順:\n1. 監視サービスや連携方法ごとに用意されたMicrometerのモジュールを依存関係に追加する\n2. 使用するレジストリファクトリをコンポーネントとして定義する\n3. その他、監視サービスごとに独自に設定する\n\n対応サービス: Datadog、CloudWatch、Azure（Java 3.0エージェント経由）、StatsD（DogStatsD）、OpenTelemetry Protocol (OTLP)",
+    "s2": "## Datadog と連携する\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>io.micrometer</groupId>\n  <artifactId>micrometer-registry-datadog</artifactId>\n  <version>1.13.0</version>\n</dependency>\n```\n\n**クラス**: `nablarch.integration.micrometer.datadog.DatadogMeterRegistryFactory`\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.datadog.DatadogMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n</component>\n```\n\n設定プロパティ（`micrometer.properties`）:\n- `nablarch.micrometer.datadog.apiKey=XXXXXXXXXXXXXXXX` — APIキー\n- `nablarch.micrometer.datadog.uri=<サイトURL>` — サイトURL\n- `nablarch.micrometer.datadog.enabled=false` — 連携無効化（環境変数で上書き可能）\n\n> **重要**: 連携を無効にした場合も、`nablarch.micrometer.datadog.apiKey` には何らかの値（ダミー可）を設定しておく必要がある。",
+    "s3": "## CloudWatch と連携する\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>io.micrometer</groupId>\n  <artifactId>micrometer-registry-cloudwatch2</artifactId>\n  <version>1.13.0</version>\n</dependency>\n```\n\n**クラス**: `nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory`\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n</component>\n```\n\nリージョン・アクセスキーはAWS SDKの方法で設定する（`micrometer-registry-cloudwatch2`はAWS SDKを使用）:\n```bash\nexport AWS_REGION=ap-northeast-1\nexport AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXXXX\nexport AWS_SECRET_ACCESS_KEY=YYYYYYYYYYYYYYYYYYYYY\n```\n\n設定プロパティ（`micrometer.properties`）:\n- `nablarch.micrometer.cloudwatch.namespace=test` — カスタム名前空間\n- `nablarch.micrometer.cloudwatch.enabled=false` — 連携無効化（環境変数で上書き可能）\n\n> **重要**: 連携を無効にした場合も、`nablarch.micrometer.cloudwatch.namespace` と環境変数 `AWS_REGION` には何らかの値（ダミー可）を設定しておく必要がある。\n\n### より詳細な設定（カスタムプロバイダ）\n\nOS環境変数や設定ファイルでは指定できない詳細な設定が必要な場合は、`CloudWatchAsyncClientProvider` を実装したカスタムプロバイダを作成する。\n\n**カスタムプロバイダの実装例**:\n```java\npackage example.micrometer.cloudwatch;\n\nimport nablarch.integration.micrometer.cloudwatch.CloudWatchAsyncClientProvider;\nimport software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;\n\npublic class CustomCloudWatchAsyncClientProvider implements CloudWatchAsyncClientProvider {\n    @Override\n    public CloudWatchAsyncClient provide() {\n        return CloudWatchAsyncClient\n                .builder()\n                .asyncConfiguration(...) // 任意の設定を行う\n                .build();\n    }\n}\n```\n\n`CloudWatchAsyncClientProvider` は `CloudWatchAsyncClient` を提供する `provide()` メソッドを持つ。カスタムプロバイダでは、任意の設定を行った `CloudWatchAsyncClient` を構築して返すように `provide()` メソッドを実装する。\n\n**カスタムプロバイダのコンポーネント定義**:\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n  <!-- cloudWatchAsyncClientProvider プロパティにカスタムプロバイダを設定する -->\n  <property name=\"cloudWatchAsyncClientProvider\">\n    <component class=\"example.micrometer.cloudwatch.CustomCloudWatchAsyncClientProvider\" />\n  </property>\n</component>\n```\n\n作成したカスタムプロバイダは `CloudWatchMeterRegistryFactory` の `cloudWatchAsyncClientProvider` プロパティに設定する。これにより、カスタムプロバイダが生成した `CloudWatchAsyncClient` がメトリクスの連携で使用されるようになる。\n\n> **補足**: デフォルトでは [CloudWatchAsyncClient.create()](https://javadoc.io/static/software.amazon.awssdk/cloudwatch/2.13.4/software/amazon/awssdk/services/cloudwatch/CloudWatchAsyncClient.html#create--) で作成されたインスタンスが使用される。",
+    "s4": "## Azure と連携する\n\nMicrometerでAzureに連携するには、Java 3.0エージェントを使用する。Java 3.0エージェントはMicrometerの[グローバルレジストリ](https://docs.micrometer.io/micrometer/reference/concepts/registry.html#_global_registry)に出力されたメトリクスを自動収集してAzureに連携する。\n\n> **重要**: Java 3.0エージェントは初期化処理中に大量のjarファイルをロードするためGCが頻発する。アプリケーション起動後しばらくはGCの影響で性能が一時的に劣化する可能性がある。また高負荷時にはエージェントの処理によるオーバーヘッドが性能に影響する可能性があるため、性能試験では本番同様にJava 3.0エージェントを導入して想定内の性能になることを確認すること。\n\n設定手順:\n1. 起動オプションにJava 3.0エージェントを追加する（[Azureのドキュメント](https://learn.microsoft.com/ja-jp/azure/azure-monitor/app/opentelemetry-enable?tabs=java#modify-your-application)参照）\n2. `MeterRegistry`にグローバルレジストリを使うコンポーネントを定義する\n\n**クラス**: `nablarch.integration.micrometer.GlobalMeterRegistryFactory`\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.GlobalMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n</component>\n```\n\n> **補足**: Java 3.0エージェントを使う方法ではAzure用の`MeterRegistry`は使用しないため、Azure用モジュールを依存関係に追加しなくてもメトリクスを連携できる。\n\n> **重要**: 本アダプタ用の設定ファイル `micrometer.properties` は使用できないが、ファイルは配置しておく必要がある（内容は空で可）。\n\n連携を無効にするには、Java 3.0エージェントを使用せずにアプリケーションを起動する。詳細設定はJava 3.0エージェントが提供する方法で行う（[構成オプション](https://learn.microsoft.com/ja-jp/azure/azure-monitor/app/java-standalone-config)参照）。",
+    "s5": "## StatsD で連携する\n\nDatadogは[DogStatsD](https://docs.datadoghq.com/ja/developers/dogstatsd/?tab=hostagent)というStatsDプロトコルを使った連携をサポートしている。`micrometer-registry-statsd`モジュールでStatsDによるDatadog連携が可能。\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>io.micrometer</groupId>\n  <artifactId>micrometer-registry-statsd</artifactId>\n  <version>1.13.0</version>\n</dependency>\n```\n\n**クラス**: `nablarch.integration.micrometer.statsd.StatsdMeterRegistryFactory`\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.statsd.StatsdMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n</component>\n```\n\nデフォルト値はDogStatsDをデフォルト構成でインストールした場合と一致するため、デフォルト構成のDogStatsDでは明示的な設定不要。デフォルト以外の構成の場合は`StatsdConfig`を参照して設定する。\n\n設定プロパティ（`micrometer.properties`）:\n- `nablarch.micrometer.statsd.port=9999` — ポート変更例\n- `nablarch.micrometer.statsd.enabled=false` — 連携無効化（環境変数で上書き可能）",
+    "s6": "## OpenTelemetry Protocol (OTLP) で連携する\n\n多くの監視サービスがOpenTelemetryをサポートしており、`micrometer-registry-otlp`モジュールでOTLPによる各種監視サービス連携が可能。\n\n> **重要**: どの連携方法が利用可能かは監視サービスによって異なるため、使用する監視サービスの情報を確認すること（例: [Datadog](https://docs.datadoghq.com/ja/opentelemetry/)、[New Relic](https://docs.newrelic.com/jp/docs/opentelemetry/opentelemetry-introduction)、[Prometheus OTLP Receiver](https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver)）。\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>io.micrometer</groupId>\n  <artifactId>micrometer-registry-otlp</artifactId>\n  <version>1.13.0</version>\n</dependency>\n```\n\n**クラス**: `nablarch.integration.micrometer.otlp.OtlpMeterRegistryFactory`\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.otlp.OtlpMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n</component>\n```\n\n設定プロパティ（`micrometer.properties`）:\n- `nablarch.micrometer.otlp.url=http://localhost:9090/api/v1/otlp/v1/metrics` — 送信先URL\n- `nablarch.micrometer.otlp.headers=key1=value1,key2=value2` — 認証APIキー等のヘッダ情報\n- `nablarch.micrometer.otlp.enabled=false` — 連携無効化（環境変数で上書き可能）"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

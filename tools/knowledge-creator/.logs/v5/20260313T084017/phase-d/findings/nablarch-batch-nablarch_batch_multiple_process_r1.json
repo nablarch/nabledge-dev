@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-nablarch_batch_multiple_process",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 自作Reader説明文",
+      "description": "Source says \"するとよい\"（推奨・提案）だが、knowledge fileでは\"実装すること\"（命令形）に変更されている。これにより任意の推奨事項が必須要件のように読める。",
+      "source_evidence": "なお、Readerを自作している場合には、下の例を参考に悲観ロック後に処理対象データを抽出するようにするとよい。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 別トランザクション注記",
+      "description": "ソースコードのコメントは \"なお\"（付記・参考情報）で始まる注釈だが、knowledge fileでは \"> **重要**:\" というラベルを付加して重要度を強調している。\"重要\"という語はソースに存在しない。",
+      "source_evidence": "// なお、この処理は別トランザクションで実行する必要がある。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints配列",
+      "description": "コード例に登場するNablarch固有のPascalCaseクラス名がhintsから欠落している: DbConnectionContext、AppDbConnection。これらはユーザーがこのドキュメントを検索する際のキーワードになり得る。",
+      "source_evidence": "DbConnectionContext.getConnection()... / public Void execute(final AppDbConnection connection)"
+    }
+  ]
+}

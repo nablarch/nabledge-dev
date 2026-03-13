@@ -1,0 +1,336 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "jakarta-batch-progress_log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "PascalCase class name `BasicLogFormatter` (nablarch.core.log.basic.BasicLogFormatter) appears in the log.properties configuration example but is absent from s2 hints.",
+      "source_evidence": "writer.progressLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "PascalCase class name `StepContext` (javax.batch.runtime.context.StepContext) is referenced in the source via the Retrying Exceptions important note but is absent from s4 hints.",
+      "source_evidence": ":java:extdoc:`metrics <javax.batch.runtime.context.StepContext.getMetrics()>`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+進捗状況のログ出力
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+  
+.. _jsr352-progress_log:
+
+進捗ログで出力される内容
+--------------------------------------------------
+以下の内容をログに出力する。
+
+* ジョブの開始と終了ログ
+* ステップの開始と終了ログ
+* 処理対象の件数ログ(処理対象の件数は、アプリケーション側で求める必要がある)
+* ステップの進捗状況ログ
+
+  * 開始後からのTPS(処理対象の件数及び処理済み件数から算出したTPS)
+  * 最新のTPS(前回TPS算出時の時間の経過時間と処理した件数から算出したTPS)
+  * 未処理件数
+  * 終了予測時間(未処理件数とTPSから求めたステップの終了予測時間)
+  
+以下に出力例を示す。
+
+.. code-block:: bash
+
+  INFO progress start job. job name: [test-job]
+  INFO progress start step. job name: [test-job] step name: [test-step]
+  INFO progress job name: [test-job] step name: [test-step] input count: [25]
+  INFO progress job name: [test-job] step name: [test-step] total tps: [250.00] current tps: [250.00] estimated end time: [2017/02/13 04:02:25.656] remaining count: [15]
+  INFO progress job name: [test-job] step name: [test-step] total tps: [384.62] current tps: [519.32] estimated end time: [2017/02/13 04:02:25.668] remaining count: [5]
+  INFO progress job name: [test-job] step name: [test-step] total tps: [409.84] current tps: [450.00] estimated end time: [2017/02/13 04:02:25.677] remaining count: [0]
+  INFO progress finish step. job name: [test-job] step name: [test-step] step status: [null]
+  INFO progress finish job. job name: [test-job]
+
+進捗ログを専用のログファイルに出力するための設定を追加する
+-----------------------------------------------------------------
+進捗を示すログは、ログカテゴリ名を ``progress`` として出力する。
+このカテゴリ名を使用して、進捗ログ用のファイルにログを出力することが出来る。
+
+:ref:`log` を使用した場合の ``log.properties`` の設定例を以下に示す。
+:ref:`log_adaptor` を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
+
+.. code-block:: properties
+
+  # progress log file
+  writer.progressLog.className=nablarch.core.log.basic.FileLogWriter
+  writer.progressLog.filePath=./log/progress.log
+  writer.progressLog.encoding=UTF-8
+  writer.progressLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+  writer.progressLog.formatter.format=$date$ -$logLevel$- $message$
+  
+  # logger list
+  availableLoggersNamesOrder=SQL,MON,PROGRESS,ROO
+  
+  # progress logger setting
+  loggers.PROGRESS.nameRegex=progress
+  loggers.PROGRESS.level=INFO
+  loggers.PROGRESS.writerNames=progressLog
+
+Batchletステップで進捗ログを出力する
+--------------------------------------------------
+Batchletステップで進捗状況をログに出力するための実装例を以下に示す。
+
+なお、Batchletは基本的にはタスク指向の処理を実行するため進捗ログを必要とするケースは少ない。
+Batchletで、ループを伴う処理を行う必要がある場合には、下の実装例を元に進捗ログを出力すると良い。
+
+ポイント
+  * processメソッドの先頭で、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` に設定する。
+  
+    .. important::
+    
+      TPSの算出の起点となる時間は、 :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` が呼び出されたタイミングとなる。
+      :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、
+      TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
+      
+  * 処理を行うループ処理内で、一定間隔ごとに進捗ログを出力する :java:extdoc:`outputProgressInfo <nablarch.fw.batch.ee.progress.ProgressManager.outputProgressInfo(long)>` を呼び出す。
+
+実装例
+  .. code-block:: java
+
+    @Named
+    @Dependent
+    public class ProgressBatchlet extends AbstractBatchlet {
+
+        /** 進捗ログを出力するための機能 */
+        private final ProgressManager progressManager;
+        
+        /** 進捗ログを出力する間隔 */
+        private static final int PROGRESS_LOG_INTERVAL = 1000;
+
+        /**
+         * 進捗ログを出力するための機能をコンストラクタインジェクションを使用してインジェクションする。
+         */
+        @Inject
+        public ProgressBatchlet(ProgressManager progressManager) {
+          this.progressManager = progressManager;
+        }
+
+        @Override
+        public String process() throws Exception {
+         
+          // 処理対象の件数を設定する。
+          // 実際には、データベースやファイルのレコード数などが処理件数となる。
+          progressManager.setInputCount(10000);
+          
+          // 処理済みの件数
+          long processedCount = 0;
+          
+          while (処理対象が存在している間) {
+              processedCount++;
+              
+              // 実際の処理は省略
+              
+              if (processedCount % PROGRESS_LOG_INTERVAL == 0) {
+                // 処理済みの件数を進捗ログ出力機能に渡すことで、進捗ログが出力される
+                progressManager.outputProgressInfo(processedCount);
+              }
+          }
+          return "SUCCESS";
+        }
+    }
+  
+Chunkステップで進捗ログを出力する
+--------------------------------------------------
+Chunkステップで進捗状況をログに出力するための実装例を以下に示す。
+
+.. _jsr352-progress_reader:
+
+ItemReader
+  ポイント
+    * コンストラクタインジェクションを使用して、進捗ログを出力するインタフェース( :java:extdoc:`ProgressManager <nablarch.fw.batch.ee.progress.ProgressManager>` )をインジェクションする。
+    * openメソッドにて、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` に設定する。
+    
+      .. important::
+      
+        TPSの算出の起点となる時間は、 :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` が呼び出されたタイミングとなる。
+        :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、
+        TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
+    
+  実装例
+    .. code-block:: java
+
+      @Named
+      @Dependent
+      public class ProgressReader extends AbstractItemReader {
+
+        /** 進捗ログを出力する機能 */
+        private final ProgressManager progressManager;
+
+        /**
+         * 進捗ログを出力するための機能をコンストラクタインジェクションを使用してインジェクションする。
+         */
+        @Inject
+        public ProgressReader(ProgressManager progressManager) {
+            this.progressManager = progressManager;
+        }
+
+        @Override
+        public void open(Serializable checkpoint) throws Exception {
+          // openメソッド内で、処理対象の件数を進捗ログを出力する機能に設定する。
+          // 実際には、データベースに対するcount文の結果やファイルのレコード数を設定する。
+          progressManager.setInputCount(10000);
+        }
+
+        @Override
+        public Object readItem() throws Exception {
+          // 省略
+        }
+      }
+
+.. _jsr352-progress_listener:
+
+ジョブ定義ファイル
+  ポイント
+    * step配下のリスナーのリストに進捗ログを出力するリスナー(名前は、 ``progressLogListener`` 固定)を設定する。
+    
+  実装例
+    .. code-block:: xml
+    
+      <job id="batchlet-progress-test" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+        <listeners>
+          <listener ref="nablarchJobListenerExecutor" />
+        </listeners>
+      
+        <step id="step">
+          <listeners>
+            <listener ref="nablarchStepListenerExecutor" />
+            <listener ref="nablarchItemWriteListenerExecutor" />
+            <!-- step配下に進捗ログを出力するリスナーを設定する。 -->
+            <listener ref="progressLogListener" />
+          </listeners>
+          <chunk item-count="1000">
+            <reader ref="progressReader" />
+            <writer ref="progressWriter" />
+          </chunk>
+        </step>
+      </job>
+
+.. important::
+  :ref:`ItemReader <jsr352-progress_reader>` で処理対象件数を設定せずに、
+  :ref:`進捗ログ出力リスナー <jsr352-progress_listener>` を設定した場合には、設定不備として例外を送出し処理を異常終了させる。
+  このため、進捗ログを必要としない場合には、 :ref:`進捗ログ出力リスナー <jsr352-progress_listener>` の設定を必ず削除すること。
+  
+.. important::
+  chunkステップでRetrying Exceptionsを設定した場合は、リスナーによる進捗ログの出力が正しく機能しなくなる。
+  これは、リスナーが処理済み件数として使用している :java:extdoc:`metrics <javax.batch.runtime.context.StepContext.getMetrics()>`
+  の読み込み済み件数が実態とずれることに起因する。
+  
+  このため、Retrying Exceptionsを使用して例外発生時のリトライ処理を行いたい場合には、 :java:extdoc:`ItemWriter <javax.batch.api.chunk.ItemWriter>` の実装クラスにて処理済み件数を計算し、
+  :java:extdoc:`outputProgressInfo <nablarch.fw.batch.ee.progress.ProgressManager.outputProgressInfo(long)>` を使用して進捗ログを出力すること。
+  
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "jakarta-batch-progress_log--s1",
+  "title": "進捗状況のログ出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/feature_details/progress_log.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/batch/ee/progress/ProgressManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/runtime/context/StepContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/batch/api/chunk/ItemWriter.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "進捗ログで出力される内容",
+      "hints": [
+        "ProgressManager",
+        "進捗ログ",
+        "TPS算出",
+        "終了予測時間",
+        "未処理件数",
+        "ジョブ進捗状況"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "進捗ログを専用のログファイルに出力するための設定を追加する",
+      "hints": [
+        "progress",
+        "log.properties",
+        "専用ログファイル",
+        "progressカテゴリ",
+        "ログ設定",
+        "FileLogWriter"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Batchletステップで進捗ログを出力する",
+      "hints": [
+        "ProgressManager",
+        "AbstractBatchlet",
+        "setInputCount",
+        "outputProgressInfo",
+        "Batchletステップ進捗ログ",
+        "TPS算出起点"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Chunkステップで進捗ログを出力する",
+      "hints": [
+        "ProgressManager",
+        "AbstractItemReader",
+        "ItemWriter",
+        "progressLogListener",
+        "Chunkステップ進捗ログ",
+        "RetryingExceptions制約",
+        "ItemReader設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "進捗ログに出力される内容:\n\n- ジョブの開始と終了ログ\n- ステップの開始と終了ログ\n- 処理対象の件数ログ（アプリケーション側で設定が必要）\n- ステップの進捗状況ログ:\n  - 開始後からのTPS（処理対象件数と処理済み件数から算出）\n  - 最新のTPS（前回算出時からの経過時間と処理件数から算出）\n  - 未処理件数\n  - 終了予測時間（未処理件数とTPSから算出）\n\n出力例:\n\n```bash\nINFO progress start job. job name: [test-job]\nINFO progress start step. job name: [test-job] step name: [test-step]\nINFO progress job name: [test-job] step name: [test-step] input count: [25]\nINFO progress job name: [test-job] step name: [test-step] total tps: [250.00] current tps: [250.00] estimated end time: [2017/02/13 04:02:25.656] remaining count: [15]\nINFO progress job name: [test-job] step name: [test-step] total tps: [384.62] current tps: [519.32] estimated end time: [2017/02/13 04:02:25.668] remaining count: [5]\nINFO progress job name: [test-job] step name: [test-step] total tps: [409.84] current tps: [450.00] estimated end time: [2017/02/13 04:02:25.677] remaining count: [0]\nINFO progress finish step. job name: [test-job] step name: [test-step] step status: [null]\nINFO progress finish job. job name: [test-job]\n```",
+    "s2": "進捗ログのログカテゴリ名は `progress`。このカテゴリ名を使用して専用ファイルへ出力できる。\n\n:ref:`log_adaptor` を使用している場合は、アダプタに対応したログライブラリのマニュアルを参照して設定する。\n\n:ref:`log` を使用した場合の `log.properties` 設定例:\n\n```properties\n# progress log file\nwriter.progressLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.progressLog.filePath=./log/progress.log\nwriter.progressLog.encoding=UTF-8\nwriter.progressLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.progressLog.formatter.format=$date$ -$logLevel$- $message$\n\n# logger list\navailableLoggersNamesOrder=SQL,MON,PROGRESS,ROO\n\n# progress logger setting\nloggers.PROGRESS.nameRegex=progress\nloggers.PROGRESS.level=INFO\nloggers.PROGRESS.writerNames=progressLog\n```",
+    "s3": "ポイント:\n- `process` メソッドの先頭で処理対象件数（DBのcount結果やファイルのレコード数等）を取得し、:java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` に設定する。\n- ループ処理内で一定間隔ごとに :java:extdoc:`outputProgressInfo <nablarch.fw.batch.ee.progress.ProgressManager.outputProgressInfo(long)>` を呼び出す。\n\n> **重要**: TPSの算出起点となる時間は :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` 呼び出しタイミング。`setInputCount` 呼び出し後に重い処理（DB検索等）を行うとTPSが実際より小さい値になる。\n\nBatchletはタスク指向処理のため進捗ログを必要とするケースは少ない。ループを伴う処理を行う場合に使用する。\n\n実装例:\n\n```java\n@Named\n@Dependent\npublic class ProgressBatchlet extends AbstractBatchlet {\n\n    private final ProgressManager progressManager;\n    private static final int PROGRESS_LOG_INTERVAL = 1000;\n\n    @Inject\n    public ProgressBatchlet(ProgressManager progressManager) {\n      this.progressManager = progressManager;\n    }\n\n    @Override\n    public String process() throws Exception {\n      progressManager.setInputCount(10000);\n      long processedCount = 0;\n      \n      while (処理対象が存在している間) {\n          processedCount++;\n          if (processedCount % PROGRESS_LOG_INTERVAL == 0) {\n            progressManager.outputProgressInfo(processedCount);\n          }\n      }\n      return \"SUCCESS\";\n    }\n}\n```",
+    "s4": "## ItemReader\n\nポイント:\n- コンストラクタインジェクションを使用して :java:extdoc:`ProgressManager <nablarch.fw.batch.ee.progress.ProgressManager>` をインジェクションする。\n- `open` メソッドにて処理対象件数（DBのcount結果やファイルのレコード数等）を取得し、:java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` に設定する。\n\n> **重要**: TPSの算出起点となる時間は :java:extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` 呼び出しタイミング。`setInputCount` 呼び出し後に重い処理（DB検索等）を行うとTPSが実際より小さい値になる。\n\n実装例（ItemReader）:\n\n```java\n@Named\n@Dependent\npublic class ProgressReader extends AbstractItemReader {\n\n  private final ProgressManager progressManager;\n\n  @Inject\n  public ProgressReader(ProgressManager progressManager) {\n      this.progressManager = progressManager;\n  }\n\n  @Override\n  public void open(Serializable checkpoint) throws Exception {\n    progressManager.setInputCount(10000);\n  }\n\n  @Override\n  public Object readItem() throws Exception {\n    // 省略\n  }\n}\n```\n\n## ジョブ定義ファイル（Chunkステップ）\n\n`step` 配下のリスナーリストに進捗ログ出力リスナー（名前は `progressLogListener` 固定）を設定する。\n\n```xml\n<job id=\"batchlet-progress-test\" xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\" version=\"1.0\">\n  <listeners>\n    <listener ref=\"nablarchJobListenerExecutor\" />\n  </listeners>\n\n  <step id=\"step\">\n    <listeners>\n      <listener ref=\"nablarchStepListenerExecutor\" />\n      <listener ref=\"nablarchItemWriteListenerExecutor\" />\n      <listener ref=\"progressLogListener\" />\n    </listeners>\n    <chunk item-count=\"1000\">\n      <reader ref=\"progressReader\" />\n      <writer ref=\"progressWriter\" />\n    </chunk>\n  </step>\n</job>\n```\n\n> **重要**: :ref:`ItemReader <jsr352-progress_reader>` で処理対象件数を設定せずに :ref:`進捗ログ出力リスナー <jsr352-progress_listener>` を設定した場合は、設定不備として例外を送出し処理を異常終了させる。進捗ログが不要な場合は必ず :ref:`進捗ログ出力リスナー <jsr352-progress_listener>` の設定を削除すること。\n\n> **重要**: ChunkステップでRetrying Exceptionsを設定した場合、リスナーによる進捗ログ出力が正しく機能しなくなる。これは、リスナーが処理済み件数として使用している :java:extdoc:`metrics <javax.batch.runtime.context.StepContext.getMetrics()>` の読み込み済み件数が実態とずれることに起因する。Retrying Exceptionsを使用する場合は、:java:extdoc:`ItemWriter <javax.batch.api.chunk.ItemWriter>` 実装クラスにて処理済み件数を計算し、:java:extdoc:`outputProgressInfo <nablarch.fw.batch.ee.progress.ProgressManager.outputProgressInfo(long)>` を使用して進捗ログを出力すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

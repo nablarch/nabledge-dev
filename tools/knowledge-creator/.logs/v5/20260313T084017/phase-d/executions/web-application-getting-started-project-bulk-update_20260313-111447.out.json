@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-getting-started-project-bulk-update",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 確認画面JSPの実装ポイント",
+      "description": "The knowledge file adds an implementation explanation for the confirmation JSP: \"二重送信防止のため、確認画面のフォームには `useToken=\\\"true\\\"` を指定する。サーバー側の `@OnDoubleSubmission` アノテーションと組み合わせて使用することで二重送信防止が正しく機能する。\" The source's confirmation JSP section (`project_bulk_update-confirm_jsp`) contains only JSP code with no 「この実装のポイント」explanation. The combination requirement statement between useToken and @OnDoubleSubmission has no basis in the source text.",
+      "source_evidence": "Source `project_bulk_update-confirm_jsp` section shows only `<n:form useToken=\"true\">` in JSP code with no accompanying implementation notes. The source never states that useToken and @OnDoubleSubmission must be combined, or that double-submission prevention requires both."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — index hints",
+      "description": "The hints array is missing `ProjectSearchForm` and `ProjectSearchDto`, both of which are PascalCase class names explicitly referenced in the list action method code example.",
+      "source_evidence": "Source `project_bulk_update-action_list` code shows: `@InjectForm(form = ProjectSearchForm.class, ...)`, `ProjectSearchForm searchForm = ...`, `ProjectSearchDto projectSearchDto = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm)`, and `SessionUtil.put(context, \"projectSearchDto\", projectSearchDto)`."
+    }
+  ]
+}

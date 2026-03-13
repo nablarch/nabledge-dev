@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-generator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: introductory section (before 機能概要)",
+      "description": "The introductory section before 機能概要 is entirely absent from the knowledge file. It contains decision-necessary guidance: (1) this feature is intended for use with universal_dao for simple sequential numbering; (2) for use cases outside universal_dao, application-side implementation is recommended instead; (3) reasoning — other numbering use cases involve complex rules or value editing that this feature cannot handle; (4) a concrete 3-step example for implementing parent-key-scoped sequential numbering at the application level. This guidance is critical for a developer deciding whether to use this feature directly.",
+      "source_evidence": "この機能は、:ref:`universal_dao` でサロゲートキーを採番(単純な連番を採番)する際に使用する。\nなお、:ref:`universal_dao` 以外でも使用できるが、以下の理由によりアプリケーション側で対応することを推奨する。\n理由: サロゲートキーの採番処理は、:ref:`universal_dao` が行うためアプリケーション側で直接採番機能を使用する必要が無い。それ以外の用途で値を採番する場合には、採番ルールが複雑であったり、採番した値を編集することが想定される。このような場合は、単純な連番を採番する本機能を使用できないため、アプリケーション側で設計、実装する必要がある。\n例: 1. 親キーの毎に連番を採番するための専用テーブルを作成する。2. アプリケーションでは、親のキーが登録されたタイミングで専用テーブルにレコードを登録する。3. 採番が必要なタイミングで親キーに対応する採番済みの値をインクリメントすることで、親キー内での連番を採番できる。"
+    }
+  ]
+}

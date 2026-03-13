@@ -1,0 +1,258 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/standalone/retry_handler.rst`
+- Format: `rst`
+
+```
+.. _retry_handler:
+
+リトライハンドラ
+========================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラはデータベースアクセス時のデッドロックのように、単純リトライによってリカバリ可能なエラーについて、自動的なリトライを制御する。
+
+本ハンドラでは、 :java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を実装した実行時例外をリトライ可能なエラーとみなし、後続ハンドラを再実行する。
+なお、リトライ上限の判定に関する処理は、 :java:extdoc:`RetryContext <nablarch.fw.handler.RetryHandler.RetryContext>` の実装クラスとして外部化されている。デフォルトでは以下の実装が提供されている。
+
+* :java:extdoc:`リトライ回数による上限設定 <nablarch.fw.handler.retry.CountingRetryContext>`
+* :java:extdoc:`経過時間による上限設定 <nablarch.fw.handler.retry.TimeRetryContext>`
+
+本ハンドラでは、以下の処理を行う。
+
+* リトライ対象例外発生時のリトライ処理
+* リトライ上限到達時の例外送出処理
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/RetryHandler/flow.png
+  :scale: 80
+  
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.handler.RetryHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-standalone</artifactId>
+  </dependency>
+
+制約
+------------------------------
+リトライ対象例外を送出するハンドラは、本ハンドラより後ろに設定すること。
+本ハンドラより手前でリトライ対象の例外を送出しても、単に例外として処理されるので注意すること。
+
+リトライの上限を設定する
+--------------------------------------------------
+本ハンドラでは、リトライを無限に繰り返すのではなく一定の回数リトライを繰り返しても処理が成功しなかった場合は、
+リトライに失敗したとみなし処理を異常終了させる。
+このため、本ハンドラを使用する際には必ずリトライ上限の設定が必要となる。
+
+上限設定は、上述したとおり以下の2種類から選択できる。プロジェクト要件とマッチしない場合には、プロジェクト側で実装を追加し対応すること。
+
+* :java:extdoc:`リトライ回数による上限設定 <nablarch.fw.handler.retry.CountingRetryContext>`
+* :java:extdoc:`経過時間による上限設定 <nablarch.fw.handler.retry.TimeRetryContext>`
+
+以下にリトライ回数による上限設定の例を示す。
+
+.. code-block:: xml
+
+  <component name="retryHandler" class="nablarch.fw.handler.RetryHandler">
+    <property name="retryContextFactory">
+      <component class="nablarch.fw.handler.retry.CountingRetryContextFactory">
+        <property name="retryCount" value="3" />          <!-- 最大3回リトライを行う -->
+        <property name="retryIntervals" value="5000" />   <!-- リトライを実行するまで5秒待機する -->
+      </component>
+    </property>
+  </component>
+
+.. tip::
+
+  上限に設定する値は、想定する最大の復旧時間プラスアルファの値を設定すること。
+
+  例えば、アクティブ/スタンバイ構成のデータベースの切り替えに最大5分かかるのであれば、
+  5分プラスアルファの時間(例えば7分等)を上限値として設定する。
+
+  なお、複数の例外に対するリトライを実現する場合には、最も復旧まで時間をようするものをベースに上限値を設定すること。
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-retry_handler--s1`
+
+```json
+{
+  "id": "handlers-retry_handler--s1",
+  "title": "リトライハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/standalone/retry_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/retry/Retryable.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/RetryHandler.RetryContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/retry/CountingRetryContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/retry/TimeRetryContext.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "RetryHandler",
+        "Retryable",
+        "RetryContext",
+        "CountingRetryContext",
+        "TimeRetryContext",
+        "nablarch.fw.handler.RetryHandler",
+        "リトライハンドラ",
+        "自動リトライ",
+        "デッドロックリカバリ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-standalone",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "ハンドラ設定順序",
+        "リトライ対象例外",
+        "制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "リトライの上限を設定する",
+      "hints": [
+        "CountingRetryContextFactory",
+        "TimeRetryContext",
+        "retryCount",
+        "retryIntervals",
+        "リトライ上限設定",
+        "回数制限",
+        "経過時間制限"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "デッドロックのような単純リトライでリカバリ可能なエラーを自動リトライ制御するハンドラ。:java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を実装した実行時例外をリトライ可能とみなし、後続ハンドラを再実行する。リトライ上限の判定は :java:extdoc:`RetryContext <nablarch.fw.handler.RetryHandler.RetryContext>` の実装クラスとして外部化されており、以下のデフォルト実装が提供されている。\n\n- :java:extdoc:`リトライ回数による上限設定 <nablarch.fw.handler.retry.CountingRetryContext>`\n- :java:extdoc:`経過時間による上限設定 <nablarch.fw.handler.retry.TimeRetryContext>`\n\n処理内容:\n1. リトライ対象例外発生時のリトライ処理\n2. リトライ上限到達時の例外送出処理\n\n**クラス**: `nablarch.fw.handler.RetryHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-standalone</artifactId>\n</dependency>\n```",
+    "s3": "> **警告**: リトライ対象例外を送出するハンドラは、本ハンドラより後ろに設定すること。本ハンドラより手前でリトライ対象の例外を送出しても、単に例外として処理される。",
+    "s4": "本ハンドラを使用する際には必ずリトライ上限の設定が必要。上限設定は以下の2種類から選択:\n\n- :java:extdoc:`リトライ回数による上限設定 <nablarch.fw.handler.retry.CountingRetryContext>`\n- :java:extdoc:`経過時間による上限設定 <nablarch.fw.handler.retry.TimeRetryContext>`\n\nプロジェクト要件にマッチしない場合は、プロジェクト側で実装を追加すること。\n\nリトライ回数による上限設定の例:\n\n```xml\n<component name=\"retryHandler\" class=\"nablarch.fw.handler.RetryHandler\">\n  <property name=\"retryContextFactory\">\n    <component class=\"nablarch.fw.handler.retry.CountingRetryContextFactory\">\n      <property name=\"retryCount\" value=\"3\" />        <!-- 最大3回リトライ -->\n      <property name=\"retryIntervals\" value=\"5000\" /> <!-- リトライまで5秒待機 -->\n    </component>\n  </property>\n</component>\n```\n\n> **補足**: 上限値は想定する最大復旧時間+αを設定すること。例: アクティブ/スタンバイDBの切り替えに最大5分かかる場合は7分等を上限に設定。複数の例外をリトライする場合は、最も復旧に時間がかかるものをベースに上限値を設定すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

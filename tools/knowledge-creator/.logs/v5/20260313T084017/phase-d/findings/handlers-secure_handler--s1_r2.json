@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-secure_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "official_doc_urls",
+      "description": "ContentSecurityPolicyHeader の Javadoc URL が official_doc_urls に含まれていない。s6 で ContentSecurityPolicyHeader クラスが中心的に使用されているにもかかわらず、nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader への URL が他のヘッダクラス（FrameOptionsHeader, XssProtectionHeader 等）と同様にリストされていない。",
+      "source_evidence": "ソースファイルの CSP セクション全体で `ContentSecurityPolicyHeader` (`nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader`) が繰り返し参照されており、他のセキュアヘッダクラスと同様に Javadoc リンクが存在するはず。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "s6 の hints に ContentSecurityPolicyHeader の完全修飾クラス名 `nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader` が含まれていない。他のセクション（s4, s5）では短縮名と完全修飾名の両方が hints に含まれているのに対し、s6 では `ContentSecurityPolicyHeader` の短縮名のみ存在する。",
+      "source_evidence": "s4 hints は `FrameOptionsHeader` と `nablarch.fw.web.handler.secure.FrameOptionsHeader` の両形式を含む。s5 も `SecureResponseHeader` と `nablarch.fw.web.handler.secure.SecureResponseHeader` の両形式を含む。s6 の `ContentSecurityPolicyHeader` は同様のパターンに従っていない。"
+    }
+  ]
+}

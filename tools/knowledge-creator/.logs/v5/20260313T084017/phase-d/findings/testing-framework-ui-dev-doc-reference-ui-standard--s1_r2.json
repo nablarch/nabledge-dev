@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-ui-dev-doc-reference-ui-standard--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — 画面の配色変更",
+      "description": "Default CSS color variable values (actual RGB defaults) are omitted. The source contains a code block showing the exact default values for all four color parameters. An AI cannot answer questions like 'what is the default value of @mainColor1?' without this information.",
+      "source_evidence": "デフォルトの配色は以下のような設定になっている。\n@baseColor  : rgb(255, 255, 255); // 白\n@mainColor1 : rgb(235, 92,  21);  // オレンジ\n@mainColor2 : rgb(76,  42,  26);  // こげ茶\n@subColor   : rgb(170, 10,  10);  // 赤"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — index hints",
+      "description": "Hints for s3 are missing the color variable property names that appear in the first column of the parameters table: @baseColor, @mainColor1, @mainColor2, @subColor. Per V4, property names from table first columns should be included as hints.",
+      "source_evidence": "各パラメータの役割は以下のとおり。\n**@baseColor** 背景色\n**@mainColor1** 前景色1\n**@mainColor2** 前景色2\n**@subColor** 差し色"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — IE6/7サポートの制約",
+      "description": "The source explicitly states that supporting IE6/7 results in increased support cost ('対応コストの増大') in addition to the listed technical constraints. The knowledge file lists only the two technical constraints (icon display, hover pseudo-selector) and omits the cost increase warning that the source presents as a primary consideration.",
+      "source_evidence": "ただし、IE6/7をサポートする場合、対応コストの増大に加えて、以下の制約が発生する。"
+    }
+  ]
+}

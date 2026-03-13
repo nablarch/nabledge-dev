@@ -1,0 +1,34 @@
+{
+  "file_id": "releases-nablarch5u6-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "No.41 デフォルトコンフィグレーション — nablarch-testing-default-configurationのメッセージIDに不適切なものがある",
+      "description": "本番稼働アプリケーションへの影響はないが「影響あり（テスト設定）」と分類されており、対処として具体的なBefore/After XML設定が提示されている。バージョンアップ後にテスト設定の動作を変えたくない場合に entityTestConfiguration の maxAndMinMessageId・underLimitMessageId を旧値に明示設定するよう指示する内容が知識ファイルに一切含まれていない。テスティングフレームワークを使用する開発者が必要とする重要な移行情報。",
+      "source_evidence": "No.41: アプリケーションへの影響「なし」（ただし「本番稼働アプリケーションへの影響はありませんが、テストの設定について、修正対象コンポーネントの修正対象プロパティを使用していて、動作を変えたくない場合は、アプリケーションの設定ファイルに以下の定義を追加してください」と具体的なXML設定例が示されている。修正後バージョン: nablarch-testing-default-configuration 1.0.2、起因バージョン: nablarch-testing-default-configuration 1.0.0）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "No.63 Example — Exampleアプリケーション追加",
+      "description": "チュートリアルを廃止して追加された7種のExampleアプリケーション（ウェブ、RESTful、HTTPメッセージング、JSR352バッチ、Nablarchバッチ、MOMメッセージング、テーブルキューメッセージング）が「主な新機能」テーブルにも「その他の変更」にも記載されていない。5u6でのプロジェクト開始時の参照先として重要な追加リソース。",
+      "source_evidence": "No.63: リリース区分「追加」、モジュール nablarch-example-web 1.0.0 / nablarch-example-rest 1.0.0 / nablarch-example-http-messaging-send 1.0.0 / nablarch-example-http-messaging 1.0.0 / nablarch-example-batch-ee 1.0.0 / nablarch-example-batch 1.0.0 / nablarch-example-mom-delayed-send 1.0.0 他"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "No.44 解説書 — JSPカスタムタグ textタグのvalueFormat属性制約",
+      "description": "ウィンドウスコープを使用しない場合、textタグの `valueFormat` 属性（yyyymmdd形式）のみを指定したバリデーションができないという制約が知識ファイルに記載されていない。JSPカスタムタグのフォーマット機能を使用する開発者が影響を受ける実装上の制約。",
+      "source_evidence": "No.44: 「ウィンドウスコープを使用しない場合は、textタグのvalueFormat属性(年月日のフォーマット：yyyymmdd)のみを指定したバリデーションができない制約を追記しました」参照先: Nablarchアプリケーションフレームワーク:Nablarchが提供するライブラリ:JSPカスタムタグ:フォーマットして値を出力する"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "知識ファイルのコンテンツに登場する `CodeUtil` クラス名がhintsリストに含まれていない。No.26（大文字小文字非区別化）および「その他の変更」セクションに CodeUtil の変更が記載されているが、hintsに \"CodeUtil\" が存在しない。",
+      "source_evidence": "No.26: 「CodeUtil使用時に指定するパターン/オプション名称のカラム名で、大文字/小文字を区別しないで動作するように変更」。知識ファイルの「その他の変更」に「CodeUtilのパターン/オプション名称カラム名で大文字小文字を区別しないように変更」と記載あり。"
+    }
+  ]
+}

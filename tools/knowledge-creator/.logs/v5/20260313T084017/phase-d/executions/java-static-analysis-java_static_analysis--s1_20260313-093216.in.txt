@@ -1,0 +1,220 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/java_static_analysis/index.rst`
+- Format: `rst`
+
+```
+効率的なJava静的チェック
+=========================
+
+.. contents:: 目次
+  :depth: 2
+  :local:
+
+コードの品質と保守性を高めるために次の３つを実践する。
+
+* :ref:`code-analysis`
+* :ref:`code-format`
+* :ref:`api-analysis`
+
+上記を行うために、NablarchではJetBrains社製のIDEである `IntelliJ IDEA(外部サイト) <https://www.jetbrains.com/idea/>`_ の使用を推奨している。
+本ページでは、IntelliJ IDEAを用いた効率的なJava静的チェックの方法を説明する。
+
+.. _code-analysis:
+
+Inspectionを行う
+------------------
+
+IntelliJ IDEAには静的検査を行う `Inspection機能(外部サイト) <https://www.jetbrains.com/help/idea/code-inspection.html>`_ があり、Javaコーディングの慣例に沿っているか、潜在的なバグが含まれていないかなどをチェックし、リアルタイムに警告してくれる。
+
+Inspectionはデフォルトで、一般的に注意すべき点について警告する設定となっている。
+
+プロジェクトで規約を策定している場合は、プロジェクトに適した設定に変更することで、Inspectionをより有効に活用することができる。
+変更した設定はエクスポートおよびインポートすることで、プロジェクトの開発者間で共有することができる。
+エクスポートおよびインポートの方法については `プロファイルの構成(外部サイト) <https://www.jetbrains.com/help/idea/customizing-profiles.html>`_ を参照。
+
+.. _code-format:
+
+フォーマットを統一する
+----------------------
+
+IntelliJ IDEAのコードフォーマッター機能を使用することで、プロジェクトでコードスタイルを統一することができる。
+使用方法については `JavaスタイルガイドのJavaコードフォーマッター解説 <https://github.com/Fintan-contents/coding-standards/blob/main/java/code-formatter.md>`_ を参照。
+
+.. _api-analysis:
+
+許可していないAPIが使用されていないかチェックする
+-------------------------------------------------
+
+このチェックにはIntelliJ IDEAのプラグインとIntelliJ IDEAに依存しないSpotBugsプラグインの2種類のツールを提供している。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+nablarch-intellij-pluginを使用する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`nablarch-intellij-plugin <https://github.com/nablarch/nablarch-intellij-plugin>`_ はNablarch開発を支援するためのIntelliJ IDEA用のプラグインであり、下記の機能を有している。
+
+* Nablarch非公開APIが使用されている場合に警告を出す
+* ブラックリストに登録したJava APIが使用されている場合に警告を出す
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+使用不許可APIチェックツールを使用する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+使用不許可APIチェックツールはSpotBugsのプラグインとして作成されたツールである。
+詳細な仕様と実行方法は `Javaスタイルガイドの使用不許可APIチェックツール解説 <https://github.com/Fintan-contents/coding-standards/blob/main/java/staticanalysis/unpublished-api/README.md>`_ を参照。
+
+なお、ブランクプロジェクトには `Mavenで実行するための設定 <https://github.com/Fintan-contents/coding-standards/blob/main/java/staticanalysis/spotbugs/docs/Maven-settings.md>`_ をあらかじめ設定してあるため、すぐにチェックを実施することが可能である。
+```
+
+## Knowledge File
+
+- ID: `java-static-analysis-java_static_analysis--s1`
+
+```json
+{
+  "id": "java-static-analysis-java_static_analysis--s1",
+  "title": "効率的なJava静的チェック",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/java_static_analysis/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Inspectionを行う",
+      "hints": [
+        "IntelliJ IDEA",
+        "Inspection",
+        "静的検査",
+        "コード品質チェック",
+        "コーディング規約確認",
+        "プロファイル設定共有"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマットを統一する",
+      "hints": [
+        "IntelliJ IDEA",
+        "コードフォーマッター",
+        "コードスタイル統一",
+        "Javaスタイルガイド"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "許可していないAPIが使用されていないかチェックする",
+      "hints": [
+        "nablarch-intellij-plugin",
+        "SpotBugs",
+        "使用不許可APIチェックツール",
+        "Nablarch非公開API",
+        "ブラックリストAPI",
+        "Maven"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "IntelliJ IDEAの[Inspection機能](https://www.jetbrains.com/help/idea/code-inspection.html)で静的検査を行う。Javaコーディング慣例への準拠や潜在的バグの検出をリアルタイムに警告する。\n\n- デフォルト設定で一般的な注意点について警告する\n- プロジェクト規約に合わせて設定変更することで、より有効に活用できる\n- 変更した設定はエクスポート/インポートにより開発者間で共有可能\n\nエクスポート/インポートの方法: [プロファイルの構成](https://www.jetbrains.com/help/idea/customizing-profiles.html)",
+    "s2": "IntelliJ IDEAのコードフォーマッター機能でプロジェクトのコードスタイルを統一する。\n\n使用方法: [JavaスタイルガイドのJavaコードフォーマッター解説](https://github.com/Fintan-contents/coding-standards/blob/main/java/code-formatter.md)",
+    "s3": "許可していないAPIの使用チェックには2種類のツールを提供している。\n\n**nablarch-intellij-plugin**（IntelliJ IDEA用プラグイン）:\n- リポジトリ: [nablarch-intellij-plugin](https://github.com/nablarch/nablarch-intellij-plugin)\n- Nablarch非公開APIが使用されている場合に警告を出す\n- ブラックリストに登録したJava APIが使用されている場合に警告を出す\n\n**使用不許可APIチェックツール**（SpotBugsプラグイン）:\n- 仕様・実行方法: [Javaスタイルガイドの使用不許可APIチェックツール解説](https://github.com/Fintan-contents/coding-standards/blob/main/java/staticanalysis/unpublished-api/README.md)\n- ブランクプロジェクトには[Mavenで実行するための設定](https://github.com/Fintan-contents/coding-standards/blob/main/java/staticanalysis/spotbugs/docs/Maven-settings.md)があらかじめ設定済みのため、即時チェック可能"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

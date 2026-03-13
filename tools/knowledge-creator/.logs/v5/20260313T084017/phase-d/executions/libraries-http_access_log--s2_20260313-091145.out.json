@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-http_access_log--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The single section s1 covers three distinct h3-level source sections (「HTTPアクセスログの設定」「JSON形式の構造化ログとして出力する」「セッションストアIDについて」). The combined content is far beyond 2000 chars and contains multiple tables and code examples. Per V3 rules, when an h2 section has >= 2000 chars AND h3 subsections exist but the knowledge file does not split them, it should be reported.",
+      "source_evidence": "Source h3 sections separated by ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~: (1) HTTPアクセスログの設定, (2) JSON形式の構造化ログとして出力する, (3) セッションストアIDについて — all under the h2 「使用方法」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "The class `BasicLogFormatter` (referenced in the source's 「重要」note under beginFormat) is missing from hints. Additionally, many property names that appear in the property tables are absent from hints: `httpAccessLogFormatter.parametersTargets`, `httpAccessLogFormatter.dispatchingClassTargets`, `httpAccessLogFormatter.datePattern`, `httpAccessLogFormatter.parametersSeparator`, `httpAccessLogFormatter.sessionScopeSeparator`, `httpAccessLogFormatter.beginOutputEnabled`, `httpAccessLogFormatter.parametersOutputEnabled`, `httpAccessLogFormatter.dispatchingClassOutputEnabled`, `httpAccessLogFormatter.endOutputEnabled`, `httpAccessLogFormatter.beginLabel`, `httpAccessLogFormatter.parametersLabel`, `httpAccessLogFormatter.dispatchingClassLabel`, `httpAccessLogFormatter.endLabel`.",
+      "source_evidence": "Source references BasicLogFormatter in: 「リクエストIDとユーザIDは、 BasicLogFormatter が出力する項目と重複するが…」. All listed property names appear as first-column entries in the source property tables for both text-format and JSON-format sections."
+    }
+  ]
+}

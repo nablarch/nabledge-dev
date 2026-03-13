@@ -1,0 +1,474 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/web/multipart_handler.rst`
+- Format: `rst`
+
+```
+.. _multipart_handler:
+
+マルチパートリクエストハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+
+HTTPリクエストがマルチパート形式の場合に、ボディ部を解析しアップロードファイルを一時ファイルとして保存するハンドラ。
+
+本ハンドラでは、以下の処理を行う。
+
+* マリチパートリクエストの解析
+* アップロードファイルを一時ファイルとして保存
+* 保存した一時ファイルの削除
+
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/MultipartHandler/flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.web.upload.MultipartHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+
+  <!-- 一時保存先を指定する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core</artifactId>
+  </dependency>
+
+.. _multipart_handler-constraint:
+
+制約
+--------------------------------------------------
+なし。
+
+このハンドラの動作条件
+--------------------------------------------------
+このハンドラはマルチパート形式のリクエストの場合のみ、リクエストボディを解析する。マルチパート形式かどうかは、リクエストヘッダの ``Content-Type`` で判断する。
+
+``Content-Type`` が ``multipart/form-data`` と一致する場合は、リクエストがマルチパート形式だと判断し、ボディの解析処理を行う。
+それ以外の場合には、このハンドラは何もせずに後続のハンドラに処理を委譲する。
+
+アップロードファイルの一時保存先を指定する
+--------------------------------------------------
+アップロードファイルの一時保存先ディレクトリは、 :ref:`file_path_management` に設定する。
+
+ファイルパス管理に一時保存先ディレクトリの指定がない場合は、デフォルトの保存先としてシステムプロパティの `java.io.tmpdir` の値を使用する。
+
+以下に一時ファイルの保存先ディレクトリの設定例を示す。
+
+ポイント
+  * 保存先ディレクトリの論理名は、 ``uploadFileTmpDir`` とすること。
+
+.. code-block:: xml
+
+  <component name="filePathSetting" class="nablarch.core.util.FilePathSetting">
+    <!-- ディレクトリの設定 -->
+    <property name="basePathSettings">
+      <map>
+        <!-- アップロードファイルの一時保存ディレクトリ -->
+        <entry key="uploadFileTmpDir" value="file:/var/nablarch/uploadTmpDir" />
+      </map>
+    </property>
+  </component>
+
+.. tip::
+
+  上記の例では、保存先ディレクトリを直接指定しているが、この値は環境ごとに異なることが想定される。
+  このため、直接コンポーネント設定ファイルに設定するのではなく、環境設定ファイルに設定することを推奨する。
+
+  詳細は、:ref:`repository-environment_configuration` を参照。
+
+
+.. _multipart_handler-file_limit:
+
+巨大なファイルのアップロードを防ぐ
+--------------------------------------------------
+巨大なファイルをアップロードされると、ディスクリソースが枯渇するなどが原因でシステムが正常に稼働しなくなる可能性がある。
+このため、このハンドラではアップロードサイズの上限を超過した場合には、413(Payload Too Large)をクライアントに返却する。
+
+アップロードサイズの上限は、バイト数で設定する。設定を省略した場合は、無制限となる。
+DoS攻撃を防ぐためにも、アップロードサイズの上限は常に設定しておくこと。
+
+以下にアップロードサイズの設定例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.upload.MultipartHandler" name="multipartHandler">
+    <property name="uploadSettings">
+      <component class="nablarch.fw.web.upload.UploadSettings">
+        <!-- アップロードサイズ(Content-Length)の上限(約1MB) -->
+        <property name="contentLengthLimit" value="1000000" />
+      </component>
+    </property>
+  </component>
+
+
+.. tip::
+
+  アップロードサイズの上限は、ファイル単位ではなく1リクエストでアップロード出来る上限となる。
+
+  このため、複数のファイルをアップロードした場合には、それらのファイルサイズの合計値(厳密には、Content-Length)により、上限チェックが実施される。
+
+  もし、ファイル単位でサイズチェックをする必要がある場合には、アクション側で実装すること。
+
+.. _multipart_handler-max_file_count:
+
+ファイルの大量アップロードを防ぐ
+--------------------------------------------------
+アップロードサイズの上限を設定しても、1つ1つのファイルサイズを小さくすることで一度に大量のファイルをアップロードできる。
+不必要な処理を減らすため、マルチパートリクエストハンドラでは一度にアップロードできるファイル数に上限を設定できるようになっている。
+上限を超えるファイルがアップロードされた場合、このハンドラは400(Bad Request)を返す。
+
+以下に設定例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.web.upload.MultipartHandler" name="multipartHandler">
+    <property name="uploadSettings">
+      <component class="nablarch.fw.web.upload.UploadSettings">
+        <!-- アップロードファイル数の上限 -->
+        <property name="maxFileCount" value="100" />
+      </component>
+    </property>
+  </component>
+
+``maxFileCount`` に0以上の値を設定すると、その値が一度にアップロードできるファイル数の上限となる。
+負数を設定した場合は無制限となる。
+未設定の場合はデフォルトで-1となる。
+
+
+一時ファイルの削除（クリーニング）を行う
+--------------------------------------------------
+保存されたアップロードファイルを以下の条件でクリーニングする。
+
+* ボディの解析中に例外が発生した場合
+* ハンドラの復路で自動削除設定が有効な場合
+
+自動削除設定は、デフォルトで有効に設定されている。
+この設定は本番環境で安易に無効にすると、大量の一時ファイルがディスク上に残り、最悪の場合ディスクフルの原因となるため注意すること。
+
+設定値を無効にする場合には、 :java:extdoc:`UploadSettings#autoCleaning <nablarch.fw.web.upload.UploadSettings.setAutoCleaning(boolean)>` に `false` を設定する。
+
+
+マルチパート解析エラー及びファイルサイズ上限超過時の遷移先画面を設定する
+----------------------------------------------------------------------------------------------------
+このハンドラでは、マルチパート解析エラー [#part_error]_ や :ref:`ファイルサイズの上限超過時 <multipart_handler-file_limit>` に、
+不正なリクエストとしてクライアントに `400(BadRequest)` を返却する。
+
+このため、 `400(BadRequest)` に対応したエラーページの設定を `web.xml` に行う必要がある。
+`web.xml` へのエラーページ設定を省略した場合は、ウェブアプリケーションサーバが持つデフォルトのページなどがクライアントに返却される。
+
+.. important::
+
+  このハンドラは、:ref:`session_store_handler-constraint` にあるとおり、 :ref:`session_store_handler` より手前に設定する必要がある。
+  このため、 :ref:`session_store_handler` の後続に設定される :ref:`http_error_handler` の :ref:`HttpErrorHandler_DefaultPage` は使用できない。
+
+.. [#part_error]
+  マルチパート解析エラーが発生するケース
+
+  * アップロード中にクライアントからの切断要求があり、ボディ部が不完全な場合
+  * バウンダリーが存在しない
+
+.. _multipart_handler-read_upload_file:
+
+アップロードしたファイルを読み込む
+------------------------------------------------------------
+アップロードされたファイル(一時保存されたファイル)は、 :java:extdoc:`HttpRequest <nablarch.fw.web.HttpRequest>` から取得する。
+
+以下に実装例を示す。
+
+ポイント
+  * :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` を呼び出してアップロードされたファイルを取得する。
+  * :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` の引数には、パラメータ名を指定する。
+
+.. code-block:: java
+
+  public HttpResponse upload(HttpRequest request, ExecutionContext context) throws IOException {
+    // アップロードファイルの取得
+    List<PartInfo> partInfoList = request.getPart("uploadFile");
+
+    if (partInfoList.isEmpty()) {
+      // アップロードファイルが指定されていなかった場合は業務エラー
+    }
+
+    // アップロードされたファイルを処理する
+    InputStream file = partInfoList.get(0).getInputStream()
+
+    // 以下アップロードファイルを読み込み処理を行う。
+  }
+
+アップロードファイルを処理する詳細な実装方法は、以下のドキュメントを参照。
+なお、 :ref:`data_converter` に記載がある通り、 :ref:`data_bind` が推奨となる。
+(:ref:`data_bind` で扱うことのできない形式の場合は、 :ref:`data_format` を使用すること。)
+
+* :ref:`データバインドを使ってアップロードファイルを処理する <data_bind-upload_file>`
+* :ref:`汎用データフォーマットを使ってアップロードファイルを処理する <data_format-load_upload_file>`
+
+.. tip::
+
+  アップロードされたファイルが画像ファイル等のバイナリファイルの場合は、読み込んだバイナリデータを使用して処理を行うこと。
+
+  Java8であれば以下の様に実装することでアップロードファイルのバイトデータを読み込むことができる。
+
+  .. code-block:: java
+
+    File savedFile = partInfo.getSavedFile();
+    try {
+        byte[] bytes = Files.readAllBytes(savedFile.toPath());
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+```
+
+## Knowledge File
+
+- ID: `handlers-multipart_handler--s1`
+
+```json
+{
+  "id": "handlers-multipart_handler--s1",
+  "title": "マルチパートリクエストハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/multipart_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/upload/MultipartHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpRequest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/upload/UploadSettings.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "MultipartHandler",
+        "nablarch.fw.web.upload.MultipartHandler",
+        "マルチパートリクエストハンドラ",
+        "ハンドラクラス名"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web",
+        "nablarch-core",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "制約",
+        "前提条件",
+        "マルチパートリクエストハンドラ制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "このハンドラの動作条件",
+      "hints": [
+        "Content-Type",
+        "multipart/form-data",
+        "マルチパート判定",
+        "動作条件",
+        "リクエスト解析"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "アップロードファイルの一時保存先を指定する",
+      "hints": [
+        "uploadFileTmpDir",
+        "FilePathSetting",
+        "java.io.tmpdir",
+        "一時保存先ディレクトリ",
+        "アップロードファイル保存先"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "巨大なファイルのアップロードを防ぐ",
+      "hints": [
+        "contentLengthLimit",
+        "413",
+        "Payload Too Large",
+        "ファイルサイズ制限",
+        "DoS対策",
+        "UploadSettings"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ファイルの大量アップロードを防ぐ",
+      "hints": [
+        "maxFileCount",
+        "400",
+        "ファイル数制限",
+        "大量アップロード防止",
+        "UploadSettings"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "一時ファイルの削除（クリーニング）を行う",
+      "hints": [
+        "autoCleaning",
+        "UploadSettings",
+        "一時ファイルクリーニング",
+        "自動削除",
+        "UploadSettings#autoCleaning"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "マルチパート解析エラー及びファイルサイズ上限超過時の遷移先画面を設定する",
+      "hints": [
+        "エラーページ",
+        "400 BadRequest",
+        "web.xml",
+        "session_store_handler",
+        "マルチパート解析エラー",
+        "http_error_handler"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "アップロードしたファイルを読み込む",
+      "hints": [
+        "HttpRequest",
+        "getPart",
+        "PartInfo",
+        "アップロードファイル読み込み",
+        "nablarch.fw.web.HttpRequest",
+        "HttpRequest#getPart",
+        "getSavedFile",
+        "Files.readAllBytes",
+        "バイナリファイル",
+        "画像ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.upload.MultipartHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n\n<!-- 一時保存先を指定する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n```",
+    "s3": "なし。",
+    "s4": "リクエストヘッダの `Content-Type` が `multipart/form-data` と一致する場合のみボディ解析を行う。それ以外の場合は後続のハンドラに処理を委譲する（このハンドラは何もしない）。",
+    "s5": "一時保存先ディレクトリは :ref:`file_path_management` に設定する。論理名は `uploadFileTmpDir` とすること。設定がない場合は `java.io.tmpdir` を使用する。\n\n> **補足**: 保存先ディレクトリはコンポーネント設定ファイルではなく、環境設定ファイルに設定することを推奨する（:ref:`repository-environment_configuration` 参照）。\n\n```xml\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"uploadFileTmpDir\" value=\"file:/var/nablarch/uploadTmpDir\" />\n    </map>\n  </property>\n</component>\n```",
+    "s6": "アップロードサイズ上限を超過した場合、413(Payload Too Large)を返す。設定を省略した場合は無制限になる。\n\n> **重要**: DoS攻撃を防ぐためにも、アップロードサイズの上限は常に設定すること。\n\n> **補足**: アップロードサイズの上限はファイル単位ではなく1リクエスト単位（Content-Length）。複数ファイルをアップロードした場合、ファイルサイズの合計で上限チェックが行われる。ファイル単位でサイズチェックする場合はアクション側で実装すること。\n\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <!-- アップロードサイズ(Content-Length)の上限(約1MB) -->\n      <property name=\"contentLengthLimit\" value=\"1000000\" />\n    </component>\n  </property>\n</component>\n```",
+    "s7": "`maxFileCount` を設定することで1リクエストでアップロードできるファイル数に上限を設定できる。上限を超えた場合は400(Bad Request)を返す。\n\n| 設定値 | 動作 |\n|---|---|\n| 0以上 | その値が上限 |\n| 負数 | 無制限 |\n| 未設定 | -1（無制限） |\n\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <property name=\"maxFileCount\" value=\"100\" />\n    </component>\n  </property>\n</component>\n```",
+    "s8": "以下の条件で一時ファイルをクリーニングする:\n1. ボディ解析中に例外が発生した場合\n2. ハンドラの復路で自動削除設定が有効な場合\n\n自動削除設定はデフォルトで有効。無効にするには :java:extdoc:`UploadSettings#autoCleaning <nablarch.fw.web.upload.UploadSettings.setAutoCleaning(boolean)>` に `false` を設定する。\n\n> **重要**: 本番環境で自動削除を無効にすると、大量の一時ファイルがディスク上に残り、ディスクフルの原因となる可能性がある。",
+    "s9": "マルチパート解析エラーや :ref:`ファイルサイズの上限超過 <multipart_handler-file_limit>` 時に `400(BadRequest)` を返す。`web.xml` に 400 に対応したエラーページ設定が必要。省略した場合はWebアプリケーションサーバのデフォルトページが返される。\n\nマルチパート解析エラーが発生するケース:\n- アップロード中にクライアントからの切断要求があり、ボディ部が不完全な場合\n- バウンダリーが存在しない\n\n> **重要**: このハンドラは :ref:`session_store_handler` より手前に設定する必要がある。このため、:ref:`session_store_handler` の後続に設定される :ref:`http_error_handler` の :ref:`HttpErrorHandler_DefaultPage` は使用できない。",
+    "s10": ":java:extdoc:`HttpRequest <nablarch.fw.web.HttpRequest>` から :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` を呼び出してアップロードファイルを取得する。引数にはパラメータ名を指定する。\n\nアップロードファイルの処理には :ref:`data_bind` が推奨（扱えない形式は :ref:`data_format` を使用）。詳細は :ref:`data_bind-upload_file`、:ref:`data_format-load_upload_file` を参照。\n\n```java\npublic HttpResponse upload(HttpRequest request, ExecutionContext context) throws IOException {\n    List<PartInfo> partInfoList = request.getPart(\"uploadFile\");\n\n    if (partInfoList.isEmpty()) {\n      // アップロードファイルが指定されていなかった場合は業務エラー\n    }\n\n    InputStream file = partInfoList.get(0).getInputStream();\n    // 以下アップロードファイルを読み込み処理を行う。\n}\n```\n\n> **補足**: アップロードされたファイルが画像ファイル等のバイナリファイルの場合は、読み込んだバイナリデータを使用して処理を行うこと。Java 8 であれば `partInfo.getSavedFile()` と `Files.readAllBytes()` を使用してバイトデータを読み込める。\n\n```java\nFile savedFile = partInfo.getSavedFile();\ntry {\n    byte[] bytes = Files.readAllBytes(savedFile.toPath());\n} catch (IOException e) {\n    throw new RuntimeException(e);\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

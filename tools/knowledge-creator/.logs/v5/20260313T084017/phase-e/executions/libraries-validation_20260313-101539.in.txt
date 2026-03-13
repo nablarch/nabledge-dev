@@ -1,0 +1,109 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-validation",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 入力値のチェックでは以下のことを行う (bullet list)",
+      "description": "The two bullet points describing the scope of input validation are missing from the knowledge file. Source states: (1) 入力値が妥当な形式かどうか（例えば、桁数や文字種などのチェック）, (2) システムの状態に適合しているかどうか（例えば、アカウントの重複登録チェック）. These explain that validation covers both format/type checks and business-state checks, which is substantive information about feature scope.",
+      "source_evidence": "入力値のチェックでは以下のことを行う。\n* 入力値が妥当な形式かどうか(例えば、桁数や文字種などのチェック)\n* システムの状態に適合しているかどうか(例えば、アカウントの重複登録チェック)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _validation:
+
+入力値のチェック
+==================================================
+クライアントから送信されるユーザ入力値や、システム間連携により外部システムから送信される値が妥当かを検証するための機能を提供する。
+
+入力値のチェックでは以下のことを行う。
+
+* 入力値が妥当な形式かどうか(例えば、桁数や文字種などのチェック)
+* システムの状態に適合しているかどうか(例えば、アカウントの重複登録チェック)
+
+※入力値のチェックでエラーとなった場合に表示するメッセージの定義方法は、 :doc:`message` を参照。
+
+Nablarchでは、以下の2種類のバリデーション機能を提供している。
+
+.. toctree::
+  :maxdepth: 1
+
+  Java EE7のBean Validation(JSR349)に準拠したバリデーション機能 (Bean Validation) <validation/bean_validation>
+  Nablarch独自のバリデーション機能 (Nablarch Validation) <validation/nablarch_validation>
+
+どちらの機能を使用しても入力値のチェックは行えるが、以下の理由によりJava EE7に準拠した機能を使用することを推奨する。
+
+* Bean ValidationはJava EEで仕様が定められており情報が豊富である。
+* 開発者がNablarch独自のバリデーションの使い方などを覚える必要がない。
+
+.. tip::
+ :ref:`bean_validation` と :ref:`nablarch_validation` で提供している機能の違いは、 :ref:`validation-functional_comparison` を参照。
+
+.. toctree::
+  :hidden:
+
+  validation/functional_comparison
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-validation",
+  "title": "入力値のチェック",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデーション機能の選択",
+      "hints": [
+        "Bean Validation",
+        "Nablarch Validation",
+        "バリデーション",
+        "入力値チェック",
+        "JSR349",
+        "bean_validation",
+        "nablarch_validation",
+        "validation-functional_comparison"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchでは以下の2種類のバリデーション機能を提供している:\n- Java EE7のBean Validation（JSR349）準拠: :doc:`validation/bean_validation`\n- Nablarch独自のバリデーション機能: :doc:`validation/nablarch_validation`\n\n**推奨**: Java EE7に準拠したBean Validationを使用すること。理由:\n1. Bean ValidationはJava EEで仕様が定められており情報が豊富\n2. 開発者がNablarch独自バリデーションの使い方を覚える必要がない\n\n> **補足**: :ref:`bean_validation` と :ref:`nablarch_validation` の機能比較は :ref:`validation-functional_comparison` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

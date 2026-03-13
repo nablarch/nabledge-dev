@@ -1,0 +1,505 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/system_messaging/mom_system_messaging.rst`
+- Format: `rst`
+
+```
+同期応答でメッセージを受信する(同期応答メッセージ受信)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+通信先から特定の宛先に送信されるメッセージを受信し、そこに設定されていた応答宛先に対して応答電文を送信する。
+このとき、受信した電文のメッセージIDヘッダの値を、応答電文の関連メッセージIDヘッダに設定する。
+
+.. image:: ../images/system_messaging/mom_system_messaging-sync_message_receive.png
+  :scale: 80
+
+送信電文に設定する :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>` の内容
+
+  :メッセージID: 設定不要(送信後に採番される)
+  :関連メッセージID: 受信電文のメッセージIDヘッダの値
+  :送信宛先: 受信電文の応答宛先ヘッダの値
+  :応答宛先: 設定不要
+  :有効期間: 任意
+
+同期応答メッセージ受信では、定型的な処理を行うテンプレートクラスとして、
+:java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` を提供している。
+:java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` は、
+:ref:`mom_messaging` で動作するアクションクラスである。
+
+:java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>`
+を使用することにより、以下の成果物のみを作成すればよい。
+
+* 電文のレイアウトを表すフォーマット定義ファイル
+* 電文受信時とエラー発生時の処理(アクションクラス)
+
+:ref:`Exampleアプリケーション<example_application-mom_system_messaging>` をベースに、
+プロジェクト情報を受信する場合の実装例を以下に示す。
+
+実装例
+ \
+
+ フォーマット定義ファイル
+  ポイント
+   * ファイル名は以下とする。
+
+    * 受信用： ``<電文のリクエストID>_RECEIVE.fmt``
+    * 送信用： ``<電文のリクエストID>_SEND.fmt``
+
+  ProjectInsertMessage_RECEIVE.fmt
+   .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    2120    # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード
+
+    [data]
+    項目定義は省略
+
+  ProjectInsertMessage_SEND.fmt
+   .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    130     # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード
+
+    [data]
+    項目定義は省略
+
+ 電文受信時とエラー発生時の処理(アクションクラス)
+  ポイント
+   * :java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` を継承し、
+     以下のメソッドをオーバーライドする。
+
+      * :java:extdoc:`MessagingAction#onReceive<nablarch.fw.messaging.action.MessagingAction.onReceive(nablarch.fw.messaging.RequestMessage-nablarch.fw.ExecutionContext)>`
+      * :java:extdoc:`MessagingAction#onError<nablarch.fw.messaging.action.MessagingAction.onError(java.lang.Throwable-nablarch.fw.messaging.RequestMessage-nablarch.fw.ExecutionContext)>`
+
+   * 応答電文は、 :java:extdoc:`RequestMessage#reply<nablarch.fw.messaging.RequestMessage.reply()>` で作成する。
+   * 要求電文と応答電文の内容を保持するため、それぞれに対応したフォームクラスを作成する。
+
+  ProjectInsertMessageAction.java
+   .. code-block:: java
+
+    public class ProjectInsertMessageAction extends MessagingAction {
+
+        @Override
+        protected ResponseMessage onReceive(
+                RequestMessage request, ExecutionContext context) {
+             ProjectInsertMessageForm projectInsertMessageForm
+                = BeanUtil.createAndCopy(
+                    ProjectInsertMessageForm.class, request.getParamMap());
+
+            // バリデーション処理を行う。エラー検知時は、ApplicationExceptionが送出される。
+            ValidatorUtil.validate(projectInsertMessageForm);
+
+            ProjectTemp projectTemp
+                = BeanUtil.createAndCopy(
+                    ProjectTemp.class, projectInsertMessageForm);
+
+            // データ設定は省略
+
+            UniversalDao.insert(projectTemp);
+
+            // 応答データ返却
+            ProjectInsertMessageResponseForm resForm = new ProjectInsertMessageResponseForm("success", "");
+            return request.reply().addRecord(resForm);
+        }
+
+        @Override
+        protected ResponseMessage onError(
+                Throwable e, RequestMessage request, ExecutionContext context) {
+                
+            if (e instanceof InvalidDataFormatException) {
+                //要求電文データレコード部レイアウト不正
+                resForm = new ProjectInsertMessageResponseForm("fatal", "invalid layout.");
+            } else if (e instanceof ApplicationException) {
+                //要求電文データレコード部項目バリデーションエラー
+                resForm = new ProjectInsertMessageResponseForm("error.validation", "");
+            } else {
+                resForm = new ProjectInsertMessageResponseForm("fatal", "unexpected exception.");
+            }
+            return request.reply().addRecord(resForm);
+        }
+    }
+
+拡張例
+--------------------------------------------------
+
+.. _mom_system_messaging-change_fw_header:
+
+フレームワーク制御ヘッダの読み書きを変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+外部システムで既に電文フォーマットが規定されている場合など、
+フレームワーク制御ヘッダの読み書きを変更したい場合がある。
+この場合は、プロジェクトで実装を追加することで対応する。
+以下に、送受信の種類ごとに対応方法を示す。
+
+応答不要メッセージ送信の場合
+ フレームワーク制御ヘッダの書き込みは、以下のメソッドにより行っているので、
+ 以下のメソッドをオーバーライドして対応すればよい。
+
+ * :java:extdoc:`AsyncMessageSendAction#createHeaderRecordFormatter<nablarch.fw.messaging.action.AsyncMessageSendAction.createHeaderRecordFormatter()>`
+ * :java:extdoc:`AsyncMessageSendAction#createHeaderRecord<nablarch.fw.messaging.action.AsyncMessageSendAction.createHeaderRecord(nablarch.core.db.statement.SqlRow)>`
+
+.. _mom_system_messaging-change_fw_header_sync_ex:
+
+同期応答メッセージ送信の場合
+ :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` では、送受信する電文の変換処理を変更できるように、
+ 変換処理を :java:extdoc:`SyncMessageConvertor<nablarch.fw.messaging.SyncMessageConvertor>` に委譲しており、
+ このクラスがフレームワーク制御ヘッダを読み書きしている。
+
+ そのため、:java:extdoc:`SyncMessageConvertor<nablarch.fw.messaging.SyncMessageConvertor>` を継承したクラスを作成し、
+ :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` の設定に指定すればよい。
+ :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` の設定については、
+ :java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings>` を参照。
+
+.. _mom_system_messaging-change_fw_header_async_receive:
+
+応答不要メッセージ受信の場合
+ フレームワーク制御ヘッダの読み込みは、
+ :java:extdoc:`FwHeaderReader<nablarch.fw.messaging.reader.FwHeaderReader>` に設定された
+ :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスが行う。
+ デフォルトでは、 :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>` が使用される。
+
+ そのため、 :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>` を参考に、
+ プロジェクトで :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスを作成し、
+ コンポーネント定義で
+ :java:extdoc:`FwHeaderReader#fwHeaderDefinition<nablarch.fw.messaging.reader.FwHeaderReader.setFwHeaderDefinition(nablarch.fw.messaging.FwHeaderDefinition)>`
+ プロパティに指定すればよい。
+
+同期応答メッセージ受信の場合
+ フレームワーク制御ヘッダの読み込みは、
+ :ref:`応答不要メッセージ受信の場合<mom_system_messaging-change_fw_header_async_receive>` と同じである。
+
+ フレームワーク制御ヘッダの書き込みについても、
+ :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスを作成することは同じであるが、
+ コンポーネント定義で作成したクラスを :ref:`message_reply_handler` の
+ :java:extdoc:`fwHeaderDefinition<nablarch.fw.messaging.handler.MessageReplyHandler.setFwHeaderDefinition(nablarch.fw.messaging.FwHeaderDefinition)>`
+ プロパティに指定すればよい。
+
+.. _mom_system_messaging-data_model:
+
+送受信電文のデータモデル
+--------------------------------------------------
+MOMメッセージングでは、送受信電文の内容を以下のデータモデルで表現する。
+
+.. image:: ../images/system_messaging/mom_system_messaging-data_model.png
+  :scale: 80
+
+.. _mom_system_messaging-protocol_header:
+
+プロトコルヘッダ
+ 主にMOMによるメッセージ送受信処理において使用される情報を格納したヘッダ領域である。
+ プロトコルヘッダはMapインターフェースでアクセスすることが可能となっている。
+
+.. _mom_system_messaging-common_protocol_header:
+
+共通プロトコルヘッダ
+ プロトコルヘッダのうち、フレームワークが使用する以下のヘッダについては、特定のキー名でアクセスできる。
+ キー名をカッコで示す。
+
+ メッセージID(MessageId)
+  電文ごとにMOMが採番する文字列
+
+  :送信時: MOMが採番した値
+  :受信時: 送信側のMOMが発番した値
+
+ 関連メッセージID(CorrelationId)
+  電文が関連する電文のメッセージID
+
+  :応答電文: 要求電文のメッセージID
+  :再送要求: 応答再送を要求する要求電文のメッセージID
+
+ 送信宛先(Destination)
+  電文の送信宛先を表す論理名
+
+  :送信時: 送信キューの論理名
+  :受信時: 受信キューの論理名
+
+ 応答宛先(ReplyTo)
+  この電文に応答を送信する際に使用する宛先を表す論理名
+
+  :送信時: 同期応答の場合は応答受信キューの論理名。
+           応答不要の場合は設定不要
+  :受信時: 同期応答の場合は応答宛先キューの論理名。
+           応答不要の場合は通常設定なし
+
+ 有効期間(TimeToLive)
+  送信処理開始時点を起点とする電文の有効期間(msec)
+
+  :送信時: 送信電文の有効期間
+  :受信時: 設定なし
+
+ .. tip::
+  共通プロトコルヘッダ以外のヘッダについては、各メッセージングプロバイダ側で任意に定義可能である。
+  このようなヘッダは **個別プロトコルヘッダ** と呼ばれる。
+  例えば、JMSメッセージングプロバイダの場合、全てのJMSヘッダ、JMS拡張ヘッダおよび任意属性は、個別プロトコルヘッダとして扱われる。
+
+.. _mom_system_messaging-message_body:
+
+メッセージボディ
+ プロトコルヘッダを除いた電文のデータ領域をメッセージボディと呼ぶ。
+ MOMに依存する :java:extdoc:`MessagingProvider<nablarch.fw.messaging.MessagingProvider>` は、
+ 原則としてプロトコルヘッダ領域のみを使用する。
+ それ以外のデータ領域については、未解析の単なるバイナリデータとして扱うものとする。
+
+ メッセージボディの解析は、 :ref:`data_format` によって行う。
+ これにより、電文の内容をフィールド名をキーとするMap形式で読み書き可能である。
+
+.. _mom_system_messaging-fw_header:
+
+フレームワーク制御ヘッダ
+ 本フレームワークが提供する機能の中には、電文中に特定の制御項目が定義されていることを前提として設計されているものが多く存在する。
+ そのような制御項目のことを ``フレームワーク制御ヘッダ`` とよぶ。
+
+ フレームワーク制御ヘッダとそれを使用するハンドラの対応は以下のとおり。
+
+ リクエストID
+  この電文を受信したアプリケーションが実行すべき業務処理を識別するためのID。
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`request_path_java_package_mapping`
+  | :ref:`message_resend_handler`
+  | :ref:`permission_check_handler`
+  | :ref:`ServiceAvailabilityCheckHandler`
+
+ ユーザID
+  この電文の実行権限を表す文字列
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`permission_check_handler`
+
+ 再送要求フラグ
+  再送要求電文の送信時に設定されるフラグ
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`message_resend_handler`
+
+ ステータスコード
+  要求電文に対する処理結果を表すコード値
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`message_reply_handler`
+
+ フレームワーク制御ヘッダは、デフォルトの設定では、
+ メッセージボディの最初のデータレコード中に、それぞれ以下のフィールド名で定義されている必要がある。
+
+  :リクエストID: requestId
+  :ユーザID: userId
+  :再送要求フラグ: resendFlag
+  :ステータスコード: statusCode
+
+ 以下は、標準的なフレームワーク制御ヘッダの定義例である。
+
+ .. code-block:: bash
+
+  #===================================================================
+  # フレームワーク制御ヘッダ部 (50byte)
+  #===================================================================
+  [NablarchHeader]
+  1   requestId   X(10)       # リクエストID
+  11  userId      X(10)       # ユーザID
+  21  resendFlag  X(1)  "0"   # 再送要求フラグ (0: 初回送信 1: 再送要求)
+  22  statusCode  X(4)  "200" # ステータスコード
+  26 ?filler      X(25)       # 予備領域
+  #====================================================================
+
+ フォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、
+ フレームワーク制御ヘッダの任意ヘッダ項目としてアクセスでき、
+ プロジェクト毎にフレームワーク制御ヘッダを簡易的に拡張する目的で使用できる。
+
+ また、将来的な任意項目の追加およびフレームワークの機能追加に伴うヘッダ追加に対応するため、
+ 予備領域を設けておくことを強く推奨する。
+```
+
+## Knowledge File
+
+- ID: `libraries-mom_system_messaging--s7`
+
+```json
+{
+  "id": "libraries-mom_system_messaging--s7",
+  "title": "同期応答でメッセージを受信する(同期応答メッセージ受信)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/system_messaging/mom_system_messaging.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/MessagingAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/RequestMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageSendAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/SyncMessageConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSender.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSenderSettings.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/FwHeaderDefinition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/reader/FwHeaderReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/StandardFwHeaderDefinition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/handler/MessageReplyHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessagingProvider.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "同期応答でメッセージを受信する(同期応答メッセージ受信)",
+      "hints": [
+        "MessagingAction",
+        "onReceive",
+        "onError",
+        "RequestMessage",
+        "reply",
+        "同期応答メッセージ受信",
+        "フォーマット定義ファイル",
+        "RECEIVE.fmt",
+        "SEND.fmt",
+        "応答電文",
+        "InvalidDataFormatException",
+        "ApplicationException"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "拡張例",
+      "hints": [
+        "AsyncMessageSendAction",
+        "createHeaderRecordFormatter",
+        "createHeaderRecord",
+        "SyncMessageConvertor",
+        "MessageSender",
+        "MessageSenderSettings",
+        "FwHeaderDefinition",
+        "FwHeaderReader",
+        "StandardFwHeaderDefinition",
+        "MessageReplyHandler",
+        "フレームワーク制御ヘッダ変更",
+        "ヘッダ読み書きカスタマイズ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "送受信電文のデータモデル",
+      "hints": [
+        "プロトコルヘッダ",
+        "共通プロトコルヘッダ",
+        "MessageId",
+        "CorrelationId",
+        "Destination",
+        "ReplyTo",
+        "TimeToLive",
+        "メッセージボディ",
+        "フレームワーク制御ヘッダ",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "MessagingProvider",
+        "データモデル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "通信先から特定の宛先に送信されるメッセージを受信し、受信電文の応答宛先に応答電文を送信する。受信電文のメッセージIDヘッダの値を応答電文の関連メッセージIDヘッダに設定する。\n\n送信電文の :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>` :\n\n| ヘッダ | 設定値 |\n|---|---|\n| メッセージID | 設定不要（送信後に採番） |\n| 関連メッセージID | 受信電文のメッセージIDヘッダの値 |\n| 送信宛先 | 受信電文の応答宛先ヘッダの値 |\n| 応答宛先 | 設定不要 |\n| 有効期間 | 任意 |\n\nテンプレートクラス: :java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` (:ref:`mom_messaging` で動作するアクションクラス)\n\n`MessagingAction` を使用する場合に作成する成果物:\n- 電文のレイアウトを表すフォーマット定義ファイル\n- 電文受信時とエラー発生時の処理（アクションクラス）\n\nフォーマット定義ファイルの命名規則:\n- 受信用: `<電文のリクエストID>_RECEIVE.fmt`\n- 送信用: `<電文のリクエストID>_SEND.fmt`\n\nアクションクラス実装ポイント:\n- :java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` を継承し、以下をオーバーライドする:\n  - :java:extdoc:`MessagingAction#onReceive<nablarch.fw.messaging.action.MessagingAction.onReceive(nablarch.fw.messaging.RequestMessage-nablarch.fw.ExecutionContext)>`\n  - :java:extdoc:`MessagingAction#onError<nablarch.fw.messaging.action.MessagingAction.onError(java.lang.Throwable-nablarch.fw.messaging.RequestMessage-nablarch.fw.ExecutionContext)>`\n- 応答電文は :java:extdoc:`RequestMessage#reply<nablarch.fw.messaging.RequestMessage.reply()>` で作成する\n- 要求電文・応答電文それぞれに対応したフォームクラスを作成する\n\n```java\npublic class ProjectInsertMessageAction extends MessagingAction {\n    @Override\n    protected ResponseMessage onReceive(RequestMessage request, ExecutionContext context) {\n        ProjectInsertMessageForm form = BeanUtil.createAndCopy(\n            ProjectInsertMessageForm.class, request.getParamMap());\n        ValidatorUtil.validate(form);\n        ProjectTemp projectTemp = BeanUtil.createAndCopy(ProjectTemp.class, form);\n        UniversalDao.insert(projectTemp);\n        return request.reply().addRecord(new ProjectInsertMessageResponseForm(\"success\", \"\"));\n    }\n\n    @Override\n    protected ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context) {\n        ProjectInsertMessageResponseForm resForm;\n        if (e instanceof InvalidDataFormatException) {\n            resForm = new ProjectInsertMessageResponseForm(\"fatal\", \"invalid layout.\");\n        } else if (e instanceof ApplicationException) {\n            resForm = new ProjectInsertMessageResponseForm(\"error.validation\", \"\");\n        } else {\n            resForm = new ProjectInsertMessageResponseForm(\"fatal\", \"unexpected exception.\");\n        }\n        return request.reply().addRecord(resForm);\n    }\n}\n```",
+    "s2": "フレームワーク制御ヘッダの読み書きを変更する方法（送受信の種類別対応）。\n\n**応答不要メッセージ送信の場合**\n\n以下のメソッドをオーバーライドする:\n- :java:extdoc:`AsyncMessageSendAction#createHeaderRecordFormatter<nablarch.fw.messaging.action.AsyncMessageSendAction.createHeaderRecordFormatter()>`\n- :java:extdoc:`AsyncMessageSendAction#createHeaderRecord<nablarch.fw.messaging.action.AsyncMessageSendAction.createHeaderRecord(nablarch.core.db.statement.SqlRow)>`\n\n**同期応答メッセージ送信の場合** (:ref:`mom_system_messaging-change_fw_header_sync_ex`)\n\n:java:extdoc:`SyncMessageConvertor<nablarch.fw.messaging.SyncMessageConvertor>` を継承したクラスを作成し、:java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` の設定に指定する。設定については :java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings>` を参照。\n\n**応答不要メッセージ受信の場合** (:ref:`mom_system_messaging-change_fw_header_async_receive`)\n\n:java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスを作成し、コンポーネント定義で :java:extdoc:`FwHeaderReader#fwHeaderDefinition<nablarch.fw.messaging.reader.FwHeaderReader.setFwHeaderDefinition(nablarch.fw.messaging.FwHeaderDefinition)>` プロパティに指定する。デフォルト実装: :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>`\n\n**同期応答メッセージ受信の場合**\n\n- 読み込みは :ref:`mom_system_messaging-change_fw_header_async_receive` と同じ（`FwHeaderDefinition` 実装クラスを `FwHeaderReader#fwHeaderDefinition` プロパティに指定）\n- 書き込みも :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスを作成するが、コンポーネント定義で :ref:`message_reply_handler` の :java:extdoc:`fwHeaderDefinition<nablarch.fw.messaging.handler.MessageReplyHandler.setFwHeaderDefinition(nablarch.fw.messaging.FwHeaderDefinition)>` プロパティに指定する",
+    "s3": "MOMメッセージングでは、送受信電文の内容を以下のデータモデルで表現する。\n\n![送受信電文データモデル](assets/libraries-mom_system_messaging--s7/mom_system_messaging-data_model.png)\n\n**プロトコルヘッダ** (:ref:`mom_system_messaging-protocol_header`)\n\nMOMによるメッセージ送受信処理で使用される情報を格納したヘッダ領域。Mapインターフェースでアクセス可能。\n\n**共通プロトコルヘッダ** (:ref:`mom_system_messaging-common_protocol_header`)\n\nフレームワークが使用するヘッダ。特定のキー名でアクセス可能。\n\n| ヘッダ（キー名） | 説明 | 送信時 | 受信時 |\n|---|---|---|---|\n| メッセージID (MessageId) | MOMが採番する文字列 | MOMが採番した値 | 送信側MOMが発番した値 |\n| 関連メッセージID (CorrelationId) | 関連する電文のメッセージID | 応答電文: 要求電文のID / 再送要求: 応答再送を要求する要求電文のID | 同左 |\n| 送信宛先 (Destination) | 送信宛先の論理名 | 送信キューの論理名 | 受信キューの論理名 |\n| 応答宛先 (ReplyTo) | 応答送信先の論理名 | 同期応答: 応答受信キューの論理名 / 応答不要: 設定不要 | 同期応答: 応答宛先キューの論理名 / 応答不要: 通常設定なし |\n| 有効期間 (TimeToLive) | 電文有効期間(msec) | 送信電文の有効期間 | 設定なし |\n\n> **補足**: 共通プロトコルヘッダ以外のヘッダは各メッセージングプロバイダ側で任意に定義可能（個別プロトコルヘッダ）。JMSプロバイダの場合、全JMSヘッダ・JMS拡張ヘッダ・任意属性が個別プロトコルヘッダとして扱われる。\n\n**メッセージボディ** (:ref:`mom_system_messaging-message_body`)\n\nプロトコルヘッダを除いたデータ領域。:java:extdoc:`MessagingProvider<nablarch.fw.messaging.MessagingProvider>` はプロトコルヘッダ領域のみを使用し、それ以外は未解析バイナリとして扱う。解析は :ref:`data_format` により行い、フィールド名をキーとするMap形式で読み書き可能。\n\n**フレームワーク制御ヘッダ** (:ref:`mom_system_messaging-fw_header`)\n\n電文中に特定の制御項目（フレームワーク制御ヘッダ）の定義が前提となっている機能が多数ある。デフォルトではメッセージボディの最初のデータレコード中に以下のフィールド名で定義する。\n\n| 制御項目 | フィールド名 | 使用する主要なハンドラ |\n|---|---|---|\n| リクエストID | requestId | :ref:`request_path_java_package_mapping`, :ref:`message_resend_handler`, :ref:`permission_check_handler`, :ref:`ServiceAvailabilityCheckHandler` |\n| ユーザID | userId | :ref:`permission_check_handler` |\n| 再送要求フラグ | resendFlag | :ref:`message_resend_handler` |\n| ステータスコード | statusCode | :ref:`message_reply_handler` |\n\n標準的なフレームワーク制御ヘッダ定義例:\n\n```\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n```\n\nフォーマット定義にフレームワーク制御ヘッダ以外の項目を含めると、フレームワーク制御ヘッダの任意ヘッダ項目としてアクセスでき、プロジェクト毎の簡易拡張に使用できる。将来の任意項目追加に備えて予備領域を設けることを強く推奨する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

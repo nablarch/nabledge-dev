@@ -1,0 +1,282 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/service_availability.rst`
+- Format: `rst`
+
+```
+.. _`service_availability`:
+
+サービス提供可否チェック
+=====================================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+この機能では、アプリケーションが提供する機能に対して、サービス提供可否をチェックする。
+
+この機能を使うことで、以下のようなことが実現できる。
+
+* ウェブにおいて一部機能へのアクセスを遮断し、503エラーを返す。
+* 常駐バッチにおいて、空回り(処理せずに待機する状態)を行う。
+
+.. important::
+ 本機能は、アプリケーションの要件が合致する場合に限り、使用すること。
+ 本機能は、データベースを使用してサービス提供可否の状態を管理し、
+ リクエスト単位でサービス提供可否を設定する( :ref:`service_availability-settings` を参照)。
+ 例えば、ウェブの登録機能といった場合、初期表示/確認/戻る/登録といった複数リクエストで構成されるのが一般的である。
+ そのため、本機能は、細かくサービス提供可否を設定できる反面、非常に細かいデータ設計が必要となり、
+ 開発時の生産性低下やリリース後の運用負荷が高まる可能性がある。
+
+機能概要
+---------------------------------------------------------------------
+
+リクエスト単位でサービス提供可否をチェックできる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`ServiceAvailabilityCheckHandler` をハンドラキューに設定することで、
+ウェブでも常駐バッチでも、リクエスト単位でサービス提供可否をチェックできるようになる。
+この機能は、ウェブや常駐バッチといった処理方式に依存しない。
+
+詳細は以下を参照。
+
+* :ref:`service_availability-settings`
+* :ref:`service_availability-check`
+* :ref:`service_availability-view_control`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-auth</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-auth-jdbc</artifactId>
+  </dependency>
+
+使用方法
+---------------------------------------------------------------------
+
+.. _`service_availability-settings`:
+
+サービス提供可否チェックを使うための設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能では、データベースを使用してサービス提供可否の状態を管理する。
+テーブルのレイアウトは以下となる。
+
+====================== ===================================================
+リクエストID(PK)       リクエストを識別するための値。文字列型
+サービス提供可否状態   可の場合は"1"。文字列型。設定で値を変更できる。
+====================== ===================================================
+
+サービス提供可否チェックを使うためには、
+:java:extdoc:`BasicServiceAvailability <nablarch.common.availability.BasicServiceAvailability>` の定義をコンポーネント設定ファイルに追加する。
+コンポーネント名には **serviceAvailability** と指定する。
+
+.. code-block:: xml
+
+ <component name="serviceAvailability" class="nablarch.common.availability.BasicServiceAvailability">
+   <!-- テーブル名 -->
+   <property name="tableName" value="REQUEST"/>
+   <!-- リクエストIDのカラム名 -->
+   <property name="requestTableRequestIdColumnName" value="REQUEST_ID"/>
+   <!-- サービス提供可否状態のカラム名 -->
+   <property name="requestTableServiceAvailableColumnName" value="SERVICE_AVAILABLE"/>
+   <!-- サービス提供可を示す値 -->
+   <property name="requestTableServiceAvailableOkStatus" value="1"/>
+   <!-- データベースアクセスに使用するトランザクションマネージャ -->
+   <property name="dbManager" ref="serviceAvailabilityDbManager"/>
+ </component>
+
+.. _`service_availability-check`:
+
+サービス提供可否をチェックする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+サービス提供可否チェックは、 :java:extdoc:`ServiceAvailabilityUtil <nablarch.common.availability.ServiceAvailabilityUtil>` を使用する。
+
+.. _`service_availability-view_control`:
+
+サービス提供可否に応じて画面表示を制御する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+サービス提供可否に応じてボタンやリンクの非表示(非活性)を制御したい場合は、カスタムタグを使用する。
+:ref:`tag-submit_display_control` を参照。
+
+拡張例
+---------------------------------------------------------------------
+なし。
+```
+
+## Knowledge File
+
+- ID: `libraries-service_availability--s1`
+
+```json
+{
+  "id": "libraries-service_availability--s1",
+  "title": "サービス提供可否チェック",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/service_availability.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/availability/BasicServiceAvailability.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/availability/ServiceAvailabilityUtil.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "ServiceAvailabilityCheckHandler",
+        "サービス提供可否チェック",
+        "リクエスト単位チェック",
+        "ウェブ・常駐バッチ対応",
+        "サービス遮断",
+        "503エラー",
+        "空回り"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-auth",
+        "nablarch-common-auth-jdbc",
+        "サービス提供可否モジュール",
+        "Maven依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用方法",
+      "hints": [
+        "BasicServiceAvailability",
+        "ServiceAvailabilityUtil",
+        "serviceAvailability",
+        "tableName",
+        "requestTableRequestIdColumnName",
+        "requestTableServiceAvailableColumnName",
+        "requestTableServiceAvailableOkStatus",
+        "dbManager",
+        "tag-submit_display_control",
+        "テーブル設定",
+        "コンポーネント設定",
+        "画面表示制御",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "拡張例",
+      "hints": [
+        "拡張例なし",
+        "サービス提供可否拡張"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "アプリケーションが提供する機能に対してサービス提供可否をチェックする機能。この機能を使うことで以下が実現できる。\n\n- **ウェブ**: 一部機能へのアクセスを遮断し、503エラーを返す\n- **常駐バッチ**: 空回り（処理せずに待機する状態）を行う\n\n:ref:`ServiceAvailabilityCheckHandler` をハンドラキューに設定することで、ウェブ・常駐バッチでリクエスト単位のサービス提供可否チェックが可能。この機能は処理方式（ウェブ・常駐バッチ）に依存しない。\n\n> **重要**: 本機能はアプリケーションの要件が合致する場合に限り使用すること。DBでサービス提供可否の状態をリクエスト単位で管理するため、非常に細かいデータ設計が必要となり、開発時の生産性低下やリリース後の運用負荷が高まる可能性がある。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth-jdbc</artifactId>\n</dependency>\n```",
+    "s3": "**サービス提供可否チェックを使うための設定**\n\nテーブルレイアウト:\n\n| カラム | 型 | 説明 |\n|---|---|---|\n| リクエストID (PK) | 文字列 | リクエストを識別するための値 |\n| サービス提供可否状態 | 文字列 | 可の場合は\"1\"。設定で値を変更可能 |\n\nコンポーネント名は **serviceAvailability** と指定する。\n\n**クラス**: :java:extdoc:`BasicServiceAvailability <nablarch.common.availability.BasicServiceAvailability>`\n\n```xml\n<component name=\"serviceAvailability\" class=\"nablarch.common.availability.BasicServiceAvailability\">\n  <property name=\"tableName\" value=\"REQUEST\"/>\n  <property name=\"requestTableRequestIdColumnName\" value=\"REQUEST_ID\"/>\n  <property name=\"requestTableServiceAvailableColumnName\" value=\"SERVICE_AVAILABLE\"/>\n  <property name=\"requestTableServiceAvailableOkStatus\" value=\"1\"/>\n  <property name=\"dbManager\" ref=\"serviceAvailabilityDbManager\"/>\n</component>\n```\n\n**サービス提供可否をチェックする**\n\n**クラス**: :java:extdoc:`ServiceAvailabilityUtil <nablarch.common.availability.ServiceAvailabilityUtil>`\n\n**サービス提供可否に応じて画面表示を制御する**\n\nサービス提供可否に応じてボタンやリンクの非表示（非活性）を制御する場合はカスタムタグを使用する。:ref:`tag-submit_display_control` を参照。",
+    "s4": "なし。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

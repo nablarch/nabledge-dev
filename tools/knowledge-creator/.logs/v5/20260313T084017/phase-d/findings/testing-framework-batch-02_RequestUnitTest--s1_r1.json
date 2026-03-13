@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-batch-02_RequestUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "The hints for s3 do not include `expectedMessageByClient` and `responseMessageByClient`, which are column names in the testShots table described in the source. These are searchable property names that users may query about.",
+      "source_evidence": "Source table lists columns: expectedMessageByClient (HTTPメッセージ同期送信処理の期待する要求電文グループID) and responseMessageByClient (HTTPメッセージ同期送信処理の返却する応答電文グループID)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "The hints for s6 do not include `StringDataType`, which is the PascalCase class name (`nablarch.test.core.file.StringDataType`) used in the fixedLengthConvertorSetting XML configuration example for TEST_X9 and TEST_SX9 entries.",
+      "source_evidence": "Source XML: `<entry key=\"TEST_X9\" value=\"nablarch.test.core.file.StringDataType\"/>` and `<entry key=\"TEST_SX9\" value=\"nablarch.test.core.file.StringDataType\"/>`"
+    }
+  ]
+}

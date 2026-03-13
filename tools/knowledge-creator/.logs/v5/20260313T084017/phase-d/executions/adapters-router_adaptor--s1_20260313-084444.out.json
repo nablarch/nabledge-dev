@@ -1,0 +1,48 @@
+{
+  "file_id": "adapters-router_adaptor--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 — マッピングの実装方法 (サブパスマッピング)",
+      "description": "Source provides a complete Java code example for sub-path mapping (TestAction class with @GET @Path(\"/foo\") and @GET @Path(\"/bar\") methods) and a dispatch table showing /sample/foo and /sample/bar routing. Knowledge file only states \"メソッドに`@Path`を付けることでサブパスのマッピングも定義可能。\" with no code example or dispatch table.",
+      "source_evidence": "Source section under マッピングの実装方法: `@Path(\"/sample\") public class TestAction { @GET @Path(\"/foo\") ... @GET @Path(\"/bar\") ... }` followed by a dispatch table with /sample/foo GET→TestAction#foo() and /sample/bar GET→TestAction#bar()."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — パスパラメータの定義 (dispatch table)",
+      "description": "The dispatch table in the source has 4 rows illustrating path parameter matching (/sample/foo/hello, /sample/foo/world, /sample/bar/123, /sample/bar/987). The knowledge file only includes 2 rows, omitting /sample/foo/world and /sample/bar/987.",
+      "source_evidence": "Source table: /sample/foo/hello GET TestAction#foo, /sample/foo/world GET TestAction#foo, /sample/bar/123 GET TestAction#bar, /sample/bar/987 GET TestAction#bar."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — ルーティング定義を一覧で確認する",
+      "description": "Source includes a concrete debug log output example showing the default format of routing definitions (e.g., `GET /api/bar => com.example.BarAction#findAll` etc.). The knowledge file omits this example, which helps users understand what to look for in logs.",
+      "source_evidence": "Source: `2020-07-20 13:35:53.092 -DEBUG- nablarch.integration.router.PathOptionsProviderRoutesMapping ... GET /api/bar => com.example.BarAction#findAll\\nGET /api/bar/fizz => ...`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4 — JAX-RSのPathアノテーションでマッピングする",
+      "description": "The source h2 section 'JAX-RSのPathアノテーションでマッピングする' contains 4 h3 subsections (ディスパッチハンドラを変更する, マッピングの実装方法, パスパラメータの定義, ルーティング定義を一覧で確認する) and is well over 2000 chars in plain text. All 4 h3 subsections are merged into a single knowledge section (s4) without splitting.",
+      "source_evidence": "RST source has h3 headings (~~~~~~~~~~~~~~~~~) for: ディスパッチハンドラを変更する, マッピングの実装方法, パスパラメータの定義, ルーティング定義を一覧で確認する — all under a single h2 section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "Section s4 references classes JaxRsMethodBinderFactory and JerseyJaxRsHandlerListFactory in its XML configuration example, and the property name methodBinderFactory is a key configuration property. None of these appear in the hints array.",
+      "source_evidence": "XML in source: `<component class=\"nablarch.fw.jaxrs.JaxRsMethodBinderFactory\">` and `<component class=\"nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory\"/>` under `<property name=\"methodBinderFactory\">`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "Section s2 configuration XML includes WebFrontController and BasicApplicationInitializer as key classes. Neither appears in the s2 hints array.",
+      "source_evidence": "XML in source: `<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">` and `<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">`."
+    }
+  ]
+}

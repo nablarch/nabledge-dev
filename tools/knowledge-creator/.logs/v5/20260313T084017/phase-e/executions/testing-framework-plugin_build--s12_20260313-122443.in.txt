@@ -1,0 +1,587 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-plugin_build--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — libraryDeployMappings description",
+      "description": "Two implementation-relevant constraints for libraryDeployMappings are missing: (1) 展開元のファイルはパッケージ内の相対パスで指定する (source path is relative to within the package, not the project root), and (2) 展開元のファイルとしてフォルダが指定された場合、フォルダ配下のファイルが全て展開される (if a folder is specified as source, all files under it are deployed). The knowledge file only mentions 展開先はui_test等からの相対パス and リネーム可能, omitting the source-path convention and folder expansion behavior.",
+      "source_evidence": "展開元のファイルはパッケージ内の相対パスで指定する。展開元のファイルとしてフォルダが指定された場合、フォルダ配下のファイルが全て展開される。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections — overall structure",
+      "description": "The automated pre-check reports 12 source headings but only 9 knowledge sections exist. The provided source excerpt is truncated at `.. _install:`, indicating that the full source file contains at least 3 additional sections (likely individual command detail sections for install, ui_build, ui_genless, and/or other build commands listed in s9). These command detail sections may contain substantive configuration, option, and usage information that is entirely absent from the knowledge file.",
+      "source_evidence": "Source ends with `.. _install:` label after the ビルドコマンド table; automated check: S9 Section count 9 < source headings 12"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "The hints for s1 include 'pathSettings' but omit the five individual sub-property names: projectRootPath, webProjectPath, demoProjectPath, testProjectPath, pluginProjectPath. These are all named configuration properties with their own required/optional status and defaults, and users are likely to query them by name.",
+      "source_evidence": "pathSettings sub-table lists: projectRootPath（必須）, webProjectPath（必須）, demoProjectPath（任意）, testProjectPath（任意）, pluginProjectPath（任意）"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+ビルドコマンド用設定ファイル
+-----------------------------------------
+
+**設定ファイル**
+
+  ======================================================== ===========================================================
+  配置フォルダ                                             ファイル名
+  ======================================================== ===========================================================
+  ui_plugins ( :ref:`install` で任意のフォルダに変更可能)  pjconf.json ( :ref:`ui_build` で任意のフォルダに変更可能)
+  ======================================================== ===========================================================
+
+**ファイル概要**
+
+  プラグインの展開先ごとに定義する環境毎のビルドコマンド用設定ファイル。
+
+  以下の形式で定義する。
+
+    .. code-block:: json
+
+      { "pathSettings" :
+        { "projectRootPath"   : "<プロジェクトルートパス(絶対パスまたは起動フォルダからの相対パス)>"
+        , "webProjectPath"    : "<ウェブプロジェクトのパス(プロジェクトルートからの相対パス)>"
+        , "demoProjectPath"   : "<ui_demoプロジェクトのパス(プロジェクトルートからの相対パス)>"
+        , "testProjectPath"   : "<ui_testプロジェクトのパス(プロジェクトルートからの相対パス)>"
+        , "pluginProjectPath" : "<プラグインプロジェクトのパス(プロジェクトルートからの相対パス)>"
+        }
+      , "cssMode" : "<ビルド対象のCSSのモードリスト>"
+      , "plugins" : "<展開対象のプラグインリスト>"
+      , "libraryDeployMappings":
+          { "<パッケージ名>" :
+            { "展開元のファイル(orフォルダ)": "展開先のファイル(orフォルダ)" }
+          }
+      , "imgcopy" :
+        { "fromdirs" : "<画像ファイルコピー元ディレクトリ名リスト>"
+        , "todirs"   : "<画像ファイルコピー先ディレクトリ名リスト>"
+        }
+      , "excludedirs" : "<コピー対象外ディレクトリ名リスト>"
+      }
+
+  以下に各設定値の定義方法を示す。
+
+  ================================= ======== ========================================================================================================
+   設定項目                          必須     設定内容
+  ================================= ======== ========================================================================================================
+   pathSettings/projectRootPath      必須     以下のオプションで示す各パスを指定する。
+   
+                                              =================== ======== ========================================================================
+                                               オプション          必須     設定内容
+                                              =================== ======== ========================================================================
+                                               projectRootPath     必須     プロジェクトルートパス。 |br|
+                                                                            絶対パスまたは起動ディレクトリからの相対パスで指定する。
+                                               webProjectPath      必須     デプロイ対象プロジェクトのパス。 |br|
+                                                                            プロジェクトルートからの相対パスで指定する。
+                                               demoProjectPath     任意     UIローカルデモプロジェクトのパス。 |br|
+                                                                            プロジェクトルートからの相対パスで指定する。 |br|
+                                                                            省略した場合は"ui_demo"となる。
+                                               testProjectPath     任意     UI開発基盤テストプロジェクトのパス。 |br|
+                                                                            プロジェクトルートからの相対パスで指定する。 |br|
+                                                                            省略した場合は"ui_test"となる。
+                                               pluginProjectPath   任意     プラグインプロジェクトのパス。 |br|
+                                                                            プロジェクトルートからの相対パスで指定する。 |br|
+                                                                            省略した場合は"ui_plugins"となる。
+                                              =================== ======== ========================================================================
+
+   cssMode                           任意     ビルド対象のCSSのモードを配列で指定する。 |br|
+                                              省略した場合は["wide", "compact", "narrow"]となる。
+
+   plugins                           任意     展開対象のプラグインリストをオブジェクトで指定する。 |br|
+                                              省略した場合は全てのプラグインおよびファイルが展開対象となる。 |br|
+                                              各プラグインはこのリストで定義された順に展開される。 |br|
+                                              オブジェクトの値は以下のオプションを指定する。
+
+                                              ============== ======== ===========================================================================
+                                               オプション     必須     設定内容
+                                              ============== ======== ===========================================================================
+                                               pattern        必須     展開対象のプラグイン名を正規表現で指定する。
+                                               exclude        任意     プラグイン内で展開しないファイルを正規表現の配列で指定する。|br|
+                                                                       省略した場合はプラグイン内の全てのファイルが展開対象となる。
+                                              ============== ======== ===========================================================================
+
+   libraryDeployMappings             任意     サードパーティライブラリで展開するファイルを設定する。|br|
+                                              対象のパッケージ名をキーとして、値にはファイルの展開元、展開先を定義したオブジェクトを設定する。|br|
+                                              展開元のファイルはパッケージ内の相対パスで指定する。 |br|
+                                              展開元のファイルとしてフォルダが指定された場合、フォルダ配下のファイルが全て展開される。
+                                              展開先のファイルは展開先(ui_test等)からの相対パスで指定する。 |br|
+                                              この時展開元と異なるファイル名を指定することでリネームして配置することが可能である。
+
+   imgcopy                           任意     画像ファイルのコピーを行うディレクトリを指定する。 |br|
+                                              展開時に高解像度版の画像ファイルを低解像度版の画像ファイルディレクトリにコピーする際に使用される。|br|
+                                              省略した場合は画像ファイルのコピーが行われない。
+                                              
+                                              ============== ======== ===========================================================================
+                                               オプション     必須     設定内容
+                                              ============== ======== ===========================================================================
+                                               fromdirs       必須    コピー元ディレクトリを配列で指定する。 |br|
+                                               todirs         必須    コピー先ディレクトリを配列で指定する。 |br|
+                                              ============== ======== ===========================================================================
+
+   excludedirs                       任意     展開時に共通的に除外されるディレクトリを指定する場合、ディレクトリ名を配列で指定する。|br|
+                                              省略した場合は隠しディレクトリ（.始まり）が除外対象となる。
+  ================================= ======== ========================================================================================================
+
+
+**設定例**
+
+  以下に本設定ファイルの設定例を示す。
+
+    .. code-block:: json
+
+      { "pathSettings" :
+        { "projectRootPath"   : "../.."
+        , "webProjectPath"    : "web/main/web"
+        , "demoProjectPath"   : "ui_demo"
+        , "testProjectPath"   : "ui_test"
+        , "pluginProjectPath" : "ui_plugins"
+        }
+      , "cssMode" : ["wide", "compact", "narrow"]
+      , "plugins" :
+        [ { "pattern": "nablarch-.*", "exclude" : [ "hogeRegExp1", "hogeRegExp2" ] }
+        , { "pattern": "web_project-.*" }
+        , { "pattern": "requirejs" }
+        , { "pattern": "sugar" }
+        , { "pattern": "jquery" }
+        , { "pattern": "requirejs-text" }
+        , { "pattern": "font-awesome" }
+        , { "pattern": "less" }
+        ]
+      , "libraryDeployMappings":
+        { "jquery" :
+          { "dist/jquery.js": "js/jquery.js"
+          }
+        , "requirejs" :
+          { "require.js": "js/require.js"
+          }
+        , "sugar" :
+          { "release/sugar-full.development.js": "js/sugar.js"
+          }
+        , "font-awesome":
+          { "fonts/fonts*": "fonts/fonts*"
+          , "css/font-awesome.min.css": "css/font-awesome.min.css"}
+        }
+      , "imgcopy":
+        { "fromdirs": [ "img/narrow/high", "img/wide/high" ]
+        , "todirs":   [ "img/wide/low", "img/narrow/high", "img/narrow/low" ]
+        }
+      , "excludedirs" : [ "hoge" ]
+      }
+
+
+.. _lessImport_less:
+
+lessインポート定義ファイル
+-----------------------------------------
+
+**設定ファイル**
+
+  ================================================================================= ======================
+  配置フォルダ                                                                      ファイル名
+  ================================================================================= ======================
+  ui_plugins/css/${デプロイ先種別} ( :ref:`install` で任意のフォルダに変更可能)     ${表示モード}.less
+  ================================================================================= ======================
+
+**ファイル概要**
+
+  | 表示モードごとにインポートするファイルの定義。
+  | デプロイ先種別ごと、表示モードごとにファイルを作成する。
+  | （表示モードおよびlessファイルの内容については :doc:`internals/css_framework` 参照）
+  
+  デプロイ先種別として指定可能な値とデプロイ先を以下に示す。
+  
+  ======================== ======================================================
+  デプロイ先種別           デプロイ先
+  ======================== ======================================================
+  ui_public                デプロイ対象プロジェクトのルートフォルダ(web)
+  ui_test                  UI開発基盤テスト用フォルダ(ui_test) |br|
+                           UIローカルデモ用フォルダ(ui_demo)
+  ======================== ======================================================
+  
+  | lessファイルは :ref:`pjconf_json` の"cssMode"で指定されたモードと対応するファイルをそれぞれ作成する必要がある。
+  | 例えば"cssMode"で["wide", "compact", "narrow"]を指定した場合、以下のファイルを作成する。
+
+    .. code-block:: bash
+    
+      ui_plugins/
+       └── css/
+            ├── ui_public/
+            │    ├── wide.less
+            │    ├── compact.less
+            │    └── narrow.less
+            └── ui_test/
+                 ├── wide.less
+                 ├── compact.less
+                 └── narrow.less
+  
+  
+  lessファイルは以下の形式で定義する。
+  
+    .. code-block:: none
+
+      @import "インポート対象ファイル名";
+      @import "インポート対象ファイル名";
+                      ：
+  
+  インポート対象ファイル名はファイルの配置フォルダからの相対パスで指定する。
+  
+  以下に定義例を示す。
+    .. code-block:: css
+
+      @import "../../node_modules/nablarch-widget-field-base/ui_public/css/field/base";
+      @import "../../node_modules/nablarch-widget-field-base/ui_public/css/field/base-wide";
+
+  | なお、lessファイルは :ref:`ui_genless` を使用して各プラグインからlessファイルを抽出した雛形を作成することができる。
+  | 複数のlessファイル内で同一のセレクタが記述されている場合、後に記述されたセレクタの内容で上書きされる。
+  | そのためlessファイルをインポートする順序が大きな意味を持ち、作成された雛形を適宜修正する必要がある。
+
+
+.. _generate-file:
+
+---------------------------------------------------------
+ファイルの自動生成
+---------------------------------------------------------
+
+本プラグインビルドコマンドではプラグインや外部ライブラリをui_test、ui_demoなどの環境毎に展開後、CSSおよびJavaScriptファイルの一部を各環境毎に自動生成する。
+
+CSSの自動生成
+-------------------------------
+
+**CSS自動生成ファイル一覧**
+
+  以下に自動生成されるCSSファイルの一覧を示す。
+
+  =================== ========================= ========================================================
+   生成先フォルダ      生成ファイル              元になるファイル 
+  =================== ========================= ========================================================
+   css/built           ${cssMode}-minify.css     :ref:`lessImport_less` で定義されたされたcssファイル。
+  =================== ========================= ========================================================
+
+**CSSファイル生成イメージ**
+
+  以下に自動生成されるCSSファイルの生成イメージを示す。
+
+  .. image:: ./_image/build_css_gen.png
+
+**CSSのモードについて**
+
+  ファイル展開設定ファイルの"cssMode"で指定されたCSS表示モードのみが生成対象となる。
+  （表示モードおよびlessファイルの内容については :doc:`internals/css_framework` 参照）
+
+  | プラグインに含まれるlessファイルをインポートした :ref:`lessImport_less` を参照し、各cssファイルを作成する。
+  | 例えば"cssMode"で["wide", "compact", "narrow"]を指定した場合、以下のファイルが生成される。
+
+    .. code-block:: bash
+    
+      css/
+       └── built/
+            ├── wide-minify.css
+            ├── compact-minify.css
+            └── narrow-minify.css
+  
+  
+
+.. _generate_javascript:
+
+JavaScriptの自動生成
+-------------------------------
+
+**JavaScript自動生成ファイル一覧**
+
+  以下に自動生成されるJavaScriptファイルの一覧を示す。表の記述順にファイルが生成される。
+
+  =================== ========================= ==================================================
+   生成先フォルダ      生成ファイル              元になるファイル                                 
+  =================== ========================= ==================================================
+   js/nablarch         ui.js                     js/nablarch/ui配下のJavaScriptファイル。
+
+   js                  nablarch-minify.js        業務画面から参照されるJavaScriptファイル。
+
+   js/build            devtool_conf.js           autoconf.jsで検出されたJavaScriptファイル。
+
+   js                  devtool.js                devtool_conf.jsで定義されたJavaScriptファイル。
+  =================== ========================= ==================================================
+
+**JavaScriptファイル生成イメージ**
+
+  以下に自動生成されるJavaScriptファイルの生成イメージを示す。
+
+  .. image:: ./_image/build_js_gen.png
+
+
+.. _build-file:
+
+---------------------------------------------------------
+プラグイン、外部ライブラリの展開
+---------------------------------------------------------
+
+本プラグインビルドコマンドではプラグインや外部ライブラリを各種設定ファイルの内容に基づきui_test、ui_demoなどの環境毎に展開する。
+
+プラグインの展開
+-------------------------------
+
+**参照設定ファイル**
+
+  - :ref:`pjconf_json`
+
+**展開仕様**
+
+  各プラグインに含まれるフォルダごとに以下のように展開する。
+
+  ======================== ================================================================================================
+  プラグイン内のフォルダ   プロジェクト上の配布先
+  ======================== ================================================================================================
+  ui_public                UIローカルデモ用プロジェクト, UI開発基盤テスト用プロジェクト, デプロイ対象プロジェクト
+
+  ui_local                 UIローカルデモ用プロジェクト, UI開発基盤テスト用プロジェクト
+
+  ui_test                  UI開発基盤テスト用プロジェクト
+  ======================== ================================================================================================
+
+  ただし、各プラグインに含まれるlessファイルは展開されず、自動生成された*-minify.cssファイルのみ展開される。
+  自動生成ファイルについては :ref:`generate-file` を参照。
+
+  .. tip::
+
+    プラグイン間で同一の展開先となるファイルを検出した場合、重複ファイルとして下記フォーマットでコマンド終了時に該当ファイルの一覧が表示される。
+    
+      .. code-block:: none
+      
+        duplicate file detected!!
+        {
+          "<展開先ファイル名>": [
+            "<プラグイン1>",
+            "<プラグイン2>",
+              :
+            "<プラグインn>
+          ]
+        }
+        
+    各ファイルの最後に表示されたプラグインに含まれるファイルが適用されている。
+    問題がある場合は :ref:`pjconf_json` を見直し反映順序を制御するか、プラグイン内のファイル構成を見直す必要がある。
+
+
+外部ライブラリの展開
+-------------------------------
+
+**参照設定ファイル**
+
+  - :ref:`pjconf_json`
+
+**展開仕様**
+
+  :ref:`pjconf_json` に定義されている"libraryDeployMappings"の内容に従い、
+  ライブラリ内の必要なファイルのみを配布する。
+  "libraryDeployMappings"の内容については :ref:`pjconf_json` を参照。
+
+
+.. _build-command:
+
+-------------------------------
+ビルドコマンド
+-------------------------------
+
+プラグインビルドコマンド用のコマンドとして以下のコマンドが提供されている。
+
+================================== ============================== ==========================================================================================================================
+コマンド名                         Windows用実行ファイル名        概要
+================================== ============================== ==========================================================================================================================
+:ref:`install`                     install.bat                    Nablarch提供プラグインおよび外部ライブラリをプロジェクトフォルダ配下に取り込む。
+
+:ref:`ui_build`                    ui_build.bat                   Nablarch提供プラグイン、プロジェクト開発プラグインおよび外部ライブラリをプロジェクトフォルダ内の各フォルダに展開する。|br|
+                                                                  同時に各環境固有の自動生成ファイルを生成する。
+
+:ref:`ui_genless`                  ui_genless.bat                 各表示モード毎のlessインポート定義ファイルの雛形を作成する。
+
+:ref:`localServer`                 ローカル画面確認.bat           ローカル動作確認用のサーバを起動する。
+
+:ref:`ui_demo`                     サーバ動作確認.bat             サーバ動作確認用のサーバを起動する。
+================================== ============================== ==========================================================================================================================
+
+
+それぞれのコマンドについて詳細を示す。
+
+
+.. _install:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-plugin_build--s12",
+  "title": "プラグインビルド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/plugin_build.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ビルドコマンド用設定ファイル",
+      "hints": [
+        "pjconf.json",
+        "pathSettings",
+        "cssMode",
+        "plugins",
+        "libraryDeployMappings",
+        "imgcopy",
+        "excludedirs",
+        "ビルドコマンド設定",
+        "プラグイン展開設定",
+        "CSSモード設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "lessインポート定義ファイル",
+      "hints": [
+        "lessインポート",
+        "CSS表示モード",
+        "ui_public",
+        "ui_test",
+        "@import",
+        "wide.less",
+        "compact.less",
+        "narrow.less",
+        "デプロイ先種別"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ファイルの自動生成",
+      "hints": [
+        "CSS自動生成",
+        "JavaScript自動生成",
+        "ファイル自動生成",
+        "minify"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "CSSの自動生成",
+      "hints": [
+        "CSS自動生成",
+        "minify.css",
+        "css/built",
+        "cssMode",
+        "lessファイル",
+        "wide-minify.css",
+        "compact-minify.css",
+        "narrow-minify.css"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "JavaScriptの自動生成",
+      "hints": [
+        "JavaScript自動生成",
+        "ui.js",
+        "nablarch-minify.js",
+        "devtool_conf.js",
+        "devtool.js",
+        "js/nablarch",
+        "js/build",
+        "autoconf.js"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "プラグイン、外部ライブラリの展開",
+      "hints": [
+        "プラグイン展開",
+        "外部ライブラリ展開",
+        "ui_test",
+        "ui_demo",
+        "pjconf.json"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "プラグインの展開",
+      "hints": [
+        "プラグイン展開",
+        "ui_public",
+        "ui_local",
+        "ui_test",
+        "展開先",
+        "重複ファイル",
+        "lessファイル除外",
+        "duplicate file detected"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "外部ライブラリの展開",
+      "hints": [
+        "外部ライブラリ展開",
+        "libraryDeployMappings",
+        "サードパーティライブラリ",
+        "ファイルリネーム"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "ビルドコマンド",
+      "hints": [
+        "install.bat",
+        "ui_build.bat",
+        "ui_genless.bat",
+        "ローカル画面確認.bat",
+        "サーバ動作確認.bat",
+        "install",
+        "ui_build",
+        "ui_genless",
+        "localServer",
+        "ui_demo"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**配置**: `ui_plugins/pjconf.json`（:ref:`install` で配置フォルダ変更可、:ref:`ui_build` でファイル名変更可）\n\n| 設定項目 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| pathSettings/projectRootPath | ○ | | プロジェクトルートパス（絶対パスまたは起動ディレクトリからの相対パス） |\n| pathSettings/webProjectPath | ○ | | デプロイ対象プロジェクトのパス（プロジェクトルートからの相対パス） |\n| pathSettings/demoProjectPath | | `ui_demo` | UIローカルデモプロジェクトのパス（プロジェクトルートからの相対パス） |\n| pathSettings/testProjectPath | | `ui_test` | UI開発基盤テストプロジェクトのパス（プロジェクトルートからの相対パス） |\n| pathSettings/pluginProjectPath | | `ui_plugins` | プラグインプロジェクトのパス（プロジェクトルートからの相対パス） |\n| cssMode | | `[\"wide\", \"compact\", \"narrow\"]` | ビルド対象CSSモードの配列 |\n| plugins | | 全プラグイン・全ファイル | 展開対象プラグインリスト（定義順に展開）。各要素: `pattern`（必須、正規表現）、`exclude`（任意、除外ファイルの正規表現配列） |\n| libraryDeployMappings | | | サードパーティライブラリの展開マッピング。パッケージ名→`{展開元: 展開先}`。展開先はui_test等からの相対パス。リネーム可能。 |\n| imgcopy | | 画像コピーなし | 高解像度→低解像度ディレクトリへの画像コピー設定。`fromdirs`（必須）、`todirs`（必須）を配列で指定。 |\n| excludedirs | | 隠しディレクトリ（`.`始まり） | 展開時に共通的に除外するディレクトリ名の配列 |\n\n```json\n{ \"pathSettings\" :\n  { \"projectRootPath\"   : \"../..\"\n  , \"webProjectPath\"    : \"web/main/web\"\n  , \"demoProjectPath\"   : \"ui_demo\"\n  , \"testProjectPath\"   : \"ui_test\"\n  , \"pluginProjectPath\" : \"ui_plugins\"\n  }\n, \"cssMode\" : [\"wide\", \"compact\", \"narrow\"]\n, \"plugins\" :\n  [ { \"pattern\": \"nablarch-.*\", \"exclude\" : [ \"hogeRegExp1\", \"hogeRegExp2\" ] }\n  , { \"pattern\": \"web_project-.*\" }\n  , { \"pattern\": \"requirejs\" }\n  , { \"pattern\": \"sugar\" }\n  , { \"pattern\": \"jquery\" }\n  , { \"pattern\": \"requirejs-text\" }\n  , { \"pattern\": \"font-awesome\" }\n  , { \"pattern\": \"less\" }\n  ]\n, \"libraryDeployMappings\":\n  { \"jquery\" : { \"dist/jquery.js\": \"js/jquery.js\" }\n  , \"requirejs\" : { \"require.js\": \"js/require.js\" }\n  , \"sugar\" : { \"release/sugar-full.development.js\": \"js/sugar.js\" }\n  , \"font-awesome\": { \"fonts/fonts*\": \"fonts/fonts*\", \"css/font-awesome.min.css\": \"css/font-awesome.min.css\" }\n  }\n, \"imgcopy\":\n  { \"fromdirs\": [ \"img/narrow/high\", \"img/wide/high\" ]\n  , \"todirs\":   [ \"img/wide/low\", \"img/narrow/high\", \"img/narrow/low\" ]\n  }\n, \"excludedirs\" : [ \"hoge\" ]\n}\n```",
+    "s2": "**配置**: `ui_plugins/css/${デプロイ先種別}/${表示モード}.less`（:ref:`install` で配置フォルダ変更可）\n\n表示モードごとにインポートするlessファイルの定義。デプロイ先種別・表示モードごとにファイルを作成する。\n\n| デプロイ先種別 | デプロイ先 |\n|---|---|\n| `ui_public` | デプロイ対象プロジェクトのルートフォルダ（web） |\n| `ui_test` | UI開発基盤テスト用フォルダ（ui_test）、UIローカルデモ用フォルダ（ui_demo） |\n\n:ref:`pjconf_json` の`cssMode`で指定されたモードと対応するファイルをそれぞれ作成する必要がある。例えば`[\"wide\", \"compact\", \"narrow\"]`の場合:\n\n```\nui_plugins/\n └── css/\n      ├── ui_public/\n      │    ├── wide.less\n      │    ├── compact.less\n      │    └── narrow.less\n      └── ui_test/\n           ├── wide.less\n           ├── compact.less\n           └── narrow.less\n```\n\nlessファイルの形式:\n\n```css\n@import \"インポート対象ファイル名\";\n@import \"インポート対象ファイル名\";\n```\n\nインポート対象ファイル名はファイルの配置フォルダからの相対パスで指定する。\n\n```css\n@import \"../../node_modules/nablarch-widget-field-base/ui_public/css/field/base\";\n@import \"../../node_modules/nablarch-widget-field-base/ui_public/css/field/base-wide\";\n```\n\n> **重要**: 複数のlessファイル内で同一のセレクタが記述されている場合、後に記述されたセレクタの内容で上書きされる。lessファイルをインポートする順序が重要であり、:ref:`ui_genless` で作成した雛形を適宜修正する必要がある。",
+    "s3": "プラグインや外部ライブラリをui_test、ui_demoなどの環境毎に展開後、CSSおよびJavaScriptファイルの一部を各環境毎に自動生成する。CSSの自動生成については「CSSの自動生成」、JavaScriptの自動生成については「JavaScriptの自動生成」セクション参照。",
+    "s4": "**自動生成ファイル**:\n\n| 生成先フォルダ | 生成ファイル | 元になるファイル |\n|---|---|---|\n| `css/built` | `${cssMode}-minify.css` | :ref:`lessImport_less` で定義されたcssファイル |\n\n`cssMode`で指定されたモードのみ生成対象。例えば`[\"wide\", \"compact\", \"narrow\"]`の場合:\n\n```\ncss/\n └── built/\n      ├── wide-minify.css\n      ├── compact-minify.css\n      └── narrow-minify.css\n```\n\n![CSSファイル生成イメージ](assets/testing-framework-plugin_build--s12/build_css_gen.png)",
+    "s5": "**自動生成ファイル**（表の記述順に生成）:\n\n| 生成先フォルダ | 生成ファイル | 元になるファイル |\n|---|---|---|\n| `js/nablarch` | `ui.js` | `js/nablarch/ui`配下のJavaScriptファイル |\n| `js` | `nablarch-minify.js` | 業務画面から参照されるJavaScriptファイル |\n| `js/build` | `devtool_conf.js` | `autoconf.js`で検出されたJavaScriptファイル |\n| `js` | `devtool.js` | `devtool_conf.js`で定義されたJavaScriptファイル |\n\n![JavaScriptファイル生成イメージ](assets/testing-framework-plugin_build--s12/build_js_gen.png)",
+    "s6": "プラグインや外部ライブラリを各種設定ファイルの内容に基づきui_test、ui_demoなどの環境毎に展開する。参照設定ファイル: :ref:`pjconf_json`",
+    "s7": "**参照設定ファイル**: :ref:`pjconf_json`\n\n各プラグインに含まれるフォルダごとの展開先:\n\n| プラグイン内のフォルダ | プロジェクト上の配布先 |\n|---|---|\n| `ui_public` | UIローカルデモ用プロジェクト、UI開発基盤テスト用プロジェクト、デプロイ対象プロジェクト |\n| `ui_local` | UIローカルデモ用プロジェクト、UI開発基盤テスト用プロジェクト |\n| `ui_test` | UI開発基盤テスト用プロジェクト |\n\n> **重要**: 各プラグインに含まれるlessファイルは展開されず、自動生成された`*-minify.css`ファイルのみ展開される（:ref:`generate-file` 参照）。\n\n> **補足**: プラグイン間で同一の展開先となるファイルを検出した場合、重複ファイルとしてコマンド終了時に一覧が表示される。各ファイルは最後に表示されたプラグインのものが適用される。問題がある場合は :ref:`pjconf_json` で反映順序を制御するか、プラグイン内のファイル構成を見直す。",
+    "s8": "**参照設定ファイル**: :ref:`pjconf_json`\n\n:ref:`pjconf_json` の`libraryDeployMappings`の内容に従い、ライブラリ内の必要なファイルのみを配布する。`libraryDeployMappings`の詳細は :ref:`pjconf_json` 参照。",
+    "s9": "| コマンド名 | Windows用実行ファイル名 | 概要 |\n|---|---|---|\n| :ref:`install` | `install.bat` | Nablarch提供プラグインおよび外部ライブラリをプロジェクトフォルダ配下に取り込む |\n| :ref:`ui_build` | `ui_build.bat` | Nablarch提供プラグイン、プロジェクト開発プラグインおよび外部ライブラリをプロジェクトフォルダ内の各フォルダに展開し、各環境固有の自動生成ファイルを生成する |\n| :ref:`ui_genless` | `ui_genless.bat` | 各表示モード毎のlessインポート定義ファイルの雛形を作成する |\n| :ref:`localServer` | `ローカル画面確認.bat` | ローカル動作確認用のサーバを起動する |\n| :ref:`ui_demo` | `サーバ動作確認.bat` | サーバ動作確認用のサーバを起動する |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

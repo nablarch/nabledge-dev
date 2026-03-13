@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-delayed_receive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "概要セクションの前提説明が欠落している。「応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される」という記述および「このため、リクエスト単体テストではこのアクションクラスを使用して…確認を行う」という文脈が s1 に含まれていない。これはアクションクラスに対する条件網羅・限界値テストが不要な理由（Nablarch提供であるから自前実装ではない）を説明する根拠であり、テスト設計の判断に影響する。",
+      "source_evidence": "「応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される。このため、リクエスト単体テストではこのアクションクラスを使用して、以下のテスト対象の成果物の確認を行う。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "テストクラスの具体的なコード例（package宣言とクラス定義）が省略されている。ソースには「パッケージがnablarch.sample.ss21AA、リクエストIDがRM21AA100の場合のクラスは以下のようになる」として `RM21AA100RequestTest extends MessagingReceiveTestSupport` の実装例が示されており、AIがテストクラスを生成する際の参考になる。",
+      "source_evidence": "「例えば、テスト対象機能のパッケージがnablarch.sample.ss21AA、電文のリクエストIDがRM21AA100だとすると、テストクラスは以下のようになる。」 と対応するコードブロック: `public class RM21AA100RequestTest extends MessagingReceiveTestSupport {`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "「（レスポンスメッセージの扱い）」という括弧内補足と「のみ」という限定表現がソースに存在しない。ソースの当該文は「本項では…異なる箇所を解説する」とだけ述べており、差異の内容を同文内で特定していない。また「のみ」という限定もソースには含まれない。",
+      "source_evidence": "「本項では、:ref:`real_request_test` と記述方法が異なる箇所を解説する。」（括弧内補足なし、「のみ」なし）"
+    }
+  ]
+}

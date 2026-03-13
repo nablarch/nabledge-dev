@@ -1,0 +1,320 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/development_environment/redistribution.rst`
+- Format: `rst`
+
+```
+====================================
+UI開発基盤の展開
+====================================
+本節では、前節 :doc:`../development_environment/initial_setup`
+で作成した開発基盤をプロジェクト内に展開する方法について述べる。
+開発基盤の用途は、その目的によって以下の3つにわかれる。
+
+**1.画面設計担当者向けワークスペース**
+  外部設計工程において、業務画面設計者が作業するためのワークスペース。
+
+**2.開発担当者向けワークスペース**
+  PG/UT工程において、画面機能の実装担当者が作業するためのワークスペース。
+
+**3.UIデモ実行用アーカイブ**
+  業務画面のUIデモを実施するためのアーカイブ。
+  本ファイルとブラウザがあれば、UIデモを実施できる。
+  客先に送信して、ミーティングで使用したり、
+  開発リポジトリに直接アクセスできない顧客側の担当者に
+  UIを直接確認してもらう場合などに用いる。
+
+ここでは、用途に応じた開発基盤の取得方法について述べる。
+
+画面設計担当者向けワークスペースの取得
+=========================================
+画面設計担当者向けワークスペースは、前節で作成したリポジトリの
+**ui_demo/** ディレクトリ(下図)をローカルディスクの任意の位置にチェックアウトする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │  
+        └── web_project/
+              ├── web/
+              ├── ui_demo/        #### ← ここからチェックアウト####
+              │     ├── .project
+              │     ├── ローカル画面確認.bat
+              │     │
+              │
+              ├── ui_plugins/
+              └── ui_test/
+
+.. tip::
+
+  チェックアウトしたワークスペースの使用方法については :ref:`ui_dev-howto_make_jsp` を参照すること。
+
+
+開発担当者向けワークスペースの展開
+=========================================
+開発担当者向けワークスペースは、前節で作成したリポジトリの
+**web_project/** ディレクトリ(下図)をローカルディスクの任意の位置にチェックアウトする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │  
+        └── web_project/      #### ← ここからチェックアウト####
+              ├── web/
+              │     ├── .classpath
+              │     ├── .project
+              │     │
+              │  
+              ├── ui_demo/
+              │     ├── .project
+              │     ├── ローカル画面確認.bat
+              │     │
+              │  
+              ├── ui_plugins/
+              └── ui_test/
+                    ├── .classpath
+                    ├── .project
+                    │
+
+.. tip::
+
+  Eclipseを使用する場合、 ui_plugins/tool/wtptoolをantで実行すると、ui_plugins配下のjsp, tagファイルの入力補完や構文チェックが有効になる。
+
+.. important::
+
+  リクエスト単体テストでhtmlを確認したとき動的読み込み(XHR)が許可されず、JavaScriptが動作しないため、
+  開発担当者向けワークスペースに展開する前には
+  `main/webapp/WEB-INF/include/js_include.jsp` を確認し、本番用に切り替えること。(minifyされたjsファイルを読み込むようにする。)
+
+
+UIデモ実行用アーカイブの作成
+=========================================
+
+作成手順
+----------------------
+
+1. UI開発基盤リポジトリの **ui_demo/** ディレクトリ(下図)をローカルディスクの任意の位置にエクスポートする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │  
+        └── web_project/
+              ├── web/
+              ├── ui_demo/        #### ← ここからエクスポート####
+              │     ├── .project
+              │     ├── ローカル画面確認.bat
+              │     │
+              │
+              ├── ui_plugins/
+              └── ui_test/
+
+.. tip::
+
+  ここで、デモに不要な業務画面JSPを削除してもよい。
+  (**ローカル画面確認.bat** で表示されるリンク一覧には自動的に反映される。)
+
+
+2. エクスポートしたディレクトリを圧縮ソフトで圧縮する。(ファイル名は任意)
+
+
+確認手順
+----------------------------
+1. 作成したアーカイブを任意の別ディレクトリに展開する。
+
+2. 展開したディレクトリ直下の **ローカル画面確認.bat** を実行する。
+
+3. ブラウザが起動し、各業務画面JSPのリンク一覧が表示されるので
+   デモ表示を行いたい画面のリンクをクリックする。
+
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-redistribution--s1`
+
+```json
+{
+  "id": "testing-framework-redistribution--s1",
+  "title": "UI開発基盤の展開",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/development_environment/redistribution.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "UI開発基盤の用途と展開概要",
+      "hints": [
+        "開発基盤の用途",
+        "3種類のワークスペース",
+        "画面設計担当者",
+        "開発担当者",
+        "UIデモ実行用アーカイブ",
+        "客先送信",
+        "ミーティング",
+        "開発リポジトリにアクセスできない"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "画面設計担当者向けワークスペースの取得",
+      "hints": [
+        "画面設計担当者",
+        "ui_demo",
+        "チェックアウト",
+        "外部設計工程",
+        "業務画面設計"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "開発担当者向けワークスペースの展開",
+      "hints": [
+        "開発担当者",
+        "web_project",
+        "チェックアウト",
+        "wtptool",
+        "ant",
+        "jsp入力補完",
+        "js_include.jsp",
+        "minify",
+        "XHR",
+        "単体テスト",
+        "JavaScriptが動作しない"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "UIデモ実行用アーカイブの作成手順",
+      "hints": [
+        "UIデモ実行用アーカイブ",
+        "ui_demo",
+        "ローカル画面確認.bat",
+        "アーカイブ作成",
+        "JSP削除",
+        "エクスポート",
+        "圧縮"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "UIデモ実行用アーカイブの確認手順",
+      "hints": [
+        "UIデモ確認",
+        "ローカル画面確認.bat",
+        "UIデモ実行",
+        "業務画面JSP",
+        "ブラウザ起動"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "UI開発基盤の展開には、用途に応じた以下の3種類がある。\n\n1. **画面設計担当者向けワークスペース**: 外部設計工程において、業務画面設計者が作業するためのワークスペース。\n2. **開発担当者向けワークスペース**: PG/UT工程において、画面機能の実装担当者が作業するためのワークスペース。\n3. **UIデモ実行用アーカイブ**: 業務画面のUIデモを実施するためのアーカイブ。本ファイルとブラウザがあればUIデモを実施できる。客先に送信してミーティングで使用したり、開発リポジトリに直接アクセスできない顧客側の担当者にUIを直接確認してもらう場合などに用いる。",
+    "s2": "画面設計担当者向けワークスペースは、リポジトリの `ui_demo/` ディレクトリをローカルディスクの任意の位置にチェックアウトして取得する。\n\n```\nプロジェクトルート/\n      │  \n      └── web_project/\n            ├── web/\n            ├── ui_demo/        #### ← ここからチェックアウト####\n            │     ├── .project\n            │     ├── ローカル画面確認.bat\n            │\n            ├── ui_plugins/\n            └── ui_test/\n```\n\n> **補足**: チェックアウトしたワークスペースの使用方法については `ui_dev-howto_make_jsp` を参照すること。",
+    "s3": "開発担当者向けワークスペースは、リポジトリの `web_project/` ディレクトリをローカルディスクの任意の位置にチェックアウトして展開する。\n\n```\nプロジェクトルート/\n      │  \n      └── web_project/      #### ← ここからチェックアウト####\n            ├── web/\n            │     ├── .classpath\n            │     ├── .project\n            │  \n            ├── ui_demo/\n            │     ├── .project\n            │     ├── ローカル画面確認.bat\n            │  \n            ├── ui_plugins/\n            └── ui_test/\n                  ├── .classpath\n                  ├── .project\n```\n\n> **補足（Eclipse使用時）**: `ui_plugins/tool/wtptool` を ant で実行すると、`ui_plugins` 配下の jsp、tag ファイルの入力補完や構文チェックが有効になる。\n\n> **重要**: リクエスト単体テストで HTML を確認したとき、動的読み込み（XHR）が許可されず JavaScript が動作しない。そのため、開発担当者向けワークスペースに展開する前には `main/webapp/WEB-INF/include/js_include.jsp` を確認し、本番用（minify された JS ファイルを読み込む設定）に切り替えること。",
+    "s4": "UIデモ実行用アーカイブは、リポジトリの `ui_demo/` ディレクトリをエクスポートし、圧縮して作成する。\n\n1. UI開発基盤リポジトリの `ui_demo/` ディレクトリをローカルディスクの任意の位置にエクスポートする。\n\n```\nプロジェクトルート/\n      │  \n      └── web_project/\n            ├── web/\n            ├── ui_demo/        #### ← ここからエクスポート####\n            │     ├── .project\n            │     ├── ローカル画面確認.bat\n            │\n            ├── ui_plugins/\n            └── ui_test/\n```\n\n> **補足**: エクスポート後、デモに不要な業務画面 JSP を削除してもよい。削除内容は `ローカル画面確認.bat` で表示されるリンク一覧に自動的に反映される。\n\n2. エクスポートしたディレクトリを圧縮ソフトで圧縮する（ファイル名は任意）。",
+    "s5": "展開ディレクトリ直下の `ローカル画面確認.bat` を実行するとブラウザが起動し、業務画面 JSP のリンク一覧が表示される。デモ表示したい画面のリンクをクリックする。\n\n1. 作成したアーカイブを任意の別ディレクトリに展開する。\n2. 展開したディレクトリ直下の `ローカル画面確認.bat` を実行する。\n3. ブラウザが起動し、各業務画面 JSP のリンク一覧が表示されるので、デモ表示を行いたい画面のリンクをクリックする。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

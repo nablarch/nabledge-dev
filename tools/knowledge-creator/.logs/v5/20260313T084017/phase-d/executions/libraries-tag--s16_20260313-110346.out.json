@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-tag--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — BLOBダウンロード実装例 (JSP)",
+      "description": "BLOBダウンロードのJSP実装例が省略されている。ソースでは `c:forEach` ループ内で `n:downloadLink` に `n:write`・`n:param` をネストしてテーブル行ごとのダウンロードリンクを生成するパターンを示しており、`n:param` でfileIdを渡す具体的な方法が含まれている。このパターンはファイルダウンロード・CSVダウンロードのJSP例（1行のみ）とは異なり、複数行リストでのダウンロードリンク実装方法を示す実用的なコード例である。",
+      "source_evidence": "BLOB型カラムのダウンロードの実装例 JSP: `<c:forEach var=\"record\" items=\"${records}\" varStatus=\"status\"> ... <n:downloadLink uri=\"/action/download/tempFile\"> <n:write name=\"record.fileName\" />(<n:write name=\"fileId\" />) <n:param paramName=\"fileId\" name=\"fileId\" /> </n:downloadLink> ...</c:forEach>`"
+    }
+  ]
+}

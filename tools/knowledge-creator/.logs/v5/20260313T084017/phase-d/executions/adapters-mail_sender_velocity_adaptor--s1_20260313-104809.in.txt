@@ -1,0 +1,290 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/adaptors/mail_sender_velocity_adaptor.rst`
+- Format: `rst`
+
+```
+.. _mail_sender_velocity_adaptor:
+
+E-mail Velocityアダプタ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+`Velocity(外部サイト) <https://velocity.apache.org/>`_ を使用した定型メール送信処理を行うためのアダプタを提供する。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <!-- E-mail Velocityアダプタ -->
+  <dependency>
+    <groupId>com.nablarch.integration</groupId>
+    <artifactId>nablarch-mail-sender-velocity-adaptor</artifactId>
+  </dependency>
+  
+.. tip::
+
+  Velocityのバージョン2.0を使用してテストを行っている。
+  バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
+
+E-mail Velocityアダプタを使用するための設定を行う
+----------------------------------------------------------------------------------------------------
+本アダプタを使用するためには、コンポーネント設定ファイルで :java:extdoc:`VelocityMailProcessor<nablarch.integration.mail.velocity.VelocityMailProcessor>` を :java:extdoc:`MailRequester<nablarch.common.mail.MailRequester>` へ設定する。
+
+``VelocityMailProcessor`` にはVelocityが提供する ``VelocityEngine`` を設定する必要がある。
+``VelocityEngine`` は以下の理由により :java:extdoc:`ComponentFactory<nablarch.core.repository.di.ComponentFactory>` の実装クラスを作成してコンポーネントを設定することを推奨する。
+
+* ``VelocityEngine`` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい
+* ``VelocityEngine`` を設定した後に ``init`` メソッドを呼ぶ必要がある
+
+``VelocityEngine`` を作成する ``ComponentFactory`` 実装クラスの例を以下に示す。
+
+.. code-block:: java
+
+  package com.example;
+
+  import org.apache.velocity.app.VelocityEngine;
+  import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+
+  import nablarch.core.repository.di.ComponentFactory;
+
+  public class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {
+
+      @Override
+      public VelocityEngine createObject() {
+          VelocityEngine velocityEngine = new VelocityEngine();
+
+          velocityEngine.setProperty("resource.loader", "classloader");
+          velocityEngine.setProperty("classloader.resource.loader.class",
+                  ClasspathResourceLoader.class.getName());
+
+          //必要に応じてVelocityEngineへその他の設定を行う
+
+          velocityEngine.init();
+
+          return velocityEngine;
+      }
+  }
+
+この ``ConfigurationFactory`` を使用するコンポーネント設定ファイルの設定例を以下に示す。
+
+.. code-block:: xml
+
+  <component name="templateEngineMailProcessor"
+             class="nablarch.integration.mail.velocity.VelocityMailProcessor" autowireType="None">
+    <property name="velocityEngine">
+      <component class="com.example.VelocityEngineFactory"/>
+    </property>
+  </component>
+
+  <!-- メール送信要求API -->
+  <component name="mailRequester" class="nablarch.common.mail.MailRequester">
+    <property name="templateEngineMailProcessor" ref="templateEngineMailProcessor"/>
+    <!-- その他の設定は省略 -->
+  </component>
+
+メールのテンプレートを作成する
+--------------------------------------------------
+Velocityを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。
+
+件名と本文はデリミタと呼ばれる行で分割される。
+デフォルトのデリミタは ``---`` である（半角のハイフンが3つ）。
+
+テンプレートの例を以下に示す。
+
+.. code-block:: none
+
+ $titleについて$option
+ ---
+ $titleは、申請番号$requestIdで申請されました。
+ $approverは速やかに$titleを承認してください。$option
+
+より詳しい件名と本文の分割ルールは :java:extdoc:`TemplateEngineProcessedResult#valueOf<nablarch.common.mail.TemplateEngineProcessedResult.valueOf(java.lang.String)>` を参照。
+
+テンプレートファイルを配置する場所は ``VelocityEngine`` の設定によって異なる。
+例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされるので、クラスパス上のディレクトリにテンプレートファイルを配置することになる。
+
+メール送信要求を登録する
+--------------------------------------------------
+単に定型メールの送信要求を登録すればよい。
+:ref:`mail-request` を参照。
+```
+
+## Knowledge File
+
+- ID: `adapters-mail_sender_velocity_adaptor--s1`
+
+```json
+{
+  "id": "adapters-mail_sender_velocity_adaptor--s1",
+  "title": "E-mail Velocityアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/mail_sender_velocity_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/mail/velocity/VelocityMailProcessor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/mail/MailRequester.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/ComponentFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/mail/TemplateEngineProcessedResult.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-mail-sender-velocity-adaptor",
+        "com.nablarch.integration",
+        "Velocity",
+        "メールアダプタ",
+        "モジュール依存関係",
+        "Velocityバージョン"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "E-mail Velocityアダプタを使用するための設定を行う",
+      "hints": [
+        "VelocityMailProcessor",
+        "MailRequester",
+        "ComponentFactory",
+        "VelocityEngine",
+        "VelocityEngineFactory",
+        "nablarch.integration.mail.velocity.VelocityMailProcessor",
+        "nablarch.common.mail.MailRequester",
+        "nablarch.core.repository.di.ComponentFactory",
+        "templateEngineMailProcessor",
+        "Velocity設定",
+        "コンポーネント設定",
+        "ClasspathResourceLoader"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メールのテンプレートを作成する",
+      "hints": [
+        "TemplateEngineProcessedResult",
+        "VelocityEngine",
+        "デリミタ",
+        "件名本文分割",
+        "テンプレート作成",
+        "ClasspathResourceLoader"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メール送信要求を登録する",
+      "hints": [
+        "mail-request",
+        "定型メール送信",
+        "メール送信要求登録"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-mail-sender-velocity-adaptor</artifactId>\n</dependency>\n```\n\n> **補足**: Velocityバージョン2.0でテスト済み。バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。",
+    "s2": ":java:extdoc:`VelocityMailProcessor<nablarch.integration.mail.velocity.VelocityMailProcessor>` を :java:extdoc:`MailRequester<nablarch.common.mail.MailRequester>` へ設定する。\n\n`VelocityMailProcessor` には `VelocityEngine` を設定する必要がある。`VelocityEngine` は :java:extdoc:`ComponentFactory<nablarch.core.repository.di.ComponentFactory>` 実装クラス経由で設定することを推奨。理由: (1) VelocityEngineへの設定はJavaコードの方がやりやすい (2) `VelocityEngine` 設定後に `init` メソッドを呼ぶ必要がある。\n\n`VelocityEngine` を作成する `ComponentFactory` 実装クラスの例:\n\n```java\npublic class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {\n    @Override\n    public VelocityEngine createObject() {\n        VelocityEngine velocityEngine = new VelocityEngine();\n        velocityEngine.setProperty(\"resource.loader\", \"classloader\");\n        velocityEngine.setProperty(\"classloader.resource.loader.class\",\n                ClasspathResourceLoader.class.getName());\n        //必要に応じてVelocityEngineへその他の設定を行う\n        velocityEngine.init();\n        return velocityEngine;\n    }\n}\n```\n\nコンポーネント設定ファイルの例:\n\n```xml\n<component name=\"templateEngineMailProcessor\"\n           class=\"nablarch.integration.mail.velocity.VelocityMailProcessor\" autowireType=\"None\">\n  <property name=\"velocityEngine\">\n    <component class=\"com.example.VelocityEngineFactory\"/>\n  </property>\n</component>\n\n<component name=\"mailRequester\" class=\"nablarch.common.mail.MailRequester\">\n  <property name=\"templateEngineMailProcessor\" ref=\"templateEngineMailProcessor\"/>\n</component>\n```",
+    "s3": "件名と本文を1つのテンプレートに記述する。件名と本文はデリミタ行で分割され、デフォルトのデリミタは `---`（半角ハイフン3つ）。\n\nテンプレートの例:\n\n```\n$titleについて$option\n---\n$titleは、申請番号$requestIdで申請されました。\n$approverは速やかに$titleを承認してください。$option\n```\n\n件名と本文の分割ルールの詳細は :java:extdoc:`TemplateEngineProcessedResult#valueOf<nablarch.common.mail.TemplateEngineProcessedResult.valueOf(java.lang.String)>` を参照。\n\nテンプレートファイルの配置場所は `VelocityEngine` の設定に依存する（例: `ClasspathResourceLoader` を使用する場合はクラスパス上のディレクトリに配置）。",
+    "s4": "定型メールの送信要求を登録する。:ref:`mail-request` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

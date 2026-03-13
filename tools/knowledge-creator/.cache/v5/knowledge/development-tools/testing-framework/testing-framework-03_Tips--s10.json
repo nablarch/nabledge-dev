@@ -1,0 +1,151 @@
+{
+  "id": "testing-framework-03_Tips--s10",
+  "title": "テスティングフレームワーク Tips",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/idgenerator/IdGenerator.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "シーケンスオブジェクトを使った採番のテストをしたい",
+      "hints": [
+        "OracleSequenceIdGenerator",
+        "FastTableIdGenerator",
+        "IdGenerator",
+        "シーケンスオブジェクト採番",
+        "テーブル採番",
+        "TEST_SBN_TBL",
+        "採番テスト設定置き換え"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ThreadContextにユーザID、リクエストIDなどを設定したい",
+      "hints": [
+        "ThreadContext",
+        "setThreadContextValues",
+        "DbAccessTestSupport",
+        "TestSupport",
+        "ユーザID設定",
+        "リクエストID設定",
+        "自動設定項目"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "任意のディレクトリのExcelファイルを読み込みたい",
+      "hints": [
+        "TestDataParser",
+        "getListMap",
+        "SystemRepository",
+        "Excelファイル読み込み",
+        "任意ディレクトリ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テスト実行前後に共通処理を行いたい",
+      "hints": [
+        "@Before",
+        "@After",
+        "@BeforeClass",
+        "@AfterClass",
+        "テスト前後共通処理"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "@BeforeClass, @AfterClass使用時の注意点",
+      "hints": [
+        "@BeforeClass",
+        "@AfterClass",
+        "サブクラス同名メソッド",
+        "スーパークラス呼び出し抑止",
+        "継承注意"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "デフォルト以外のトランザクションを使用したい",
+      "hints": [
+        "DbAccessTestSupport",
+        "トランザクション自動制御",
+        "beginTransactions",
+        "endTransactions",
+        "トランザクション管理"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "本フレームワークのクラスを継承せずに使用したい",
+      "hints": [
+        "DbAccessTestSupport",
+        "委譲",
+        "beginTransactions",
+        "endTransactions",
+        "フレームワーク非継承",
+        "インスタンス化"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "クラスのプロパティを検証したい",
+      "hints": [
+        "HttpRequestTestSupport",
+        "assertObjectPropertyEquals",
+        "assertObjectArrayPropertyEquals",
+        "assertObjectListPropertyEquals",
+        "プロパティ検証",
+        "BasicAdvice",
+        "afterExecute",
+        "getRequestScopedVar"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "テストデータに空白、空文字、改行やnullを記述したい",
+      "hints": [
+        "special_notation_in_cell",
+        "空白テストデータ",
+        "null記述",
+        "改行テストデータ",
+        "特殊文字記述"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "テストデータに空行を記述したい",
+      "hints": [
+        "空行テストデータ",
+        "ダブルクォーテーション",
+        "空文字列",
+        "可変長ファイル",
+        "SETUP_VARIABLE"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "マスタデータを変更してテストを行いたい",
+      "hints": [
+        "マスタデータ変更テスト",
+        "04_MasterDataRestore",
+        "マスタデータリストア"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "シーケンスオブジェクトを使用した採番処理を、設定ファイルの変更のみでテーブル採番に置き換える機能を使用して採番テストを行う。\n\n手順:\n1. 準備データをテーブルにセットアップする\n2. 期待値はテーブルに設定した値を元に設定する\n\n**本番用設定ファイル例:**\n\n```xml\n<!-- シーケンスオブジェクトを使用した採番設定 -->\n<component name=\"idGenerator\" class=\"nablarch.common.idgenerator.OracleSequenceIdGenerator\">\n    <property name=\"idTable\">\n        <map>\n            <entry key=\"1101\" value=\"SEQ_1\"/> <!-- ID1採番用 -->\n            <entry key=\"1102\" value=\"SEQ_2\"/> <!-- ID2採番用 -->\n            <entry key=\"1103\" value=\"SEQ_3\"/> <!-- ID3採番用 -->\n            <entry key=\"1104\" value=\"SEQ_4\"/> <!-- ID4採番用 -->\n        </map>\n    </property>\n</component>\n```\n\n**テスト用設定ファイル（本番設定をテーブル採番設定で上書き）:**\n\n```xml\n<!-- シーケンスオブジェクトの採番設定をテーブルを使用した採番設定に置き換える -->\n<component name=\"idGenerator\" class=\"nablarch.common.idgenerator.FastTableIdGenerator\">\n    <property name=\"tableName\" value=\"TEST_SBN_TBL\"/>\n    <property name=\"idColumnName\" value=\"ID_COL\"/>\n    <property name=\"noColumnName\" value=\"NO_COL\"/>\n    <property name=\"dbTransactionManager\" ref=\"dbTransactionManager\" />\n</component>\n```\n\n> **補足**: テーブル採番用の設定値の詳細は、`IdGenerator` を参照すること。\n\n**Excel記述例（採番対象ID:1101）:**\n\n準備データ（SETUP_TABLE=TEST_SBN_TBL）:\n\n| ID_COL | NO_COL |\n|--------|--------|\n| 1101   | 100    |\n\n> **補足**: 採番用テーブルに準備データを設定する。テスト範囲内で使用する採番対象のレコードのみを設定する。\n\n期待値（EXPECTED_TABLE=TEST_SBN_TBL）:\n\n| ID_COL | NO_COL |\n|--------|--------|\n| 1101   | 101    |\n\n期待値（EXPECTED_TABLE=USER_INFO）:\n\n| USER_ID    | KANJI_NAME | KANA_NAME |\n|------------|------------|-----------|\n| 0000000101 | 漢字名     | ｶﾅﾒｲ      |\n\n> **補足**: テスト内で1度のみ採番処理が行われる場合、期待値は「準備データの値 + 1」となる。",
+    "s2": "データベースアクセスクラスの自動テストでは、テストクラスからテスト対象クラスを直接起動するため、ThreadContextに値が設定されていない。以下のメソッドを使用してThreadContextに値を設定する。\n\n- `TestSupport#setThreadContextValues(String sheetName, String id)`\n- `DbAccessTestSupport#setThreadContextValues(String sheetName, String id)`\n\n> **補足**: 自動設定項目を使用してデータベースを登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前に設定すること。\n\n**テストソースコード例:**\n\n```java\nsetThreadContextValues(\"testSelect\", \"threadContext\");\n```\n\n**Excelデータ例（シート[testInsert]、LIST_MAP=threadContext）:**\n\n| USER_ID | REQUEST_ID | LANG  |\n|---------|------------|-------|\n| U00001  | RS000001   | ja_JP |",
+    "s3": "テストソースコードと異なるディレクトリのExcelファイルを読み込む場合は、`TestDataParser` 実装クラスを直接使用する。\n\n```java\nTestDataParser parser = (TestDataParser) SystemRepository.getObject(\"testDataParser\");\nList<Map<String, String>> list = parser.getListMap(\"/foo/bar/Baz.xlsx\", \"sheet001\", \"params\");\n```",
+    "s4": "JUnit4のアノテーション（`@Before`, `@After`, `@BeforeClass`, `@AfterClass`）を使用して、テスト実行前後に共通処理を実行できる。",
+    "s5": "`@BeforeClass`/`@AfterClass` 使用時の注意: サブクラスでスーパークラスと同名かつ同アノテーションのメソッドを定義すると、スーパークラスのメソッドは呼び出されなくなる。\n\n```java\npublic class TestSuper {\n    @BeforeClass\n    public static void setUpBeforeClass() {\n        System.out.println(\"super\");   // 表示されない\n    }\n}\n\npublic class TestSub extends TestSuper {\n    @BeforeClass\n    public static void setUpBeforeClass() {\n        // スーパークラスのメソッドを上書き\n    }\n    @Test\n    public void test() {\n        System.out.println(\"test\");\n    }\n}\n```\n\nTestSubを実行した場合、「test」のみ表示される。",
+    "s6": "`DbAccessTestSupport` を継承することで、スーパークラスの `@Before`/`@After` メソッドが自動的に呼び出される。テストメソッド実行前にトランザクション開始、実行後にトランザクション終了が自動制御されるため、個別テストでのトランザクション開始処理の記述とトランザクション終了処理漏れが不要になる。\n\nプロパティファイルにトランザクション名を記載しておくことで、この機構が有効になる。",
+    "s7": "フレームワークのスーパークラスを継承できない場合、スーパークラスをインスタンス化して処理を委譲する。\n\n- コンストラクタにテストクラス自身の `Class` インスタンスを渡す\n- `@Before` メソッドで `dbSupport.beginTransactions()` を明示的に呼び出す\n- `@After` メソッドで `dbSupport.endTransactions()` を明示的に呼び出す\n\n```java\npublic class SampleTest extends AnotherSuperClass {\n    private DbAccessTestSupport dbSupport = new DbAccessTestSupport(getClass());\n\n    @Before\n    public void setUp() {\n        dbSupport.beginTransactions();\n    }\n\n    @After\n    public void tearDown() {\n        dbSupport.endTransactions();\n    }\n\n    @Test\n    public void test() {\n        dbSupport.setUpDb(\"test\");\n        dbSupport.assertSqlResultSetEquals(\"test\", \"id\", actual);\n    }\n}\n```",
+    "s8": "テスト対象クラスのプロパティ値を検証するメソッド（第1引数: エラー時メッセージ、第2引数: シート名、第3引数: ID、第4引数: 検証対象）:\n\n- `HttpRequestTestSupport#assertObjectPropertyEquals(String message, String sheetName, String id, Object actual)`\n- `HttpRequestTestSupport#assertObjectArrayPropertyEquals(String message, String sheetName, String id, Object[] actual)`\n- `HttpRequestTestSupport#assertObjectListPropertyEquals(String message, String sheetName, String id, List<?> actual)`\n\nテストデータの記述方法は :ref:`how_to_get_data_from_excel` と同様。2行目がプロパティ名、3行目以降が検証値。\n\n**テストソースコード例:**\n\n```java\npublic class UserUpdateActionRequestTest extends HttpRequestTestSupport {\n\n    @Test\n    public void testRW11AC0301Normal() {\n        execute(\"testRW11AC0301Normal\", new BasicAdvice() {\n            @Override\n            public void afterExecute(TestCaseInfo testCaseInfo,\n                    ExecutionContext context) {\n                String message = testCaseInfo.getTestCaseName();\n                String sheetName = testCaseInfo.getSheetName();\n\n                UserForm form = (UserForm) context.getRequestScopedVar(\"user_form\");\n                UsersEntity users = form.getUsers();\n\n                // users のプロパティ kanjiName,kanaName,mailAddress を検証\n                assertObjectPropertyEquals(message, sheetName, \"expectedUsers\", users);\n            }\n        });\n    }\n}\n```\n\n**Excelデータ例（LIST_MAP=expectedUsers）:**\n\n| kanjiName | kanaName   | mailAddress         |\n|-----------|------------|---------------------|\n| 漢字氏名  | カナシメイ | test@anydomain.com  |",
+    "s9": ":ref:`special_notation_in_cell` を参照。",
+    "s10": "全くの空行は無視されるため、ダブルクォーテーション `\"\"` を使用して空文字列を記述することで空行を表す。\n\n> **補足**: 空行を表す場合、行のうちいずれか1セルだけに `\"\"` を記述すれば良い。可読性のため、左端のセルへの記載を推奨する。\n\n**例（2レコード目が空行、SETUP_VARIABLE=/path/to/file.csv）:**\n\n| name | address |\n|------|---------|\n| 山田 | 東京都  |\n| \"\"   |         |\n| 田中 | 大阪府  |",
+    "s11": ":doc:`04_MasterDataRestore` を参照。"
+  }
+}

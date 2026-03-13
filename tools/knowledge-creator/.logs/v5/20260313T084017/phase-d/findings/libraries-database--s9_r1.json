@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-database--s9",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s5 — properties table",
+      "description": "The knowledge file presents a formal properties table with a '型' column listing 'String' for both likeEscapeChar and likeEscapeTargetCharList. The source file defines these only via XML configuration examples and does not state the Java type. The 'String' type designation is inferred, not sourced.",
+      "source_evidence": "Source only shows: `<property name=\"likeEscapeChar\" value=\"\\\" />` and `<property name=\"likeEscapeTargetCharList\" value=\"%,％,_,＿\" />` — no type information is stated."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3 — SQL example",
+      "description": "The source includes a SQL example section for the auto-property feature showing that auto-set property columns (:createdAt, :updatedAt) must still appear in the SQL statement even though they do not need to be set in the Bean. This implementation-relevant detail is absent from the knowledge file.",
+      "source_evidence": "Source SQL section under 'SQL実行時に共通的な値を自動的に設定したい': `insert into user (id, createdAt, updatedAt) values (:id, :createdAt, :updatedAt)` with heading note 'SQLは、:ref:`database-input_bean`と同じように作成する。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "Section s6's implementation example uses SqlResultSet as the return type of retrieve(), but SqlResultSet is absent from the hints for s6.",
+      "source_evidence": "Source implementation example: `SqlResultSet result = statement.retrieve(entity);`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "Section s1's implementation example uses DbConnectionContext.getConnection() to obtain a database connection, but DbConnectionContext is absent from the hints for s1.",
+      "source_evidence": "Source implementation example: `AppDbConnection connection = DbConnectionContext.getConnection();`"
+    }
+  ]
+}

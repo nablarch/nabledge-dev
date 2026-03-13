@@ -1,0 +1,225 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/setting_guide/CustomizingConfigurations/CustomizeSystemTableName.rst`
+- Format: `rst`
+
+```
+====================================================
+Nablarchフレームワークが使用するテーブル名の変更手順
+====================================================
+
+-----------
+概要
+-----------
+
+Nablarchフレームワークが認可チェックなどで使用するテーブル名が命名規約にそぐわなかったり、
+スキーマ修飾したい場合に変更する手順を記述する。
+
+-----------
+変更方法
+-----------
+
+以下、Nablarchが提供する各アーキタイプから生成したブランクプロジェクトで、Nablarchフレームワークが使用するテーブル名を一律「T_テーブル名」に変更する場合の例である。
+
+src/main/resources/common.propertiesに、プロジェクトが使用する機能に必要なテーブルの設定を追加する。各機能に対して必要な設定と設定例を以下に記載する。
+
+ .. code-block:: properties
+    
+    # 日付管理
+    nablarch.businessDateTable.tableName=T_BUSINESS_DATE
+    
+    # コード管理
+    nablarch.codeNameTable.name=T_CODE_NAME
+    nablarch.codePatternTable.name=T_CODE_PATTERN
+    
+    # 自動採番
+    nablarch.idGeneratorTable.tableName=T_ID_GENERATE
+    
+    # メール送信
+    nablarch.mailAttachedFileTable.tableName=T_MAIL_ATTACHED_FILE
+    nablarch.mailRecipientTable.tableName=T_MAIL_RECIPIENT
+    nablarch.mailRequestTable.tableName=T_MAIL_REQUEST
+    nablarch.mailTemplateTable.tableName=T_MAIL_TEMPLATE
+    
+    # メッセージ管理（データベースで管理時）
+    nablarch.messageTable.tableName=T_MESSAGE
+    
+    # サービス提供可否チェック
+    # (nablarch.batchRequestTable.nameはプロセス多重起動防止、プロセス停止制御でも使用する。)
+    nablarch.requestTable.name=T_REQUEST
+    nablarch.batchRequestTable.name=T_BATCH_REQUEST
+    
+    # 認可チェック
+    nablarch.permissionUnitTable.name=T_PERMISSION_UNIT
+    nablarch.permissionUnitRequestTable.name=T_PERMISSION_UNIT_REQUEST
+    nablarch.systemAccountTable.name=T_SYSTEM_ACCOUNT
+    nablarch.systemAccountAuthorityTable.name=T_SYSTEM_ACCOUNT_AUTHORITY
+    nablarch.ugroupTable.name=T_UGROUP
+    nablarch.ugroupAuthorityTable.name=T_UGROUP_AUTHORITY
+    nablarch.ugroupSystemAccountTable.name=T_UGROUP_SYSTEM_ACCOUNT
+
+
+ウェブアプリケーションの場合、セッションストアに使用するテーブル名も変更する。（アプリケーションでコンポーネント定義していない場合は定義する。）
+
+ .. code-block:: xml
+
+  <component class="nablarch.common.web.session.store.DbStore">
+    <property name="userSessionSchema">
+      <component class="nablarch.common.web.session.store.UserSessionSchema">
+        <property name="tableName" value="T_USER_SESSION" />
+        <property name="sessionIdName" value="SESSION_ID" />
+        <property name="sessionObjectName" value="SESSION_OBJECT" />
+        <property name="expirationDatetimeName" value="EXPIRATION_DATETIME" />
+      </component>
+    </property>
+  </component>
+```
+
+## Knowledge File
+
+- ID: `setting-guide-CustomizeSystemTableName--s1`
+
+```json
+{
+  "id": "setting-guide-CustomizeSystemTableName--s1",
+  "title": "Nablarchフレームワークが使用するテーブル名の変更手順",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/setting_guide/CustomizingConfigurations/CustomizeSystemTableName.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "テーブル名変更",
+        "命名規約",
+        "スキーマ修飾",
+        "Nablarchフレームワーク使用テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "変更方法",
+      "hints": [
+        "DbStore",
+        "UserSessionSchema",
+        "nablarch.common.web.session.store.DbStore",
+        "nablarch.common.web.session.store.UserSessionSchema",
+        "common.properties",
+        "テーブル名設定",
+        "セッションストア",
+        "認可チェック",
+        "日付管理",
+        "コード管理",
+        "自動採番",
+        "メール送信",
+        "メッセージ管理",
+        "サービス提供可否チェック"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テーブル名が命名規約にそぐわない場合やスキーマ修飾したい場合に、Nablarchフレームワークが使用するテーブル名を変更する。",
+    "s2": "`src/main/resources/common.properties` に使用する機能のテーブル設定を追加する。\n\n```properties\n# 日付管理\nnablarch.businessDateTable.tableName=T_BUSINESS_DATE\n\n# コード管理\nnablarch.codeNameTable.name=T_CODE_NAME\nnablarch.codePatternTable.name=T_CODE_PATTERN\n\n# 自動採番\nnablarch.idGeneratorTable.tableName=T_ID_GENERATE\n\n# メール送信\nnablarch.mailAttachedFileTable.tableName=T_MAIL_ATTACHED_FILE\nnablarch.mailRecipientTable.tableName=T_MAIL_RECIPIENT\nnablarch.mailRequestTable.tableName=T_MAIL_REQUEST\nnablarch.mailTemplateTable.tableName=T_MAIL_TEMPLATE\n\n# メッセージ管理（データベースで管理時）\nnablarch.messageTable.tableName=T_MESSAGE\n\n# サービス提供可否チェック\n# (nablarch.batchRequestTable.nameはプロセス多重起動防止、プロセス停止制御でも使用する。)\nnablarch.requestTable.name=T_REQUEST\nnablarch.batchRequestTable.name=T_BATCH_REQUEST\n\n# 認可チェック\nnablarch.permissionUnitTable.name=T_PERMISSION_UNIT\nnablarch.permissionUnitRequestTable.name=T_PERMISSION_UNIT_REQUEST\nnablarch.systemAccountTable.name=T_SYSTEM_ACCOUNT\nnablarch.systemAccountAuthorityTable.name=T_SYSTEM_ACCOUNT_AUTHORITY\nnablarch.ugroupTable.name=T_UGROUP\nnablarch.ugroupAuthorityTable.name=T_UGROUP_AUTHORITY\nnablarch.ugroupSystemAccountTable.name=T_UGROUP_SYSTEM_ACCOUNT\n```\n\nウェブアプリケーションの場合、セッションストアに使用するテーブル名も変更する（アプリケーションでコンポーネント定義していない場合は定義する）。\n\n**クラス**: `nablarch.common.web.session.store.DbStore`, `nablarch.common.web.session.store.UserSessionSchema`\n\n```xml\n<component class=\"nablarch.common.web.session.store.DbStore\">\n  <property name=\"userSessionSchema\">\n    <component class=\"nablarch.common.web.session.store.UserSessionSchema\">\n      <property name=\"tableName\" value=\"T_USER_SESSION\" />\n      <property name=\"sessionIdName\" value=\"SESSION_ID\" />\n      <property name=\"sessionObjectName\" value=\"SESSION_OBJECT\" />\n      <property name=\"expirationDatetimeName\" value=\"EXPIRATION_DATETIME\" />\n    </component>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

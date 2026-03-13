@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-request_thread_loop_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (OutOfMemoryError row)",
+      "description": "OutOfMemoryError処理で標準エラー出力を先に行う理由（「ログ出力時に再度ヒープ不足が発生する可能性があるため」）が省略されている。この理由は処理順序の設計根拠として実装判断に関わる情報。",
+      "source_evidence": "ヒープ不足のエラー: 「標準エラー出力にヒープ不足が発生したことを示すメッセージを出力し、FATALレベルのログ出力を行う。(ログ出力時に再度ヒープ不足が発生する可能性があるため、標準エラー出力にメッセージ出力後にログを出力する。)」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "s4のtipで参照されている `ServiceAvailabilityCheckHandler` がhintsに含まれていない。このハンドラを設定しない場合に serviceUnavailabilityRetryInterval が不要という重要な条件判断に関わるため、hints追加が望ましい。",
+      "source_evidence": "「後続ハンドラに :ref:`ServiceAvailabilityCheckHandler` を設定しない場合には、本設定値は設定する必要が無い。」"
+    }
+  ]
+}

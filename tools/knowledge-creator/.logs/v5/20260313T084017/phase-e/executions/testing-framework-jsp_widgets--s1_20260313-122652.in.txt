@@ -1,0 +1,557 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-jsp_widgets--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 (構造 - タグファイル実装例)",
+      "description": "field:calendarタグのカレンダーボタンが `<n:forInputPage>` でラップされているという重要な動作制約が記載されていない。これにより、カレンダーボタンは入力ページでのみレンダリングされ、参照画面・出力画面では表示されない。ウィジェットの動作を理解する上で必要な情報。",
+      "source_evidence": "ソース `<n:forInputPage>` ブロック: `<n:forInputPage>\\n  <n:set var=\"classText\" ... nablarch_DatePicker .../>\\n  <c:if test=\"${disabled || readonly }\">\\n    <button ... disabled=\"disabled\" type=\"button\">...</button>\\n  </c:if>\\n  <c:if test=\"${!disabled && !readonly}\">\\n    <button ... type=\"button\">...</button>\\n  </c:if>\\n</n:forInputPage>`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 (概要)",
+      "description": "`<field:hint>` に関する説明注記「`<field:hint>` は `field:block` ブロック内でスタンドアロン要素としても使用できる（hint属性とは別の使い方）。」という解釈的コメントはソースに存在しない。ソースはコード例を提示するのみで、この解説は知識ファイル作成者による付加的解釈。",
+      "source_evidence": "ソースのコード例には `<field:hint>半角英数記号20文字以内</field:hint>` の使用例が示されているが、これが「hint属性とは別の使い方」であるという説明はソース中に存在しない。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==========================================
+UI部品ウィジェット
+==========================================
+
+-----------
+概要
+-----------
+
+ウィジェットの使用
+====================================
+:doc:`jsp_widgets` は、ボタンや検索結果テーブル、各種入力フィールドといった
+画面内に配置される **UI部品** について **UI標準** に準拠した形で
+実装された **JSPタグファイル** である。
+
+以下のソースコードは、業務画面JSPにおいて :doc:`jsp_widgets` を使用して入力フォームを記述した例である。
+
+  .. code-block:: jsp
+
+    <n:form windowScopePrefixes="W11AC02,11AC_W11AC01">
+    <field:block title="ユーザ基本情報">
+      <field:text title="ログインID"
+                  domain="LOGIN_ID"
+                  required="true"
+                  maxlength="20"
+                  hint="半角英数記号20文字以内"
+                  name="W11AC02.systemAccount.loginId"
+                  sample="test01">
+      </field:text>
+      <field:password title="パスワード"
+                      domain="PASSWORD"
+                      required="true"
+                      maxlength="20"
+                      name="W11AC02.newPassword"
+                      sample="password">
+      </field:password>
+      <field:password title="パスワード（確認用）"
+                      domain="PASSWORD"
+                      required="true"
+                      maxlength="20"
+                      name="W11AC02.confirmPassword"
+                      sample="password">
+      </field:password>
+      <field:hint>半角英数記号20文字以内</field:hint>
+    </field:block>
+    </n:form>
+ 
+この例をみるとわかるように、 :doc:`jsp_widgets` は通常のHTMLのレベルより一段上の抽象度で
+業務画面の内容を定義できるため、HTML/JSPを直接使用するのに比べて
+開発者が記述するコード量を大幅に減少させることができる。
+
+また、JSPに見た目に関する記述が含まれないため、設計・開発中に画面デザインの変更が入った
+場合でも、既に作成された業務画面JSPに一切影響が発生しない。
+
+このため、業務機能設計と画面デザインのワークフローを並行で進めた場合のリスクを最小化
+可能である。
+
+
+ウィジェットの分類
+==================================
+:doc:`jsp_widgets` は、その用途ごとに異なったカテゴリに分類され
+個別の名前空間が与えられている。
+
+================== ==============================================================================
+名前空間           内容 
+================== ==============================================================================
+button             画面遷移用のボタンを描画するために使用するウィジェット群。
+                   UI標準に記載された標準文言(更新、検索など)、
+                   標準サイズに沿ったボタンがデフォルトで表示される。
+
+field              画面内の入出力項目を描画するために使用するウィジェット群。
+                   UI標準に定義された各種入力項目
+                   (単行テキスト入力、プルダウン、ラジオボタン、カレンダー日付入力など)
+                   に応じたタグファイルが用意されている。
+
+link               画面内の各種リンクを描画するために使用するウィジェット群。
+                   UI標準の「リンク」に準じたリンクを表示する。
+
+tab                UI標準の「タブ」に記述されたUIを実装するウィジェット群。
+                   JavaScriptによるページ内タブ切り替えと通常のリンクと画面遷移によるタブ切り替え
+                   の双方を実現する。
+
+table              検索結果テーブルなどの各種テーブルを描画するためのウィジェット群。
+                   テーブルの描画については、Nablarchが提供する **<listSearchResult:xxx>**
+                   タグを使用して行う。
+                   テーブルカラムの内容については、次の「column」を使用する。
+
+column             テーブルの各行の内容を定義するためのウィジェット群。
+                   カラムの内容ごと(テキスト、詳細リンク、処理対象選択用チェックボックスなど)に
+                   ウィジェットが用意されている。
+
+box                画面内を構造化するためのウィジェット群。
+                   PJのポリシーでスタイルを調整するウィジェットが用意されている。
+
+================== ==============================================================================
+
+
+----------------------
+構造
+----------------------
+:doc:`jsp_widgets` の本体は、ウィジェットごとに作成される **JSPタグファイル** である。
+これに、必要に応じて :doc:`js_framework` や スタイルファイルなどが付随する。
+
+
+タグファイル実装例
+=======================
+以下は :doc:`../reference_jsp_widgets/field_calendar` におけるタグファイルのソースコードである。
+このファイルでは :doc:`jsp_widgets` の
+`日付入力機能(nablarch_DatePicker) <../../../../_static/ui_dev/yuidoc/classes/nablarch.ui.DatePicker.html>`_
+を **マーカCSS** を使って使用している。
+
+.. code-block:: jsp
+
+  <%--
+    カレンダー日付入力UI部品
+    @author Iwauo Tajima
+  --%>
+
+  <%@ tag pageEncoding="UTF-8" description="日付入力項目を出力するウィジェット" %>
+  <%@ taglib prefix="n"      uri="http://tis.co.jp/nablarch" %>
+  <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+  <%@ taglib prefix="field"  tagdir="/WEB-INF/tags/widget/field" %>
+
+  <%---------------------- 属性定義 ----------------------%>
+  <%@ attribute name="title"     description="項目名" required="true" rtexprvalue="true" %>
+  <%@ attribute name="domain"    description="項目のドメイン型" rtexprvalue="true" %>
+  <%@ attribute name="required"  description="必須項目かどうか" rtexprvalue="true" %>
+  <%@ attribute name="readonly"  description="編集可能かどうか" rtexprvalue="true" %>
+  <%@ attribute name="disabled"  description="サーバに対する入力値の送信を抑制するかどうか" rtexprvalue="true" %>
+  <%@ attribute name="name"      description="HTMLのname属性値" required="true" rtexprvalue="true" %>
+  <%@ attribute name="id"        description="HTMLのid属性値 (省略時はname属性と同じ値を使用する)" rtexprvalue="true" %>
+  <%@ attribute name="cssClass"  description="HTMLのclass属性値" rtexprvalue="true" %>
+  <%@ attribute name="maxlength" description="入力文字数の上限(デフォルト:10文字)" rtexprvalue="true" %>
+  <%@ attribute name="example"   description="具体的な入力例を表すテキスト(placeholderなどの形式で表示する)" rtexprvalue="true" %>
+  <%@ attribute name="nameAlias" description="一つのエラーメッセージに対して複数の入力項目をハイライト表示する場合に指定する（項目間精査など）。詳細については、Application Framework解説書の「エラー表示」を参照。" rtexprvalue="true" %>
+  <%@ attribute name="hint"      description="入力内容や留意点などの補助テキスト" rtexprvalue="true" %>
+  <%@ attribute name="sample"    description="テスト用のダミー入力値(本番動作では使用されない)" rtexprvalue="true" %>
+  <%-----------------------追加属性---------------------------%>
+  <%@ attribute name="format"    description="日付フォーマット(デフォルト:yyyy/MM/dd)" rtexprvalue="true" %>
+  <%@ attribute name="locale"    description="言語設定(デフォルト:ja)" rtexprvalue="true" %>
+
+  <%---------------------- 設計書用属性定義 ----------------------%>
+  <%@ attribute name="dataFrom" description="表示するデータの取得元（画面項目定義に記載する、「表示情報取得元」.「表示項目名」の形式で設定する）" %>
+  <%@ attribute name="comment"    description="このカレンダーについての備考（画面項目定義の項目定義一覧で、備考欄に表示される）" %>
+  <%@ attribute name="initialValueDesc"    description="初期表示内容に関する説明。" %>
+
+  <%---------------------- マルチレイアウト用属性 ----------------------%>
+  <%@ attribute name="titleSize" description="タイトル部の幅（グリッド数）※マルチレイアウトモードの場合に使用する。" rtexprvalue="true" type="java.lang.Integer" %>
+  <%@ attribute name="inputSize" description="入力部の幅（グリッド数）※マルチレイアウトモードの場合に使用する。" rtexprvalue="true" %>
+
+  <%-- デフォルトの日付フォーマットの最大入力文字数 --%>
+  <c:if test="${empty format}">
+    <n:set var="maxlengthValue" value="10" scope="page"/>
+  </c:if>
+  <c:if test="${not empty format}">
+    <n:set var="maxlengthValue" name="maxlength" scope="page"/>
+  </c:if>
+
+  <%-- デフォルトの日付フォーマット --%>
+  <c:if test="${empty format}"><n:set var="format" value="yyyy/MM/dd" scope="page" /></c:if>
+
+  <%-- デフォルトのロケール --%>
+  <c:if test="${empty locale}"><n:set var="locale" value="ja" scope="page" /></c:if>
+
+  <field:inputbase
+    title      = "${title}"
+    name       = "${name}"
+    required   = "${required}"
+    hint       = "${hint}"
+    fieldClass = "${disabled ? 'disabled' : ''}"
+    titleSize  = "${titleSize}"
+    inputSize  = "${inputSize}">
+    <jsp:attribute name="fieldContent">
+      <c:if test="${empty maxlengthValue}">
+        <n:text
+          name        = "${name}"
+          id          = "${(empty id) ? name : id}"
+          disabled    = "${disabled}"
+          cssClass    = "${cssClass} ${(readonly) ? 'nablarch_readonly' : ''}"
+          placeholder = "${example}"
+          valueFormat = "yyyymmdd{${format}}"
+          nameAlias   = "${nameAlias}"
+        />
+      </c:if>
+      <c:if test="${not empty maxlengthValue}">
+        <n:text
+          name        = "${name}"
+          id          = "${(empty id) ? name : id}"
+          disabled    = "${disabled}"
+          cssClass    = "${cssClass} ${(readonly) ? 'nablarch_readonly' : ''}"
+          placeholder = "${example}"
+          valueFormat = "yyyymmdd{${format}}"
+          nameAlias   = "${nameAlias}"
+          maxlength   = "${maxlengthValue}"
+        />
+      </c:if>
+      <n:forInputPage>
+        <n:set
+          var   = "classText"
+          value = "${(readonly || disabled) ? 'disabled' : ''}
+                   nablarch_DatePicker
+                     -format ${format}
+                     -locale ${locale}
+                     -input  ${(empty id) ? name : id}"
+        />
+        <c:if test="${disabled || readonly }">
+          <button class="<n:write name='classText' withHtmlFormat='false' />"  disabled="disabled" type="button">
+            <i class="fa fa-calendar"></i>
+          </button>
+        </c:if>
+        <c:if test="${!disabled && !readonly}">
+          <button class="<n:write name='classText' withHtmlFormat='false' />" type="button">
+            <i class="fa fa-calendar"></i>
+          </button>
+        </c:if>
+      </n:forInputPage>
+    </jsp:attribute>
+  </field:inputbase>
+
+
+
+
+構成ファイル一覧
+==========================
+各 :doc:`jsp_widgets` の実体となるタグファイルは **(サーブレットコンテキストルート)/WEB-INF/tags/widget/** の配下に
+カテゴリごとのサブフォルダごとに置かれている。
+
+============================ ======== ======= ============================ ===================================================
+名称                         動作環境 [#1]_   パス                         内容                       
+---------------------------- ---------------- ---------------------------- ---------------------------------------------------
+_                            ローカル サーバ  _                            _
+============================ ======== ======= ============================ ===================================================
+**buttonタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<button:xxx>タグファイル     ○        ○       /WEB-INF/tags/widget/\       ボタンカテゴリのタグファイル群
+                                              button/\*.tag                  
+
+<button:xxx>スタブ           ○        ×       /js/jsp/taglib/\             ボタンカテゴリ配下の各タグファイルを読み込んで
+                                              button.js                    ローカルレンダリングを行うスクリプト。
+
+**fieldタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<field:xxx>タグファイル      ○        ○       /WEB-INF/tags/widget/\       入出力項目カテゴリのタグファイル群
+                                              field/\*.tag                  
+
+<field:xxx>スタブ            ○        ×       /js/jsp/taglib\              入出力項目カテゴリ配下の各タグファイルを読み込んで
+                                              field.js                     ローカルレンダリングを行うスクリプト。
+
+カレンダー日付入力機能       ○        △       /js/nablarch/ui/\            カレンダーを用いて日付を入力させる
+                                              DatePicker.js                JavaScript UI部品。
+                                                                           <field:calendar> タグで内部的に使用する。
+
+リストビルダー機能           ○        △       /js/nablarch/ui/\            2つのリストボックス間の要素移動により項目を選択する
+                                              ListBuilder.js               JavaScript UI部品。
+                                                                           <field:listbuilder> タグで内部的に使用する。
+
+プレースホルダー機能         ○        △       /js/nablarch/ui/\            HTML5のplaceholder属性をサポートしていないブラウザで\
+                                              Placeholder.js               同等の機能を実現するJavaScript UI部品。
+                                                                           <field:text> タグ等のテキストを入力するタグ全般で使用
+                                                                           している。
+
+入力不可項目機能             ○        △       /js/nablarch/ui/\            HTMLのreadonly属性の拡張機能を実装する
+                                              readonly.js                  JavaScript UI部品。
+                                                                           テキスト入力項目だけでなく、プルダウンやラジオボタンの
+                                                                           ような選択項目にも対応する。
+                                                                           <field:pulldown>など、入力項目タグ全般で使用している。
+
+**linkタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<link:xxx>タグファイル       ○        ○       /WEB-INF/tags/widget/\       リンクカテゴリのタグファイル群
+                                              link/\*.tag                  
+
+<link:xxx>スタブ             ○        ×       /js/jsp/taglib/\             リンクカテゴリ配下の各タグファイルを読み込んで
+                                              link.js                      ローカルレンダリングを行うスクリプト。
+
+
+**tabタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<tab:xxx>タグファイル        ○        ○       /WEB-INF/tags/widget/\       タグカテゴリのタグファイル群
+                                              tab/\*.tag                   
+
+<tab:xxx>スタブ              ○        ×       /js/jsp/taglib/\             タブカテゴリ配下の各タグファイルを読み込んで
+                                              tab.js                       ローカルレンダリングを行うスクリプト。
+
+タブ表示機能                 ○        △       /js/nablarch/ui/Tab.js       ページ内タブ機能を実現する JavaScript UI部品。
+                                                                           <tab:content>で使用している。
+
+**tableタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<table:xxx>タグファイル      ○        ○       /WEB-INF/tags/widget/\       テーブルカテゴリのタグファイル群
+                                              table/\*.tag                  
+
+<table:xxx>スタブ            ○        ×       /js/jsp/taglib/\             テーブルカテゴリ配下の各タグファイルを読み込んで
+                                              table.js                     ローカルレンダリングを行うスクリプト。
+                                                                           ローカル動作で表示するダミーデータのレコード件数 
+                                                                           などを設定する。
+
+listSearchResultタグ         ○        ○       /WEB-INF/tags/\              Nablarchフレームワークが提供している
+                                              listSearchResult/\*.tag      検索結果テーブル表示用の共通部品。            
+                                                                           <table:xxx> タグが内部的に使用する。
+
+listSearchResultスタブ       ○        ×       /js/jsp/taglib/\             <listSearchResult:xxx>タグを読み込んで、
+                                              listsearchresult.js          ローカルレンダリングを行うスクリプト。
+
+階層テーブル表示機能         ○        △       /js/nablarch/ui/\            組織表のような階層構造を持ったテーブルを表示する
+                                              TreeList.js                  JavaScript UI部品。
+                                                                           <table:treelist>で使用している。
+
+**columnタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<column:xxx>タグファイル     ○        ○       /WEB-INF/tags/widget/\       カラムカテゴリのタグファイル群
+                                              column/\*.tag                   
+
+<column:xxx>スタブ           ○        ○       /js/jsp/taglib/column.js     カラムカテゴリ配下の各タグファイルを読み込んで 
+                                                                           ローカルレンダリングを行うスクリプト。
+
+**boxタグ**
+------------------------------------------------------------------------------------------------------------------------------
+<box:XXX>タグファイル        ○        ○       /WEB-INF/tags/widget/\       ボックスカテゴリのタグファイル群。
+                                              box/\*.tag
+
+<box:XXX>スタブ              ○        ×       /js/jsp/taglib/\             ボックスカテゴリのタグファイルを読み込んで
+                                              box.js                       ローカルレンダリングに使用するファイル。
+
+============================ ======== ======= ============================ ===================================================
+
+.. [#1]
+  **「サーバ」:**
+    実働環境にデプロイして使用するかどうか
+  **「ローカル」:**
+    ローカル動作時に使用するかどうか
+  **○ :**
+    使用する 
+  **△ :**
+    直接は使用しないがミニファイしたファイルの一部として使用する。
+  **× :**
+    使用しない
+
+
+------------------------------
+ローカル動作時の挙動
+------------------------------
+ローカル動作時でのJSPウィジェットタグの評価は、 **js/jsp/taglib/** 配下にカテゴリの名前空間ごとに用意された
+スタブ動作スクリプトによって行われる。
+これらのスクリプトは、基本的にカテゴリ内の当該のタグファイルを読み込んで、その内容をレンダリングする。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-jsp_widgets--s1",
+  "title": "UI部品ウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/internals/jsp_widgets.html",
+    "https://nablarch.github.io/docs/LATEST/doc/_static/ui_dev/yuidoc/classes/nablarch.ui.DatePicker.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "JSPウィジェット",
+        "UI部品",
+        "UI標準",
+        "JSPタグファイル",
+        "名前空間",
+        "button",
+        "field",
+        "link",
+        "tab",
+        "table",
+        "column",
+        "box",
+        "ウィジェット分類",
+        "field:hint",
+        "field:block"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "構造",
+      "hints": [
+        "JSPタグファイル構造",
+        "field:calendar",
+        "タグファイル実装例",
+        "マーカCSS",
+        "nablarch_DatePicker",
+        "sample属性",
+        "dateFormat",
+        "locale",
+        "dataFrom",
+        "comment",
+        "initialValueDesc",
+        "titleSize",
+        "inputSize",
+        "設計書用属性",
+        "マルチレイアウト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "buttonタグ",
+      "hints": [
+        "button:xxx",
+        "ボタンウィジェット",
+        "/WEB-INF/tags/widget/button",
+        "button.js",
+        "ローカルレンダリング"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "fieldタグ",
+      "hints": [
+        "field:xxx",
+        "入出力項目ウィジェット",
+        "DatePicker.js",
+        "ListBuilder.js",
+        "Placeholder.js",
+        "readonly.js",
+        "/WEB-INF/tags/widget/field",
+        "field.js"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "linkタグ",
+      "hints": [
+        "link:xxx",
+        "リンクウィジェット",
+        "/WEB-INF/tags/widget/link",
+        "link.js"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "tabタグ",
+      "hints": [
+        "tab:xxx",
+        "タブウィジェット",
+        "Tab.js",
+        "/WEB-INF/tags/widget/tab",
+        "tab.js",
+        "tab:content"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "tableタグ",
+      "hints": [
+        "table:xxx",
+        "テーブルウィジェット",
+        "listSearchResult",
+        "TreeList.js",
+        "/WEB-INF/tags/widget/table",
+        "table.js",
+        "listsearchresult.js",
+        "table:treelist"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "columnタグ",
+      "hints": [
+        "column:xxx",
+        "カラムウィジェット",
+        "/WEB-INF/tags/widget/column",
+        "column.js"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "boxタグ",
+      "hints": [
+        "box:XXX",
+        "ボックスウィジェット",
+        "/WEB-INF/tags/widget/box",
+        "box.js"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "ローカル動作時の挙動",
+      "hints": [
+        "ローカル動作",
+        "スタブ動作スクリプト",
+        "/js/jsp/taglib/",
+        "ローカルレンダリング",
+        "JSPウィジェットタグ評価"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`jsp_widgets` はUI部品（ボタン・入力フィールド・テーブルなど）をUI標準に準拠した形で実装したJSPタグファイル。HTMLより高い抽象度で業務画面を定義できるため記述コード量を大幅削減可能。JSPに見た目の記述が含まれないため、画面デザイン変更が入っても業務画面JSPへの影響が発生しない。業務機能設計と画面デザインのワークフローを並行で進める際のリスクを最小化できる。\n\n## ウィジェット使用例\n\n```jsp\n<n:form windowScopePrefixes=\"W11AC02,11AC_W11AC01\">\n  <field:block title=\"ユーザ基本情報\">\n    <field:text title=\"ログインID\" domain=\"LOGIN_ID\" required=\"true\" maxlength=\"20\"\n                hint=\"半角英数記号20文字以内\" name=\"W11AC02.systemAccount.loginId\" sample=\"test01\"/>\n    <field:password title=\"パスワード\" domain=\"PASSWORD\" required=\"true\" maxlength=\"20\"\n                    name=\"W11AC02.newPassword\" sample=\"password\"/>\n    <field:password title=\"パスワード（確認用）\" domain=\"PASSWORD\" required=\"true\" maxlength=\"20\"\n                    name=\"W11AC02.confirmPassword\" sample=\"password\"/>\n    <field:hint>半角英数記号20文字以内</field:hint>\n  </field:block>\n</n:form>\n```\n\n`<field:hint>` は `field:block` ブロック内でスタンドアロン要素としても使用できる（hint属性とは別の使い方）。\n\n## 名前空間分類\n\n| 名前空間 | 内容 |\n|---|---|\n| button | 画面遷移用ボタン。UI標準の標準文言・サイズに沿ったボタンをデフォルト表示 |\n| field | 入出力項目（単行テキスト、プルダウン、ラジオボタン、カレンダー日付入力など） |\n| link | UI標準「リンク」に準じたリンク |\n| tab | UI標準「タブ」。ページ内タブ切り替え（JavaScript）と画面遷移によるタブ切り替えの双方を実現 |\n| table | 検索結果テーブルなど各種テーブル。内部で `<listSearchResult:xxx>` タグを使用 |\n| column | テーブルの各行内容（テキスト、詳細リンク、チェックボックスなど）を定義 |\n| box | 画面内を構造化するウィジェット群 |",
+    "s2": ":doc:`jsp_widgets` の本体はウィジェットごとに作成されるJSPタグファイル。必要に応じて :doc:`js_framework` やスタイルファイルが付随する。\n\n## field:calendarタグファイル主要属性\n\n:doc:`../reference_jsp_widgets/field_calendar` は [nablarch_DatePicker](https://nablarch.github.io/docs/LATEST/doc/_static/ui_dev/yuidoc/classes/nablarch.ui.DatePicker.html) をマーカCSSで使用する。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| title | ○ | | 項目名 |\n| name | ○ | | HTMLのname属性値 |\n| domain | | | 項目のドメイン型 |\n| required | | | 必須項目かどうか |\n| readonly | | | 編集可能かどうか |\n| disabled | | | サーバへの入力値送信を抑制するかどうか |\n| id | | name属性と同じ | HTMLのid属性値 |\n| maxlength | | 10 | 入力文字数の上限（format指定時はformatに依存） |\n| format | | yyyy/MM/dd | 日付フォーマット |\n| locale | | ja | 言語設定 |\n| example | | | 入力例テキスト（placeholder等で表示） |\n| hint | | | 入力内容や留意点の補助テキスト |\n| nameAlias | | | 複数入力項目をハイライト表示する場合に指定（項目間精査など） |\n| sample | | | テスト用のダミー入力値（**本番動作では使用されない**） |\n| cssClass | | | HTMLのclass属性値 |\n| dataFrom | | | 【設計書用】表示するデータの取得元。「表示情報取得元」.「表示項目名」の形式で設定する |\n| comment | | | 【設計書用】画面項目定義の項目定義一覧で備考欄に表示される備考テキスト |\n| initialValueDesc | | | 【設計書用】初期表示内容に関する説明 |\n| titleSize | | | 【マルチレイアウト用】タイトル部の幅（グリッド数）※マルチレイアウトモードの場合に使用する |\n| inputSize | | | 【マルチレイアウト用】入力部の幅（グリッド数）※マルチレイアウトモードの場合に使用する |\n\ndisabled/readonlyが真の場合、カレンダーボタンに `disabled=\"disabled\"` 属性を付加する。",
+    "s3": "| 構成要素 | ローカル | サーバ | パス |\n|---|---|---|---|\n| `<button:xxx>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/button/*.tag` |\n| `<button:xxx>` スタブ | ○ | × | `/js/jsp/taglib/button.js` |\n\n- タグファイル: ボタンカテゴリのJSPタグファイル群\n- スタブ: ローカル動作時にタグファイルを読み込んでローカルレンダリングを行うスクリプト（サーバ環境では使用しない）",
+    "s4": "| 構成要素 | ローカル | サーバ | パス | 備考 |\n|---|---|---|---|---|\n| `<field:xxx>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/field/*.tag` | |\n| `<field:xxx>` スタブ | ○ | × | `/js/jsp/taglib/field.js` | |\n| カレンダー日付入力機能 | ○ | △ | `/js/nablarch/ui/DatePicker.js` | `<field:calendar>` で内部使用 |\n| リストビルダー機能 | ○ | △ | `/js/nablarch/ui/ListBuilder.js` | `<field:listbuilder>` で内部使用 |\n| プレースホルダー機能 | ○ | △ | `/js/nablarch/ui/Placeholder.js` | テキスト入力タグ全般で使用 |\n| 入力不可項目機能 | ○ | △ | `/js/nablarch/ui/readonly.js` | `<field:pulldown>` など入力項目タグ全般で使用 |\n\n△ = 直接は使用しないがミニファイしたファイルの一部として使用する。",
+    "s5": "| 構成要素 | ローカル | サーバ | パス |\n|---|---|---|---|\n| `<link:xxx>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/link/*.tag` |\n| `<link:xxx>` スタブ | ○ | × | `/js/jsp/taglib/link.js` |\n\n- タグファイル: リンクカテゴリのJSPタグファイル群\n- スタブ: ローカル動作時にタグファイルを読み込んでローカルレンダリングを行うスクリプト（サーバ環境では使用しない）",
+    "s6": "| 構成要素 | ローカル | サーバ | パス | 備考 |\n|---|---|---|---|---|\n| `<tab:xxx>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/tab/*.tag` | |\n| `<tab:xxx>` スタブ | ○ | × | `/js/jsp/taglib/tab.js` | |\n| タブ表示機能 | ○ | △ | `/js/nablarch/ui/Tab.js` | `<tab:content>` で使用 |\n\n△ = 直接は使用しないがミニファイしたファイルの一部として使用する。",
+    "s7": "| 構成要素 | ローカル | サーバ | パス | 備考 |\n|---|---|---|---|---|\n| `<table:xxx>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/table/*.tag` | |\n| `<table:xxx>` スタブ | ○ | × | `/js/jsp/taglib/table.js` | ローカル動作で表示するダミーデータのレコード件数などを設定 |\n| listSearchResultタグ | ○ | ○ | `/WEB-INF/tags/listSearchResult/*.tag` | `<table:xxx>` が内部使用するNablarchフレームワーク提供の検索結果テーブル表示用共通部品 |\n| listSearchResultスタブ | ○ | × | `/js/jsp/taglib/listsearchresult.js` | |\n| 階層テーブル表示機能 | ○ | △ | `/js/nablarch/ui/TreeList.js` | `<table:treelist>` で使用 |\n\n△ = 直接は使用しないがミニファイしたファイルの一部として使用する。",
+    "s8": "| 構成要素 | ローカル | サーバ | パス |\n|---|---|---|---|\n| `<column:xxx>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/column/*.tag` |\n| `<column:xxx>` スタブ | ○ | ○ | `/js/jsp/taglib/column.js` |\n\ncolumnカテゴリのスタブはローカル・サーバ両環境で使用される（他カテゴリのスタブはローカルのみ）。",
+    "s9": "| 構成要素 | ローカル | サーバ | パス |\n|---|---|---|---|\n| `<box:XXX>` タグファイル | ○ | ○ | `/WEB-INF/tags/widget/box/*.tag` |\n| `<box:XXX>` スタブ | ○ | × | `/js/jsp/taglib/box.js` |\n\n- タグファイル: ボックスカテゴリのJSPタグファイル群\n- スタブ: ローカル動作時にタグファイルを読み込んでローカルレンダリングに使用するファイル（サーバ環境では使用しない）",
+    "s10": "ローカル動作時のJSPウィジェットタグの評価は `/js/jsp/taglib/` 配下にカテゴリの名前空間ごとに用意されたスタブ動作スクリプトによって行われる。スクリプトはカテゴリ内の当該タグファイルを読み込んでその内容をレンダリングする。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

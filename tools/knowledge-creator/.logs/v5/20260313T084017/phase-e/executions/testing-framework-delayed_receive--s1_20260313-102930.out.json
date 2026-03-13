@@ -1,0 +1,63 @@
+{
+  "id": "testing-framework-delayed_receive--s1",
+  "title": "リクエスト単体テストの実施方法（応答不要メッセージ受信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ受信処理",
+        "リクエスト単体テスト",
+        "テスト対象の成果物",
+        "フォーマット定義ファイル",
+        "Formクラス",
+        "INSERT文",
+        "条件網羅不要",
+        "限界値テスト不要",
+        "Nablarch提供アクションクラス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingReceiveTestSupport",
+        "nablarch.test.core.messaging.MessagingReceiveTestSupport",
+        "テストクラス命名規則",
+        "RequestTest",
+        "テストクラス作成",
+        "RM21AA100RequestTest"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "テストデータ記述方法",
+        "real_request_test",
+        "応答不要メッセージ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "レスポンスメッセージ",
+      "hints": [
+        "レスポンスメッセージ不要",
+        "MESSAGE=expectedMessages",
+        "期待値",
+        "データベース検証",
+        "応答電文なし"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される。このため、リクエスト単体テストではこのアクションクラスを使用して、テスト対象の成果物の確認を行う。\n\n> **重要**: 他のテストのようにアクションクラスに対する条件網羅や限界値テストなどは実施不要。\n\n**テスト対象の成果物**:\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- データベースへ電文を登録する際に使用するFormクラス\n- データベースへ電文を登録するためのINSERT文",
+    "s2": "テストクラス作成ルール: (1) テスト対象機能と同一パッケージ (2) クラス名は`{電文のリクエストID}RequestTest` (3) `MessagingReceiveTestSupport`を継承\n\n**クラス**: `nablarch.test.core.messaging.MessagingReceiveTestSupport`\n\n例（パッケージ`nablarch.sample.ss21AA`、リクエストID`RM21AA100`の場合）:\n```java\npackage nablarch.sample.ss21AA;\n\n// ～中略～\n\npublic class RM21AA100RequestTest extends MessagingReceiveTestSupport {\n```",
+    "s3": "テストデータの記述方法は :ref:`real_request_test` に準拠する。本項では :ref:`real_request_test` と記述方法が異なる箇所を解説する。",
+    "s4": "応答不要メッセージ受信処理では応答電文は存在しないため、レスポンスメッセージ（`MESSAGE=expectedMessages`）の記述は不要。期待するデータベースの状態のみ確認する。"
+  }
+}

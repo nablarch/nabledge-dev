@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-RequestUnitTest_batch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s10",
+      "description": "The code example for the 固定長ファイル directive block uses `<map name=\"fixedLengthDirectives\">`, but the source file has `<map name=\"variableLengthDirectives\">` (with the comment `<!-- ディレクティブ（固定長） -->`). The knowledge file silently corrected what appears to be a typo in the source, introducing a value not present in the source.",
+      "source_evidence": "<!-- ディレクティブ（固定長） -->\n<map name=\"variableLengthDirectives\">\n  <entry key=\"record-separator\" value=\"NONE\"/>\n</map>"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "主なクラス, リソース table",
+      "description": "`DbAccessTestSupport` is listed in the source's main classes table with the description \"DB準備データ投入などデータベースを使用するテストに必要な機能を提供する\" but is completely absent from the knowledge file — no dedicated section, no mention in any section body, and no hint entry.",
+      "source_evidence": "DbAccessTestSupport | DB準備データ投入などデータベースを使用するテストに必要な機能を提供する。 | \\－"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "主なクラス, リソース table",
+      "description": "The creation unit constraints from the main classes table are not captured: リクエスト単体テストクラス is created 1 per テスト対象クラス (Action), and Excelファイル（テストデータ）is created 1 per テストクラス. These are practical constraints an AI agent would use when guiding test setup.",
+      "source_evidence": "リクエスト単体テストクラス | … | テスト対象クラス(Action)につき１つ作成\nExcelファイル（テストデータ）| … | テストクラスにつき１つ作成"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "概要",
+      "description": "The overview sentence defining the fundamental purpose of this test framework is absent from the knowledge file: \"実際にバッチをコマンドラインから起動したときの動作を擬似的に再現し、テストを行う\".",
+      "source_evidence": "リクエスト単体テスト（バッチ処理)では、実際にバッチをコマンドラインから起動したときの動作を擬似的に再現し、テストを行う。"
+    }
+  ]
+}

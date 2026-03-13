@@ -1,0 +1,457 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/extension_components/report/index.rst`
+- Format: `rst`
+
+```
+====================================================
+帳票ライブラリ
+====================================================
+
+------------
+概要
+------------
+
+本ライブラリでは、JasperReportsを利用したPDF帳票出力機能を提供する。
+以下にライブラリの構成と使用方法を示す。
+
+
+JasperReportsのバージョンについて
+
+URL: 　https://community.jaspersoft.com/download-jaspersoft/community-edition/
+(2014/12/16時点)
+
+================ ================== ===================
+ ライブラリ名     バージョン          ライセンス体系
+================ ================== ===================
+ JasperReports         5.6.1          GNU LESSER GENERAL PUBLIC LICENSE version 3(GNU LGPL)
+================ ================== ===================
+
+.. important::
+
+  本機能は、以下の依存ライブラリが現在入手困難となっているため、今後メンテナンスは行われない。
+
+  ================ =================== ===================
+   グループID       アーティファクトID  バージョン
+  ================ =================== ===================
+   com.lowagie     iTextAsian           1.0.0
+  ================ =================== ===================
+
+  
+  帳票出力機能が必要な場合は、以下のような代替手段を検討すること。
+  
+  * 商用製品を利用する
+  * ブラウザやOfficeのPDF出力機能を利用する
+
+
+------------
+要求
+------------
+
+実装済み
+========================
+
+* PDF形式の帳票を作成し、ファイルまたはストリーム形式で出力できる。
+
+* 用いる帳票テンプレートをプログラム内で指定した言語のものに切り替えることができる。
+
+* 異なる帳票フォーマットのPDFを連結して１つのファイルとして出力できる。
+
+
+  .. tip::
+  
+   下記の項目についてはPJにて検討すること。
+
+   ディレード処理制御
+  
+   同時実行制御
+  
+   流量制御
+  
+   タイムアウト設計
+  
+   使用可能文字集合
+  
+   使用フォント
+  
+   帳票の参照権限
+  
+   帳票テンプレートの管理方式
+  
+   帳票データの管理、帳票クリーニング機能
+
+
+  .. tip::
+   
+   帳票出力の基本実装クラス(BasicReportOutputResolver)は、PDFを帳票テンプレートと同一フォルダに一意なファイル名で作成するため、PDFが実行のたびに増えていく。
+
+   そのため、対象システムの帳票出力の頻度とディスク容量より、出力後不要となった帳票ファイルを定期的に削除する処理を検討する必要がある。
+
+
+  .. tip::
+
+
+   JasperReportsの標準機能を用いることでPDFにパスワードや暗号化、ブックマーク、作成者などの各種ドキュメントプロパティを設定することが出来る。
+   
+   その場合には本ライブラリの修正が必要となる。
+  
+
+未実装
+========================
+
+* 帳票サーバ機能
+
+ 帳票の作成・出力を行うWebサービスを公開することができる。
+
+* プリンタ直接印刷機能
+
+ PDF出力を介することなく、直接プリンタに印刷要求を発行することができる。
+
+
+取り下げ
+========================
+
+* なし
+
+
+--------
+構造
+--------
+
+クラス図
+============
+
+  .. image:: 09/_images/Report_ClassDiagram.png
+
+
+インターフェース定義
+========================
+
+　\a) 帳票生成処理パッケージ
+
+=========================== ======================================================================================
+クラス名                             概要
+=========================== ======================================================================================
+ ReportCreator                   帳票生成インタフェース。
+=========================== ======================================================================================
+
+　\b) 帳票出力処理パッケージ
+
+=========================== ======================================================================================
+クラス名                             概要
+=========================== ======================================================================================
+ ReportExporter                  帳票出力インタフェース。
+=========================== ======================================================================================
+
+　\c) 帳票出力先解決パッケージ
+
+=========================== ======================================================================================
+クラス名                             概要
+=========================== ======================================================================================
+ ReportOutputResolver            帳票出力先のパス解決を行うインタフェース。
+=========================== ======================================================================================
+
+　\d) 帳票テンプレートファイルパス解決パッケージ
+
+=========================== ======================================================================================
+クラス名                             概要
+=========================== ======================================================================================
+ ReportTemplateResolver          帳票テンプレートのパス解決を行うインタフェース。
+=========================== ======================================================================================
+
+
+クラス定義
+===============
+
+　\a) 帳票管理パッケージ
+
+=============================== ===============================================================================================================
+クラス名                                概要
+=============================== ===============================================================================================================
+ ReportManager                     業務機能からの要求を受付、システムリポジトリ経由でReportCreatorに処理を委譲するクラス。
+ ReportContext                     帳票出力に関する情報を保持するクラス。出力情報のほかに、利用する「帳票ID」や「ReportCreatorのキー」を持つクラス。
+ ReportParam                       テンプレート名と帳票テンプレートにバインドする情報を保持するクラス。(バインドの方式については :ref:`report_template` を参照。)
+ ReportException                   帳票機能でチェック例外が発生した場合に送出される実行時例外クラス。
+=============================== ===============================================================================================================
+
+　\b) データソースパッケージ
+
+================================== ===============================================================================================================
+クラス名                                概要
+================================== ===============================================================================================================
+ SqlRowIteratorDataSourceSupport     nablarch.core.db.statement.SqlRowを用いて帳票テンプレートのフィールド項目バインド処理を行うサポートクラス。
+ SqlResultSetDataSource              nablarch.core.db.statement.SqlResultSetを利用して、帳票テンプレートのフィールド項目にバインドする実装クラス。
+ ResultSetIteratorDataSource         nablarch.core.db.statement.ResultSetIteratorを利用して、帳票テンプレートのフィールド項目にバインドする実装クラス。
+================================== ===============================================================================================================
+
+　\c) 帳票生成処理パッケージ
+
+=============================== ===============================================================================================================
+クラス名                                概要
+=============================== ===============================================================================================================
+ ReportCreatorSupport              帳票生成のサポートクラス。(実際の帳票出力はReportExporterに委譲する。)
+ BasicReportCreator                帳票生成の基本実装クラス。帳票出力用データをJasperReportライブラリのインスタンスに変換する。
+ VirtualizerReportCreator          大量データ出力をサポートするクラス。                           
+=============================== ===============================================================================================================
+
+　\d) 帳票出力処理パッケージ
+
+=============================== ===============================================================================================================
+クラス名                                概要
+=============================== ===============================================================================================================
+ ReportExporterSupport             帳票出力のサポートクラス。
+ BasicReportExporter               帳票出力の基本実装クラス。
+=============================== ===============================================================================================================
+
+　\e) 帳票出力先解決パッケージ
+
+=============================== ===============================================================================================================
+クラス名                                概要
+=============================== ===============================================================================================================
+ BasicReportOutputResolver         帳票出力先のパス解決を行う基本実装クラス。帳票テンプレートと同一フォルダに一意なファイル名を生成し作成する。
+=============================== ===============================================================================================================
+
+　\f) 帳票テンプレートファイルパス解決パッケージ
+
+=============================== ===============================================================================================================
+クラス名                                概要
+=============================== ===============================================================================================================
+ BasicReportTemplateResolver       帳票テンプレートのパス解決を行う基本実装クラス。
+=============================== ===============================================================================================================
+
+
+.. _report_template:
+
+------------------------
+実装例
+------------------------
+
+本ライブラリでは出力帳票のレイアウトおよびデータの埋めこみ箇所を帳票テンプレートにて管理する。
+
+帳票テンプレートの作成については :download:`帳票アプリケーションガイド <development_guide/帳票アプリケーション開発ガイド.docx>` を参照すること。
+
+
+帳票テンプレートのコンパイル
+============================
+
+設計時に作成する帳票テンプレート(jrxml)は、実行時にはjasperファイルにコンパイルしておく必要がある。
+
+
+帳票テンプレートの配置
+======================
+
+実行時の帳票テンプレートファイルの配置と業務アプリ実装の関連を下記に示す。
+
+ .. tip::
+   
+   下記の例は基本実装クラス(BasicReportTemplateResolverなど)がベースとなっているので、PJ側でカスタマイズをすることでマッピングの変更は可能である。
+
+```
+
+## Knowledge File
+
+- ID: `report-report--s1`
+
+```json
+{
+  "id": "report-report--s1",
+  "title": "帳票ライブラリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/extension_components/report/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "JasperReports",
+        "PDF帳票出力",
+        "iTextAsian",
+        "依存ライブラリ入手困難",
+        "メンテナンス終了",
+        "代替手段",
+        "帳票ライブラリ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "PDF帳票出力",
+        "ストリーム出力",
+        "言語切り替え",
+        "帳票連結",
+        "BasicReportOutputResolver",
+        "PDF定期削除",
+        "未実装機能",
+        "帳票サーバ",
+        "プリンタ直接印刷"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "構造 — クラス図",
+      "hints": [
+        "クラス図",
+        "帳票ライブラリ構造"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構造 — インターフェース定義",
+      "hints": [
+        "ReportCreator",
+        "ReportExporter",
+        "ReportOutputResolver",
+        "ReportTemplateResolver",
+        "インターフェース定義",
+        "帳票生成処理パッケージ",
+        "帳票出力処理パッケージ",
+        "帳票出力先解決パッケージ",
+        "帳票テンプレートファイルパス解決パッケージ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "構造 — クラス定義",
+      "hints": [
+        "ReportManager",
+        "ReportContext",
+        "ReportParam",
+        "ReportException",
+        "SqlRowIteratorDataSourceSupport",
+        "SqlResultSetDataSource",
+        "ResultSetIteratorDataSource",
+        "ReportCreatorSupport",
+        "BasicReportCreator",
+        "VirtualizerReportCreator",
+        "ReportExporterSupport",
+        "BasicReportExporter",
+        "BasicReportOutputResolver",
+        "BasicReportTemplateResolver",
+        "クラス定義"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "実装例",
+      "hints": [
+        "帳票テンプレート",
+        "jrxml",
+        "jasperファイル",
+        "コンパイル",
+        "テンプレート配置",
+        "BasicReportTemplateResolver",
+        "帳票アプリケーション開発ガイド"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 概要\n\nJasperReportsを利用したPDF帳票出力ライブラリ。JasperReports 5.6.1 (GNU LESSER GENERAL PUBLIC LICENSE version 3) を使用。\n\nURL: [https://community.jaspersoft.com/download-jaspersoft/community-edition/](https://community.jaspersoft.com/download-jaspersoft/community-edition/) (2014/12/16時点)\n\n> **重要**: `com.lowagie:iTextAsian:1.0.0` が現在入手困難なため、今後メンテナンスは行われない。帳票出力機能が必要な場合は以下の代替手段を検討すること。\n> - 商用製品を利用する\n> - ブラウザやOfficeのPDF出力機能を利用する",
+    "s2": "## 要求\n\n### 実装済み機能\n\n1. PDF形式の帳票を作成し、ファイルまたはストリーム形式で出力できる\n2. 帳票テンプレートをプログラム内で指定した言語のものに切り替えることができる\n3. 異なる帳票フォーマットのPDFを連結して1つのファイルとして出力できる\n\n> **補足**: ディレード処理制御、同時実行制御、流量制御、タイムアウト設計、使用可能文字集合、使用フォント、帳票の参照権限、帳票テンプレートの管理方式、帳票データの管理・帳票クリーニング機能についてはPJにて検討すること。\n\n> **補足**: `BasicReportOutputResolver` はPDFを帳票テンプレートと同一フォルダに一意なファイル名で作成するため、実行のたびにPDFが増えていく。対象システムの帳票出力の頻度とディスク容量より、出力後不要となった帳票ファイルを定期的に削除する処理を検討する必要がある。\n\n> **補足**: JasperReportsの標準機能を用いることでPDFにパスワードや暗号化、ブックマーク、作成者などの各種ドキュメントプロパティを設定することが出来る。その場合には本ライブラリの修正が必要となる。\n\n### 未実装機能\n\n- **帳票サーバ機能**: 帳票の作成・出力を行うWebサービスを公開する機能\n- **プリンタ直接印刷機能**: PDF出力を介することなく、直接プリンタに印刷要求を発行する機能",
+    "s3": "## 構造 — クラス図\n\n![クラス図](assets/report-report--s1/Report_ClassDiagram.png)",
+    "s4": "## 構造 — インターフェース定義\n\n**a) 帳票生成処理パッケージ**\n- **クラス**: `ReportCreator` — 帳票生成インタフェース\n\n**b) 帳票出力処理パッケージ**\n- **クラス**: `ReportExporter` — 帳票出力インタフェース\n\n**c) 帳票出力先解決パッケージ**\n- **クラス**: `ReportOutputResolver` — 帳票出力先のパス解決インタフェース\n\n**d) 帳票テンプレートファイルパス解決パッケージ**\n- **クラス**: `ReportTemplateResolver` — 帳票テンプレートのパス解決インタフェース",
+    "s5": "## 構造 — クラス定義\n\n**a) 帳票管理パッケージ**\n- **クラス**: `ReportManager` — 業務機能からの要求を受付、システムリポジトリ経由でReportCreatorに処理を委譲\n- **クラス**: `ReportContext` — 帳票出力に関する情報を保持（出力情報・帳票ID・ReportCreatorのキー）\n- **クラス**: `ReportParam` — テンプレート名と帳票テンプレートにバインドする情報を保持\n- **クラス**: `ReportException` — 帳票機能でチェック例外が発生した場合に送出される実行時例外\n\n**b) データソースパッケージ**\n- **クラス**: `SqlRowIteratorDataSourceSupport` — `nablarch.core.db.statement.SqlRow` を用いた帳票テンプレートのフィールド項目バインド処理サポートクラス\n- **クラス**: `SqlResultSetDataSource` — `nablarch.core.db.statement.SqlResultSet` を利用した帳票テンプレートのフィールド項目バインド実装クラス\n- **クラス**: `ResultSetIteratorDataSource` — `nablarch.core.db.statement.ResultSetIterator` を利用した帳票テンプレートのフィールド項目バインド実装クラス\n\n**c) 帳票生成処理パッケージ**\n- **クラス**: `ReportCreatorSupport` — 帳票生成のサポートクラス（実際の帳票出力はReportExporterに委譲）\n- **クラス**: `BasicReportCreator` — 帳票生成の基本実装クラス（帳票出力用データをJasperReportライブラリのインスタンスに変換）\n- **クラス**: `VirtualizerReportCreator` — 大量データ出力をサポートするクラス\n\n**d) 帳票出力処理パッケージ**\n- **クラス**: `ReportExporterSupport` — 帳票出力のサポートクラス\n- **クラス**: `BasicReportExporter` — 帳票出力の基本実装クラス\n\n**e) 帳票出力先解決パッケージ**\n- **クラス**: `BasicReportOutputResolver` — 帳票出力先のパス解決を行う基本実装クラス（帳票テンプレートと同一フォルダに一意なファイル名を生成し作成）\n\n**f) 帳票テンプレートファイルパス解決パッケージ**\n- **クラス**: `BasicReportTemplateResolver` — 帳票テンプレートのパス解決を行う基本実装クラス",
+    "s6": "## 実装例\n\n帳票出力のレイアウトおよびデータの埋め込み箇所を帳票テンプレートで管理する。帳票テンプレートの作成については :download:`帳票アプリケーション開発ガイド <development_guide/帳票アプリケーション開発ガイド.docx>` を参照すること。（ファイル: `assets/report-report--s1/帳票アプリケーション開発ガイド.docx`）\n\n### 帳票テンプレートのコンパイル\n\n設計時に作成する帳票テンプレート（jrxml）は、実行時にはjasperファイルにコンパイルしておく必要がある。\n\n### 帳票テンプレートの配置\n\n> **補足**: 基本実装クラス（`BasicReportTemplateResolver` など）がベースとなっているため、PJ側でカスタマイズすることでマッピングの変更が可能。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 6 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,525 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "adapters-micrometer_adaptor--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 実行結果 subsection (anchor: micrometer_metrics_output_example)",
+      "description": "The 実行結果 subsection is completely omitted. The source contains a concrete log output example showing the exact metric names collected by DefaultMeterBinderListProvider via LoggingMeterRegistry (e.g., jvm.gc.count, jvm.buffer.count, jvm.memory.committed, jvm.threads.live, process.cpu.usage, system.cpu.count, etc.) and the log format 'i.m.c.i.l.LoggingMeterRegistry: <metric>{<tags>} value=...'.",
+      "source_evidence": "Source section '実行結果' under h2 'Micrometerアダプタを使用するための設定を行う': 'アプリケーションを起動すると、以下のように収集されたメトリクスが標準出力に出力されていることを確認できる。' followed by a multi-line code block showing ~40 metric log lines."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The source h2 section 'Micrometerアダプタを使用するための設定を行う' contains 5 h3 subsections (DefaultMeterBinderListProviderをコンポーネントとして宣言する / 廃棄処理対象にする / レジストリのファクトリクラスをコンポーネントとして宣言する / 設定ファイルを作成する / 実行結果) with well over 2000 chars of plain text, but the knowledge file consolidates all of them into a single section s2 without splitting.",
+      "source_evidence": "Source h2 'Micrometerアダプタを使用するための設定を行う' spans from 'Micrometerでメトリクスを収集するためには...' through the 実行結果 code block, containing 5 h3-level subsections and multiple XML/properties code blocks."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "The hints for s3 (レジストリファクトリ) include all six factory class names but are missing the registry class names themselves, which are PascalCase class names in the section's table content: SimpleMeterRegistry, LoggingMeterRegistry, CloudWatchMeterRegistry, DatadogMeterRegistry, StatsdMeterRegistry, OtlpMeterRegistry.",
+      "source_evidence": "Source table in 'レジストリファクトリ' lists both registry names and factory class names in side-by-side columns, e.g., 'SimpleMeterRegistry(外部サイト、英語)' paired with 'SimpleMeterRegistryFactory'."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "The hints for s4 (設定ファイル) are missing PascalCase class names referenced in the section: MeterRegistryFactory (the base class with prefix and xmlConfigPath properties) and DatadogConfig (mentioned as an example of a registry-specific configuration class).",
+      "source_evidence": "Source: 'Micrometerがレジストリごとに提供している設定クラス... DatadogMeterRegistryに対しては DatadogConfig という設定クラスが用意されている。' and ':java:extdoc:`prefix <nablarch.integration.micrometer.MeterRegistryFactory.setPrefix...>`' and ':java:extdoc:`xmlConfigPath <nablarch.integration.micrometer.MeterRegistryFactory.setXmlConfigPath...>`'."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _micrometer_adaptor:
+
+Micrometerアダプタ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+`Micrometer(外部サイト、英語) <https://micrometer.io/>`_ を使用したメトリクス収集を行うためのアダプタを提供する。
+
+本アダプタを使うことで、次のようなことができるようになり、アプリケーションの運用監視がしやすくなるというメリットが得られる。
+
+* JVM のメモリ使用量や CPU 使用率など、アプリケーションのメトリクスを収集できる
+* 収集したメトリクスを `Datadog(外部サイト) <https://www.datadoghq.com/ja/>`_ や `CloudWatch(外部サイト) <https://aws.amazon.com/jp/cloudwatch/>`_ などの監視サービスに連携できる
+
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <!-- Micrometerアダプタ -->
+  <dependency>
+    <groupId>com.nablarch.integration</groupId>
+    <artifactId>nablarch-micrometer-adaptor</artifactId>
+  </dependency>
+  
+.. tip::
+
+  Micrometerのバージョン1.13.0を使用してテストを行っている。
+  バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
+
+Micrometerアダプタを使用するための設定を行う
+--------------------------------------------------
+Micrometerでメトリクスを収集するためには、 `レジストリ(外部サイト、英語) <https://docs.micrometer.io/micrometer/reference/concepts/registry.html>`_ と呼ばれるクラスを作成する必要がある。
+本アダプタでは、このレジストリを :ref:`repository` に登録するための :java:extdoc:`ComponentFactory<nablarch.core.repository.di.ComponentFactory>` を提供している。
+
+ここでは、 `LoggingMeterRegistry(外部サイト、英語)`_ をコンポーネントとして登録する :java:extdoc:`LoggingMeterRegistryFactory<nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory>` を例にして設定方法について説明する。
+
+.. tip::
+
+  `LoggingMeterRegistry(外部サイト、英語)`_ は、 SLF4J または Java Util Logging を使ってメトリクスをログに出力する機能を提供する。
+  特に設定をしていない場合は、 Java Util Logging を使って標準出力にメトリクスが出力されるため、簡単な動作確認をするのに適している。
+
+  他のレジストリは連携先のサービスの準備や、収集したメトリクスを出力する実装を作りこむなどの手間がかかる。
+  このため、この説明では最も簡単に動作を確認できる `LoggingMeterRegistry(外部サイト、英語)`_ を使用している。
+
+なお、ベースとなるアプリケーションには `ウェブアプリケーションのExample(外部サイト) <https://github.com/nablarch/nablarch-example-web>`_ を使用する。
+
+.. _micrometer_adaptor_declare_default_meter_binder_list_provider_as_component:
+
+DefaultMeterBinderListProviderをコンポーネントとして宣言する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Micrometerには、 `MeterBinder(外部サイト、英語)`_ というインタフェースが存在する。
+
+JVMのメモリ使用量やCPU使用率など、よく使用するメトリクスの収集は、このインタフェースを実装したクラスとしてあらかじめ用意されている。
+（例：JVMのメモリ使用量は `JvmMemoryMetrics(外部サイト、英語)`_ 、CPU使用率は `ProcessorMetrics(外部サイト、英語)`_ ）
+
+:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` は、この `MeterBinder(外部サイト、英語)`_ のリストを提供するクラスで、本クラスを使用することでJVMのメモリ使用量やCPU使用率などのメトリクスを収集できるようになる。
+
+まず ``src/main/resources/web-component-configuration.xml`` に、この :java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` の宣言を追加する。
+
+.. code-block:: xml
+
+  <component name="meterBinderListProvider"
+             class="nablarch.integration.micrometer.DefaultMeterBinderListProvider" />
+
+
+収集されるメトリクスの具体的な説明については、 :ref:`micrometer_default_metrics` を参照。
+
+DefaultMeterBinderListProviderを廃棄処理対象にする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` は廃棄処理が必要なコンポーネントなので、下記のように廃棄処理対象として宣言する。
+
+.. code-block:: xml
+  
+  <component name="disposer"
+      class="nablarch.core.repository.disposal.BasicApplicationDisposer">
+
+    <property name="disposableList">
+      <list>
+        <component-ref name="meterBinderListProvider"/>
+      </list>
+    </property>
+
+  </component>
+
+オブジェクトの廃棄処理については、 :ref:`repository-dispose_object` を参照
+
+レジストリのファクトリクラスをコンポーネントとして宣言する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: xml
+
+  <component class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
+    <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+    <property name="applicationDisposer" ref="disposer" />
+  </component>
+
+次に、使用するレジストリごとに用意されているファクトリクラスをコンポーネントとして宣言する。
+
+このとき、 ``meterBinderListProvider`` と ``applicationDisposer`` の２つのプロパティを設定する。
+それぞれのプロパティには、上で宣言した :java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` と :java:extdoc:`BasicApplicationDisposer <nablarch.core.repository.disposal.BasicApplicationDisposer>` を設定する。
+
+なお、本アダプタが提供しているファクトリクラスについては :ref:`micrometer_registry_factory` に一覧を記載している。
+
+
+設定ファイルを作成する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+最後に、 ``src/main/resources`` の下に ``micrometer.properties`` という名前のテキストファイルを作成する。
+
+ここでは、中身を次のように記述する。
+
+.. code-block:: properties
+
+  # 確認を楽にするため、5秒ごとにメトリクスを出力する（デフォルトは1分）
+  nablarch.micrometer.logging.step=5s
+  # step で指定した時間よりも早くアプリケーションが終了した場合でも廃棄処理でログが出力されるよう設定
+  nablarch.micrometer.logging.logInactive=true
+
+.. important::
+
+  ``micrometer.properties`` は内容が空であっても必ず配置しなければならない。
+
+
+.. _micrometer_metrics_output_example:
+
+実行結果
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+以上で、 ``LoggingMeterRegistry`` を用いたメトリクスの収集ができるようになる。
+
+アプリケーションを起動すると、以下のように収集されたメトリクスが標準出力に出力されていることを確認できる。
+
+.. code-block:: text
+
+  2020-09-04 15:33:40.689 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.gc.count{memory.manager.name=PS Scavenge} throughput=2.6/s
+  2020-09-04 15:33:40.690 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.gc.count{memory.manager.name=PS MarkSweep} throughput=0.4/s
+  2020-09-04 15:33:40.691 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.buffer.count{id=mapped} value=0 buffers
+  2020-09-04 15:33:40.691 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.buffer.count{id=direct} value=2 buffers
+  2020-09-04 15:33:40.692 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.buffer.memory.used{id=direct} value=124 KiB
+  2020-09-04 15:33:40.692 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.buffer.memory.used{id=mapped} value=0 B
+  2020-09-04 15:33:40.692 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.buffer.total.capacity{id=mapped} value=0 B
+  2020-09-04 15:33:40.692 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.buffer.total.capacity{id=direct} value=124 KiB
+  2020-09-04 15:33:40.693 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.classes.loaded{} value=9932 classes
+  2020-09-04 15:33:40.693 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.gc.live.data.size{} value=0 B
+  2020-09-04 15:33:40.693 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.gc.max.data.size{} value=2.65918 GiB
+  2020-09-04 15:33:40.694 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.committed{area=heap,id=PS Old Gen} value=182.5 MiB
+  2020-09-04 15:33:40.694 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.committed{area=heap,id=PS Survivor Space} value=44 MiB
+  2020-09-04 15:33:40.694 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.committed{area=heap,id=PS Eden Space} value=197 MiB
+  2020-09-04 15:33:40.694 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.committed{area=nonheap,id=Code Cache} value=29.125 MiB
+  2020-09-04 15:33:40.694 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.committed{area=nonheap,id=Compressed Class Space} value=6.796875 MiB
+  2020-09-04 15:33:40.695 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.committed{area=nonheap,id=Metaspace} value=55.789062 MiB
+  2020-09-04 15:33:40.695 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.max{area=heap,id=PS Old Gen} value=2.65918 GiB
+  2020-09-04 15:33:40.695 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.max{area=heap,id=PS Survivor Space} value=44 MiB
+  2020-09-04 15:33:40.696 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.max{area=nonheap,id=Code Cache} value=240 MiB
+  2020-09-04 15:33:40.696 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.max{area=nonheap,id=Metaspace} value=-1 B
+  2020-09-04 15:33:40.696 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.max{area=heap,id=PS Eden Space} value=1.243652 GiB
+  2020-09-04 15:33:40.696 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.max{area=nonheap,id=Compressed Class Space} value=1 GiB
+  2020-09-04 15:33:40.697 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.used{area=nonheap,id=Code Cache} value=28.618713 MiB
+  2020-09-04 15:33:40.697 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.used{area=nonheap,id=Compressed Class Space} value=6.270714 MiB
+  2020-09-04 15:33:40.697 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.used{area=nonheap,id=Metaspace} value=54.118324 MiB
+  2020-09-04 15:33:40.698 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.used{area=heap,id=PS Old Gen} value=69.320663 MiB
+  2020-09-04 15:33:40.698 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.used{area=heap,id=PS Survivor Space} value=7.926674 MiB
+  2020-09-04 15:33:40.698 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.memory.used{area=heap,id=PS Eden Space} value=171.750542 MiB
+  2020-09-04 15:33:40.698 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.daemon{} value=28 threads
+  2020-09-04 15:33:40.698 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.live{} value=29 threads
+  2020-09-04 15:33:40.699 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.peak{} value=31 threads
+  2020-09-04 15:33:40.702 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.states{state=blocked} value=0 threads
+  2020-09-04 15:33:40.703 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.states{state=runnable} value=9 threads
+  2020-09-04 15:33:40.703 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.states{state=new} value=0 threads
+  2020-09-04 15:33:40.703 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.states{state=timed-waiting} value=3 threads
+  2020-09-04 15:33:40.703 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.states{state=terminated} value=0 threads
+  2020-09-04 15:33:40.704 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: jvm.threads.states{state=waiting} value=17 threads
+  2020-09-04 15:33:41.199 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.cpu.usage{} value=0.111672
+  2020-09-04 15:33:41.199 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{} value=444222h 33m 14.544s
+  2020-09-04 15:33:41.199 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.uptime{} value=26.729s
+  2020-09-04 15:33:41.200 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.count{} value=8
+  2020-09-04 15:33:41.200 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.usage{} value=0.394545
+
+
+
+.. _micrometer_registry_factory:
+
+レジストリファクトリ
+--------------------------------------------------
+本アダプタでは、以下のレジストリのファクトリクラスを提供している。
+
+.. list-table::
+
+  * - レジストリ
+    - ファクトリクラス
+    - 提供しているアダプタのバージョン
+  * - `SimpleMeterRegistry(外部サイト、英語)`_
+    - :java:extdoc:`SimpleMeterRegistryFactory <nablarch.integration.micrometer.simple.SimpleMeterRegistryFactory>`
+    - ``1.0.0`` 以上
+  * - `LoggingMeterRegistry(外部サイト、英語)`_
+    - :java:extdoc:`LoggingMeterRegistryFactory <nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory>`
+    - ``1.0.0`` 以上
+  * - `CloudWatchMeterRegistry(外部サイト、英語)`_
+    - :java:extdoc:`CloudWatchMeterRegistryFactory <nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory>`
+    - ``1.0.0`` 以上
+  * - `DatadogMeterRegistry(外部サイト、英語)`_
+    - :java:extdoc:`DatadogMeterRegistryFactory <nablarch.integration.micrometer.datadog.DatadogMeterRegistryFactory>`
+    - ``1.0.0`` 以上
+  * - `StatsdMeterRegistry(外部サイト、英語)`_
+    - :java:extdoc:`StatsdMeterRegistryFactory <nablarch.integration.micrometer.statsd.StatsdMeterRegistryFactory>`
+    - ``1.0.0`` 以上
+  * - `OtlpMeterRegistry(外部サイト、英語)`_
+    - :java:extdoc:`OtlpMeterRegistryFactory <nablarch.integration.micrometer.otlp.OtlpMeterRegistryFactory>`
+    - ``1.3.0`` 以上
+
+
+.. _micrometer_configuration:
+
+設定ファイル
+--------------------------------------------------
+
+配置場所
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本アダプタの設定ファイルは、クラスパス直下に ``micrometer.properties`` という名前で配置されるように作成する。
+
+フォーマット
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+このファイルに記載する設定は、以下のフォーマットで記述する。
+
+.. code-block:: text
+
+  nablarch.micrometer.<subPrefix>.<key>=設定する値
+
+ここで、 ``<subPrefix>`` に設定する値は、使用するレジストリファクトリごとに異なる値を指定する。
+
+レジストリファクトリごとに、 ``<subPrefix>`` で指定する値を下記表に記載する。
+
+=================================== ================
+レジストリファクトリ                  subPrefix
+=================================== ================
+``SimpleMeterRegistryFactory``      ``simple``
+``LoggingMeterRegistryFactory``     ``logging``
+``CloudWatchMeterRegistryFactory``  ``cloudwatch``
+``DatadogMeterRegistryFactory``     ``datadog``
+``StatsdMeterRegistryFactory``      ``statsd``
+``OtlpMeterRegistryFactory``        ``otlp``
+=================================== ================
+
+また、 ``<key>`` には Micrometer がレジストリごとに提供している `設定クラス(外部サイト、英語) <https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/config/MeterRegistryConfig.html>`_ で定義されたメソッドと同じ名前を指定する。
+
+例えば、 `DatadogMeterRegistry(外部サイト、英語)`_ に対しては `DatadogConfig(外部サイト、英語)`_ という設定クラスが用意されている。
+そして、この設定クラスには `apiKey(外部サイト、英語) <https://javadoc.io/doc/io.micrometer/micrometer-registry-datadog/1.13.0/io/micrometer/datadog/DatadogConfig.html#apiKey()>`_ というメソッドが定義されている。
+
+
+
+
+したがって、 ``micrometer.properties`` に次のように記述することで、 ``apiKey`` を設定できる。
+
+.. code-block:: text
+
+  nablarch.micrometer.datadog.apiKey=XXXXXXXXXXXXXXXXXXXX
+
+OS環境変数・システムプロパティで上書きする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``micrometer.properties`` に記述した設定の値は、OS環境変数およびシステムプロパティで上書きできる。
+
+設定値は、優先度の高い順に次の順番で採用される。
+
+#. システムプロパティで指定した値
+#. OS環境変数で指定した値
+#. ``micrometer.properties`` の設定値
+
+例えば、次のような条件で設定したとする。
+
+micrometer.properties
+
+  .. code-block:: text
+
+    nablarch.micrometer.example.one=PROPERTIES
+    nablarch.micrometer.example.two=PROPERTIES
+    nablarch.micrometer.example.three=PROPERTIES
+
+OS環境変数
+
+  .. code-block:: text
+
+    $ export NABLARCH_MICROMETER_EXAMPLE_TWO=OS_ENV
+
+    $ export NABLARCH_MICROMETER_EXAMPLE_THREE=OS_ENV
+
+システムプロパティ
+
+  .. code-block:: text
+
+    -Dnablarch.micrometer.example.three=SYSTEM_PROP
+
+この場合、それぞれの設定値は最終的に次の値が採用される。
+
+========== ================
+key        採用される値
+========== ================
+``one``    ``PROPERTIES``
+``two``    ``OS_ENV``
+``three``  ``SYSTEM_PROP``
+========== ================
+
+OS環境変数で上書きするときの名前のルールについては、 :ref:`OS環境変数の名前について <repository-overwrite_environment_configuration_by_os_env_var_naming_rule>` を参照。
+
+設定のプレフィックスを変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+設定のプレフィックス (``nablarch.micrometer.<subPrefix>``) は、各レジストリファクトリごとに :java:extdoc:`prefix <nablarch.integration.micrometer.MeterRegistryFactory.setPrefix(java.lang.String)>` プロパティを指定することで変更できる。
+
+以下に、プレフィックスを変更する例を記載する。
+
+.. code-block:: xml
+
+  <component name="meterRegistry" class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
+    <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+    <property name="applicationDisposer" ref="disposer" />
+
+    <!-- prefix プロパティに任意のプレフィックスを設定する -->
+    <property name="prefix" value="sample.prefix" />
+  </component>
+
+この場合、 ``micrometer.properties`` は次のように設定できるようになる。
+
+.. code-block:: text
+
+  sample.prefix.step=10s
+
+設定ファイルの場所を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+設定ファイル（``micrometer.properties``）の場所は、以下の方法で変更できる。
+
+まず、レジストリファクトリの :java:extdoc:`xmlConfigPath <nablarch.integration.micrometer.MeterRegistryFactory.setXmlConfigPath(java.lang.String)>` プロパティに、設定ファイルを読み込むXMLファイルのパスを指定する。
+
+.. code-block:: xml
+
+  <component name="meterRegistry" class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
+    <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+    <property name="applicationDisposer" ref="disposer" />
+
+    <!-- 設定ファイルを読み込むXMLファイルのパスを指定 -->
+    <property name="xmlConfigPath" value="config/metrics.xml" />
+  </component>
+
+そして、 ``xmlConfigPath`` プロパティで指定した場所に、設定ファイルを読み込むXMLファイルを配置する。
+下記設定では、クラスパス内の ``config/metrics.properties`` が設定ファイルとして読み込まれるようになる。
+
+.. code-block:: xml
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <component-configuration
+          xmlns="http://tis.co.jp/nablarch/component-configuration"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration https://nablarch.github.io/schema/component-configuration.xsd">
+
+    <!-- Micrometerアダプタの設定を読み込む -->
+    <config-file file="config/metrics.properties" />
+
+  </component-configuration>
+
+.. tip::
+
+  このXMLファイルはコンポーネント設定ファイルと同じ書式で記述できる。
+
+  ただし、このファイルでコンポーネントを定義しても、システムリポジトリから参照を取得できない。
+
+
+.. _micrometer_default_metrics:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "adapters-micrometer_adaptor--s1",
+  "title": "Micrometerアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/ComponentFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/logging/LoggingMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/DefaultMeterBinderListProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/disposal/BasicApplicationDisposer.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/simple/SimpleMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/cloudwatch/CloudWatchMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/datadog/DatadogMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/statsd/StatsdMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/otlp/OtlpMeterRegistryFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/MeterRegistryFactory.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-micrometer-adaptor",
+        "Micrometerアダプタ",
+        "モジュール依存関係",
+        "Maven依存関係",
+        "メトリクス収集"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Micrometerアダプタを使用するための設定を行う",
+      "hints": [
+        "DefaultMeterBinderListProvider",
+        "LoggingMeterRegistryFactory",
+        "BasicApplicationDisposer",
+        "MeterBinder",
+        "JvmMemoryMetrics",
+        "ProcessorMetrics",
+        "micrometer.properties",
+        "JVMメトリクス収集",
+        "メトリクス設定",
+        "廃棄処理",
+        "meterBinderListProvider",
+        "applicationDisposer"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "レジストリファクトリ",
+      "hints": [
+        "SimpleMeterRegistryFactory",
+        "LoggingMeterRegistryFactory",
+        "CloudWatchMeterRegistryFactory",
+        "DatadogMeterRegistryFactory",
+        "StatsdMeterRegistryFactory",
+        "OtlpMeterRegistryFactory",
+        "レジストリファクトリ一覧"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "設定ファイル",
+      "hints": [
+        "micrometer.properties",
+        "nablarch.micrometer",
+        "subPrefix",
+        "システムプロパティ",
+        "OS環境変数",
+        "prefix",
+        "xmlConfigPath",
+        "設定ファイル",
+        "設定上書き",
+        "プレフィックス変更"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-micrometer-adaptor</artifactId>\n</dependency>\n```\n\n> **補足**: Micrometerのバージョン1.13.0を使用してテストを行っている。バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。",
+    "s2": ":java:extdoc:`ComponentFactory<nablarch.core.repository.di.ComponentFactory>` を使ってレジストリを :ref:`repository` に登録する。\n\n### DefaultMeterBinderListProviderの宣言\n\n:java:extdoc:`DefaultMeterBinderListProvider<nablarch.integration.micrometer.DefaultMeterBinderListProvider>` はJVMのメモリ使用量・CPU使用率などの MeterBinder リストを提供するクラス。廃棄処理が必要。`src/main/resources/web-component-configuration.xml` に宣言を追加する。\n\nMicrometerには `MeterBinder` というインタフェースがあり、よく使用するメトリクスの収集クラスがあらかじめ用意されている（例：JVMのメモリ使用量は `JvmMemoryMetrics`、CPU使用率は `ProcessorMetrics`）。\n\n```xml\n<component name=\"meterBinderListProvider\"\n           class=\"nablarch.integration.micrometer.DefaultMeterBinderListProvider\" />\n```\n\n収集されるメトリクスの詳細は :ref:`micrometer_default_metrics` を参照。\n\n### 廃棄処理対象への登録\n\n:java:extdoc:`DefaultMeterBinderListProvider<nablarch.integration.micrometer.DefaultMeterBinderListProvider>` は廃棄処理が必要なコンポーネントなので、廃棄処理対象として宣言する。オブジェクトの廃棄処理については :ref:`repository-dispose_object` を参照。\n\n```xml\n<component name=\"disposer\"\n    class=\"nablarch.core.repository.disposal.BasicApplicationDisposer\">\n  <property name=\"disposableList\">\n    <list>\n      <component-ref name=\"meterBinderListProvider\"/>\n    </list>\n  </property>\n</component>\n```\n\n### レジストリファクトリクラスの宣言\n\n`meterBinderListProvider` と `applicationDisposer` の2つのプロパティを設定する。それぞれ上で宣言した :java:extdoc:`DefaultMeterBinderListProvider<nablarch.integration.micrometer.DefaultMeterBinderListProvider>` と :java:extdoc:`BasicApplicationDisposer<nablarch.core.repository.disposal.BasicApplicationDisposer>` を設定する。ファクトリクラスの一覧は :ref:`micrometer_registry_factory` を参照。\n\n```xml\n<component class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n</component>\n```\n\n### micrometer.propertiesの作成\n\n`src/main/resources` の下に `micrometer.properties` を配置する。\n\n> **重要**: `micrometer.properties` は内容が空であっても必ず配置しなければならない。\n\n```properties\n# 5秒ごとにメトリクスを出力（デフォルトは1分）\nnablarch.micrometer.logging.step=5s\n# stepで指定した時間よりも早くアプリケーションが終了した場合でも廃棄処理でログが出力されるよう設定\nnablarch.micrometer.logging.logInactive=true\n```",
+    "s3": "| レジストリ | ファクトリクラス | バージョン |\n|---|---|---|\n| SimpleMeterRegistry | :java:extdoc:`SimpleMeterRegistryFactory<nablarch.integration.micrometer.simple.SimpleMeterRegistryFactory>` | 1.0.0以上 |\n| LoggingMeterRegistry | :java:extdoc:`LoggingMeterRegistryFactory<nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory>` | 1.0.0以上 |\n| CloudWatchMeterRegistry | :java:extdoc:`CloudWatchMeterRegistryFactory<nablarch.integration.micrometer.cloudwatch.CloudWatchMeterRegistryFactory>` | 1.0.0以上 |\n| DatadogMeterRegistry | :java:extdoc:`DatadogMeterRegistryFactory<nablarch.integration.micrometer.datadog.DatadogMeterRegistryFactory>` | 1.0.0以上 |\n| StatsdMeterRegistry | :java:extdoc:`StatsdMeterRegistryFactory<nablarch.integration.micrometer.statsd.StatsdMeterRegistryFactory>` | 1.0.0以上 |\n| OtlpMeterRegistry | :java:extdoc:`OtlpMeterRegistryFactory<nablarch.integration.micrometer.otlp.OtlpMeterRegistryFactory>` | 1.3.0以上 |",
+    "s4": "### 配置場所\n\nクラスパス直下に `micrometer.properties` という名前で配置する。\n\n### フォーマット\n\n```\nnablarch.micrometer.<subPrefix>.<key>=設定する値\n```\n\n`<subPrefix>` はレジストリファクトリごとに以下の値を指定する:\n\n| レジストリファクトリ | subPrefix |\n|---|---|\n| SimpleMeterRegistryFactory | simple |\n| LoggingMeterRegistryFactory | logging |\n| CloudWatchMeterRegistryFactory | cloudwatch |\n| DatadogMeterRegistryFactory | datadog |\n| StatsdMeterRegistryFactory | statsd |\n| OtlpMeterRegistryFactory | otlp |\n\n`<key>` には Micrometerが各レジストリ用に提供している [設定クラス](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/config/MeterRegistryConfig.html) で定義されたメソッドと同じ名前を指定する。例: DatadogMeterRegistry の場合 `nablarch.micrometer.datadog.apiKey=XXXXXXXXXXXXXXXXXXXX`\n\n### OS環境変数・システムプロパティによる上書き\n\n設定値の優先度（高い順）:\n1. システムプロパティ\n2. OS環境変数\n3. `micrometer.properties` の設定値\n\nOS環境変数で上書きする場合の名前ルールは :ref:`OS環境変数の名前について <repository-overwrite_environment_configuration_by_os_env_var_naming_rule>` を参照。\n\n### プレフィックスの変更\n\n各レジストリファクトリの :java:extdoc:`prefix<nablarch.integration.micrometer.MeterRegistryFactory.setPrefix(java.lang.String)>` プロパティで変更できる。\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n  <property name=\"prefix\" value=\"sample.prefix\" />\n</component>\n```\n\n上記設定後、`micrometer.properties` に `sample.prefix.step=10s` のように記述できる。\n\n### 設定ファイルの場所の変更\n\n:java:extdoc:`xmlConfigPath<nablarch.integration.micrometer.MeterRegistryFactory.setXmlConfigPath(java.lang.String)>` プロパティに、設定ファイルを読み込むXMLファイルのパスを指定する。\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n  <property name=\"xmlConfigPath\" value=\"config/metrics.xml\" />\n</component>\n```\n\n`xmlConfigPath` で指定した場所に設定ファイルを読み込むXMLを配置する（コンポーネント設定ファイルと同じ書式）:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<component-configuration\n        xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n        xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration https://nablarch.github.io/schema/component-configuration.xsd\">\n  <config-file file=\"config/metrics.properties\" />\n</component-configuration>\n```\n\n> **補足**: このXMLファイルでコンポーネントを定義しても、システムリポジトリから参照を取得できない。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

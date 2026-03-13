@@ -1,0 +1,110 @@
+{
+  "id": "libraries-repository--s1",
+  "title": "システムリポジトリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/repository.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "DIコンテナ",
+        "システムリポジトリ",
+        "シングルトン",
+        "setterインジェクション",
+        "オブジェクト初期化",
+        "自動インジェクション",
+        "ファクトリインジェクション",
+        "環境依存値管理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core",
+        "nablarch-core-repository",
+        "モジュール",
+        "Maven依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "xmlにルートノードを定義する",
+      "hints": [
+        "component-configuration",
+        "XMLルートノード",
+        "schemaLocation",
+        "コンポーネント設定ファイル",
+        "IDE補完"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Java Beansオブジェクトを設定する",
+      "hints": [
+        "component要素",
+        "Java Beans",
+        "setterインジェクション",
+        "FQCN",
+        "シングルトン",
+        "スレッドセーフ",
+        "staticプロパティ",
+        "property要素",
+        "ref属性"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Java Beansオブジェクトの設定を上書きする",
+      "hints": [
+        "コンポーネント上書き",
+        "name属性",
+        "モック置き換え",
+        "テスト",
+        "property引き継ぎ",
+        "MockSampleBean"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "文字列や数値、真偽値を設定値として使う",
+      "hints": [
+        "プロパティ型",
+        "String",
+        "Integer",
+        "Long",
+        "Boolean",
+        "value属性",
+        "リテラル値",
+        "String配列",
+        "int配列"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ListやMapを設定値として使う",
+      "hints": [
+        "list要素",
+        "map要素",
+        "List設定",
+        "Map設定",
+        "component-ref",
+        "value-component",
+        "setterインジェクション",
+        "entry要素"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DIコンテナ機能でできること（構築されるオブジェクトはシングルトン）:\n- setterインジェクション（:ref:`repository-definition_bean`）\n- 文字列・数値・真偽値の使用（:ref:`repository-property_type`）\n- List/Mapのインジェクション（:ref:`repository-map_list`）\n- 型・名前一致による自動インジェクション（:ref:`repository-autowired`）\n- ファクトリインジェクション（:ref:`repository-factory_injection`）\n- アノテーション付与クラスのオブジェクト構築（:ref:`repository-inject-annotation-component`）\n- 環境依存値の管理（:ref:`repository-environment_configuration`）\n\nアプリケーションからはDIコンテナに直接アクセスせず、システムリポジトリ経由でアクセスする（:ref:`repository-use_system_repository` 参照）。\n\nオブジェクト構築後に任意の初期化処理を実行できる。依存関係による初期化順の制約があるため、初期化順を指定できる（:ref:`repository-initialize_object` 参照）。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-repository</artifactId>\n</dependency>\n```",
+    "s3": "コンポーネント設定ファイル(xml)のルートノードは `component-configuration` とする。`schemaLocation` を正しく設定するとIDEで各要素や属性のドキュメント参照・補完機能が使える。\n\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration /component-configuration.xsd\">\n</component-configuration>\n```",
+    "s4": "`component`要素でJava Beansオブジェクトを定義する:\n- `class`属性: DIコンテナで管理するクラスのFQCN\n- `name`属性: 任意の名前\n- `property`子要素: setterインジェクション。`ref`属性で他のcomponentを参照、または`property`の子要素に直接`component`を定義することもできる\n- `value`属性: リテラル値のインジェクション\n\n```xml\n<component name=\"sample\" class=\"sample.SampleBean\" />\n\n<component name=\"component\" class=\"sample.SampleComponent\">\n  <property name=\"sample\" ref=\"sample\" />\n  <property name=\"obj\">\n    <component class=\"sample.SampleObject\" />\n  </property>\n  <property name=\"limit\" value=\"100\" />\n</component>\n```\n\n> **重要**: 生成されるインスタンスはシングルトン（プロトタイプではない）。アプリケーション終了まで破棄されない。コンポーネントの状態を変更・共有する場合はスレッドセーフにすること。シングルトンをプロトタイプと誤解すると、あるリクエストで設定したユーザーAの値が別ユーザーBのリクエストで使われるなどの重大な不具合が発生する。\n\n> **補足**: インスタンスはcomponent要素単位に生成される。同じクラスを2つのcomponent要素で定義した場合、別々のインスタンスが生成される。\n\n> **補足**: ネストして定義したcomponentもリポジトリ上はグローバル領域に保持されるため、名前を指定してオブジェクトを取得できる（:ref:`repository-get_object` 参照）。\n\n> **補足**: staticなプロパティ（staticなsetterメソッド）へのインジェクションは行われない。インジェクション対象がstaticの場合、DIコンテナ構築時に例外が送出される。",
+    "s5": "`component`タグの`name`属性が同じオブジェクトを登録すると、後に読み込まれたオブジェクトの設定が優先される。テスト時にプロダクション環境用オブジェクトをモックに置き換える際に使用できる。\n\n```xml\n<component name=\"sample\" class=\"sample.SampleBean\">\n  <property name=\"prop\" value=\"message\" />\n</component>\n\n<!-- 同じ名前でコンポーネントを定義して上書きする -->\n<component name=\"sample\" class=\"sample.MockSampleBean\" />\n```\n\n> **重要**: 異なるクラスを設定した場合、上書き前のpropertyへの設定は全て破棄される（同じインタフェースを実装していても同じpropertyを持つとは限らないため）。同じクラスを設定した場合、上書き前のpropertyが全て引き継がれるため、特定propertyの設定を削除することはできない。\n\n同じクラスで上書きした場合のproperty引き継ぎの例:\n\n```xml\n<component name=\"sample\" class=\"sample.SampleBean\">\n  <property name=\"prop\" value=\"message\" />\n</component>\n\n<!-- propertyを設定していないが、上書き前のpropの値が引き継がれる -->\n<component name=\"sample\" class=\"sample.SampleBean\" />\n```\n\n上の例では、上書き後のcomponentにproperty要素を記述していないが、上書き前の`prop=message`の値が引き継がれるため、`prop`には`message`が設定された状態となる。",
+    "s6": "プロパティの型が以下の場合、`value`属性にリテラル表記で設定できる:\n\n| 型 | 設定方法 |\n|---|---|\n| `java.lang.String` | `value`属性にリテラルで設定 |\n| `java.lang.String[]` | `value`属性にカンマ(`,`)区切りで設定。カンマ自体は要素として設定不可 |\n| `java.lang.Integer`(int) | `value`属性に設定。`Integer#valueOf`で変換できる値 |\n| `java.lang.Integer[]`(int[]) | カンマ区切りで設定。各要素は`Integer#valueOf`で変換できる値 |\n| `java.lang.Long`(long) | `value`属性に設定。`Long#valueOf`で変換できる値 |\n| `java.lang.Boolean`(boolean) | `value`属性に設定。`Boolean#valueOf`で変換できる値 |\n\n```xml\n<property name=\"str\" value=\"あいうえお\" />\n<property name=\"array\" value=\"あ,い,う,え,お\" />\n<property name=\"num\" value=\"12345\" />\n<property name=\"bool\" value=\"true\" />\n```",
+    "s7": "`list`要素や`map`要素を使ってList/Mapを受け取るpropertyへのsetterインジェクションが行える。\n\n**list要素**: 文字列または任意のJava Beansオブジェクトを設定できる。\n\n```xml\n<component class=\"sample.SampleBean\">\n  <property name=\"stringList\">\n    <list>\n      <value>string1</value>\n      <value>string2</value>\n      <value>string3</value>\n    </list>\n  </property>\n</component>\n```\n\nlist要素にも任意の名前を設定でき、`property`要素で名前参照ができる（上の例と同じ設定）:\n\n```xml\n<list name=\"strList\">\n  <value>string1</value>\n  <value>string2</value>\n  <value>string3</value>\n</list>\n\n<component class=\"sample.ListSample\">\n  <!-- strListという名前のListを設定する -->\n  <property name=\"stringList\" ref=\"strList\" />\n</component>\n```\n\n`component-ref`要素で名前参照ができる:\n\n```xml\n<component name=\"sampleHandler3\" class=\"sample.SampleHandler3\" />\n<component class=\"sample.ListSample\">\n  <property name=\"handlers\">\n    <list>\n      <component class=\"sample.SampleHandler1\" />\n      <component class=\"sample.SampleHandler2\" />\n      <component-ref name=\"sampleHandler3\" />\n    </list>\n  </property>\n</component>\n```\n\n**map要素**: `entry`にkey/valueを設定できる。\n\n```xml\n<property name=\"map\">\n  <map>\n    <entry key=\"key1\" value=\"1\" />\n    <entry key=\"key2\" value=\"2\" />\n    <entry key=\"key3\" value=\"3\" />\n  </map>\n</property>\n```\n\nmap要素にも任意の名前を設定でき、`property`要素で名前参照ができる（上の例と同じ設定）:\n\n```xml\n<map name=\"map\">\n  <entry key=\"key1\" value=\"1\" />\n  <entry key=\"key2\" value=\"2\" />\n  <entry key=\"key3\" value=\"3\" />\n</map>\n\n<component class=\"sample.ListSample\">\n  <!-- mapという名前のMapを設定する -->\n  <property name=\"map\" ref=\"map\" />\n</component>\n```\n\n`value-component`要素でMapの値に任意のBeanを設定できる:\n\n```xml\n<property name=\"settings\">\n  <map>\n    <entry key=\"sample1\">\n      <value-component class=\"sample.SampleBean1\" />\n    </entry>\n    <entry key=\"sample2\">\n      <value-component class=\"sample.SampleBean2\" />\n    </entry>\n  </map>\n</property>\n```\n\n> **重要**: mapやlistで`name`属性が同じものを複数定義した場合、先に定義されたものが有効（:ref:`repository-override_bean` とは逆の挙動）。環境毎にmap/listを変更したい場合は、環境毎に読み込むファイルを変えること。"
+  }
+}

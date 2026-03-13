@@ -1,0 +1,102 @@
+{
+  "id": "testing-framework-01_entityUnitTestWithBeanValidation--s6",
+  "title": "Bean Validation を使用したEntity単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest/01_entityUnitTestWithBeanValidation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/validation/constraints/AssertTrue.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストメソッドの作成方法",
+      "hints": [
+        "testSingleValidation",
+        "EntityTestSupport",
+        "単項目精査テスト",
+        "Bean Validationテスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストケース表の作成",
+      "hints": [
+        "testShots",
+        "params",
+        "@AssertTrue",
+        "javax.validation.constraints.AssertTrue",
+        "special_notation_in_cell",
+        "項目間精査テストケース",
+        "ネストプロパティ指定",
+        "項目間精査テストデータ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストメソッドの作成方法",
+      "hints": [
+        "testBeanValidation",
+        "EntityTestSupport",
+        "項目間精査テスト",
+        "Bean Validationテスト"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Excelへの定義",
+      "hints": [
+        "testSetterAndGetter",
+        "getParamMap",
+        "getListParamMap",
+        "BigDecimal",
+        "java.util.Date",
+        "java.sql.Date",
+        "java.sql.Timestamp",
+        "setter/getterテスト",
+        "プロパティ型制限",
+        "valueOf"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "設定項目一覧",
+      "hints": [
+        "EntityTestConfiguration",
+        "nablarch.test.core.entity.EntityTestConfiguration",
+        "maxMessageId",
+        "maxAndMinMessageId",
+        "underLimitMessageId",
+        "fixLengthMessageId",
+        "minMessageId",
+        "emptyInputMessageId",
+        "characterGenerator",
+        "validationTestStrategy",
+        "BeanValidationTestStrategy",
+        "BasicJapaneseCharacterGenerator",
+        "CharacterGenerator",
+        "自動テストフレームワーク設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "コンポーネント設定ファイルの記述例",
+      "hints": [
+        "EntityTestConfiguration",
+        "BeanValidationTestStrategy",
+        "nablarch.test.core.entity.BeanValidationTestStrategy",
+        "BasicJapaneseCharacterGenerator",
+        "nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator",
+        "コンポーネント設定ファイル",
+        "Bean Validation設定例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "スーパークラスの `testSingleValidation` メソッドを呼び出して単項目精査をテストする。\n\n**メソッドシグネチャ**: `void testSingleValidation(Class entityClass, String sheetName, String id)`\n\n```java\npublic class UserRegistrationFormTest extends EntityTestSupport {\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    @Test\n    public void testSingleValidation() {\n        String sheetName = \"testSingleValidation\";\n        String id = \"singleValidation\";\n        testSingleValidation(TARGET_CLASS, sheetName, id);\n    }\n}\n```",
+    "s2": ":java:extdoc:`@AssertTrue <javax.validation.constraints.AssertTrue>` などを使った項目間精査は単項目精査テストでカバーできないため別途テストを作成する。\n\n**テストケース表**: ID は `testShots` 固定。\n\n| カラム名 | 記載内容 |\n|---|---|\n| title | テストケースのタイトル |\n| description | テストケースの簡単な説明 |\n| group | Bean Validationのグループ（省略可） |\n| expectedMessageId*n* | 期待するメッセージ（*n* は1からの連番） |\n| propertyName*n* | 期待するプロパティ（*n* は1からの連番） |\n| interpolateKey*n*_*k* | 埋め込み文字のキー名（*n* はexpectedMessageIdの連番に対応、*k* は1からの連番、省略可） |\n| interpolateValue*n*_*k* | 埋め込み文字の値（省略可） |\n\n複数メッセージを期待する場合: `expectedMessageId2`, `propertyName2` のように数値を増やして右側に追加。複数メッセージに対応する埋め込み文字がある場合も同様に `interpolateKey2_1`, `interpolateValue2_1` のように数値を増やす。\n\nグループの指定方法・メッセージの指定方法は :ref:`entityUnitTest_CharsetAndLengthInputData_BeanValidation` に記載の方法と同じ。\n\nテストケース表には、精査エラーが発生するプロパティ名とそのプロパティの精査エラーメッセージを記載する。精査エラーが発生しないプロパティは記載しない。\n\n**入力パラメータ表**: ID は `params` 固定。テストケース表に対応する入力値を1行ずつ記載。:ref:`special_notation_in_cell` の記法を使用して効率的に入力値を作成できる。\n\n入力パラメータ表には、項目間精査で検証したいプロパティの値を記載する。項目間精査で検証したいプロパティ以外に、入力必須のプロパティが存在する場合は、それも記載する必要がある。\n\n![項目間精査テストデータ例](assets/testing-framework-01_entityUnitTestWithBeanValidation--s6/entityUnitTest_validationTestData_BeanValidation.png)\n\n> **補足**: Formが保持する別Formのプロパティをテストデータで指定する場合、以下の記法を使用する。\n> - 通常のネストプロパティ（例: `SystemUserEntity.userId` を指定する場合）: `sampleForm.systemUser.userId`\n> - 配列要素のプロパティ（例: `UserTelEntity[]` の先頭要素を指定する場合）: `sampleForm.userTelArray[0].telNoArea`",
+    "s3": "項目間精査のテストはスーパークラスの `testBeanValidation` メソッドを呼び出す。\n\n**メソッドシグネチャ**: `void testBeanValidation(Class entityClass, String sheetName)`\n\n```java\npublic class UserRegistrationFormTest extends EntityTestSupport {\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    @Test\n    public void testWholeFormValidation() {\n        String sheetName = \"testWholeFormValidation\";\n        testBeanValidation(TARGET_CLASS, sheetName);\n    }\n}\n```",
+    "s4": "setter/getterテスト: setterで設定した値とgetterで取得した値が期待通りか確認する。対象はFormに定義されている全てのプロパティ。\n\n> **補足**: Entityは自動生成されるため未使用のsetter/getterが生成される可能性があり、Entity単体テストでsetter/getterのテストを必ず実施すること。一般的なFormはアプリで使用するsetter/getterのみ作成するためリクエスト単体テストでカバー可能なので、Formのクラス単体テストでのsetter/getterテストは不要。\n\n![setter/getter Excel定義](assets/testing-framework-01_entityUnitTestWithBeanValidation--s6/entityUnitTest_SetterAndGetter.png)\n\n```java\npublic class UserRegistrationFormTest extends EntityTestSupport {\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    @Test\n    public void testSetterAndGetter() {\n        String sheetName = \"testSetterAndGetter\";\n        String id = \"setterAndGetter\";\n        testSetterAndGetter(TARGET_CLASS, sheetName, id);\n    }\n}\n```\n\n> **補足**: `testSetterAndGetter` でテスト可能なプロパティ型に制限あり。以下の型以外は各テストクラスで個別にsetter/getterを明示的に呼び出してテストすること。\n> - `String` および `String[]`\n> - `BigDecimal` および `BigDecimal[]`\n> - `java.util.Date` および `java.util.Date[]`（Excelへはyyyy-MM-dd形式またはyyyy-MM-dd HH:mm:ss形式で記述）\n> - `valueOf(String)` メソッドを持つクラスおよびその配列（例: `Integer`, `Long`, `java.sql.Date`, `java.sql.Timestamp`）\n\n上記対象外の型のプロパティは、`getParamMap`（単一）または `getListParamMap`（複数）でテストデータを取得し個別テストを実施する。\n\n![setter/getter 個別テストのExcel定義](assets/testing-framework-01_entityUnitTestWithBeanValidation--s6/entityUnitTest_SetterAndGetterOther.png)\n\n```java\n@Test\npublic void testSetterAndGetter() {\n    Class<?> entityClass = UserRegistrationForm.class;\n    String sheetName = \"testSetterAndGetter\";\n    String id = \"setterAndGetter\";\n    testSetterAndGetter(entityClass, sheetName, id);\n\n    Map<String, String[]> data = getParamMap(sheetName, \"setterAndGetterOther\");\n    List<String> users = Arrays.asList(data.get(\"set\"));\n    UserRegistrationForm form = new UserRegistrationForm();\n    form.setUsers(users);\n    assertEquals(form.getUsers(), Arrays.asList(data.get(\"get\")));\n}\n```\n\n> **補足**: setter/getterにロジックを記述した場合（例: setterは郵便番号上3桁・下4桁を受け取り、getterは7桁でまとめて返す）は、そのロジックを確認するテストケースを別途作成すること。\n\n![setter/getter ロジック確認テスト例](assets/testing-framework-01_entityUnitTestWithBeanValidation--s6/entityUnitTest_SetterAndGetter_PostNo.png)",
+    "s5": "**クラス**: `nablarch.test.core.entity.EntityTestConfiguration`\n\n:ref:`entityUnitTest_ValidationCase_BeanValidation` を実施する際に必要な初期値設定。\n\n| 設定項目名 | 説明 |\n|---|---|\n| maxMessageId | 最大文字列長超過時のメッセージのデフォルト値 |\n| maxAndMinMessageId | 最長最小文字列長範囲外のメッセージのデフォルト値（可変長、超過時） |\n| underLimitMessageId | 最長最小文字列長範囲外のメッセージのデフォルト値（可変長、不足時） |\n| fixLengthMessageId | 最長最小文字列長範囲外のメッセージのデフォルト値（固定長） |\n| minMessageId | 文字列長不足時のメッセージのデフォルト値（maxを省略したテストケースを作成する場合は指定必須） |\n| emptyInputMessageId | 未入力時のメッセージのデフォルト値 |\n| characterGenerator | `nablarch.test.core.util.generator.CharacterGenerator` の実装クラスを指定。通常は `nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator` を使用 |\n| validationTestStrategy | Bean Validationを使用する場合は `nablarch.test.core.entity.BeanValidationTestStrategy` を固定で指定 |",
+    "s6": "```xml\n<component name=\"entityTestConfiguration\" class=\"nablarch.test.core.entity.EntityTestConfiguration\">\n  <property name=\"maxMessageId\"        value=\"{nablarch.core.validation.ee.Length.max.message}\"/>\n  <property name=\"maxAndMinMessageId\"  value=\"{nablarch.core.validation.ee.Length.min.max.message}\"/>\n  <property name=\"fixLengthMessageId\"  value=\"{nablarch.core.validation.ee.Length.fixed.message}\"/>\n  <property name=\"underLimitMessageId\" value=\"{nablarch.core.validation.ee.Length.min.max.message}\"/>\n  <property name=\"minMessageId\"        value=\"{nablarch.core.validation.ee.Length.min.message}\"/>\n  <property name=\"emptyInputMessageId\" value=\"{nablarch.core.validation.ee.Required.message}\"/>\n  <property name=\"characterGenerator\">\n    <component name=\"characterGenerator\"\n               class=\"nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator\"/>\n  </property>\n  <property name=\"validationTestStrategy\">\n    <component class=\"nablarch.test.core.entity.BeanValidationTestStrategy\"/>\n  </property>\n</component>\n```"
+  }
+}

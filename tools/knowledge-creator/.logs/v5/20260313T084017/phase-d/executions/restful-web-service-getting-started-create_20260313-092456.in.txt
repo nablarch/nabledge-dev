@@ -1,0 +1,272 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web_service/rest/getting_started/create/index.rst`
+- Format: `rst`
+
+```
+登録機能の作成
+================================================================
+Exampleアプリケーションを元に、登録機能を解説する。
+
+作成する機能の説明
+  本機能は、POSTリクエスト時にリクエストボディにJSON形式のプロジェクト情報を設定することで、
+  データベースにプロジェクト情報を登録する。
+
+動作確認手順
+  1. 事前にDBの状態を確認
+
+     H2のコンソールから下記SQLを実行し、レコードが存在しないことを確認する。
+
+     .. code-block:: sql
+
+       SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+
+  2. プロジェクト情報の登録
+
+    任意のRESTクライアントを使用して、以下のリクエストを送信する。
+
+    URL
+      http://localhost:9080/projects
+    HTTPメソッド
+      POST
+    Content-Type
+      application/json
+    リクエストボディ
+      .. code-block:: json
+
+        {
+            "projectName": "プロジェクト９９９",
+            "projectType": "development",
+            "projectClass": "ss",
+            "projectManager": "山田",
+            "projectLeader": "田中",
+            "clientId": 10,
+            "projectStartDate": "20160101",
+            "projectEndDate": "20161231",
+            "note": "備考９９９",
+            "sales": 10000,
+            "costOfGoodsSold": 20000,
+            "sga": 30000,
+            "allocationOfCorpExpenses": 40000
+        }
+
+  3. 動作確認
+
+    H2のコンソールから下記SQLを実行し、レコードが1件取得できることを確認する。
+
+    .. code-block:: sql
+
+      SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+
+プロジェクト情報を登録する
+---------------------------------
+
+フォームの作成
+  クライアントから送信された値を受け付けるフォームを作成する。
+
+  ProjectForm.java
+    .. code-block:: java
+
+      public class ProjectForm implements Serializable {
+
+          // 一部のみ抜粋
+
+          /** プロジェクト名 */
+          @Required
+          @Domain("projectName")
+          private String projectName;
+
+          // ゲッタ及びセッタは省略
+      }
+
+    この実装のポイント
+     * プロパティは全てString型で宣言する。詳細は :ref:`バリデーションルールの設定方法 <bean_validation-form_property>` を参照。
+
+業務アクションメソッドの実装
+  プロジェクト情報をデータベースに登録する処理を実装する。
+
+  ProjectAction.java
+    .. code-block:: java
+
+      @Consumes(MediaType.APPLICATION_JSON)
+      @Valid
+      public HttpResponse save(ProjectForm project) {
+          UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));
+          return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());
+      }
+
+   この実装のポイント
+    * リクエストをJSON形式で受け付けるため、 :java:extdoc:`Consumes<javax.ws.rs.Consumes>` アノテーションに
+      ``MediaType.APPLICATION_JSON`` を指定する。
+    * :java:extdoc:`Valid <javax.validation.Valid>` アノテーションを使用して、リクエストのバリデーションを行う。
+      詳細は :ref:`jaxrs_bean_validation_handler` を参照。
+    * :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` でフォームをエンティティに変換し、
+      :ref:`universal_dao` を使用してプロジェクト情報をデータベースに登録する。
+    * 戻り値として、リソースの作成完了(ステータスコード： ``201`` )を表す :java:extdoc:`HttpResponse<nablarch.fw.web.HttpResponse>` を返却する。
+
+URLとのマッピングを定義
+  :ref:`router_adaptor` を使用して、業務アクションとURLのマッピングを行う。
+  マッピングには :ref:`JAX-RSのPathアノテーション <router_adaptor_path_annotation>` を使用する。
+
+  ProjectAction.java
+    .. code-block:: java
+
+      @Path("/projects")
+      public class ProjectAction {
+        @POST
+        @Consumes(MediaType.APPLICATION_JSON)
+        @Valid
+        public HttpResponse save(ProjectForm project) {
+          UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));
+          return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());
+      }
+
+  この実装のポイント
+    * ``@Path`` アノテーションと ``@POST`` アノテーションを使用して、POSTリクエスト時にマッピングする業務アクションメソッドを定義する。
+
+
+```
+
+## Knowledge File
+
+- ID: `restful-web-service-getting-started-create`
+
+```json
+{
+  "id": "restful-web-service-getting-started-create",
+  "title": "登録機能の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/rest/getting_started/create/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/ws/rs/Consumes.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/validation/Valid.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/beans/BeanUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "プロジェクト情報を登録する",
+      "hints": [
+        "ProjectForm",
+        "ProjectAction",
+        "BeanUtil",
+        "HttpResponse",
+        "UniversalDao",
+        "@Required",
+        "@Domain",
+        "@Consumes",
+        "@Valid",
+        "@Path",
+        "@POST",
+        "JSON登録",
+        "RESTful POST",
+        "フォームバリデーション",
+        "ユニバーサルDAO登録",
+        "HTTPレスポンス201"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フォームの作成\n\nフォームのプロパティは全てString型で宣言する（詳細: :ref:`bean_validation-form_property`）。\n\n**クラス**: `ProjectForm`\n\n```java\npublic class ProjectForm implements Serializable {\n    @Required\n    @Domain(\"projectName\")\n    private String projectName;\n    // ゲッタ及びセッタは省略\n}\n```\n\n## 業務アクションメソッドの実装\n\n- JSON形式でリクエストを受け付けるため、:java:extdoc:`Consumes<javax.ws.rs.Consumes>` に `MediaType.APPLICATION_JSON` を指定する。\n- :java:extdoc:`Valid <javax.validation.Valid>` アノテーションでリクエストのバリデーションを行う（詳細: :ref:`jaxrs_bean_validation_handler`）。\n- :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` でフォームをエンティティに変換し、:ref:`universal_dao` でDB登録する。\n- 戻り値はリソース作成完了（ステータスコード `201`）を表す :java:extdoc:`HttpResponse<nablarch.fw.web.HttpResponse>` を返す。\n\n```java\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(ProjectForm project) {\n    UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));\n    return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());\n}\n```\n\n## URLとのマッピングを定義\n\n:ref:`router_adaptor` を使用してURLマッピングを行う（:ref:`JAX-RSのPathアノテーション <router_adaptor_path_annotation>` 使用）。`@Path` と `@POST` でPOSTリクエスト時にマッピングする業務アクションメソッドを定義する。\n\n```java\n@Path(\"/projects\")\npublic class ProjectAction {\n    @POST\n    @Consumes(MediaType.APPLICATION_JSON)\n    @Valid\n    public HttpResponse save(ProjectForm project) {\n        UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));\n        return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());\n    }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

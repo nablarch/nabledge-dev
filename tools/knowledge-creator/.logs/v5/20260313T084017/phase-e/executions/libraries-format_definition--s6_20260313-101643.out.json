@@ -1,0 +1,48 @@
+{
+  "id": "libraries-format_definition--s6",
+  "title": "フィールドタイプ一覧",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format/format_definition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/FixedLengthConvertorSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/InvalidDataFormatException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/datatype/SignedNumberStringDecimal.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/VariableLengthConvertorSetting.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フィールドタイプ一覧",
+      "hints": [
+        "固定長フィールドタイプ",
+        "可変長フィールドタイプ",
+        "JSONフィールドタイプ",
+        "XMLフィールドタイプ",
+        "ゾーン数値",
+        "パック数値",
+        "バイナリ列",
+        "ネストレコード",
+        "convertEmptyToNull",
+        "FixedLengthConvertorSetting",
+        "VariableLengthConvertorSetting",
+        "InvalidDataFormatException",
+        "SignedNumberStringDecimal",
+        "X",
+        "N",
+        "XN",
+        "Z",
+        "SZ",
+        "P",
+        "SP",
+        "B",
+        "X9",
+        "SX9",
+        "BL",
+        "OB"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Fixed(固定長)データ形式フィールドタイプ一覧\n\n| タイプ | Java型 | 説明 |\n|---|---|---|\n| X | String | シングルバイト文字列(バイト長 = 文字列長)。デフォルト: 半角空白による右トリム・パディング。引数: バイト長(数値) 必須。出力値null→空文字変換して処理。読み込み空文字列→null変換。null変換を無効化する場合は:java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setConvertEmptyToNull(boolean)>`にfalseを設定 |\n| N | String | ダブルバイト文字列(バイト長 = 文字数 ÷ 2)。デフォルト: 全角空白による右トリム・パディング。引数: バイト長(数値) 必須。バイト長が2の倍数でない場合は構文エラー。null/空文字扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ |\n| XN | String | マルチバイト文字列(UTF-8等バイト長の異なる文字が混在するフィールド、または全角文字列のパディングに半角スペースを使用する場合に指定)。デフォルト: 半角空白による右トリム・パディング。引数: バイト長(数値) 必須。null/空文字扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ |\n| Z | BigDecimal | ゾーン数値(バイト長 = 桁数)。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 小数点以下桁数(数値) 任意(デフォルト: 0)。出力値null→0変換。読み込みバイト数0→null変換。null変換を無効化する場合は:java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setConvertEmptyToNull(boolean)>`にfalseを設定 |\n| SZ | BigDecimal | 符号付きゾーン数値(バイト長 = 桁数)。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 少数点以下桁数(数値) 任意(デフォルト: 0)、引数3: ゾーン部正符号(16進表記) 任意、引数4: ゾーン部負符号(16進表記) 任意。引数3・4は:ref:`data_format-positive_zone_sign_nibble`/:ref:`data_format-negative_zone_sign_nibble`を上書きする場合に設定。null/バイト数0の扱いは:ref:`data_format-field_type-zoned_decimal`と同じ |\n| P | BigDecimal | パック数値(バイト長 = 桁数 ÷ 2 [端数切り上げ])。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 少数点以下桁数(数値) 任意(デフォルト: 0)。null/バイト数0の扱いは:ref:`data_format-field_type-zoned_decimal`と同じ |\n| SP | BigDecimal | 符号付きパック数値(バイト長 = (桁数 + 1) ÷ 2 [端数切り上げ])。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 少数点以下桁数(数値) 任意(デフォルト: 0)、引数3: 符号ビット正符号(16進表記) 任意、引数4: 符号ビット負符号(16進表記) 任意。引数3・4は:ref:`data_format-positive_pack_sign_nibble`/:ref:`data_format-negative_pack_sign_nibble`を上書きする場合に設定。null/バイト数0の扱いは:ref:`data_format-field_type-zoned_decimal`と同じ |\n| B | byte[] | バイナリ列。パディング・トリムなし。引数: バイト長(数値) 必須。出力値nullの場合は変換を行わず:java:extdoc:`InvalidDataFormatException <nablarch.core.dataformat.InvalidDataFormatException>`を送出。アプリケーション側で明示的に値を設定すること |\n| X9 | BigDecimal | 符号無し数値文字列(バイト長 = 文字数)。Xフィールドを数値として扱う。デフォルト: 0による左トリム・パディング。文字列中に小数点記号(.)を含めることができる。引数1: バイト長(数値) 必須、引数2: 固定小数点の小数点以下桁数(数値) 任意(デフォルト: 0)。出力値nullの扱いは:ref:`data_format-field_type-zoned_decimal`と同じ。読み込み空文字列の扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ |\n| SX9 | BigDecimal | 符号付き数値文字列(バイト長 = 文字数)。Xフィールドを符号付き数値として扱う。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 固定小数点の小数点以下桁数(数値) 任意(デフォルト: 0)。出力値nullの扱いは:ref:`data_format-field_type-zoned_decimal`と同じ。読み込み空文字列の扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ。符号文字(+/-)変更時は:java:extdoc:`SignedNumberStringDecimal <nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal>`を参考にプロジェクト固有フィールドタイプを作成。フィールドタイプ追加は:ref:`data_format-field_type_add`参照 |\n\n## Variable(可変長)データ形式フィールドタイプ一覧\n\n| タイプ | Java型 | 説明 |\n|---|---|---|\n| X / N / XN / X9 / SX9 | String | 可変長データ形式では全フィールドをStringとして読み書きする。タイプ識別子による動作の違いはない。フィールド長の概念がないため引数不要。BigDecimalとして読み書きする場合は:ref:`numberコンバータ <data_format-number_convertor>`または:ref:`signed_numberコンバータ <data_format-signed_number_convertor>`を使用。出力値null→空文字変換。読み込み空文字列→null変換。null変換を無効化する場合は:java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.VariableLengthConvertorSetting.setConvertEmptyToNull(boolean)>`にfalseを設定 |\n\n## JSONおよびXMLデータ形式フィールドタイプ一覧\n\n| タイプ | Java型 | 説明 |\n|---|---|---|\n| X / N / XN | String | 文字列データタイプ。パディング等の編集なし。JSON出力時は値がダブルクォートで括られる。出力値null: JSONは変換なし、XMLは空文字に変換 |\n| X9 / SX9 | String | 数値文字列タイプ。パディング等のデータ編集なし。出力時は値がそのまま出力される。BigDecimalとして読み書きする場合は:ref:`numberコンバータ <data_format-number_convertor>`または:ref:`signed_numberコンバータ <data_format-signed_number_convertor>`を使用。出力値nullの扱いは:ref:`data_format-field_type-nullable_string`と同じ |\n| BL | String | boolean値(true/falseを文字列で表したもの)。パディング等の編集なし。出力時は値がそのまま出力される。出力値nullの扱いは:ref:`data_format-field_type-nullable_string`と同じ |\n| OB | - | ネストされたレコードタイプ指定に使用。フィールド名に対応したレコードタイプがネスト要素として入出力される。出力値nullの扱いは:ref:`data_format-field_type-nullable_string`と同じ |\n\nOBタイプの使用例:\n\n```json\n{\n  \"users\": [\n    {\n      \"name\"    : \"名前\",\n      \"age\"     : 30,\n      \"address\" : \"住所\"\n    }\n  ]\n}\n```\n\n```xml\n<users>\n  <user>\n    <name>名前</name>\n    <age>30</age>\n    <address>住所</address>\n  </user>\n</users>\n```\n\n対応するフォーマット定義ファイル:\n\n```\n[users]       # ルート要素\n1 user [1..*] OB\n\n[user]        # ネストした要素\n1 name    N   # 最下層の要素\n2 age     X9\n3 address N\n```"
+  }
+}

@@ -1,0 +1,266 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/batch/nablarch_batch/architecture.rst`
+- Format: `rst`
+
+```
+アーキテクチャ概要
+==============================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+Nablarchバッチアプリケーションでは、
+DBやファイルに格納されたデータレコード1件ごとに処理を繰り返し実行する
+バッチ処理を構築するための機能を提供している。
+
+Nablarchバッチアプリケーションは、以下の2つに分かれる。
+
+.. _nablarch_batch-each_time_batch:
+
+都度起動バッチ
+ 日次や月次など、定期的にプロセスを起動してバッチ処理を実行する。
+
+.. _nablarch_batch-resident_batch:
+
+常駐バッチ
+ プロセスを起動しておき、一定間隔でバッチ処理を実行する。
+ 例えば、オンライン処理で作成された要求データを定期的に一括処理するような場合に使用する。
+
+.. important::
+ 常駐バッチは、マルチスレッドで実行しても、処理が遅いスレッドの終了を他のスレッドが待つことにより、
+ 要求データの取り込み遅延が発生する可能性がある。
+
+ このため、 新規開発プロジェクトでは、常駐バッチではなく、上記問題が発生しない
+ :ref:`db_messaging` を使用することを推奨する。
+
+ また、既存プロジェクトにおいては、常駐バッチをこのまま稼働させることはできるが、
+ 上記問題が発生する可能性がある場合(既に発生している場合)には、 :ref:`db_messaging` への変更を検討すること。
+
+.. _nablarch_batch-structure:
+
+Nablarchバッチアプリケーションの構成
+------------------------------------------------------
+Nablarchバッチアプリケーションは、javaコマンドから直接起動する\
+スタンドアロンのアプリケーションとして実行する。
+以下にNablarchバッチアプリケーションの構成を示す。
+
+.. image:: images/application_structure.png
+
+:ref:`main` (Main)
+ Nablarchバッチアプリケーションの起点となるメインクラス。
+ javaコマンドから直接起動し、システムリポジトリやログの初期化処理を行い、
+ ハンドラキューを実行する。
+
+.. _nablarch_batch-resolve_action:
+
+リクエストパスによるアクションとリクエストIDの指定
+------------------------------------------------------
+Nablarchバッチアプリケーションでは、コマンドライン引数(-requestPath)で、
+実行するアクションとリクエストIDを指定する。
+
+.. code-block:: properties
+
+ # 書式
+ -requestPath=アクションのクラス名/リクエストID
+
+ # 指定例
+ -requestPath=com.sample.SampleBatchAction/BATCH0001
+
+リクエストIDは、各バッチプロセスの識別子として用いられる。
+同一の業務アクションクラスを実行するプロセスを複数起動する場合などは、このリクエストIDが識別子となる。
+
+.. _nablarch_batch-process_flow:
+
+Nablarchバッチアプリケーションの処理の流れ
+------------------------------------------------------
+Nablarchバッチアプリケーションが入力データを読み込み、処理結果を返却するまでの処理の流れを以下に示す。
+
+.. image:: images/batch-flow.png
+  :scale: 80
+
+1. :ref:`共通起動ランチャ(Main) <main>` がハンドラキュー(handler queue)を実行する。
+2. :java:extdoc:`データリーダ(DataReader)<nablarch.fw.DataReader>` が入力データを読み込み、
+   データレコードを1件ずつ提供する。
+3. ハンドラキューに設定された
+   :java:extdoc:`ディスパッチハンドラ(DispatchHandler) <nablarch.fw.handler.DispatchHandler>` が、
+   コマンドライン引数(-requestPath)で指定するリクエストパスを元に処理すべきアクションクラス(action class)を特定し、
+   ハンドラキューの末尾に追加する。
+4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して、
+   データレコード1件ごとの業務ロジック(business logic) を実行する。
+5. アクションクラス(action class)は、処理結果を示す :java:extdoc:`Result <nablarch.fw.Result>` を返却する。
+6. 処理対象データがなくなるまで2～5を繰り返す。
+7. ハンドラキューに設定された
+   :java:extdoc:`ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler) <nablarch.fw.handler.StatusCodeConvertHandler>` が、
+   処理結果のステータスコードをプロセス終了コードに変換し、
+   バッチアプリケーションの処理結果としてプロセス終了コードが返される。
+
+.. _nablarch_batch-handler:
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-architecture--s1`
+
+```json
+{
+  "id": "nablarch-batch-architecture--s1",
+  "title": "アーキテクチャ概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/architecture.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/DataReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DispatchHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Result.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/StatusCodeConvertHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchバッチアプリケーションの構成",
+      "hints": [
+        "都度起動バッチ",
+        "常駐バッチ",
+        "db_messaging推奨",
+        "スタンドアロン",
+        "Main",
+        "アーキテクチャ構成",
+        "取り込み遅延",
+        "マルチスレッド"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リクエストパスによるアクションとリクエストIDの指定",
+      "hints": [
+        "-requestPath",
+        "リクエストパス",
+        "アクションクラス",
+        "リクエストID",
+        "コマンドライン引数"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Nablarchバッチアプリケーションの処理の流れ",
+      "hints": [
+        "DataReader",
+        "DispatchHandler",
+        "StatusCodeConvertHandler",
+        "Result",
+        "処理フロー",
+        "ハンドラキュー",
+        "nablarch.fw.DataReader",
+        "nablarch.fw.handler.DispatchHandler",
+        "nablarch.fw.Result",
+        "nablarch.fw.handler.StatusCodeConvertHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchバッチアプリケーションは以下の2種別に分かれる。\n\n**都度起動バッチ**: 日次・月次など定期的にプロセスを起動してバッチ処理を実行する。\n\n**常駐バッチ**: プロセスを起動し続け、一定間隔でバッチ処理を実行する。オンライン処理で作成された要求データを定期的に一括処理する場合などに使用する。\n\n> **重要**: 常駐バッチはマルチスレッド実行時に、処理が遅いスレッドの終了を他のスレッドが待つことで、要求データの取り込み遅延が発生する可能性がある。新規開発プロジェクトでは常駐バッチではなく :ref:`db_messaging` を使用することを推奨する。既存プロジェクトで上記問題が発生する可能性がある場合（既に発生している場合）は :ref:`db_messaging` への変更を検討すること。\n\nNablarchバッチアプリケーションはjavaコマンドから直接起動するスタンドアロンアプリケーションとして実行する。\n\n![アプリケーション構成](assets/nablarch-batch-architecture--s1/application_structure.png)\n\n**:ref:`main` (Main)**: 起点となるメインクラス。javaコマンドから直接起動し、システムリポジトリやログの初期化処理を行い、ハンドラキューを実行する。",
+    "s2": "コマンドライン引数 `-requestPath` で実行するアクションクラスとリクエストIDを指定する。\n\n```properties\n# 書式\n-requestPath=アクションのクラス名/リクエストID\n\n# 指定例\n-requestPath=com.sample.SampleBatchAction/BATCH0001\n```\n\nリクエストIDは各バッチプロセスの識別子として用いられる。同一の業務アクションクラスを実行するプロセスを複数起動する場合などは、リクエストIDが識別子となる。",
+    "s3": "1. :ref:`共通起動ランチャ(Main) <main>` がハンドラキューを実行する。\n2. :java:extdoc:`データリーダ(DataReader)<nablarch.fw.DataReader>` が入力データを読み込み、データレコードを1件ずつ提供する。\n3. :java:extdoc:`ディスパッチハンドラ(DispatchHandler) <nablarch.fw.handler.DispatchHandler>` がコマンドライン引数（-requestPath）で指定するリクエストパスを元にアクションクラスを特定し、ハンドラキューの末尾に追加する。\n4. アクションクラスはフォームクラスやエンティティクラスを使用して、データレコード1件ごとの業務ロジックを実行する。\n5. アクションクラスは処理結果を示す :java:extdoc:`Result <nablarch.fw.Result>` を返却する。\n6. 処理対象データがなくなるまで2〜5を繰り返す。\n7. :java:extdoc:`ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler) <nablarch.fw.handler.StatusCodeConvertHandler>` が処理結果のステータスコードをプロセス終了コードに変換し、バッチアプリケーションの処理結果として返す。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

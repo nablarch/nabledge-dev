@@ -1,0 +1,20 @@
+{
+  "file_id": "adapters-web_thymeleaf_adaptor--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ServletContextTemplateResolver tip",
+      "description": "ソースには ServletContextTemplateResolver を使用できない理由が2つ記載されているが、ナレッジファイルは1つ目の理由（デフォルトコンストラクタなし）のみを記載し、2つ目の理由を省略している。2つ目の理由: 「システムリポジトリ構築時には javax.servlet.ServletContext にアクセスできず、ファクトリによるオブジェクト生成もできない」。AIが ServletContextTemplateResolver が使えない理由を説明する際に不完全になる可能性がある。",
+      "source_evidence": "* システムリポジトリ構築時には ``javax.servlet.ServletContext`` にアクセスできず、:ref:`ファクトリ<repository-factory_injection>` によるオブジェクト生成もできない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "s2 のコンテンツで言及されているクラス `ServletContextTemplateResolver` が hints 配列に含まれていない。ユーザーがこのクラス名で検索した場合に s2 がヒットしない可能性がある。",
+      "source_evidence": "``ITemplateResolver`` インタフェースの実装クラスに、``org.thymeleaf.templateresolver.ServletContextTemplateResolver`` が存在するが、..."
+    }
+  ]
+}

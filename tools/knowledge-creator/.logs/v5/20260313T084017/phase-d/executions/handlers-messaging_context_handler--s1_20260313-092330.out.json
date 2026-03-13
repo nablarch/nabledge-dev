@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-messaging_context_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s4",
+      "description": "Raw RST `:java:extdoc:` markup is preserved verbatim in the section text instead of being converted to plain readable text. Knowledge files should present clean prose for AI consumption, not RST-specific cross-reference syntax.",
+      "source_evidence": "Source uses RST directive: `:java:extdoc:`messagingProvider <nablarch.fw.messaging.handler.MessagingContextHandler.setMessagingProvider(nablarch.fw.messaging.MessagingProvider)>`` and `:java:extdoc:`MessagingProvider <nablarch.fw.messaging.MessagingProvider>`` — these should be rendered as plain class/property name references in the knowledge file."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3].hints (s4)",
+      "description": "The fully-qualified class name `nablarch.fw.messaging.MessagingProvider` is missing from s4 hints. The short form `MessagingProvider` is present, but the fully-qualified form is referenced in the source and is included for the sibling class `nablarch.fw.messaging.provider.JmsMessagingProvider`, making the omission inconsistent.",
+      "source_evidence": "Source: `:java:extdoc:`MessagingProvider <nablarch.fw.messaging.MessagingProvider>`` — fully-qualified name `nablarch.fw.messaging.MessagingProvider` appears explicitly in the source but is absent from hints while `nablarch.fw.messaging.provider.JmsMessagingProvider` is included."
+    }
+  ]
+}

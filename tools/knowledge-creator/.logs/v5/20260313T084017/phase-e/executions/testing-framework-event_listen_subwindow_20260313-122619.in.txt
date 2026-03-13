@@ -1,0 +1,165 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-event_listen_subwindow",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "属性値一覧の第1列にある属性名 `title`、`operation`、`comment` がヒントに含まれていない。設計書表示用（×）の属性ではあるが、属性名としてヒントに追加すべき。",
+      "source_evidence": "属性値一覧テーブルの第1列: title（監視するイベントの簡単な説明）、operation（監視イベントが発生する画面操作の説明）、comment（このイベントに対する補足説明）"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+サブウィンドウ内イベント定義
+===================================================
+:doc:`event_listen_subwindow` はサブウィンドウ内で発生した各種イベントに対して
+あらかじめ登録しておいたJavaScript処理をイベント発生時に実行するウィジェットである。
+
+本ウィジェットの仕様の多くは :doc:`event_listen` と共通であるため、
+以下では :doc:`event_listen` との差分のみについて述べる。
+本項に記述されていない部分については別途 :doc:`event_listen` の項を参照すること。
+
+コードサンプル
+==================================
+
+以下のソースコード例では、特定のボタンから開かれたサブウィンドウについて、
+サブウィンドウ内のテーブルの各行を監視対象要素としている。
+その選択リンクに対するクリックイベントが発生すると、イベントアクションを順次実行する。
+
+イベントアクションでは選択された行の内容を、親ウィンドウ上の対応する項目に出力している。
+(ここで使用しているイベントアクションの詳細については :doc:`event_write_to` を参照。)
+
+  .. code-block:: jsp
+
+    <event:listen_subwindow
+      openTrigger = "#openSelectUserWindow"
+      watchTarget = "table tr"
+      event       = "a.select click">
+      <event:write_to
+        target = ".user_name"
+        format = "{td.userName}">
+      </event:write_to>
+      <event:write_to
+        target = ".user_id input"
+        format = "{td.userId}">
+      </event:write_to>
+
+      ... (中略) ...
+
+   </event:listen_subwindow>
+
+
+仕様
+=============================================
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ================================
+event                     監視対象イベントの定義式         文字列         ◎          ◎
+
+watchTarget               監視対象とするサブウィンドウ内の 文字列         ◎          ◎
+                          要素を指定するセレクタ式。
+
+windowName                監視対象ウィンドウ名             文字列         ○          ○         デフォルトでは "subwindow"
+
+openTrigger               監視対象ウィンドウを開く         文字列         ○          ○
+                          ボタン・リンクを指定する
+                          セレクタ式。
+                          これを指定した場合、セレクタ式に
+                          合致するボタン・リンクから
+                          開かれたサブウィンドウのみが
+                          監視対象となる。
+
+title                     監視するイベントの簡単な説明     文字列         ×          ×         設計書表示用
+
+operation                 監視イベントが発生する画面操作   文字列         ×          ×         設計書表示用
+                          の説明。
+
+comment                   このイベントに対する補足説明。   文字列         ×          ×         設計書表示用
+
+========================= ================================ ============== ========== ========= ================================
+
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+================================================= =====================================================
+パス                                              内容
+================================================= =====================================================
+/WEB-INF/tags/widget/event/listen_subwindow.tag   このウィジェットの実体となるタグファイル
+
+/js/nablarch/ui/event/SubwindowListener.js        イベント監視機能を実装するJS部品。
+
+================================================= =====================================================
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-event_listen_subwindow",
+  "title": "サブウィンドウ内イベント定義",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_jsp_widgets/event_listen_subwindow.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "サブウィンドウ内イベント定義",
+      "hints": [
+        "event:listen_subwindow",
+        "SubwindowListener",
+        "サブウィンドウイベント監視",
+        "openTrigger",
+        "watchTarget",
+        "windowName",
+        "event属性",
+        "listen_subwindow.tag"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`event:listen_subwindow` ウィジェットは、サブウィンドウ内で発生したイベントに対してあらかじめ登録したJavaScript処理を実行する。仕様の多くは :doc:`event_listen` と共通であり、以下はその差分のみを記載する。\n\n**コードサンプル:**\n\n```jsp\n<event:listen_subwindow\n  openTrigger = \"#openSelectUserWindow\"\n  watchTarget = \"table tr\"\n  event       = \"a.select click\">\n  <event:write_to\n    target = \".user_name\"\n    format = \"{td.userName}\">\n  </event:write_to>\n  <event:write_to\n    target = \".user_id input\"\n    format = \"{td.userId}\">\n  </event:write_to>\n</event:listen_subwindow>\n```\n\n**属性値一覧** (◎ 必須属性 ○ 任意属性 × 無効)\n\n| 名称 | 型 | サーバ | ローカル | 説明 | 備考 |\n|---|---|---|---|---|---|\n| event | 文字列 | ◎ | ◎ | 監視対象イベントの定義式 | |\n| watchTarget | 文字列 | ◎ | ◎ | 監視対象とするサブウィンドウ内の要素を指定するセレクタ式 | |\n| windowName | 文字列 | ○ | ○ | 監視対象ウィンドウ名 | デフォルト: \"subwindow\" |\n| openTrigger | 文字列 | ○ | ○ | 監視対象ウィンドウを開くボタン・リンクを指定するセレクタ式。指定した場合、合致するボタン・リンクから開かれたサブウィンドウのみが監視対象となる | |\n| title | 文字列 | × | × | 監視するイベントの簡単な説明 | 設計書表示用 |\n| operation | 文字列 | × | × | 監視イベントが発生する画面操作の説明 | 設計書表示用 |\n| comment | 文字列 | × | × | このイベントに対する補足説明 | 設計書表示用 |\n\n**部品一覧:**\n\n| パス | 内容 |\n|---|---|\n| `/WEB-INF/tags/widget/event/listen_subwindow.tag` | このウィジェットの実体となるタグファイル |\n| `/js/nablarch/ui/event/SubwindowListener.js` | イベント監視機能を実装するJS部品 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

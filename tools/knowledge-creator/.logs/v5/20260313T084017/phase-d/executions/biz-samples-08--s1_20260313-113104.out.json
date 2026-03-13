@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-08--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Table property names from the first column of the data model tables are missing from hints: `メールテンプレートID` and `言語` (from HTMLメール用代替テキストテンプレートテーブル). `代替テキスト` also appears in both tables but is absent from hints.",
+      "source_evidence": "HTMLメール用代替テキストテンプレートテーブルの定義列: メールテンプレートID (PK), 言語 (PK), 代替テキスト"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 hints",
+      "description": "`HtmlMailTable` is a PascalCase class name used in the s8 code example (`HtmlMailTable htmlTable = SystemRepository.get(\"htmlMailTable\")`) but is absent from s8 hints.",
+      "source_evidence": "HtmlMailTable htmlTable = SystemRepository.get(\"htmlMailTable\");\nSqlRow alternativeText = htmlTable.findAlternativeText(mailRequest.getMailRequestId());"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 hints",
+      "description": "`TemplateMailContext` is a PascalCase class name explicitly mentioned in the s9 source text (`TemplateMailContext#setReplaceKeyValue`) and referenced in the code via `super.setReplaceKeyValue`, but is absent from s9 hints.",
+      "source_evidence": "PJにてTemplateHtmlMailContextを修正し、TemplateMailContext#setReplaceKeyValueを呼び出すAPIを追加すること"
+    }
+  ]
+}

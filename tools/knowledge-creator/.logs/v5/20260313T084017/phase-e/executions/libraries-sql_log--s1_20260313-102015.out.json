@@ -1,0 +1,31 @@
+{
+  "id": "libraries-sql_log--s1",
+  "title": "SQLログの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log/sql_log.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SQLログの出力方針",
+      "hints": [
+        "SQLログ",
+        "SqlLogFormatter",
+        "log.properties",
+        "app-log.properties",
+        "SQLログ出力設定",
+        "DEBUGレベル",
+        "TRACEレベル",
+        "SQLパラメータ",
+        "nablarch.core.log.basic.FileLogWriter",
+        "nablarch.core.log.basic.BasicLogFormatter",
+        "SqlPStatement",
+        "SqlStatement"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "SQLログはパフォーマンスチューニング用途。ディスクフル・パフォーマンス影響の可能性があるため、開発時使用を想定しDEBUGレベル以下で出力する。\n\n| ログレベル | ロガー名 | 出力内容 |\n|---|---|---|\n| DEBUG | SQL | SQL文、実行時間、件数(検索件数や更新件数など)、トランザクションの処理結果(コミット又はロールバック) |\n| TRACE | SQL | SQLパラメータ(バインド変数の値) |\n\n**log.properties設定例**:\n```properties\nwriterNames=appLog\n\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\nwriter.appLog.encoding=UTF-8\nwriter.appLog.maxFileSize=10000\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=SQL,ROO\n\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=appLog\n```\n\n**app-log.properties設定例（SqlLogFormatter）**:\n```properties\n# SqlPStatement#retrieveのフォーマット\nsqlLogFormatter.startRetrieveFormat=$methodName$\\\n    \\n\\tSQL = [$sql$]\\\n    \\n\\tstart_position = [$startPosition$] size = [$size$]\\\n    \\n\\tquery_timeout = [$queryTimeout$] fetch_size = [$fetchSize$]\\\n    \\n\\tadditional_info:\\\n    \\n\\t$additionalInfo$\nsqlLogFormatter.endRetrieveFormat=$methodName$\\\n    \\n\\texecute_time(ms) = [$executeTime$] retrieve_time(ms) = [$retrieveTime$] count = [$count$]\n# SqlPStatement#executeのフォーマット\nsqlLogFormatter.startExecuteFormat=$methodName$\\\n    \\n\\tSQL = [$sql$]\\\n    \\n\\tadditional_info:\\\n    \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteFormat=$methodName$\\\n    \\n\\texecute_time(ms) = [$executeTime$]\n# SqlPStatement#executeQueryのフォーマット\nsqlLogFormatter.startExecuteQueryFormat=$methodName$\\\n    \\n\\tSQL = [$sql$]\\\n    \\n\\tadditional_info:\\\n    \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteQueryFormat=$methodName$\\\n    \\n\\texecute_time(ms) = [$executeTime$]\n# SqlPStatement#executeUpdateのフォーマット\nsqlLogFormatter.startExecuteUpdateFormat=$methodName$\\\n    \\n\\tSQL = [$sql$]\\\n    \\n\\tadditional_info:\\\n    \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteUpdateFormat=$methodName$\\\n    \\n\\texecute_time(ms) = [$executeTime$] update_count = [$updateCount$]\n# SqlStatement#executeBatchのフォーマット\nsqlLogFormatter.startExecuteBatchFormat=$methodName$\\\n    \\n\\tSQL = [$sql$]\\\n    \\n\\tadditional_info:\\\n    \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteBatchFormat=$methodName$\\\n    \\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]\n```"
+  }
+}

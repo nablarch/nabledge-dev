@@ -1,0 +1,410 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-database--s23",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`BasicStatementFactory` は s4 のコンテンツ内（SqlStatementExceptionFactory の設定XMLおよびその説明文）に登場するPascalCaseクラス名だが、s4のhintsに含まれていない。",
+      "source_evidence": "`:java:extdoc:`SqlStatementExceptionFactory` の実装クラスは、 :java:extdoc:`BasicStatementFactory` に対して設定する。` および対応するXMLコード例"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+検索結果をキャッシュする（同じSQLで同じ条件の場合にキャッシュしたデータを扱いたい)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+更新時間が決まっているデータや、頻繁にアクセスされるが必ず最新のデータを返す必要がない場合には、
+データベースの負荷を軽減させるために検索結果をキャッシュできる。
+
+この機能は、以下のような機能で有効に活用できる。
+
+* 売り上げランキングのように結果が厳密に最新である必要が無く大量に参照されるデータ
+* データ更新タイミングが夜間のみで日中は更新されないデータ
+
+制約
+  LOB型について
+    LOB(BLOB型やCLOB型)のカラムを取得した場合、実際にDBに格納されたデータが取得されるのではなく、LOBロケータが取得される。
+    実際の値を取得する場合は、このLOBロケータ経由で値を取得する。
+
+    このLOBロケータの有効期間は、RDBMS毎の実装に依存している。
+    通常、 :java:extdoc:`java.sql.ResultSet` や :java:extdoc:`java.sql.Connection` がクローズされた時点でアクセスできなくなる。
+    このため、 `ResultSet` や `Connection` よりも生存期間が長いキャッシュにはBLOB、CLOB型を含めることができない。
+
+  アプリケーションの冗長化について
+    デフォルトで提供するキャッシュを保持するコンポーネントはJVMのヒープ上にキャッシュを保持する。
+    このため、アプリケーションを冗長化構成とした場合、アプリケーションごとに検索結果がキャッシュされることになる。
+
+    このため、キャッシュタイミングが異なるため、それぞれのアプリケーションで異なるキャッシュを保持する可能性がある。
+
+    アプリケーションサーバを冗長化している場合で、ラウンドロビンでロードバランサを行う場合は、
+    毎回異なるサーバにアクセスする可能性がある。
+    もし、サーバごとに異なるキャッシュを保持していた場合、リクエストの都度異なる結果が画面表示される可能性があるので注意すること。
+
+.. important::
+
+  この機能は、参照系のデータベースアクセスを省略可能な場合に省略し、システム負荷を軽減することを目的としており、
+  データベースアクセス（SQL）の高速化を目的としているものではない。
+  このため、SQLの高速化を目的として使用してはならない。そのような場合には、SQLのチューニングを実施すること。
+
+.. important::
+
+  この機能は、データベースの値の更新を監視してキャッシュの最新化を行うことはない。
+  このため、常に最新のデータを表示する必要がある機能では使用しないこと。
+
+以下に使用例を示す。
+
+コンポーネント設定ファイル
+  以下の手順に従い、検索結果のキャッシュを有効化する。
+
+  #. クエリ結果をキャッシュするコンポーネントの定義
+  #. SQLID毎の検索結果のキャッシュ設定
+  #. 検索結果をキャッシュするSQL実行コンポーネントの定義
+
+  クエリ結果のキャッシュクラスのコンポーネントの定義
+    デフォルトで提供されるクエリ結果をキャッシュするクラスの :java:extdoc:`InMemoryResultSetCache <nablarch.core.db.cache.InMemoryResultSetCache>` を設定する。
+
+    .. code-block:: xml
+
+      <component name="resultSetCache" class="nablarch.core.db.cache.InMemoryResultSetCache">
+        <property name="cacheSize" value="100"/>
+        <property name="systemTimeProvider" ref="systemTimeProvider"/>
+      </component>
+
+  SQLID毎のキャッシュ設定
+    SQLID毎のキャッシュを設定する。
+    デフォルトで提供される :java:extdoc:`BasicExpirationSetting <nablarch.core.cache.expirable.BasicExpirationSetting>` では、SQLID毎にキャッシュの有効期限が設定できる。
+
+    有効期限には、以下の単位が使用できる。
+
+    :ms: ミリ秒
+    :sec: 秒
+    :min: 分
+    :h: 時
+
+    .. code-block:: xml
+
+      <!-- キャッシュ有効期限設定 -->
+        <component name="expirationSetting"
+            class="nablarch.core.cache.expirable.BasicExpirationSetting">
+
+          <property name="expiration">
+            <map>
+              <!-- keyにSQLIDを設定し、valueに有効期限を設定する -->
+              <entry key="please.change.me.tutorial.ss11AA.W11AA01Action#SELECT" value="100ms"/>
+              <entry key="please.change.me.tutorial.ss11AA.W11AA02Action#SELECT" value="30sec"/>
+            </map>
+          </property>
+
+        </component>
+
+  検索結果をキャッシュするSQL実行コンポーネントの定義
+    検索結果をキャッシュさせるためには、SQL実行コンポーネントの生成クラスに :java:extdoc:`CacheableStatementFactory <nablarch.core.db.cache.statement.CacheableStatementFactory>` を設定する。
+    :java:extdoc:`CacheableStatementFactory <nablarch.core.db.cache.statement.CacheableStatementFactory>` は、 デフォルトで提供される
+    :java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` を継承しているため、
+    基本的な設定値は、 :java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` と同じである。
+
+    :java:extdoc:`expirationSetting <nablarch.core.db.cache.statement.CacheableStatementFactory.setExpirationSetting(nablarch.core.cache.expirable.ExpirationSetting)>` 及び
+    :java:extdoc:`resultSetCache <nablarch.core.db.cache.statement.CacheableStatementFactory.setResultSetCache(nablarch.core.db.cache.ResultSetCache)>` プロパティに対しては、上で設定したクエリー結果のキャッシュコンポーネントと
+    SQLID毎のキャッシュ設定のコンポーネントを設定すること。
+
+    ここで定義した :java:extdoc:`CacheableStatementFactory <nablarch.core.db.cache.statement.CacheableStatementFactory>` コンポーネントは、
+    :ref:`database-connect` で定義したデータベース接続を取得するコンポーネントに設定すること。
+
+    .. code-block:: xml
+
+      <!-- キャッシュ可能なステートメントを生成するCacheableStatementFactoryを設定する -->
+      <component name="cacheableStatementFactory"
+                 class="nablarch.core.db.cache.CacheableStatementFactory">
+
+        <!-- 有効期限設定 -->
+        <property name="expirationSetting" ref="expirationSetting"/>
+        <!-- キャッシュ実装 -->
+        <property name="resultSetCache" ref="resultSetCache"/>
+
+      </component>
+
+  実装例
+    SQLを使ったデータベースアクセスは、キャッシュ有無によって変わることはない。
+    以下と同じように実装すれば良い。
+
+    * :ref:`database-execute_sqlid`
+    * :ref:`database-input_bean`
+
+`java.sql.Connection` を使って処理を行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+JDBCのネイティブなデータベース接続( :java:extdoc:`java.sql.Connection` )を扱いたい場合がある。
+例えば、 :java:extdoc:`java.sql.DatabaseMetaData` を使用したい場合がこれに該当する。
+
+この場合は、 :java:extdoc:`DbConnectionContext <nablarch.core.db.connection.DbConnectionContext>` から取得した
+:java:extdoc:`TransactionManagerConnection <nablarch.core.db.connection.TransactionManagerConnection>` から :java:extdoc:`java.sql.Connection` を取得することで対応できる。
+
+.. important::
+
+  :java:extdoc:`java.sql.Connection` を使用した場合、チェック例外である :java:extdoc:`java.sql.SQLException` をハンドリングして例外を制御する必要がある。
+  この例外制御は実装を誤ると、障害が検知されなかったり障害時の調査ができないなどの問題が発生することがある。
+  このため、どうしても :java:extdoc:`java.sql.Connection` を使わないと満たせない要件がない限り、この機能は使用しないこと。
+
+以下に例を示す。
+
+.. code-block:: java
+
+  TransactionManagerConnection managerConnection = DbConnectionContext.getTransactionManagerConnection();
+  Connection connection = managerConnection.getConnection();
+  return connection.getMetaData();
+    
+
+.. _database-replace_schema:
+  
+SQL文中のスキーマを環境毎に切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+特定のSQL（テーブル）のみ別のスキーマを参照したい場合、通常はSQL文に明示的にスキーマを記述するが
+(例: ``SELECT * FROM A_SCHEMA.TABLE1``)、環境によって参照したいスキーマ名が異なるケースがある（下記の例を参照）。
+
+**TABLE1の参照先スキーマ**
+
+=================== ==========
+環境                スキーマ
+=================== ==========
+本番環境            A_SCHEMA
+テスト環境          B_SCHEMA
+=================== ==========
+
+このケースでは、SQL文中にスキーマ名を明示的に記述する方法を使うことができない。
+
+.. code-block:: sql
+
+  -- スキーマ名を指定してSELECT
+  SELECT * FROM A_SCHEMA.TABLE1  -- 本番では動作するがテスト環境では動作しない
+
+  
+このような場合のために、SQL文中のスキーマを環境毎に切り替える機能を提供する。
+
+まず、SQL文にスキーマを置き換えるためのプレースホルダー ``#SCHEMA#`` \ [#schema]_\ を記載する。
+
+
+.. code-block:: sql
+                
+  -- スキーマ名を指定してSELECT
+  SELECT * FROM #SCHEMA#.TABLE1
+
+
+.. [#schema] このプレースホルダーの文字列は固定である。
+
+
+プレースホルダーを置き換えるために、以下の例のように\
+:java:extdoc:`BasicSqlLoader <nablarch.core.db.statement.BasicSqlLoader>` を設定する。
+
+.. code-block:: xml
+                
+  <component name="statementFactory" class="nablarch.core.db.statement.BasicStatementFactory">
+    <property name="sqlLoader">
+      <component name="sqlLoader" class="nablarch.core.db.statement.BasicSqlLoader">
+        <property name="sqlLoaderCallback">
+          <list>
+            <!-- SQL文中の#SCHEMA#を指定した値で置き換え -->
+            <component class="nablarch.core.db.statement.sqlloader.SchemaReplacer">
+              <property name="schemaName" value="${nablarch.schemaReplacer.schemaName}"/>
+            </component>
+          </list>
+        </property>
+      </component>
+    </property>
+  </component>
+
+プレースホルダーをどのような値に置き換えるかは、
+:java:extdoc:`SchemaReplacer <nablarch.core.db.statement.sqlloader.SchemaReplacer>`
+のプロパティ\ ``schemaName``\ に設定する。
+上記の例では、置き換え後の値を ``nablarch.schemaReplacer.schemaName`` という環境依存値に設定している。\
+この値を環境毎に切り替えることにより、\
+SQL文中のスキーマをその環境に応じたものに置き換えることができる\
+（切替方法の詳細については :ref:`how_to_switch_env_values` を参照）。
+
+.. tip::
+   本機能によるSQL文中のスキーマ置き換えは単純な文字列置換処理であり、\
+   スキーマが存在するか、スキーマ置き換え後のSQLが妥当であるかといったチェックは行われない\
+   （SQL文実行時にエラーとなる）。
+
+拡張例
+--------------------------------------------------
+
+.. _database-add_connection_factory:
+
+データベースへの接続法を追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データベースの接続方法を追加する手順を説明する。
+例えば、OSSのコネクションプールライブラリを使用する場合などは、この手順に従い作業すると良い。
+
+#. :java:extdoc:`ConnectionFactorySupport <nablarch.core.db.connection.ConnectionFactorySupport>` を継承し、データベース接続を生成するクラスを作成する。
+#. 作成したクラスをコンポーネント設定ファイルに設定する。( :ref:`database-connect` を参照)
+
+.. _database-add_dialect:
+
+ダイアレクトを追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ダイアレクトを追加する手順を説明する。
+
+例えば、使用するデータベース製品に対応したダイアレクトがない場合や、特定機能の使用可否を切り替えたい場合にはダイアレクトを追加する必要がある。
+
+#. :java:extdoc:`DefaultDialect <nablarch.core.db.dialect.DefaultDialect>` を継承し、 データベース製品に対応したダイアレクトを作成する。
+#. 作成したダイアレクトをコンポーネント設定ファイルに設定する ( :ref:`database-use_dialect` を参照)
+
+.. _database-change_exception:
+
+データベースアクセス時の例外クラスを切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データベースアクセス時の例外クラスを切り替える手順を説明する。
+
+例えば、デッドロックエラーの例外クラスを変更したい場合には、この手順に従い作業すると良い。
+
+#. データベースアクセスエラーを生成する :java:extdoc:`DbAccessExceptionFactory <nablarch.core.db.connection.DbAccessExceptionFactory>` の実装クラスを作成する。
+#. SQL実行時エラーを生成する :java:extdoc:`SqlStatementExceptionFactory <nablarch.core.db.statement.SqlStatementExceptionFactory>` の実装クラスを作成する。
+#. 作成したクラスをコンポーネント設定ファイルに定義する。
+
+以下に詳細な手順を示す。
+
+:java:extdoc:`DbAccessExceptionFactory <nablarch.core.db.connection.DbAccessExceptionFactory>` の実装クラスを作成する
+  データベース接続取得時及びトランザクション制御時(commitやrollback)に発生させる :java:extdoc:`DbAccessException <nablarch.core.db.DbAccessException>` を変更したい場合は、
+  このインタフェースの実装クラスを作成する。
+
+:java:extdoc:`SqlStatementExceptionFactory <nablarch.core.db.statement.SqlStatementExceptionFactory>` の実装クラスを作成する
+  SQL実行時に発生させる :java:extdoc:`SqlStatementException <nablarch.core.db.statement.exception.SqlStatementException>` を変更したい場合は、 このインタフェースの実装クラスを作成する。
+
+コンポーネント設定ファイルに定義する
+  :java:extdoc:`DbAccessExceptionFactory <nablarch.core.db.connection.DbAccessExceptionFactory>` の実装クラスは、 :ref:`database-connect`
+  で定義したデータベース接続を取得するコンポーネントに設定する必要がある。
+
+  .. code-block:: xml
+
+    <component class="sample.SampleDbAccessExceptionFactory" />
+
+  :java:extdoc:`SqlStatementExceptionFactory <nablarch.core.db.statement.SqlStatementExceptionFactory>` の実装クラスは、 :java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` に対して設定する。
+  なお、 :java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` は、 :ref:`database-connect` で定義したデータベース接続を取得するコンポーネントに設定する必要がある。
+
+  .. code-block:: xml
+
+    <component name="statementFactory" class="nablarch.core.db.statement.BasicStatementFactory">
+      <property name="sqlStatementExceptionFactory">
+        <component class="sample.SampleStatementExceptionFactory" />
+      </property>
+    </component>
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-database--s23",
+  "title": "データベースアクセス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/database/database.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/cache/InMemoryResultSetCache.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/cache/expirable/BasicExpirationSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/cache/statement/CacheableStatementFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/BasicStatementFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/connection/DbConnectionContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/connection/TransactionManagerConnection.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/BasicSqlLoader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/sqlloader/SchemaReplacer.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/connection/ConnectionFactorySupport.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/dialect/DefaultDialect.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/connection/DbAccessExceptionFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/SqlStatementExceptionFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/DbAccessException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/exception/SqlStatementException.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果をキャッシュする（同じSQLで同じ条件の場合にキャッシュしたデータを扱いたい）",
+      "hints": [
+        "InMemoryResultSetCache",
+        "BasicExpirationSetting",
+        "CacheableStatementFactory",
+        "BasicStatementFactory",
+        "検索結果キャッシュ",
+        "LOB型制約",
+        "SQLID有効期限設定",
+        "cacheSize",
+        "expiration"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "`java.sql.Connection` を使って処理を行う",
+      "hints": [
+        "DbConnectionContext",
+        "TransactionManagerConnection",
+        "java.sql.Connection",
+        "java.sql.SQLException",
+        "JDBCネイティブ接続",
+        "getConnection"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "SQL文中のスキーマを環境毎に切り替える",
+      "hints": [
+        "BasicSqlLoader",
+        "SchemaReplacer",
+        "BasicStatementFactory",
+        "schemaName",
+        "スキーマ切り替え",
+        "#SCHEMA#プレースホルダー",
+        "how_to_switch_env_values"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "拡張例",
+      "hints": [
+        "ConnectionFactorySupport",
+        "DefaultDialect",
+        "DbAccessExceptionFactory",
+        "SqlStatementExceptionFactory",
+        "DbAccessException",
+        "SqlStatementException",
+        "接続方法追加",
+        "ダイアレクト追加",
+        "例外クラス切り替え"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "検索結果のキャッシュ機能。参照系DBアクセスを省略してシステム負荷を軽減する目的で使用する。\n\n**有効なユースケース**:\n- 売り上げランキングのように結果が厳密に最新でなく大量に参照されるデータ\n- データ更新タイミングが夜間のみで日中は更新されないデータ\n\n> **重要**: この機能はDBアクセス省略によるシステム負荷軽減が目的。SQLの高速化目的には使用しないこと。SQLチューニングを実施すること。\n\n> **重要**: DBの値更新を監視してキャッシュを最新化しない。常に最新データを表示する必要がある機能では使用しないこと。\n\n**制約**:\n- LOB型（BLOB/CLOB）カラム取得時はLOBロケータが取得される。LOBロケータの有効期間はRDBMS依存で、通常 :java:extdoc:`java.sql.ResultSet` や :java:extdoc:`java.sql.Connection` のクローズ時に失効する。キャッシュにBLOB/CLOB型を含められない。\n- 冗長化構成ではJVMヒープ上にキャッシュが保持されアプリごとに独立。ラウンドロビンLBでリクエスト毎に異なる結果が返る可能性がある。\n\n**コンポーネント設定（3ステップ）**:\n\n1. :java:extdoc:`InMemoryResultSetCache <nablarch.core.db.cache.InMemoryResultSetCache>` を定義:\n\n```xml\n<component name=\"resultSetCache\" class=\"nablarch.core.db.cache.InMemoryResultSetCache\">\n  <property name=\"cacheSize\" value=\"100\"/>\n  <property name=\"systemTimeProvider\" ref=\"systemTimeProvider\"/>\n</component>\n```\n\n2. :java:extdoc:`BasicExpirationSetting <nablarch.core.cache.expirable.BasicExpirationSetting>` でSQLID毎の有効期限を設定（単位: `ms`, `sec`, `min`, `h`）:\n\n```xml\n<component name=\"expirationSetting\" class=\"nablarch.core.cache.expirable.BasicExpirationSetting\">\n  <property name=\"expiration\">\n    <map>\n      <entry key=\"SQLID1\" value=\"100ms\"/>\n      <entry key=\"SQLID2\" value=\"30sec\"/>\n    </map>\n  </property>\n</component>\n```\n\n3. :java:extdoc:`CacheableStatementFactory <nablarch.core.db.cache.statement.CacheableStatementFactory>` を定義し、 :ref:`database-connect` のDB接続コンポーネントに設定。:java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` を継承するため基本設定は同じ。`expirationSetting` と `resultSetCache` プロパティに上記コンポーネントを設定すること:\n\n```xml\n<component name=\"cacheableStatementFactory\" class=\"nablarch.core.db.cache.CacheableStatementFactory\">\n  <property name=\"expirationSetting\" ref=\"expirationSetting\"/>\n  <property name=\"resultSetCache\" ref=\"resultSetCache\"/>\n</component>\n```",
+    "s2": ":java:extdoc:`DbConnectionContext <nablarch.core.db.connection.DbConnectionContext>` から :java:extdoc:`TransactionManagerConnection <nablarch.core.db.connection.TransactionManagerConnection>` を取得し、`getConnection()` で :java:extdoc:`java.sql.Connection` を取得できる。\n\n> **重要**: :java:extdoc:`java.sql.Connection` 使用時はチェック例外 :java:extdoc:`java.sql.SQLException` のハンドリングが必要。実装を誤ると障害検知不能・調査不能になる。どうしても必要な要件がない限り使用しないこと。\n\n```java\nTransactionManagerConnection managerConnection = DbConnectionContext.getTransactionManagerConnection();\nConnection connection = managerConnection.getConnection();\nreturn connection.getMetaData();\n```",
+    "s3": "SQL文中にプレースホルダー `#SCHEMA#`（固定文字列）を記載し、環境毎にスキーマを切り替える機能。\n\n```sql\nSELECT * FROM #SCHEMA#.TABLE1\n```\n\n:java:extdoc:`BasicSqlLoader <nablarch.core.db.statement.BasicSqlLoader>` に :java:extdoc:`SchemaReplacer <nablarch.core.db.statement.sqlloader.SchemaReplacer>` を設定し、`schemaName` プロパティに置換値（環境依存値）を指定する。\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n  <property name=\"sqlLoader\">\n    <component name=\"sqlLoader\" class=\"nablarch.core.db.statement.BasicSqlLoader\">\n      <property name=\"sqlLoaderCallback\">\n        <list>\n          <component class=\"nablarch.core.db.statement.sqlloader.SchemaReplacer\">\n            <property name=\"schemaName\" value=\"${nablarch.schemaReplacer.schemaName}\"/>\n          </component>\n        </list>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n環境依存値の切り替え方法: :ref:`how_to_switch_env_values` 参照。\n\n> **補足**: スキーマ置き換えは単純な文字列置換。スキーマの存在確認やSQL妥当性チェックは行われない（実行時エラーとなる）。",
+    "s4": "**接続方法の追加** (:ref:`database-add_connection_factory`):\n1. :java:extdoc:`ConnectionFactorySupport <nablarch.core.db.connection.ConnectionFactorySupport>` を継承してDB接続生成クラスを作成\n2. 作成クラスをコンポーネント設定ファイルに設定（ :ref:`database-connect` 参照）\n\n**ダイアレクトの追加** (:ref:`database-add_dialect`):\n1. :java:extdoc:`DefaultDialect <nablarch.core.db.dialect.DefaultDialect>` を継承してDB製品対応ダイアレクトを作成\n2. 作成ダイアレクトをコンポーネント設定ファイルに設定（ :ref:`database-use_dialect` 参照）\n\n**例外クラスの切り替え** (:ref:`database-change_exception`):\n1. :java:extdoc:`DbAccessExceptionFactory <nablarch.core.db.connection.DbAccessExceptionFactory>` 実装クラスを作成（DB接続取得時・トランザクション制御時の :java:extdoc:`DbAccessException <nablarch.core.db.DbAccessException>` を変更）\n2. :java:extdoc:`SqlStatementExceptionFactory <nablarch.core.db.statement.SqlStatementExceptionFactory>` 実装クラスを作成（SQL実行時の :java:extdoc:`SqlStatementException <nablarch.core.db.statement.exception.SqlStatementException>` を変更）\n3. `DbAccessExceptionFactory` 実装は :ref:`database-connect` のDB接続コンポーネントに設定:\n\n```xml\n<component class=\"sample.SampleDbAccessExceptionFactory\" />\n```\n\n`SqlStatementExceptionFactory` 実装は :java:extdoc:`BasicStatementFactory <nablarch.core.db.statement.BasicStatementFactory>` に設定:\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n  <property name=\"sqlStatementExceptionFactory\">\n    <component class=\"sample.SampleStatementExceptionFactory\" />\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

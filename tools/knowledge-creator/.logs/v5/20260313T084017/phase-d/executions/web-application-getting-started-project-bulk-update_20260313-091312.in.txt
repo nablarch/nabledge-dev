@@ -1,0 +1,502 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/getting_started/project_bulk_update/index.rst`
+- Format: `rst`
+
+```
+.. _`project_bulk_update`:
+
+一括更新機能の作成
+==========================================
+Exampleアプリケーションを元に一括更新機能を解説する。
+
+作成する機能の説明
+  1. メニューの一括更新リンクを押下し、一括更新画面へ遷移する。
+
+    .. image:: ../images/project_bulk_update/project_bulk_update-menu.png
+      :scale: 80
+
+  2. プロジェクト全件検索の結果が表示される。
+
+    .. image:: ../images/project_bulk_update/project_bulk_update-list.png
+      :scale: 80
+
+  3. 当該ページで更新する項目を書き換えて、更新ボタンを押下する(ページをまたいだ更新はできない)。
+
+    .. image:: ../images/project_bulk_update/project_bulk_update-list_changed.png
+      :scale: 80
+
+  4. 更新確認画面が表示されるので、確定ボタンを押下する。
+
+    .. image:: ../images/project_bulk_update/project_bulk_update-confirm.png
+      :scale: 80
+
+  5. データベースが更新され、更新完了画面が表示される。
+
+    .. image:: ../images/project_bulk_update/project_bulk_update-complete.png
+      :scale: 80
+
+一括更新機能の作成
+---------------------
+一括更新機能の作成方法を解説する。
+
+  #. :ref:`フォームの作成<project_bulk_update-create_form>`
+  #. :ref:`画面に更新対象を受け渡すBeanの作成<project_bulk_update-create_bean>`
+  #. :ref:`一括更新画面を表示する業務アクションメソッドの作成<project_bulk_update-action_list>`
+  #. :ref:`一括更新画面JSPの作成<project_bulk_update-update_jsp>`
+  #. :ref:`更新内容を確認する業務アクションメソッドの作成<project_bulk_update-confirm_action>`
+  #. :ref:`確認画面JSPの作成<project_bulk_update-confirm_jsp>`
+  #. :ref:`データベースを一括更新する業務アクションメソッドの作成<project_bulk_update-bulk_update>`
+  #. :ref:`完了画面の作成<project_bulk_update-complete_jsp>`
+
+.. _`project_bulk_update-create_form`:
+
+フォームの作成
+  検索条件を受け付けるフォームと、更新内容を受け付けるフォームをそれぞれ作成する。
+
+  検索フォームの作成
+    検索フォームの実装は、 :ref:`検索機能の作成：フォームの作成<project_search-create_form>` と同様であるためそちらを参照。
+
+  更新フォームの作成
+    複数のプロジェクトの更新情報を一括で送信するため、フォームを2種類作成する。
+
+      #. :ref:`プロジェクト１つ分の更新情報を受け付けるフォーム<project_bulk_update-create_single_pj_form>`
+      #. :ref:`プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム<project_bulk_update-create_multi_pj_form>`
+
+        .. image:: ../images/project_bulk_update/project_bulk_update-form.png
+
+    .. _`project_bulk_update-create_single_pj_form`:
+
+    プロジェクト１つ分の更新情報を受け付けるフォーム
+      プロジェクト１つ分の更新値を受け付けるフォームを作成する。
+
+        InnerProjectForm.java
+          .. code-block:: java
+
+            public class InnerProjectForm implements Serializable {
+
+                // 一部項目のみ抜粋
+
+                /** プロジェクト名 */
+                @Required
+                @Domain("projectName")
+                private String projectName;
+
+                // ゲッタ及びセッタは省略
+            }
+
+      この実装のポイント
+        * 入れ子となったフォームに対しても  :ref:`Bean Validation<bean_validation>` を実行するため、
+          :java:extdoc:`@Required<nablarch.core.validation.ee.Required>` や :java:extdoc:`@Domain<nablarch.core.validation.ee.Domain>`
+          などのバリデーション用のアノテーションを付与する。
+
+    .. _`project_bulk_update-create_multi_pj_form`:
+
+    プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
+      複数プロジェクトの更新情報を一括で受け付けるために、プロジェクト１つ分の更新情報を受け付けるフォームのリストを定義した親フォームを作成する。
+
+      ProjectBulkForm.java
+        .. code-block:: java
+
+          public class ProjectBulkForm implements Serializable {
+
+              /** プロジェクト情報のリスト */
+              @Valid
+              private List<InnerProjectForm> projectList = new ArrayList<>();
+
+              // ゲッタ及びセッタは省略
+          }
+
+      この実装のポイント
+        * :java:extdoc:`@Valid<javax.validation.Valid>` を付与することで、入れ子としたフォームも :ref:`Bean Validation<bean_validation>` の対象に含めることができる。
+
+.. _`project_bulk_update-create_bean`:
+
+業務アクションで取得した更新対象リストを画面へ受け渡すBeanの作成
+  業務アクションで取得した更新対象リストを画面へ受け渡すBeanを作成する。このBeanは一括更新画面と確認画面で持ちまわすため、 :ref:`セッションストア <session_store>` に登録する。
+
+    ProjectListDto.java
+      .. code-block:: java
+
+        public class ProjectListDto implements Serializable {
+
+            /** プロジェクトリスト */
+            private List<Project> projectList = new ArrayList<>();
+
+            // ゲッタ及びセッタは省略
+        }
+
+    この実装のポイント
+      * 配列やコレクション型を :ref:`セッションストア <session_store>` に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、
+        そのBeanを :ref:`セッションストア <session_store>` に登録すること。詳細は :ref:`セッションストア使用上の制約<session_store-constraint>` を参照。
+
+.. _`project_bulk_update-action_list`:
+
+一括更新画面を表示する業務アクションメソッドの作成
+  データベースから対象プロジェクトを取得し、一括更新画面に表示する業務アクションメソッドを作成する。
+
+  ProjectBulkAction.java
+    .. code-block:: java
+
+      @InjectForm(form = ProjectSearchForm.class, prefix = "searchForm",  name = "searchForm")
+      @OnError(type = ApplicationException.class, path = "forward://initialize")
+      public HttpResponse list(HttpRequest request, ExecutionContext context) {
+
+          ProjectSearchForm searchForm = context.getRequestScopedVar("searchForm");
+
+          // 検索実行
+          ProjectSearchDto projectSearchDto
+              = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);
+          EntityList<Project> projectList = searchProject(projectSearchDto, context);
+          ProjectListDto projectListDto = new ProjectListDto();
+          projectListDto.setProjectList(projectList);
+          SessionUtil.put(context, "projectListDto", projectListDto);
+
+          // 更新対象を画面に引き渡す
+          context.setRequestScopedVar("bulkForm", projectListDto);
+
+          // 検索条件を保存
+          SessionUtil.put(context, "projectSearchDto", projectSearchDto);
+
+          return new HttpResponse("/WEB-INF/view/projectBulk/update.jsp");
+      }
+
+  この実装のポイント
+    * 検索メソッドの実装方法に関しては :ref:`検索機能の作成：業務アクションの実装<project_search-create_action>` と同様であるためそちらを参照。
+    * 確認画面から一括更新画面へ戻った際に、同条件でページングや再検索ができるように
+      検索条件を :ref:`セッションストア <session_store>` に登録して持ちまわす。
+
+.. _`project_bulk_update-update_jsp`:
+
+一括更新画面JSPの作成
+  検索結果の表示と複数のプロジェクトの情報を編集する、一括更新画面のJSPを作成する。
+
+  /src/main/webapp/WEB-INF/projectBulk/update.jsp
+    .. code-block:: jsp
+
+      <!-- 顧客検索結果の表示部分 -->
+      <n:form>
+          <!-- 現在の検索結果の表示に使用した検索条件をパラメータとして持つURIを、
+               変数としてpageスコープに登録する。
+               この変数は、<app:listSearchResult>タグのページング用のURIとして使用される。-->
+          <c:url value="list" var="uri">
+              <!-- セッションストア上のprojectSearchDtoから検索条件を取得する -->
+              <c:param name="searchForm.clientId" value="${projectSearchDto.clientId}"/>
+              <c:param name="searchForm.clientName" value="${projectSearchDto.clientName}"/>
+              <c:param name="searchForm.projectName" value="${projectSearchDto.projectName}"/>
+              <!-- 以降も同様に検索条件パラメータであるため省略 -->
+
+          </c:url>
+          <app:listSearchResult>
+          <!-- listSearchResultの属性値は省略 -->
+              <jsp:attribute name="headerRowFragment">
+                  <tr>
+                      <th>プロジェクトID</th>
+                      <th>プロジェクト名</th>
+                      <th>プロジェクト種別</th>
+                      <th>開始日</th>
+                      <th>終了日</th>
+                  </tr>
+              </jsp:attribute>
+              <jsp:attribute name="bodyRowFragment">
+                  <tr class="info">
+                      <td>
+                          <!-- プロジェクトIDをパラメータとするリンクを表示する -->
+                          <n:a href="show/${row.projectId}">
+                              <n:write name="bulkForm.projectList[${status.index}].projectId"/>
+                          </n:a>
+                          <n:plainHidden name="bulkForm.projectList[${status.index}].projectId"/>
+                      </td>
+                      <td>
+                          <div class="form-group">
+                              <n:text name="bulkForm.projectList[${status.index}].projectName"
+                                      maxlength="64" cssClass="form-control"
+                                      errorCss="input-error input-text"/>
+                              <n:error errorCss="message-error"
+                                      name="bulkForm.projectList[${status.index}].projectName" />
+                          </div>
+                      </td>
+                      <!-- その他の編集項目は省略 -->
+
+                  </tr>
+              </jsp:attribute>
+          </app:listSearchResult>
+          <div class="title-nav page-footer">
+              <div class="button-nav">
+                  <n:button id="bottomUpdateButton" uri="/action/projectBulk/confirmOfUpdate"
+                      disabled="${isUpdatable}" cssClass="btn btn-raised btn-success">
+                          更新</n:button>
+                  <n:a id="bottomCreateButton" type="button" uri="/action/project"
+                      cssClass="btn btn-raised btn-default" value="新規登録"></n:a>
+              </div>
+          </div>
+      </n:form>
+
+  この実装のポイント
+    * 検索結果を表示するJSPの作成方法は :ref:`検索機能の作成：検索結果表示部分の作成<project_search-create_result_jsp>` と同様であるため、そちらを参照。
+    * 確認画面から一括更新画面に戻った際に、同条件での再検索やページングが行えるように、 :ref:`セッションストア <session_store>` から取得した検索条件を元に検索条件パラメータを構成する。
+      JSPでは、 :ref:`セッションストア <session_store>` に登録したオブジェクトは、リクエストスコープに登録したオブジェクトと同様に扱うことができる。
+    * 配列型、もしくは :java:extdoc:`List<java.util.List>` 型プロパティの要素は、 `プロパティ名[index]` 形式でアクセスできる。
+      詳細は :ref:`tag-access_rule` 参照。
+
+.. _`project_bulk_update-confirm_action`:
+
+更新内容を確認する業務アクションメソッドの作成
+  更新内容を確認する業務アクションメソッドを作成する。
+
+  ProjectBulkAction.java
+    .. code-block:: java
+
+      @InjectForm(form = ProjectBulkForm.class, prefix = "bulkForm", name = "bulkForm")
+      @OnError(type = ApplicationException.class, path = "/WEB-INF/view/projectBulk/update.jsp")
+      public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext context) {
+
+          ProjectBulkForm form = context.getRequestScopedVar("bulkForm");
+          ProjectListDto dto = SessionUtil.get(context, "projectListDto");
+
+          // 更新内容をセッションに上書き
+          final List<InnerProjectForm> innerForms = form.getProjectList();
+          dto.getProjectList()
+             .forEach(project ->
+                     innerForms.stream()
+                               .filter(innerForm ->
+                                       Objects.equals(innerForm.getProjectId(), project.getProjectId()
+                                                                                       .toString()))
+                               .findFirst()
+                               .ifPresent(innerForm -> BeanUtil.copy(innerForm, project)));
+
+          return new HttpResponse("/WEB-INF/view/projectBulk/confirmOfUpdate.jsp");
+      }
+
+  この実装のポイント
+    * 更新する情報は :ref:`セッションストア <session_store>` に保持する。
+
+.. _`project_bulk_update-confirm_jsp`:
+
+確認画面JSPの作成
+  変更後のプロジェクト情報を表示する画面のJSPを作成する。
+
+  /src/main/webapp/WEB-INF/projectBulk/confirmOfUpdate.jsp
+    .. code-block:: jsp
+
+          <section>
+              <div class="title-nav">
+                  <span>プロジェクト検索一覧更新画面</span>
+                  <div class="button-nav">
+                      <n:form useToken="true">
+                        <!-- ボタン部分は省略 -->
+                      </n:form>
+                  </div>
+              </div>
+              <h4 class="font-group">プロジェクト変更一覧</h4>
+              <div>
+                  <table class="table table-striped table-hover">
+                      <tr>
+                          <th>プロジェクトID</th>
+                          <th>プロジェクト名</th>
+                          <th>プロジェクト種別</th>
+                          <th>開始日</th>
+                          <th>終了日</th>
+                      </tr>
+                      <c:forEach var="row" items="${projectListDto.projectList}">
+                          <tr class="<n:write name='oddEvenCss' />">
+                              <td>
+                                  <n:write name="row.projectId" />
+                              </td>
+                              <!-- 他項目は省略 -->
+                          </tr>
+                      </c:forEach>
+                  </table>
+              </div>
+          </section>
+
+.. _`project_bulk_update-bulk_update`:
+
+データベースを一括更新する業務アクションメソッドの作成
+  対象プロジェクトを一括で更新する。
+
+  ProjectBulkAction.java
+    .. code-block:: java
+
+      @OnDoubleSubmission
+      public HttpResponse update(HttpRequest request, ExecutionContext context) {
+
+        ProjectListDto projectListDto = SessionUtil.get(context, "projectListDto");
+        projectListDto.getProjectList().forEach(UniversalDao::update);
+
+        return new HttpResponse(303, "redirect://completeOfUpdate");
+      }
+
+  この実装のポイント
+    * 基本的な実装方法は  :ref:`更新機能の作成：データベースを更新する業務アクションメソッドの作成<project_update-create_decide_action>` と同様である。
+    * :java:extdoc:`UniversalDao#update <nablarch.common.dao.UniversalDao.update(java.lang.Object)>` を更新件数分実行する。
+      排他制御エラーが発生した場合は全件の更新がロールバックされる。
+
+      .. tip::
+        Exampleアプリケーションでは独自のエラー制御ハンドラを追加しているため、排他制御エラーにより :java:extdoc:`OptimisticLockException<javax.persistence.OptimisticLockException>` が発生した場合、
+        排他制御エラー画面へ遷移する。ハンドラによるエラー制御の作成方法は、 :ref:`ハンドラで例外クラスに対応したエラーページに遷移させる <forward_error_page-handler>` を参照。
+
+    * :java:extdoc:`UniversalDao<nablarch.common.dao.UniversalDao>` には、エンティティのリストを引数に取る
+      :java:extdoc:`UniversalDao#batchUpdate <nablarch.common.dao.UniversalDao.batchUpdate(java.util.List)>` メソッドも用意されているが、
+      このメソッドは :ref:`バッチ実行<universal_dao-batch_execute>` での使用を想定したものであり、排他制御を行わない。
+      排他制御が必要である場合は、 :java:extdoc:`UniversalDao#update <nablarch.common.dao.UniversalDao.update(java.lang.Object)>`
+      を使用すること。
+
+.. _`project_bulk_update-complete_jsp`:
+
+完了画面の表示
+  完了画面の実装方法は :ref:`更新機能の作成：更新完了画面の作成<project_update-create_success_jsp>` と同様であるためそちらを参照。
+
+一括更新機能の解説は以上。
+
+:ref:`Getting Started TOPページへ <getting_started>`
+```
+
+## Knowledge File
+
+- ID: `web-application-getting-started-project-bulk-update`
+
+```json
+{
+  "id": "web-application-getting-started-project-bulk-update",
+  "title": "一括更新機能の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/project_bulk_update/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Required.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Domain.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/validation/Valid.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/persistence/OptimisticLockException.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "一括更新機能の作成",
+      "hints": [
+        "InnerProjectForm",
+        "ProjectBulkForm",
+        "ProjectListDto",
+        "ProjectBulkAction",
+        "UniversalDao",
+        "SessionUtil",
+        "BeanUtil",
+        "@Valid",
+        "@Required",
+        "@Domain",
+        "@InjectForm",
+        "@OnError",
+        "@OnDoubleSubmission",
+        "OptimisticLockException",
+        "一括更新",
+        "セッションストア",
+        "入れ子フォーム",
+        "Bean Validation",
+        "排他制御",
+        "List型プロパティのインデックスアクセス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 一括更新機能の作成\n\n### フォームの作成\n\n複数プロジェクトの更新情報を一括送信するため、2種類のフォームを作成する。\n\n**InnerProjectForm.java**（プロジェクト1つ分の更新情報）:\n```java\npublic class InnerProjectForm implements Serializable {\n    @Required\n    @Domain(\"projectName\")\n    private String projectName;\n    // ゲッタ及びセッタは省略\n}\n```\n\n入れ子となったフォームに対しても :ref:`Bean Validation<bean_validation>` を実行するため、:java:extdoc:`@Required<nablarch.core.validation.ee.Required>` や :java:extdoc:`@Domain<nablarch.core.validation.ee.Domain>` などのバリデーション用アノテーションを付与する。\n\n**ProjectBulkForm.java**（親フォーム）:\n```java\npublic class ProjectBulkForm implements Serializable {\n    @Valid\n    private List<InnerProjectForm> projectList = new ArrayList<>();\n    // ゲッタ及びセッタは省略\n}\n```\n\n:java:extdoc:`@Valid<javax.validation.Valid>` を付与することで、入れ子フォームも :ref:`Bean Validation<bean_validation>` の対象に含まれる。\n\n### 更新対象リストを画面へ受け渡すBeanの作成\n\n**ProjectListDto.java**（一括更新画面・確認画面で :ref:`セッションストア <session_store>` に登録して持ちまわすBean）:\n```java\npublic class ProjectListDto implements Serializable {\n    private List<Project> projectList = new ArrayList<>();\n    // ゲッタ及びセッタは省略\n}\n```\n\n> **重要**: 配列やコレクション型を :ref:`セッションストア <session_store>` に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、そのBeanを :ref:`セッションストア <session_store>` に登録すること。詳細は :ref:`セッションストア使用上の制約<session_store-constraint>` を参照。\n\n### 一括更新画面を表示する業務アクションメソッド\n\n```java\n@InjectForm(form = ProjectSearchForm.class, prefix = \"searchForm\", name = \"searchForm\")\n@OnError(type = ApplicationException.class, path = \"forward://initialize\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n    ProjectSearchForm searchForm = context.getRequestScopedVar(\"searchForm\");\n    ProjectSearchDto projectSearchDto = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n    EntityList<Project> projectList = searchProject(projectSearchDto, context);\n    ProjectListDto projectListDto = new ProjectListDto();\n    projectListDto.setProjectList(projectList);\n    SessionUtil.put(context, \"projectListDto\", projectListDto);\n    context.setRequestScopedVar(\"bulkForm\", projectListDto);\n    // 確認画面から戻った際に同条件で再検索・ページングできるよう検索条件も保存\n    SessionUtil.put(context, \"projectSearchDto\", projectSearchDto);\n    return new HttpResponse(\"/WEB-INF/view/projectBulk/update.jsp\");\n}\n```\n\n### 一括更新画面JSPの実装ポイント\n\n- :ref:`セッションストア <session_store>` に登録したオブジェクトは、リクエストスコープに登録したオブジェクトと同様にJSPから参照できる。\n- 配列型またはList型プロパティの要素は `プロパティ名[index]` 形式でアクセスする（詳細: :ref:`tag-access_rule`）。\n\n```jsp\n<n:text name=\"bulkForm.projectList[${status.index}].projectName\"\n        maxlength=\"64\" cssClass=\"form-control\" errorCss=\"input-error input-text\"/>\n<n:error errorCss=\"message-error\"\n        name=\"bulkForm.projectList[${status.index}].projectName\" />\n```\n\n### 更新内容を確認する業務アクションメソッド\n\n```java\n@InjectForm(form = ProjectBulkForm.class, prefix = \"bulkForm\", name = \"bulkForm\")\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/projectBulk/update.jsp\")\npublic HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext context) {\n    ProjectBulkForm form = context.getRequestScopedVar(\"bulkForm\");\n    ProjectListDto dto = SessionUtil.get(context, \"projectListDto\");\n    final List<InnerProjectForm> innerForms = form.getProjectList();\n    dto.getProjectList()\n       .forEach(project ->\n               innerForms.stream()\n                         .filter(innerForm -> Objects.equals(innerForm.getProjectId(),\n                                 project.getProjectId().toString()))\n                         .findFirst()\n                         .ifPresent(innerForm -> BeanUtil.copy(innerForm, project)));\n    return new HttpResponse(\"/WEB-INF/view/projectBulk/confirmOfUpdate.jsp\");\n}\n```\n\n更新する情報は :ref:`セッションストア <session_store>` に保持する。\n\n### データベースを一括更新する業務アクションメソッド\n\n```java\n@OnDoubleSubmission\npublic HttpResponse update(HttpRequest request, ExecutionContext context) {\n    ProjectListDto projectListDto = SessionUtil.get(context, \"projectListDto\");\n    projectListDto.getProjectList().forEach(UniversalDao::update);\n    return new HttpResponse(303, \"redirect://completeOfUpdate\");\n}\n```\n\n- :java:extdoc:`UniversalDao#update <nablarch.common.dao.UniversalDao.update(java.lang.Object)>` を更新件数分実行する。排他制御エラーが発生した場合は全件の更新がロールバックされる。\n- :java:extdoc:`UniversalDao#batchUpdate <nablarch.common.dao.UniversalDao.batchUpdate(java.util.List)>` は :ref:`バッチ実行<universal_dao-batch_execute>` での使用を想定したものであり排他制御を行わない。排他制御が必要な場合は :java:extdoc:`UniversalDao#update <nablarch.common.dao.UniversalDao.update(java.lang.Object)>` を使用すること。\n\n> **補足**: :java:extdoc:`OptimisticLockException<javax.persistence.OptimisticLockException>` が発生した場合、独自エラーハンドラを追加することで排他制御エラー画面へ遷移させることができる。詳細は :ref:`forward_error_page-handler` 参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

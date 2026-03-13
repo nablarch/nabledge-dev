@@ -1,0 +1,203 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-nablarch_servlet_context_listener--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1のhintsに `nablarch-core` が含まれていない。モジュール一覧には4つの依存関係（nablarch-fw-web, nablarch-core, nablarch-core-repository, nablarch-core-applog）が記載されているが、nablarch-coreのみhintsに欠けている。",
+      "source_evidence": "モジュール一覧セクションに `<artifactId>nablarch-core</artifactId>` が明示されている。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _nablarch_servlet_context_listener:
+
+Nablarchサーブレットコンテキスト初期化リスナー
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本クラスはサーブレットコンテキストリスナーとして定義されており、
+ウェブアプリケーションの起動時、終了時に以下の処理を行う。
+
+起動時
+ * :ref:`repository` の初期化処理
+ * :ref:`log` の初期化処理
+
+終了時
+ * :ref:`log` の終了処理
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-repository</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-applog</artifactId>
+  </dependency>
+
+システムリポジトリを初期化する
+--------------------------------------------------
+
+システムリポジトリの初期化を行うには、以下のとおり設定する必要がある。
+
+* サーブレットコンテキストリスナーとして、本クラスを登録する。
+* サーブレットコンテキストの初期化パラメータとして、コンポーネント設定ファイルのパスを設定する。
+
+`web.xml` への設定例を以下に示す。
+
+ポイント
+ * コンポーネント設定ファイルのパスのパラメータ名は **di.config** とすること。
+
+.. code-block:: xml
+
+  <context-param>
+    <param-name>di.config</param-name>
+    <param-value>web-boot.xml</param-value>
+  </context-param>
+
+  <listener>
+    <listener-class>nablarch.fw.web.servlet.NablarchServletContextListener</listener-class>
+  </listener>
+
+初期化の成否を後続処理で取得する
+--------------------------------------------------
+
+本クラスの初期化に成功したか否かは、:java:extdoc:`NablarchServletContextListener#isInitializationCompleted <nablarch.fw.web.servlet.NablarchServletContextListener.isInitializationCompleted()>` を使用して取得できる。
+初期化に成功した場合は上記メソッドは ``true`` を返却する。
+
+本クラスの初期化に失敗するとアプリケーションの起動も失敗するが、サーブレットコンテキストリスナーを複数登録していた場合は、
+本クラスの後続のサーブレットコンテキストリスナーの処理が実行されることがある。
+この機能を使用することで本クラスの後続のサーブレットコンテキストリスナーにおいて、
+以下のようにシステムリポジトリの初期化に成功した場合だけ処理を続行するといった分岐が可能となる。
+
+.. code-block:: java
+
+  public class CustomServletContextListener implements ServletContextListener {
+      @Override
+      public void contextInitialized(ServletContextEvent sce) {
+          if(NablarchServletContextListener.isInitializationCompleted()){
+            // システムリポジトリを使用した処理
+          }
+      }
+
+なお、サーブレットコンテキストリスナーの実行順は `web.xml` に記載した順序となる。
+システムリポジトリを使用するサーブレットコンテキストリスナーを登録する場合は、
+以下のように本クラスより後に `web.xml` に記載する必要がある。
+また、 ``@WebListener`` アノテーションによるサーブレットコンテキストリスナーの登録では実行順序は保証されないため、
+必ず `web.xml` で定義すること。
+
+.. code-block:: xml
+
+  <listener>
+    <listener-class>nablarch.fw.web.servlet.NablarchServletContextListener</listener-class>
+  </listener>
+  <listener>
+    <listener-class>please.change.me.CustomServletContextListener</listener-class>
+  </listener>
+
+.. tip::
+
+  複数のサーブレットコンテキストリスナーが登録されている場合に、先に実行されたサーブレットコンテキストリスナーの処理の例外を検知して処理を中止するか、
+  例外を無視して後続のサーブレットコンテキストリスナーの処理を継続するかはサーブレットコンテナの実装に依存する。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-nablarch_servlet_context_listener--s1",
+  "title": "Nablarchサーブレットコンテキスト初期化リスナー",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/feature_details/nablarch_servlet_context_listener.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/servlet/NablarchServletContextListener.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "NablarchServletContextListener",
+        "サーブレットコンテキストリスナー",
+        "起動時初期化処理",
+        "終了時終了処理",
+        "nablarch-fw-web",
+        "nablarch-core-repository",
+        "nablarch-core-applog"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システムリポジトリを初期化する",
+      "hints": [
+        "NablarchServletContextListener",
+        "di.config",
+        "システムリポジトリ初期化",
+        "web.xml設定",
+        "コンポーネント設定ファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "初期化の成否を後続処理で取得する",
+      "hints": [
+        "NablarchServletContextListener",
+        "isInitializationCompleted",
+        "初期化成否確認",
+        "サーブレットコンテキストリスナー実行順序",
+        "WebListenerアノテーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.fw.web.servlet.NablarchServletContextListener`\n\nサーブレットコンテキストリスナーとして定義されており、ウェブアプリケーションの起動時・終了時に以下の処理を行う:\n- 起動時: :ref:`repository` の初期化処理、:ref:`log` の初期化処理\n- 終了時: :ref:`log` の終了処理\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-repository</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-applog</artifactId>\n</dependency>\n```",
+    "s2": "システムリポジトリを初期化するには以下の設定が必要:\n1. サーブレットコンテキストリスナーとして `NablarchServletContextListener` を登録する\n2. サーブレットコンテキストの初期化パラメータとしてコンポーネント設定ファイルのパスを設定する\n\n> **重要**: コンポーネント設定ファイルのパスのパラメータ名は **di.config** とすること。\n\n`web.xml` 設定例:\n```xml\n<context-param>\n  <param-name>di.config</param-name>\n  <param-value>web-boot.xml</param-value>\n</context-param>\n\n<listener>\n  <listener-class>nablarch.fw.web.servlet.NablarchServletContextListener</listener-class>\n</listener>\n```",
+    "s3": "初期化成否は :java:extdoc:`NablarchServletContextListener#isInitializationCompleted <nablarch.fw.web.servlet.NablarchServletContextListener.isInitializationCompleted()>` で取得可能。初期化成功時は `true` を返却。\n\n初期化失敗時はアプリ起動も失敗するが、複数のサーブレットコンテキストリスナーを登録していた場合、本クラスの後続リスナーが実行されることがある。後続リスナーで以下のように初期化成功時のみ処理を続行する分岐が可能:\n\n```java\npublic class CustomServletContextListener implements ServletContextListener {\n    @Override\n    public void contextInitialized(ServletContextEvent sce) {\n        if(NablarchServletContextListener.isInitializationCompleted()){\n          // システムリポジトリを使用した処理\n        }\n    }\n```\n\n**実行順序の注意**:\n- サーブレットコンテキストリスナーの実行順は `web.xml` に記載した順序となる\n- システムリポジトリを使用するリスナーは本クラスより後に `web.xml` に記載すること\n- `@WebListener` アノテーションによる登録では実行順序が保証されないため、必ず `web.xml` で定義すること\n\n```xml\n<listener>\n  <listener-class>nablarch.fw.web.servlet.NablarchServletContextListener</listener-class>\n</listener>\n<listener>\n  <listener-class>please.change.me.CustomServletContextListener</listener-class>\n</listener>\n```\n\n> **補足**: 複数のサーブレットコンテキストリスナーが登録されている場合、先に実行されたリスナーの例外を検知して処理を中止するか継続するかはサーブレットコンテナの実装に依存する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

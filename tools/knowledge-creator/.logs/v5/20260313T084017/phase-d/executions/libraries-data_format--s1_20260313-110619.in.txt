@@ -1,0 +1,602 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/data_io/data_format.rst`
+- Format: `rst`
+
+```
+.. _data_format:
+
+汎用データフォーマット
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+システムで扱う多様なデータ形式に対応した汎用の入出力ライブラリ機能を提供する。
+
+本機能の大まかな構成は以下のとおり。
+
+.. image:: ../images/data_format/structure.png
+
+
+機能概要
+--------------------------------------------------
+
+.. _data_format-support_type:
+
+標準でサポートするフォーマットが豊富
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+標準では、以下の形式のフォーマットに対応している。
+
+固定長と可変長のデータ形式では、レコード毎にレイアウトの異なるマルチレイアウトデータにも対応している。
+(XMLとJSONには、レコードという概念が存在しない。)
+
+* 固定長
+* 可変長(csvやtsvなど)
+* JSON
+* XML
+
+.. important::
+
+  本機能には、以下のデメリットがある。
+
+  * 複雑な :ref:`フォーマット定義ファイル <data_format-format_definition_file>` を作成する必要がある。
+  * 入出力が :java:extdoc:`Map <java.util.Map>` に限定されており、実装誤りを起こしやすい。
+
+    * フィールド名を文字列で指定する必要があり、IDEの補完も使えないなど、実装時にミスを起こしやすい。
+    * アプリケーション側で、Mapから取り出した値をダウンキャストする必要がある。(誤ると、実行時に例外が送出される。)
+
+  * データとJavaオブジェクトのマッピングに :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` を使用していないため、他の機能とはマッピング方法が異なる。
+  * 出力対象の :java:extdoc:`Map <java.util.Map>` の扱い方がフォーマットによって異なる。このため、同じデータを複数のフォーマットに対応させる機能を使用した場合に、フォーマットによっては例外が発生するなど正常に動作しない場合がある。
+    
+    例えば、下のケースで問題がある。
+    
+    XMLとJSONで必須項目にnullを指定した場合：
+      * XML：値を空文字として出力
+      * JSON：必須の例外を送出
+  
+  * 出力対象のデータによってはJSONの仕様を満たせない場合がある。
+  
+    例えば、 :java:extdoc:`数値型 <nablarch.core.dataformat.convertor.datatype.JsonNumber>` や :java:extdoc:`真偽値型 <nablarch.core.dataformat.convertor.datatype.JsonBoolean>` を使用し、出力対象のデータ型がこれらの型に対応していない場合に不正なJSONが出力される。
+    
+    例：数値型を指定し、出力対象が「data」などの文字列の場合、{"number":data}のような不正なJSONが出力される。
+  
+  * データ形式によって使用できる :java:extdoc:`データタイプ <nablarch.core.dataformat.convertor.datatype.DataType>` の実装クラスが異なるため拡張しづらい。また、この設定の誤りは実行時まで検知できない。
+  
+  このため原則本機能はやむを得ない場合を除き非推奨とする。
+  なお、 :ref:`messaging` は、内部で本機能を使用しているため、代替機能を使用できない。
+
+  本機能の代替機能
+    :固定長: :ref:`data_bind` を使用すること。
+    :可変長: :ref:`data_bind` を使用すること。
+    :XML: :java:extdoc:`JAXB <javax.xml.bind>` を推奨する。
+    :JSON: OSSの使用を推奨する。例えば、 `Jackson(外部サイト、英語) <https://github.com/FasterXML/jackson>`_ が広く使われている。
+
+
+様々な文字セットや文字種、データ形式に対応
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+文字列や10進数数値だけでなく、ホストでよく扱われるパック数値やゾーン10進数形式などに対応している。
+また、UTF-8やShift_JISだけではなくEBCDICなどの文字セットにも対応している。
+
+.. tip::
+  
+  文字セットについては、実行環境のJVMでサポートされているものが使用できる。
+
+.. _data_format-value_convertor:
+
+パディングやトリミングなどの変換処理に対応
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+固定長ファイルで多く使用されるスペースやゼロ(0)パディング及びトリミングに対応している。
+このため、アプリケーション側でパディング処理やトリミング処理を行わなくて良い。
+
+パディングやトリミングの詳細は、 :ref:`data_format-field_convertor_list` を参照。
+
+モジュール一覧
+---------------------------------------------------------------------
+* :ref:`アップロードヘルパー <data_format-upload_helper>` を使用する場合は、 ``nablarch-fw-web-extension`` を追加する。
+* :ref:`ファイルダウンロード <data_format-file_download>` を使用する場合は、 ``nablarch-fw-web-extension`` を追加する。
+
+.. code-block:: xml
+
+  <!-- 汎用データフォーマット -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-dataformat</artifactId>
+  </dependency>
+
+  <!--
+  アップロードヘルパーを使用する場合、ダウンロードを使用する場合は以下を追加する
+   -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-extension</artifactId>
+  </dependency>
+
+
+
+使用方法
+--------------------------------------------------
+
+.. _data_format-format_definition_file:
+
+入出力データのフォーマットを定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+入出力対象データのフォーマット定義は、フォーマット定義ファイルに行う。
+
+フォーマット定義ファイルは、以下のようなテキストファイル形式で作成する。
+詳細な仕様は、 :doc:`data_format/format_definition` を参照。
+
+.. code-block:: bash
+
+  file-type:        "Variable" # 可変長
+  text-encoding:    "MS932"    # 文字列型フィールドの文字エンコーディング
+  record-separator: "\r\n"     # 改行コード(crlf)
+  field-separator:  ","        # csv
+
+  # レコード識別フィールドの定義
+  [Classifier]
+  1 dataKbn X     # 1つめのフィールド
+  3 type    X     # 3つめのフィールド
+
+  [parentData]
+  dataKbn = "1"
+  type    = "01"
+  1 dataKbn X
+  2 ?filler X
+  3 type    X
+  4 data    X
+
+  [childData]
+  dataKbn = "1"
+  type    = "02"
+  1 dataKbn X
+  2 ?filler X
+  3 type    X
+  4 data    X
+  
+
+.. toctree::
+  :hidden:
+
+  data_format/format_definition
+
+
+ファイルにデータを出力する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データレコードの内容をファイルに出力する方法について説明する。
+
+ファイルへのデータ出力は、 :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用することで実現できる。
+
+以下に実装例を示す。
+
+ポイント
+  * ファイルに書き込むデータは :java:extdoc:`Map <java.util.Map>` として準備する。
+  * :java:extdoc:`Map <java.util.Map>` のキー値は、 :ref:`data_format-format_definition_file` で定義したフィールド名を設定する。(大文字、小文字は区別しない)
+  * :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` の `open` メソッドを呼び出して、ファイルリソースを書き込み可能状態にする。
+  * :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` の `write` メソッドを呼び出して、データをファイルに書き込む。
+
+.. code-block:: java
+
+  // 書き込み対象のデータ
+  Map<String, Object> user = new HashMap<>();
+  user.put("name", "名前");
+  user.put("age", 20);
+
+  // 書き込み対象のファイルを開く
+  FileRecordWriterHolder.open("users.csv", "user_csv_format");
+
+  // データを書き込む
+  FileRecordWriterHolder.write(user, "user.csv");
+
+.. tip::
+
+  :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用するためには、
+  :ref:`フォーマット定義ファイル <data_format-format_definition_file>` の配置ディレクトリや出力先ディレクトリを
+  :ref:`file_path_management` に設定する必要がある。
+
+  必要となるディレクトリの設定値については、 :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を参照。
+
+.. important::
+
+  :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` で開いたファイルリソースは、
+  :ref:`file_record_writer_dispose_handler` にて自動的に開放される。
+  このため、 :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用する場合には、
+  必ず :ref:`file_record_writer_dispose_handler` をハンドラキュー上に設定すること。
+
+.. important::
+  出力するデータに不正な値が設定されていた場合に正しく処理できない可能性があるため、事前にアプリケーション側で不正な値でないかをチェックすること。
+
+.. important::
+
+  デフォルトの動作では1レコード毎にファイルへの書き込みを行う。
+  大量データを出力する場合はレコード毎にファイルに書き込むと性能要件を満たせない可能性がある。
+  そのような場合は、1レコード毎でなく指定したバッファサイズで書き込みを行うようにデフォルトの動作を変更して対応すること。
+
+  下記のコンポーネント定義を追加することで、1レコード毎でなく指定したバッファサイズで書き込みを行うようにできる。
+
+  .. code-block:: xml
+
+    <!-- コンポーネント名はdataFormatConfigとする -->
+    <component name="dataFormatConfig" class="nablarch.core.dataformat.DataFormatConfig">
+      <property name="flushEachRecordInWriting" value="false" />
+    </component>
+
+  出力に使用するバッファサイズは :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>`
+  の `open` メソッドで指定できる。
+
+.. _data_format-file_download:
+  
+ファイルダウンロードで使用する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データレコードの内容をファイルダウンロード形式でクライアントに応答する方法について解説する。
+
+ファイルダウンロード形式のレスポンスは、 :java:extdoc:`DataRecordResponse <nablarch.common.web.download.DataRecordResponse>` を使用することで実現できる。
+
+以下に実装例を示す。
+
+ポイント
+  * :java:extdoc:`DataRecordResponse <nablarch.common.web.download.DataRecordResponse>` 生成時に、
+    フォーマット定義ファイルが格納された論理パス名と、フォーマット定義ファイル名を指定する。
+  * :java:extdoc:`DataRecordResponse#write <nablarch.common.web.download.DataRecordResponse.write(java.util.Map)>` を使って、
+    データを出力する。(複数のレコードをダウンロードする場合には、繰り返し出力する)
+  * `Content-Type` 及び `Content-Disposition` を設定する。
+  * 業務アクションから :java:extdoc:`DataRecordResponse <nablarch.common.web.download.DataRecordResponse>` を返却する。
+
+.. code-block:: java
+
+  public HttpResponse download(HttpRequest request, ExecutionContext context) {
+
+    // 業務処理
+
+    // ダウンロードデータを格納したMapの作成する。
+    Map<String, Object> user = new hashMap<>()
+    user.put("name", "なまえ");
+    user.put("age", 30);
+
+    // フォーマット定義ファイルが格納された論理パス名と
+    // フォーマット定義ファイル名を指定してDataRecordResponseを生成する。
+    DataRecordResponse response = new DataRecordResponse("format", "users_csv");
+
+    // ダウンロードデータを出力する。
+    response.write(user);
+
+    // Content-Typeヘッダ、Content-Dispositionヘッダを設定する
+    response.setContentType("text/csv; charset=Shift_JIS");
+    response.setContentDisposition("メッセージ一覧.csv");
+
+    return response;
+  }
+  
+
+.. tip::
+  フォーマット定義ファイルの格納パスは、 :ref:`file_path_management` に設定する必要がある。
+
+.. _data_format-load_upload_file:
+
+アップロードしたファイルを読み込む
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+アップロードしたファイルを読み込む方法について解説する。
+
+この機能では、以下の2種類の方法でアップロードしたファイルを読み込むことが出来る。
+:ref:`アップロードヘルパーを使った読み込み <data_format-upload_helper>` に記載のある通り、
+:ref:`汎用データフォーマット(本機能)のみを使った読み込み <data_format-native_upload_file_load>` の使用を推奨する。
+
+* :ref:`汎用データフォーマット(本機能)のみを使った読み込み <data_format-native_upload_file_load>`
+* :ref:`アップロードヘルパーを使った読み込み <data_format-upload_helper>`
+
+.. _data_format-native_upload_file_load:
+
+汎用データフォーマット(本機能)のみを使ったアップロードファイルの読み込み
+  後述のアップロードヘルパーを使わずに本機能のAPIを使用したアップロードファイルのロード処理について解説する。
+
+  以下に実装例を示す。
+
+  ポイント
+    * :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` を呼び出してアップロードされたファイルを取得する。
+    * :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` の引数には、パラメータ名を指定する。
+    * :java:extdoc:`FilePathSetting <nablarch.core.util.FilePathSetting>` からフォーマット定義ファイルの :java:extdoc:`File <java.io.File>` オブジェクトを取得する。
+    * フォーマット定義ファイルを指定し、 :java:extdoc:`FormatterFactory <nablarch.core.dataformat.FormatterFactory>`
+      から :java:extdoc:`DataRecordFormatter <nablarch.core.dataformat.DataRecordFormatter>` を生成する。
+    * :java:extdoc:`DataRecordFormatter <nablarch.core.dataformat.DataRecordFormatter>` にアップロードファイルを読み込むための :java:extdoc:`InputStream <java.io.InputStream>` を設定する。
+      設定する :java:extdoc:`InputStream <java.io.InputStream>` の実装クラスは、 :java:extdoc:`mark <java.io.InputStream.mark(int)>`/:java:extdoc:`reset <java.io.InputStream.reset()>` がサポートされている必要がある。
+    * :java:extdoc:`DataRecordFormatter <nablarch.core.dataformat.DataRecordFormatter>` のAPIを呼び出し、アップロードファイルのレコードを読み込む。
+
+  .. code-block:: java
+
+    public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
+
+      // アップロードしたファイルの情報を取得
+      final List<PartInfo> partInfoList = request.getPart("users");
+
+      // フォーマット定義ファイルのFileオブジェクトを取得する
+      final File format = FilePathSetting.getInstance()
+                                         .getFile("format", "users-layout");
+
+      // フォーマット定義ファイルを取得し、アップロードファイルを読み込むためのフォーマッタを生成する。
+      try (final DataRecordFormatter formatter = FormatterFactory.getInstance()
+                                                                 .createFormatter(format)) {
+
+        // アップロードファイルを読み込むためのInputStreamをフォーマッタに設定し初期化する。
+        // mark/resetがサポートされている必要が有るため、BufferedInputStreamでラップする。
+        formatter.setInputStream(new BufferedInputStream(partInfoList.get(0).getInputStream()))
+                 .initialize();
+
+        // レコードが終わるまで繰り返し処理を行う。
+        while (formatter.hasNext()) {
+          // レコードを読み込む。
+          final DataRecord record = formatter.readRecord();
+
+          // レコードに対する処理を行う
+          final Users users = BeanUtil.createAndCopy(Users.class, record);
+
+          // 以下省略
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+.. _data_format-upload_helper:
+
+アップロードヘルパーを使用したアップロードファイルの読み込み
+  アップロードヘルパー( :java:extdoc:`UploadHelper <nablarch.fw.web.upload.util.UploadHelper>` )を使用すると、
+  ファイルの読み込み、バリデーション、データベースへの保存を簡易的に実行出来る。
+
+  しかし、この機能では以下の制限(デメリット)があるため、 :ref:`汎用データフォーマット(本機能)のみを使ったアップロードファイルの読み込み <data_format-native_upload_file_load>`
+  を使用することを推奨する。
+
+  * 入力値のチェックは :ref:`nablarch_validation` に限定される。(推奨される :ref:`bean_validation` が使用できない。)
+  * 拡張可能ではあるが、難易度が高く容易に要件を満たす実装ができない。
+
+  以下にシングルレイアウトのアップロードファイルに対して、入力チェックを行いデータベースに登録する例を示す。
+
+  ポイント
+    * :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` を呼び出してアップロードされたファイルを取得する。
+    * :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` の引数には、パラメータ名を指定する。
+    * 取得したアップロードファイルを元に :java:extdoc:`UploadHelper <nablarch.fw.web.upload.util.UploadHelper>` を生成する。
+    * :java:extdoc:`UploadHelper#applyFormat <nablarch.fw.web.upload.util.UploadHelper.applyFormat(java.lang.String)>` を使って、フォーマット定義ファイルを設定する。
+
+    * :java:extdoc:`setUpMessageIdOnError <nablarch.fw.web.upload.util.BulkValidator.setUpMessageIdOnError(java.lang.String-java.lang.String-java.lang.String)>` を使って、バリデーションエラー用のメッセージIDを設定する。
+    * :java:extdoc:`validateWith <nablarch.fw.web.upload.util.BulkValidator.ErrorHandlingBulkValidator.validateWith(java.lang.Class-java.lang.String)>` を使って、バリデーションを実行するJava Beansクラスとバリデーションメソッドを設定する。
+    * :java:extdoc:`importWith <nablarch.fw.web.upload.util.BulkValidationResult.importWith(nablarch.core.db.support.DbAccessSupport-java.lang.String)>` を使って、バリデーション実行後のJava Beansオブジェクトの内容をデータベースに登録する。
+
+  .. code-block:: java
+
+    public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
+
+      PartInfo partInfo = req.getPart("fileToSave").get(0);
+
+      // 全件一括登録
+      UploadHelper helper = new UploadHelper(partInfo);
+      int cnt = helper
+          .applyFormat("N11AC002")                     // フォーマットを適用する
+          .setUpMessageIdOnError("format.error",       // 形式エラー時のメッセージIDを指定する
+                                 "validation.error",   // バリデーションエラー時のメッセージIDを指定する
+                                 "file.empty.error")   // ファイルが空の場合のメッセージIDを指定する
+          .validateWith(UserInfoTempEntity.class,      // バリデーションメソッドを指定する
+                        "validateRegister")
+          .importWith(this, "INSERT_SQL");             // INSERT文のSQLIDを指定する
+
+    }
+
+  .. tip::
+
+    :java:extdoc:`nablarch.fw.web.upload.util` パッケージ内のクラスのドキュメントを合わせて参照すること。
+
+.. _data_format-structured_data:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-data_format--s1`
+
+```json
+{
+  "id": "libraries-data_format--s1",
+  "title": "汎用データフォーマット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Map.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/beans/BeanUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/datatype/JsonNumber.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/datatype/JsonBoolean.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/datatype/DataType.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/io/FileRecordWriterHolder.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/download/DataRecordResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpRequest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/util/FilePathSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/FormatterFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/DataRecordFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/io/InputStream.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/upload/util/UploadHelper.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "汎用データフォーマット",
+        "固定長",
+        "可変長",
+        "JSON",
+        "XML",
+        "マルチレイアウト",
+        "非推奨",
+        "BeanUtil",
+        "data_bind",
+        "JsonNumber",
+        "JsonBoolean",
+        "DataType",
+        "JAXB"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core-dataformat",
+        "nablarch-fw-web-extension",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入出力データのフォーマットを定義する",
+      "hints": [
+        "フォーマット定義ファイル",
+        "file-type",
+        "text-encoding",
+        "record-separator",
+        "field-separator",
+        "マルチレイアウト定義",
+        "Classifier"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ファイルにデータを出力する",
+      "hints": [
+        "FileRecordWriterHolder",
+        "ファイル出力",
+        "file_record_writer_dispose_handler",
+        "DataFormatConfig",
+        "flushEachRecordInWriting",
+        "バッファサイズ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ファイルダウンロードで使用する",
+      "hints": [
+        "DataRecordResponse",
+        "ファイルダウンロード",
+        "Content-Type",
+        "Content-Disposition"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "アップロードしたファイルを読み込む",
+      "hints": [
+        "UploadHelper",
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "FilePathSetting",
+        "アップロードファイル読み込み",
+        "BufferedInputStream",
+        "PartInfo",
+        "DataRecord"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "標準でサポートするフォーマット: 固定長、可変長（CSV/TSVなど）、JSON、XML。固定長・可変長はマルチレイアウトデータ（レコード毎に異なるレイアウト）に対応。\n\n> **重要**: 本機能には以下のデメリットがあるため、**やむを得ない場合を除き非推奨**。代替機能を使用すること。\n>\n> - :ref:`フォーマット定義ファイル <data_format-format_definition_file>` が複雑\n> - 入出力が :java:extdoc:`Map <java.util.Map>` に限定されており実装誤りを起こしやすい\n>   - フィールド名を文字列指定のためIDEの補完が使えない\n>   - Mapから取り出した値のダウンキャストが必要（誤ると、実行時に例外が送出される）\n> - :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` を使用していないため他の機能とマッピング方法が異なる\n> - フォーマットによってMapの扱い方が異なるため、同一データを複数フォーマットで出力すると正常動作しないケースがある（例：XMLとJSONで必須項目にnullを指定した場合、XMLは空文字出力、JSONは必須例外送出）\n> - :java:extdoc:`JsonNumber <nablarch.core.dataformat.convertor.datatype.JsonNumber>` や :java:extdoc:`JsonBoolean <nablarch.core.dataformat.convertor.datatype.JsonBoolean>` 使用時、出力データ型が対応していない場合に不正なJSONが出力される（例：数値型指定で文字列\"data\"を出力すると `{\"number\":data}` のような不正JSON）\n> - :java:extdoc:`DataType <nablarch.core.dataformat.convertor.datatype.DataType>` の実装クラスがデータ形式毎に異なるため拡張しづらく、設定誤りは実行時まで検知できない\n>\n> 代替機能:\n> - 固定長・可変長: :ref:`data_bind` を使用すること\n> - XML: :java:extdoc:`JAXB <javax.xml.bind>` を推奨\n> - JSON: OSSを推奨（例: [Jackson(外部サイト、英語)](https://github.com/FasterXML/jackson)）\n>\n> 例外: :ref:`messaging` は内部で本機能を使用しているため代替機能を使用できない。\n\n文字セット・文字種: UTF-8、Shift_JIS、EBCDICなどJVMがサポートする文字セットに対応。パック数値・ゾーン10進数形式にも対応。\n\nパディング・トリミング: スペースおよびゼロパディング・トリミングに対応。アプリケーション側での処理不要。詳細は :ref:`data_format-field_convertor_list` 参照。",
+    "s2": "**モジュール**:\n```xml\n<!-- 汎用データフォーマット -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-dataformat</artifactId>\n</dependency>\n```\n\n:ref:`アップロードヘルパー <data_format-upload_helper>` または :ref:`ファイルダウンロード <data_format-file_download>` を使用する場合は以下を追加:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-extension</artifactId>\n</dependency>\n```",
+    "s3": "入出力対象データのフォーマット定義はフォーマット定義ファイル（テキスト形式）に記述する。詳細仕様は :doc:`data_format/format_definition` 参照。\n\n```bash\nfile-type:        \"Variable\" # 可変長\ntext-encoding:    \"MS932\"    # 文字列型フィールドの文字エンコーディング\nrecord-separator: \"\\r\\n\"     # 改行コード(crlf)\nfield-separator:  \",\"        # csv\n\n[Classifier]\n1 dataKbn X\n3 type    X\n\n[parentData]\ndataKbn = \"1\"\ntype    = \"01\"\n1 dataKbn X\n2 ?filler X\n3 type    X\n4 data    X\n\n[childData]\ndataKbn = \"1\"\ntype    = \"02\"\n1 dataKbn X\n2 ?filler X\n3 type    X\n4 data    X\n```",
+    "s4": ":java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用してファイルにデータを出力する。\n\n- 書き込みデータは :java:extdoc:`Map <java.util.Map>` として準備する\n- Mapのキー値はフォーマット定義ファイルのフィールド名（大文字/小文字区別なし）\n- `open` メソッドでファイルリソースを開き、`write` メソッドでデータを書き込む\n\n```java\nMap<String, Object> user = new HashMap<>();\nuser.put(\"name\", \"名前\");\nuser.put(\"age\", 20);\nFileRecordWriterHolder.open(\"users.csv\", \"user_csv_format\");\nFileRecordWriterHolder.write(user, \"user.csv\");\n```\n\n> **補足**: :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用するには、フォーマット定義ファイルの配置ディレクトリと出力先ディレクトリを :ref:`file_path_management` に設定する必要がある。\n\n> **重要**: :java:extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` で開いたファイルリソースは :ref:`file_record_writer_dispose_handler` で自動解放される。必ずハンドラキュー上に :ref:`file_record_writer_dispose_handler` を設定すること。\n\n> **重要**: 出力データに不正な値が設定されていた場合に正しく処理できない可能性があるため、事前にアプリケーション側で入力値をチェックすること。\n\n> **重要**: デフォルトでは1レコード毎にファイルへの書き込みを行う。大量データ出力時に性能要件を満たせない場合は、以下のコンポーネント定義を追加し、`open` メソッドのバッファサイズ引数で出力バッファサイズを指定すること。\n\n```xml\n<!-- コンポーネント名はdataFormatConfigとする -->\n<component name=\"dataFormatConfig\" class=\"nablarch.core.dataformat.DataFormatConfig\">\n  <property name=\"flushEachRecordInWriting\" value=\"false\" />\n</component>\n```",
+    "s5": ":java:extdoc:`DataRecordResponse <nablarch.common.web.download.DataRecordResponse>` を使用してファイルダウンロード形式でレスポンスを返す。\n\n- `DataRecordResponse` 生成時にフォーマット定義ファイルの論理パス名とファイル名を指定する\n- :java:extdoc:`DataRecordResponse#write <nablarch.common.web.download.DataRecordResponse.write(java.util.Map)>` でデータを出力（複数レコードは繰り返し呼び出し）\n- `Content-Type` および `Content-Disposition` を設定して返却する\n\n```java\npublic HttpResponse download(HttpRequest request, ExecutionContext context) {\n    Map<String, Object> user = new HashMap<>();\n    user.put(\"name\", \"なまえ\");\n    user.put(\"age\", 30);\n    DataRecordResponse response = new DataRecordResponse(\"format\", \"users_csv\");\n    response.write(user);\n    response.setContentType(\"text/csv; charset=Shift_JIS\");\n    response.setContentDisposition(\"メッセージ一覧.csv\");\n    return response;\n}\n```\n\n> **補足**: フォーマット定義ファイルの格納パスは :ref:`file_path_management` に設定する必要がある。",
+    "s6": "アップロードファイルの読み込みには2種類の方法があるが、**汎用データフォーマット（本機能）のみを使った方法を推奨**する。\n\n### 汎用データフォーマットのみを使った読み込み（推奨）\n\n- :java:extdoc:`HttpRequest#getPart <nablarch.fw.web.HttpRequest.getPart(java.lang.String)>` でアップロードファイルを取得（引数はパラメータ名）\n- :java:extdoc:`FilePathSetting <nablarch.core.util.FilePathSetting>` からフォーマット定義ファイルの `File` オブジェクトを取得\n- :java:extdoc:`FormatterFactory <nablarch.core.dataformat.FormatterFactory>` から :java:extdoc:`DataRecordFormatter <nablarch.core.dataformat.DataRecordFormatter>` を生成\n- フォーマッタに設定する :java:extdoc:`InputStream <java.io.InputStream>` は `mark`/`reset` サポートが必要（`BufferedInputStream` でラップする）\n\n```java\npublic HttpResponse upload(HttpRequest req, ExecutionContext ctx) {\n    final List<PartInfo> partInfoList = request.getPart(\"users\");\n    final File format = FilePathSetting.getInstance().getFile(\"format\", \"users-layout\");\n    try (final DataRecordFormatter formatter = FormatterFactory.getInstance().createFormatter(format)) {\n        formatter.setInputStream(new BufferedInputStream(partInfoList.get(0).getInputStream())).initialize();\n        while (formatter.hasNext()) {\n            final DataRecord record = formatter.readRecord();\n            final Users users = BeanUtil.createAndCopy(Users.class, record);\n        }\n    } catch (IOException e) {\n        throw new RuntimeException(e);\n    }\n}\n```\n\n### アップロードヘルパーを使った読み込み（非推奨）\n\n:java:extdoc:`UploadHelper <nablarch.fw.web.upload.util.UploadHelper>` を使用するとファイル読み込み・バリデーション・DB保存を簡易的に実行できるが、以下の制限があるため非推奨:\n\n- 入力値チェックが :ref:`nablarch_validation` に限定される（推奨される :ref:`bean_validation` が使用できない）\n- 拡張難易度が高い\n\n```java\nPartInfo partInfo = req.getPart(\"fileToSave\").get(0);\nUploadHelper helper = new UploadHelper(partInfo);\nint cnt = helper\n    .applyFormat(\"N11AC002\")\n    .setUpMessageIdOnError(\"format.error\", \"validation.error\", \"file.empty.error\")\n    .validateWith(UserInfoTempEntity.class, \"validateRegister\")\n    .importWith(this, \"INSERT_SQL\");\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

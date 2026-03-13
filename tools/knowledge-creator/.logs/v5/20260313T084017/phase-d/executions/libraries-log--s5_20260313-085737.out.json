@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-log--s5",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "s5のhintsに`ObjectSettings`が含まれていない。ソースのカスタム拡張コード例（`CustomBootProcessItem`のコンストラクタ引数）でNablarchクラスとして使用されているPascalCaseクラス名。",
+      "source_evidence": "public CustomBootProcessItem(ObjectSettings settings) { bootProcess = settings.getProp(\"bootProcess\"); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "s5のhintsに`LogContext`が含まれていない。ソースのコード例でジェネリクス型パラメータ（`LogItem<LogContext>`）およびメソッド引数型（`get(LogContext context)`）として使用されているPascalCaseクラス名。",
+      "source_evidence": "public class CustomBootProcessItem implements LogItem<LogContext> { ... public String get(LogContext context) { ... } }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "s5のhintsに`BasicLogFormatter`が含まれていない。s5の本文では「BasicLogFormatterを継承したクラスを作り、プレースホルダを追加する」という拡張手順を説明しており、s2とは独立した文脈で参照されているPascalCaseクラス名。",
+      "source_evidence": "BasicLogFormatter を継承したクラスを作り、プレースホルダを追加する / public class CustomLogFormatter extends BasicLogFormatter { ... }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "s5のhintsに`StringUtil`が含まれていない。ソースの初期化メッセージ抑制コード例（`needsToWrite`のオーバーライド実装）で使用されているNablarchユーティリティクラス名。",
+      "source_evidence": "if (StringUtil.hasValue(message) && message.startsWith(\"initialized.\")) { ... }"
+    }
+  ]
+}

@@ -1,0 +1,518 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/log/failure_log.rst`
+- Format: `rst`
+
+```
+.. _failure_log:
+
+障害ログの出力
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+フレームワークでは、処理方式毎の例外ハンドラにおいて出力する。
+アプリケーションでは、バッチ処理の障害発生時に後続処理を継続する場合などに出力する。
+
+障害ログの出力方針
+--------------------------------------------------
+障害通知ログは、ログ監視ツールから監視することで障害を検知することを想定しているので、
+ロガー名を付けて障害通知専用のファイルに出力する。
+障害解析ログは、アプリケーション全体のログ出力を行うアプリケーションログに出力する。
+
+.. list-table:: 障害ログの出力方針
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 30,30,30
+
+   * - ログの種類
+     - ログレベル
+     - ロガー名
+
+   * - 障害通知ログ
+     - FATAL、ERROR
+     - MONITOR
+
+   * - 障害解析ログ
+     - FATAL、ERROR
+     - クラス名
+
+上記出力方針に対するログ出力の設定例を下記に示す。
+
+log.propertiesの設定例
+ .. code-block:: properties
+
+  writerNames=monitorLog,appLog
+
+  # 障害通知ログの出力先
+  writer.monitorLog.className=nablarch.core.log.basic.FileLogWriter
+  writer.monitorLog.filePath=/var/log/app/monitor.log
+  writer.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+  writer.monitorLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$
+
+  # アプリケーションログの出力先
+  writer.appLog.className=nablarch.core.log.basic.FileLogWriter
+  writer.appLog.filePath=/var/log/app/app.log
+  writer.appLog.maxFileSize=10000
+  writer.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+  writer.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$
+
+  availableLoggersNamesOrder=MON,ROO
+
+  # アプリケーションログの設定
+  loggers.ROO.nameRegex=.*
+  loggers.ROO.level=INFO
+  loggers.ROO.writerNames=appLog
+
+  # 障害通知ログの出力設定
+  loggers.MON.nameRegex=MONITOR
+  loggers.MON.level=ERROR
+  loggers.MON.writerNames=monitorLog
+
+app-log.propertiesの設定例
+ .. code-block:: properties
+
+  # FailureLogFormatter
+  #failureLogFormatter.className=
+  failureLogFormatter.defaultFailureCode=MSG99999
+  failureLogFormatter.defaultMessage=an unexpected exception occurred.
+  failureLogFormatter.language=ja
+  failureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$
+  failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nInput Data :\n$data$
+  #failureLogFormatter.contactFilePath=
+  #failureLogFormatter.fwFailureCodeFilePath=
+
+.. tip::
+
+ 大規模システムで障害時の連絡先が複数存在する場合、
+ :ref:`failure_log-add_contact` を使用することで、リクエストID毎に連絡先情報をログに含めることができる。
+
+
+使用方法
+--------------------------------------------------
+
+.. _failure_log-logging:
+
+障害ログを出力する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+障害ログの出力には、 :java:extdoc:`FailureLogUtil <nablarch.core.log.app.FailureLogUtil>` を使用する。
+
+.. code-block:: java
+
+  try {
+      // 業務処理
+  } catch (UserNotFoundException e) {
+      // 捕捉した例外、処理対象データ、障害コードを指定している。
+      FailureLogUtil.logError(e, inputData, "USER_NOT_FOUND");
+  }
+
+なお、バッチとメッセージングにおいては、障害を検知した時点で、
+障害ログを出力して業務処理を終了したい場合がある。
+このような場合は、
+:java:extdoc:`TransactionAbnormalEnd <nablarch.fw.results.TransactionAbnormalEnd>` または
+:java:extdoc:`ProcessAbnormalEnd <nablarch.fw.launcher.ProcessAbnormalEnd>` を送出し、
+例外ハンドラ(:ref:`global_error_handler` や :ref:`request_thread_loop_handler`) に障害ログの出力を依頼する。
+
+.. code-block:: java
+
+  // 自ら例外を生成する場合
+  if (user == null) {
+      // 終了コード、障害コードを指定している。
+      throw new TransactionAbnormalEnd(100, "USER_NOT_FOUND");
+  }
+
+  // 例外を捕捉した場合
+  try {
+      // 業務処理
+  } catch (UserNotFoundException e) {
+      // 終了コード、捕捉した例外、障害コードを指定している。
+      throw new ProcessAbnormalEnd(100, e, "USER_NOT_FOUND");
+  }
+
+.. tip::
+ 上記例のように、障害ログの出力では、ログから障害内容を特定するために障害コードを指定する。
+ 障害コードのコード体系は、プロジェクト毎に規定すること。
+
+障害ログに出力されるメッセージ
+ 障害ログに出力されるメッセージは、 :ref:`message` を使用して障害コードに対応するメッセージを取得する。
+ :ref:`message` では、メッセージが見つからない場合に例外が発生する。
+ メッセージ取得処理で例外が発生した場合は、障害ログとは別に、
+ メッセージ取得処理で発生した例外をWARNレベルでログ出力し、障害ログには下記のメッセージを出力する。
+
+ .. code-block:: bash
+
+  failed to get the message to output the failure log. failureCode = [<障害コード>]
+
+ フレームワークの例外ハンドラで例外やエラーを捕捉した場合など、障害コードの指定がない場合は、
+ 設定で指定するデフォルトの :ref:`障害コード <failure_log-prop_default_failure_code>` と
+ :ref:`メッセージ <failure_log-prop_default_message>` を出力する。
+
+.. _failure_log-setting:
+
+障害ログの設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+障害ログの設定は、 :ref:`log-app_log_setting` で説明したプロパティファイルに行う。
+
+記述ルール
+ \
+
+ failureLogFormatter.className
+  :java:extdoc:`FailureLogFormatter <nablarch.core.log.app.FailureLogFormatter>` を実装したクラス。
+  差し替える場合に指定する。
+
+ .. _failure_log-prop_default_failure_code:
+
+ failureLogFormatter.defaultFailureCode ``必須``
+  デフォルトの障害コード。
+  例外ハンドラで例外がエラーを捕捉した場合など、障害コードの指定がない場合に使用する。
+
+ .. _failure_log-prop_default_message:
+
+ failureLogFormatter.defaultMessage ``必須``
+  デフォルトのメッセージ。
+  デフォルトの障害コードを使用する場合に出力するメッセージとなる。
+
+ failureLogFormatter.language
+  障害コードからメッセージを取得する際に使用する言語。
+  指定がない場合は :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` に設定されている言語を使用する。
+
+ .. _failure_log-prop_notification_format:
+
+ failureLogFormatter.notificationFormat
+  障害通知ログのフォーマット。
+
+  フォーマットに指定可能なプレースホルダ
+   \
+
+   .. list-table::
+      :header-rows: 1
+      :class: white-space-normal
+      :widths: 20,20,60
+
+      * - 項目名
+        - プレースホルダ
+        - 説明
+
+      * - 障害コード
+        - $failureCode$
+        - 障害を一意に識別するコード。障害内容の特定に使用する。
+
+      * - メッセージ
+        - $message$
+        - 障害コードに対応するメッセージ。障害内容の特定に使用する。
+
+      * - 処理対象データ
+        - $data$
+        - 障害が発生した処理が対象としていたデータを特定するために使用する。
+          データリーダを使用して読み込まれたデータオブジェクトのtoStringメソッドを呼び出し出力される。
+
+      * - 連絡先
+        - $contact$
+        - 連絡先を特定するために使用する。
+
+  デフォルトのフォーマット
+   .. code-block:: java
+
+    fail_code = [$failureCode$] $message$
+
+ failureLogFormatter.analysisFormat
+  障害解析ログのフォーマット。
+  フォーマットに指定可能なプレースホルダとデフォルトのフォーマットは、
+  :ref:`障害通知ログのフォーマット <failure_log-prop_notification_format>` と同じ。
+
+ failureLogFormatter.contactFilePath
+  障害の連絡先情報を指定したプロパティファイルのパス。
+  障害の連絡先情報を出力する場合に指定する。
+  詳細は :ref:`failure_log-add_contact` を参照。
+
+ failureLogFormatter.fwFailureCodeFilePath
+  フレームワークの障害コードの変更情報を指定したプロパティファイルのパス。
+  障害ログ出力時にフレームワークの障害コードを変更する場合に指定する。
+  詳細は :ref:`failure_log-change_fw_failure_code` を参照。
+
+
+ .. important::
+  システムのセキュリティ要件により、障害解析ログであっても個人情報や機密情報の出力が許されない場合は、
+  :ref:`failure_log-placeholder_customize` を参照し、プロジェクトでカスタマイズすること。
+
+ .. tip::
+  処理対象データの出力により、障害ログに派生元実行時情報を出力できる。
+  派生元実行時情報とは、例えば、ウェブからバッチ処理にデータ連携する場合であれば、
+  画面処理を実行した時点の実行時情報(リクエストIDや実行時IDなど)がバッチ処理での派生元実行時情報となる。
+  派生元実行時情報の出力方法は、 :ref:`failure_log-output_src_exe_info` を参照。
+
+記述例
+ .. code-block:: properties
+
+  failureLogFormatter.className=nablarch.core.log.app.FailureLogFormatter
+  failureLogFormatter.defaultFailureCode=UNEXPECTED_ERROR
+  failureLogFormatter.defaultMessage=an unexpected exception occurred.
+  failureLogFormatter.language=en
+  failureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$
+  failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$
+  failureLogFormatter.derivedRequestIdPropName=insertRequestId
+  failureLogFormatter.derivedUserIdPropName=updatedUserId
+  failureLogFormatter.contactFilePath=classpath:failure-log-contact.properties
+  failureLogFormatter.fwFailureCodeFilePath=classpath:failure-log-fw-codes.properties
+
+.. _failure_log-add_contact:
+
+障害ログに連絡先情報を追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+大規模システムで障害時の連絡先が複数存在する場合など、障害ログに連絡先情報を含めたい場合がある。
+そこで、障害ログの出力では、リクエストID毎に連絡先情報を指定する機能を提供する。
+
+連絡先情報の追加は、プロパティファイルに指定する。キーにリクエストID、値に連絡先情報を指定する。
+キーに指定されたリクエストIDは、 :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` から取得したリクエストIDに対して、前方一致で検索する。
+このため、プロパティファイルの内容は読み込み後に、より限定的なリクエストIDから検索するように、キー名の長さの降順にソートする。
+
+連絡先情報の追加例を下記に示す。
+
+まず、プロパティファイルを準備する。 ``failure-log-contact.properties`` というファイル名でクラスパス直下に配置しているものとする。
+
+failure-log-contact.propertiesの設定例
+ .. code-block:: properties
+
+  # リクエストID=連絡先情報
+  /users/=USRMGR999
+  /users/index=USRMGR300
+  /users/list=USRMGR301
+  /users/new=USRMGR302
+  /users/edit=USRMGR303
+
+ 上記プロパティファイルは、読み込み後下記の通りソートされ、上から順に検索に使用する。
+
+ .. code-block:: properties
+
+  # キー名の長さが等しいものは、実行毎に順番が変わる。
+  /users/index=USRMGR300
+  /users/list=USRMGR301
+  /users/edit=USRMGR303
+  /users/new=USRMGR302
+  /users/=USRMGR999
+
+次に、障害ログのフォーマットで連絡先情報を表すプレースホルダ ``$contact$`` を指定する。
+さらに、プロパティファイルのパスを指定する。
+
+app-log.propertiesの設定例
+ .. code-block:: properties
+
+  # FailureLogFormatterの設定
+  failureLogFormatter.defaultFailureCode=UNEXPECTED_ERROR
+  failureLogFormatter.defaultMessage=an unexpected exception occurred.
+  failureLogFormatter.notificationFormat=[$failureCode$:$message$] <$contact$>
+  failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$ <$contact$>
+
+  # プロパティファイルのパスを指定する。
+  failureLogFormatter.contactFilePath=classpath:failure-log-contact.properties
+
+上記の設定により、リクエストID毎に連絡先情報が出力される。
+リクエストIDが ``/users/new`` の場合に発生した障害の出力例を下記に示す。
+``$contact$`` を指定した箇所(<>で囲った部分)に ``USRMGR302`` が出力される。
+
+.. code-block:: bash
+
+ # 障害通知ログ
+ 2011-02-15 15:09:57.691 -FATAL- [APUSRMGR0001201102151509320020009] R[/users/new] U[0000000001] [UNEXPECTED_ERROR:an unexpected exception occurred.] <USRMGR302>
+
+ # 障害解析ログ
+ 2011-02-15 15:09:57.707 -FATAL- [APUSRMGR0001201102151509320020009] R[/users/new] U[0000000001] fail_code = [UNEXPECTED_ERROR] an unexpected exception occurred. <USRMGR302>
+ # スタックトレースは省略。
+
+なお、リクエストIDに対応する連絡先情報が見つからない場合はnullが出力される。
+
+.. _failure_log-change_fw_failure_code:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-failure_log--s1`
+
+```json
+{
+  "id": "libraries-failure_log--s1",
+  "title": "障害ログの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log/failure_log.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/FailureLogUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/results/TransactionAbnormalEnd.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/ProcessAbnormalEnd.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/FailureLogFormatter.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "障害ログの出力方針",
+      "hints": [
+        "障害通知ログ",
+        "障害解析ログ",
+        "MONITOR",
+        "ログレベル",
+        "ロガー名",
+        "log.properties",
+        "app-log.properties",
+        "FailureLogFormatter",
+        "障害ログ出力方針"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "障害ログを出力する",
+      "hints": [
+        "FailureLogUtil",
+        "TransactionAbnormalEnd",
+        "ProcessAbnormalEnd",
+        "障害コード",
+        "障害ログ出力",
+        "バッチ障害処理",
+        "例外ハンドラ",
+        "メッセージ取得失敗"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "障害ログの設定",
+      "hints": [
+        "failureLogFormatter.defaultFailureCode",
+        "failureLogFormatter.defaultMessage",
+        "failureLogFormatter.language",
+        "failureLogFormatter.notificationFormat",
+        "failureLogFormatter.analysisFormat",
+        "failureLogFormatter.contactFilePath",
+        "failureLogFormatter.fwFailureCodeFilePath",
+        "failureLogFormatter.className",
+        "$failureCode$",
+        "$message$",
+        "$data$",
+        "$contact$",
+        "FailureLogFormatter",
+        "障害ログ設定",
+        "個人情報マスク"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "障害ログに連絡先情報を追加する",
+      "hints": [
+        "ThreadContext",
+        "連絡先情報",
+        "前方一致",
+        "リクエストID",
+        "failure-log-contact.properties",
+        "contactFilePath",
+        "$contact$",
+        "障害ログ連絡先"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 障害ログの出力方針\n\n| ログの種類 | ログレベル | ロガー名 |\n|---|---|---|\n| 障害通知ログ | FATAL、ERROR | MONITOR |\n| 障害解析ログ | FATAL、ERROR | クラス名 |\n\n障害通知ログはログ監視ツールで障害を検知するための専用ファイルに出力する（ロガー名: MONITOR）。障害解析ログはアプリケーション全体のログを出力するアプリケーションログに出力する。\n\nlog.propertiesの設定例:\n```properties\nwriterNames=monitorLog,appLog\n\n# 障害通知ログの出力先\nwriter.monitorLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.monitorLog.filePath=/var/log/app/monitor.log\nwriter.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.monitorLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$\n\n# アプリケーションログの出力先\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\nwriter.appLog.maxFileSize=10000\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=MON,ROO\n\n# アプリケーションログの設定\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n\n# 障害通知ログの出力設定\nloggers.MON.nameRegex=MONITOR\nloggers.MON.level=ERROR\nloggers.MON.writerNames=monitorLog\n```\n\napp-log.propertiesの設定例:\n```properties\nfailureLogFormatter.defaultFailureCode=MSG99999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.language=ja\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\\nInput Data :\\n$data$\n```\n\n> **補足**: 大規模システムで障害時の連絡先が複数存在する場合、:ref:`failure_log-add_contact` を使用することで、リクエストID毎に連絡先情報をログに含めることができる。",
+    "s2": "## 障害ログを出力する\n\n障害ログの出力には :java:extdoc:`FailureLogUtil <nablarch.core.log.app.FailureLogUtil>` を使用する。\n\n```java\ntry {\n    // 業務処理\n} catch (UserNotFoundException e) {\n    // 捕捉した例外、処理対象データ、障害コードを指定している。\n    FailureLogUtil.logError(e, inputData, \"USER_NOT_FOUND\");\n}\n```\n\nバッチ・メッセージングで障害検知時に業務処理を終了したい場合は、 :java:extdoc:`TransactionAbnormalEnd <nablarch.fw.results.TransactionAbnormalEnd>` または :java:extdoc:`ProcessAbnormalEnd <nablarch.fw.launcher.ProcessAbnormalEnd>` を送出し、例外ハンドラ（:ref:`global_error_handler` や :ref:`request_thread_loop_handler`）に障害ログの出力を依頼する。\n\n```java\n// 自ら例外を生成する場合\nif (user == null) {\n    // 終了コード、障害コードを指定している。\n    throw new TransactionAbnormalEnd(100, \"USER_NOT_FOUND\");\n}\n\n// 例外を捕捉した場合\ntry {\n    // 業務処理\n} catch (UserNotFoundException e) {\n    // 終了コード、捕捉した例外、障害コードを指定している。\n    throw new ProcessAbnormalEnd(100, e, \"USER_NOT_FOUND\");\n}\n```\n\n障害ログに出力されるメッセージは :ref:`message` を使用して障害コードに対応するメッセージを取得する。メッセージが見つからない場合は、メッセージ取得処理で発生した例外をWARNレベルでログ出力し、障害ログには以下を出力する:\n\n```\nfailed to get the message to output the failure log. failureCode = [<障害コード>]\n```\n\n障害コードの指定がない場合（例外ハンドラで例外を捕捉した場合など）は、設定で指定するデフォルトの :ref:`障害コード <failure_log-prop_default_failure_code>` と :ref:`メッセージ <failure_log-prop_default_message>` を出力する。",
+    "s3": "## 障害ログの設定\n\n設定は :ref:`log-app_log_setting` で説明したプロパティファイルに行う。\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| failureLogFormatter.className | | :java:extdoc:`FailureLogFormatter <nablarch.core.log.app.FailureLogFormatter>` を実装したクラス。差し替える場合に指定する。 |\n| failureLogFormatter.defaultFailureCode | ○ | デフォルトの障害コード。障害コードの指定がない場合に使用する。 |\n| failureLogFormatter.defaultMessage | ○ | デフォルトのメッセージ。デフォルト障害コード使用時に出力する。 |\n| failureLogFormatter.language | | メッセージ取得時の言語。未指定の場合は :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` に設定されている言語を使用する。 |\n| failureLogFormatter.notificationFormat | | 障害通知ログのフォーマット。デフォルト: `fail_code = [$failureCode$] $message$` |\n| failureLogFormatter.analysisFormat | | 障害解析ログのフォーマット。プレースホルダとデフォルトは通知ログと同じ。 |\n| failureLogFormatter.contactFilePath | | 連絡先情報を指定したプロパティファイルのパス。:ref:`failure_log-add_contact` 参照。 |\n| failureLogFormatter.fwFailureCodeFilePath | | フレームワーク障害コードの変更情報を指定したプロパティファイルのパス。:ref:`failure_log-change_fw_failure_code` 参照。 |\n\nフォーマットに指定可能なプレースホルダ:\n\n| プレースホルダ | 説明 |\n|---|---|\n| $failureCode$ | 障害を一意に識別するコード |\n| $message$ | 障害コードに対応するメッセージ |\n| $data$ | 障害発生時の処理対象データ（toStringメソッドの出力） |\n| $contact$ | 連絡先情報 |\n\n> **重要**: システムのセキュリティ要件により、障害解析ログであっても個人情報や機密情報の出力が許されない場合は、:ref:`failure_log-placeholder_customize` を参照しプロジェクトでカスタマイズすること。\n\n設定例:\n```properties\nfailureLogFormatter.className=nablarch.core.log.app.FailureLogFormatter\nfailureLogFormatter.defaultFailureCode=UNEXPECTED_ERROR\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.language=en\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.derivedRequestIdPropName=insertRequestId\nfailureLogFormatter.derivedUserIdPropName=updatedUserId\nfailureLogFormatter.contactFilePath=classpath:failure-log-contact.properties\nfailureLogFormatter.fwFailureCodeFilePath=classpath:failure-log-fw-codes.properties\n```",
+    "s4": "## 障害ログに連絡先情報を追加する\n\nリクエストID毎に連絡先情報を障害ログに出力できる。連絡先情報はプロパティファイルに「リクエストID=連絡先情報」形式で指定する。\n\nキーに指定されたリクエストIDは :java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` から取得したリクエストIDに対して前方一致で検索する。プロパティファイルは読み込み後、キー名の長さの降順にソートされ、より限定的なリクエストIDから検索する。\n\nfailure-log-contact.propertiesの設定例:\n```properties\n# リクエストID=連絡先情報\n/users/=USRMGR999\n/users/index=USRMGR300\n/users/list=USRMGR301\n/users/new=USRMGR302\n/users/edit=USRMGR303\n```\n\n上記プロパティファイルは読み込み後、以下の順にソートされる（キー名の長さが等しいものは実行毎に順番が変わる）:\n```properties\n/users/index=USRMGR300\n/users/list=USRMGR301\n/users/edit=USRMGR303\n/users/new=USRMGR302\n/users/=USRMGR999\n```\n\nフォーマットに `$contact$` プレースホルダを指定し、`failureLogFormatter.contactFilePath` でプロパティファイルのパスを指定する:\n\n```properties\nfailureLogFormatter.defaultFailureCode=UNEXPECTED_ERROR\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=[$failureCode$:$message$] <$contact$>\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$ <$contact$>\nfailureLogFormatter.contactFilePath=classpath:failure-log-contact.properties\n```\n\nリクエストIDが `/users/new` の場合の出力例:\n```\n# 障害通知ログ\n2011-02-15 15:09:57.691 -FATAL- [APUSRMGR0001201102151509320020009] R[/users/new] U[0000000001] [UNEXPECTED_ERROR:an unexpected exception occurred.] <USRMGR302>\n\n# 障害解析ログ\n2011-02-15 15:09:57.707 -FATAL- [APUSRMGR0001201102151509320020009] R[/users/new] U[0000000001] fail_code = [UNEXPECTED_ERROR] an unexpected exception occurred. <USRMGR302>\n```\n\nリクエストIDに対応する連絡先情報が見つからない場合はnullが出力される。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

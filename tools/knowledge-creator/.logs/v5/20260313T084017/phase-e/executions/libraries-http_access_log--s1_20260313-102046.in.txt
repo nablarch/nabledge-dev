@@ -1,0 +1,184 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-http_access_log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — app-log.properties コードブロック冒頭コメント",
+      "description": "ソースの `# HttpAccessLogFormatter` というコメントが、知識ファイルでは `# 設定可能プロパティ（デフォルト値はコメントアウト）` に書き換えられている。この説明文はソースに存在しない。",
+      "source_evidence": "ソース: `# HttpAccessLogFormatter` / 知識ファイル: `# 設定可能プロパティ（デフォルト値はコメントアウト）`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "log.properties のコード例に含まれる PascalCase クラス名 `FileLogWriter` と `BasicLogFormatter` がヒントに含まれていない。",
+      "source_evidence": "ソースコード例: `writer.appLog.className=nablarch.core.log.basic.FileLogWriter` / `writer.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _http_access_log:
+
+HTTPアクセスログの出力
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+HTTPアクセスログは、フレームワークが提供するハンドラを使用して出力する。
+アプリケーションでは、ハンドラを設定することでHTTPアクセスログを出力する。
+
+HTTPアクセスログの出力に必要となるハンドラは以下のとおり。
+
+ :ref:`http_access_log_handler`
+  リクエスト処理開始時と終了時のログ出力を行う。
+
+ :ref:`nablarch_tag_handler`
+  hiddenパラメータ復号後のログ出力を行う。
+  hiddenパラメータについては、 :ref:`hidden暗号化<tag-hidden_encryption>` を参照。
+
+ :ref:`http_request_java_package_mapping`
+  ディスパッチ先クラス決定後のログ出力を行う。
+
+リクエストパラメータを含めたリクエスト情報を出力することで、
+個別アプリケーションの証跡ログの要件を満たせる場合は、HTTPアクセスログと証跡ログを兼用することも想定している。
+
+HTTPアクセスログの出力方針
+--------------------------------------------------
+HTTPアクセスログは、アプリケーション全体のログ出力を行うアプリケーションログに出力する。
+
+.. list-table:: HTTPアクセスログの出力方針
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 15,15
+
+   * - ログレベル
+     - ロガー名
+
+   * - INFO
+     - HTTP_ACCESS
+
+上記出力方針に対するログ出力の設定例を下記に示す。
+
+log.propertiesの設定例
+ .. code-block:: properties
+
+  writerNames=appLog
+
+  # アプリケーションログの出力先
+  writer.appLog.className=nablarch.core.log.basic.FileLogWriter
+  writer.appLog.filePath=/var/log/app/app.log
+  writer.appLog.encoding=UTF-8
+  writer.appLog.maxFileSize=10000
+  writer.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+  writer.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$
+
+  availableLoggersNamesOrder=ACC,ROO
+
+  # アプリケーションログの設定
+  loggers.ROO.nameRegex=.*
+  loggers.ROO.level=INFO
+  loggers.ROO.writerNames=appLog
+
+  # HTTPアクセスログの設定
+  loggers.ACC.nameRegex=HTTP_ACCESS
+  loggers.ACC.level=INFO
+  loggers.ACC.writerNames=appLog
+
+app-log.propertiesの設定例
+ .. code-block:: properties
+
+  # HttpAccessLogFormatter
+  #httpAccessLogFormatter.className=
+  #httpAccessLogFormatter.datePattern=
+  #httpAccessLogFormatter.maskingChar=
+  #httpAccessLogFormatter.maskingPatterns=
+  #httpAccessLogFormatter.parametersSeparator=
+  #httpAccessLogFormatter.sessionScopeSeparator=
+  #httpAccessLogFormatter.beginOutputEnabled=
+  #httpAccessLogFormatter.parametersOutputEnabled=
+  #httpAccessLogFormatter.dispatchingClassOutputEnabled=
+  #httpAccessLogFormatter.endOutputEnabled=
+  httpAccessLogFormatter.beginFormat=@@@@ BEGIN @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$]\
+                                        \n\turl          = [$url$$query$]\
+                                        \n\tmethod      = [$method$]\
+                                        \n\tport        = [$port$]\
+                                        \n\tclient_ip   = [$clientIpAddress$]\
+                                        \n\tclient_host = [$clientHost$]
+  httpAccessLogFormatter.parametersFormat=@@@@ PARAMETERS @@@@\n\tparameters  = [$parameters$]
+  httpAccessLogFormatter.dispatchingClassFormat=@@@@ DISPATCHING CLASS @@@@ class = [$dispatchingClass$]
+  httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$] url = [$url$$query$] method = [$method$] status_code = [$statusCode$] content_path = [$contentPath$]\
+                                      \n\tstart_time     = [$startTime$]\
+                                      \n\tend_time       = [$endTime$]\
+                                      \n\texecution_time = [$executionTime$]\
+                                      \n\tmax_memory     = [$maxMemory$]\
+                                      \n\tfree_memory    = [$freeMemory$]
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-http_access_log--s1",
+  "title": "HTTPアクセスログの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log/http_access_log.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "HTTPアクセスログの出力方針",
+      "hints": [
+        "HTTPアクセスログ",
+        "HttpAccessLogFormatter",
+        "HTTP_ACCESS",
+        "http_access_log_handler",
+        "nablarch_tag_handler",
+        "http_request_java_package_mapping",
+        "ログ出力設定",
+        "httpAccessLogFormatter.beginFormat",
+        "httpAccessLogFormatter.endFormat",
+        "httpAccessLogFormatter.maskingPatterns",
+        "証跡ログ兼用",
+        "アクセスログ設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 必要なハンドラ\n\nHTTPアクセスログ出力には以下の3つのハンドラが必要:\n\n- :ref:`http_access_log_handler`: リクエスト処理開始時と終了時のログ出力\n- :ref:`nablarch_tag_handler`: hiddenパラメータ復号後のログ出力（:ref:`hidden暗号化<tag-hidden_encryption>` 参照）\n- :ref:`http_request_java_package_mapping`: ディスパッチ先クラス決定後のログ出力\n\nリクエストパラメータを含めたリクエスト情報を出力することで証跡ログの要件を満たせる場合、HTTPアクセスログと証跡ログを兼用可能。\n\n## HTTPアクセスログの出力方針\n\nアプリケーション全体のアプリケーションログに出力する。\n\n| ログレベル | ロガー名 |\n|---|---|\n| INFO | HTTP_ACCESS |\n\n**log.properties設定例:**\n\n```properties\nwriterNames=appLog\n\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\nwriter.appLog.encoding=UTF-8\nwriter.appLog.maxFileSize=10000\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=ACC,ROO\n\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n\nloggers.ACC.nameRegex=HTTP_ACCESS\nloggers.ACC.level=INFO\nloggers.ACC.writerNames=appLog\n```\n\n**app-log.properties設定例:**\n\n```properties\n# 設定可能プロパティ（デフォルト値はコメントアウト）\n#httpAccessLogFormatter.className=\n#httpAccessLogFormatter.datePattern=\n#httpAccessLogFormatter.maskingChar=\n#httpAccessLogFormatter.maskingPatterns=\n#httpAccessLogFormatter.parametersSeparator=\n#httpAccessLogFormatter.sessionScopeSeparator=\n#httpAccessLogFormatter.beginOutputEnabled=\n#httpAccessLogFormatter.parametersOutputEnabled=\n#httpAccessLogFormatter.dispatchingClassOutputEnabled=\n#httpAccessLogFormatter.endOutputEnabled=\nhttpAccessLogFormatter.beginFormat=@@@@ BEGIN @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$]\\\n                                      \\n\\turl          = [$url$$query$]\\\n                                      \\n\\tmethod      = [$method$]\\\n                                      \\n\\tport        = [$port$]\\\n                                      \\n\\tclient_ip   = [$clientIpAddress$]\\\n                                      \\n\\tclient_host = [$clientHost$]\nhttpAccessLogFormatter.parametersFormat=@@@@ PARAMETERS @@@@\\n\\tparameters  = [$parameters$]\nhttpAccessLogFormatter.dispatchingClassFormat=@@@@ DISPATCHING CLASS @@@@ class = [$dispatchingClass$]\nhttpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$] url = [$url$$query$] method = [$method$] status_code = [$statusCode$] content_path = [$contentPath$]\\\n                                    \\n\\tstart_time     = [$startTime$]\\\n                                    \\n\\tend_time       = [$endTime$]\\\n                                    \\n\\texecution_time = [$executionTime$]\\\n                                    \\n\\tmax_memory     = [$maxMemory$]\\\n                                    \\n\\tfree_memory    = [$freeMemory$]\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

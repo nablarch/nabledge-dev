@@ -1,0 +1,307 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/toolbox/JspStaticAnalysis/01_JspStaticAnalysis.rst`
+- Format: `rst`
+
+```
+.. _jsp_static_analysis_tool:
+
+=========================
+JSP静的解析ツール
+=========================
+
+.. contents:: 目次
+  :depth: 2
+  :local:
+
+----
+概要
+----
+
+JSPで使用を許可する構文とタグを規定し、許可する構文とタグのみを使用していることをチェックする。
+これにより、次のことを保証できる。
+
+* 使用されている構文とタグを限定できるため、保守性が向上する。
+* 使用できる構文とタグを限定することにより、サニタイジング漏れを検出できる。
+
+本ツールでは、JSPコンパイルが成功するファイルに対するチェックを行うものである。
+このため、JSPコンパイルが通らないファイル（例えばtaglibのとじタグが存在していない等）の場合には、本ツールは正しくJSPファイルを解析することは出来ない。
+
+なお、本ツールはnablarch-testing-XXX.jarに含まれる。
+
+----
+仕様
+----
+
+許可するタグの指定方法
+===========================
+
+本ツールは、 **JSPで使用を許可する構文とタグ** を設定ファイルに定義することで、設定ファイルに定義されていない構文とタグが使用されている箇所を指摘する。
+チェック結果は、HTMLまたはXML形式で出力する。
+
+本ツールで指定可能な構文とタグを下記に示す。
+
+* XMLコメント
+* HTMLコメント [#html_comment]_
+* EL式
+* 宣言
+* 式
+* スクリプトレット
+* ディレクティブ
+* アクションタグ
+* カスタムタグ
+
+本ツールではHTMLタグ等の上記以外の構文とタグは指定できない。
+
+本ツールでは、下記の場所をチェック対象外とする。下記以外の場所は常にチェックする。
+
+* 使用を許可したタグの属性
+
+下記に例として、EL式を禁止した場合のチェック結果を示す。
+
+* 使用を許可したタグの属性にEL式を指定した場合は、指摘しない。 ::
+
+    <jsp:include page="${ Expression }" />
+
+* 使用を許可したタグのボディにEL式を指定した場合は、指摘する。 ::
+     
+    <jsp:text> 
+       ${ Expression }
+    </jsp:text>
+
+* HTMLタグの属性にEL式を指定した場合は、指摘する。 ::
+
+    <td height="${ Expression }"> </td>
+
+* HTMLタグのボディにEL式を指定した場合は、指摘する。 ::
+
+    <td> ${ Expression } </td>
+
+* JavaScript中にEL式を指定した場合は、指摘する。 ::
+
+    function samplefunc() {
+        var id = ${user.id}
+    }
+
+設定ファイルの記述方法は :ref:`01_customJspAnalysis` を参照のこと。
+
+.. [#html_comment]
+
+  HTMLコメントを使用不可とした場合でも、以下のコメントについてはエラーとして検出しない。
+
+  * 条件付きコメント(IEによって解釈される条件付きのコメント)
+  * 業務画面作成支援ツールをロードするためのコメント
+
+  これらのコメントは、ブラウザによるCSSの切り替えや業務画面作成支援ツールを使用した際に
+  使用必須のコメントとなるため、エラーとして検出することは不適切であるため。
+
+
+
+チェック対象ファイルの指定方法
+===============================
+チェック対象のファイル（ディレクトリ）は、本ツールへの起動引数として指定する。
+ディレクトリを指定した場合は、対象のファイル(デフォルトでは拡張子がjspのファイルで、設定により拡張子は追加可能)を再帰的にチェックする。
+
+UI開発基盤の開発プロジェクトでは、チェック対象のファイル（本番環境にデプロイされるファイル）と、
+チェック対象外のファイル（テスト用のファイルなどで本番環境にはデプロイされないファイル）が、
+チェック対象ディレクトリに混在するケースがある。
+このような場合には、除外ファイル設定を使用することで、不要なファイルへのチェックを無効にできる。
+
+チェック対象のファイル（ディレクトリ）、チェック対象外ファイル（ディレクトリ）の設定方法は、 :ref:`01_customJspAnalysisProp` を参照
+
+対象ファイル内の一部を強制的にチェック対象外にする方法
+===================================================================
+アーキテクトが作成するJSPやタグファイルなどで、やむを得ない事情で許可されていないタグを使う必要性が出てくる場合がある。 
+例えば、アプリケーション開発者が作成するJSPファイルから使用されたくないタグを、
+アーキテクトが作成するタグファイル内に隠蔽する場合等がこれに該当する。
+
+このような場合には、特定箇所のチェックを強制的に無効化する機能を使用する。
+特定箇所のチェックを無効化するには、該当行のすぐ上の行にチェックを無効化するJSPコメントを記述する。
+無効化コメントは、本ツールのチェックっ対象外のタグとなる。このため、JSPコメントを使用不可とした場合でもエラーとはならない。
+
+無効化するJSPコメントは以下のルールに従い記述する。
+
+* コメントの開始タグと終了タグを同一行に記述する
+* コメントは必ず **suppress jsp check** で始める
+
+  **suppress jsp check**  以降は、任意のコメントを記述できる。
+  任意のコメント部には、チェックを無効化する理由を記述すると良い
+
+
+
+以下に例を示す::
+
+  <%@tag import="java.util.regex.Pattern" %>
+  <%@tag import="java.util.regex.Matcher" %>
+  <%@taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+
+  <%-- suppress jsp check:サーバサイドで判定し、bodyのクラスに埋め込むために必要なコード --%>
+  <%!
+    static class UserAgent { 
+    }
+  %>
+
+---------
+前提条件
+---------
+
+* アーキタイプからブランクプロジェクトの生成が完了していること。
+
+
+---------
+```
+
+## Knowledge File
+
+- ID: `toolbox-01_JspStaticAnalysis--s1`
+
+```json
+{
+  "id": "toolbox-01_JspStaticAnalysis--s1",
+  "title": "JSP静的解析ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/toolbox/JspStaticAnalysis/01_JspStaticAnalysis.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "JSP静的解析",
+        "サニタイジング漏れ検出",
+        "JSPコンパイル制約",
+        "保守性向上",
+        "nablarch-testing"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "許可タグ設定",
+        "EL式チェック",
+        "除外ファイル設定",
+        "チェック無効化",
+        "suppressコメント",
+        "JSPコメント",
+        "01_customJspAnalysis",
+        "01_customJspAnalysisProp",
+        "チェック対象外"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "前提条件",
+      "hints": [
+        "前提条件",
+        "ブランクプロジェクト",
+        "アーキタイプ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSPで使用を許可する構文とタグを規定し、それ以外の構文・タグの使用箇所を検出するツール。保守性向上とサニタイジング漏れの検出を目的とする。\n\n> **重要**: JSPコンパイルが成功するファイルのみ正しく解析できる。taglibの閉じタグが存在しないなどコンパイルが通らないファイルは正しく解析できない。\n\n**モジュール**: `nablarch-testing-XXX.jar` に含まれる。",
+    "s2": "## 許可するタグの指定方法\n\n設定ファイルに定義された構文・タグのみ許可し、定義されていない構文・タグの使用箇所を指摘する。チェック結果はHTMLまたはXML形式で出力する。\n\n指定可能な構文・タグ:\n- XMLコメント\n- HTMLコメント\n- EL式\n- 宣言\n- 式\n- スクリプトレット\n- ディレクティブ\n- アクションタグ\n- カスタムタグ\n\nHTMLタグ等の上記以外の構文・タグは指定できない。\n\nチェック対象外: **使用を許可したタグの属性**（それ以外は常にチェック対象）\n\nEL式を禁止した場合の挙動:\n- 許可タグの**属性**にEL式 → 指摘しない（例: `<jsp:include page=\"${ Expression }\" />`）\n- 許可タグの**ボディ**にEL式 → 指摘する\n- HTMLタグの属性/ボディにEL式 → 指摘する\n- JavaScript中にEL式 → 指摘する\n\n設定ファイルの記述方法は :ref:`01_customJspAnalysis` を参照。\n\n> **注意**: HTMLコメントを使用不可とした場合でも、以下のコメントはエラーとして検出しない。\n> - 条件付きコメント（IEが解釈する条件付きのコメント）\n> - 業務画面作成支援ツールをロードするためのコメント\n\n## チェック対象ファイルの指定方法\n\nチェック対象ファイル（ディレクトリ）は起動引数として指定する。ディレクトリ指定時は拡張子がjspのファイルを再帰的にチェック（設定で拡張子追加可能）。\n\n本番環境にデプロイされるファイルとテスト用ファイルが混在する場合は、除外ファイル設定を使用することで不要なファイルへのチェックを無効化できる。\n\n設定方法は :ref:`01_customJspAnalysisProp` を参照。\n\n## 対象ファイル内の一部を強制的にチェック対象外にする方法\n\nやむを得ず許可されていないタグを使用する必要がある箇所（例: アーキテクトが作成するタグファイル内でアプリ開発者に使用させたくないタグを隠蔽する場合）は、チェック無効化機能を使用する。\n\n該当行のすぐ上の行にJSPコメントを記述することで特定箇所のチェックを無効化できる。JSPコメントを使用不可に設定していてもエラーにはならない。\n\n無効化コメントのルール:\n- コメントの開始タグと終了タグを同一行に記述する\n- コメントは必ず `suppress jsp check` で始める（以降は任意のコメント、無効化理由を記述推奨）\n\n```jsp\n<%-- suppress jsp check:サーバサイドで判定し、bodyのクラスに埋め込むために必要なコード --%>\n<%!\n  static class UserAgent {\n  }\n%>\n```",
+    "s3": "- アーキタイプからブランクプロジェクトの生成が完了していること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

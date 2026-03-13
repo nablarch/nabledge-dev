@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-session_store--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[id=s1].hints",
+      "description": "s1のヒントに `UUID` が欠落している。ソースのtipに「セッションIDには java.util.UUID を使用している」と記載されており、s1の本文でも参照されている。",
+      "source_evidence": "クッキーで使用するセッションIDには、:java:extdoc:`UUID<java.util.UUID>` を使用している。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[id=s4].hints",
+      "description": "s4のヒントに以下のPascalCaseクラス名が欠落している: `HiddenStore`（XML設定例に登場）、`HttpSessionStore`（XML設定例に登場）、`BasicApplicationInitializer`（XML初期化設定例に登場）、`CsrfTokenUtil`（ログインコード例に登場）、`KeyGenerator`（暗号化キー生成の説明に登場）、`SecureRandom`（IV生成の説明に登場）。",
+      "source_evidence": "<component class=\"nablarch.common.web.session.store.HiddenStore\"> / <component class=\"nablarch.common.web.session.store.HttpSessionStore\"> / class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\" / CsrfTokenUtil.regenerateCsrfToken(ctx); / :java:extdoc:`KeyGenerator <javax.crypto.KeyGenerator>` / :java:extdoc:`SecureRandom <java.security.SecureRandom>`"
+    }
+  ]
+}

@@ -1,0 +1,257 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/blank_project/firstStep_appendix/firststep_complement.rst`
+- Format: `rst`
+
+```
+-----------------------------------
+初期セットアップ手順　補足事項
+-----------------------------------
+
+H2のデータの確認方法
+------------------------------------
+
+トラブルシューティング等でH2に格納されているデータを確認する場合、以下のようにしてH2のコンソールを起動する。
+
+1.h2/bin/h2.batを実行する。
+
+.. tip::
+
+  データを確認したいプロジェクトに含まれるh2.batを起動すること。
+
+
+2.しばらく待つとブラウザが起動するので、各項目に以下の通りに入力し、[Test Connection]ボタンをクリックする。
+
+============= ========================= ============================================================================
+項目          値                        補足
+============= ========================= ============================================================================
+JDBC URL      ``jdbc:h2:../db/SAMPLE``  h2.batからの相対パスでデータファイルの位置を指定する。
+User Name     ``SAMPLE``
+Password      ``SAMPLE``
+============= ========================= ============================================================================
+
+.. important ::
+
+  URLは上記の通り入力すること。h2.batからの相対パスを指定する必要があるため、env.propertiesからコピーするとパスがずれる。
+
+
+3.画面下部に「Test successful」と表示されていることを確認する。
+
+4.Password欄を再び入力し、[Connect]ボタンをクリックする。
+
+.. important ::
+
+  [Connect]ボタンクリック時に、指定したURLにH2のデータファイルが存在しない場合、H2のデータファイルが新規生成される。
+
+  トラブルを避けるために、手順2にあるように必ず[Test Connection]をクリックして、データファイルの存在を確認すること。
+
+
+5.右側のペインの上部がSQLを入力するスペースになっているので、そこに任意のSQLを入力する。
+
+6.画面上部に存在する[Run]ボタン(緑色のボタン)をクリックすることで、SQLが実行できる。
+
+7.左上のdisconnectボタン(赤色で書かれたアイコンのボタン)をクリックして切断する。
+
+
+.. important ::
+
+  アーキタイプから生成したプロジェクトはH2の組み込みモードを使用している。組み込みモード使用時は、1プロセスからのみ接続を受け付ける。
+
+  そのため、 **切断を忘れると、アプリケーションからH2に接続できなくなる。**
+
+
+.. _firstStepBuiltInTools:
+
+アーキタイプから生成したプロジェクトに組み込まれているツール
+------------------------------------------------------------
+
+以下のツールが、アーキタイプから生成したプロジェクトには組み込まれている。
+
+.. list-table::
+  :header-rows: 1
+  :class: white-space-normal
+  :widths: 7,8,18
+
+  * - ツール
+    - ツールが実行されるMavenのPhase
+    - 補足
+  * - :doc:`/development_tools/toolbox/JspStaticAnalysis/index`
+    - verify
+    -
+  * - カバレッジ取得
+    - test
+    - jacoco.execが生成されるところまで設定済み。|br|
+      jacoco.execは、SonarQube及びJenkinsのプラグインで使用出来る。
+  * - `gsp-dba-maven-plugin(外部サイト) <https://github.com/coastland/gsp-dba-maven-plugin/tree/4.x.x-main>`_
+    - －
+    - 起動は、「mvn -P gsp gsp-dba:<ゴール名>」で行う。|br|
+      例えば、「mvn -P gsp gsp-dba:generate-ddl」でgenerate-ddlを実行できる。
+
+      また、「mvn -P gsp generate-resources」と実行することで、「generate-ddl」「execute-ddl」「generate-entity」「load-data」「export-schema」を順に実行できる。
+
+
+
+.. important ::
+
+  ツールの設定を変更する際は、:ref:`about_maven_parent_module` のpom.xmlを必ず理解した上で行うこと。
+
+  pom.xmlを理解することで、多くの設定項目について **容易** に設定変更が可能になる。
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `blank-project-firststep_complement--s1`
+
+```json
+{
+  "id": "blank-project-firststep_complement--s1",
+  "title": "初期セットアップ手順　補足事項",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/blank_project/firstStep_appendix/firststep_complement.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "初期セットアップ手順　補足事項",
+      "hints": [
+        "初期セットアップ補足",
+        "H2データベース確認",
+        "組み込みツール",
+        "ブランクプロジェクト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "H2のデータの確認方法",
+      "hints": [
+        "H2コンソール起動",
+        "H2データベース接続確認",
+        "H2組み込みモード",
+        "JDBC URL",
+        "接続切断注意",
+        "h2.bat"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "アーキタイプから生成したプロジェクトに組み込まれているツール",
+      "hints": [
+        "JspStaticAnalysis",
+        "カバレッジ取得",
+        "jacoco",
+        "gsp-dba-maven-plugin",
+        "Mavenフェーズ",
+        "組み込みツール一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "初期セットアップ手順の補足事項。H2データの確認方法と、アーキタイプから生成したプロジェクトに組み込まれているツールについて記載する。",
+    "s2": "トラブルシューティング等でH2に格納されているデータを確認する手順。\n\n1. 確認したいプロジェクトに含まれる `h2/bin/h2.bat` を実行する。\n\n> **補足**: データを確認したいプロジェクトに含まれるh2.batを起動すること。\n\n2. ブラウザが起動したら以下の通りに入力し、[Test Connection]ボタンをクリックする。\n\n| 項目 | 値 | 補足 |\n|---|---|---|\n| JDBC URL | `jdbc:h2:../db/SAMPLE` | h2.batからの相対パスでデータファイルの位置を指定する |\n| User Name | `SAMPLE` | |\n| Password | `SAMPLE` | |\n\n> **重要**: URLはh2.batからの相対パスを指定する必要があるため、env.propertiesからコピーするとパスがずれる。\n\n3. 画面下部に「Test successful」と表示されていることを確認する。\n4. Password欄を再入力し、[Connect]ボタンをクリックする。\n\n> **重要**: [Connect]ボタンクリック時に指定したURLにH2のデータファイルが存在しない場合、H2のデータファイルが新規生成される。トラブルを避けるために、手順2で必ず[Test Connection]をクリックしてデータファイルの存在を確認すること。\n\n5. 右側のペインの上部にSQLを入力する。\n6. [Run]ボタン（緑色）をクリックしてSQLを実行する。\n7. disconnectボタン（赤色アイコン）をクリックして切断する。\n\n> **重要**: アーキタイプから生成したプロジェクトはH2の組み込みモードを使用しており、1プロセスからのみ接続を受け付ける。**切断を忘れると、アプリケーションからH2に接続できなくなる。**",
+    "s3": "アーキタイプから生成したプロジェクトに組み込まれているツール一覧。\n\n| ツール | Mavenのフェーズ | 補足 |\n|---|---|---|\n| :doc:`/development_tools/toolbox/JspStaticAnalysis/index` | verify | |\n| カバレッジ取得 | test | jacoco.execが生成されるところまで設定済み。jacoco.execはSonarQube及びJenkinsのプラグインで使用可能。 |\n| [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin/tree/4.x.x-main) | — | 起動は `mvn -P gsp gsp-dba:<ゴール名>` で行う。例: `mvn -P gsp gsp-dba:generate-ddl`。`mvn -P gsp generate-resources` と実行することで「generate-ddl」「execute-ddl」「generate-entity」「load-data」「export-schema」を順に実行できる。 |\n\n> **重要**: ツールの設定を変更する際は、:ref:`about_maven_parent_module` のpom.xmlを必ず理解した上で行うこと。pom.xmlを理解することで、多くの設定項目について**容易**に設定変更が可能になる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

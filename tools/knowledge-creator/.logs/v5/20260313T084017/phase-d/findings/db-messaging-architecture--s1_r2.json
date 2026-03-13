@@ -1,0 +1,20 @@
+{
+  "file_id": "db-messaging-architecture--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (ハンドラの最小構成)",
+      "description": "The introductory sentence before the minimum handler table is omitted: \"これをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。\" This states that the minimum configuration is a base to which additional standard or custom handlers should be added per project requirements — useful guidance for readers interpreting the table.",
+      "source_evidence": "ハンドラの最小構成セクション: \"これをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "The hints for s5 (最小ハンドラ構成) are missing most handler names that appear in the minimum configuration table. Only a subset is included (process_stop_handler, request_thread_loop_handler, retry_handler). Missing: status_code_convert_handler, thread_context_clear_handler, global_error_handler, thread_context_handler, database_connection_management_handler, transaction_management_handler, request_path_java_package_mapping, multi_thread_execution_handler, data_read_handler. These are all first-column values in the table and users searching for the minimum configuration details of these handlers would benefit from s5 being discoverable.",
+      "source_evidence": "最小ハンドラ構成表のNo.1〜14に status_code_convert_handler, thread_context_clear_handler, global_error_handler, thread_context_handler, database_connection_management_handler, transaction_management_handler, request_path_java_package_mapping, multi_thread_execution_handler, data_read_handler が列挙されている"
+    }
+  ]
+}

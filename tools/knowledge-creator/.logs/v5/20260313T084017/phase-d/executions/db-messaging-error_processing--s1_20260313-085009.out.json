@@ -1,0 +1,20 @@
+{
+  "file_id": "db-messaging-error_processing--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 重要 warning",
+      "description": "The parenthetical explanation explaining why the same error recurs is omitted from the important warning. The source includes: '(基本的に、同じデータを同じ状態で処理した場合、同じ結果となるため。)' This clarifies the underlying reason for the repeated failure, which aids understanding of the warning.",
+      "source_evidence": "エラーデータを除外しなかった場合、エラーとなったデータが再び処理対象として抽出され、再度例外が発生する。(基本的に、同じデータを同じ状態で処理した場合、同じ結果となるため。) 結果として、..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "PascalCase class names `Result` and `Result.Success` appear in the s2 code example (as the return type and return value) but are absent from the s2 hints array.",
+      "source_evidence": "return new Result.Success(); — in the handle() method code block under the second section"
+    }
+  ]
+}

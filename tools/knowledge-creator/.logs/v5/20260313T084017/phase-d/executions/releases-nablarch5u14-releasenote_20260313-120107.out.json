@@ -1,0 +1,20 @@
+{
+  "file_id": "releases-nablarch5u14-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "「UI開発基盤 標準プラグインの変更点（5u14）」テーブル",
+      "description": "ソースの「標準プラグインの変更点」シートには33件のエントリがあるが、知識ファイルのテーブルにはNo.1〜5の5件しか含まれていない。No.6〜33（計28件）が省略されている。これらは主にテストコードの修正だが、各ウィジェットの更新後バージョン番号（例: Ajaxリクエスト送信ウィジェット 1.0.1、イベントウィジェット共通部品 1.0.1、ダイアログ表示ウィジェット 1.0.5、カレンダー日付入力ウィジェット 1.0.2 等）がすべて欠落している。",
+      "source_evidence": "ソースの「標準プラグインの変更点」シートにはNo.6〜No.33のエントリが存在し、Ajaxリクエスト送信ウィジェット(1.0.1)、ダイアログ表示ウィジェット(1.0.5)、チェックボックス入力項目ウィジェット(1.0.2)、ファイル選択項目ウィジェット(1.0.2)、パスワード入力項目ウィジェット(1.0.1)、プルダウン入力項目ウィジェット(1.0.2)、ラジオボタン入力項目ウィジェット(1.0.2)、単行テキスト入力ウィジェット(1.0.2)、カレンダー日付入力ウィジェット(1.0.2) などのバージョン情報が記載されている"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 hints配列",
+      "description": "知識ファイルのセクション本文に登場するPascalCaseクラス名のうち、以下がhintsに含まれていない: `SignedInAdvice`（No.12 Exampleウェブアプリのsetterクラス）、`DateValue`（No.13 Exampleウェブサービスの削除クラス）、`UseToken`・`OnDoubleSubmission`（No.1 UseToken.Implの型引数修正に関連するクラス）、`JAXP`（XXE脆弱性セクションでXMLライブラリとして言及）",
+      "source_evidence": "ソースNo.1: 「UseToken.Implの型引数が誤っていたので修正しました。誤：OnDoubleSubmission 正：UseToken」、No.12: 「SignedInAdviceクラスのsetterで正しく値を設定できていなかったため修正しました」、No.13: 「DateValueクラスを削除しました」、XXE脆弱性シート: 「NablarchはXML文書を扱うためにXMLライブラリ(JAXP)を使用しています」"
+    }
+  ]
+}

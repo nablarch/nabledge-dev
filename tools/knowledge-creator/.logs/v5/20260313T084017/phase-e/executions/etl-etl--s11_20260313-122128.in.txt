@@ -1,0 +1,519 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "etl-etl--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`fileName` is a key configuration property in the ETL JOB設定ファイル table for the db2file type (s1), but it is not listed in the hints array. Users may query by this property name when looking for how to specify the output file name.",
+      "source_evidence": "Source table row: `fileName` — 出力するファイルのファイル名を設定する。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+Loadフェーズでファイルにデータを出力する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Loadフェーズで行うファイル出力の実装と設定について解説する。
+
+.. tip::
+
+  JOB定義及びETL用JOB設定ファイルは、 :ref:`etl-json-configuration` の **ファイル出力のテンプレート** をダウンロードし編集すると良い。
+  
+.. _etl-load-file-bean:
+
+出力先ファイルに対応したJava Beansの作成
+  出力先ファイルに対応したJava Beansを作成する。
+  
+  レイアウト定義は、 :ref:`data_bind` を参照しアノテーションを設定する。
+  
+.. _etl-load-file-sql:
+
+編集用SQLの作成
+  ファイルに出力するデータを取得するSQLを作成する。なお、編集処理が必要な場合には、このSQLにて関数などを用いて実施する。
+  
+  作成したSQLは、以下のファイルに保存する。SQLファイル内でのSQLの記述方法は、 :ref:`database-use_sql_file` を参照。
+  なお、本機能では外部から条件などのパラメータを与えることは出来ない。
+  
+  * ファイル名は、 :ref:`出力先ファイルに対応したJava Beans <etl-load-file-bean>` のクラス名 + ``.sql``
+  * ファイルは、クラスパス配下の :ref:`出力先ファイルに対応したJava Beans <etl-load-file-bean>` のパッケージと同じディレクトリに配置する
+  
+  例えば、 :ref:`出力先ファイルに対応したJava Beans <etl-load-file-bean>` の完全修飾名が、 ``nablarch.sample.SampleFileDto`` の場合、
+  ファイルの配置先はクラスパス配下の ``nablarch/sample`` ディレクトリ配下となる。
+  ファイル名は、 ``SampleFileDto.sql`` となる。
+  
+  SQLファイル内に定義するSQLIDは任意の値を指定する。SQLIDは :ref:`ETL用JOB設定ファイル <etl-load-file-configuration>` で使用する。
+  
+JOB定義
+  * Chunkとしてステップを定義する。
+  * readerには、 :java:extdoc:`databaseItemReader <nablarch.etl.DatabaseItemReader>` を設定する。
+  * writerには、 :java:extdoc:`fileItemWriter <nablarch.etl.FileItemWriter>`  を設定する。
+  
+  .. code-block:: xml
+  
+    <!--
+    idは適宜変更すること
+    load後に後続のステップを実行したい場合は、nextを定義し次のステップを実行すること
+     -->
+    <step id="load">
+      <listeners>
+        <!-- リスナーの設定は省略 -->
+      </listeners>
+      <!-- item-countは適宜変更すること -->
+      <chunk item-count="3000">
+        <reader ref="databaseItemReader" />
+        <writer ref="fileItemWriter" />
+      </chunk>
+    </step>
+  
+.. _etl-load-file-configuration:
+
+ETL用JOB設定ファイル
+  JOB定義のステップ名(step id)に対応したキーに対して、以下の設定値を持つオブジェクトを設定する。
+  
+  .. list-table::
+    :header-rows: 1
+    :widths: 100 200
+    :class: white-space-normal
+
+    * - キー
+      - 設定する値
+    * - type
+      - ``db2file`` を固定で設定する。
+    * - bean
+      - :ref:`出力先ファイルに対応したJava Beans <etl-load-file-bean>` の完全修飾名を設定する。
+    * - fileName
+      - 出力するファイルのファイル名を設定する。
+      
+        ファイルの出力先ディレクトリは、 :ref:`etl-common-configuration` を参照。
+    * - sqlId
+      - :ref:`編集用のSQL作成 <etl-load-file-sql>` で設定したSQLIDを設定する。
+
+  設定例
+    .. code-block:: javascript
+    
+      "load": {
+        "type": "db2file",
+        "bean": "sample.SampleDto",
+        "fileName": "output.csv",
+        "sqlId": "SELECT_ALL"
+      }
+  
+メッセージの定義
+  :java:extdoc:`FileItemWriter <nablarch.etl.FileItemWriter>` は、出力先ファイルを開けない場合例外を送出する。
+  例外に設定するメッセージは、 :ref:`message` から取得するため、メッセージの設定が必要となる。 
+  詳細は、 :ref:`etl-message` を参照。
+
+.. _etl-load-replace_database:
+
+Loadフェーズでデータベースのデータの洗い替えを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Loadフェーズで行うデータベース上のテーブルデータの洗い替えの実装と設定について解説する。
+
+.. tip::
+
+  JOB定義及びETL用JOB設定ファイルは、 :ref:`etl-json-configuration` の **Loadフェーズで洗い替えモードを使用する場合のテンプレート** をダウンロードし編集すると良い。
+
+.. _etl-load-replace_database-entity:
+
+洗い替え対象テーブルに対応したEntityを作成する
+  洗い替え対象テーブルの定義を表すEntityを作成する。
+  
+  テーブルの定義は、 :ref:`universal_dao` を参照しアノテーションを設定する。
+  
+.. _etl-load-replace_database-sql:
+
+編集用SQLの作成
+  データベースのテーブルに登録するデータを取得するSQLを作成する。なお、編集処理が必要な場合には、このSQLにて関数などを用いて実施する。
+  
+  作成したSQLは、以下のファイルに保存する。SQLファイル内でのSQLの記述方法は、 :ref:`database-use_sql_file` を参照。
+  なお、本機能では外部から条件などのパラメータを与えることは出来ない。
+  
+  * ファイル名は、 :ref:`洗い替え対象テーブルに対応したEntity <etl-load-replace_database-entity>` のクラス名 + ``.sql``
+  * ファイルは、クラスパス配下の :ref:`洗い替え対象テーブルに対応したEntity <etl-load-replace_database-entity>` のパッケージと同じディレクトリに配置する
+  
+  例えば、 :ref:`洗い替え対象テーブルに対応したEntity <etl-load-replace_database-entity>` の完全修飾名が、 ``nablarch.sample.SampleEntity`` の場合、
+  ファイルの配置先はクラスパス配下の ``nablarch/sample`` ディレクトリ配下となる。
+  ファイル名は、 ``SampleEntity.sql`` となる。
+  
+  SQLファイル内に定義するSQLIDは任意の値を指定する。SQLIDは :ref:`ETL用JOB設定ファイル <etl-load-replace_database-configuration>` で使用する。
+
+JOB定義
+  * batchletとしてステップを定義する。
+  * batchletクラスには、 :java:extdoc:`deleteInsertBatchlet <nablarch.etl.DeleteInsertBatchlet>` を設定する。
+  
+  .. code-block:: xml
+  
+    <!--
+    idは適宜変更すること
+    load後に後続のステップを実行したい場合は、nextを定義し次のステップを実行すること
+     -->
+    <step id="load">
+      <listeners>
+        <!-- リスナーの設定は省略 -->
+      </listeners>
+      <batchlet ref="deleteInsertBatchlet" />
+    </step>
+    
+.. _etl-load-replace_database-configuration:
+
+ETL用JOB設定ファイル
+  JOB定義のステップ名(step id)に対応したキーに対して、以下の設定値を持つオブジェクトを設定する。
+  
+  .. list-table::
+    :header-rows: 1
+    :widths: 50 200
+    :class: white-space-normal
+
+    * - キー
+      - 設定する値
+    * - type
+      - ``db2db`` を固定で設定する。
+    * - bean
+      - :ref:`洗い替え対象テーブルに対応したEntity <etl-load-replace_database-entity>` の完全修飾名を設定する。
+    * - sqlId
+      - :ref:`編集用のSQLの作成 <etl-load-replace_database-sql>` で設定したSQLIDを設定する。
+    * - insertMode
+      - データの登録(INSERT)時に使用するモードを設定する。設定を省略した場合は ``NORMAL`` モードで動作する。
+      
+        NORMAL
+          ``NORMAL`` を設定した場合は、ヒント句の設定などは行わずデータの登録処理を行う。
+        
+        ORACLE_DIRECT_PATH
+          ``ORACLE_DIRECT_PATH`` を設定した場合、ヒント句を自動的に設定しダイレクトパスインサートモードにてデータの登録処理を行う。
+          (Oracleデータベースの場合のみ有効)
+          
+    * - updateSize.size
+      - コミット間隔を設定する。
+      
+        コミット間隔を設定すると、INSERT～SELECTの実行をコミット間隔毎に分割して行う。
+        なお、分割してSQLを実行するために、 :ref:`ワークテーブルに定義された行番号カラム <etl-worktable_point>` を使用する。
+        このため、 :ref:`編集用のSQL <etl-load-replace_database-sql>` には、行番号カラムを使用した範囲検索の条件を必ず設定する必要がある。
+        付与する条件は、 ``where line_number between ? and ?`` となる。
+        
+        省略した場合(省略した場合は、 ``updateSize`` キー自体を定義しない)は、1回のINSERT～SELECTで全データの登録処理を行う。
+      
+        本設定値を設定した場合は、 ``updateSize.bean`` も設定すること。
+        
+    * - updateSize.bean
+      - :ref:`Extractフェーズ(Chunk版) <etl-extract-chunk>` や :ref:`Extractフェーズ(SQL*Loader版) <etl-extract-sql_loader>` で作成した
+        ワークテーブルに対応したJava Beansの完全修飾名を設定する。
+        
+        ここで設定したクラス名は、入力テーブル内の行番号カラムの中で最も大きい値を取得する際に、テーブル名を取得するために使用する。
+
+  設定例
+    .. code-block:: javascript
+    
+       "load": {
+          "type": "db2db",
+          "bean": "sample.SampleEntity",
+          "sqlId": "SELECT_ALL"
+          "insertMode" : "NORMAL"
+          "updateSize": {
+            "size": 5000
+            "bean": "sample.SampleWorkEntity"
+          }
+        } 
+        
+.. _etl-load-merge_database:
+
+Loadフェーズでデータベースのデータのマージを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Loadフェーズで行うデータベース上のデータのマージ処理の実装と設定について解説する。
+
+.. tip::
+
+  JOB定義及びETL用JOB設定ファイルは、 :ref:`etl-json-configuration` の **Loadフェーズでマージモードを使用する場合のテンプレート** をダウンロードし編集すると良い。
+
+.. _etl-load-merge_database-entity:
+
+マージ対象テーブルに対応したEntityを作成する
+  マージ対象テーブルの定義を表すEntityを作成する。
+  
+  テーブルの定義は、 :ref:`universal_dao` を参照しアノテーションを設定する。
+  
+.. _etl-load-merge_database-sql:
+
+編集用SQLの作成
+  データベースのテーブルにマージするデータを取得するSQLを作成する。なお、編集処理が必要な場合には、このSQLにて関数などを用いて実施する。
+  
+  作成したSQLは、以下のファイルに保存する。SQLファイル内でのSQLの記述方法は、 :ref:`database-use_sql_file` を参照。
+  なお、本機能では外部から条件などのパラメータを与えることは出来ない。
+  
+  * ファイル名は、 :ref:`マージ対象テーブルに対応したEntity <etl-load-merge_database-entity>` のクラス名 + ``.sql``
+  * ファイルは、クラスパス配下の :ref:`マージ対象テーブルに対応したEntity <etl-load-merge_database-entity>` のパッケージと同じディレクトリに配置する
+  
+  例えば、 :ref:`マージ対象テーブルに対応したEntity <etl-load-merge_database-entity>` の完全修飾名が、 ``nablarch.sample.SampleEntity`` の場合、
+  ファイルの配置先はクラスパス配下の ``nablarch/sample`` ディレクトリ配下となる。
+  ファイル名は、 ``SampleEntity.sql`` となる。
+  
+  SQLファイル内に定義するSQLIDは任意の値を指定する。SQLIDは :ref:`ETL用JOB設定ファイル <etl-load-merge_database-configuration>` で使用する。
+  
+JOB定義
+  * batchletとしてステップを定義する。
+  * batchletクラスには、 :java:extdoc:`mergeBatchlet <nablarch.etl.MergeBatchlet>` を設定する。
+  
+  .. code-block:: xml
+  
+    <!--
+      idは適宜変更すること
+      load後に後続のステップを実行したい場合は、nextを定義し次のステップを実行すること
+    -->
+    <step id="load">
+      <listeners>
+        <!-- リスナーの設定は省略 -->
+      </listeners>
+      <batchlet ref="mergeBatchlet" />
+    </step>
+
+.. _etl-load-merge_database-configuration:
+
+ETL用JOB設定ファイル
+  JOB定義のステップ名(step id)に対応したキーに対して、以下の設定値を持つオブジェクトを設定する。
+  
+  .. list-table::
+    :header-rows: 1
+    :widths: 50 200
+    :class: white-space-normal
+
+    * - キー
+      - 設定する値
+    * - type
+      - ``db2db`` を固定で設定する。
+    * - bean
+      - :ref:`マージ対象テーブルに対応したEntity <etl-load-merge_database-entity>` の完全修飾名を設定する。
+    * - sqlId
+      - :ref:`編集用のSQL作成 <etl-load-merge_database-sql>` で設定したSQLIDを設定する。
+          
+    * - mergeOnColumns
+      - マージ処理を行う際に、出力対象テーブルにデータが存在しているかをチェックする際に使用するカラム名を配列オブジェクトとして設定する。
+    * - updateSize.size
+      - コミット間隔を設定する。
+      
+        コミット間隔を設定すると、マージ処理の実行をコミット間隔毎に分割して行う。
+        なお、分割してSQLを実行するために、 :ref:`ワークテーブルに定義された行番号カラム <etl-worktable_point>` を使用する。
+        このため、 :ref:`編集用のSQL <etl-load-merge_database-sql>` には、行番号カラムを使用した範囲検索の条件を必ず設定する必要がある。
+        付与する条件は、 ``where line_number between ? and ?`` となる。
+        
+        省略した場合(省略した場合は、 ``updateSize`` キー自体を定義しない)は、1回のマージ実行で全データの登録処理を行う。
+      
+        本設定値を設定した場合は、 ``updateSize.bean`` も設定すること。
+        
+    * - updateSize.bean
+      - :ref:`Extractフェーズ(Chunk版) <etl-extract-chunk>` や :ref:`Extractフェーズ(SQL*Loader版) <etl-extract-sql_loader>` で作成した
+        ワークテーブルに対応したJava Beansの完全修飾名を設定する。
+        
+        ここで設定したクラス名は、入力テーブル内の行番号カラムの中で最も大きい値を取得する際に、テーブル名を取得するために使用する。
+
+  設定例
+    .. code-block:: javascript
+    
+      "load": {
+        "type": "db2db",
+        "bean": "sample.SampleEntity",
+        "sqlId": "SELECT_ALL",
+        "mergeOnColumns": [
+          "key1"
+        ],
+        "updateSize": {
+          "size": 5000,
+          "bean": "sample.SampleWorkEntity"
+        }
+      }
+
+.. _etl-load-insert_database:
+
+Loadフェーズでデータベースへ登録する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Loadフェーズで行うデータベースへの登録の実装と設定について解説する。
+
+.. tip::
+
+  JOB定義及びETL用JOB設定ファイルは、 :ref:`etl-json-configuration` の **JSR352のChunkを使用したファイル取り込みのテンプレート** をダウンロードし編集すると良い。
+
+.. _etl-load-insert_database-entity:
+
+登録対象テーブルに対応したEntityを作成する
+  登録対象テーブルの定義を表すEntityを作成する。
+
+  テーブルの定義は、 :ref:`universal_dao` を参照しアノテーションを設定する。
+
+.. _etl-load-insert_database-sql:
+
+登録用SQLの作成
+  データベースのテーブルに登録するデータを取得するSQLを作成する。なお、編集処理が必要な場合には、このSQLにて関数などを用いて実施する。
+
+  作成したSQLは、以下のファイルに保存する。SQLファイル内でのSQLの記述方法は、 :ref:`database-use_sql_file` を参照。
+  なお、本機能では外部から条件などのパラメータを与えることは出来ない。
+
+  * ファイル名は、 :ref:`登録対象テーブルに対応したEntity <etl-load-insert_database-entity>` のクラス名 + ``.sql``
+  * ファイルは、クラスパス配下の :ref:`登録対象テーブルに対応したEntity <etl-load-insert_database-entity>` のパッケージと同じディレクトリに配置する
+
+  例えば、 :ref:`登録対象テーブルに対応したEntity <etl-load-insert_database-entity>` の完全修飾名が、 ``nablarch.sample.SampleEntity`` の場合、
+  ファイルの配置先はクラスパス配下の ``nablarch/sample`` ディレクトリ配下となる。
+  ファイル名は、 ``SampleEntity.sql`` となる。
+
+  SQLファイル内に定義するSQLIDは任意の値を指定する。SQLIDは :ref:`ETL用JOB設定ファイル <etl-load-insert_database-configuration>` で使用する。
+
+JOB定義
+  * Chunkとしてステップを定義する。
+  * readerには、 :java:extdoc:`databaseItemReader <nablarch.etl.DatabaseItemReader>` を設定する。
+  * writerには、 :java:extdoc:`databaseItemWriter <nablarch.etl.DatabaseItemWriter>` を設定する。
+
+  .. code-block:: xml
+
+    <!--
+      idは適宜変更すること
+      load後に後続のステップを実行したい場合は、nextを定義し次のステップを実行すること
+    -->
+    <step id="load">
+      <listeners>
+        <!-- リスナーの設定は省略 -->
+      </listeners>
+      <!-- item-countは適宜変更すること -->
+      <chunk item-count="3000">
+        <reader ref="databaseItemReader" />
+        <writer ref="databaseItemWriter" />
+      </chunk>
+    </step>
+
+.. _etl-load-insert_database-configuration:
+
+ETL用JOB設定ファイル
+  JOB定義のステップ名(step id)に対応したキーに対して、以下の設定値を持つオブジェクトを設定する。
+
+  .. list-table::
+    :header-rows: 1
+    :widths: 50 200
+    :class: white-space-normal
+
+    * - キー
+      - 設定する値
+    * - type
+      - ``db2db`` を固定で設定する。
+    * - bean
+      - :ref:`登録対象テーブルに対応したEntity <etl-load-insert_database-entity>` の完全修飾名を設定する。
+    * - sqlId
+      - :ref:`登録用のSQL作成 <etl-load-insert_database-sql>` で設定したSQLIDを設定する。
+
+  設定例
+    .. code-block:: javascript
+
+      "extract": {
+        "type": "db2db",
+        "bean": "sample.Sample",
+        "sqlId": "SELECT_ALL"
+      }
+
+.. _etl-message:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "etl-etl--s11",
+  "title": "Loadフェーズでファイルにデータを出力する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/extension_components/etl/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/etl/DatabaseItemReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/etl/FileItemWriter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/etl/DeleteInsertBatchlet.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/etl/MergeBatchlet.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/etl/DatabaseItemWriter.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Loadフェーズでファイルにデータを出力する",
+      "hints": [
+        "DatabaseItemReader",
+        "FileItemWriter",
+        "databaseItemReader",
+        "fileItemWriter",
+        "db2file",
+        "ファイル出力",
+        "ETL Loadフェーズ",
+        "JOB設定ファイル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Loadフェーズでデータベースのデータの洗い替えを行う",
+      "hints": [
+        "DeleteInsertBatchlet",
+        "deleteInsertBatchlet",
+        "db2db",
+        "洗い替え",
+        "insertMode",
+        "ORACLE_DIRECT_PATH",
+        "updateSize",
+        "ETL Loadフェーズ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Loadフェーズでデータベースのデータのマージを行う",
+      "hints": [
+        "MergeBatchlet",
+        "mergeBatchlet",
+        "db2db",
+        "マージ",
+        "mergeOnColumns",
+        "updateSize",
+        "ETL Loadフェーズ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Loadフェーズでデータベースへ登録する",
+      "hints": [
+        "DatabaseItemReader",
+        "DatabaseItemWriter",
+        "databaseItemReader",
+        "databaseItemWriter",
+        "db2db",
+        "データベース登録",
+        "ETL Loadフェーズ",
+        "Chunk"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **補足**: JOB定義及びETL用JOB設定ファイルは、:ref:`etl-json-configuration` の **ファイル出力のテンプレート** をダウンロードし編集すると良い。\n\n## 出力先ファイルに対応したJava Beansの作成\n\nレイアウト定義は :ref:`data_bind` を参照しアノテーションを設定する。\n\n## 編集用SQLの作成\n\n- ファイル名: 出力先ファイルに対応したJava Beansのクラス名 + `.sql`\n- 配置先: クラスパス配下の同クラスのパッケージと同じディレクトリ\n- 例: 完全修飾名 `nablarch.sample.SampleFileDto` → `nablarch/sample/SampleFileDto.sql`\n- SQLIDは任意の値を指定。:ref:`etl-load-file-configuration` で参照する\n- 外部からパラメータを渡すことは不可\n\n## JOB定義\n\nChunkとしてステップを定義する。readerに :java:extdoc:`databaseItemReader <nablarch.etl.DatabaseItemReader>`、writerに :java:extdoc:`fileItemWriter <nablarch.etl.FileItemWriter>` を設定する。\n\n```xml\n<step id=\"load\">\n  <listeners>\n    <!-- リスナーの設定は省略 -->\n  </listeners>\n  <chunk item-count=\"3000\">\n    <reader ref=\"databaseItemReader\" />\n    <writer ref=\"fileItemWriter\" />\n  </chunk>\n</step>\n```\n\n## ETL用JOB設定ファイル（db2file）\n\n| キー | 設定する値 |\n|---|---|\n| type | `db2file`（固定） |\n| bean | 出力先ファイルに対応したJava Beansの完全修飾名 |\n| fileName | 出力ファイル名（ディレクトリは :ref:`etl-common-configuration` 参照） |\n| sqlId | 編集用SQLに定義したSQLID |\n\n```javascript\n\"load\": {\n  \"type\": \"db2file\",\n  \"bean\": \"sample.SampleDto\",\n  \"fileName\": \"output.csv\",\n  \"sqlId\": \"SELECT_ALL\"\n}\n```\n\n:java:extdoc:`FileItemWriter <nablarch.etl.FileItemWriter>` は出力先ファイルを開けない場合に例外を送出する。例外メッセージは :ref:`message` から取得するため、メッセージの設定が必要。詳細は :ref:`etl-message` を参照。",
+    "s2": "> **補足**: JOB定義及びETL用JOB設定ファイルは、:ref:`etl-json-configuration` の **Loadフェーズで洗い替えモードを使用する場合のテンプレート** をダウンロードし編集すると良い。\n\n## 洗い替え対象テーブルに対応したEntityの作成\n\nテーブル定義は :ref:`universal_dao` を参照しアノテーションを設定する。\n\n## 編集用SQLの作成\n\n- ファイル名: 洗い替え対象テーブルのEntityクラス名 + `.sql`\n- 配置先: クラスパス配下の同クラスのパッケージと同じディレクトリ\n- 例: 完全修飾名 `nablarch.sample.SampleEntity` → `nablarch/sample/SampleEntity.sql`\n- SQLIDは任意の値を指定。:ref:`etl-load-replace_database-configuration` で参照する\n- 外部からパラメータを渡すことは不可\n\n## JOB定義\n\nbatchletとしてステップを定義し、batchletクラスに :java:extdoc:`deleteInsertBatchlet <nablarch.etl.DeleteInsertBatchlet>` を設定する。\n\n```xml\n<step id=\"load\">\n  <listeners>\n    <!-- リスナーの設定は省略 -->\n  </listeners>\n  <batchlet ref=\"deleteInsertBatchlet\" />\n</step>\n```\n\n## ETL用JOB設定ファイル（洗い替えモード）\n\n| キー | 設定する値 |\n|---|---|\n| type | `db2db`（固定） |\n| bean | 洗い替え対象テーブルEntityの完全修飾名 |\n| sqlId | 編集用SQLのSQLID |\n| insertMode | INSERT時のモード（省略時: `NORMAL`） |\n| updateSize.size | コミット間隔。省略時は1回のINSERT-SELECTで全データ登録 |\n| updateSize.bean | ワークテーブルに対応したJava Beansの完全修飾名（updateSize.size設定時は必須） |\n\n**insertMode の値:**\n- `NORMAL`: ヒント句なしでINSERT\n- `ORACLE_DIRECT_PATH`: ヒント句自動設定でダイレクトパスインサートモード（Oracleのみ有効）\n\n**updateSize設定時の注意:** コミット間隔を設定する場合、:ref:`ワークテーブルに定義された行番号カラム <etl-worktable_point>` を使用してSQLを分割実行する。編集用SQLに `where line_number between ? and ?` の範囲検索条件が必須。`updateSize.bean` も必ず設定すること。\n\n```javascript\n\"load\": {\n  \"type\": \"db2db\",\n  \"bean\": \"sample.SampleEntity\",\n  \"sqlId\": \"SELECT_ALL\",\n  \"insertMode\": \"NORMAL\",\n  \"updateSize\": {\n    \"size\": 5000,\n    \"bean\": \"sample.SampleWorkEntity\"\n  }\n}\n```",
+    "s3": "> **補足**: JOB定義及びETL用JOB設定ファイルは、:ref:`etl-json-configuration` の **Loadフェーズでマージモードを使用する場合のテンプレート** をダウンロードし編集すると良い。\n\n## マージ対象テーブルに対応したEntityの作成\n\nテーブル定義は :ref:`universal_dao` を参照しアノテーションを設定する。\n\n## 編集用SQLの作成\n\n- ファイル名: マージ対象テーブルのEntityクラス名 + `.sql`\n- 配置先: クラスパス配下の同クラスのパッケージと同じディレクトリ\n- 例: 完全修飾名 `nablarch.sample.SampleEntity` → `nablarch/sample/SampleEntity.sql`\n- SQLIDは任意の値を指定。:ref:`etl-load-merge_database-configuration` で参照する\n- 外部からパラメータを渡すことは不可\n\n## JOB定義\n\nbatchletとしてステップを定義し、batchletクラスに :java:extdoc:`mergeBatchlet <nablarch.etl.MergeBatchlet>` を設定する。\n\n```xml\n<step id=\"load\">\n  <listeners>\n    <!-- リスナーの設定は省略 -->\n  </listeners>\n  <batchlet ref=\"mergeBatchlet\" />\n</step>\n```\n\n## ETL用JOB設定ファイル（マージモード）\n\n| キー | 設定する値 |\n|---|---|\n| type | `db2db`（固定） |\n| bean | マージ対象テーブルEntityの完全修飾名 |\n| sqlId | 編集用SQLのSQLID |\n| mergeOnColumns | マージ時に出力対象テーブルにデータが存在するかチェックするカラム名（配列） |\n| updateSize.size | コミット間隔。省略時は1回のマージ実行で全データ登録 |\n| updateSize.bean | ワークテーブルに対応したJava Beansの完全修飾名（updateSize.size設定時は必須） |\n\n**updateSize設定時の注意:** コミット間隔を設定する場合、:ref:`ワークテーブルに定義された行番号カラム <etl-worktable_point>` を使用してSQLを分割実行する。編集用SQLに `where line_number between ? and ?` の範囲検索条件が必須。`updateSize.bean` も必ず設定すること。\n\n```javascript\n\"load\": {\n  \"type\": \"db2db\",\n  \"bean\": \"sample.SampleEntity\",\n  \"sqlId\": \"SELECT_ALL\",\n  \"mergeOnColumns\": [\n    \"key1\"\n  ],\n  \"updateSize\": {\n    \"size\": 5000,\n    \"bean\": \"sample.SampleWorkEntity\"\n  }\n}\n```",
+    "s4": "> **補足**: JOB定義及びETL用JOB設定ファイルは、:ref:`etl-json-configuration` の **JSR352のChunkを使用したファイル取り込みのテンプレート** をダウンロードし編集すると良い。\n\n## 登録対象テーブルに対応したEntityの作成\n\nテーブル定義は :ref:`universal_dao` を参照しアノテーションを設定する。\n\n## 登録用SQLの作成\n\n- ファイル名: 登録対象テーブルのEntityクラス名 + `.sql`\n- 配置先: クラスパス配下の同クラスのパッケージと同じディレクトリ\n- 例: 完全修飾名 `nablarch.sample.SampleEntity` → `nablarch/sample/SampleEntity.sql`\n- SQLIDは任意の値を指定。:ref:`etl-load-insert_database-configuration` で参照する\n- 外部からパラメータを渡すことは不可\n\n## JOB定義\n\nChunkとしてステップを定義する。readerに :java:extdoc:`databaseItemReader <nablarch.etl.DatabaseItemReader>`、writerに :java:extdoc:`databaseItemWriter <nablarch.etl.DatabaseItemWriter>` を設定する。\n\n```xml\n<step id=\"load\">\n  <listeners>\n    <!-- リスナーの設定は省略 -->\n  </listeners>\n  <chunk item-count=\"3000\">\n    <reader ref=\"databaseItemReader\" />\n    <writer ref=\"databaseItemWriter\" />\n  </chunk>\n</step>\n```\n\n## ETL用JOB設定ファイル（DB登録）\n\n| キー | 設定する値 |\n|---|---|\n| type | `db2db`（固定） |\n| bean | 登録対象テーブルEntityの完全修飾名 |\n| sqlId | 登録用SQLのSQLID |\n\n```javascript\n\"extract\": {\n  \"type\": \"db2db\",\n  \"bean\": \"sample.Sample\",\n  \"sqlId\": \"SELECT_ALL\"\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

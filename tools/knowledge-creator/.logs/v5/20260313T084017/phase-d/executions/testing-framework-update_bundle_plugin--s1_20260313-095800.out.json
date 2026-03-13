@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-update_bundle_plugin--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source section 2: 作業時のディレクトリ構成",
+      "description": "Section 2 (作業時のディレクトリ構成) is entirely absent from the knowledge file. It contains a prerequisite step: obtain the latest Nablarch standard plugin bundle and arrange it with the same directory structure as described in initial_setup's 'UI開発基盤の取得と展開'. This must be completed before executing the 3-step update procedure.",
+      "source_evidence": "最新バージョンのNablarch標準プラグインのバンドルを取得し、:doc:`./initial_setup` の **UI開発基盤の取得と展開** で述べたディレクトリ構造と同じ構造になるように配置する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source section 1: UI開発基盤の更新方針",
+      "description": "Section 1 (UI開発基盤の更新方針) is entirely absent. Key decision-necessary information omitted: (1) updates can be adopted on a per-plugin basis, minimizing work effort and impact on existing PJ features; (2) the tip that Nablarch cannot know PJ-side extensions, so PJ must verify behavior after adoption. The tip's content is partially present in s1 but attributed to the plugin setup step instead of the update policy context, which misrepresents when and why this caution applies.",
+      "source_evidence": "機能の修正や追加はプラグイン単位で行うことができるので、取り込みに要する作業工数や、PJの既存機能に対する影響を極小化できる。 / ただし、PJ側の拡張や既存機能への影響に関して、Nablarch側では把握できないので、取り込み後の動作確認等はPJ側で担保する必要がある。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source section 3, step 2 — worked conflict resolution example",
+      "description": "The concrete worked example showing how to handle the merge when multiple customized plugins exist (rev:10 and rev:15 example with 6 specific steps using nablarch-css-color-default and xxx_project-css-common) is entirely omitted from s3. This example is the only place in the source that illustrates how to apply the abstract sub-steps (2-1 through 2-3) with real revision numbers and plugin names.",
+      "source_evidence": "下記の場合、rev:10, rev:15で2回の競合の解消を行う。1. nablarch-css-color-defaultを上書きする。2. リビジョン10にアップデートする。3. xxx_project-css-color-defaultに `_from` に設定されているnablarch-css-color-defaultの修正内容を上書きする。4. リビジョン15にアップデートする。5. xxx_project-css-commonに `_from` に設定されているnablarch-css-commonの修正内容を上書きする。6. PJ側の修正したリビジョンまでアップデートする。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — updated_plugin.json output example",
+      "description": "The inline comments in the updated_plugin.json output example that explain when each entry appears are omitted. The source shows three entries including a duplicate key for web_project-dev-ui_test-support at versions 1.0.1 and 1.0.0, with comments '// nablarch-css-coreが更新されていた場合' and '// 後述する_fromで指定したプラグインが更新されていた場合'. The knowledge file only shows two entries and no comments, losing the explanation of what conditions produce each type of entry.",
+      "source_evidence": "{ \"nablarch-css-core\" : \"1.0.0\" // nablarch-css-coreが更新されていた場合 , \"web_project-dev-ui_test-support\" : \"1.0.1\" // 後述する_fromで指定したプラグインが更新されていた場合 , \"web_project-dev-ui_test-support\" : \"1.0.0\" }"
+    }
+  ]
+}

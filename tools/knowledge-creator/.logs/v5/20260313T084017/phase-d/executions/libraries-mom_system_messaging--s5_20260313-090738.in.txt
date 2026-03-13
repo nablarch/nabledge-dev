@@ -1,0 +1,471 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/system_messaging/mom_system_messaging.rst`
+- Format: `rst`
+
+```
+同期応答でメッセージを送信する(同期応答メッセージ送信)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+外部システムに対してメッセージを送信し、その応答を待機する。応答メッセージを受信するか、待機タイムアウト時間が経過するまでブロックする。
+
+.. image:: ../images/system_messaging/mom_system_messaging-sync_message_send.png
+  :scale: 80
+
+:ref:`mom_system_messaging-async_message_send` とは異なり、応答電文を受信するので、
+通信先で処理が正しく行われることをある程度保証できる。
+ただし、何らかの問題により、規定時間内に応答を受信できずにタイムアウトした場合は、何らかのエラー処理(例えば、電文の再試行や障害通知など)を行う必要がある。
+
+送信電文に設定する :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>` の内容
+ 送信宛先ヘッダに加え、応答時の送信宛先となる応答宛先ヘッダを設定しておく必要がある。
+
+  :メッセージID: 設定不要(送信後に採番される)
+  :関連メッセージID: 設定不要
+  :送信宛先: 送信宛先の論理名
+  :応答宛先: 応答宛先の論理名
+  :有効期間: 任意
+
+外部システムが作成する応答電文の :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>` の内容
+ 送信処理完了後、アプリケーションは、送信した電文のメッセージIDと同じ関連メッセージIDをもつ電文が応答宛先上で受信されるまで待機する。
+ そのため、外部システムは応答電文に関連メッセージIDを設定しておく必要がある。
+
+  :メッセージID: 設定不要(送信後に採番される)
+  :関連メッセージID: 送信電文のメッセージIDヘッダの値
+  :送信宛先: 送信電文の応答宛先ヘッダの値
+  :応答宛先: 設定不要
+  :有効期間: 任意
+
+同期応答メッセージ送信では、定型的な処理をラップしたユーティリティクラスとして、
+:java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` を提供している。
+:java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>`
+を使用することにより、以下の成果物のみを作成すればよく、
+簡便に同期応答メッセージの送信処理を作成できるようになっている。
+
+* 送受信に使用するフォーマット定義ファイル
+* :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` を使った送受信処理
+
+:ref:`Exampleアプリケーション<example_application-mom_system_messaging>` をベースに、
+テーブルに格納された送信データから、
+バッチアクションでプロジェクト情報を送信する場合の実装例を以下に示す。
+テーブルからのデータ読み込み部分は、メッセージ送信に関係しないので実装例を省略する。
+
+実装例
+ \
+
+ 送受信に使用するフォーマット定義ファイル
+  ポイント
+   * ファイル名は以下とする。
+
+    * 送信用： ``<電文のリクエストID>_SEND.fmt``
+    * 受信用： ``<電文のリクエストID>_RECEIVE.fmt``
+
+   * レコードタイプ名は ``data`` 固定である。
+
+  ProjectInsertMessage_SEND.fmt
+   .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    2120    # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード
+
+    [data]
+    項目定義は省略
+
+  ProjectInsertMessage_RECEIVE.fmt
+   .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    130     # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード
+
+    [data]
+    項目定義は省略
+
+ MessageSenderを使った送受信処理
+  ポイント
+   * 要求電文は、 :java:extdoc:`SyncMessage<nablarch.fw.messaging.SyncMessage>` で作成する。
+   * メッセージ送信には、
+     :java:extdoc:`MessageSender#sendSync<nablarch.fw.messaging.MessageSender.sendSync(nablarch.fw.messaging.SyncMessage)>`
+     を使用する。
+     使い方については、リンク先のJavadocを参照。
+
+  SendProjectInsertMessageAction.java
+   .. code-block:: java
+
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // インプットデータを使った業務処理は省略
+
+            SyncMessage responseMessage = null;
+            try {
+                responseMessage = MessageSender.sendSync(
+                    new SyncMessage("ProjectInsertMessage").addDataRecord(inputData));
+            } catch (MessagingException e) {
+                // 送信エラー
+                throw new TransactionAbnormalEnd(100, e, "error.sendServer.fail");
+            }
+
+            Map<String, Object> responseDataRecord = responseMessage.getDataRecord();
+
+            // レスポンスデータを使った業務処理は省略
+
+            return new Success();
+        }
+
+ MessageSenderの設定
+  ポイント
+     * :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` を使用する場合は、
+       送受信先のキュー名やフォーマット定義ファイルの格納ディレクトリなどの設定が必要となる。
+       設定は、 :ref:`repository-environment_configuration` により行う。
+       設定項目については、
+       :java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.MessageSenderSettings(java.lang.String)>`
+       を参照。
+     * 送受信する電文の変換処理を変更する場合は、コンポーネント設定ファイルに :java:extdoc:`SyncMessageConvertor<nablarch.fw.messaging.SyncMessageConvertor>`
+       を継承したクラスを定義して、コンポーネントの名前を ``messageSender.DEFAULT.messageConvertorName`` に指定することで変更できる。
+       詳細については、 :ref:`フレームワーク制御ヘッダの読み書きを変更する（同期応答メッセージ送信の場合）<mom_system_messaging-change_fw_header_sync_ex>` を参照。
+
+  messaging.properties
+   .. code-block:: properties
+
+    messageSender.DEFAULT.messagingProviderName=defaultMessagingProvider
+    messageSender.DEFAULT.destination=TEST.REQUEST
+    messageSender.DEFAULT.replyTo=TEST.RESPONSE
+    messageSender.DEFAULT.retryCount=10
+    messageSender.DEFAULT.formatDir=format
+    messageSender.DEFAULT.headerFormatName=HEADER
+
+  コンポーネント設定ファイル
+   .. code-block:: xml
+
+    <!-- MessageSender設定を読込 -->
+    <config-file file="messaging/messaging.properties"/>
+
+
+.. _mom_system_messaging-async_message_receive:
+
+応答不要でメッセージを受信する(応答不要メッセージ受信)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+特定の宛先に送信されるメッセージを受信する。メッセージを受信するか待機タイムアウト時間が経過するまでブロックする。
+
+.. image:: ../images/system_messaging/mom_system_messaging-async_message_receive.png
+  :scale: 80
+
+外部システムが作成する受信電文の :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>` の内容
+  :メッセージID: 設定不要(送信後に採番される)
+  :関連メッセージID: 設定不要
+  :送信宛先: 宛先の論理名
+  :応答宛先: 設定不要
+  :有効期間: 任意
+
+応答不要メッセージ受信では、受信した電文を一時テーブル(電文受信テーブル)に保存するための共通的なアクションとして、
+:java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>`
+を提供している。
+:java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>`
+は、:ref:`mom_messaging` で動作するアクションクラスである。
+
+.. tip::
+ 一時テーブルに保存したデータは、 :ref:`batch_application` を用いて、
+ システムの本テーブルに取り込みを行うことを想定している。
+
+:java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>`
+を使用することにより、以下の成果物のみを作成すればよく、 非常に簡易的に電文をテーブルに保存することが可能となっている。
+
+* 電文を登録するための一時テーブル
+* 電文のレイアウトを表すフォーマット定義ファイル
+* 電文を登録するためのINSERT文(SQLファイル)
+* 電文を登録する際に使用するフォームクラス
+
+:ref:`Exampleアプリケーション<example_application-mom_system_messaging>` をベースに、
+プロジェクト情報を受信する場合の実装例を以下に示す。
+
+実装例
+ \
+
+ 電文を登録するための一時テーブル
+  ポイント
+   * 受信した電文は、電文の種類毎に専用の一時テーブルに保存する。
+   * 主キーは、電文を一意に識別するためのIDを格納するカラムとする。
+     このカラムに格納する値は、 :ref:`generator` を用いてフレームワークで採番を行う。
+   * テーブルの属性情報には、受信した電文の各項目に対応するカラムを定義する。
+   * 各プロジェクトの方式に合わせて共通項目(登録ユーザIDや登録日時など)を定義する。
+
+  INS_PROJECT_RECEIVE_MESSAGE
+   ====================== ======================
+   受信メッセージ連番(PK) RECEIVED_MESSAGE_SEQUENCE
+   プロジェクト名         PROJECT_NAME
+   プロジェクト種別       PROJECT_TYPE
+   プロジェクト分類       PROJECT_CLASS
+       ：(省略)
+   ステータス             STATUS
+   登録ユーザID           INSERT_USER_ID
+   登録日時               INSERT_DATE
+   ====================== ======================
+
+ フォーマット定義ファイル
+  ポイント
+   * ファイル名は ``<受信電文のリクエストID>_RECEIVE.fmt`` とする。
+
+  ProjectInsertMessage_RECEIVE.fmt
+   .. code-block:: bash
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    2120    # 各レコードの長さ
+
+    [userData]
+    項目定義は省略
+
+ SQLファイル
+  ポイント
+   * ファイル名は ``<受信電文のリクエストID>.sql`` とする。
+   * SQL_IDは ``INSERT_MESSAGE`` とする。
+
+  ProjectInsertMessage.sql
+   .. code-block:: bash
+
+    INSERT_MESSAGE =
+    INSERT INTO INS_PROJECT_RECEIVE_MESSAGE (
+        RECEIVED_MESSAGE_SEQUENCE,
+        PROJECT_NAME,
+        PROJECT_TYPE,
+        PROJECT_CLASS,
+        以下省略
+
+ 電文を登録する際に使用するフォームクラス
+  ポイント
+   * クラス名は ``<受信電文のリクエストID>Form`` とする。
+   * :java:extdoc:`String<java.lang.String>`、:java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>`
+     の2つの引数を持つコンストラクタを定義する。それぞれのパラメータの意味は以下の通り。
+
+     * :java:extdoc:`String<java.lang.String>` -> 受信電文連番
+     * :java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>` -> 受信電文
+
+  ProjectInsertMessageForm.java
+   .. code-block:: java
+
+    public class ProjectInsertMessageForm {
+
+        /** 受信電文連番 */
+        private String receivedMessageSequence;
+
+        /** プロジェクト名 */
+        private String projectName;
+
+        // 他のフィールドは省略
+
+        public ProjectInsertMessageForm(
+                String receivedMessageSequence, RequestMessage message) {
+            this.receivedMessageSequence = receivedMessageSequence;
+
+            DataRecord data = message.getRecordOf("userData");
+
+            projectName = data.getString("projectName");
+
+            // 以降の処理は省略
+        }
+
+        // アクセッサは省略
+    }
+
+ AsyncMessageReceiveActionの設定
+  ポイント
+   * :java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>`
+     を使用する場合は、フォーマット定義ファイルやSQLファイルの配置場所などの設定が必要となる。
+     設定は、
+     :java:extdoc:`AsyncMessageReceiveActionSettings<nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings>`
+     をコンポーネント定義に追加することで行う。
+     設定項目については、リンク先のJavadocを参照。
+
+  messaging-async-receive-component-configuration.xml
+   .. code-block:: xml
+
+    <component name="asyncMessageReceiveActionSettings"
+               class="nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings">
+      <property name="formClassPackage" value="com.nablarch.example.form" />
+      <property name="receivedSequenceFormatter">
+        <component class="nablarch.common.idgenerator.formatter.LpadFormatter">
+          <property name="length" value="10" />
+          <property name="paddingChar" value="0" />
+        </component>
+      </property>
+      <property name="receivedSequenceGenerator" ref="idGenerator" />
+      <property name="targetGenerateId" value="9991" />
+      <property name="sqlFilePackage" value="com.nablarch.example.sql" />
+    </component>
+
+ AsyncMessageReceiveActionの適用
+  ポイント
+   * :java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>` を
+     :ref:`mom_messaging` で動作させるためには、
+     :ref:`request_path_java_package_mapping` のコンポーネント定義で
+     :java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>` を指定する。
+
+  messaging-async-receive-component-configuration.xml
+   .. code-block:: xml
+
+    <component class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+      <property name="basePackage"
+                value="nablarch.fw.messaging.action.AsyncMessageReceiveAction" />
+      <property name="immediate" value="false" />
+    </component>
+
+.. _mom_system_messaging-sync_message_receive:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-mom_system_messaging--s5`
+
+```json
+{
+  "id": "libraries-mom_system_messaging--s5",
+  "title": "同期応答でメッセージを送信する(同期応答メッセージ送信)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/system_messaging/mom_system_messaging.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSender.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/SyncMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSenderSettings.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/SyncMessageConvertor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageReceiveAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageReceiveActionSettings.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/RequestMessage.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "同期応答でメッセージを送信する(同期応答メッセージ送信)",
+      "hints": [
+        "MessageSender",
+        "SyncMessage",
+        "MessagingException",
+        "MessageSenderSettings",
+        "SyncMessageConvertor",
+        "sendSync",
+        "同期応答メッセージ送信",
+        "外部システム連携",
+        "フォーマット定義ファイル",
+        "応答宛先"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "応答不要でメッセージを受信する(応答不要メッセージ受信)",
+      "hints": [
+        "AsyncMessageReceiveAction",
+        "AsyncMessageReceiveActionSettings",
+        "RequestMessage",
+        "formClassPackage",
+        "receivedSequenceFormatter",
+        "応答不要メッセージ受信",
+        "電文受信テーブル",
+        "フォームクラス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "外部システムにメッセージを送信し応答を待機する（応答受信またはタイムアウトまでブロック）。:ref:`mom_system_messaging-async_message_send` と異なり応答電文を受信するため通信先での処理完了をある程度保証できる。タイムアウト時はエラー処理（再試行・障害通知など）が必要。\n\n![同期応答メッセージ送信フロー](assets/libraries-mom_system_messaging--s5/mom_system_messaging-sync_message_send.png)\n\n**送信電文の :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>`**: 送信宛先ヘッダに加え、応答宛先ヘッダの設定が必要。\n\n| ヘッダ | 設定内容 |\n|---|---|\n| メッセージID | 設定不要（送信後採番） |\n| 関連メッセージID | 設定不要 |\n| 送信宛先 | 送信宛先の論理名 |\n| 応答宛先 | 応答宛先の論理名（必須） |\n| 有効期間 | 任意 |\n\n**応答電文の :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>`（外部システムが設定）**: 送信後、アプリは送信電文のメッセージIDと同じ関連メッセージIDを持つ電文を応答宛先で待機する。外部システムは応答電文に関連メッセージIDを設定する必要がある。\n\n| ヘッダ | 設定内容 |\n|---|---|\n| メッセージID | 設定不要（送信後採番） |\n| 関連メッセージID | 送信電文のメッセージIDヘッダの値 |\n| 送信宛先 | 送信電文の応答宛先ヘッダの値 |\n| 応答宛先 | 設定不要 |\n| 有効期間 | 任意 |\n\n**クラス**: :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>`\n\n:java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` を使用することで以下の成果物のみ作成すればよい:\n- 送受信に使用するフォーマット定義ファイル\n- :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>` を使った送受信処理\n\nフォーマット定義ファイル命名規則:\n- 送信用: `<電文のリクエストID>_SEND.fmt`\n- 受信用: `<電文のリクエストID>_RECEIVE.fmt`\n- レコードタイプ名は `data` 固定\n\n送受信処理のポイント:\n- 要求電文は :java:extdoc:`SyncMessage<nablarch.fw.messaging.SyncMessage>` で作成\n- 送信は :java:extdoc:`MessageSender#sendSync<nablarch.fw.messaging.MessageSender.sendSync(nablarch.fw.messaging.SyncMessage)>` を使用\n\n```java\nSyncMessage responseMessage = MessageSender.sendSync(\n    new SyncMessage(\"ProjectInsertMessage\").addDataRecord(inputData));\n```\n\nMessageSenderの設定は :ref:`repository-environment_configuration` で行う。設定項目は :java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.MessageSenderSettings(java.lang.String)>` を参照。\n\n```properties\nmessageSender.DEFAULT.messagingProviderName=defaultMessagingProvider\nmessageSender.DEFAULT.destination=TEST.REQUEST\nmessageSender.DEFAULT.replyTo=TEST.RESPONSE\nmessageSender.DEFAULT.retryCount=10\nmessageSender.DEFAULT.formatDir=format\nmessageSender.DEFAULT.headerFormatName=HEADER\n```\n\n```xml\n<config-file file=\"messaging/messaging.properties\"/>\n```\n\n電文変換処理を変更する場合は :java:extdoc:`SyncMessageConvertor<nablarch.fw.messaging.SyncMessageConvertor>` を継承したクラスをコンポーネント定義し、コンポーネント名を `messageSender.DEFAULT.messageConvertorName` に指定する。詳細は :ref:`mom_system_messaging-change_fw_header_sync_ex` を参照。",
+    "s2": "特定宛先のメッセージを受信する（受信またはタイムアウトまでブロック）。\n\n![応答不要メッセージ受信フロー](assets/libraries-mom_system_messaging--s5/mom_system_messaging-async_message_receive.png)\n\n**受信電文の :ref:`共通プロトコルヘッダ<mom_system_messaging-common_protocol_header>`（外部システムが設定）**:\n\n| ヘッダ | 設定内容 |\n|---|---|\n| メッセージID | 設定不要（送信後採番） |\n| 関連メッセージID | 設定不要 |\n| 送信宛先 | 宛先の論理名 |\n| 応答宛先 | 設定不要 |\n| 有効期間 | 任意 |\n\n**クラス**: :java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>`（:ref:`mom_messaging` で動作する共通アクション。受信電文を電文受信テーブルに保存する）\n\n> **補足**: 一時テーブルに保存したデータは :ref:`batch_application` を用いてシステムの本テーブルに取り込むことを想定している。\n\n:java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>` 使用時の必要成果物:\n- 電文を登録するための一時テーブル\n- フォーマット定義ファイル\n- INSERT文（SQLファイル）\n- フォームクラス\n\n**一時テーブル設計ポイント**:\n- 電文種類ごとに専用の一時テーブルを作成\n- 主キーは電文一意識別IDカラム（:ref:`generator` で採番）\n\n**フォーマット定義ファイル**: ファイル名 `<受信電文のリクエストID>_RECEIVE.fmt`、レコードタイプ名は `userData`\n\n**SQLファイル**: ファイル名 `<受信電文のリクエストID>.sql`、SQL_IDは `INSERT_MESSAGE`\n\n**フォームクラス要件**:\n- クラス名: `<受信電文のリクエストID>Form`\n- コンストラクタ引数: `String`（受信電文連番）と :java:extdoc:`RequestMessage<nablarch.fw.messaging.RequestMessage>`（受信電文）の2引数\n\n**AsyncMessageReceiveActionSettings設定**（:java:extdoc:`AsyncMessageReceiveActionSettings<nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings>` をコンポーネント定義に追加）:\n\n```xml\n<component name=\"asyncMessageReceiveActionSettings\"\n           class=\"nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings\">\n  <property name=\"formClassPackage\" value=\"com.nablarch.example.form\" />\n  <property name=\"receivedSequenceFormatter\">\n    <component class=\"nablarch.common.idgenerator.formatter.LpadFormatter\">\n      <property name=\"length\" value=\"10\" />\n      <property name=\"paddingChar\" value=\"0\" />\n    </component>\n  </property>\n  <property name=\"receivedSequenceGenerator\" ref=\"idGenerator\" />\n  <property name=\"targetGenerateId\" value=\"9991\" />\n  <property name=\"sqlFilePackage\" value=\"com.nablarch.example.sql\" />\n</component>\n```\n\n:ref:`mom_messaging` で動作させるには :ref:`request_path_java_package_mapping` のコンポーネント定義で :java:extdoc:`AsyncMessageReceiveAction<nablarch.fw.messaging.action.AsyncMessageReceiveAction>` を指定する:\n\n```xml\n<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\"\n            value=\"nablarch.fw.messaging.action.AsyncMessageReceiveAction\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

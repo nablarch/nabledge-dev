@@ -1,0 +1,532 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/code.rst`
+- Format: `rst`
+
+```
+使用方法
+--------------------------------------------------
+
+.. _code-setup_table:
+
+コード管理機能を使用する為の初期設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能を使用するためには、コードを管理するためのテーブルを作成し、その情報を設定ファイルに設定する必要がある。
+
+以下にテーブルの構造及び設定例を示す。
+
+テーブルの構造
+  コード情報は、 ``コードパターンテーブル`` と ``コード名称テーブル`` の2つのテーブルを使用する。
+  2テーブルの関係は、以下のとおり。
+
+  .. image:: images/code/code_table.png
+
+  |
+  |
+
+  各カラムの用途などは、以下の通り。
+
+  :ID:            コード情報を一意に識別するためのID
+
+                  性別区分や住所区分毎に一意のIDを設定する。
+
+  :VALUE:         コード情報内の名称を識別する値
+
+                  性別区分であれば、 ``male`` や ``female`` といった値になる。
+
+  :PATTERN:       値を使用するか否かのフラグ( ``0`` または ``1`` を設定する)
+
+                  有効な値を切り替えたい場合に使用する。不要な場合は省略可能。
+
+                  詳細は :ref:`code-use_pattern` を参照。
+
+  :LANG:          言語
+
+                  多言語化対応する場合に、サポートする言語の *Local#getLanguage()* を格納する。
+
+                  日本語のみをサポートする場合は、 ``ja`` を設定する。
+
+  :SORT_ORDER:    ソート順
+
+                  IDに紐づく一覧情報を取得すると、このカラムに設定された値の昇順で結果が返される。
+
+                  詳細は :ref:`code-use_sort_order` を参照。
+
+  :NAME:          名称
+  
+                  VALUEに対応した名称を設定する。
+
+  :SHORT_NAME:    略称
+
+                  VALUEに対応した略称を設定する。
+
+  :OPTIONAL_NAME: オプション名称
+
+                  名称と略称だけでは、表示する文言の値を管理しきれない場合に使用する。
+                  カラム名やカラム数は必要数定義することが出来る。
+
+                  詳細は、 :ref:`code-option_name` を参照。
+                
+
+設定ファイル例
+  コード管理を使用する為の設定ファイル例を以下に示す。
+
+  ポイント
+    * :java:extdoc:`BasicCodeManager <nablarch.common.code.BasicCodeManager>` のコンポーネント名は、 **codeManager** とすること。
+    * :java:extdoc:`BasicStaticDataCache <nablarch.core.cache.BasicStaticDataCache>` の :java:extdoc:`loadOnStartup <nablarch.core.cache.BasicStaticDataCache.setLoadOnStartup(boolean)>` に対する設定値は、 :ref:`static_data_cache-cache_timing` を参照すること。
+    * :java:extdoc:`BasicStaticDataCache <nablarch.core.cache.BasicStaticDataCache>` は、初期化が必要なので初期化対象のリストに設定すること。
+
+  .. code-block:: xml
+
+    <component name="codeLoader" class="nablarch.common.code.BasicCodeLoader">
+
+      <!-- コードパターンテーブルのスキーマ情報 -->
+      <property name="codePatternSchema">
+        <component class="nablarch.common.code.schema.CodePatternSchema">
+          <!-- CodePatternSchemaのプロパティにテーブル名及びカラム名を設定する。 -->
+        </component>
+      </property>
+
+      <!-- コード名称テーブルのスキーマ情報 -->
+      <property name="codeNameSchema">
+        <component class="nablarch.common.code.schema.CodeNameSchema">
+          <!-- CodeNameSchemaのプロパティにテーブル名及びカラム名を設定する。 -->
+        </component>
+      </property>
+    </component>
+
+    <!-- データベースから取得した情報をキャッシュするための設定 -->
+    <component name="codeCache" class="nablarch.core.cache.BasicStaticDataCache" >
+      <property name="loader" ref="codeLoader"/>
+      <property name="loadOnStartup" value="false"/>
+    </component>
+
+    <!-- データベースから取得した情報をキャッシュするクラスをBasicCodeManagerに設定する -->
+    <component name="codeManager" class="nablarch.common.code.BasicCodeManager" >
+      <property name="codeDefinitionCache" ref="codeCache"/>
+    </component>
+
+    <!-- BasicStaticDataCacheは初期化が必要なため初期化リストに設定する -->
+    <component name="initializer"
+        class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+      <property name="initializeList">
+        <list>
+          <component-ref name="codeCache"/>
+        </list>
+      </property>
+    </component>
+    
+
+.. _code-use_pattern:
+
+機能毎に使用するコード情報を切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+コード情報をリスト表示する際に、機能毎に表示・非表示を切り替えたい場合がある。
+このような場合は、コードパターンテーブルのパターンを用いて、機能毎にどのパターンの情報を表示するか否かを切り替える。
+
+
+以下に例を示す。
+
+コードパターンテーブルにパターンカラムを定義する
+  コードパターンテーブルに表示パターンを持つパターン列を定義する。
+
+  パターン列は、 :java:extdoc:`CodePatternSchema.patternColumnNames <nablarch.common.code.schema.CodePatternSchema.setPatternColumnNames(java.lang.String:A)>` に設定することで使用可能となる。
+  設定ファイルへの設定方法は、 :ref:`code-setup_table` を参照。
+
+
+  この例では、 ``PATTERN1`` と ``PATTERN2`` の2つのパターンを定義し、
+  ``PATTERN2`` ではOTHERを非表示としている。
+
+  コードパターンテーブル
+    ======= =========   ========  ===========
+    ID      VALUE       PATTERN1  PATTERN2
+    ======= =========   ========  ===========
+    GENDER  MALE        1         1
+    GENDER  FEMALE      1         1
+    GENDER  OTHER       1         0
+    ======= =========   ========  ===========
+
+  コード名称テーブル
+    ======= ========= ====  ==========  ==========  ===========
+    ID      VALUE     LANG  SORT_ORDER  NAME        SHORT_NAME
+    ======= ========= ====  ==========  ==========  ===========
+    GENDER  MALE      ja    1           男性        男
+    GENDER  FEMALE    ja    2           女性        女
+    GENDER  OTHER     ja    3           その他      他
+    ======= ========= ====  ==========  ==========  ===========
+
+パターンを指定してコード情報を取得する
+  コード情報は、 :java:extdoc:`CodeUtil <nablarch.common.code.CodeUtil>` を使用して取得する。
+
+  パターンを使用する場合、どのパターンを使用するかは文字列で指定する。
+  この値は、 :ref:`code-setup_table` で設定ファイルに設定したカラム名と厳密に一致させる必要がある。
+
+  .. code-block:: java
+
+
+    // PATTER1のリストを取得する。
+    // [MALE, FEMALE, OTHER]が取得できる。
+    List<String> pattern1 = CodeUtil.getValues("GENDER", "PATTERN1");
+
+    // PATTER2のリストを取得する。
+    // [MALE, FEMALE]が取得できる。
+    List<String> pattern2 = CodeUtil.getValues("GENDER", "PATTERN2");
+
+画面(JSP)でパターンを指定してコード情報を取得する
+  コード情報を取得するカスタムタグライブラリを使用する際に、パターンを指定することでそのパターンの情報のみが表示される。
+
+  カスタムタグライブラリの詳細な使用方法は、以下を参照。
+
+  * :ref:`tag-code_input_output`
+
+  PATTERN2を指定する場合は、以下のように `pattern` 属性に指定する。
+
+  .. code-block:: jsp
+
+    <n:codeSelect name="form.gender" codeId="GENDER" pattern="PATTERN2" cssClass="form-control" />
+
+  PATTERN2で対象となっている、 ``男性`` と ``女性`` が出力される。
+  
+  .. image:: images/code/code_pattern.png
+
+
+.. _code-use_multilingualization:
+
+名称の多言語化対応
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+名称の多言語化対応を行うには、コード名称テーブルにサポートする言語ごとのデータを準備する。
+
+以下に例を示す。
+
+コード名称テーブルのデータ
+  この例の場合、 ``ja`` と ``en`` の２つの言語がサポートされる。
+
+  ======= ========= ====  ==========  ==========  ===========
+  ID      VALUE     LANG  SORT_ORDER  NAME        SHORT_NAME
+  ======= ========= ====  ==========  ==========  ===========
+  GENDER  MALE      ja    1           男性        男
+  GENDER  FEMALE    ja    2           女性        女
+  GENDER  OTHER     ja    3           その他      他
+  GENDER  MALE      en    1           Male        M
+  GENDER  FEMALE    en    2           Female      F
+  GENDER  OTHER     en    3           Unknown     \-
+  ======= ========= ====  ==========  ==========  ===========
+
+言語を指定してコード情報を取得する
+  :java:extdoc:`CodeUtil <nablarch.common.code.CodeUtil>` を使用して、言語に対応した名称を取得出来る。
+
+  .. code-block:: java
+
+    // 名称
+    CodeUtil.getName("GENDER", "MALE", Locale.JAPANESE);    // -> 男性
+    CodeUtil.getName("GENDER", "MALE", Locale.ENGLISH);     // -> Male
+
+    // 略称
+    CodeUtil.getShortName("GENDER", "MALE", Locale.JAPANESE) // -> 男
+    CodeUtil.getShortName("GENDER", "MALE", Locale.ENGLISH) // -> M
+
+.. important::
+
+  JSP用に提供されているカスタムタグライブラリでは、言語指定による値の取得はできないので注意すること。
+  カスタムタグライブラリが使用する言語情報の詳細は、 :ref:`tag-code_input_output` を参照。
+
+.. _code-use_sort_order:
+
+画面などで表示する名称のソート順を定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+画面のリストボックやチェックボックスにコード情報を表示する際のソート順を定義出来る。
+ソート順は、国ごとに異なる可能性があるため、言語ごとに設定することが出来る。
+
+
+以下に例を示す。
+
+コード名称テーブルのSORT_ORDERにソート順を設定する
+  ソート順は、コード名称テーブルのSORT_ORDERカラムに設定する。
+
+  この例では、 ``MALE`` -> ``FEMALE`` -> ``OTHER`` の順に表示される。
+
+  ======= ========= ====  ==========  ==========  ===========
+  ID      VALUE     LANG  SORT_ORDER  NAME        SHORT_NAME
+  ======= ========= ====  ==========  ==========  ===========
+  GENDER  MALE      ja    1           男性        男
+  GENDER  FEMALE    ja    2           女性        女
+  GENDER  OTHER     ja    3           その他      他
+  ======= ========= ====  ==========  ==========  ===========
+
+画面表示例
+  カスタムタグライブラリの `codeSelect` を使用した場合は、
+  以下のように  ``MALE(男性)`` -> ``FEMALE(女性)`` -> ``OTHER(その他)`` の順に表示される。
+
+  .. image:: images/code/code_sort.png
+
+.. _code-option_name:
+
+名称、略称以外の名称を定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+デフォルトの動作では名称と略称の2種類の名称を使用できる。
+
+要件によっては、これら以外の表示名称を定義したい場合がある。
+この場合は、オプション名称領域を使用して対応する。
+
+以下に例を示す。
+ 
+コード名称テーブルにオプション名称カラムを定義する
+  コード名称テーブルに、オプションの名称を持つカラムを定義する。
+
+  パターン列は、 :java:extdoc:`CodePatternSchema.patternColumnNames <nablarch.common.code.schema.CodePatternSchema.setPatternColumnNames(java.lang.String:A)>` に設定することで使用可能となる。
+  設定ファイルへの設定方法は、 :ref:`code-setup_table` を参照。
+
+  この例では、オプション名称のカラムとして、 ``FORM_NAME`` と ``KANA_NAME`` の2つを定義している。
+
+  ======= ========= ====  ==========  ==========  =========== =========== ===========
+  ID      VALUE     LANG  SORT_ORDER  NAME        SHORT_NAME  FORM_NAME   KANA_NAME
+  ======= ========= ====  ==========  ==========  =========== =========== ===========
+  GENDER  MALE      ja    1           男性        男          Male        おとこ
+  GENDER  FEMALE    ja    2           女性        女          Female      おんな
+  GENDER  OTHER     ja    3           その他      他          Other       そのた
+  ======= ========= ====  ==========  ==========  =========== =========== ===========
+
+
+オプションの名称を取得する
+  オプション名称は、  :java:extdoc:`CodeUtil <nablarch.common.code.CodeUtil>` を使用して取得する。
+
+  オプション名称を取得する場合、どのオプション名称を取得するかを文字列で指定する。
+  この値は、 :ref:`code-setup_table` で設定ファイルに設定したカラム名と厳密に一致させる必要がある。
+
+  .. code-block:: java
+
+    CodeUtil.getOptionalName("GENDER", "MALE", "KANA_NAME") // -> おとこ
+    CodeUtil.getOptionalName("GENDER", "FEMALE", "FORM_NAME", Locale.JAPANESE) // -> Female
+
+画面(JSP)でオプショナル名称を表示する
+  カスタムタグライブラリを使用する際に、オプショナル名称を指定することでその名称を表示できる。
+
+  カスタムタグライブラリの詳細な使用方法は以下を参照。
+
+  * code_select
+  * code
+
+  KANA_NAMEの名称を表示する場合は、以下のように `optionColumnName` を指定し、 `labelPattern` に **$OPTIONALNAME$** を指定する。
+
+  .. code-block:: jsp
+
+    <n:codeSelect name="form.gender" codeId="GENDER" optionColumnName="KANA_NAME" cssClass="form-control" labelPattern="$OPTIONALNAME$"/>
+
+  オプション名称のKANA_NAMEの値が表示される。
+  
+  .. image:: images/code/code_option_name.png
+
+.. _code-validation:
+
+入力値が有効なコード値かチェックする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+入力値(画面の場合はクライアントから送信されるリクエストパラメータ)が、コードの有効範囲内かをチェック出来る機能を提供する。
+この機能を使用すると、アノテーションの設定のみで入力値のチェックを行える。
+
+以下に例を示す。
+
+:ref:`bean_validation`
+  :ref:`bean_validation` を使用する場合は、 :java:extdoc:`nablarch.common.code.validator.ee.CodeValue` アノテーションを使用する。
+
+  .. code-block:: java
+
+    @CodeValue(codeId = "GENDER")
+    private String gender;
+
+:ref:`nablarch_validation`
+  :ref:`nablarch_validation` を使用する場合は、 :java:extdoc:`nablarch.common.code.validator.CodeValue` アノテーションを使用する。
+
+  .. code-block:: java
+
+    @CodeValue(codeId = "GENDER")
+    public void setGender(String gender) {
+      this.gender = gender;
+    }
+
+入力画面などで、 :ref:`パターン <code-use_pattern>` を使用して、選択できる値を制限した場合、
+バリデーション時にもそのパターン内で有効な値かをチェックする必要がある。
+
+バリデーション用のアノテーションの `pattern` 属性にパターン名を指定することで、
+そのパターンで有効な値かをチェックできる。
+
+以下に例を示す。
+
+.. code-block:: java
+
+  @CodeValue(codeId = "GENDER", pattern = "PATTERN2")
+  private String gender;
+
+.. tip::
+
+  :ref:`ドメインバリデーション <bean_validation-domain_validation>` を使用した場合、1つのドメインに対して1つのパターンしか指定できない。
+  このため、複数のパターンに対応するためには、パターンに対応したドメインを定義する必要がある。
+
+  ただし、全てのパターンに対応したドメインを定義する必要はなく、バリデーションで必要なドメインのみ定義すればよい。
+
+  以下に例を示す。
+
+  .. code-block:: java
+
+    public class SampleDomainBean {
+
+      // PATTERN1用のドメイン
+      @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN1")
+      String flowStatusGeneral;
+
+      // PATTERN2用のドメイン
+      @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN2")
+      String flowStatusGuest;
+
+    }
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-code--s3`
+
+```json
+{
+  "id": "libraries-code--s3",
+  "title": "使用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/code.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/BasicCodeManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/cache/BasicStaticDataCache.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/schema/CodePatternSchema.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/CodeUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/schema/CodeNameSchema.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/validator/ee/CodeValue.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/validator/CodeValue.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用方法",
+      "hints": [
+        "BasicCodeManager",
+        "BasicStaticDataCache",
+        "BasicCodeLoader",
+        "CodePatternSchema",
+        "CodeNameSchema",
+        "CodeUtil",
+        "@CodeValue",
+        "codeManager",
+        "codeDefinitionCache",
+        "loadOnStartup",
+        "patternColumnNames",
+        "コード管理初期設定",
+        "コードパターン切り替え",
+        "多言語化対応",
+        "ソート順定義",
+        "オプション名称",
+        "コードバリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## コード管理機能を使用する為の初期設定\n\nコードパターンテーブルとコード名称テーブルの2テーブルを使用する。\n\n| カラム | 用途 |\n|---|---|\n| ID | コード情報を一意に識別するID（性別区分・住所区分ごとに一意） |\n| VALUE | コード情報内の名称を識別する値（例: male, female） |\n| PATTERN | 値を使用するか否かのフラグ（0 or 1）。不要な場合省略可能 |\n| LANG | 言語（日本語のみの場合 `ja`） |\n| SORT_ORDER | ソート順（昇順で返される） |\n| NAME | 名称 |\n| SHORT_NAME | 略称 |\n| OPTIONAL_NAME | オプション名称（カラム名・数は必要数定義可） |\n\n設定のポイント:\n- :java:extdoc:`BasicCodeManager <nablarch.common.code.BasicCodeManager>` のコンポーネント名は **codeManager** とすること\n- :java:extdoc:`BasicStaticDataCache <nablarch.core.cache.BasicStaticDataCache>` の :java:extdoc:`loadOnStartup <nablarch.core.cache.BasicStaticDataCache.setLoadOnStartup(boolean)>` 設定は :ref:`static_data_cache-cache_timing` 参照\n- :java:extdoc:`BasicStaticDataCache <nablarch.core.cache.BasicStaticDataCache>` は初期化が必要なため初期化対象リストに設定すること\n\n```xml\n<component name=\"codeLoader\" class=\"nablarch.common.code.BasicCodeLoader\">\n  <property name=\"codePatternSchema\">\n    <component class=\"nablarch.common.code.schema.CodePatternSchema\">\n      <!-- CodePatternSchemaのプロパティにテーブル名及びカラム名を設定する。 -->\n    </component>\n  </property>\n  <property name=\"codeNameSchema\">\n    <component class=\"nablarch.common.code.schema.CodeNameSchema\">\n      <!-- CodeNameSchemaのプロパティにテーブル名及びカラム名を設定する。 -->\n    </component>\n  </property>\n</component>\n\n<component name=\"codeCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n  <property name=\"loader\" ref=\"codeLoader\"/>\n  <property name=\"loadOnStartup\" value=\"false\"/>\n</component>\n\n<component name=\"codeManager\" class=\"nablarch.common.code.BasicCodeManager\">\n  <property name=\"codeDefinitionCache\" ref=\"codeCache\"/>\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"codeCache\"/>\n    </list>\n  </property>\n</component>\n```\n\n## 機能毎に使用するコード情報を切り替える\n\nコードパターンテーブルのパターンカラムで機能ごとに表示・非表示を切り替える。パターン名は設定ファイルで設定したカラム名と**厳密に一致**させる必要がある。\n\nパターン列は :java:extdoc:`CodePatternSchema.patternColumnNames <nablarch.common.code.schema.CodePatternSchema.setPatternColumnNames(java.lang.String:A)>` に設定することで使用可能（設定方法は :ref:`code-setup_table` 参照）。\n\n```java\n// PATTERN1のリスト（OTHERを含む）を取得\nList<String> pattern1 = CodeUtil.getValues(\"GENDER\", \"PATTERN1\");\n// PATTERN2のリスト（OTHERを非表示）を取得\nList<String> pattern2 = CodeUtil.getValues(\"GENDER\", \"PATTERN2\");\n```\n\nJSPでのパターン指定（`pattern`属性）:\n```jsp\n<n:codeSelect name=\"form.gender\" codeId=\"GENDER\" pattern=\"PATTERN2\" cssClass=\"form-control\" />\n```\n\n## 名称の多言語化対応\n\nコード名称テーブルにサポートする言語ごとのデータを準備する（LANG列に言語コードを設定）。\n\n```java\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.JAPANESE);       // -> 男性\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.ENGLISH);        // -> Male\nCodeUtil.getShortName(\"GENDER\", \"MALE\", Locale.JAPANESE);  // -> 男\nCodeUtil.getShortName(\"GENDER\", \"MALE\", Locale.ENGLISH);   // -> M\n```\n\n> **重要**: JSPカスタムタグライブラリでは言語指定による値の取得はできない。詳細は :ref:`tag-code_input_output` を参照。\n\n## 画面などで表示する名称のソート順を定義する\n\nソート順はコード名称テーブルのSORT_ORDERカラムに設定する（昇順で返される）。言語ごとに設定可能。\n\n## 名称、略称以外の名称を定義する\n\nコード名称テーブルにオプション名称カラムを定義し、設定ファイルに設定することで使用可能。オプション名称取得時は設定ファイルで設定したカラム名と**厳密に一致**させる必要がある。\n\n```java\nCodeUtil.getOptionalName(\"GENDER\", \"MALE\", \"KANA_NAME\");                    // -> おとこ\nCodeUtil.getOptionalName(\"GENDER\", \"FEMALE\", \"FORM_NAME\", Locale.JAPANESE); // -> Female\n```\n\nJSPでのオプショナル名称表示（`optionColumnName`と`labelPattern=\"$OPTIONALNAME$\"`を指定）:\n```jsp\n<n:codeSelect name=\"form.gender\" codeId=\"GENDER\" optionColumnName=\"KANA_NAME\" cssClass=\"form-control\" labelPattern=\"$OPTIONALNAME$\"/>\n```\n\n## 入力値が有効なコード値かチェックする\n\nバリデーションアノテーションのみでコードの有効範囲内かをチェックできる。\n\n**:ref:`bean_validation` を使用する場合** — **アノテーション**: `nablarch.common.code.validator.ee.CodeValue`\n\n```java\n@CodeValue(codeId = \"GENDER\")\nprivate String gender;\n```\n\n**:ref:`nablarch_validation` を使用する場合** — **アノテーション**: `nablarch.common.code.validator.CodeValue`\n\n```java\n@CodeValue(codeId = \"GENDER\")\npublic void setGender(String gender) { this.gender = gender; }\n```\n\n`pattern`属性でパターン内の有効値かをチェック可能:\n```java\n@CodeValue(codeId = \"GENDER\", pattern = \"PATTERN2\")\nprivate String gender;\n```\n\n> **補足**: :ref:`ドメインバリデーション <bean_validation-domain_validation>` では1ドメインに1パターンのみ指定可能。複数パターンに対応する場合は、パターンごとにドメインを定義すること（バリデーションで必要なもののみ定義すれば良い）。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

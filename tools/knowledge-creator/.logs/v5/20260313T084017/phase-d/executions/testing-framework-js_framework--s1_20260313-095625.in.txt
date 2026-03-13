@@ -1,0 +1,516 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/internals/js_framework.rst`
+- Format: `rst`
+
+```
+==================================
+JavaScript UI部品
+==================================
+
+-----------
+概要
+-----------
+:doc:`js_framework` は、カレンダー表示やページ内タブページのように、
+通常のHTMLの範疇では実現できないUI機能を実装するJavaScript部品群である。
+これらの部品群は、以下の指針に基づき、独自実装されている。
+
+- Nablarchフレームワークの動作を前提とし、エラー時の入力データ復帰や、
+  非活性項目・変更不可項目など、サーバ処理との連携の整合性を重視する。
+   
+- 可能な限りJavaScriptを直接記述しなくてもカスタマイズできるようにする。  
+
+- UI標準に準じた挙動、統一的なデザインが実現されること。
+
+使用可能な各部品の仕様については :doc:`../reference_js_framework` を参照すること。
+
+使用例
+---------------------
+以下のソースコードは、画面内の入力要素に対してカレンダー入力部品を使用している例である。
+
+.. code-block:: jsp
+
+    <div class="field">
+      <label>適用開始日：</label>
+      <input id="effectiveDate" type="text" value="" />
+      <button class="nablarch_DatePicker
+                    -format yyyy/MM/dd
+                    -locale ja
+                    -input  effectiveDate">
+        <i class="fa fa-calendar"></i>
+      </button>
+    </div>
+
+`<button>` 要素に指定された **class** 属性の内容に注目してほしい。
+ここでは、 `<button>` 要素に適用する :doc:`js_framework` を指定する **マーカCSS** と呼ばれる識別子(**nablarch_DatePicker**)
+の後に当該の部品の挙動を定義する各種オプション(**-format yyyy/MM/dd -locale ja -input effectiveDate**)
+が続いている。
+このように :doc:`js_framework` の使用するには上記のようなCSSの指定のみを行えばよく、JavaScriptを直接記述する必要はない。
+
+
+**注)**  :doc:`js_framework` は基本的には :doc:`jsp_widgets` 内で使用することを想定しており、
+一般の業務画面実装者がこれらのAPIを直接使用することは想定していない。
+
+依存ライブラリ
+----------------------
+本機能は、以下の外部ライブラリに依存している。
+
+  ============= =================================================== =============
+  ライブラリ名  用途                                                ライセンス
+  ============= =================================================== =============
+  require.js    JavaScriptの分割モジュール管理                      MIT          
+  sugar.js      ECMAScript5互換関数を含むユーティリティAPI群の提供  ライセンスフリー    
+  jQuery        DOM関連APIの簡易化およびブラウザ互換レイヤの提供    MIT
+  ============= =================================================== =============
+
+---------------------------
+初期処理
+---------------------------
+:doc:`js_framework` の初期処理は各業務画面のJSPから参照している `/js/nablarch.js` もしくは
+それをミニファイした `/js/nablarch-minify.js` によって行われる。
+
+.. tip::
+  本番環境では、処理性能を最大化するため、全てのJavaScriptを事前にミニファイし、単一のJavaScriptとして
+  ロードするが、開発環境では、開発効率性を重視するため、各スクリプトは個別に動的ロード(XHR)される。
+
+初期処理は上記スクリプトのロードが完了した時点に行われる処理と、
+業務画面JSPのDOM構造が確定した時点(ドキュメントロード)の処理の2段階に分けて実行される。
+
+スクリプトロード時の挙動
+----------------------------
+:doc:`js_framework` は AMD(Asynchronous Module Definition) 形式に沿って実装されており、
+AMDモジュール管理ライブラリである **require.js** により、動的にロードもしくは事前にミニファイされる。
+
+:doc:`js_framework` のロードは `/js/nablarch.js` 内の以下の処理によって開始される。
+
+.. code-block:: javascript
+
+  // 初期ロード対象コンポーネント
+  require(["nablarch/ui"], function(ui) {
+    $(function() {
+      ui.Widget.init(); //ドキュメントロード後の初期化処理を実行
+    });
+  });
+
+上記ソースコードによってロードされるモジュールが `/js/nablarch/ui.js <../../../../_static/ui_dev/yuidoc/files/js_nablarch_ui.js.html>`_ である。
+このモジュールは、プロジェクトで使用する全UI部品を以下のように依存モジュールとして定義している。
+
+.. code-block:: javascript
+
+  define([
+    "nablarch/ui/Widget"
+  , "nablarch/ui/event"  
+  , "nablarch/ui/ListBuilder"
+  , "nablarch/ui/DatePicker"
+  , "nablarch/ui/AutoSum"
+  , "nablarch/ui/Collapsible"  
+  , "nablarch/ui/TreeList"
+  , "nablarch/ui/readonly"
+  , "nablarch/ui/Placeholder"
+  , "nablarch/ui/Tab"
+  ], function(Widget) { "use strict";
+    return {
+      Widget: Widget
+    };
+  });
+
+各UI部品側では、先に述べた **マーカCSS** の宣言と、UI部品の登録処理
+(`Widget.register() <../../../../_static/ui_dev/yuidoc/classes/nablarch.ui.Widget.html>`_)を呼び出す。
+以下は `/js/nablarch/ui/DatePicker.js <../../../../_static/ui_dev/yuidoc/classes/nablarch.ui.DatePicker.html>`_ の例である。
+
+.. code-block:: javascript
+
+  DatePicker.widgetType = "nablarch_DatePicker"; //マーカCSS
+  Widget.register(DatePicker); // UI部品の登録
+
+このように全てのUI部品の初期化と登録が完了すると、最初の `/js/nablarch.js` に制御が戻り
+`Widget.init() <../../../../_static/ui_dev/yuidoc/classes/nablarch.ui.Widget.html>`_ をドキュメントロード後に呼び出す。
+(イベントハンドラ登録する。)
+
+
+ドキュメントロード時の挙動
+-----------------------------
+ドキュメントロード後に呼び出される
+`Widget.init() <../../../../_static/ui_dev/yuidoc/classes/nablarch.ui.Widget.html>`_ では、各UI部品に対して以下の初期処理を実行する。
+
+1. **マーカCSS** にマッチするドキュメント上の各要素に対してUI部品のインスタンスを作成する。
+   この際、要素のNodeインスタンスおよびマーカCSSに付随するオプションをパースしたオブジェクトが
+   コンストラクタの引数として渡される。
+
+2. 生成したインスタンスを当該要素の **data-** プロパティとして設定し
+   UI部品のインスタンスがGCの対象とならないようにする。
+   なお、1. の初期化処理の前に、この **data-** プロパティの内容をチェックするので
+   同じ要素に対して複数回初期化が行われることはない。
+
+
+UI部品の再初期化
+------------------------------------
+JavaScriptのテンプレート処理などによって、画面ロード完了後に **マーカCSS** を含むドキュメントノードを
+動的に追加しても、そのままでは上で述べた初期化処理は実行されず、期待された動作とならない。
+このような場合は明示的に `Widget.init() <../../../../_static/ui_dev/yuidoc/classes/nablarch.ui.Widget.html>`_
+を呼び出す必要がある。
+
+上で述べたように、既に初期化されている要素に対しては何もしないので、複数回実行しても
+既にドキュメント上に存在しているUI部品に影響を与えることはない。
+
+-------------------------
+ファイル構成
+-------------------------
+
+**構成ファイル一覧**
+
+============================ ======== ======= ============================ ==========================================================================
+名称                         動作環境 [#1]_   パス                         内容                       
+---------------------------- ---------------- ---------------------------- --------------------------------------------------------------------------
+_                            ローカル サーバ  _                            _
+============================ ======== ======= ============================ ==========================================================================
+初期ロードスクリプト         ○        △       /js/nablarch.js              AMDロードパスを設定し、PJで使用するUIモジュールの初期化ルーチンを実行する。 |br|
+                                                                           また、スクリプトロード直後でしか実行できない処理をあわせて行う。 |br|
+                                                                           (iPadでの画面ロードサイズに関する問題の対処スクリプトの適用など)
+
+ミニファイ済みスクリプト     ×        ○       /js/nablarch-minify.js       初期ロードスクリプトの依存ライブラリを全て結合し、ミニファイした
+                                                                           スクリプト。
+                                                                           本番環境では、このスクリプトと require.js のみを使用する。
+
+AMDスクリプトローダ          △        ○       /js/require.js               AMD形式で記述されたJavaScript部品のローダ
+
+テキストリソースローダ       ○        △       /js/text.js                  require.js の拡張プラグイン。JavaScript以外のテキストリソースを
+                                                                           XHR経由で動的にロードする。
+
+jQueryライブラリ             ○        △       /js/jquery.js                DOM操作API/イベント管理APIのブラウザ間互換レイヤーを提供する。
+
+sugar.js                     ○        △       /js/sugar.js                 ECMAScript5互換関数および、その他のユーティリティ系API群の提供
+
+簡易BigDecimal               ○        △       /js/nablarch/util/           JavaScriptによる簡易BigDecimal実装。
+                                              BigDecimal.js
+
+簡易SimpleDateFormat         ○        △       /js/nablarch/util/           Java SDK SimpleDateFormat の仕様のうち、
+                                              SimpleDateFormat.js          日付に関する処理のサブセットを実装する。 
+
+日付ライブラリ               ○        △       /js/nablarch/util/           JavaScriptネイティブ日付型(Date)と
+                                              DateUtil.js                  日付文字列を相互変換するためのライブラリ。
+
+UI部品共通プロトタイプ       ○        △       /js/nablarch/ui/             UI部品の実装に必要な共通機能(HTMLノードへのバインド
+                                              Widget.js                    /イベント定義/画面ロード時処理の起動)などを実装
+                                                                           する共通プロトタイプ。
+
+自動集計                     ○        △       /js/nablarch/ui/             入出力項目を自動集計するUI部品。
+                                              AutoSum.js                 
+
+日付入力部品                 ○        △       /js/nablarch/ui/             カレンダーを用いた日付入力を実装するUI部品
+                                              DatePicker.js
+
+カレンダーテンプレート       △        △       /js/nablarch/ui/             日付入力部品のカレンダー部分に表示する
+                                              DatePicker.template          HTMLを記述するテキストファイル。
+
+リストビルダー部品           ○        △       /js/nablarch/ui/             2つのセレクトボックスを用いた、複数選択用のUI
+                                              ListBuilder.js
+
+リストビルダーテンプレート   △        △       /js/nablarch/ui/             リストビルダーの制御ボタン部分に表示する
+                                              ListBuilder.template         HTMLを記述するテキストファイル。
+
+タブ切り替え部品             ○        △       /js/nablarch/ui/             JavaScriptによるページ内タブ切り替えUIを実装する部品。
+                                              Tab.js
+
+Nablarchサブミット連動       ○        △       /js/nablarch/ui/             Nablarchのサブミット制御管理機構に連動して、
+                                              event.js                     画面サブミットの前後に発火するカスタムイベントを
+                                                                           定義する。
+
+============================ ======== ======= ============================ ==========================================================================
+
+.. [#1]
+  **「サーバ」:**
+    実働環境にデプロイして使用するかどうか
+  **「ローカル」:**
+    ローカル動作時に使用するかどうか
+  **○ :**
+    使用する 
+  **△ :**
+    直接は使用しないがミニファイしたファイルの一部として使用する。
+  **× :**
+    使用しない
+
+---------------------------------------
+新規 JavaScript UI部品の作成方法
+---------------------------------------
+本ドキュメントでは、UI部品カタログに収録されている既存のもの以外の
+UI部品を作成する方法について解説する。
+
+作成するファイル
+---------------------
+標準的なUI部品は以下の3つのファイルから構成される。
+
+**1. モジュール定義ファイル(.js)**
+  ウィジェットの処理を記述したJavaScriptファイルである。
+  以下の場所に配置する。::
+
+    (コンテキストルート)/js/(PJ名)/ui/(ウィジェット名).js
+
+**2. テンプレートファイル(.template)**
+  ウィジェット内のUIを定義するHTMLファイルである。
+  モジュール定義ファイルと同じ場所に配置する。::
+
+    (コンテキストルート)/js/(PJ名)/ui/(ウィジェット名).template
+
+**3. スタイル定義(.less)**
+  ウィジェットのスタイルを定義するCSS(LESS)ファイルである。
+  以下の場所に配置する。::
+
+    (コンテキストルート)/css/ui/(ウィジェット名).less
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-js_framework--s1`
+
+```json
+{
+  "id": "testing-framework-js_framework--s1",
+  "title": "JavaScript UI部品",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/internals/js_framework.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "JavaScript UI部品",
+        "マーカCSS",
+        "js_framework",
+        "jsp_widgets",
+        "UI部品設計方針",
+        "カレンダー表示",
+        "タブページ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用例",
+      "hints": [
+        "DatePicker",
+        "nablarch_DatePicker",
+        "マーカCSS",
+        "カレンダー入力",
+        "JavaScript直接記述不要",
+        "オプション指定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "依存ライブラリ",
+      "hints": [
+        "require.js",
+        "sugar.js",
+        "jQuery",
+        "AMD",
+        "依存ライブラリ",
+        "ECMAScript5互換"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "初期処理",
+      "hints": [
+        "nablarch.js",
+        "nablarch-minify.js",
+        "初期処理",
+        "開発環境",
+        "本番環境",
+        "ミニファイ",
+        "動的ロード"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "スクリプトロード時の挙動",
+      "hints": [
+        "AMD",
+        "require.js",
+        "Widget.register",
+        "nablarch/ui.js",
+        "マーカCSS宣言",
+        "AMDモジュール",
+        "DatePicker.js"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ドキュメントロード時の挙動",
+      "hints": [
+        "Widget.init",
+        "UI部品インスタンス生成",
+        "data-プロパティ",
+        "ドキュメントロード",
+        "初期化処理",
+        "マーカCSSマッチ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "UI部品の再初期化",
+      "hints": [
+        "Widget.init",
+        "動的追加",
+        "再初期化",
+        "マーカCSS",
+        "DOMノード動的追加"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ファイル構成",
+      "hints": [
+        "nablarch.js",
+        "nablarch-minify.js",
+        "require.js",
+        "Widget.js",
+        "DatePicker.js",
+        "ListBuilder.js",
+        "Tab.js",
+        "AutoSum.js",
+        "event.js",
+        "BigDecimal.js",
+        "SimpleDateFormat.js",
+        "DateUtil.js"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "新規 JavaScript UI部品の作成方法",
+      "hints": [
+        "UI部品作成",
+        "カスタムUI部品",
+        "ウィジェット作成",
+        "3ファイル構成"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "作成するファイル",
+      "hints": [
+        "モジュール定義ファイル",
+        "テンプレートファイル",
+        "スタイル定義",
+        ".js",
+        ".template",
+        ".less",
+        "ウィジェットファイル構成",
+        "コンテキストルート"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`js_framework` はカレンダー表示やページ内タブページなど、通常HTMLでは実現できないUI機能のJavaScript部品群。以下の方針で独自実装されている:\n\n- Nablarchフレームワークの動作を前提とし、エラー時入力データ復帰・非活性項目・変更不可項目などサーバ処理との連携整合性を重視\n- JavaScript直接記述なしでカスタマイズ可能\n- UI標準準拠の挙動・統一デザイン\n\n> **注意**: :doc:`js_framework` は基本的に :doc:`jsp_widgets` 内で使用することを前提としており、一般の業務画面実装者がAPIを直接使用することは想定していない。",
+    "s2": "マーカCSS（`nablarch_DatePicker` など）の指定のみでUI部品を使用可能。JavaScriptの直接記述は不要。\n\n```jsp\n<div class=\"field\">\n  <label>適用開始日：</label>\n  <input id=\"effectiveDate\" type=\"text\" value=\"\" />\n  <button class=\"nablarch_DatePicker\n                -format yyyy/MM/dd\n                -locale ja\n                -input  effectiveDate\">\n    <i class=\"fa fa-calendar\"></i>\n  </button>\n</div>\n```\n\n`<button>` 要素のclass属性にUI部品識別子（マーカCSS: `nablarch_DatePicker`）と動作オプション（`-format yyyy/MM/dd -locale ja -input effectiveDate`）を記述する。",
+    "s3": "| ライブラリ名 | 用途 | ライセンス |\n|---|---|---|\n| require.js | JavaScriptの分割モジュール管理（AMD） | MIT |\n| sugar.js | ECMAScript5互換関数を含むユーティリティAPI群 | ライセンスフリー |\n| jQuery | DOM関連API簡易化・ブラウザ互換レイヤ | MIT |",
+    "s4": "初期処理は業務画面JSPから参照する `/js/nablarch.js`（または `/js/nablarch-minify.js`）で実行される。2段階で処理される:\n\n1. スクリプトロード完了時の処理\n2. ドキュメントロード（DOM構造確定）時の処理\n\n> **補足**: 本番環境では全JavaScriptを事前ミニファイして単一JSとしてロードする。開発環境では各スクリプトを個別に動的ロード(XHR)する。",
+    "s5": ":doc:`js_framework` はAMD（Asynchronous Module Definition）形式で実装されており、`require.js` により動的ロードまたは事前ミニファイされる。\n\nロードは `/js/nablarch.js` 内の処理で開始される:\n\n```javascript\nrequire([\"nablarch/ui\"], function(ui) {\n  $(function() {\n    ui.Widget.init();\n  });\n});\n```\n\n`/js/nablarch/ui.js` が全UI部品（Widget、DatePicker、ListBuilder、Tab 等）を依存モジュールとして定義する。各UI部品側でマーカCSSの宣言と `Widget.register()` 呼び出しを行う（例: `/js/nablarch/ui/DatePicker.js`）:\n\n```javascript\nDatePicker.widgetType = \"nablarch_DatePicker\"; // マーカCSS\nWidget.register(DatePicker);\n```",
+    "s6": "`Widget.init()` がドキュメントロード後に呼び出され、各UI部品に以下の初期処理を実行する:\n\n1. マーカCSSにマッチするドキュメント上の各要素にUI部品インスタンスを作成する（要素のNodeインスタンスとマーカCSS付随オプションをパースしたオブジェクトをコンストラクタ引数に渡す）\n2. 生成インスタンスを要素の `data-` プロパティとして設定し、GCの対象とならないようにする\n\n同じ要素への複数回初期化は `data-` プロパティチェックにより防止される。",
+    "s7": "画面ロード後にマーカCSSを含むDOMノードを動的追加した場合、初期化処理は自動実行されないため、`Widget.init()` を明示的に呼び出す必要がある。\n\n既に初期化済みの要素には影響を与えないため、複数回呼び出しても問題ない。",
+    "s8": "○=使用する、△=直接は使用しないがミニファイファイルの一部として使用、×=使用しない\n\n| 名称 | ローカル | サーバ | パス | 内容 |\n|---|---|---|---|---|\n| 初期ロードスクリプト | ○ | △ | /js/nablarch.js | AMDロードパス設定・UIモジュール初期化ルーチン実行 |\n| ミニファイ済みスクリプト | × | ○ | /js/nablarch-minify.js | 初期ロードスクリプトの依存ライブラリを全結合・ミニファイ。本番環境ではこのスクリプトとrequire.jsのみ使用 |\n| AMDスクリプトローダ | △ | ○ | /js/require.js | AMD形式JavaScriptのローダ |\n| テキストリソースローダ | ○ | △ | /js/text.js | require.js拡張プラグイン。JS以外のテキストリソースをXHR経由で動的ロード |\n| jQueryライブラリ | ○ | △ | /js/jquery.js | DOM操作API・イベント管理APIのブラウザ間互換レイヤ |\n| sugar.js | ○ | △ | /js/sugar.js | ECMAScript5互換関数・ユーティリティAPI群 |\n| 簡易BigDecimal | ○ | △ | /js/nablarch/util/BigDecimal.js | JavaScriptによる簡易BigDecimal実装 |\n| 簡易SimpleDateFormat | ○ | △ | /js/nablarch/util/SimpleDateFormat.js | Java SDK SimpleDateFormatの日付処理サブセット実装 |\n| 日付ライブラリ | ○ | △ | /js/nablarch/util/DateUtil.js | JavaScript Date型と日付文字列の相互変換ライブラリ |\n| UI部品共通プロトタイプ | ○ | △ | /js/nablarch/ui/Widget.js | UI部品共通機能（HTMLノードへのバインド・イベント定義・画面ロード時処理起動） |\n| 自動集計 | ○ | △ | /js/nablarch/ui/AutoSum.js | 入出力項目の自動集計UI部品 |\n| 日付入力部品 | ○ | △ | /js/nablarch/ui/DatePicker.js | カレンダーを用いた日付入力UI部品 |\n| カレンダーテンプレート | △ | △ | /js/nablarch/ui/DatePicker.template | 日付入力部品カレンダー部分のHTMLテキストファイル |\n| リストビルダー部品 | ○ | △ | /js/nablarch/ui/ListBuilder.js | 2つのセレクトボックスを用いた複数選択UI部品 |\n| リストビルダーテンプレート | △ | △ | /js/nablarch/ui/ListBuilder.template | リストビルダー制御ボタン部分のHTMLテキストファイル |\n| タブ切り替え部品 | ○ | △ | /js/nablarch/ui/Tab.js | ページ内タブ切り替えUI部品 |\n| Nablarchサブミット連動 | ○ | △ | /js/nablarch/ui/event.js | Nablarchサブミット制御管理機構連動・画面サブミット前後のカスタムイベント定義 |",
+    "s9": "UI部品カタログ収録の既存部品以外のUI部品を作成する場合、標準的なUI部品は以下の3ファイルで構成される:\n\n1. モジュール定義ファイル（.js）\n2. テンプレートファイル（.template）\n3. スタイル定義（.less）",
+    "s10": "**1. モジュール定義ファイル（.js）**\nウィジェットの処理を記述したJavaScriptファイル。配置場所:\n```\n(コンテキストルート)/js/(PJ名)/ui/(ウィジェット名).js\n```\n\n**2. テンプレートファイル（.template）**\nウィジェット内のUIを定義するHTMLファイル。モジュール定義ファイルと同じ場所に配置:\n```\n(コンテキストルート)/js/(PJ名)/ui/(ウィジェット名).template\n```\n\n**3. スタイル定義（.less）**\nウィジェットのスタイルを定義するCSS(LESS)ファイル。配置場所:\n```\n(コンテキストルート)/css/ui/(ウィジェット名).less\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 10 < source headings 14
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

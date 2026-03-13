@@ -1,0 +1,180 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-ServiceAvailabilityCheckHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction paragraph (before ハンドラクラス名)",
+      "description": "The prerequisite that a class implementing `ServiceAvailability` must be configured on this handler is not captured anywhere in the knowledge file. The source explicitly states: 「本ハンドラを使用するには、ServiceAvailability を実装したクラスを本ハンドラに設定する必要がある」。 This is a required setup step — without it the handler cannot function — and belongs in s3 (制約) or as a dedicated setup note.",
+      "source_evidence": "本ハンドラを使用するには、:java:extdoc:`ServiceAvailability <nablarch.common.availability.ServiceAvailability>` を実装したクラスを本ハンドラに設定する必要がある。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`ServiceAvailabilityCheckHandler`:
+
+サービス提供可否チェックハンドラ
+=======================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラでは、 :ref:`ServiceAvailabilityCheckHandler-request_checking` を行う。
+
+サービス提供可否チェックは、ライブラリの :ref:`service_availability` を使用して行う。
+そのため、本ハンドラを使用するには、
+:java:extdoc:`ServiceAvailability <nablarch.common.availability.ServiceAvailability>` を実装したクラスを本ハンドラに設定する必要がある。
+
+本ハンドラでは、以下の処理を行う。
+
+* サービス提供可否チェック
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/ServiceAvailabilityCheckHandler/ServiceAvailabilityCheckHandler_flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.common.availability.ServiceAvailabilityCheckHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-auth</artifactId>
+  </dependency>
+
+制約
+------------------------------
+:ref:`thread_context_handler` より後ろに配置すること
+  本ハンドラではスレッドコンテキスト上に設定されたリクエストIDをもとにサービス提供可否チェックを行うため、
+  :ref:`thread_context_handler` より後ろに本ハンドラを配置する必要がある。
+
+:ref:`forwarding_handler` より後ろに配置すること
+  内部フォーワードが行われた際に、フォーワード先のリクエストID（ :ref:`内部リクエストID <internal_request_id>` ）をもとに
+  サービス提供可否チェックを行いたい場合は、 :ref:`forwarding_handler` より後ろに本ハンドラを配置する必要がある。
+  合わせて、 :ref:`thread_context_handler` の ``attributes`` に :java:extdoc:`InternalRequestIdAttribute <nablarch.common.handler.threadcontext.InternalRequestIdAttribute>` を追加すること。
+
+.. _ServiceAvailabilityCheckHandler-request_checking:
+
+リクエストに対するサービス提供可否チェック
+--------------------------------------------------------------
+:java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` からリクエストIDを取得し、サービス提供可否をチェックする。
+チェックの詳細は、 :ref:`service_availability` を参照。
+
+OK(サービス提供可)の場合
+ 後続ハンドラを呼び出す。
+
+NG(サービス提供不可)の場合
+ :java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>` (503) を送出する。
+
+チェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、
+:java:extdoc:`ServiceAvailabilityCheckHandler.setUsesInternalRequestId <nablarch.common.availability.ServiceAvailabilityCheckHandler.setUsesInternalRequestId(boolean)>`
+でtrueを指定する。デフォルトはfalseである。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-ServiceAvailabilityCheckHandler--s1",
+  "title": "サービス提供可否チェックハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/ServiceAvailabilityCheckHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/availability/ServiceAvailability.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/availability/ServiceAvailabilityCheckHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/handler/threadcontext/InternalRequestIdAttribute.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/results/ServiceUnavailable.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "ServiceAvailabilityCheckHandler",
+        "nablarch.common.availability.ServiceAvailabilityCheckHandler",
+        "サービス提供可否チェックハンドラ",
+        "ハンドラクラス名"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-auth",
+        "com.nablarch.framework",
+        "モジュール依存関係",
+        "Maven依存設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "thread_context_handler",
+        "forwarding_handler",
+        "InternalRequestIdAttribute",
+        "ハンドラ配置順序",
+        "制約",
+        "内部フォーワード",
+        "internal_request_id"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "リクエストに対するサービス提供可否チェック",
+      "hints": [
+        "ThreadContext",
+        "ServiceUnavailable",
+        "setUsesInternalRequestId",
+        "リクエストID",
+        "サービス提供可否チェック",
+        "503",
+        "内部リクエストID",
+        "service_availability"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.availability.ServiceAvailabilityCheckHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth</artifactId>\n</dependency>\n```",
+    "s3": "- :ref:`thread_context_handler` より後ろに配置すること。スレッドコンテキスト上に設定されたリクエストIDをもとにサービス提供可否チェックを行うため。\n- 内部フォーワード先のリクエストID（:ref:`内部リクエストID <internal_request_id>`）でチェックしたい場合は、:ref:`forwarding_handler` より後ろに配置すること。合わせて :ref:`thread_context_handler` の `attributes` に :java:extdoc:`InternalRequestIdAttribute <nablarch.common.handler.threadcontext.InternalRequestIdAttribute>` を追加すること。",
+    "s4": ":java:extdoc:`ThreadContext <nablarch.core.ThreadContext>` からリクエストIDを取得してサービス提供可否をチェック（詳細は :ref:`service_availability` 参照）。\n\n- OK（サービス提供可）: 後続ハンドラを呼び出す\n- NG（サービス提供不可）: :java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>` (503) を送出\n\nフォーワード先のリクエストIDをチェック対象にするには、:java:extdoc:`ServiceAvailabilityCheckHandler.setUsesInternalRequestId <nablarch.common.availability.ServiceAvailabilityCheckHandler.setUsesInternalRequestId(boolean)>` に `true` を設定する（デフォルト: `false`）。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

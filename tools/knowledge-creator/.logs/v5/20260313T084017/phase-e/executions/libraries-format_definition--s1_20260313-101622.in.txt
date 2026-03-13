@@ -1,0 +1,482 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-format_definition--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) hints",
+      "description": "The `ignore-blank-lines` directive is defined in the Variable format directive table in the source but is absent from s3 hints.",
+      "source_evidence": "Source lists `ignore-blank-lines ``任意``` as a Variable-format directive with description and default behavior."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 covers the entire `ディレクティブ宣言部の定義` h2, which contains 5 h3 subsections (共通, Fixed, Variable, JSON, XML) and is well over 2000 chars of plain text. The h3 boundaries were not used as split points, resulting in a single very large section.",
+      "source_evidence": "RST h2 `ディレクティブ宣言部の定義` has 5 h3 children: 共通で使用可能なディレクティブ一覧, Fixed(固定長)形式で指定可能なディレクティブ一覧, Variable(可変長)形式で指定可能なディレクティブ一覧, JSON形式で指定可能なディレクティブ一覧, XML形式で指定可能なディレクティブ一覧."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`data_format-definition`:
+
+フォーマット定義ファイルの記述ルール
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+.. |br| raw:: html
+
+    <br/>
+
+フォーマット定義ファイルの共通の記法
+--------------------------------------------------
+フォーマット定義ファイルの共通的な記述ルールについて説明する。
+
+文字コード
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+フォーマット定義ファイルの文字コードは ``UTF-8`` となる。
+
+
+リテラル表記
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+設定値にリテラルを記述する場合は、以下のルールに準拠すること。
+
+
+.. list-table::
+  :class: white-space-normal
+  :header-rows: 1
+  :widths: 30 70
+
+  * - リテラル型
+    - 説明
+  * - 文字列
+    - Javaの文字リテラルと同じように ``"`` で値を囲んで記述する。
+
+      なお、Unicodeエスケープや8進数エスケープには対応していない。
+      
+      記述例
+       | "Nablarch"
+       | "\\r\\n"
+
+  * - 10進整数
+    - Javaの数値リテラルと同じように記述する。
+
+      なお、小数には対応していない。
+
+      記述例
+        | 123
+        | -123
+
+  * - 真偽値
+    - ``true`` または、 ``false`` で設定する。(大文字でも可)
+
+コメント
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+行中の ``#`` 以降をコメントとして扱う。
+
+以下に例を示す。
+
+.. code-block:: bash
+
+  #
+  # サンプルファイル
+  # 
+  file-type:     "Fixed"  # 固定長
+  text-encoding: "ms932"  # 文字コードはms932
+  record-length:  120     # 各業の長さは120バイト
+
+
+
+
+フォーマット定義ファイルの構造
+--------------------------------------------------
+
+フォーマット定義ファイルは大きく以下の2つの要素で構成される。
+
+:ディレクティブ宣言部:
+  使用するデータ形式(固定長やJSONなど)やエンコーディングなどの共通設定を定義する。
+
+  詳細は、 :ref:`data_format-definition_directive` を参照。
+
+:レコードフォーマット定義部:
+  レコードの内容を定義する。
+
+  具体的には、レコード内のフィールド定義やフィールド毎のデータ型やデータ変換ルールを定義する。
+
+  詳細は、 :ref:`data_format-definition_record` を参照
+
+.. _data_format-definition_directive:
+
+ディレクティブ宣言部の定義
+--------------------------------------------------
+
+共通で使用可能なディレクティブ一覧
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+全てのデータ形式で使用するディレクティブ定義は以下のとおり。
+
+.. list-table::
+  :class: white-space-normal
+  :widths: 30 70
+  :header-rows: 1
+
+  * - ディレクティブ
+    - 説明
+  * - file-type ``必須``
+    - データ形式を指定する。 
+
+      標準では以下のデータ形式を指定できる。
+
+      * Fixed(固定長)
+      * Variable(CSVやTSVなどの可変長)
+      * JSON
+      * XML
+
+  * - text-encoding ``必須``
+    - .. _data_format-directive_text_encoding:
+
+      文字列フィールドの読み書き時に使用するエンコーディングを指定する。
+
+      使用するJVMで使用できる文字エンコーディングのみ指定可能。例えば、 ``UTF-8`` や ``SJIS`` などを指定する。
+
+      `file-type` にJSONを指定した場合は、以下のエンコーディングのみ指定可能
+
+      * UTF-8
+      * UTF-16(BE or LE)
+      * UTF-32(BE or LE)
+
+      `file-type` にXMLを指定した場合には、本設定値よりもXML宣言部
+      に指定されたエンコーディングが優先される。
+
+  * - record-separator ``任意``
+    - レコード終端文字(改行文字)を指定する。
+
+      `file-type` にVariable(可変長)を指定した場合は、 ``必須`` となる。
+
+      `file-type` がJSONまたはXMLの場合には、本設定値は使用しない。
+
+Fixed(固定長)形式で指定可能なディレクティブ一覧
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Fixed(固定長)形式のデータで使用するディレクティブは以下のとおり。
+
+.. list-table::
+  :class: white-space-normal
+  :widths: 30 70
+  :header-rows: 1
+
+  * - ディレクティブ
+    - 説明
+  * -  record-length ``必須``
+    - 1レコードのバイト長を指定する。
+
+  * - positive-zone-sign-nibble ``任意``
+    - .. _data_format-positive_zone_sign_nibble:
+
+      符号付きゾーン数値のゾーン部に設定する正符号を16進数表記の文字列で指定する。
+
+      デフォルトでは、 :ref:`text-encoding <data_format-directive_text_encoding>` の値に応じて以下の値が使用される。
+
+      :ASCII互換の場合: 0x3      
+      :EBCDIC互換の場合: 0xC
+
+  * - negative-zone-sign-nibble ``任意``
+    - .. _data_format-negative_zone_sign_nibble:
+
+      符号付きゾーン数値のゾーン部に設定する負符号を16進数表記の文字列で指定する。
+
+      デフォルトでは、 :ref:`text-encoding <data_format-directive_text_encoding>` の値に応じて以下の値が使用される。
+
+      :ASCII互換の場合: 0x7      
+      :EBCDIC互換の場合: 0xD
+
+  * - positive-pack-sign-nibble ``任意``
+    - .. _data_format-positive_pack_sign_nibble:
+      
+      符号付きパック数値の符号ビットに設定する正符号を16進数表記の文字列で指定する。
+
+      デフォルトでは、 :ref:`text-encoding <data_format-directive_text_encoding>` の値に応じて以下の値が使用される。
+
+      :ASCII互換の場合: 0x3      
+      :EBCDIC互換の場合: 0xC
+  
+  * - negative-pack-sign-nibble ``任意``
+    - .. _data_format-negative_pack_sign_nibble:
+      
+      符号付きパック数値の符号ビットに設定する負符号を16進数表記の文字列で指定する。
+
+      デフォルトでは、 :ref:`text-encoding <data_format-directive_text_encoding>` の値に応じて以下の値が使用される。
+
+      :ASCII互換の場合: 0x7      
+      :EBCDIC互換の場合: 0xD
+
+  * - required-decimal-point ``任意``
+    - 符号無し数値及び符号付き数値の小数点の要否を指定する。
+
+      ``true`` を指定すると書き込むデータに小数点が付与される。
+
+      ``false`` を指定すると、書き込むデータに小数点が付与されない。(固定小数点となる)
+
+      デフォルト動作は 小数点付与( ``true`` )となる。
+
+  * - fixed-sign-position ``任意``
+    - 符号付き数値の符号位置を固定するかの要否を指定する。
+
+      符号位置を固定( ``true`` )とした場合、符号位置は項目の先頭に固定される。
+      符号位置を非固定( ``false`` )とした場合、符号位置はパディング前の数値の先頭に付加される。
+
+      デフォルト動作は固定( ``true`` )となる。
+
+      例
+        :符号位置を固定: -000123456
+        :符号位置を非固定: 000-123456
+
+  
+  * - required-plus-sign ``任意``
+    - 符号付き数値の正の符号の要否を指定する。
+
+      ``true`` を指定した場合、読み込むデータには正の符号( ``+`` )が必要で、
+      書き込むデータには正の符号( ``+`` )が付加される。
+
+      デフォルトの動作は付加しない( ``false`` )となる。
+
+
+
+以下に例を示す。
+
+.. code-block:: bash
+
+  #
+  # ディレクティブ定義部
+  #
+  file-type:                      "Fixed"  # 固定長ファイル
+  text-encoding:                  "ms932"  # 文字列型フィールドの文字エンコーディング
+  record-length:                  120      # 各レコードbyte長 
+  positive-zone-sign-nibble:      "C"      # ゾーン数値の正符号
+  negative-zone-sign-nibble:      "D"      # ゾーン数値の負符号
+  positive-pack-sign-nibble:      "C"      # パック数値の正符号
+  negative-pack-sign-nibbleL      "D"      # パック数値の負符号
+  required-decimal-point:         true     # 小数点あり
+  fixed-sign-position:            true     # 符号は先頭に
+  required-plus-sign:             false    # 正符号は付加しない
+
+.. _data_format-variable_data_directive:
+
+Variable(可変長)形式で指定可能なディレクティブ一覧
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Variable(可変長)形式のデータで使用するディレクティブは以下のとおり。
+
+.. list-table::
+  :class: white-space-normal
+  :widths: 30 70
+  :header-rows: 1
+
+  * - ディレクティブ
+    - 説明
+  * - field-separator ``必須``
+    - フィールド(項目)の区切り文字を指定する。
+
+      例えば、CSVであれば ``,`` を、TSVであれば ``\t`` を指定する。
+
+  * - quoting-delimiter ``任意``
+    - フィールド(項目)の値をクォートする際に使用する文字を指定する。
+
+      例えば、ダブルクォートを設定する場合には、 ``"`` を、
+      シングルクォートを設定する場合には、 ``'`` を設定する。
+
+      出力時は、値を設定した場合、全てのフィールド(項目)がクォートされる。
+      デフォルトでは、クォートされない。
+      
+      入力時は、値を設定した場合、フィールドの前後のクォート文字が除去される。
+      改行やフィールド内のクォート文字の扱いなどは、RFC4180を参照。
+
+  * - ignore-blank-lines ``任意``
+    - データ読み込み時に空行を無視するか否かを設定する。
+
+      ``true`` を設定した場合、空行(改行のみ)のレコードは無視される。
+
+      デフォルトでは、空行は無視される。
+
+  * - requires-title ``任意``
+    - .. _data_format-requires-title:
+      
+      最初のレコードをタイトルとして読み書きするかどうかを設定する。
+
+      ``true`` を設定した場合、最初のレコードをタイトルとして扱う。
+
+      デフォルトでは、最初のレコードをタイトルとして扱わない。
+
+      タイトルレコードのレイアウト定義は、 :ref:`title-record-type-nameディレクティブ <data_format-title_type_name>` を参照。
+
+  * - title-record-type-name ``任意``
+    - .. _data_format-title_type_name:
+      
+      タイトルのレコードタイプ名を設定する。
+
+      指定しなかった場合、タイトルのレコードタイプ名は ``Title`` となる。
+
+      このディレクティブで指定したレコードタイプ名に紐づくレコードフォーマット定義に従い、タイトルレコードが編集される。
+
+      タイトルのレコードタイプを使ったフォーマット定義ファイルのサンプルは、
+      :ref:`タイトルレコードのフォーマット定義例 <data_format-variable_title_sample>` を参照。
+
+      レコードタイプやレコード定義の詳細は、 :ref:`data_format-definition_record` を参照。
+
+  * - max-record-length ``任意``
+    - 読み込みを許容する1レコードの文字数を指定する。
+
+      レコードの区切り文字が存在しないデータ(壊れているデータ)を読み込んだ場合、
+      レコードを全てヒープ上に展開するとヒープ不足によりプロセスが異常終了する可能性がある。
+
+      このため、このディレクティブに設定した値の文字数を読み込んでもレコードの区切り文字が存在しなかった場合には、
+      不正なデータとして読み込み処理を中止し例外を送出する。
+
+      デフォルトでは、1,000,000文字となる。
+
+以下に例を示す。
+
+.. code-block:: bash
+
+  #
+  # ディレクティブ定義部
+  #
+  file-type:                  "Variable"  # 可変長ファイル
+  text-encoding:              "utf-8"     # 文字列型フィールドの文字エンコーディング
+  record-separator:           "\\r\\n"    # 改行
+
+  field-separator:            ","         # CSV
+  quoting-delimiter:          "\""        # ダブルクォートで項目を囲む
+  ignore-blank-lines:         true        # 空行は無視
+  requires-title:             false       # タイトルレコードは無し
+  max-record-length:          1000        # このcsvのレコードには最大でも1000文字まで
+
+JSON形式で指定可能なディレクティブ一覧
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+JSONデータ形式固有のディレクティブは存在しない。
+
+以下に例を示す。
+
+.. code-block:: bash
+
+  file-type:      "JSON"      # jsonフォーマット
+  text-encoding:  "utf-8"     # 文字列型フィールドの文字エンコーディング
+
+
+XML形式で指定可能なディレクティブ一覧
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+XMLデータ形式固有のディレクティブは存在いない。
+
+以下に例を示す。
+
+.. code-block:: bash
+
+  file-type:      "XML"       # xmlフォーマット
+  text-encoding:  "utf-8"     # 文字列型フィールドの文字エンコーディング
+
+.. _data_format-definition_record:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-format_definition--s1",
+  "title": "フォーマット定義ファイルの記述ルール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format/format_definition.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーマット定義ファイルの共通の記法",
+      "hints": [
+        "フォーマット定義ファイル",
+        "文字コード",
+        "UTF-8",
+        "リテラル表記",
+        "コメント",
+        "文字列リテラル",
+        "10進整数",
+        "真偽値",
+        "コメント記号"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマット定義ファイルの構造",
+      "hints": [
+        "フォーマット定義ファイル構造",
+        "ディレクティブ宣言部",
+        "レコードフォーマット定義部",
+        "フィールド定義",
+        "データ型",
+        "データ変換ルール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ディレクティブ宣言部の定義",
+      "hints": [
+        "file-type",
+        "text-encoding",
+        "record-separator",
+        "record-length",
+        "field-separator",
+        "quoting-delimiter",
+        "requires-title",
+        "title-record-type-name",
+        "max-record-length",
+        "positive-zone-sign-nibble",
+        "negative-zone-sign-nibble",
+        "positive-pack-sign-nibble",
+        "negative-pack-sign-nibble",
+        "required-decimal-point",
+        "fixed-sign-position",
+        "required-plus-sign",
+        "Fixed固定長",
+        "Variable可変長",
+        "JSON",
+        "XML",
+        "ディレクティブ定義"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 文字コード\n\nフォーマット定義ファイルの文字コードは `UTF-8`。\n\n## リテラル表記\n\n| リテラル型 | 説明 |\n|---|---|\n| 文字列 | `\"` で値を囲む。Unicodeエスケープ・8進数エスケープは非対応。例: `\"Nablarch\"`, `\"\\\\r\\\\n\"` |\n| 10進整数 | Javaの数値リテラルと同じ形式。小数は非対応。例: `123`, `-123` |\n| 真偽値 | `true` または `false`（大文字可）|\n\n## コメント\n\n行中の `#` 以降はコメントとして扱われる。\n\n```bash\nfile-type:     \"Fixed\"  # 固定長\ntext-encoding: \"ms932\"  # 文字コードはms932\nrecord-length:  120     # 各業の長さは120バイト\n```",
+    "s2": "フォーマット定義ファイルは以下の2つの要素で構成される。\n\n- **ディレクティブ宣言部**: 使用するデータ形式（固定長、JSONなど）やエンコーディングなどの共通設定を定義する。詳細は :ref:`data_format-definition_directive` を参照。\n- **レコードフォーマット定義部**: レコード内のフィールド定義、フィールドごとのデータ型・データ変換ルールを定義する。詳細は :ref:`data_format-definition_record` を参照。",
+    "s3": "## 共通ディレクティブ\n\n| ディレクティブ | 必須/任意 | 説明 |\n|---|---|---|\n| file-type | 必須 | データ形式を指定。`Fixed`（固定長）、`Variable`（CSV/TSVなど可変長）、`JSON`、`XML` |\n| text-encoding | 必須 | 文字列フィールドの読み書き時のエンコーディング。使用JVMで利用可能な文字エンコーディングのみ指定可能。`file-type` がJSONの場合はUTF-8/UTF-16(BE or LE)/UTF-32(BE or LE)のみ指定可能。`file-type` がXMLの場合はXML宣言部のエンコーディングが本設定値より優先される。 |\n| record-separator | 任意 | レコード終端文字（改行文字）を指定。`file-type` がVariable（可変長）の場合は必須。JSON/XMLでは使用しない。 |\n\n## Fixed（固定長）形式のディレクティブ\n\n| ディレクティブ | 必須/任意 | 説明 |\n|---|---|---|\n| record-length | 必須 | 1レコードのバイト長 |\n| positive-zone-sign-nibble | 任意 | 符号付きゾーン数値のゾーン部の正符号（16進数文字列）。デフォルト: ASCII互換=`0x3`、EBCDIC互換=`0xC` |\n| negative-zone-sign-nibble | 任意 | 符号付きゾーン数値のゾーン部の負符号（16進数文字列）。デフォルト: ASCII互換=`0x7`、EBCDIC互換=`0xD` |\n| positive-pack-sign-nibble | 任意 | 符号付きパック数値の符号ビットの正符号（16進数文字列）。デフォルト: ASCII互換=`0x3`、EBCDIC互換=`0xC` |\n| negative-pack-sign-nibble | 任意 | 符号付きパック数値の符号ビットの負符号（16進数文字列）。デフォルト: ASCII互換=`0x7`、EBCDIC互換=`0xD` |\n| required-decimal-point | 任意 | 符号無し・符号付き数値の小数点付与要否。`true`=小数点付与（デフォルト）、`false`=固定小数点（小数点なし） |\n| fixed-sign-position | 任意 | 符号付き数値の符号位置を固定するかの要否。`true`=項目の先頭に固定（デフォルト）、`false`=パディング前の数値の先頭に付加。例: 固定=`-000123456`、非固定=`000-123456` |\n| required-plus-sign | 任意 | 正の符号の要否。`true`=読み込み時に正符号（`+`）必須、書き込み時に正符号付加。デフォルト=`false`（付加しない） |\n\n```bash\nfile-type:                      \"Fixed\"\ntext-encoding:                  \"ms932\"\nrecord-length:                  120\npositive-zone-sign-nibble:      \"C\"\nnegative-zone-sign-nibble:      \"D\"\npositive-pack-sign-nibble:      \"C\"\nnegative-pack-sign-nibbleL      \"D\"\nrequired-decimal-point:         true\nfixed-sign-position:            true\nrequired-plus-sign:             false\n```\n\n## Variable（可変長）形式のディレクティブ\n\n| ディレクティブ | 必須/任意 | 説明 |\n|---|---|---|\n| field-separator | 必須 | フィールドの区切り文字。CSVは `,`、TSVは `\\t` |\n| quoting-delimiter | 任意 | フィールド値をクォートする文字（例: `\"` や `'`）。出力時は設定すると全フィールドがクォートされる。入力時はフィールド前後のクォート文字が除去される。デフォルト=クォートなし。改行やフィールド内クォート文字の扱いはRFC4180を参照。 |\n| ignore-blank-lines | 任意 | 空行（改行のみ）を無視するか。`true`=空行を無視（デフォルト） |\n| requires-title | 任意 | 最初のレコードをタイトルとして読み書きするか。`true`=タイトルとして扱う。デフォルト=`false`。タイトルレコードのレイアウト定義は :ref:`data_format-title_type_name` を参照。 |\n| title-record-type-name | 任意 | タイトルのレコードタイプ名。デフォルト=`Title`。指定したレコードタイプ名に紐づくレコードフォーマット定義に従いタイトルレコードが編集される。 |\n| max-record-length | 任意 | 読み込みを許容する1レコードの最大文字数。区切り文字が存在しないデータ（壊れたデータ）を読み込んだ際のヒープ不足によるプロセス異常終了を防ぐ。デフォルト=1,000,000文字 |\n\n```bash\nfile-type:                  \"Variable\"\ntext-encoding:              \"utf-8\"\nrecord-separator:           \"\\\\r\\\\n\"\nfield-separator:            \",\"\nquoting-delimiter:          \"\\\"\"\nignore-blank-lines:         true\nrequires-title:             false\nmax-record-length:          1000\n```\n\n## JSON形式のディレクティブ\n\nJSON固有のディレクティブは存在しない。`file-type` と `text-encoding` のみ指定する。\n\n```bash\nfile-type:      \"JSON\"\ntext-encoding:  \"utf-8\"\n```\n\n## XML形式のディレクティブ\n\nXML固有のディレクティブは存在しない。`file-type` と `text-encoding` のみ指定する。なお、`text-encoding` よりもXML宣言部に指定されたエンコーディングが優先される。\n\n```bash\nfile-type:      \"XML\"\ntext-encoding:  \"utf-8\"\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,111 @@
+{
+  "id": "adapters-micrometer_adaptor--s11",
+  "title": "Micrometerアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/batch/BatchProcessedRecordCountMetricsLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/logging/LogCountMetrics.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/MetricsMetaData.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/LoggerManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogPublisher.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/DefaultMeterBinderListProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogLevel.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/dao/SqlTimeMetricsDaoContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/dao/SqlTimeMetricsDaoContextFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/DaoContext.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチの処理件数を計測する",
+      "hints": [
+        "BatchProcessedRecordCountMetricsLogger",
+        "batch.processed.record.count",
+        "CompositeCommitLogger",
+        "BasicCommitLogger",
+        "CommitLogger",
+        "setMetricsName",
+        "バッチ処理件数計測",
+        "Counter",
+        "meterRegistry"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ログレベルごとの出力回数を計測する",
+      "hints": [
+        "LogCountMetrics",
+        "log.count",
+        "LoggerManager",
+        "MetricsMetaData",
+        "ログレベル出力回数計測",
+        "Counter",
+        "level",
+        "logger"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "LogPublisher を設定する",
+      "hints": [
+        "LogPublisher",
+        "log-publisher_usage",
+        "LogCountMetrics",
+        "ログ出力イベント検知"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "カスタムのDefaultMeterBinderListProviderを作成する",
+      "hints": [
+        "DefaultMeterBinderListProvider",
+        "MeterBinder",
+        "LogCountMetrics",
+        "CustomMeterBinderListProvider",
+        "createMeterBinderList",
+        "MeterRegistryFactory",
+        "meterBinderListProvider",
+        "micrometer_adaptor_declare_default_meter_binder_list_provider_as_component"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "集計対象のログレベル",
+      "hints": [
+        "LogLevel",
+        "LogCountMetrics",
+        "WARN",
+        "INFO",
+        "ログレベルしきい値",
+        "集計対象"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "SQLの処理時間を計測する",
+      "hints": [
+        "SqlTimeMetricsDaoContext",
+        "SqlTimeMetricsDaoContextFactory",
+        "sql.process.time",
+        "DaoContext",
+        "daoContextFactory",
+        "SQL処理時間計測",
+        "UniversalDAO",
+        "Timer",
+        "setMetricsName",
+        "sql.id",
+        "entity",
+        "method"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.integration.micrometer.instrument.batch.BatchProcessedRecordCountMetricsLogger`\n\n:ref:`nablarch_batch` が処理した入力データの件数をCounterを使って `batch.processed.record.count` という名前で計測する。メトリクス名は :java:extdoc:`setMetricsName(String) <nablarch.integration.micrometer.instrument.batch.BatchProcessedRecordCountMetricsLogger.setMetricsName(java.lang.String)>` で変更可能。\n\n**メトリクスタグ**:\n\n| タグ名 | 説明 |\n|---|---|\n| `class` | アクションのクラス名（:ref:`-requestPath <nablarch_batch-resolve_action>` から取得した値） |\n\n`CommitLogger` の仕組みを利用して処理件数を計測する。詳細は :ref:`micrometer_adaptor_batch_transaction_time` を参照。\n\n**設定例** (`CompositeCommitLogger` と組み合わせる):\n\n```xml\n<component name=\"commitLogger\"\n           class=\"nablarch.core.log.app.CompositeCommitLogger\">\n  <property name=\"commitLoggerList\">\n    <list>\n      <component class=\"nablarch.core.log.app.BasicCommitLogger\">\n        <property name=\"interval\" value=\"${nablarch.commitLogger.interval}\" />\n      </component>\n      <component class=\"nablarch.integration.micrometer.instrument.batch.BatchProcessedRecordCountMetricsLogger\">\n        <property name=\"meterRegistry\" ref=\"meterRegistry\" />\n      </component>\n    </list>\n  </property>\n</component>\n```",
+    "s2": "**クラス**: `nablarch.integration.micrometer.instrument.binder.logging.LogCountMetrics`\n\nログレベルごとの出力回数をCounterを使って `log.count` という名前で計測する。メトリクス名は :java:extdoc:`MetricsMetaData <nablarch.integration.micrometer.instrument.binder.MetricsMetaData>` を受け取る :java:extdoc:`コンストラクタ <nablarch.integration.micrometer.instrument.binder.logging.LogCountMetrics.LogCountMetrics(nablarch.integration.micrometer.instrument.binder.MetricsMetaData)>` で変更可能。\n\n**メトリクスタグ**:\n\n| タグ名 | 説明 |\n|---|---|\n| `level` | ログレベル |\n| `logger` | :java:extdoc:`LoggerManager <nablarch.core.log.LoggerManager>` からロガーを取得するときに使用した名前 |",
+    "s3": "`LogCountMetrics` はログ出力イベントを検知するために :java:extdoc:`LogPublisher <nablarch.core.log.basic.LogPublisher>` の仕組みを使用している。\n\nしたがって `LogCountMetrics` を使い始めるためには、まず `LogPublisher` の設定をする必要がある。`LogPublisher` の設定については、:ref:`log-publisher_usage` を参照のこと。",
+    "s4": "`LogCountMetrics` は `MeterBinder` の実装クラスとして提供されている。したがって、:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` を継承したクラスを作り、`LogCountMetrics` を含んだ `MeterBinder` のリストを返すように実装する必要がある。\n\n`DefaultMeterBinderListProvider` の説明については、:ref:`micrometer_adaptor_declare_default_meter_binder_list_provider_as_component` を参照。\n\n```java\npublic class CustomMeterBinderListProvider extends DefaultMeterBinderListProvider {\n    @Override\n    protected List<MeterBinder> createMeterBinderList() {\n        // デフォルトの MeterBinder リストに LogCountMetrics を追加\n        List<MeterBinder> meterBinderList = new ArrayList<>(super.createMeterBinderList());\n        meterBinderList.add(new LogCountMetrics());\n        return meterBinderList;\n    }\n}\n```\n\n最後に、`MeterRegistryFactory` コンポーネントの `meterBinderListProvider` プロパティに、作成したカスタムの `DefaultMeterBinderListProvider` を設定する。以上で、`LogCountMetrics` が使用できるようになる。",
+    "s5": "デフォルトでは、`WARN` 以上のログ出力回数のみが集計の対象となる。\n\n集計対象のログレベルのしきい値は、`LogCountMetrics` のコンストラクタに :java:extdoc:`LogLevel <nablarch.core.log.basic.LogLevel>` を渡すことで変更できる。以下の実装例では、しきい値を `INFO` に変更している。\n\n```java\nmeterBinderList.add(new LogCountMetrics(LogLevel.INFO)); // LogLevel のしきい値を指定\n```\n\n> **重要**: ログレベルのしきい値を下げすぎると、アプリケーションによっては大量のメトリクスが収集される可能性がある。使用する監視サービスの料金体系によっては使用料金が増大する可能性があるため、注意して設定すること。",
+    "s6": "**クラス**: `nablarch.integration.micrometer.instrument.dao.SqlTimeMetricsDaoContext`\n\n:ref:`universal_dao` を通じて実行したSQLの処理時間をTimerを使って `sql.process.time` という名前で計測する。メトリクス名はファクトリクラス :java:extdoc:`SqlTimeMetricsDaoContextFactory <nablarch.integration.micrometer.instrument.dao.SqlTimeMetricsDaoContextFactory>` の :java:extdoc:`setMetricsName(String) <nablarch.integration.micrometer.instrument.dao.SqlTimeMetricsDaoContextFactory.setMetricsName(java.lang.String)>` で変更可能。\n\n**メトリクスタグ**:\n\n| タグ名 | 説明 |\n|---|---|\n| `sql.id` | `DaoContext` のメソッド引数に渡されたSQLID（SQLIDが無い場合は `\"None\"`） |\n| `entity` | エンティティクラスの名前（`Class.getName()`） |\n| `method` | 実行された `DaoContext` のメソッド名 |\n\n**設定方法**: :java:extdoc:`SqlTimeMetricsDaoContextFactory <nablarch.integration.micrometer.instrument.dao.SqlTimeMetricsDaoContextFactory>` を **`daoContextFactory`** という名前でコンポーネント定義する。これにより :ref:`universal_dao` が使用する :java:extdoc:`DaoContext <nablarch.common.dao.DaoContext>` が `SqlTimeMetricsDaoContext` に置き換わる。\n\n```xml\n<component name=\"daoContextFactory\"\n           class=\"nablarch.integration.micrometer.instrument.dao.SqlTimeMetricsDaoContextFactory\">\n  <property name=\"delegate\">\n    <component class=\"nablarch.common.dao.BasicDaoContextFactory\">\n      <property name=\"sequenceIdGenerator\">\n        <component class=\"nablarch.common.idgenerator.SequenceIdGenerator\" />\n      </property>\n    </component>\n  </property>\n  <property name=\"meterRegistry\" ref=\"meterRegistry\" />\n</component>\n```"
+  }
+}

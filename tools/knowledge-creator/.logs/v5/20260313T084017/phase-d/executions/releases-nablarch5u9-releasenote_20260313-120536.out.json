@@ -1,0 +1,20 @@
+{
+  "file_id": "releases-nablarch5u9-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — No.24 BeanUtil型変換の注意点",
+      "description": "BeanUtilで精度の高い型から低い型（例: LongからInteger）へコピーする際、コピー元の値がコピー先の型の精度を超えていてもエラーとならず正常終了するという動作上の注意事項が欠落している。入力値を事前バリデーションすべきという推奨事項が記載されていない。",
+      "source_evidence": "No.24: 「BeanUtilを使用してコピーを行う際に、精度の高い型から低い型(例えば、LongからInteger)への変換を行った場合、コピー元の値がコピー先の型の精度を超えていてもエラーとならず正常に処理が終了します。そのため、コピー元の値は、入力値のチェックにより、事前にバリデーションしておくことを注意点として追加しました。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "以下のMavenアーティファクトIDがソースファイルの変更内容に登場するが、hintsに含まれていない: nablarch-common-databind (No.14), nablarch-fw-batch-ee (No.4/5), nablarch-fw-web-tag (No.19/20), nablarch-common-dao (No.9/11), nablarch-fw-batch (No.6), nablarch-mail-sender (No.17/18), nablarch-core-beans (No.2)。これらのアーティファクット名で検索した際にこの知識ファイルがヒットしない可能性がある。",
+      "source_evidence": "No.2: nablarch-core-beans 1.1.4 / No.4,5: nablarch-fw-batch-ee 1.1.0 / No.6: nablarch-fw-batch 1.2.1 / No.9,11: nablarch-common-dao 1.4.0 / No.14: nablarch-common-databind 1.1.0 / No.17,18: nablarch-mail-sender 1.2.0 / No.19,20: nablarch-fw-web-tag 1.0.6"
+    }
+  ]
+}

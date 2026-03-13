@@ -1,0 +1,20 @@
+{
+  "file_id": "blank-project-setup_ContainerBatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (ブランクプロジェクト作成)",
+      "description": "プロジェクト情報入力後のY/N確認プロンプトの説明と、コマンド正常終了後の結果説明が欠落している。",
+      "source_evidence": "プロジェクト情報の入力が終わると、Y: :と表示される。\n* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。\n* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。\nコマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (コンテナイメージを作成する)",
+      "description": "ビルド後にローカルリポジトリに保存されたイメージを確認するための `docker image ls` コマンドとその出力例が欠落している。",
+      "source_evidence": "ビルドされたDockerイメージは、ローカルリポジトリに保存される。\n以下のコマンドで、ローカルリポジトリに保存されたイメージを確認できる。\n\n```\ndocker image ls\nREPOSITORY              TAG         IMAGE ID       CREATED        SIZE\nmyapp-container-batch   0.1.0       1cafd4108237   51 years ago   253MB\nmyapp-container-batch   latest      1cafd4108237   51 years ago   253MB\n```\n\n`myapp-container-batch:0.1.0` と `myapp-container-batch:latest` という２つのイメージが登録されていることが分かる。"
+    }
+  ]
+}

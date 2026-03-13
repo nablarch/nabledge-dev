@@ -1,0 +1,279 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/db_double_submit.rst`
+- Format: `rst`
+
+```
+.. _`db_double_submit`:
+
+データベースを使用した二重サブミット防止
+=====================================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+:ref:`二重サブミット防止 <tag-double_submission>` では、サーバ側のトークンはHTTPセッションに保存される。
+このため、アプリケーションサーバをスケールアウトする際には、スティッキーセッションやセッションレプリケーション等を
+使用する必要がある。
+
+サーバ側のトークンをデータベースに保管する実装を使用することで、特にアプリケーションサーバの設定をしなくても、
+複数のアプリケーションサーバ間でトークンを共有できる。
+
+.. tip::
+
+  ブラウザが閉じられた場合などにテーブル上にトークンが残ってしまうことがある。
+  そのため、期限切れのトークンは定期的に削除する必要がある。
+
+.. important::
+
+  HTTPセッションを使用した :ref:`二重サブミット防止 <tag-double_submission>` はCSRF対策に使用できたが、
+  本機能はユーザを識別せずにトークンをDBに格納しているためCSRF対策に使用できない。
+  本機能を使用する場合は、CSRF対策に :ref:`csrf_token_verification_handler` を使用すること。
+
+機能概要
+---------------------------------------------------------------------
+
+サーバ側のトークンをデータベースに保管できる
+
+モジュール一覧
+---------------------------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-doublesubmit-jdbc</artifactId>
+  </dependency>
+
+
+使用方法
+---------------------------------------------------------------------
+
+データベース上にトークンを保存するためのテーブルが必要となる。
+
+作成するテーブルの定義を以下に示す。
+
+`DOUBLE_SUBMISSION` テーブル
+  ==================== ====================
+  カラム名             データ型
+  ==================== ====================
+  TOKEN(PK)            `java.lang.String`
+  CREATED_AT           `java.sql.Timestamp`
+  ==================== ====================
+
+テーブル名およびカラム名は変更可能である。
+変更する場合は、 :java:extdoc:`DbTokenManager.dbTokenSchema <nablarch.common.web.token.DbTokenManager.setDbTokenSchema(nablarch.common.web.token.DbTokenSchema)>` に
+:java:extdoc:`DbTokenSchema <nablarch.common.web.token.DbTokenSchema>` のコンポーネントを定義する。
+
+2種類のコンポーネント定義を追加する。
+
+``tokenManager`` という名前でコンポーネント定義を追加する。
+これにより、トークンがデータベースで管理されるようになる。
+``tokenManager`` は :ref:`初期化<repository-initialize_object>` が必要。
+
+.. code-block:: xml
+                
+  <component name="tokenManager" class="nablarch.common.web.token.DbTokenManager">
+    <property name="dbManager">
+      <component class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+        <property name="dbTransactionName" value="tokenTransaction"/>
+      </component>
+    </property>
+    <!-- 上記のテーブル定義からテーブル名、カラム名を変更する場合のみ以下設定が必要 -->
+    <property name="dbTokenSchema">
+      <component class="nablarch.common.web.token.DbTokenSchema">
+        <property name="tableName" value="DB_TOKEN"/>
+        <property name="tokenName" value="VALUE_COL"/>
+        <property name="createdAtName" value="CREATED_AT_COL"/>
+      </component>
+    </property>
+  </component>
+
+  <!-- 初期化が必要なため、以下を設定 -->
+  <component name="initializer" class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+    <property name="initializeList">
+      <list>
+        <component-ref name="tokenManager"/>
+      </list>
+    </property>
+  </component>
+
+
+``tokenGenerator`` という名前でコンポーネント定義を追加する。
+これによりトークンにUUIDが使用され、推測および衝突の可能性を考慮しなくてよくなる。
+
+.. code-block:: xml
+
+    <component name="tokenGenerator"
+               class="nablarch.common.web.token.UUIDV4TokenGenerator" />
+
+.. important::
+
+  :ref:`テスティングフレームワークのトークン発行<how_to_set_token_in_request_unit_test>` はトークンのDB保存に対応していない。
+  そのため、自動テスト実行時には :java:extdoc:`HttpSessionTokenManager <nablarch.common.web.token.HttpSessionTokenManager>` に差し替えてテストする必要がある。
+
+  .. code-block:: xml
+
+    <!-- トークンをHTTPセッションに保存する -->
+    <component name="tokenManager" class="nablarch.common.web.token.HttpSessionTokenManager"/>
+```
+
+## Knowledge File
+
+- ID: `libraries-db_double_submit--s1`
+
+```json
+{
+  "id": "libraries-db_double_submit--s1",
+  "title": "データベースを使用した二重サブミット防止",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/db_double_submit.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/DbTokenManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/DbTokenSchema.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/HttpSessionTokenManager.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "DbTokenManager",
+        "DbTokenSchema",
+        "二重サブミット防止",
+        "DBトークン管理",
+        "スケールアウト対応",
+        "CSRF対策不可",
+        "トークン期限切れ削除"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web-doublesubmit-jdbc",
+        "二重サブミット防止モジュール",
+        "Mavenモジュール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用方法",
+      "hints": [
+        "DbTokenManager",
+        "DbTokenSchema",
+        "HttpSessionTokenManager",
+        "UUIDV4TokenGenerator",
+        "DOUBLE_SUBMISSION",
+        "tokenManager",
+        "tokenGenerator",
+        "トークンDB保存設定",
+        "テスト時HttpSessionTokenManagerに差し替え"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "サーバ側のトークンをデータベースに保管できる。アプリケーションサーバをスケールアウトする際、スティッキーセッションやセッションレプリケーションを設定しなくても複数サーバ間でトークンを共有できる。\n\n> **補足**: ブラウザが閉じられた場合などにテーブル上にトークンが残ってしまうことがある。期限切れのトークンは定期的に削除する必要がある。\n\n> **重要**: HTTPセッションを使用した :ref:`二重サブミット防止 <tag-double_submission>` はCSRF対策に使用できたが、本機能はユーザを識別せずにトークンをDBに格納しているためCSRF対策に使用できない。本機能を使用する場合は、CSRF対策に :ref:`csrf_token_verification_handler` を使用すること。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-doublesubmit-jdbc</artifactId>\n</dependency>\n```",
+    "s3": "データベース上にトークンを保存するためのテーブルが必要。\n\n`DOUBLE_SUBMISSION` テーブル定義:\n\n| カラム名 | データ型 |\n|---|---|\n| TOKEN (PK) | `java.lang.String` |\n| CREATED_AT | `java.sql.Timestamp` |\n\nテーブル名・カラム名は変更可能。変更する場合は :java:extdoc:`DbTokenManager.dbTokenSchema <nablarch.common.web.token.DbTokenManager.setDbTokenSchema(nablarch.common.web.token.DbTokenSchema)>` に :java:extdoc:`DbTokenSchema <nablarch.common.web.token.DbTokenSchema>` のコンポーネントを定義する。\n\n以下2種類のコンポーネント定義を追加する。\n\n**tokenManager** (`nablarch.common.web.token.DbTokenManager`) - :ref:`初期化<repository-initialize_object>` が必要:\n\n```xml\n<component name=\"tokenManager\" class=\"nablarch.common.web.token.DbTokenManager\">\n  <property name=\"dbManager\">\n    <component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n      <property name=\"dbTransactionName\" value=\"tokenTransaction\"/>\n    </component>\n  </property>\n  <!-- テーブル名・カラム名を変更する場合のみ以下設定が必要 -->\n  <property name=\"dbTokenSchema\">\n    <component class=\"nablarch.common.web.token.DbTokenSchema\">\n      <property name=\"tableName\" value=\"DB_TOKEN\"/>\n      <property name=\"tokenName\" value=\"VALUE_COL\"/>\n      <property name=\"createdAtName\" value=\"CREATED_AT_COL\"/>\n    </component>\n  </property>\n</component>\n\n<!-- 初期化設定 -->\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"tokenManager\"/>\n    </list>\n  </property>\n</component>\n```\n\n**tokenGenerator** (`nablarch.common.web.token.UUIDV4TokenGenerator`) - トークンにUUIDを使用（推測・衝突の考慮不要）:\n\n```xml\n<component name=\"tokenGenerator\" class=\"nablarch.common.web.token.UUIDV4TokenGenerator\" />\n```\n\n> **重要**: :ref:`テスティングフレームワークのトークン発行<how_to_set_token_in_request_unit_test>` はトークンのDB保存に対応していない。自動テスト実行時には :java:extdoc:`HttpSessionTokenManager <nablarch.common.web.token.HttpSessionTokenManager>` に差し替えてテストすること。\n> ```xml\n> <component name=\"tokenManager\" class=\"nablarch.common.web.token.HttpSessionTokenManager\"/>\n> ```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,190 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "restful-web-service-functional_comparison",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 機能比較テーブルのJSR 339列（エラー時ログ出力行以降）",
+      "description": "凡例では `－:対象外` と記載しているのに、テーブル内のJSR 339列の「対象外」セルに `—`（EMダッシュ U+2014）を使用している。ソースでは `－`（FULLWIDTH HYPHEN-MINUS U+FF0D）が使われており、知識ファイル内の凡例と表の記号が不一致になっている。",
+      "source_evidence": "ソースの凡例: `○：提供あり　△：一部提供あり　×：提供なし　－:対象外`。ソーステーブルの該当セル例: `- ー` （rst list-table内）"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`restful_web_service_functional_comparison`:
+
+JAX-RSサポート/JSR339/HTTPメッセージングの機能比較
+==========================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+ここでは、以下の機能比較を示す。
+
+ - :ref:`NablarchのJAX-RSサポート <restful_web_service>`
+ - :ref:`HTTPメッセージング <http_messaging>`
+ - `JSR 339: JAX-RS 2.0: The Java API for RESTful Web Services(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=339>`_
+
+.. tip::
+
+ NablarchのJAX-RSサポートとHTTPメッセージングのみ、表内のマークをクリックすると、解説書の説明ページに遷移する。
+
+.. |br| raw:: html
+
+   <br />
+
+.. list-table:: 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+   :header-rows: 1
+   :class: something-special-class
+
+   * - 機能
+     - JAX-RS |br| サポート
+     - HTTP |br| メッセージング
+     - JSR 339
+   * - リクエストとリソースメソッドのマッピング
+     - :ref:`△ <rest-action_mapping>`
+     - :ref:`○ <http_messaging-action_mapping>`
+     - ○
+   * - リクエストとパラメータのマッピング
+     - :ref:`△ <rest-path_query_param>`
+     - × [1]_
+     - ○
+   * - HTTPメソッドのマッチング
+     - :ref:`△ <rest-action_mapping>`
+     - × [1]_
+     - ○
+   * - メディアタイプに応じた |br| リクエスト/レスポンスの変換
+     - :ref:`△ <body_convert_handler>`
+     - × [1]_
+     - ○
+   * - エンティティのバリデーション
+     - :ref:`○ <rest-request_validation>`
+     - :ref:`○ <http_messaging-request_validation>`
+     - ○
+   * - リソースクラスへのインジェクション(CDI)
+     - × [2]_
+     - × [2]_
+     - ○
+   * - リクエスト/レスポンスに対するフィルタ
+     - × [3]_
+     - × [3]_
+     - ○
+   * - ボディの読み書きに対するインターセプタ
+     - × [4]_
+     - × [5]_
+     - ○
+   * - クライアントAPI
+     - × [6]_
+     - :ref:`○ <http_system_messaging-message_send>`
+     - ○
+   * - 非同期処理
+     - × [7]_
+     - × [7]_
+     - ○
+   * - エラー時ログ出力
+     - :ref:`○ <jaxrs_response_handler-error_log>`
+     - :ref:`○ <http_messaging_error_handler-error_response_and_log>`
+     - －
+   * - リクエストボディの最大容量チェック
+     - × [8]_
+     - :ref:`○ <http_messaging_request_parsing_handler-limit_size>`
+     - －
+   * - 証跡ログの出力
+     - × [9]_
+     - :ref:`○ <messaging_log>`
+     - －
+   * - 再送制御
+     - × [9]_
+     - :ref:`○ <message_resend_handler>`
+     - －
+   * - サービス提供の可否チェック
+     - × [10]_
+     - × [10]_
+     - －
+   * - トランザクション制御
+     - × [11]_
+     - × [11]_
+     - －
+   * - 業務処理エラー時のコールバック
+     - × [12]_
+     - :java:extdoc:`○ <nablarch.fw.messaging.action.MessagingAction>`
+     - －
+
+.. [1] HTTPメッセージングはRESTを考慮した作りになっていない。RESTfulウェブサービスには、JAX-RSサポートを使用する。
+.. [2] JAX-RSサポートとHTTPメッセージングは、Nablarchのウェブアプリケーションとして動作するため、CDIは使用できない。
+.. [3] リクエスト/レスポンスに対するフィルタを作りたい場合は、ハンドラを作成する。
+.. [4] ボディの読み書きに対するインターセプタを作りたい場合は、JAX-RSサポートのBodyConverterを作成する。
+.. [5] ボディの読み書きにはNablarchのデータフォーマットを使用している。変更したい場合は、データフォーマットのDataRecordFormatterを作成する。
+.. [6] JAX-RSクライアントが必要な場合は、JAX-RSの実装(JerseyやRESTEasyなど)を使用する。
+.. [7] サーバサイドで非同期処理が必要になる要件がないと想定している。要望があれば対応を検討する。
+.. [8] ウェブサーバやアプリケーションサーバにあるリクエストサイズをチェックする機能を使用する。
+.. [9] アプリケーションごとに要件が異なると想定している。アプリケーションで設計/実装する。
+.. [10] Nablarchにあるサービス提供可否チェックがアプリケーションの要件にマッチする場合はそれを使用する。マッチしない場合は、アプリケーションで設計/実装する。
+.. [11] Nablarchにあるトランザクション管理を使用する。
+.. [12] エラー処理は共通化し、JaxRsResponseHandlerをカスタマイズすることを想定している。業務処理で個別にエラー処理をしたい場合は、リソースメソッドにてtry/catchを使用する。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "restful-web-service-functional_comparison",
+  "title": "JAX-RSサポート/JSR339/HTTPメッセージングの機能比較",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/functional_comparison.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/MessagingAction.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "JAX-RSサポート/HTTPメッセージング/JSR 339 機能比較",
+      "hints": [
+        "JAX-RSサポート",
+        "HTTPメッセージング",
+        "JSR 339",
+        "機能比較",
+        "RESTfulウェブサービス",
+        "MessagingAction",
+        "BodyConverter",
+        "DataRecordFormatter",
+        "JaxRsResponseHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## JAX-RSサポート/HTTPメッセージング/JSR 339 機能比較\n\n> **補足**: NablarchのJAX-RSサポートとHTTPメッセージングのみ、表内のマークをクリックすると、解説書の説明ページに遷移する。\n\n凡例: ○：提供あり　△：一部提供あり　×：提供なし　－:対象外\n\n| 機能 | JAX-RSサポート | HTTPメッセージング | JSR 339 |\n|---|---|---|---|\n| リクエストとリソースメソッドのマッピング | :ref:`△ <rest-action_mapping>` | :ref:`○ <http_messaging-action_mapping>` | ○ |\n| リクエストとパラメータのマッピング | :ref:`△ <rest-path_query_param>` | × [1] | ○ |\n| HTTPメソッドのマッチング | :ref:`△ <rest-action_mapping>` | × [1] | ○ |\n| メディアタイプに応じたリクエスト/レスポンスの変換 | :ref:`△ <body_convert_handler>` | × [1] | ○ |\n| エンティティのバリデーション | :ref:`○ <rest-request_validation>` | :ref:`○ <http_messaging-request_validation>` | ○ |\n| リソースクラスへのインジェクション(CDI) | × [2] | × [2] | ○ |\n| リクエスト/レスポンスに対するフィルタ | × [3] | × [3] | ○ |\n| ボディの読み書きに対するインターセプタ | × [4] | × [5] | ○ |\n| クライアントAPI | × [6] | :ref:`○ <http_system_messaging-message_send>` | ○ |\n| 非同期処理 | × [7] | × [7] | ○ |\n| エラー時ログ出力 | :ref:`○ <jaxrs_response_handler-error_log>` | :ref:`○ <http_messaging_error_handler-error_response_and_log>` | — |\n| リクエストボディの最大容量チェック | × [8] | :ref:`○ <http_messaging_request_parsing_handler-limit_size>` | — |\n| 証跡ログの出力 | × [9] | :ref:`○ <messaging_log>` | — |\n| 再送制御 | × [9] | :ref:`○ <message_resend_handler>` | — |\n| サービス提供の可否チェック | × [10] | × [10] | — |\n| トランザクション制御 | × [11] | × [11] | — |\n| 業務処理エラー時のコールバック | × [12] | :java:extdoc:`○ <nablarch.fw.messaging.action.MessagingAction>` | — |\n\n[1] HTTPメッセージングはRESTを考慮した作りになっていない。RESTfulウェブサービスには、JAX-RSサポートを使用する。\n[2] JAX-RSサポートとHTTPメッセージングは、Nablarchのウェブアプリケーションとして動作するため、CDIは使用できない。\n[3] リクエスト/レスポンスに対するフィルタを作りたい場合は、ハンドラを作成する。\n[4] ボディの読み書きに対するインターセプタを作りたい場合は、JAX-RSサポートのBodyConverterを作成する。\n[5] ボディの読み書きにはNablarchのデータフォーマットを使用している。変更したい場合は、データフォーマットのDataRecordFormatterを作成する。\n[6] JAX-RSクライアントが必要な場合は、JAX-RSの実装(JerseyやRESTEasyなど)を使用する。\n[7] サーバサイドで非同期処理が必要になる要件がないと想定している。要望があれば対応を検討する。\n[8] ウェブサーバやアプリケーションサーバにあるリクエストサイズをチェックする機能を使用する。\n[9] アプリケーションごとに要件が異なると想定している。アプリケーションで設計/実装する。\n[10] Nablarchにあるサービス提供可否チェックがアプリケーションの要件にマッチする場合はそれを使用する。マッチしない場合は、アプリケーションで設計/実装する。\n[11] Nablarchにあるトランザクション管理を使用する。\n[12] エラー処理は共通化し、JaxRsResponseHandlerをカスタマイズすることを想定している。業務処理で個別にエラー処理をしたい場合は、リソースメソッドにてtry/catchを使用する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

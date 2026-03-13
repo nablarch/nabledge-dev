@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-client_create2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — ClientFormクラスの作成 — Javaコード例のコメント",
+      "description": "ソースの `// getter、setterは省略` というコメントが `// getter、setter必須` に変更されている。ソースのコメントは「このコード例ではgetter/setterを省略している（実際には存在する）」という意味だが、知識ファイルでは「getter/setterは必須」という実装要件の注記に意味が変わっている。",
+      "source_evidence": "ソース: `// getter、setterは省略` (コード例内のコメント)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints配列",
+      "description": "コード例に登場するPascalCaseクラス名が hints に含まれていない: `UniversalDao`、`EntityList`、`Serializable`。これらはセクション内のコードで直接使用されており、検索キーワードになりうる。",
+      "source_evidence": "`EntityList<Industry> industries = UniversalDao.findAll(Industry.class);` / `public class ClientForm implements Serializable`"
+    }
+  ]
+}

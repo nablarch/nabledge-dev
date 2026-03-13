@@ -1,0 +1,586 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/data_io/data_bind.rst`
+- Format: `rst`
+
+```
+CSVファイルのフォーマットを指定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CSVファイルのフォーマット指定は、Java Beansクラスにバインドする場合とMapクラスにバインドする場合で2種類の指定方法がある。
+
+.. _data_bind-csv_format-beans:
+
+Java Beansクラスにバインドする場合
+  以下のアノテーションを使用してフォーマットを指定する。
+
+  * :java:extdoc:`Csv <nablarch.common.databind.csv.Csv>`
+  * :java:extdoc:`CsvFormat <nablarch.common.databind.csv.CsvFormat>`
+
+  CSVファイルのフォーマットは予め用意したフォーマットセットの中から選択できる。
+  フォーマットセットについては  :ref:`data_bind-csv_format_set` を参照。
+
+  以下に実装例を示す。
+
+  .. code-block:: java
+
+    @Csv(type = Csv.CsvType.DEFAULT, properties = {"age", "name"}, headers = {"年齢", "氏名"})
+    public class Person {
+        private Integer age;
+        private String name;
+
+        // getter、setterは省略。
+    }
+
+  また、CSVファイルのフォーマットが、予め用意したフォーマットセットのいずれにも当てはまらない場合は、
+  :java:extdoc:`CsvFormat <nablarch.common.databind.csv.CsvFormat>` を使用して個別にフォーマットを指定できる。
+
+  以下に実装例を示す。
+
+  .. code-block:: java
+
+    // type属性にCUSTOMを指定する。
+    @Csv(type = Csv.CsvType.CUSTOM, properties = {"age", "name"})
+    @CsvFormat(
+            fieldSeparator = '\t',
+            lineSeparator = "\r\n",
+            quote = '\'',
+            ignoreEmptyLine = false,
+            requiredHeader = false,
+            charset = "UTF-8",
+            quoteMode = CsvDataBindConfig.QuoteMode.ALL,
+            emptyToNull = true)
+    public class Person {
+        private Integer age;
+        private String name;
+
+        // getter、setterは省略。
+    }
+
+  .. tip::
+
+    Java Beansクラスにバインドする場合、フォーマット指定はアノテーションで行うため、
+    :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に
+    :java:extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` を使用したフォーマットの指定はできない。
+
+.. _data_bind-csv_format-map:
+
+Mapクラスにバインドする場合
+  :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に
+  :java:extdoc:`CsvDataBindConfig <nablarch.common.databind.csv.CsvDataBindConfig>` を使用して個別にフォーマットを指定する。
+
+  また、フォーマットを指定する際は、
+  :java:extdoc:`CsvDataBindConfig#withProperties <nablarch.common.databind.csv.CsvDataBindConfig.withProperties(java.lang.String...)>`
+  で設定したプロパティ名がMapオブジェクトのキーとして使用される。
+  なお、CSVにヘッダ行が存在する場合は、プロパティ名の設定を省略することでヘッダタイトルをキーとして使用できる。
+
+  以下に実装例を示す。
+
+  ポイント
+    * ヘッダタイトル、プロパティ名はCSVの項目順と一致するように定義すること
+
+  .. code-block:: java
+
+    // ヘッダタイトル、プロパティ名はCSVの項目順と一致するように定義する
+    DataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "名前")
+                                                     .withProperties("age", "name");
+    ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config);
+
+.. _data_bind-fixed_length_format:
+
+固定長ファイルのフォーマットを指定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+固定長ファイルのフォーマット指定は、Java Beansクラスにバインドする場合とMapクラスにバインドする場合で2種類の指定方法がある。
+
+.. _data_bind-fixed_length_format-beans:
+
+Java Beansクラスにバインドする場合
+  以下のアノテーションを使用してフォーマットを指定する。
+
+  * :java:extdoc:`FixedLength <nablarch.common.databind.fixedlength.FixedLength>`
+  * :java:extdoc:`Field <nablarch.common.databind.fixedlength.Field>`
+
+  また、固定長ファイルの各フィールドに対し、パディングやトリム等を変換するコンバータを指定できる。
+  標準で指定できるコンバータについては、 :java:extdoc:`nablarch.common.databind.fixedlength.converter` パッケージ配下を参照。
+
+  以下に実装例を示す。
+
+  .. code-block:: java
+
+    @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
+    public class Person {
+
+        @Field(offset = 1, length = 3)
+        @Lpad
+        private Integer age;
+
+        @Field(offset = 4, length = 16)
+        @Rpad
+        private String name;
+
+        // getter、setterは省略
+    }
+
+  もし、以下の様に未使用領域が存在するフォーマットの場合、
+  固定長ファイルへの書き込み時に ``FixedLength#fillChar`` に設定した文字で自動的にパディングされる。(デフォルトは半角スペース)
+
+  .. code-block:: java
+
+    @FixedLength(length = 24, charset = "MS932", lineSeparator = "\r\n", fillChar = '0')
+    public class Person {
+
+        @Field(offset = 1, length = 3)
+        @Lpad
+        private Integer age;
+
+        @Field(offset = 9, length = 16)
+        @Rpad
+        private String name;
+
+        // getter、setterは省略
+    }
+
+.. _data_bind-fixed_length_format-map:
+
+Mapクラスにバインドする場合
+  :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に
+  :java:extdoc:`FixedLengthDataBindConfig <nablarch.common.databind.fixedlength.FixedLengthDataBindConfig>` を使用して個別にフォーマットを指定する。
+
+  :java:extdoc:`FixedLengthDataBindConfig <nablarch.common.databind.fixedlength.FixedLengthDataBindConfig>` は、
+  :java:extdoc:`FixedLengthDataBindConfigBuilder <nablarch.common.databind.fixedlength.FixedLengthDataBindConfigBuilder>` を使用して生成できる。
+
+  以下に実装例を示す。
+
+  .. code-block:: java
+
+    final DataBindConfig config = FixedLengthDataBindConfigBuilder
+            .newBuilder()
+            .length(19)
+            .charset(Charset.forName("MS932"))
+            .lineSeparator("\r\n")
+            .singleLayout()
+            .field("age", 1, 3, new Lpad.Converter('0'))
+            .field("name", 4, 16, new Rpad.RpadConverter(' '))
+            .build();
+
+    final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config);
+
+.. _data_bind-fixed_length_format-multi_layout:
+
+固定長ファイルに複数のフォーマットを指定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+複数のフォーマットを持つ固定長ファイルのフォーマット指定についても、
+Java Beansクラスにバインドする場合とMapクラスにバインドする場合で2種類の指定方法がある。
+
+Java Beansクラスにバインドする場合
+  フォーマットごとにJavaBeansクラスを定義して、それらのJava Beansクラスをプロパティとして持つ
+  :java:extdoc:`MultiLayout <nablarch.common.databind.fixedlength.MultiLayout>` の継承クラスを作成することで、
+  複数フォーマットの固定長ファイルに対応できる。
+
+  以下にフォーマット指定の実装例を示す。
+
+  ポイント
+    * フォーマットごとにJava Beansクラスを定義する。
+    * 上記のフォーマットを定義したJava Beansクラスをプロパティとして持つ、
+      :java:extdoc:`MultiLayout <nablarch.common.databind.fixedlength.MultiLayout>` の継承クラスを定義する。
+    * :java:extdoc:`MultiLayout <nablarch.common.databind.fixedlength.MultiLayout>` の継承クラスに
+      :java:extdoc:`FixedLength <nablarch.common.databind.fixedlength.FixedLength>` アノテーションを設定し、 ``multiLayout`` 属性に ``true`` を設定する。
+    * :java:extdoc:`MultiLayout#getRecordIdentifier <nablarch.common.databind.fixedlength.MultiLayout.getRecordIdentifier()>` メソッドをオーバーライドして、
+      対象のデータがどのフォーマットに紐づくかを識別する :java:extdoc:`RecordIdentifier <nablarch.common.databind.fixedlength.MultiLayoutConfig.RecordIdentifier>` の実装クラスを返却する。
+
+  .. code-block:: java
+
+    @FixedLength(length = 20, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
+    public class Person extends MultiLayout {
+
+        @Record
+        private Header header;
+
+        @Record
+        private Data data;
+
+        @Override
+        public RecordIdentifier getRecordIdentifier() {
+            return new RecordIdentifier() {
+                @Override
+                public RecordName identifyRecordName(byte[] record) {
+                    return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
+                }
+            };
+        }
+
+        // getter、setterは省略
+    }
+
+    public class Header {
+
+        @Field(offset = 1, length = 1)
+        private Long id;
+
+        @Rpad
+        @Field(offset = 2, length = 19)
+        private String field;
+
+        // getter、setterは省略
+    }
+
+    public class Data {
+
+        @Field(offset = 1, length = 1)
+        private Long id;
+
+        @Lpad
+        @Field(offset = 2, length = 3)
+        private Long age;
+
+        @Rpad
+        @Field(offset = 5, length = 16)
+        private String name;
+
+        // getter、setterは省略
+    }
+
+    enum RecordType implements MultiLayoutConfig.RecordName {
+        HEADER {
+            @Override
+            public String getRecordName() {
+                return "header";
+            }
+        },
+        DATA {
+            @Override
+            public String getRecordName() {
+                return "data";
+            }
+        }
+    }
+
+  次に、指定されたフォーマットをもとに固定長データの読み込み・書き込みを行う実装例を示す。
+
+  .. code-block:: java
+
+    // 読み込む場合の実装例
+    try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {
+        final Person person = mapper.read();
+        if (RecordType.HEADER == person.getRecordName()) {
+            final Header header = person.getHeader();
+
+            // 後続の処理は省略
+        }
+    }
+
+    // 書き込む場合の実装例
+    try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {
+        final Person person = new Person();
+        person.setHeader(new Header("1", "test"));
+        mapper.write(person);
+    }
+
+
+Mapクラスにバインドする場合
+  :ref:`固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法 <data_bind-fixed_length_format-map>`
+  と同様の手順でフォーマットを指定できる。
+
+  以下にフォーマット指定の実装例を示す。
+
+  ポイント
+    * ``multiLayout`` メソッドを呼び出し、マルチレイアウト用のDataBindConfigを生成する。
+    * ``recordIdentifier`` メソッドには、対象のデータがどのフォーマットに紐づくかを識別する
+      :java:extdoc:`RecordIdentifier <nablarch.common.databind.fixedlength.MultiLayoutConfig.RecordIdentifier>` の実装クラスを指定する。
+
+  .. code-block:: java
+
+    final DataBindConfig config = FixedLengthDataBindConfigBuilder
+            .newBuilder()
+            .length(20)
+            .charset(Charset.forName("MS932"))
+            .lineSeparator("\r\n")
+            .multiLayout()
+            .record("header")
+            .field("id", 1, 1, new DefaultConverter())
+            .field("field", 2, 19, new Rpad.RpadConverter(' '))
+            .record("data")
+            .field("id", 1, 1, new DefaultConverter())
+            .field("age", 2, 3, new Lpad.LpadConverter('0'))
+            .field("name", 5, 16, new Rpad.RpadConverter(' '))
+            .recordIdentifier(new RecordIdentifier() {
+                @Override
+                public RecordName identifyRecordName(byte[] record) {
+                    return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
+                }
+            })
+            .build();
+
+  次に、指定されたフォーマットをもとに固定長データの読み込み・書き込みを行う実装例を示す。
+
+  .. code-block:: java
+
+    // 読み込む場合の実装例
+    try (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {
+        final Map<String, ?> map = mapper.read();
+        if (RecordType.HEADER == map.get("recordName")) {
+            final Map<String, ?> header = map.get("header");
+
+            // 後続の処理は省略
+        }
+    }
+
+    // 書き込む場合の実装例
+    try (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config)) {
+        final Map<String, ?> header = new HashMap<>();
+        header.put("id", "1");
+        header.put("field", "test");
+
+        final Map<String, ?> map = new HashMap<>();
+        map.put("recordName", RecordType.HEADER);
+        map.put("header", header);
+
+        mapper.write(map);
+    }
+
+.. _data_bind-formatter:
+
+出力するデータの表示形式をフォーマットする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データを出力する際に、 :ref:`format` を使用することで日付や数値などのデータの表示形式をフォーマットできる。
+
+詳細は :ref:`format` を参照すること。
+
+拡張例
+---------------------------------------------------------------------
+
+Java Beansクラスにバインドできるファイル形式を追加する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Java Beansクラスにバインドできるファイル形式を追加するには、以下の手順が必要となる。
+
+1. 指定した形式のファイルとJava Beansクラスをバインドさせるため、 :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の実装クラスを作成する。
+2. :java:extdoc:`ObjectMapperFactory <nablarch.common.databind.ObjectMapperFactory>` を継承したクラスを作成し、
+   先ほど作成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の実装クラスを生成する処理を追加する。
+3. :java:extdoc:`ObjectMapperFactory <nablarch.common.databind.ObjectMapperFactory>` の継承クラスをコンポーネント設定ファイルに設定する。
+   以下にコンポーネント設定ファイルへの設定例を示す。
+
+
+  ポイント
+   * コンポーネント名は、 **objectMapperFactory** とすること。
+
+  .. code-block:: xml
+
+    <component name="objectMapperFactory" class="sample.SampleObjectMapperFactory" />
+
+.. _data_bind-csv_format_set:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-data_bind--s11`
+
+```json
+{
+  "id": "libraries-data_bind--s11",
+  "title": "CSVファイルのフォーマットを指定する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_bind.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/Csv.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/CsvFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/ObjectMapper.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/DataBindConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/csv/CsvDataBindConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/FixedLength.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/Field.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/FixedLengthDataBindConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/FixedLengthDataBindConfigBuilder.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/MultiLayout.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/fixedlength/MultiLayoutConfig/RecordIdentifier.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/databind/ObjectMapperFactory.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "CSVファイルのフォーマットを指定する",
+      "hints": [
+        "Csv",
+        "CsvFormat",
+        "CsvDataBindConfig",
+        "ObjectMapper",
+        "DataBindConfig",
+        "ObjectMapperFactory",
+        "@Csv",
+        "@CsvFormat",
+        "withProperties",
+        "CsvType",
+        "CSVフォーマット指定",
+        "Java Beansバインド",
+        "Mapバインド",
+        "フォーマットセット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "固定長ファイルのフォーマットを指定する",
+      "hints": [
+        "FixedLength",
+        "Field",
+        "FixedLengthDataBindConfig",
+        "FixedLengthDataBindConfigBuilder",
+        "ObjectMapperFactory",
+        "@FixedLength",
+        "@Field",
+        "@Lpad",
+        "@Rpad",
+        "fillChar",
+        "固定長フォーマット指定",
+        "パディング",
+        "トリム",
+        "singleLayout"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "固定長ファイルに複数のフォーマットを指定する",
+      "hints": [
+        "MultiLayout",
+        "RecordIdentifier",
+        "RecordName",
+        "@Record",
+        "multiLayout",
+        "getRecordIdentifier",
+        "FixedLengthDataBindConfigBuilder",
+        "DefaultConverter",
+        "マルチレイアウト",
+        "複数フォーマット",
+        "固定長マルチレイアウト",
+        "identifyRecordName"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "出力するデータの表示形式をフォーマットする",
+      "hints": [
+        "format",
+        "日付フォーマット",
+        "数値フォーマット",
+        "表示形式",
+        "データ出力"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "拡張例",
+      "hints": [
+        "ObjectMapper",
+        "ObjectMapperFactory",
+        "objectMapperFactory",
+        "ファイル形式追加",
+        "Java Beansバインド拡張",
+        "コンポーネント設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "CSVファイルのフォーマット指定はJava BeansクラスにバインドするとMapクラスにバインドする2種類の指定方法がある。\n\n## Java Beansクラスにバインドする場合\n\n**アノテーション**: :java:extdoc:`Csv <nablarch.common.databind.csv.Csv>`, :java:extdoc:`CsvFormat <nablarch.common.databind.csv.CsvFormat>`\n\nCSVファイルのフォーマットは予め用意したフォーマットセットから選択できる（:ref:`data_bind-csv_format_set` 参照）。フォーマットセットに該当しない場合は :java:extdoc:`CsvFormat <nablarch.common.databind.csv.CsvFormat>` で個別指定し、`@Csv` の `type` 属性に `CUSTOM` を指定する。\n\n```java\n// DEFAULTフォーマットセット使用\n@Csv(type = Csv.CsvType.DEFAULT, properties = {\"age\", \"name\"}, headers = {\"年齢\", \"氏名\"})\npublic class Person {\n    private Integer age;\n    private String name;\n}\n\n// CUSTOMフォーマット個別指定\n@Csv(type = Csv.CsvType.CUSTOM, properties = {\"age\", \"name\"})\n@CsvFormat(\n        fieldSeparator = '\\t',\n        lineSeparator = \"\\r\\n\",\n        quote = '\\'',\n        ignoreEmptyLine = false,\n        requiredHeader = false,\n        charset = \"UTF-8\",\n        quoteMode = CsvDataBindConfig.QuoteMode.ALL,\n        emptyToNull = true)\npublic class Person {\n    private Integer age;\n    private String name;\n}\n```\n\n> **補足**: Java BeansクラスにバインドするはObjectMapper生成時にDataBindConfigを使ったフォーマット指定はできない。フォーマットはアノテーションで行う。\n\n## Mapクラスにバインドする場合\n\n:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` 生成時に :java:extdoc:`CsvDataBindConfig <nablarch.common.databind.csv.CsvDataBindConfig>` でフォーマット指定する。:java:extdoc:`CsvDataBindConfig#withProperties <nablarch.common.databind.csv.CsvDataBindConfig.withProperties(java.lang.String...)>` で設定したプロパティ名がMapオブジェクトのキーになる。CSVにヘッダ行がある場合、プロパティ名の設定を省略するとヘッダタイトルがキーとして使われる。\n\nヘッダタイトルとプロパティ名はCSVの項目順と一致するように定義すること。\n\n```java\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\nObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config);\n```",
+    "s2": "固定長ファイルのフォーマット指定はJava BeansクラスにバインドするとMapクラスにバインドする2種類の指定方法がある。\n\n## Java Beansクラスにバインドする場合\n\n**アノテーション**: :java:extdoc:`FixedLength <nablarch.common.databind.fixedlength.FixedLength>`, :java:extdoc:`Field <nablarch.common.databind.fixedlength.Field>`\n\n各フィールドにパディングやトリムを行うコンバータを指定できる。標準コンバータは `nablarch.common.databind.fixedlength.converter` パッケージ配下を参照。\n\n未使用領域が存在する場合、固定長ファイルへの書き込み時に `FixedLength#fillChar` に設定した文字で自動的にパディングされる（デフォルトは半角スペース）。\n\n```java\n@FixedLength(length = 19, charset = \"MS932\", lineSeparator = \"\\r\\n\")\npublic class Person {\n    @Field(offset = 1, length = 3)\n    @Lpad\n    private Integer age;\n\n    @Field(offset = 4, length = 16)\n    @Rpad\n    private String name;\n}\n\n// 未使用領域あり（fillCharで'0'埋め）\n@FixedLength(length = 24, charset = \"MS932\", lineSeparator = \"\\r\\n\", fillChar = '0')\npublic class Person {\n    @Field(offset = 1, length = 3)\n    @Lpad\n    private Integer age;\n\n    @Field(offset = 9, length = 16)\n    @Rpad\n    private String name;\n}\n```\n\n## Mapクラスにバインドする場合\n\n:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` 生成時に :java:extdoc:`FixedLengthDataBindConfig <nablarch.common.databind.fixedlength.FixedLengthDataBindConfig>` でフォーマット指定する。:java:extdoc:`FixedLengthDataBindConfig <nablarch.common.databind.fixedlength.FixedLengthDataBindConfig>` は :java:extdoc:`FixedLengthDataBindConfigBuilder <nablarch.common.databind.fixedlength.FixedLengthDataBindConfigBuilder>` で生成する。\n\n```java\nfinal DataBindConfig config = FixedLengthDataBindConfigBuilder\n        .newBuilder()\n        .length(19)\n        .charset(Charset.forName(\"MS932\"))\n        .lineSeparator(\"\\r\\n\")\n        .singleLayout()\n        .field(\"age\", 1, 3, new Lpad.Converter('0'))\n        .field(\"name\", 4, 16, new Rpad.RpadConverter(' '))\n        .build();\n\nfinal ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config);\n```",
+    "s3": "複数フォーマットの固定長ファイルの指定もJava BeansクラスにバインドするとMapクラスにバインドする2種類の指定方法がある。\n\n## Java Beansクラスにバインドする場合\n\nフォーマットごとにJava Beansクラスを定義し、それらをプロパティとして持つ :java:extdoc:`MultiLayout <nablarch.common.databind.fixedlength.MultiLayout>` の継承クラスを作成する。\n\nポイント:\n1. フォーマットごとにJava Beansクラスを定義する\n2. それらをプロパティとして持つ :java:extdoc:`MultiLayout <nablarch.common.databind.fixedlength.MultiLayout>` の継承クラスを定義する\n3. :java:extdoc:`FixedLength <nablarch.common.databind.fixedlength.FixedLength>` アノテーションの `multiLayout` 属性に `true` を設定する\n4. :java:extdoc:`MultiLayout#getRecordIdentifier <nablarch.common.databind.fixedlength.MultiLayout.getRecordIdentifier()>` をオーバーライドし、データがどのフォーマットに紐づくかを識別する :java:extdoc:`RecordIdentifier <nablarch.common.databind.fixedlength.MultiLayoutConfig.RecordIdentifier>` の実装クラスを返す\n\n```java\n@FixedLength(length = 20, charset = \"MS932\", lineSeparator = \"\\r\\n\", multiLayout = true)\npublic class Person extends MultiLayout {\n    @Record private Header header;\n    @Record private Data data;\n\n    @Override\n    public RecordIdentifier getRecordIdentifier() {\n        return new RecordIdentifier() {\n            @Override\n            public RecordName identifyRecordName(byte[] record) {\n                return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;\n            }\n        };\n    }\n}\n\npublic class Header {\n    @Field(offset = 1, length = 1) private Long id;\n    @Rpad @Field(offset = 2, length = 19) private String field;\n}\n\npublic class Data {\n    @Field(offset = 1, length = 1) private Long id;\n    @Lpad @Field(offset = 2, length = 3) private Long age;\n    @Rpad @Field(offset = 5, length = 16) private String name;\n}\n\nenum RecordType implements MultiLayoutConfig.RecordName {\n    HEADER { public String getRecordName() { return \"header\"; } },\n    DATA   { public String getRecordName() { return \"data\"; } }\n}\n```\n\n読み込み・書き込み例:\n\n```java\n// 読み込む場合\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    final Person person = mapper.read();\n    if (RecordType.HEADER == person.getRecordName()) {\n        final Header header = person.getHeader();\n    }\n}\n\n// 書き込む場合\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {\n    final Person person = new Person();\n    person.setHeader(new Header(\"1\", \"test\"));\n    mapper.write(person);\n}\n```\n\n## Mapクラスにバインドする場合\n\n:ref:`data_bind-fixed_length_format-map` と同様の手順でフォーマット指定する。\n\nポイント:\n- `multiLayout()` メソッドを呼び出してマルチレイアウト用のDataBindConfigを生成する\n- `recordIdentifier()` メソッドに :java:extdoc:`RecordIdentifier <nablarch.common.databind.fixedlength.MultiLayoutConfig.RecordIdentifier>` の実装クラスを指定する\n\n```java\nfinal DataBindConfig config = FixedLengthDataBindConfigBuilder\n        .newBuilder()\n        .length(20)\n        .charset(Charset.forName(\"MS932\"))\n        .lineSeparator(\"\\r\\n\")\n        .multiLayout()\n        .record(\"header\")\n        .field(\"id\", 1, 1, new DefaultConverter())\n        .field(\"field\", 2, 19, new Rpad.RpadConverter(' '))\n        .record(\"data\")\n        .field(\"id\", 1, 1, new DefaultConverter())\n        .field(\"age\", 2, 3, new Lpad.LpadConverter('0'))\n        .field(\"name\", 5, 16, new Rpad.RpadConverter(' '))\n        .recordIdentifier(new RecordIdentifier() {\n            @Override\n            public RecordName identifyRecordName(byte[] record) {\n                return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;\n            }\n        })\n        .build();\n```\n\n読み込み・書き込み例:\n\n```java\n// 読み込む場合\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {\n    final Map<String, ?> map = mapper.read();\n    if (RecordType.HEADER == map.get(\"recordName\")) {\n        final Map<String, ?> header = map.get(\"header\");\n    }\n}\n\n// 書き込む場合\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config)) {\n    final Map<String, ?> header = new HashMap<>();\n    header.put(\"id\", \"1\");\n    header.put(\"field\", \"test\");\n    final Map<String, ?> map = new HashMap<>();\n    map.put(\"recordName\", RecordType.HEADER);\n    map.put(\"header\", header);\n    mapper.write(map);\n}\n```",
+    "s4": "データを出力する際に :ref:`format` を使用することで日付や数値などのデータの表示形式をフォーマットできる。詳細は :ref:`format` を参照すること。",
+    "s5": "Java Beansクラスにバインドできるファイル形式を追加するには以下の手順が必要:\n\n1. 指定した形式のファイルとJava Beansクラスをバインドさせるため、:java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の実装クラスを作成する\n2. :java:extdoc:`ObjectMapperFactory <nablarch.common.databind.ObjectMapperFactory>` を継承したクラスを作成し、作成した :java:extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` 実装クラスを生成する処理を追加する\n3. :java:extdoc:`ObjectMapperFactory <nablarch.common.databind.ObjectMapperFactory>` の継承クラスをコンポーネント設定ファイルに設定する。コンポーネント名は **objectMapperFactory** とすること\n\n```xml\n<component name=\"objectMapperFactory\" class=\"sample.SampleObjectMapperFactory\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_entityUnitTestWithNablarchValidation--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — 精査クラスのコンポーネント設定ファイル XML example",
+      "description": "The source XML contains a `<!-- 中略 -->` comment (meaning \"abbreviated\") between the LengthValidator component and the closing `</property>` tag, indicating additional validators exist but are not shown. The knowledge file omits this comment and presents the XML as syntactically complete with only two validators. An AI could incorrectly infer that RequiredValidator and LengthValidator are the only validators in a typical configuration.",
+      "source_evidence": "Source: `<!-- 中略 -->` appears after the LengthValidator closing tag and before `</property>` in the 精査クラスのコンポーネント設定ファイル example."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`getListParamMap` is referenced in the source as an alternative to `getParamMap` when testing multiple properties simultaneously (\"テスト対象のプロパティが複数ある場合は、getListParamMapを使用する\"). It appears in the source code comment and is a distinct method name that users may search for. It is present in the s4 section body as a code comment but absent from the hints array.",
+      "source_evidence": "Source code comment in コンストラクタに対するテストケース section: `// (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)`"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-static_data_cache--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — キャッシュを使用するクラスにBasicStaticDataCacheを設定する",
+      "description": "The Java code example for SampleService is omitted. The source provides a concrete code block showing StaticDataCache<Integer> as the field type and getValue(n) as the access method. This demonstrates the actual API usage pattern for consumers of the cache.",
+      "source_evidence": "```java\npublic class SampleService {\n  private StaticDataCache<Integer> sampleCache;\n  public int calc(int n) {\n      return sampleCache.getValue(n);\n  }\n  public void setSampleCache(StaticDataCache<Integer> sampleCache) {\n      this.sampleCache = sampleCache;\n  }\n}\n```"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "The hints for s3 are missing 'loadAll' and 'getValue', which appear as the first-column keys in the StaticDataLoader method implementation table in s3 content. These are the primary method names users would search for when implementing StaticDataLoader.",
+      "source_evidence": "Source table rows: ':loadAll:' and ':getValue:' in the StaticDataLoader implementation rules section"
+    }
+  ]
+}

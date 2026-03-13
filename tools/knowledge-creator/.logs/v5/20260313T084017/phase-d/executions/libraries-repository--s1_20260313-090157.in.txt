@@ -1,0 +1,597 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/repository.rst`
+- Format: `rst`
+
+```
+.. _repository:
+
+システムリポジトリ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+アプリケーションを実装する際に様々な箇所で使用されるオブジェクトや、設定値などを管理する機能を提供する。
+
+この機能では、以下の事ができる。
+
+* 環境毎に異なる可能性のあるロジック(生成されるクラスやプロパティの値)を、 外部ファイルに定義できる。
+* 外部ファイルの定義を元に、オブジェクト間の関連を構築できる。(DIコンテナ機能を持つ)
+
+機能概要
+--------------------------------------------------
+DIコンテナによるオブジェクトの構築ができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DIコンテナ機能を使うことで、 :ref:`xml <repository-root_node>` に定義されたコンポーネントの定義または 
+:ref:`アノテーションを付与したクラス <repository-inject-annotation-component>` を元にオブジェクトを構築できる。
+構築されるオブジェクトは **シングルトン** となる。
+
+DIコンテナ機能では、以下のことができる。
+
+* :ref:`setterインジェクションができる。 <repository-definition_bean>`
+* :ref:`文字列や数値、真偽値を使用できる。 <repository-property_type>`
+* :ref:`ListやMapをインジェクションできる。 <repository-map_list>`
+* :ref:`型や名前が一致するsetterへの自動インジェクションができる。 <repository-autowired>`
+* :ref:`ファクトリインジェクションができる。 <repository-factory_injection>`
+* :ref:`アノテーションを付与したクラスのオブジェクトが構築できる。 <repository-inject-annotation-component>`
+* :ref:`環境依存値を管理できる。 <repository-environment_configuration>`
+
+アプリケーションからはDIコンテナに直接アクセスするのではなく、システムリポジトリ経由でアクセスする。
+詳細は、 :ref:`repository-use_system_repository` を参照。
+
+オブジェクトの初期化ができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+オブジェクト構築後に任意の初期化処理を実行できる。
+
+オブジェクトの依存関係によっては、初期化順に制約が発生することが考えられるため、
+この機能ではオブジェクトの初期化順が指定できる。
+
+詳細は、 :ref:`repository-initialize_object` を参照。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-repository</artifactId>
+  </dependency>
+
+使用方法
+--------------------------------------------------
+
+.. _repository-root_node:
+
+xmlにルートノードを定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+コンポーネント設定ファイル(xml)のルートノードは、 `component-configuration` とする。
+`schemaLocation` を正しく設定すると、IDEで各要素や属性のドキュメントが参照できたり、補完機能が有効活用できる。
+
+.. code-block:: xml
+
+  <component-configuration xmlns="http://tis.co.jp/nablarch/component-configuration"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration /component-configuration.xsd">
+
+  </component-configuration>
+
+xmlへのコンポーネント定義方法の詳細は、以下を参照。
+
+* :ref:`repository-definition_bean`
+* :ref:`repository-override_bean`
+* :ref:`repository-property_type`
+* :ref:`repository-map_list`
+* :ref:`repository-autowired`
+* :ref:`repository-environment_configuration`
+* :ref:`repository-user_environment_configuration`
+* :ref:`repository-factory_injection`
+* :ref:`repository-initialize_object`
+* :ref:`repository-split_xml`
+
+.. _repository-definition_bean:
+
+Java Beansオブジェクトを設定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Java Beansオブジェクトは、component要素を用いて定義する。
+
+* class属性にDIコンテナで管理するクラスのFQCNを設定する。
+* name属性を使って任意の名前を設定できる。
+* property子要素を使って、setterインジェクションができる。
+* propertyの子要素にcomponentを定義できる。
+* propertyのref属性を使って、他で定義したcomponentをsetterインジェクションできる。
+
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <!-- component要素を使ってJava Beansオブジェクトを設定する -->
+  <component name="sample" class="sample.SampleBean" />
+
+  <component name="component" class="sample.SampleComponent">
+    <!--
+     property要素を使ってsetterインジェクションを行う
+     この例では、sampleという名前でcomponent定義されたオブジェクトがインジェクションされる
+     -->
+    <property name="sample" ref="sample" />
+
+    <!-- ref属性を使わずに、propertyの子要素にcomponentを定義することもできる -->
+    <property name="obj">
+      <component class="sample.SampleObject" />
+    </property>
+
+    <!-- リテラル値をsetterインジェクションする -->
+    <property name="limit" value="100" />
+  <component/>
+
+
+.. important::
+
+  生成されるインスタンスはシングルトンとなる。このため、以下の点に注意すること。
+
+  - インスタンスはシングルトンとなるため、取得の度に生成されるのではない（プロトタイプでない）。
+  - アプリケーションが終了するまでインスタンスは破棄されない。
+  
+  この理解を誤ると、深刻な不具合を埋め込むこととなるので特に注意が必要である。
+  例えば、生成されるインスタンスをプロトタイプと勘違いした場合、あるリクエストでユーザAの入力値をコンポーネントに設定し、
+  別のユーザBのリクエストでその値を使用してしまう、というような重大な不具合を起こす可能性がある。
+  
+  意図的にアプリケーション全体でコンポーネントの状態を変更、共有する場合は、そのコンポーネントはスレッドセーフでなければならない。
+
+
+.. tip::
+
+  オブジェクトはcomponent要素単位にインスタンスが生成される。例えば、以下のように2箇所でcomponentを定義した場合別々のインスタンスが生成される。
+
+  .. code-block:: xml
+
+    <!-- SampleBeanのインスタンスが2つリポジトリに登録される -->
+    <component name="sample1" class="sample.SampleBean" />
+    <component name="sample2" class="sample.SampleBean" />
+
+.. tip::
+
+  ネストして定義したcomponentについても、リポジトリ上はグローバル領域に保持されるため、名前を指定してオブジェクトを取得できる。
+  オブジェクトの取得方法は、 :ref:`repository-get_object` を参照。
+
+  
+
+.. tip::
+   staticなプロパティ(staticなsetterメソッド)に対するインジェクションは行われない。
+   インジェクション対象となるプロパティがstaticであった場合には、DIコンテナの構築時に例外が送出される。
+   
+.. _repository-override_bean:
+
+Java Beansオブジェクトの設定を上書きする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+componentタグのname属性が同じオブジェクトを登録することで、前に読み込まれたオブジェクトの設定を上書きできる。
+この機能は、テスト時にプロダクション環境用のオブジェクトをテスト用のオブジェクト(モック)に置き換える際に使用できる。
+
+オブジェクトを上書きする場合は、同じ名前のオブジェクトを登録するだけで自動的に後で読み込まれたオブジェクトが優先される。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component name="sample" class="sample.SampleBean">
+    <property name="prop" value="message" />
+  </component>
+
+  <!-- 同じ名前でコンポーネントを定義して上書きする -->
+  <component name="sample" class="sample.MockSampleBean" />
+
+.. important::
+
+  上の例のように異なるクラスを設定すると、上書き前のpropertyへの設定は全て破棄される。
+  これは、同じインタフェースを実装していても、同じpropertyを持っているとは限らないためである。
+
+  ただし、同じクラスを設定した場合、上書き前のpropertyへの設定が上書き後のクラスに全て引き継がれる。
+  このため、上書き後の設定で特定propertyへの設定は削除できない。
+  例えば、以下の様な上書き設定をした場合、上書き後の設定にはproperty要素は存在していないが、
+  上書き前のpropの値が引き継がれるため、propにはmessageが設定された状態となる。
+
+  .. code-block:: xml
+
+    <component name="sample" class="sample.SampleBean">
+      <property name="prop" value="message" />
+    </component>
+
+    <!--
+    propertyを設定していないが、上書き前のpropの値が引き継がれる
+     -->
+    <component name="sample" class="sample.SampleBean" />
+
+.. _repository-property_type:
+
+文字列や数値、真偽値を設定値として使う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+プロパティの型が以下の型の場合、リテラル表記で値を簡易的に設定できる。
+
+* java.lang.String
+* java.lang.String[]
+* java.lang.Integer(int)
+* java.lang.Integer[](int[])
+* java.lang.Long(long)
+* java.lang.Boolean(boolean)
+
+以下に設定例を示す。
+
+java.lang.String
+  java.lang.String型に値を設定する場合、value属性にリテラルで設定する値を記述する。
+
+  この例では、strプロパティに対して「あいうえお」が設定される。
+
+  .. code-block:: xml
+
+    <property name="str" value="あいうえお" />
+
+java.lang.String[]
+  java.lang.String[]型に値を設定する場合、value属性に値をカンマ(,)区切りで設定する。
+  カンマで区切られた値が、配列の1つの要素となる。
+
+  この例では、arrayプロパティに対して「[あ, い, う, え, お]」が設定される。
+  なお、区切り文字である ``,`` は要素として設定できない。
+
+  .. code-block:: xml
+
+    <property name="array" value="あ,い,う,え,お" />
+
+java.lang.Integer(int)
+  java.lang.Integer型及びint型に値を設定する場合、value属性に設定する値を記述する。
+  設定できる値は、 `Integer#valueOf` により変換できる値。
+
+  この例では、Integer(int)型のnumプロパティに対して「12345」が設定される。
+
+  .. code-block:: xml
+
+    <property name="num" value="12345" />
+
+java.lang.Integer[](int[])
+  java.lang.String[]と同じように、value属性に値をカンマ(,)区切りで設定する。
+  各要素に設定できる値は、 `Integer#valueOf` により変換できる値。
+
+java.lang.Long(long)
+  java.lang.Integer(int)と同じように、value属性に設定する値を記述する。
+  設定できる値は、 `Long#valueOf` により変換できる値。
+
+java.lang.Boolean(boolean)
+  java.lang.Boolean型に値を設定する場合、value属性にリテラルで設定する値を記述する。
+  設定できる値は、 `Boolean#valueOf` により変換できる値。
+
+  この例では、Boolean(boolean)型のboolプロパティに対して「true」が設定される。
+
+  .. code-block:: xml
+
+    <property name="bool" value="true" />
+
+.. _repository-map_list:
+
+ListやMapを設定値として使う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+list要素やmap要素を使ってコンポーネント設定をすることで、ListやMapを受け取るpropertyに対するsetterインジェクションが行える。
+
+list要素を使ったListの設定
+  list要素には、文字列または任意のJava Beansオブジェクトを設定できる。
+
+  この例では、SampleBeanのstringListプロパティに対して、[string1, string2, string3]を持つ文字列のListが設定される。
+
+  .. code-block:: xml
+
+    <component class="sample.SampleBean">
+      <property name="stringList">
+        <list>
+          <value>string1</value>
+          <value>string2</value>
+          <value>string3</value>
+        </list>
+      </property>
+    </component>
+
+  list要素にも任意の名前を設定でき、property要素で名前参照ができる。
+  この例は、上の例と同じ設定となる。
+
+  .. code-block:: xml
+
+    <list name="strList">
+      <value>string1</value>
+      <value>string2</value>
+      <value>string3</value>
+    </list>
+
+    <component class="sample.ListSample">
+      <!-- strListという名前のListを設定する -->
+      <property name="stringList" ref="strList" />
+    </component>
+
+  この例では、handlersプロパティに対して、 `SampleHandler1` 、 `SampleHandler2` 、 `SampleHandler3` を持つJava BeansオブジェクトのListが設定される。
+  なお、下の例にもあるがcomponent-ref要素を使用することで、名前参照ができる。
+
+  .. code-block:: xml
+
+    <component name="sampleHandler3" class="sample.SampleHandler3" />
+
+    <component class="sample.ListSample">
+      <property name="handlers">
+        <list>
+          <component class="sample.SampleHandler1" />
+          <component class="sample.SampleHandler2" />
+          <component-ref name="sampleHandler3" />
+        </list>
+      </property>
+    </component>
+
+map要素を使ったMapの設定
+  この例では、mapプロパティに対してentryに「{key1=1, key2=2, key3=3}」を持つMapが設定される。
+
+  .. code-block:: xml
+
+    <property name="map">
+      <map>
+        <entry key="key1" value="1" />
+        <entry key="key2" value="2" />
+        <entry key="key3" value="3" />
+      </map>
+    </property>
+
+  mapにも任意の名前を設定でき、property要素で名前参照ができる。
+  この例は、上の例と同じ設定となる。
+
+  .. code-block:: xml
+
+      <map name="map">
+        <entry key="key1" value="1" />
+        <entry key="key2" value="2" />
+        <entry key="key3" value="3" />
+      </map>
+
+    <component class="sample.ListSample">
+      <!-- mapという名前のMapを設定する -->
+    <property name="map" ref="map">
+    </component>
+
+  value-component要素を使用することで、Mapの値として任意のBeanも設定できる。
+
+  .. code-block:: xml
+
+    <property name="settings">
+      <map>
+        <entry key="sample1">
+          <value-component class="sample.SampleBean1" />
+        </entry>
+        <entry key="sample2">
+          <value-component class="sample.SampleBean2" />
+        </entry>
+      </map>
+    </property>
+
+.. important::
+  mapやlistのname属性が同じものを複数定義した場合は、先に定義されたものが有効となる。
+  これは、 :ref:`beanの上書き <repository-override_bean>` と異なる挙動であるため注意すること。
+
+  もし、環境毎にmapやlistの情報を変更したい場合には、環境毎読み込むファイルを変えることで対応すること。
+  
+
+.. _repository-autowired:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-repository--s1`
+
+```json
+{
+  "id": "libraries-repository--s1",
+  "title": "システムリポジトリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/repository.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "DIコンテナ",
+        "システムリポジトリ",
+        "シングルトン",
+        "setterインジェクション",
+        "オブジェクト初期化",
+        "自動インジェクション",
+        "ファクトリインジェクション",
+        "環境依存値管理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core",
+        "nablarch-core-repository",
+        "モジュール",
+        "Maven依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "xmlにルートノードを定義する",
+      "hints": [
+        "component-configuration",
+        "XMLルートノード",
+        "schemaLocation",
+        "コンポーネント設定ファイル",
+        "IDE補完"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Java Beansオブジェクトを設定する",
+      "hints": [
+        "component要素",
+        "Java Beans",
+        "setterインジェクション",
+        "FQCN",
+        "シングルトン",
+        "スレッドセーフ",
+        "staticプロパティ",
+        "property要素",
+        "ref属性"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Java Beansオブジェクトの設定を上書きする",
+      "hints": [
+        "コンポーネント上書き",
+        "name属性",
+        "モック置き換え",
+        "テスト",
+        "property引き継ぎ",
+        "MockSampleBean"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "文字列や数値、真偽値を設定値として使う",
+      "hints": [
+        "プロパティ型",
+        "String",
+        "Integer",
+        "Long",
+        "Boolean",
+        "value属性",
+        "リテラル値",
+        "String配列",
+        "int配列"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ListやMapを設定値として使う",
+      "hints": [
+        "list要素",
+        "map要素",
+        "List設定",
+        "Map設定",
+        "component-ref",
+        "value-component",
+        "setterインジェクション",
+        "entry要素"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DIコンテナ機能でできること（構築されるオブジェクトはシングルトン）:\n- setterインジェクション（:ref:`repository-definition_bean`）\n- 文字列・数値・真偽値の使用（:ref:`repository-property_type`）\n- List/Mapのインジェクション（:ref:`repository-map_list`）\n- 型・名前一致による自動インジェクション（:ref:`repository-autowired`）\n- ファクトリインジェクション（:ref:`repository-factory_injection`）\n- アノテーション付与クラスのオブジェクト構築（:ref:`repository-inject-annotation-component`）\n- 環境依存値の管理（:ref:`repository-environment_configuration`）\n\nアプリケーションからはDIコンテナに直接アクセスせず、システムリポジトリ経由でアクセスする（:ref:`repository-use_system_repository` 参照）。\n\nオブジェクト構築後に任意の初期化処理を実行できる。依存関係による初期化順の制約があるため、初期化順を指定できる（:ref:`repository-initialize_object` 参照）。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-repository</artifactId>\n</dependency>\n```",
+    "s3": "コンポーネント設定ファイル(xml)のルートノードは `component-configuration` とする。`schemaLocation` を正しく設定するとIDEで各要素や属性のドキュメント参照・補完機能が使える。\n\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration /component-configuration.xsd\">\n</component-configuration>\n```",
+    "s4": "`component`要素でJava Beansオブジェクトを定義する:\n- `class`属性: DIコンテナで管理するクラスのFQCN\n- `name`属性: 任意の名前\n- `property`子要素: setterインジェクション。`ref`属性で他のcomponentを参照、または`property`の子要素に直接`component`を定義することもできる\n- `value`属性: リテラル値のインジェクション\n\n```xml\n<component name=\"sample\" class=\"sample.SampleBean\" />\n\n<component name=\"component\" class=\"sample.SampleComponent\">\n  <property name=\"sample\" ref=\"sample\" />\n  <property name=\"obj\">\n    <component class=\"sample.SampleObject\" />\n  </property>\n  <property name=\"limit\" value=\"100\" />\n</component>\n```\n\n> **重要**: 生成されるインスタンスはシングルトン（プロトタイプではない）。アプリケーション終了まで破棄されない。コンポーネントの状態を変更・共有する場合はスレッドセーフにすること。シングルトンをプロトタイプと誤解すると、あるリクエストで設定したユーザーAの値が別ユーザーBのリクエストで使われるなどの重大な不具合が発生する。\n\n> **補足**: インスタンスはcomponent要素単位に生成される。同じクラスを2つのcomponent要素で定義した場合、別々のインスタンスが生成される。\n\n> **補足**: ネストして定義したcomponentもリポジトリ上はグローバル領域に保持されるため、名前を指定してオブジェクトを取得できる（:ref:`repository-get_object` 参照）。\n\n> **補足**: staticなプロパティ（staticなsetterメソッド）へのインジェクションは行われない。インジェクション対象がstaticの場合、DIコンテナ構築時に例外が送出される。",
+    "s5": "`component`タグの`name`属性が同じオブジェクトを登録すると、後に読み込まれたオブジェクトの設定が優先される。テスト時にプロダクション環境用オブジェクトをモックに置き換える際に使用できる。\n\n```xml\n<component name=\"sample\" class=\"sample.SampleBean\">\n  <property name=\"prop\" value=\"message\" />\n</component>\n\n<!-- 同じ名前でコンポーネントを定義して上書きする -->\n<component name=\"sample\" class=\"sample.MockSampleBean\" />\n```\n\n> **重要**: 異なるクラスを設定した場合、上書き前のpropertyへの設定は全て破棄される（同じインタフェースを実装していても同じpropertyを持つとは限らないため）。同じクラスを設定した場合、上書き前のpropertyが全て引き継がれるため、特定propertyの設定を削除することはできない。例えば上書き後のcomponentにproperty要素を記述しなくても、上書き前のpropの値が引き継がれる。",
+    "s6": "プロパティの型が以下の場合、`value`属性にリテラル表記で設定できる:\n\n| 型 | 設定方法 |\n|---|---|\n| `java.lang.String` | `value`属性にリテラルで設定 |\n| `java.lang.String[]` | `value`属性にカンマ(`,`)区切りで設定。カンマ自体は要素として設定不可 |\n| `java.lang.Integer`(int) | `value`属性に設定。`Integer#valueOf`で変換できる値 |\n| `java.lang.Integer[]`(int[]) | カンマ区切りで設定。各要素は`Integer#valueOf`で変換できる値 |\n| `java.lang.Long`(long) | `value`属性に設定。`Long#valueOf`で変換できる値 |\n| `java.lang.Boolean`(boolean) | `value`属性に設定。`Boolean#valueOf`で変換できる値 |\n\n```xml\n<property name=\"str\" value=\"あいうえお\" />\n<property name=\"array\" value=\"あ,い,う,え,お\" />\n<property name=\"num\" value=\"12345\" />\n<property name=\"bool\" value=\"true\" />\n```",
+    "s7": "`list`要素や`map`要素を使ってList/Mapを受け取るpropertyへのsetterインジェクションが行える。\n\n**list要素**: 文字列または任意のJava Beansオブジェクトを設定できる。任意の名前を設定し`property`要素で名前参照も可能。`component-ref`要素で名前参照ができる。\n\n```xml\n<component class=\"sample.SampleBean\">\n  <property name=\"stringList\">\n    <list>\n      <value>string1</value>\n      <value>string2</value>\n      <value>string3</value>\n    </list>\n  </property>\n</component>\n\n<component name=\"sampleHandler3\" class=\"sample.SampleHandler3\" />\n<component class=\"sample.ListSample\">\n  <property name=\"handlers\">\n    <list>\n      <component class=\"sample.SampleHandler1\" />\n      <component class=\"sample.SampleHandler2\" />\n      <component-ref name=\"sampleHandler3\" />\n    </list>\n  </property>\n</component>\n```\n\n**map要素**: `entry`にkey/valueを設定。任意の名前を設定し`property`要素で名前参照も可能。`value-component`要素でMapの値に任意のBeanを設定できる。\n\n```xml\n<property name=\"map\">\n  <map>\n    <entry key=\"key1\" value=\"1\" />\n    <entry key=\"key2\" value=\"2\" />\n    <entry key=\"key3\" value=\"3\" />\n  </map>\n</property>\n\n<property name=\"settings\">\n  <map>\n    <entry key=\"sample1\">\n      <value-component class=\"sample.SampleBean1\" />\n    </entry>\n    <entry key=\"sample2\">\n      <value-component class=\"sample.SampleBean2\" />\n    </entry>\n  </map>\n</property>\n```\n\n> **重要**: mapやlistで`name`属性が同じものを複数定義した場合、先に定義されたものが有効（:ref:`repository-override_bean` とは逆の挙動）。環境毎にmap/listを変更したい場合は、環境毎に読み込むファイルを変えること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

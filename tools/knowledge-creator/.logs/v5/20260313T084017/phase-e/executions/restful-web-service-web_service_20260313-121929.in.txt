@@ -1,0 +1,127 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "restful-web-service-web_service",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — constraint 2 label",
+      "description": "The knowledge file labels the second http_messaging constraint as「レスポンスヘッダのカスタマイズ不可」(customization impossible), but the source states「レスポンスヘッダに設定する項目を容易にカスタマイズ出来ない」(cannot easily customize). The knowledge file overstates the limitation from 'not easy' to 'impossible'.",
+      "source_evidence": "レスポンスヘッダに設定する項目を容易にカスタマイズ出来ない。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`web_service`:
+
+ウェブサービス編
+==================================================
+本章ではNablarchアプリケーションフレームワークを使用してウェブサービスを開発するために必要となる情報を提供する。
+
+Nablarchでは、以下2種類のRESTfulウェブサービス用のフレームワークを提供している。
+
+.. toctree::
+  :maxdepth: 1
+
+  rest/index
+  http_messaging/index
+
+.. _web_service-recommended_jaxrs:
+
+これらのどちらのフレームワークを使用してもウェブサービスを構築できるが、
+以下の理由により :ref:`restful_web_service` を使用してウェブサービスを作成することを推奨する。
+
+理由
+  :ref:`restful_web_service` では、 `JSR 339(外部サイト、英語) <https://jcp.org/en/jsr/detail?id=339>`_ で規定されている一部のアノテーションを使用して容易にウェブサービスを構築できる。
+  
+  一方、 :ref:`http_messaging` はボディ部やHTTPヘッダ、例外制御に以下の制約があり柔軟な設計及び実装ができない。
+
+  * Nablarchの制御用領域がHTTPヘッダやボディ部に必要となる。
+
+    既に構築済みの外部システムと連携するようなウェブサービスを構築する場合に設計及び実装の難易度が高くなる。
+
+  * レスポンスヘッダに設定する項目を容易にカスタマイズ出来ない。
+
+    :ref:`http_messaging_response_building_handler-header` に記載がある通り、レスポンスヘッダの変更したい場合はハンドラ自体を差し替える必要がある。
+
+  * :ref:`data_format` 機能に依存している。
+  
+    フォーマット定義ファイルを作成する必要があり、開発コストが高くなる。
+    また、カスタマイズが容易でなく、入出力データをMapオブジェクトで扱う必要があり、実装ミスを起こしやすい。
+
+  * リクエストボディのパース時の例外が全て単一の例外クラスにマッピングされるため細かく例外ハンドリングできない。
+
+    パース中の例外は全て :java:extdoc:`MessagingException <nablarch.fw.messaging.MessagingException>` として送出されるため、根本原因を元に細かな処理制御を行うことが出来ない。
+
+.. tip::
+
+  :ref:`restful_web_service` と :ref:`http_messaging` で提供している機能の違いは、:ref:`restful_web_service_functional_comparison` を参照。
+
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  functional_comparison
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "restful-web-service-web_service",
+  "title": "ウェブサービス編",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessagingException.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "RESTfulウェブサービスフレームワーク選択",
+      "hints": [
+        "restful_web_service",
+        "http_messaging",
+        "MessagingException",
+        "JSR 339",
+        "JAX-RS",
+        "RESTfulウェブサービス",
+        "フレームワーク選択",
+        "http_messaging制約"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "NablarchはRESTfulウェブサービス用フレームワークを2種類提供している: :ref:`restful_web_service` と :ref:`http_messaging`。\n\n:ref:`restful_web_service` の使用を推奨。理由: [JSR 339(外部サイト、英語)](https://jcp.org/en/jsr/detail?id=339) で規定されている一部のアノテーションを使用して容易にウェブサービスを構築できる。\n\n:ref:`http_messaging` には以下の制約があり、柔軟な設計・実装ができない:\n\n1. **Nablarchの制御用領域がHTTPヘッダやボディ部に必要** — 既存外部システムと連携するウェブサービスの設計・実装難易度が高くなる\n2. **レスポンスヘッダのカスタマイズ不可** — 変更する場合は :ref:`http_messaging_response_building_handler-header` に記載の通りハンドラ自体を差し替える必要がある\n3. **:ref:`data_format` 機能依存** — フォーマット定義ファイルの作成が必要で開発コストが高くなる。カスタマイズが容易でなく、入出力データをMapオブジェクトで扱う必要があり実装ミスを起こしやすい\n4. **リクエストボディのパース例外が全て :java:extdoc:`MessagingException <nablarch.fw.messaging.MessagingException>` にマッピング** — 根本原因による細かい例外ハンドリング不可\n\n> **補足**: :ref:`restful_web_service` と :ref:`http_messaging` の機能比較は :ref:`restful_web_service_functional_comparison` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

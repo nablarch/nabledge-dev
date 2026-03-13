@@ -1,0 +1,65 @@
+{
+  "id": "libraries-tag--s22",
+  "title": "カスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/CustomTagConfig.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "GETリクエストを使用する",
+      "hints": [
+        "GETリクエスト",
+        "hiddenパラメータ",
+        "checkboxタグ",
+        "code_checkboxタグ",
+        "submitタグ",
+        "plainHiddenタグ",
+        "popupSubmitタグ",
+        "popupLinkタグ",
+        "paramタグ",
+        "changeParamNameタグ",
+        "フォームGET送信",
+        "使用不可カスタムタグ",
+        "hiddenタグ",
+        "buttonタグ",
+        "submitLinkタグ",
+        "popupButtonタグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "値を出力する",
+      "hints": [
+        "writeタグ",
+        "リクエストスコープ",
+        "値の出力",
+        "name属性",
+        "tag-write_tag",
+        "tag-access_rule"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "HTMLエスケープせずに値を出力する",
+      "hints": [
+        "prettyPrintタグ",
+        "rawWriteタグ",
+        "HTMLエスケープ",
+        "XSS",
+        "CustomTagConfig",
+        "safeTagsプロパティ",
+        "safeAttributesプロパティ",
+        "tag-pretty_print_tag",
+        "tag-raw_write_tag"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "URLの長さ制限や不要なパラメータ付与の問題を避けるため、:ref:`tag-form_tag` でGETが指定された場合、hiddenパラメータを出力しない。その結果、:ref:`hidden暗号化<tag-hidden_encryption>` や :ref:`パラメータ追加<tag-submit_change_parameter>` 機能が使用できなくなり、以下のカスタムタグに制限が生じる。\n\n## 使用制限のあるカスタムタグ\n\n- :ref:`tag-checkbox_tag`\n- :ref:`tag-code_checkbox_tag`\n\n:ref:`チェックなしの場合にリクエストパラメータを設定する機能 <tag-checkbox_off_value>` は :ref:`hidden暗号化<tag-hidden_encryption>` を使用しているため、GETリクエストでは使用できない。**対応方法**: :ref:`バリデーション <validation>` 後に該当項目の値をnull判定し、アクション側でチェックなしに対する値を設定する。\n\n## 使用不可となるカスタムタグと対応方法\n\n**hiddenタグ**: :ref:`tag-plain_hidden_tag` を使用する。\n\n```jsp\n<%-- GETの場合 --%>\n<n:plainHidden name=\"test\" />\n```\n\n**submitタグ**: HTMLのinput(type=\"submit\")を使用。サブミット先のURIは :ref:`tag-form_tag` のaction属性に指定する。\n\n```jsp\n<%-- GETの場合 --%>\n<n:form method=\"GET\" action=\"search\">\n  <input type=\"submit\" value=\"検索\" />\n</n:form>\n```\n\n**buttonタグ**: HTMLのbuttonタグ(type=\"submit\")を使用。サブミット先のURIは :ref:`tag-form_tag` のaction属性に指定する。\n\n```jsp\n<%-- GETの場合 --%>\n<n:form method=\"GET\" action=\"search\">\n  <button type=\"submit\" value=\"検索\" />\n</n:form>\n```\n\n**submitLinkタグ**: :ref:`tag-a_tag` を使用し、onclick属性に画面遷移するJavaScript関数を指定する。関数は :ref:`tag-script_tag` 内に記述する。\n\n```jsp\n<%-- GETの場合 --%>\n<input type=\"text\" name=\"test\" id=\"test\" />\n<n:a href=\"javascript:void(0);\" onclick=\"searchTest();\">検索</n:a>\n<n:script type=\"text/javascript\">\n  var searchTest = function() {\n    var test = document.getElementById('test').value;\n    location.href = 'search?test=' + test;\n  }\n</n:script>\n```\n\n**popupSubmitタグ**: HTMLのinput(type=\"button\")を使用し、onclick属性にJavaScriptのwindow.open()を指定する。\n\n```jsp\n<%-- GETの場合 --%>\n<n:form method=\"GET\">\n  <input type=\"button\" value=\"検索\"\n    onclick=\"window.open('search', 'popupWindow', 'width=700,height=500')\" />\n</n:form>\n```\n\n**popupButtonタグ**: HTMLのbuttonタグ(type=\"button\")を使用し、onclick属性にJavaScriptのwindow.open()を指定する。\n\n```jsp\n<%-- GETの場合 --%>\n<n:form method=\"GET\">\n  <button type=\"button\" value=\"検索\"\n    onclick=\"window.open('search', 'popupWindow', 'width=700,height=500')\" />\n</n:form>\n```\n\n**popupLinkタグ**: :ref:`tag-a_tag` を使用し、onclick属性にポップアップウィンドウを表示するJavaScript関数を指定する。関数は :ref:`tag-script_tag` 内に記述する。\n\n```jsp\n<%-- GETの場合 --%>\n<input type=\"text\" name=\"test\" id=\"test\" />\n<n:a href=\"javascript:void(0);\" onclick=\"openTest();\" >検索</n:a>\n<n:script type=\"text/javascript\">\n  var openTest = function() {\n    var test = document.getElementById('test').value;\n    window.open('search?test=' + test, 'popupWindow', 'width=700,height=500')\n  }\n</n:script>\n```\n\n**paramタグ**: パラメータを追加したいボタンやリンクごとに :ref:`tag-form_tag` を記述し、form内にパラメータを設定する。\n\n```jsp\n<%-- GETの場合（複数ボタン例） --%>\n<n:form method=\"GET\" action=\"search\">\n  <n:set var=\"test\" value=\"テスト１\" />\n  <input type=\"hidden\" name=\"changeParam\" value=\"<n:write name='test' />\" />\n  <input type=\"submit\" value=\"検索\" />\n</n:form>\n\n<n:form method=\"GET\" action=\"search\">\n  <n:set var=\"test\" value=\"テスト２\" />\n  <input type=\"hidden\" name=\"changeParam\" value=\"<n:write name='test' />\" />\n  <input type=\"submit\" value=\"検索\" />\n</n:form>\n```\n\n**changeParamNameタグ**: :ref:`popupLinkタグ <tag-using_get_popup_link_tag>` と同様。window.open()の第一引数に、クエリストリングのキーを変更したいパラメータ名で指定する。\n\n```jsp\n<%-- GETの場合 --%>\n<input type=\"text\" name=\"test\" id=\"test\" />\n<input type=\"button\" value=\"検索\" onclick=\"openTest();\" />\n<n:script type=\"text/javascript\">\n  var openTest = function() {\n    var test = document.getElementById('test').value;\n    window.open('search?changeParam=' + test, 'popupWindow', 'width=700,height=500');\n  }\n</n:script>\n```",
+    "s2": "値の出力には :ref:`tag-write_tag` を使用する。name属性でリクエストスコープに設定したオブジェクトにアクセスする。name属性の指定方法は :ref:`tag-access_rule` を参照。\n\n**アクション**:\n```java\nPerson person = new Person();\nperson.setPersonName(\"名前\");\ncontext.setRequestScopedVar(\"person\", person);\n```\n\n**JSP**:\n```jsp\n<n:write name=\"person.personName\" />\n```",
+    "s3": "HTMLエスケープせずに出力したい場合は以下のカスタムタグを使用する（システム管理者がメンテナンス情報を設定するような特定画面・表示領域のみで使用を想定）。\n\n- :ref:`tag-pretty_print_tag`: `<b>` や `<del>` のような装飾系HTMLタグをエスケープせずに出力。使用可能なタグ・属性は :ref:`tag-setting` で :java:extdoc:`safeTagsプロパティ<nablarch.common.web.tag.CustomTagConfig.setSafeTags(java.lang.String:A)>` / :java:extdoc:`safeAttributesプロパティ<nablarch.common.web.tag.CustomTagConfig.setSafeAttributes(java.lang.String:A)>` で設定可能。\n- :ref:`tag-raw_write_tag`: 変数中の文字列をエスケープせずそのまま出力。\n\n> **重要**: :ref:`tag-pretty_print_tag` は非推奨。理由: (1) 使用可能なタグだけでなく属性も含めて全て :java:extdoc:`CustomTagConfig <nablarch.common.web.tag.CustomTagConfig>` に設定しなければならない（例: `a` タグを使用可能にするには :java:extdoc:`CustomTagConfig#safeTags <nablarch.common.web.tag.CustomTagConfig.setSafeTags(java.lang.String:A)>` に `a` タグ追加だけでなく、:java:extdoc:`CustomTagConfig#safeAttributes <nablarch.common.web.tag.CustomTagConfig.setSafeAttributes(java.lang.String:A)>` にも `href` 等の属性を全て定義が必要）。(2) 入力文字列がHTMLとして正しいかのチェックを行っていない。代替方法: OSSのHTMLパーサで入力値をバリデーションし :ref:`tag-raw_write_tag` で出力する。または、Markdownで入力しOSSのJavaScriptライブラリでクライアントサイド変換する方法もある。\n\n> **重要**: :ref:`tag-pretty_print_tag` で不特定ユーザが任意に設定できる値を出力する場合、使用可能なHTMLタグ・属性の選択に十分注意すること。`<script>` タグやonclick属性を使用可能とした場合、XSS脆弱性の直接要因となるためこれらは使用不可とすること。\n\n> **重要**: :ref:`tag-raw_write_tag` で不特定ユーザが任意に設定できる値を出力する場合、XSS脆弱性の直接の要因となる。使用には十分な考慮が必要。"
+  }
+}

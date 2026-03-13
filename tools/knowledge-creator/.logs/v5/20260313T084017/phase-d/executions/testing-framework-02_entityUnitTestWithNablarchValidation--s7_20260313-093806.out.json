@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_entityUnitTestWithNablarchValidation--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s4 / sections.s4",
+      "description": "Section s4 is titled \"Excelへの定義\" (a subsection label in the source), but its content covers the entire parent section `コンストラクタに対するテストケース` including its introductory paragraphs, the `Excelへの定義` subsection, and the `test-constructor-java-label` test code block. The misleading title may cause AI to miss constructor-test content when the user asks about it under the parent heading name.",
+      "source_evidence": "Source heading hierarchy: `コンストラクタに対するテストケース` (====) > `Excelへの定義` (----) > `test-constructor-java-label` label. Knowledge s4 merges all three but is titled only after the subsection."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s6 hints",
+      "description": "s6 hints include MSG00010 and MSG00011 but omit MSG00023, which appears as the value of fixLengthMessageId in both the validator config XML and the EntityTestConfiguration XML shown in s6.",
+      "source_evidence": "Source s6 XML: `<property name=\"fixLengthMessageId\" value=\"MSG00023\"/>` appears in both code blocks."
+    }
+  ]
+}

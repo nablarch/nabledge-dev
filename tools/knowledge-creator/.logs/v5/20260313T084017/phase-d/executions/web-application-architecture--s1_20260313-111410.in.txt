@@ -1,0 +1,341 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/architecture.rst`
+- Format: `rst`
+
+```
+アーキテクチャ概要
+==============================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+Nablarchでは、HTMLをベースとした画面UIを持つウェブアプリケーションを構築するための機能を提供している。
+
+.. _web_application-structure:
+
+ウェブアプリケーションの構成
+----------------------------------------
+Nablarchではウェブアプリケーションを構築する場合、ServletAPIの使用を前提としている。
+以下にNablarchにおけるウェブアプリケーションの構成を示す。
+
+.. image:: images/application_structure.png
+
+:ref:`nablarch_servlet_context_listener` (NablarchServletContextListener)
+  システムリポジトリやログの初期化処理を行うサーブレットコンテキストリスナー。
+
+:ref:`web_front_controller` (WebFrontController)
+  受け取ったリクエストに対する処理をハンドラキューに委譲するサーブレットフィルタ。
+
+ウェブアプリケーションの処理の流れ
+----------------------------------------
+ウェブアプリケーションがリクエストを処理し、レスポンスを返却するまでの処理の流れを以下に示す。
+
+.. image:: images/web-design.png
+  :scale: 80
+
+1. :ref:`web_front_controller` ( `javax.servlet.Filter` の実装クラス)がrequestを受信する。
+2. :ref:`web_front_controller` は、requestに対する処理をハンドラキュー(handler queue)に委譲する。
+3. ハンドラキューに設定されたディスパッチハンドラ(`DispatchHandler`) が、URIを元に処理すべきaction classを特定しハンドラキューの末尾に追加する。
+4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して業務ロジック(business logic) を実行する。
+   各クラスの詳細は、 :doc:`application_design` を参照。
+
+5. action classは、処理結果を示す `HttpResponse` を作成し返却する。
+6. ハンドラキュー内のHTTPレスポンスハンドラ(`HttpResponseHandler`)が、 `HttpResponse` をクライアントに返却するレスポンスに変換する。例えば、JSPのServlet Forwardなど。
+7. responseが返却される。
+
+ウェブアプリケーションで使用するハンドラ
+--------------------------------------------------
+Nablarchでは、ウェブアプリケーションを構築するために必要なハンドラを標準で幾つか提供している。
+プロジェクトの要件に従い、ハンドラキューを構築すること。(要件によっては、プロジェクトカスタムなハンドラを作成することになる)
+
+各ハンドラの詳細は、リンク先を参照すること。
+
+リクエストやレスポンスの変換を行うハンドラ
+  * :ref:`http_character_encoding_handler`
+  * :ref:`http_response_handler`
+  * :ref:`forwarding_handler`
+  * :ref:`multipart_handler`
+  * :ref:`session_store_handler`
+  * :ref:`normalize_handler`
+  * :ref:`secure_handler`
+
+リクエストのフィルタリングを行うハンドラ
+  * :ref:`service_availability`
+  * :ref:`permission_check_handler`
+
+データベースに関連するハンドラ
+  * :ref:`database_connection_management_handler`
+  * :ref:`transaction_management_handler`
+
+リクエストの検証を行うハンドラ
+  * :ref:`csrf_token_verification_handler`
+
+エラー処理に関するハンドラ
+  * :ref:`http_error_handler`
+  * :ref:`global_error_handler`
+
+その他
+  * :ref:`http_request_java_package_mapping`
+  * :ref:`nablarch_tag_handler`
+  * :ref:`thread_context_handler`
+  * :ref:`thread_context_clear_handler`
+  * :ref:`http_access_log_handler`
+  * :ref:`file_record_writer_dispose_handler`
+  * :ref:`health_check_endpoint_handler`
+
+最小ハンドラ構成
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nablarchでウェブアプリケーションを構築する際の、必要最小限のハンドラキューを以下に示す。
+これをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。
+
+.. list-table:: 最小ハンドラ構成
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 4,24,24,24,24
+
+   * - No.
+     - ハンドラ
+     - 往路処理
+     - 復路処理
+     - 例外処理
+
+   * - 1
+     - :ref:`http_character_encoding_handler`
+     - リクエストとレスポンスに文字エンコーディングを設定する。
+     -
+     -
+
+   * - 2
+     - :ref:`global_error_handler`
+     -
+     -
+     - 実行時例外、またはエラーの場合、ログ出力を行う。
+
+   * - 3
+     - :ref:`http_response_handler`
+     -
+     - サーブレットフォーワード、リダイレクト、レスポンス書き込みのいずれかを行う。
+     - 実行時例外、またはエラーの場合、既定のエラーページを表示する。
+
+   * - 4
+     - :ref:`secure_handler`
+     -
+     - レスポンスオブジェクト(:java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>`)にセキュリティ関連のレスポンスヘッダを設定する。
+     - 
+
+   * - 5
+     - :ref:`multipart_handler`
+     - リクエストがマルチパート形式の場合、その内容を一時ファイルに保存する。
+     - 保存した一時ファイルを削除する。
+     -
+
+   * - 6
+     - :ref:`session_store_handler`
+     - セッションストアから内容を読み込む。
+     - セッションストアに内容を書き込む。
+     -
+
+   * - 7
+     - :ref:`normalize_handler`
+     - リクエストパラメータのノーマライズ処理を行う。
+     - 
+     -
+
+   * - 8
+     - :ref:`forwarding_handler`
+     -
+     - 遷移先が内部フォーワードの場合、後続のハンドラを再実行する。
+     -
+
+   * - 9
+     - :ref:`http_error_handler`
+     -
+     -
+     - 例外の種類に応じたログ出力とレスポンスの生成を行う。
+
+   * - 10
+     - :ref:`nablarch_tag_handler`
+     - Nablarchカスタムタグの動作に必要な事前処理を行う。
+     -
+     -
+
+   * - 11
+     - :ref:`database_connection_management_handler`
+     - DB接続を取得する。
+     - DB接続を解放する。
+     -
+
+   * - 12
+     - :ref:`transaction_management_handler`
+     - トランザクションを開始する。
+     - トランザクションをコミットする。
+     - トランザクションをロールバックする。
+
+   * - 13
+     - :ref:`router_adaptor`
+     - リクエストパスをもとに呼び出すアクションを決定する。
+     -
+     -
+
+```
+
+## Knowledge File
+
+- ID: `web-application-architecture--s1`
+
+```json
+{
+  "id": "web-application-architecture--s1",
+  "title": "アーキテクチャ概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/architecture.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ウェブアプリケーションの構成",
+      "hints": [
+        "NablarchServletContextListener",
+        "WebFrontController",
+        "ウェブアプリケーション構成",
+        "サーブレットコンテキストリスナー",
+        "ハンドラキュー",
+        "ServletAPI"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ウェブアプリケーションの処理の流れ",
+      "hints": [
+        "DispatchHandler",
+        "HttpResponse",
+        "HttpResponseHandler",
+        "リクエスト処理フロー",
+        "アクションクラス",
+        "handler queue"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ウェブアプリケーションで使用するハンドラ",
+      "hints": [
+        "http_character_encoding_handler",
+        "http_response_handler",
+        "session_store_handler",
+        "transaction_management_handler",
+        "最小ハンドラ構成",
+        "ハンドラキュー構成",
+        "router_adaptor",
+        "csrf_token_verification_handler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "NablarchのウェブアプリケーションはServletAPIの使用を前提としている。\n\n- :ref:`nablarch_servlet_context_listener` (NablarchServletContextListener): システムリポジトリやログの初期化処理を行うサーブレットコンテキストリスナー\n- :ref:`web_front_controller` (WebFrontController): 受け取ったリクエストに対する処理をハンドラキューに委譲するサーブレットフィルタ",
+    "s2": "1. :ref:`web_front_controller` (`javax.servlet.Filter`の実装クラス)がrequestを受信する。\n2. :ref:`web_front_controller` は、requestに対する処理をハンドラキュー(handler queue)に委譲する。\n3. ディスパッチハンドラ(`DispatchHandler`)がURIを元に処理すべきaction classを特定しハンドラキューの末尾に追加する。\n4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して業務ロジックを実行する。各クラスの詳細は :doc:`application_design` を参照。\n5. action classは処理結果を示す`HttpResponse`を作成し返却する。\n6. ハンドラキュー内の`HttpResponseHandler`が`HttpResponse`をクライアントへのレスポンスに変換する（例: JSPのServlet Forward）。\n7. responseが返却される。",
+    "s3": "プロジェクトの要件に従い、ハンドラキューを構築すること。(要件によっては、プロジェクトカスタムなハンドラを作成することになる)\n\n**リクエストやレスポンスの変換を行うハンドラ**\n- :ref:`http_character_encoding_handler`\n- :ref:`http_response_handler`\n- :ref:`forwarding_handler`\n- :ref:`multipart_handler`\n- :ref:`session_store_handler`\n- :ref:`normalize_handler`\n- :ref:`secure_handler`\n\n**リクエストのフィルタリングを行うハンドラ**\n- :ref:`service_availability`\n- :ref:`permission_check_handler`\n\n**データベースに関連するハンドラ**\n- :ref:`database_connection_management_handler`\n- :ref:`transaction_management_handler`\n\n**リクエストの検証を行うハンドラ**\n- :ref:`csrf_token_verification_handler`\n\n**エラー処理に関するハンドラ**\n- :ref:`http_error_handler`\n- :ref:`global_error_handler`\n\n**その他**\n- :ref:`http_request_java_package_mapping`\n- :ref:`nablarch_tag_handler`\n- :ref:`thread_context_handler`\n- :ref:`thread_context_clear_handler`\n- :ref:`http_access_log_handler`\n- :ref:`file_record_writer_dispose_handler`\n- :ref:`health_check_endpoint_handler`\n\n## 最小ハンドラ構成\n\nこれをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。\n\n| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |\n|---|---|---|---|---|\n| 1 | :ref:`http_character_encoding_handler` | リクエストとレスポンスに文字エンコーディングを設定する。 | — | — |\n| 2 | :ref:`global_error_handler` | — | — | 実行時例外、またはエラーの場合、ログ出力を行う。 |\n| 3 | :ref:`http_response_handler` | — | サーブレットフォーワード、リダイレクト、レスポンス書き込みのいずれかを行う。 | 実行時例外、またはエラーの場合、既定のエラーページを表示する。 |\n| 4 | :ref:`secure_handler` | — | レスポンスオブジェクト(:java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>`)にセキュリティ関連のレスポンスヘッダを設定する。 | — |\n| 5 | :ref:`multipart_handler` | リクエストがマルチパート形式の場合、その内容を一時ファイルに保存する。 | 保存した一時ファイルを削除する。 | — |\n| 6 | :ref:`session_store_handler` | セッションストアから内容を読み込む。 | セッションストアに内容を書き込む。 | — |\n| 7 | :ref:`normalize_handler` | リクエストパラメータのノーマライズ処理を行う。 | — | — |\n| 8 | :ref:`forwarding_handler` | — | 遷移先が内部フォーワードの場合、後続のハンドラを再実行する。 | — |\n| 9 | :ref:`http_error_handler` | — | — | 例外の種類に応じたログ出力とレスポンスの生成を行う。 |\n| 10 | :ref:`nablarch_tag_handler` | Nablarchカスタムタグの動作に必要な事前処理を行う。 | — | — |\n| 11 | :ref:`database_connection_management_handler` | DB接続を取得する。 | DB接続を解放する。 | — |\n| 12 | :ref:`transaction_management_handler` | トランザクションを開始する。 | トランザクションをコミットする。 | トランザクションをロールバックする。 |\n| 13 | :ref:`router_adaptor` | リクエストパスをもとに呼び出すアクションを決定する。 | — | — |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

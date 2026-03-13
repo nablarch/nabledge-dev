@@ -1,0 +1,244 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/terms_of_use/index.rst`
+- Format: `rst`
+
+```
+.. _terms_of_use:
+
+================
+ご利用にあたって
+================
+
+情報の外部送信について
+=======================
+
+当サイトでは、ブラウザによる閲覧履歴等の情報を収集しております。
+以下に、情報の利用目的や各情報の具体的な用途を示します。
+
+情報の利用目的
+---------------
+
+取得した情報はアクセス解析に利用されます。
+ページのアクセス数等からサイトの利用状況を把握し、サイトの改善に利用します。
+アクセス情報は匿名で収集され、個人を特定することはできません。
+
+情報の送信先
+-------------
+
+取得した情報は `Plausible Analytics <https://plausible.io>`__ に送信されます。
+
+情報の種類・用途
+-----------------
+
+利用する情報は以下のとおりです。
+
+.. list-table::
+   :widths: 15 30 25 30
+   :header-rows: 1
+   :class: white-space-normal
+
+   * - 情報の種類
+     - 例
+     - 説明
+     - 用途
+
+   * - ページのURL
+     - `https://nablarch.github.io/docs/LATEST​/doc/index.html <https://nablarch.github.io/docs/LATEST/doc/index.html>`_
+     - 当ウェブサイトのURL
+     - どのページが閲覧されたか測定するために使用されます。
+
+   * - リファラー
+     - https://x.com/
+     - 参照元ページ
+     - どのページから当サイトに到達したかを測定するために使用されます。
+
+   * - ブラウザ
+     - Chrome 86.0
+     - 利用者のブラウザの種類
+     - 利用者の閲覧環境を測定するために使用されます [1]_。
+
+   * - OS
+     - macOS 10.15
+     - 利用者のOSの種類
+     - 利用者の閲覧環境を測定するために使用されます [2]_。
+
+   * - デバイス種別
+     - Desktop
+     - 利用者のデバイスの種類
+     - 利用者の閲覧環境を測定するために使用されます [3]_。
+
+   * - 国、地域、都市
+     - United Kingdom, England, London
+     - 利用者の位置情報
+     - 利用者の閲覧環境を測定するために使用されます [4]_。
+
+より詳細な情報については、 `Plausible Analyticsのポリシー <https://plausible.io/data-policy>`__ をご参照ください。
+
+.. [1]
+   ユーザーエージェントから取得しますが、必要な情報だけを使用します。完全なユーザーエージェントは破棄されます。
+
+.. [2]
+   ユーザーエージェントから取得しますが、必要な情報だけを使用します。完全なユーザーエージェントは破棄されます。
+
+.. [3]
+   ユーザーエージェントから取得しますが、必要な情報だけを使用します。完全なユーザーエージェントは破棄されます。
+
+.. [4]
+   IPアドレスを使用して位置情報を取得しますが、都市レベルより詳細な追跡は行いません。IPアドレスは破棄されるため、データベース等に保存されることはありません。
+  
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-terms_of_use--s1`
+
+```json
+{
+  "id": "about-nablarch-terms_of_use--s1",
+  "title": "ご利用にあたって",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/terms_of_use/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "情報の利用目的",
+      "hints": [
+        "アクセス解析",
+        "プライバシー",
+        "利用目的",
+        "匿名収集",
+        "サイト改善"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "情報の送信先",
+      "hints": [
+        "Plausible Analytics",
+        "情報送信先",
+        "外部送信"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "情報の種類・用途",
+      "hints": [
+        "ページURL",
+        "リファラー",
+        "ブラウザ",
+        "OS",
+        "デバイス種別",
+        "位置情報",
+        "閲覧環境",
+        "ユーザーエージェント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "取得した情報はアクセス解析に利用される。ページのアクセス数等からサイトの利用状況を把握し、サイトの改善に利用する。アクセス情報は匿名で収集され、個人を特定することはできない。",
+    "s2": "取得した情報は [Plausible Analytics](https://plausible.io) に送信される。",
+    "s3": "| 情報の種類 | 例 | 説明 | 用途 |\n|---|---|---|---|\n| ページのURL | https://nablarch.github.io/docs/LATEST/doc/index.html | 当ウェブサイトのURL | どのページが閲覧されたか測定するために使用 |\n| リファラー | https://x.com/ | 参照元ページ | どのページから到達したかを測定するために使用 |\n| ブラウザ | Chrome 86.0 | 利用者のブラウザの種類 | 利用者の閲覧環境を測定するために使用 [1] |\n| OS | macOS 10.15 | 利用者のOSの種類 | 利用者の閲覧環境を測定するために使用 [2] |\n| デバイス種別 | Desktop | 利用者のデバイスの種類 | 利用者の閲覧環境を測定するために使用 [3] |\n| 国、地域、都市 | United Kingdom, England, London | 利用者の位置情報 | 利用者の閲覧環境を測定するために使用 [4] |\n\n[1] ユーザーエージェントから取得するが、必要な情報だけを使用。完全なユーザーエージェントは破棄される。\n\n[2] ユーザーエージェントから取得するが、必要な情報だけを使用。完全なユーザーエージェントは破棄される。\n\n[3] ユーザーエージェントから取得するが、必要な情報だけを使用。完全なユーザーエージェントは破棄される。\n\n[4] IPアドレスを使用して位置情報を取得するが、都市レベルより詳細な追跡は行わない。IPアドレスは破棄され、データベース等に保存されない。\n\n詳細は [Plausible Analyticsのポリシー](https://plausible.io/data-policy) を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,293 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/adaptors/mail_sender_freemarker_adaptor.rst`
+- Format: `rst`
+
+```
+.. _mail_sender_freemarker_adaptor:
+
+E-mail FreeMarkerアダプタ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+`FreeMarker(外部サイト) <https://freemarker.apache.org/>`_ を使用した定型メール送信処理を行うためのアダプタを提供する。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <!-- E-mail FreeMarkerアダプタ -->
+  <dependency>
+    <groupId>com.nablarch.integration</groupId>
+    <artifactId>nablarch-mail-sender-freemarker-adaptor</artifactId>
+  </dependency>
+  
+.. tip::
+
+  FreeMarkerのバージョン2.3.27-incubatingを使用してテストを行っている。
+  バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
+
+E-mail FreeMarkerアダプタを使用するための設定を行う
+----------------------------------------------------------------------------------------------------
+本アダプタを使用するためには、コンポーネント設定ファイルで :java:extdoc:`FreeMarkerMailProcessor<nablarch.integration.mail.freemarker.FreeMarkerMailProcessor>` を :java:extdoc:`MailRequester<nablarch.common.mail.MailRequester>` へ設定する。
+
+``FreeMarkerMailProcessor`` にはFreeMarkerが提供する ``Configuration`` を設定する必要がある。
+``Configuration`` は以下の理由により :java:extdoc:`ComponentFactory<nablarch.core.repository.di.ComponentFactory>` の実装クラスを作成してコンポーネントを設定することを推奨する。
+
+* ``Configuration`` はデフォルトコンストラクタが非推奨である
+* ``Configuration`` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい
+
+``Configuration`` を作成する ``ComponentFactory`` 実装クラスの例を以下に示す。
+
+.. code-block:: java
+
+  package com.example;
+
+  import freemarker.template.Configuration;
+  import nablarch.core.repository.di.ComponentFactory;
+
+  public class ConfigurationFactory implements ComponentFactory<Configuration> {
+
+      private String basePackagePath;
+      private String encoding;
+
+      @Override
+      public Configuration createObject() {
+          Configuration cfg = new Configuration(Configuration.getVersion());
+          ClassLoader classLoader = getClass().getClassLoader();
+          cfg.setClassLoaderForTemplateLoading(classLoader, basePackagePath);
+          cfg.setDefaultEncoding(encoding);
+          //必要に応じてConfigurationへその他の設定を行う
+          return cfg;
+      }
+
+      public void setBasePackagePath(String basePackagePath) {
+          this.basePackagePath = basePackagePath;
+      }
+
+      public void setEncoding(String encoding) {
+          this.encoding = encoding;
+      }
+  }
+
+この ``ConfigurationFactory`` を使用するコンポーネント設定ファイルの設定例を以下に示す。
+
+.. code-block:: xml
+
+  <component name="templateEngineMailProcessor"
+             class="nablarch.integration.mail.freemarker.FreeMarkerMailProcessor" autowireType="None">
+    <property name="configuration">
+      <component class="com.example.ConfigurationFactory">
+        <property name="basePackagePath" value="com/example/template/"/>
+        <property name="encoding" value="UTF-8"/>
+      </component>
+    </property>
+  </component>
+
+  <!-- メール送信要求API -->
+  <component name="mailRequester" class="nablarch.common.mail.MailRequester">
+    <property name="templateEngineMailProcessor" ref="templateEngineMailProcessor"/>
+    <!-- その他の設定は省略 -->
+  </component>
+
+メールのテンプレートを作成する
+--------------------------------------------------
+FreeMarkerを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。
+
+件名と本文はデリミタと呼ばれる行で分割される。
+デフォルトのデリミタは ``---`` である（半角のハイフンが3つ）。
+
+テンプレートの例を以下に示す。
+
+.. code-block:: none
+
+ ${title}について${option}
+ ---
+ ${title}は、申請番号${requestId}で申請されました。
+ ${approver}は速やかに${title}を承認してください。${option}
+
+より詳しい件名と本文の分割ルールは :java:extdoc:`TemplateEngineProcessedResult#valueOf<nablarch.common.mail.TemplateEngineProcessedResult.valueOf(java.lang.String)>` を参照。
+
+テンプレートファイルを配置する場所は ``Configuration`` の設定によって異なる。
+例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされる。
+また、 ``basePackagePath`` に ``com/example/template/`` と設定されているので、クラスパス上の ``com/example/template/`` ディレクトリにテンプレートファイルを配置することになる。
+
+メール送信要求を登録する
+--------------------------------------------------
+単に定型メールの送信要求を登録すればよい。
+:ref:`mail-request` を参照。
+```
+
+## Knowledge File
+
+- ID: `adapters-mail_sender_freemarker_adaptor--s1`
+
+```json
+{
+  "id": "adapters-mail_sender_freemarker_adaptor--s1",
+  "title": "E-mail FreeMarkerアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/mail_sender_freemarker_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/mail/freemarker/FreeMarkerMailProcessor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/mail/MailRequester.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/repository/di/ComponentFactory.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/mail/TemplateEngineProcessedResult.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-mail-sender-freemarker-adaptor",
+        "FreeMarker",
+        "メール送信",
+        "モジュール依存関係",
+        "バージョン確認"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "E-mail FreeMarkerアダプタを使用するための設定を行う",
+      "hints": [
+        "FreeMarkerMailProcessor",
+        "MailRequester",
+        "ComponentFactory",
+        "Configuration",
+        "コンポーネント設定",
+        "templateEngineMailProcessor",
+        "定型メール設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メールのテンプレートを作成する",
+      "hints": [
+        "FreeMarker",
+        "テンプレート",
+        "件名",
+        "本文",
+        "デリミタ",
+        "TemplateEngineProcessedResult",
+        "basePackagePath"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メール送信要求を登録する",
+      "hints": [
+        "メール送信要求",
+        "定型メール",
+        "mail-request"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-mail-sender-freemarker-adaptor</artifactId>\n</dependency>\n```\n\n> **補足**: FreeMarkerのバージョン2.3.27-incubatingを使用してテストを行っている。バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。",
+    "s2": ":java:extdoc:`FreeMarkerMailProcessor<nablarch.integration.mail.freemarker.FreeMarkerMailProcessor>` をコンポーネント設定ファイルで :java:extdoc:`MailRequester<nablarch.common.mail.MailRequester>` の `templateEngineMailProcessor` プロパティに設定する。\n\n`FreeMarkerMailProcessor` にはFreeMarkerの `Configuration` を設定する必要がある。`Configuration` の設定には :java:extdoc:`ComponentFactory<nablarch.core.repository.di.ComponentFactory>` 実装クラスを作成して使用することを推奨。理由: (1) `Configuration` のデフォルトコンストラクタが非推奨 (2) Javaコードで設定する方がコンポーネント設定ファイルより容易。\n\n`ConfigurationFactory` 実装例:\n```java\npackage com.example;\n\nimport freemarker.template.Configuration;\nimport nablarch.core.repository.di.ComponentFactory;\n\npublic class ConfigurationFactory implements ComponentFactory<Configuration> {\n\n    private String basePackagePath;\n    private String encoding;\n\n    @Override\n    public Configuration createObject() {\n        Configuration cfg = new Configuration(Configuration.getVersion());\n        ClassLoader classLoader = getClass().getClassLoader();\n        cfg.setClassLoaderForTemplateLoading(classLoader, basePackagePath);\n        cfg.setDefaultEncoding(encoding);\n        return cfg;\n    }\n\n    public void setBasePackagePath(String basePackagePath) {\n        this.basePackagePath = basePackagePath;\n    }\n\n    public void setEncoding(String encoding) {\n        this.encoding = encoding;\n    }\n}\n```\n\nコンポーネント設定ファイル例:\n```xml\n<component name=\"templateEngineMailProcessor\"\n           class=\"nablarch.integration.mail.freemarker.FreeMarkerMailProcessor\" autowireType=\"None\">\n  <property name=\"configuration\">\n    <component class=\"com.example.ConfigurationFactory\">\n      <property name=\"basePackagePath\" value=\"com/example/template/\"/>\n      <property name=\"encoding\" value=\"UTF-8\"/>\n    </component>\n  </property>\n</component>\n\n<!-- メール送信要求API -->\n<component name=\"mailRequester\" class=\"nablarch.common.mail.MailRequester\">\n  <property name=\"templateEngineMailProcessor\" ref=\"templateEngineMailProcessor\"/>\n  <!-- その他の設定は省略 -->\n</component>\n```",
+    "s3": "FreeMarkerを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。件名と本文はデリミタ行で分割される。デフォルトのデリミタは `---`（半角ハイフン3つ）。\n\nテンプレート例:\n```\n${title}について${option}\n---\n${title}は、申請番号${requestId}で申請されました。\n${approver}は速やかに${title}を承認してください。${option}\n```\n\n詳細な件名と本文の分割ルールは :java:extdoc:`TemplateEngineProcessedResult#valueOf<nablarch.common.mail.TemplateEngineProcessedResult.valueOf(java.lang.String)>` を参照。\n\nテンプレートファイルの配置場所は `Configuration` の設定によって異なる。`basePackagePath` に `com/example/template/` を設定した場合、クラスパス上の `com/example/template/` ディレクトリにテンプレートファイルを配置する。",
+    "s4": "FreeMarkerアダプタを使用した定型メール送信要求の登録方法は通常の定型メール送信要求と同様。:ref:`mail-request` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

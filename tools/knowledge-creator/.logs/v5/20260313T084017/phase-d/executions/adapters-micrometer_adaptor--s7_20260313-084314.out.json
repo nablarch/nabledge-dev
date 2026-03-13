@@ -1,0 +1,27 @@
+{
+  "file_id": "adapters-micrometer_adaptor--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "CloudWatch section — CloudWatchAsyncClientProvider custom provider",
+      "description": "The Java implementation code example for `CustomCloudWatchAsyncClientProvider` is omitted. The source provides a concrete code example showing the class structure, the `provide()` method signature, and how to use `CloudWatchAsyncClient.builder().asyncConfiguration(...).build()` to construct and return the client with custom settings. This is a code example demonstrating a required usage pattern.",
+      "source_evidence": "Source contains:\n```java\npublic class CustomCloudWatchAsyncClientProvider implements CloudWatchAsyncClientProvider {\n    @Override\n    public CloudWatchAsyncClient provide() {\n        return CloudWatchAsyncClient\n                .builder()\n                .asyncConfiguration(...) // 任意の設定を行う\n                .build();\n    }\n}\n```\nKnowledge file only includes the XML component definition, not the Java implementation."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "`nablarch.micrometer.statsd.enabled` is missing from the hints list. The other three `enabled` properties (datadog, cloudwatch, otlp) are included, but the statsd one is absent despite being present in the source.",
+      "source_evidence": "Source contains: `nablarch.micrometer.statsd.enabled=false` in the StatsD section under '連携を無効にする'. Hints include `nablarch.micrometer.datadog.enabled`, `nablarch.micrometer.cloudwatch.enabled`, `nablarch.micrometer.otlp.enabled` but not `nablarch.micrometer.statsd.enabled`."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The source h2 heading '監視サービスと連携する' contains >= 2000 chars of plain text and has 5 h3-level subsections (Datadog, CloudWatch, Azure, StatsD, OTLP), but the knowledge file maps all content to a single section `s1` without splitting. Consider splitting into per-service sections for better AI retrieval.",
+      "source_evidence": "Source has 5 subsections marked with `~~~~` (h3 level): 'Datadog と連携する', 'CloudWatch と連携する', 'Azure と連携する', 'StatsD で連携する', 'OpenTelemetry Protocol (OTLP) で連携する'. Total plain text exceeds 2000 characters."
+    }
+  ]
+}

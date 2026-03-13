@@ -1,0 +1,232 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/feature_details/forward_error_page.rst`
+- Format: `rst`
+
+```
+エラー時の遷移先の指定方法
+==================================================
+
+.. _forward_error_page-handler:
+
+ハンドラで共通の振る舞いを定義する
+--------------------------------------------------
+エラー発生時の遷移先は、基本的にアクションのメソッドに対して :ref:`on_error_interceptor` や :ref:`on_errors_interceptor` を設定して指定する。
+
+しかし、システム全体で遷移先の画面を統一したい場合に、個別のアクションメソッドに対してアノテーションを指定するやり方では、
+漏れが発生したり遷移先のページの指定ミスが発生する可能性がある。
+また、誤りを検知するには全機能に対して遷移先が正しいことを確認する必要があり、非常にコストが高くなる(またこれは現実的ではない)。
+
+このため、システムで共通のエラーページに遷移させる場合には、個別のアクションに対して遷移先を指定するのではなく、
+エラー時の遷移先を制御するハンドラを追加して対応すると良い。
+
+以下に例を示す。
+
+この例では、 :java:extdoc:`NoDataException <nablarch.common.dao.NoDataException>` と :java:extdoc:`javax.persistence.OptimisticLockException` が発生した場合に、専用のエラー画面へ遷移させている。
+
+.. code-block:: java
+
+  public class ExampleErrorForwardHandler implements Handler<Object, Object> {
+
+    @Override
+    public Object handle(Object data, ExecutionContext context){
+      try{
+        return context.handleNext(data);
+      } catch (NoDataException e){
+        // ユニバーサルDAOで対象データなしエラーが発生した場合は、
+        // not foundを表すページに遷移する。
+        throw  new HttpErrorResponse(
+            404, "/WEB-INF/view/common/errorPages/pageNotFoundError.jsp", e);
+      } catch (OptimisticLockException e){
+        // 楽観ロックエラーが発生した場合は、他のユーザに更新されたため処理が
+        // 完了できなかったことを通知する画面に遷移する。
+        throw  new HttpErrorResponse(
+            400, "/WEB-INF/view/common/errorPages/optimisticLockError.jsp", e);
+      }
+    }
+  }
+
+.. _forward_error_page-try_catch:
+
+1つの例外クラスに対して複数の遷移先がある場合の実装方法
+---------------------------------------------------------
+業務例外( :java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` )が発生した箇所によって、エラー時の遷移先画面を切り替えたい場合がる。
+しかし、 :ref:`on_error_interceptor` では、例外クラスに対して1つの遷移先しか指定できないため、
+:java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` に対して複数の遷移先の画面を指定できない。
+
+このような場合は、アクションのメソッド内で ``try-catch`` を用いて、例外を捕捉しエラー時の遷移先画面を設定する必要がある。
+
+以下に例を示す。
+
+.. code-block:: java
+
+    @InjectForm(form = ClientSearchForm.class, prefix = "form")
+    @OnError(type = ApplicationException.class, path = "forward://new")
+    public HttpResponse list(HttpRequest request, ExecutionContext context) {
+
+      // 省略
+
+      try {
+        service.save(entity);
+      } catch (ApplicationException e) {
+        // saveで発生したApplicationExceptionは、
+        // 他の箇所で発生した時とは異なる画面に遷移させる
+        throw new HttpErrorResponse("forward://index", e);
+      }
+
+      return new HttpResponse("/WEB-INF/view/client/complete.jsp");
+    }
+
+```
+
+## Knowledge File
+
+- ID: `web-application-forward_error_page--s1`
+
+```json
+{
+  "id": "web-application-forward_error_page--s1",
+  "title": "エラー時の遷移先の指定方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/feature_details/forward_error_page.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/NoDataException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/persistence/OptimisticLockException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラで共通の振る舞いを定義する",
+      "hints": [
+        "ExampleErrorForwardHandler",
+        "NoDataException",
+        "OptimisticLockException",
+        "HttpErrorResponse",
+        "Handler",
+        "ExecutionContext",
+        "エラーハンドラ",
+        "エラーページ遷移",
+        "共通エラー処理",
+        "ハンドラ設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "1つの例外クラスに対して複数の遷移先がある場合の実装方法",
+      "hints": [
+        "ApplicationException",
+        "HttpErrorResponse",
+        "@InjectForm",
+        "@OnError",
+        "複数遷移先",
+        "try-catch",
+        "on_error_interceptor制限",
+        "例外処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "システム全体で共通のエラーページに遷移させる場合、個別のアクションメソッドへのアノテーション指定（:ref:`on_error_interceptor`、:ref:`on_errors_interceptor`）ではなく、エラー時の遷移先を制御するハンドラを追加することを推奨する。理由：個別指定では漏れや指定ミスが生じやすく、全機能の検証コストが非常に高くなるため。\n\n実装例（:java:extdoc:`NoDataException <nablarch.common.dao.NoDataException>` → 404、:java:extdoc:`javax.persistence.OptimisticLockException` → 400）:\n\n```java\npublic class ExampleErrorForwardHandler implements Handler<Object, Object> {\n\n    @Override\n    public Object handle(Object data, ExecutionContext context) {\n        try {\n            return context.handleNext(data);\n        } catch (NoDataException e) {\n            throw new HttpErrorResponse(\n                404, \"/WEB-INF/view/common/errorPages/pageNotFoundError.jsp\", e);\n        } catch (OptimisticLockException e) {\n            throw new HttpErrorResponse(\n                400, \"/WEB-INF/view/common/errorPages/optimisticLockError.jsp\", e);\n        }\n    }\n}\n```",
+    "s2": ":ref:`on_error_interceptor` では1つの例外クラスに対して1つの遷移先しか指定できない。:java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` が発生した箇所によって遷移先を切り替えたい場合は、アクションメソッド内で `try-catch` を使い、`HttpErrorResponse` に遷移先を指定してスローする。\n\n```java\n@InjectForm(form = ClientSearchForm.class, prefix = \"form\")\n@OnError(type = ApplicationException.class, path = \"forward://new\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n    // 省略\n    try {\n        service.save(entity);\n    } catch (ApplicationException e) {\n        // saveで発生したApplicationExceptionは他の箇所と異なる画面に遷移\n        throw new HttpErrorResponse(\"forward://index\", e);\n    }\n    return new HttpResponse(\"/WEB-INF/view/client/complete.jsp\");\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

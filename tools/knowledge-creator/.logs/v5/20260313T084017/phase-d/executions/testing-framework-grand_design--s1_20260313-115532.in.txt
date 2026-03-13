@@ -1,0 +1,272 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/introduction/grand_design.rst`
+- Format: `rst`
+
+```
+============================
+設計指針
+============================
+
+----------------------
+業務画面JSPの記述
+----------------------
+Nablarchでの画面開発のワークフローでは、設計段階から各業務画面のJSPを作成する。
+これらのJSPでは画面項目定義書の記述レベルと同じ抽象度をもったカスタムタグを記述する。
+以下は業務画面JSPの記述例である。
+
+.. code-block:: jsp
+
+      <t:page_template
+          title="ユーザ情報登録"
+          confirmationPageTitle="ユーザ情報登録確認">
+        <jsp:attribute name="contentHtml">
+        <n:form>
+          <field:block title="ユーザ基本情報">
+            <field:text title="ログインID"
+                        required="true"
+                        maxlength="20"
+                        hint="半角英数記号20文字以内"
+                        sample="test01">
+            </field:text>
+            <field:password title="パスワード"
+                            required="true"
+                            maxlength="20"
+                            sample="password">
+            </field:password>
+            <field:password title="パスワード（確認用）"
+                            required="true"
+                            maxlength="20"
+                            sample="password">
+            </field:password>
+            <field:hint>半角英数記号20文字以内</field:hint>
+          </field:block>
+          <button:block>
+            <button:back
+                  label="一覧照会画面へ"
+                  size="4">
+              </button:back>
+              <button:check
+                  uri="/action/ss11AC/W11AC02Action/RW11AC0202">
+              </button:check>
+          </button:block>
+        </n:form>
+        </jsp:attribute>
+      </t:page_template>
+ 
+
+このソースコードを見ると、各業務画面のJSPソースコードから画面の見た目に関する情報が全て排除されていることがわかる。
+このソース中の各カスタムタグがどのように画面上に表示されるのかを規定するのが **UI標準**
+であり、その標準に沿った画面表示を実現する共通部品群が :doc:`../internals/jsp_page_templates` と
+:doc:`../internals/jsp_widgets` である。
+
+:doc:`../internals/jsp_page_templates` は画面の全体構成および、画面間で共通のヘッダ・サイドメニューなどの
+領域を描画するUI部品である。
+:doc:`../internals/jsp_widgets` は各業務画面中で使用する
+ボタン、検索結果テーブル、テキスト入力などを描画するUI部品である。
+
+業務画面JSPでは、画面表示に関する実装は全て :doc:`../internals/jsp_page_templates` と
+:doc:`../internals/jsp_widgets` を通じて行う。 [#]_ 
+これにより、各画面の開発者が全く意識しなくとも、UI標準に準拠した画面表示となることが保証される。
+
+.. [#]
+  業務画面JSPに直接記述したHTMLは、そのまま画面上に描画される。
+  このため :doc:`../internals/jsp_widgets` として提供されていない画面要素がある場合は、
+  一旦HTMLとして記述し、仕様が固まった後で共通化するといったことが可能である。
+
+
+以下はこの構造をあらわした概念図である。
+
+.. figure:: ../_image/app_jsp.png
+     :scale: 85 
+     :align: center
+
+ここで作成した業務画面JSPは、以下の特性をもつ。
+
+  **ブラウザで直接開くことが可能**
+    各設計担当者に業務画面JSPを確認するためのサーバ環境を用意させるのはかなり難しいので、
+    本機能で作成したJSPファイルはHTMLと同様に直接ブラウザで確認することが可能となっている。
+
+    詳細は :doc:`../internals/inbrowser_jsp_rendering` を参照すること。
+
+
+  **画面項目一覧を表示しその内容をExcelの設計書に貼りこむことが可能**
+    業務画面JSPのローカル表示時に、画面内の入出力項目を **システム機能設計書/画面項目一覧**
+    の書式で画面上に表示でき、その内容をコピー&ペーストで設計書に貼りこむことが可能である。
+
+
+  **マルチブラウザ・マルチデバイスでの表示が可能**
+    **UI標準** では、マルチブラウザ・マルチデバイスをサポートしており、
+    各デバイスでどのような表示になるかについて、詳細に定義している。
+    そこで記述している仕様は全て :doc:`../internals/jsp_page_templates` と
+    :doc:`../internals/jsp_widgets` 側の実装により吸収されるため、
+    各業務画面ではその実装について気にする必要はない。
+
+
+  **開発工程以降もそのまま流用できる**
+    設計工程で作成したJSPファイルは、必要最小限の修正(入力項目の **name** 属性追加など)により
+    開発工程以降もそのまま流用することが可能である。
+
+
+
+--------------------------------------------
+UI標準と共通部品
+--------------------------------------------
+上述したように、本機能では各画面のJSPを最小の工数で作成できるだけでなく、
+インターフェース標準への準拠、デモ用の表示、画面項目定義の出力、
+マルチデバイスへの対応などを単一のソースコードで実現できる。
+
+しかし、これらの機能を実現している :doc:`../internals/jsp_page_templates` および
+:doc:`../internals/jsp_widgets` の修正には、高い技術と知識が必要となる。
+特に、PJごとの要求に沿ってUI標準のカスタマイズを行った際、
+その内容に沿って共通部品を修正する担当者の存在はPJを進める上で必須である。
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-grand_design--s1`
+
+```json
+{
+  "id": "testing-framework-grand_design--s1",
+  "title": "設計指針",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/introduction/grand_design.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務画面JSPの記述",
+      "hints": [
+        "業務画面JSP",
+        "カスタムタグ",
+        "UI標準",
+        "jsp_page_templates",
+        "jsp_widgets",
+        "ブラウザ直接表示",
+        "マルチブラウザ対応",
+        "画面項目一覧Excel出力",
+        "開発工程流用",
+        "field:hint",
+        "field:password"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "UI標準と共通部品",
+      "hints": [
+        "UI標準カスタマイズ",
+        "共通部品修正",
+        "jsp_page_templates",
+        "jsp_widgets",
+        "PJ担当者必須"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面JSPには画面の見た目に関する情報を含めず、画面項目定義書と同じ抽象度のカスタムタグで記述する。\n\n**UI標準**: 各カスタムタグがどのように画面上に表示されるかを規定する標準。\n\n- :doc:`../internals/jsp_page_templates`: 画面の全体構成および画面間で共通のヘッダ・サイドメニューなどの領域を描画するUI部品\n- :doc:`../internals/jsp_widgets`: 各業務画面中で使用するボタン、検索結果テーブル、テキスト入力などを描画するUI部品\n\n業務画面JSPでは画面表示に関する実装は全て :doc:`../internals/jsp_page_templates` と :doc:`../internals/jsp_widgets` を通じて行う。これにより各画面の開発者がUI標準を意識しなくてもUI標準に準拠した画面表示となることが保証される。\n\n> **注意**: 業務画面JSPに直接記述したHTMLはそのまま画面上に描画される。 :doc:`../internals/jsp_widgets` として提供されていない画面要素がある場合は、一旦HTMLとして記述し仕様が固まった後で共通化することが可能。\n\n業務画面JSP記述例:\n\n```jsp\n<t:page_template\n    title=\"ユーザ情報登録\"\n    confirmationPageTitle=\"ユーザ情報登録確認\">\n  <jsp:attribute name=\"contentHtml\">\n  <n:form>\n    <field:block title=\"ユーザ基本情報\">\n      <field:text title=\"ログインID\"\n                  required=\"true\"\n                  maxlength=\"20\"\n                  hint=\"半角英数記号20文字以内\"\n                  sample=\"test01\">\n      </field:text>\n      <field:password title=\"パスワード\"\n                      required=\"true\"\n                      maxlength=\"20\"\n                      sample=\"password\">\n      </field:password>\n      <field:password title=\"パスワード（確認用）\"\n                      required=\"true\"\n                      maxlength=\"20\"\n                      sample=\"password\">\n      </field:password>\n      <field:hint>半角英数記号20文字以内</field:hint>\n    </field:block>\n    <button:block>\n      <button:back label=\"一覧照会画面へ\" size=\"4\"></button:back>\n      <button:check uri=\"/action/ss11AC/W11AC02Action/RW11AC0202\"></button:check>\n    </button:block>\n  </n:form>\n  </jsp:attribute>\n</t:page_template>\n```\n\n業務画面JSPの特性:\n\n1. **ブラウザで直接開くことが可能**: サーバ環境なしにブラウザで直接確認可能。詳細は :doc:`../internals/inbrowser_jsp_rendering` を参照。\n2. **画面項目一覧をExcel設計書に貼り込み可能**: ローカル表示時に入出力項目をシステム機能設計書/画面項目一覧の書式で表示し、コピー&ペーストで設計書に貼り込み可能。\n3. **マルチブラウザ・マルチデバイス対応**: UI標準がマルチブラウザ・マルチデバイスをサポートし、各デバイスの表示差分は :doc:`../internals/jsp_page_templates` と :doc:`../internals/jsp_widgets` が吸収するため、各業務画面での個別対応は不要。\n4. **開発工程以降も流用可能**: 設計工程で作成したJSPファイルは、name属性追加などの最小限の修正で開発工程以降もそのまま流用可能。",
+    "s2": ":doc:`../internals/jsp_page_templates` および :doc:`../internals/jsp_widgets` の修正には高い技術と知識が必要。PJごとの要求に沿ってUI標準のカスタマイズを行う場合、その内容に沿って共通部品を修正する担当者の存在はPJを進める上で必須。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,13 @@
+{
+  "file_id": "etl-etl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — ワークテーブル > カラムの型",
+      "description": "The knowledge file states the guideline (variable-length string type; binary type for binary data) but omits two pieces of rationale present in the source: (1) the overarching reason for the column design guidelines — '不正な値であってもワークテーブルにロードできるよう' (so that invalid/malformed file values can still be loaded into the work table); (2) the specific reason binary type is used for binary data — '文字列型に変換出来ないため' (because binary data cannot be converted to string type).",
+      "source_evidence": "「不正な値 [#invalid_file] であってもワークテーブルにロードできるよう以下の指針に従い設計すること」および「ただし、ファイル内のバイナリデータを保存するカラムに関しては、文字列型に変換出来ないためバイナリ型を使用する」"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "testing-framework-01_Abstract--s1",
+  "title": "自動テストフレームワーク",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "特徴",
+      "hints": [
+        "JUnit4",
+        "JUnit5",
+        "テストデータの外部化",
+        "Excelファイル",
+        "自動テストフレームワーク",
+        "トランザクション制御",
+        "システム日付設定",
+        "Nablarch特化API",
+        "run_ntf_on_junit5_with_vintage_engine"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "自動テストフレームワークの構成",
+      "hints": [
+        "テストクラス",
+        "テスト対象クラス",
+        "Excelファイル",
+        "コンポーネント設定ファイル",
+        "環境設定ファイル",
+        "Nablarch Application Framework",
+        "フレームワーク構成",
+        "testing_fw_components"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストメソッド記述方法",
+      "hints": [
+        "@Test",
+        "JUnit4アノテーション",
+        "テストメソッド",
+        "SampleTest",
+        "テストクラス作成"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "JUnitアノテーション（@Before/@After）",
+      "hints": [
+        "@Before",
+        "@After",
+        "using_junit_annotation",
+        "共通処理",
+        "リソース取得解放"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Excelによるテストデータ記述",
+      "hints": [
+        "スプレッドシート",
+        "テストデータ",
+        "可読性",
+        "Excelファイル",
+        "データベース検索結果",
+        "how_to_write_excel"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "命名規約",
+      "hints": [
+        "Excelファイル名",
+        "命名規約",
+        "テストソースコード",
+        "ファイルパス"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "パス、ファイル名に関する規約",
+      "hints": [
+        "Excelファイル名",
+        "テストソースコード",
+        "配置ディレクトリ",
+        "xls",
+        "xlsx",
+        "Excel2003",
+        "Excel2007",
+        "拡張子",
+        "ファイル命名規約"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "自動テストフレームワークはJUnit4ベース。各種アノテーション・assertメソッド・Matcherクラスなど、JUnit4が提供する機能を使用可能。\n\n> **補足**: JUnit 5上で自動テストフレームワークを動かしたい場合は :ref:`run_ntf_on_junit5_with_vintage_engine` を参照。\n\nテストデータをExcelファイルに記述可能。DBの準備データや期待するテスト結果を、自動テストフレームワークのAPIを通じて使用できる。\n\nトランザクション制御やシステム日付設定など、Nablarchアプリケーションに特化したAPIを提供。",
+    "s2": "![フレームワーク構成図](assets/testing-framework-01_Abstract--s1/abstract_structure.png)\n\n| 構成物 | 説明 | 作成者 |\n|---|---|---|\n| テストクラス | テスト処理を記述する | アプリケーションプログラマ |\n| テスト対象クラス | テスト対象となるクラス | アプリケーションプログラマ |\n| Excelファイル | テストデータを記載する。自動テストフレームワークAPIでデータを読み取る | アプリケーションプログラマ |\n| コンポーネント設定ファイル・環境設定ファイル | テスト実行時の各種設定を記載する | アプリケーションプログラマ（個別テストに固有の設定が必要な場合） |\n| 自動テストフレームワーク | テストに必要な機能を提供する | — |\n| Nablarch Application Framework | フレームワーク本体（本機能の対象外） | — |",
+    "s3": "テストメソッドに `@Test` アノテーションを付与する（JUnit4アノテーションを使用）。\n\n```java\npublic class SampleTest {\n\n    @Test\n    public void testSomething() {\n        // テスト処理\n    }\n}\n```",
+    "s4": "> **補足**: `@Before`や`@After`などのアノテーションも使用できる。テストメソッド前後にリソースの取得解放などの共通処理を行いたい場合は :ref:`using_junit_annotation` を参照。",
+    "s5": "DBの準備データやDB検索結果などのデータを表すには、Javaソースコードよりスプレッドシートの方が可読性・編集のしやすさで有利。Excelファイルを使用することで、このようなデータをスプレッドシート形式で扱える。",
+    "s6": "ExcelファイルのファイルパスやExcelファイル名には推奨される命名規約が存在する。規約に従うことで、テストクラスで明示的にディレクトリ名やファイル名を指定せずにExcelファイルを読み込めるようになり、テストソースコードを簡潔に記述できる。明示的なパス指定により任意の場所のExcelファイルを読み込むことも可能。",
+    "s7": "- Excelファイル名はテストソースコードと同じ名前にする（拡張子のみ異なる）\n- Excelファイルをテストソースコードと同じディレクトリに配置する\n\n| ファイルの種類 | 配置ディレクトリ | ファイル名 |\n|---|---|---|\n| テストソースファイル | `<PROJECT_ROOT>/test/jp/co/tis/example/db/` | ExampleDbAcessTest.java |\n| Excelファイル | `<PROJECT_ROOT>/test/jp/co/tis/example/db/` | ExampleDbAcessTest.xlsx |\n\nExcelファイルはExcel2003以前（拡張子 xls）およびExcel2007以降（拡張子 xlsx）の形式に対応。"
+  }
+}

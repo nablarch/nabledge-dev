@@ -1,0 +1,260 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/feature_details/view/freemarker.rst`
+- Format: `rst`
+
+```
+.. _view_freemarker:
+
+FreeMarkerを使用した画面開発
+==================================================
+`FreeMarker(外部サイト、英語) <https://freemarker.apache.org/>`_ を使用した画面開発について解説する。
+
+FreeMarkerの導入手順は以下の通り。なお、詳細な手順については、 `FreeMarkerのドキュメント <https://freemarker.apache.org/docs/pgui_misc_servlet.html>`_ を参照。
+
+1. :ref:`freemarker-pom`
+2. :ref:`freemarker-servlet`
+3. :ref:`freemarker-create_ftl`
+4. :ref:`2重サブミットを防止する(必要な場合のみ) <freemarker-use_token>`
+
+.. _freemarker-pom:
+
+FreeMarkerを依存ライブラリに追加する
+--------------------------------------------------
+FreeMarkerをプロジェクトで使用可能にするために依存ライブラリに追加する。
+Mavenを使用している場合は、POMに以下を追加する。
+なお、本解説書は下のdependencyに記載のバージョンにて動作確認している。
+
+.. code-block:: xml
+
+  <dependency>
+    <groupId>org.freemarker</groupId>
+    <artifactId>freemarker-gae</artifactId>
+    <version>2.3.27-incubating</version>
+  </dependency>
+
+.. _freemarker-servlet:
+
+FreeMarkerServletの設定を行う
+--------------------------------------------------
+``web.xml`` に ``FreeMarkerServlet`` を登録し、 ``*.ftl`` に反応するようにする。
+
+web.xmlの例
+  .. code-block:: xml
+
+    <servlet>
+      <servlet-name>freemarker</servlet-name>
+      <servlet-class>freemarker.ext.servlet.FreemarkerServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+      <servlet-name>freemarker</servlet-name>
+      <url-pattern>*.ftl</url-pattern>
+
+      <init-param>
+        <!--
+        テンプレートファイル(ftl)の配置ディレクトリを指定する。
+        「/」を指定した場合は、warのルートディレクトリが配置ディレクトリとなる。
+        -->
+        <param-name>TemplatePath</param-name>
+        <param-value>/</param-value>
+
+        <!-- 上記以外については、ドキュメントを参照し必要なパラメータを設定すること -->
+      </init-param>
+    </servlet-mapping>
+
+.. _freemarker-create_ftl:
+
+テンプレートファイル(ftlファイル)を作成しActionを実装する
+-------------------------------------------------------------------
+テンプレートファイル(ftlファイル)を作成し配置する。(テンプレートの作成方法は、FreeMarkerのドキュメントを参照)
+Actionクラスでは、レスポンスとしてテンプレートファイルへのパスを返却する。
+
+例えば、 ``webapp/WEB-INF/template/index.ftl`` を使用してhtmlをクライアントに返したい場合は、Actionクラスは以下のようにレスポンスを返却する。
+(webappはWARのルートとなるディレクトリ)
+
+.. code-block:: java
+
+  return new HttpResponse("/WEB-INF/template/index.ftl");
+
+.. tip::
+
+  FreeMarkerによって生成されたhtmlがクライアントに返却される仕組みは以下の通り。
+
+  1. :ref:`http_response_handler` が ``/WEB-INF/template/index.ftl`` に対してServlet forwardを行う。
+  2. 拡張子の ``ftl`` に反応し ``FreeMarkerServlet`` が実行され、テンプレートとリクエストスコープ等のデータを元にhtmlを生成する。
+  3. 生成したhtmlをクライアントに返す。
+
+.. _freemarker-use_token:
+
+2重サブミットを防止する
+--------------------------------------------------
+2重サブミットを防止したい場合は、 :ref:`use_token_interceptor` を参照しAction及びテンプレートファイル(ftlファイル)を作成すること。
+
+```
+
+## Knowledge File
+
+- ID: `web-application-freemarker--s1`
+
+```json
+{
+  "id": "web-application-freemarker--s1",
+  "title": "FreeMarkerを使用した画面開発",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/feature_details/view/freemarker.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "FreeMarkerを依存ライブラリに追加する",
+      "hints": [
+        "freemarker-gae",
+        "org.freemarker",
+        "FreeMarker導入",
+        "Maven依存関係追加",
+        "freemarker-gae 2.3.27-incubating"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "FreeMarkerServletの設定を行う",
+      "hints": [
+        "FreemarkerServlet",
+        "freemarker.ext.servlet.FreemarkerServlet",
+        "TemplatePath",
+        "FreeMarkerServlet設定",
+        "web.xml設定",
+        "*.ftlマッピング"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テンプレートファイル(ftlファイル)を作成しActionを実装する",
+      "hints": [
+        "HttpResponse",
+        "ftlテンプレート作成",
+        "Action実装",
+        "FreeMarkerレンダリング",
+        "Servlet forward",
+        "http_response_handler"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "2重サブミットを防止する",
+      "hints": [
+        "2重サブミット防止",
+        "use_token_interceptor",
+        "トークン",
+        "ftlファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール** (動作確認済みバージョン):\n```xml\n<dependency>\n  <groupId>org.freemarker</groupId>\n  <artifactId>freemarker-gae</artifactId>\n  <version>2.3.27-incubating</version>\n</dependency>\n```\n\n> **注**: 上記のバージョンにて動作確認している。",
+    "s2": "`web.xml` に `freemarker.ext.servlet.FreemarkerServlet` を登録し、`*.ftl` にマッピングする。\n\n```xml\n<servlet>\n  <servlet-name>freemarker</servlet-name>\n  <servlet-class>freemarker.ext.servlet.FreemarkerServlet</servlet-class>\n</servlet>\n\n<servlet-mapping>\n  <servlet-name>freemarker</servlet-name>\n  <url-pattern>*.ftl</url-pattern>\n  <init-param>\n    <param-name>TemplatePath</param-name>\n    <param-value>/</param-value>\n    <!-- 上記以外については、ドキュメントを参照し必要なパラメータを設定すること -->\n  </init-param>\n</servlet-mapping>\n```\n\n`TemplatePath`: テンプレートファイル(ftl)の配置ディレクトリ。`/` を指定するとWARのルートディレクトリになる。`TemplatePath` 以外のパラメータが必要な場合は、FreeMarkerのドキュメントを参照して設定する。",
+    "s3": "ActionクラスでHTTPResponseとしてftlファイルへのパスを返す。\n\n```java\nreturn new HttpResponse(\"/WEB-INF/template/index.ftl\");\n```\n\n> **補足**: FreeMarkerによるHTML生成の流れ:\n> 1. :ref:`http_response_handler` が `/WEB-INF/template/index.ftl` に対してServlet forwardを行う。\n> 2. 拡張子 `ftl` に反応し `FreeMarkerServlet` が実行され、テンプレートとリクエストスコープ等のデータを元にhtmlを生成する。\n> 3. 生成したhtmlをクライアントに返す。",
+    "s4": "2重サブミットを防止する場合は、:ref:`use_token_interceptor` を参照してAction及びテンプレートファイル(ftlファイル)を作成する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

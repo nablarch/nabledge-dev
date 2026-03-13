@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-client_create1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 - ### メニューリンク",
+      "description": "メニューリンクのコードスニペットは含まれているが、どのファイルに追加するかを示すファイルパス `/src/main/webapp/WEB-INF/view/common/menu.jsp` が省略されている。ソースでは明示的にファイルパスが指定されており、開発者がどのファイルを編集すべきか判断するために必要な情報。",
+      "source_evidence": "/src/main/webapp/WEB-INF/view/common/menu.jsp\n  .. code-block:: jsp\n\n    <ul class=\"nav navbar-nav\">\n      ...\n      <n:a href=\"/action/client\">顧客登録</n:a>"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 - hints",
+      "description": "`ClientAction` クラス名がソースに登場している（「ClientAction に、以下の処理を行う業務アクションメソッドを追加する」）が、hintsに含まれていない。",
+      "source_evidence": "ClientAction.java\n  .. code-block:: java\n\n    public HttpResponse input(HttpRequest request, ExecutionContext context) {"
+    }
+  ]
+}

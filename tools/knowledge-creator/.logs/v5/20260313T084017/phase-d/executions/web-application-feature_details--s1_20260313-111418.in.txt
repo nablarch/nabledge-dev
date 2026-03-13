@@ -1,0 +1,552 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/web/feature_details.rst`
+- Format: `rst`
+
+```
+機能詳細
+========================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+.. _web_feature_details-nablarch_initialization:
+
+Nablarchの初期化
+----------------------------------------
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  feature_details/nablarch_servlet_context_listener
+  feature_details/web_front_controller
+
+Nablarchの初期化を行うためには、 :ref:`システムリポジトリのロードの為の設定 <nablarch_servlet_context_listener>`
+及び :ref:`ハンドラキューの設定(構築) <web_front_controller>` が必要となる。
+
+入力値のチェック
+----------------------------------------
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    feature_details/error_message
+
+* :ref:`入力値のチェック <validation>`
+* :doc:`エラーメッセージの画面表示 <feature_details/error_message>`
+
+データベースアクセス
+----------------------------------------
+* :ref:`データベースアクセス <database_management>`
+
+排他制御
+----------------------------------------
+排他制御は、以下の2種類の方法を提供しているが、
+:ref:`UniversalDaoを推奨する理由 <exclusive_control-deprecated>` に記載がある通り、
+:ref:`universal_dao` の使用を推奨する。
+
+* :ref:`exclusive_control`
+* :ref:`universal_dao`
+
+  * :ref:`universal_dao_jpa_optimistic_lock`
+  * :ref:`universal_dao_jpa_pessimistic_lock`
+
+ファイルアップロード
+----------------------------------------
+* :ref:`multipart_handler-read_upload_file`
+
+ファイルダウンロード
+----------------------------------------
+ファイルダウンロードは、以下の2種類の方法を提供しているが、
+:ref:`データバインドを推奨する理由 <data_converter-data_bind_recommend>` に記載がある通り、
+:ref:`data_bind` の使用を推奨する。
+
+* :ref:`データバインド機能を使用したファイルダウンロード <data_bind-file_download>`
+* :ref:`汎用データフォーマット機能を使用したファイルダウンロード <data_format-file_download>`
+
+大量データのダウンロード時には、 :ref:`universal_dao-lazy_load` を参照し、
+データベースの検索結果をヒープ上に展開しないように注意すること。
+
+URIとアクションクラスのマッピング
+----------------------------------------
+以下の2種類の方法を提供しているが、
+:ref:`ルーティングアダプタが推奨である理由<http_request_java_package_mapping-router_adaptor>` に記載がある通り、 :ref:`router_adaptor` の使用を推奨する。
+
+* :ref:`router_adaptor`
+* :ref:`http_request_java_package_mapping`
+
+2重サブミット防止
+----------------------------------------
+* :ref:`2重サブミット防止 <tag-double_submission>`
+
+また、JSP以外のテンプレートエンジンを使用している場合は :ref:`use_token_interceptor` も参照すること。
+
+入力データの保持
+----------------------------------------
+* :ref:`session_store`
+
+ページネーション
+----------------------------------------
+データベースから範囲を指定して検索する方法は、 :ref:`database_management` を参照。
+
+クライアントサイドについては、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。
+
+画面の作成
+----------------------------------------
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  feature_details/jsp_session
+  feature_details/view/freemarker
+  feature_details/view/other
+
+* JSPを使用する場合
+
+  * :ref:`JSPのtaglibを使用した画面開発 <tag>`
+  * :ref:`jsp_session`
+
+* JSP以外のテンプレートエンジンを使用する場合
+
+  * :ref:`Thymeleafを使用した画面開発 <web_thymeleaf_adaptor>`
+  * :ref:`view_freemarker`
+  * :ref:`view_other`
+
+国際化対応
+----------------------------------------
+静的リソースの多言語化対応については以下を参照。
+
+* :ref:`メッセージの多言語化 <message-multi_lang>`
+* :ref:`コード名称の多言語化 <code-use_multilingualization>`
+
+画面表示する文言の言語を切り替えるには、以下の2通りの方法を提供しているが、
+:ref:`メッセージタグでの国際化対応 <tag-write_message>` を使用した場合、
+画面レイアウトが崩れる可能性がある。
+そのため、レイアウト崩れを許容できる場合のみ、 :ref:`メッセージタグでの国際化対応 <tag-write_message>` を使用すること。
+
+* :ref:`メッセージタグでの国際化対応 <tag-write_message>`
+* :ref:`言語ごとにリソースのパスを切り替える <tag_change_resource_path_of_lang>`
+
+認証
+----------------------------------------
+認証については、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。
+:ref:`authentication` を参考に、プロジェクト要件に合わせてPJで実装する。
+
+認証情報の保持については、以下を参照。
+
+* :ref:`session_store-authentication_data`
+
+認可チェック
+----------------------------------------
+* :ref:`permission_check`
+
+
+.. _web_feature_details-status_code:
+
+ステータスコード
+--------------------------------------------------
+* `ステータスコードの使い分け(外部サイト) <https://qiita.com/kawasima/items/e48180041ace99842779>`_
+
+
+エラー時の画面遷移とステータスコード
+--------------------------------------------------
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  feature_details/forward_error_page
+
+* :ref:`ステータスコードに対応したデフォルトの遷移先ページを設定する <HttpErrorHandler_DefaultPage>`
+* :ref:`ハンドラで例外クラスに対応したエラーページに遷移させる <forward_error_page-handler>`
+* アクションでエラー時の遷移先を指定する
+
+  * 例外クラスに対応した遷移先を定義する (:ref:`on_error_interceptor` 、 :ref:`on_errors_interceptor`)
+  * :ref:`1つの例外に対して複数の遷移先を定義する <forward_error_page-try_catch>`
+* `ステータスコードの使い分け(外部サイト) <https://qiita.com/kawasima/items/e48180041ace99842779>`_
+
+MOMメッセージ送信
+----------------------------------------
+* :ref:`同期応答メッセージ送信<mom_system_messaging-sync_message_send>`
+
+
+Webアプリケーションのスケールアウト設計
+---------------------------------------
+
+* :ref:`stateless_web_app`
+
+CSRF対策
+----------------------------------------
+* :ref:`CSRF対策 <csrf_token_verification_handler>`
+
+ウェブアプリケーションとRESTfulウェブサービスの併用
+-----------------------------------------------------
+* :ref:`委譲するWebフロントコントローラの名前を変更する <change_web_front_controller_name>`
+
+Content Security Policy(CSP)対応
+----------------------------------------
+* :ref:`Content Security Policy(CSP)対応<content_security_policy>`
+```
+
+## Knowledge File
+
+- ID: `web-application-feature_details--s1`
+
+```json
+{
+  "id": "web-application-feature_details--s1",
+  "title": "機能詳細",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/feature_details.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchの初期化",
+      "hints": [
+        "Nablarchの初期化",
+        "nablarch_servlet_context_listener",
+        "web_front_controller",
+        "システムリポジトリ",
+        "ハンドラキュー設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "入力値のチェック",
+      "hints": [
+        "入力値チェック",
+        "バリデーション",
+        "エラーメッセージ",
+        "validation",
+        "error_message"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データベースアクセス",
+      "hints": [
+        "データベースアクセス",
+        "database_management"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "排他制御",
+      "hints": [
+        "排他制御",
+        "UniversalDao",
+        "exclusive_control",
+        "universal_dao",
+        "楽観ロック",
+        "悲観ロック",
+        "universal_dao_jpa_optimistic_lock",
+        "universal_dao_jpa_pessimistic_lock"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ファイルアップロード",
+      "hints": [
+        "ファイルアップロード",
+        "マルチパート",
+        "multipart_handler",
+        "multipart_handler-read_upload_file"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ファイルダウンロード",
+      "hints": [
+        "ファイルダウンロード",
+        "データバインド",
+        "data_bind",
+        "data_format",
+        "大量データダウンロード",
+        "lazy_load",
+        "universal_dao-lazy_load"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "URIとアクションクラスのマッピング",
+      "hints": [
+        "URIマッピング",
+        "ルーティング",
+        "router_adaptor",
+        "http_request_java_package_mapping",
+        "アクションクラス"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "2重サブミット防止",
+      "hints": [
+        "2重サブミット防止",
+        "tag-double_submission",
+        "use_token_interceptor",
+        "テンプレートエンジン"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "入力データの保持",
+      "hints": [
+        "セッションストア",
+        "入力データ保持",
+        "session_store"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "ページネーション",
+      "hints": [
+        "ページネーション",
+        "データベース範囲検索",
+        "database_management",
+        "クライアントサイド"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "画面の作成",
+      "hints": [
+        "画面作成",
+        "JSP",
+        "taglib",
+        "Thymeleaf",
+        "FreeMarker",
+        "テンプレートエンジン",
+        "view_freemarker",
+        "view_other",
+        "web_thymeleaf_adaptor",
+        "jsp_session"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "国際化対応",
+      "hints": [
+        "国際化",
+        "多言語化",
+        "message-multi_lang",
+        "code-use_multilingualization",
+        "tag-write_message",
+        "レイアウト崩れ",
+        "言語切り替え"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "認証",
+      "hints": [
+        "認証",
+        "authentication",
+        "session_store-authentication_data",
+        "認証情報保持"
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "認可チェック",
+      "hints": [
+        "認可",
+        "権限チェック",
+        "permission_check"
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "ステータスコード",
+      "hints": [
+        "ステータスコード",
+        "HTTPステータス",
+        "ステータスコードの使い分け"
+      ]
+    },
+    {
+      "id": "s16",
+      "title": "エラー時の画面遷移とステータスコード",
+      "hints": [
+        "エラー遷移",
+        "HttpErrorHandler_DefaultPage",
+        "forward_error_page",
+        "on_error_interceptor",
+        "on_errors_interceptor",
+        "エラーページ",
+        "例外クラス"
+      ]
+    },
+    {
+      "id": "s17",
+      "title": "MOMメッセージ送信",
+      "hints": [
+        "MOMメッセージ",
+        "mom_system_messaging-sync_message_send",
+        "同期応答メッセージ送信"
+      ]
+    },
+    {
+      "id": "s18",
+      "title": "Webアプリケーションのスケールアウト設計",
+      "hints": [
+        "スケールアウト",
+        "stateless_web_app",
+        "ステートレス設計"
+      ]
+    },
+    {
+      "id": "s19",
+      "title": "CSRF対策",
+      "hints": [
+        "CSRF対策",
+        "csrf_token_verification_handler",
+        "セキュリティ",
+        "CSRFトークン"
+      ]
+    },
+    {
+      "id": "s20",
+      "title": "ウェブアプリケーションとRESTfulウェブサービスの併用",
+      "hints": [
+        "RESTful併用",
+        "Webフロントコントローラ",
+        "change_web_front_controller_name",
+        "コントローラ名変更"
+      ]
+    },
+    {
+      "id": "s21",
+      "title": "Content Security Policy(CSP)対応",
+      "hints": [
+        "CSP",
+        "Content Security Policy",
+        "content_security_policy",
+        "セキュリティポリシー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchの初期化には以下の2つの設定が必要:\n\n- :ref:`システムリポジトリのロードの為の設定 <nablarch_servlet_context_listener>`\n- :ref:`ハンドラキューの設定(構築) <web_front_controller>`",
+    "s2": "- :ref:`入力値のチェック <validation>`\n- :doc:`エラーメッセージの画面表示 <feature_details/error_message>`",
+    "s3": "- :ref:`データベースアクセス <database_management>`",
+    "s4": ":ref:`UniversalDaoを推奨する理由 <exclusive_control-deprecated>` に記載がある通り、:ref:`universal_dao` の使用を推奨する。\n\n- :ref:`exclusive_control`\n- :ref:`universal_dao`（推奨）\n  - :ref:`universal_dao_jpa_optimistic_lock`\n  - :ref:`universal_dao_jpa_pessimistic_lock`",
+    "s5": "- :ref:`multipart_handler-read_upload_file`",
+    "s6": ":ref:`データバインドを推奨する理由 <data_converter-data_bind_recommend>` に記載がある通り、:ref:`data_bind` の使用を推奨する。\n\n- :ref:`データバインド機能を使用したファイルダウンロード <data_bind-file_download>`（推奨）\n- :ref:`汎用データフォーマット機能を使用したファイルダウンロード <data_format-file_download>`\n\n> **重要**: 大量データのダウンロード時には :ref:`universal_dao-lazy_load` を参照し、データベースの検索結果をヒープ上に展開しないように注意すること。",
+    "s7": ":ref:`ルーティングアダプタが推奨である理由<http_request_java_package_mapping-router_adaptor>` に記載がある通り、:ref:`router_adaptor` の使用を推奨する。\n\n- :ref:`router_adaptor`（推奨）\n- :ref:`http_request_java_package_mapping`",
+    "s8": "- :ref:`2重サブミット防止 <tag-double_submission>`\n\nJSP以外のテンプレートエンジンを使用している場合は :ref:`use_token_interceptor` も参照すること。",
+    "s9": "- :ref:`session_store`",
+    "s10": "データベースから範囲を指定して検索する方法は :ref:`database_management` を参照。\n\nクライアントサイドについては、プロジェクト要件により仕様が異なるため、フレームワークとしては提供していない。",
+    "s11": "- JSPを使用する場合\n  - :ref:`JSPのtaglibを使用した画面開発 <tag>`\n  - :ref:`jsp_session`\n- JSP以外のテンプレートエンジンを使用する場合\n  - :ref:`Thymeleafを使用した画面開発 <web_thymeleaf_adaptor>`\n  - :ref:`view_freemarker`\n  - :ref:`view_other`",
+    "s12": "静的リソースの多言語化対応:\n\n- :ref:`メッセージの多言語化 <message-multi_lang>`\n- :ref:`コード名称の多言語化 <code-use_multilingualization>`\n\n画面表示する文言の言語切り替え方法（2種類）:\n\n- :ref:`メッセージタグでの国際化対応 <tag-write_message>`\n- :ref:`言語ごとにリソースのパスを切り替える <tag_change_resource_path_of_lang>`\n\n> **警告**: :ref:`メッセージタグでの国際化対応 <tag-write_message>` を使用した場合、画面レイアウトが崩れる可能性がある。レイアウト崩れを許容できる場合のみ使用すること。",
+    "s13": "認証はプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない。:ref:`authentication` を参考にプロジェクト要件に合わせて実装すること。\n\n認証情報の保持: :ref:`session_store-authentication_data`",
+    "s14": "- :ref:`permission_check`",
+    "s15": "- [ステータスコードの使い分け(外部サイト)](https://qiita.com/kawasima/items/e48180041ace99842779)",
+    "s16": "- :ref:`ステータスコードに対応したデフォルトの遷移先ページを設定する <HttpErrorHandler_DefaultPage>`\n- :ref:`ハンドラで例外クラスに対応したエラーページに遷移させる <forward_error_page-handler>`\n- アクションでエラー時の遷移先を指定する\n  - 例外クラスに対応した遷移先を定義する（:ref:`on_error_interceptor`、:ref:`on_errors_interceptor`）\n  - :ref:`1つの例外に対して複数の遷移先を定義する <forward_error_page-try_catch>`\n- [ステータスコードの使い分け(外部サイト)](https://qiita.com/kawasima/items/e48180041ace99842779)",
+    "s17": "- :ref:`同期応答メッセージ送信<mom_system_messaging-sync_message_send>`",
+    "s18": "- :ref:`stateless_web_app`",
+    "s19": "- :ref:`CSRF対策 <csrf_token_verification_handler>`",
+    "s20": "- :ref:`委譲するWebフロントコントローラの名前を変更する <change_web_front_controller_name>`",
+    "s21": "- :ref:`Content Security Policy(CSP)対応<content_security_policy>`"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

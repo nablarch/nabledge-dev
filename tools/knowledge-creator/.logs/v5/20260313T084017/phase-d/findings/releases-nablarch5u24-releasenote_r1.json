@@ -1,0 +1,20 @@
+{
+  "file_id": "releases-nablarch5u24-releasenote",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "official_doc_urls[0]",
+      "description": "The URL 'https://fintan.jp/page/252/' appears in official_doc_urls but has no basis in the source file. The source only contains nablarch.github.io URLs. This URL was not referenced anywhere in the source xlsx.",
+      "source_evidence": "Source file contains no reference to fintan.jp. All referenced URLs begin with 'https://nablarch.github.io/docs/5u24/...' or are marked '-'."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "Section s1 is missing several PascalCase class names, annotation names, and module artifact IDs that appear in its content: 'HttpRequestTestSupport' (class referenced in No.11 via URL), '@Consumes' and '@Valid' (annotations mentioned in No.4 description), 'nablarch-testing' (module in No.11), 'nablarch-fw-messaging-mom' (module in No.8), 'nablarch-messaging-simulator' (module in No.9), 'nablarch-example-web' (module in No.10).",
+      "source_evidence": "Source No.4: '@Consumesアノテーションと@Validアノテーション'. Source No.8: 'nablarch-fw-messaging-mom 1.0.4'. Source No.9: 'nablarch-messaging-simulator 1.3.0'. Source No.10: 'nablarch-example-web 5u24'. Source No.11 URL path: '.../nablarch/test/core/http/HttpRequestTestSupport.html...', module 'nablarch-testing 1.6.0'."
+    }
+  ]
+}

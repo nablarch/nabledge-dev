@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-mail--s5",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s1",
+      "description": "The 4-step process flow in s1 includes \"対象メールのステータスを「送信中」に更新（別トランザクション）\" as step 2. The intermediate \"送信中\" (sending) status is not stated anywhere in the source text — it appears only in the image `mail_sender_flow.png` which is not readable as text. The source text confirms \"送信済み\" and \"送信失敗\" statuses but does not mention \"送信中\" as an intermediate status name.",
+      "source_evidence": "Source references: `.. image:: images/mail/mail_sender_flow.png` (image content unreadable); important note only mentions \"ステータスが送信済みのままとなる\" and \"ステータスを送信失敗にして\" — no \"送信中\" status in the text portion."
+    }
+  ]
+}

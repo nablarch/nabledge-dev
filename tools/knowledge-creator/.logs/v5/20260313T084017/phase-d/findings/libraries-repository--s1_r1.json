@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-repository--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (Java Beansオブジェクトの設定を上書きする)",
+      "description": "The second XML code example demonstrating same-class property inheritance is omitted. The source includes a concrete code block showing that when overriding with the same class and no property elements, the previous `prop=message` value is still inherited.",
+      "source_evidence": "Source: `<component name=\"sample\" class=\"sample.SampleBean\">\\n  <property name=\"prop\" value=\"message\" />\\n</component>\\n<!-- propertyを設定していないが、上書き前のpropの値が引き継がれる -->\\n<component name=\"sample\" class=\"sample.SampleBean\" />` — Knowledge file explains the behavior in text only, with no supporting code example."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 (ListやMapを設定値として使う)",
+      "description": "Code examples for named list (`<list name=\"strList\">` with `ref=\"strList\"`) and named map (`<map name=\"map\">` with `ref=\"map\"`) references are absent. The knowledge file only notes the feature textually ('任意の名前を設定し`property`要素で名前参照も可能') without showing the exact XML syntax.",
+      "source_evidence": "Source contains two code blocks: one showing `<list name=\"strList\">` defined separately and referenced via `<property name=\"stringList\" ref=\"strList\" />`, and one showing `<map name=\"map\">` referenced via `<property name=\"map\" ref=\"map\">`. Both are absent from s7."
+    }
+  ]
+}

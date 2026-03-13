@@ -1,0 +1,27 @@
+{
+  "file_id": "workflow-doc--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (ワークフロー（ステートマシン）の現在の状態を取得する)",
+      "description": "The source contains a diagram (`images/status.png`) under the 「定義」subsection. Sections s1, s2, and s3 all include their corresponding images, but s4 omits `![状態定義例](assets/workflow-doc--s14/status.png)` inconsistently.",
+      "source_evidence": "定義\n  .. image:: images/status.png\n    :scale: 75"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints (XORゲートウェイの進行先ノードの判定方法)",
+      "description": "`SequenceFlow` is a PascalCase class name that appears in the method signature of `isMatch` in both the source and the knowledge file's code example, but is absent from the hints array for s6.",
+      "source_evidence": "public boolean isMatch(String instanceId, Map<String, ?> param, SequenceFlow sequenceFlow)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints (マルチインスタンスの完了条件の判定方法)",
+      "description": "`Task` is a PascalCase class name that appears in the method signatures of `isCompletedUserTask` and `isCompletedGroupTask` in both the source and the knowledge file's code example, but is absent from the hints array for s7.",
+      "source_evidence": "public boolean isCompletedUserTask(Map<String, ?> param, String instanceId, Task task)\npublic boolean isCompletedGroupTask(Map<String, ?> param, String instanceId, Task task)"
+    }
+  ]
+}

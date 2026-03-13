@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-transaction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The source h2 section '使用方法' contains >= 2000 chars of plain text and has two h3 subsections ('データベースに対するトランザクション制御' and 'データベースに対するトランザクションタイムアウトを適用する'), but the knowledge file does not split them into separate sections — all content is merged into s3.",
+      "source_evidence": "RST h3 headings: 'データベースに対するトランザクション制御' (~~) and 'データベースに対するトランザクションタイムアウトを適用する' (~~) under h2 '使用方法'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "s4 hints are missing 'transactionFactory', which is a property name explicitly used in the TransactionManagementHandler XML configuration example in this section.",
+      "source_evidence": "<property name=\"transactionFactory\"> in the TransactionManagementHandler component definition XML under 拡張例"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 hints are missing 'setQueryTimeout' (from java.sql.Statement#setQueryTimeout), which is explicitly referenced in the source as the mechanism used for query timeout handling within transaction timeout.",
+      "source_evidence": "Source text: 'トランザクションタイムアウトの残り秒数を `java.sql.Statement#setQueryTimeout` に設定し'"
+    }
+  ]
+}

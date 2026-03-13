@@ -1,0 +1,523 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-nablarch_validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — バリデーション対象のBeanにドメインを設定 (step 3)",
+      "description": "The source contains a behavioral note after the domain annotation usage example: 「※コンバータが設定されている場合は、コンバータによる値の変換も行われる。」 This note that domain annotation triggers value conversion (in addition to validation) when a convertor is configured is absent from the knowledge file. It is decision-relevant because developers implementing domain validation need to know that conversion also occurs automatically.",
+      "source_evidence": "この例では、 `userName` に対して `SampleDomain.NAME` に設定したバリデーションが実行される。\n※コンバータが設定されている場合は、コンバータによる値の変換も行われる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — index hints",
+      "description": "The @ConversionFormat and @Validation annotations appear in the domain annotation creation code example in s5 but are absent from s5's hints list. A user searching for either annotation would not be directed to this section.",
+      "source_evidence": "@ConversionFormat\n@Validation\n@Target(ElementType.METHOD)\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface Domain {\n    SampleDomain value();\n}"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _nablarch_validation:
+
+Nablarch Validation
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+この章では、Nablarchで独自に実装したバリデーション機能を解説する。
+
+.. tip::
+
+  :ref:`validation` で説明したように、 :doc:`bean_validation` を使用することを推奨する。
+
+機能概要
+--------------------------------------------------
+
+バリデーションと型変換及び値の正規化ができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nablarchのバリデーションでは、バリデーションと入力値の型変換、正規化を行うことが出来る。
+
+型変換が行えるため、入力値をBeanクラスの数値型(IntegerやLong)などに直接マッピングすることが出来る。
+また、編集された値の編集解除(正規化)なども型変換時に行うことが出来る。
+
+詳細は、 :ref:`nablarch_validation-definition_validator_convertor` を参照。
+
+ドメインバリデーションができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ドメインごとにバリデーションルールを定義できる。
+
+ドメインバリデーションを使うと、Beanクラスのsetterにはドメイン名の指定だけを行えばよく、バリデーションルールの変更が容易になる。
+
+詳細は、 `ドメインバリデーションを使う`_ を参照。
+
+
+.. _nablarch_validation-validator_convertor:
+
+よく使われるバリデータ及びコンバータが提供されている
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nablarchでは、よく使われるバリデータやコンバータを標準で提供している。
+このため、プロジェクト側では :ref:`nablarch_validation-definition_validator_convertor` だけで、バリデーションが実行できる。
+
+Nablarchで提供しているバリデータ及びコンバータについては以下のリンク先を参照。
+
+* :java:extdoc:`nablarch.core.validation.validator`
+* :java:extdoc:`nablarch.core.validation.convertor`
+* :java:extdoc:`nablarch.common.date`
+* :java:extdoc:`nablarch.common.code.validator`
+
+
+.. _nablarch_validation-module_list:
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-validation</artifactId>
+  </dependency>
+
+  <!-- 日付のバリデータ、コンバータを使用する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-date</artifactId>
+  </dependency>
+
+  <!-- コード値のバリデータ、コンバータを使用する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-code</artifactId>
+  </dependency>
+
+使用方法
+--------------------------------------------------
+
+.. _nablarch_validation-definition_validator_convertor:
+
+使用するバリデータとコンバータを設定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バリデーションを有効にするには、コンポーネント設定ファイルに使用するバリデータとコンバータの登録が必要となる。
+
+Nablarchが提供しているバリデータ及びコンバータについては、 :ref:`nablarch_validation-validator_convertor` を参照。
+
+.. important::
+
+  バリデータやコンバータの設定がない場合、バリデーション機能は使用できないので必ず設定すること。
+
+設定例
+  * :java:extdoc:`ValidationManager <nablarch.core.validation.ValidationManager>` を **validationManager** という名前でコンポーネント定義する。
+  * :java:extdoc:`ValidationManager#convertors <nablarch.core.validation.ValidationManager.setConvertors(java.util.List)>` に使用するコンバータを列挙する。
+  * :java:extdoc:`ValidationManager#validators <nablarch.core.validation.ValidationManager.setValidators(java.util.List)>` に使用するバリデータを列挙する。
+
+  .. code-block:: xml
+
+    <component name="validationManager" class="nablarch.core.validation.ValidationManager">
+      <property name="convertors">
+        <list>
+          <!-- ここに使用するコンバータを列挙する -->
+        </list>
+      </property>
+      <property name="validators">
+        <list>
+          <!-- ここに使用するバリデータを列挙する -->
+        </list>
+      </property>
+
+      <!--
+      他の属性は省略
+      詳細は、ValidationManagerのJavadocを参照
+       -->
+    </component>
+
+バリデーションルールを設定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バリデーションルールのアノテーションは、バリデーション対象のBeanクラスのプロパティ(setter)に設定する。
+なお、getterにはアノテーションを指定できないので注意すること。(指定しても意味が無い)
+
+.. tip::
+
+  個別にアノテーションを設定した場合、実装時のミスが増えたりメンテナンスコストが大きくなるため、
+  後述する :ref:`ドメインバリデーション <nablarch_validation-domain_validation>` を使うことを推奨する。
+
+実装例
+  :ref:`Nablarchで提供しているバリデータとコンバータ <nablarch_validation-validator_convertor>` を参照しアノテーションを設定する。
+
+  この例では、 `userName` は入力が必須で、全角文字の最大10文字が許容される。
+  `birthday` は、半角数字の8桁が許容される。
+  `age` は、整数で3桁まで許容される。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+      @Length(max = 10)
+      @SystemChar(charsetDef = "全角文字")
+      @Required
+      public void setUserName(String userName) {
+          this.userName = userName;
+      }
+
+      @Length(min = 8, max = 8)
+      @SystemChar(charsetDef = "半角数字")
+      public void setBirthday(String birthday) {
+          this.birthday = birthday;
+      }
+
+      @Digits(integer = 3)
+      public void setAge(Integer age) {
+          this.age = age;
+      }
+    }
+
+.. _nablarch_validation-domain_validation:
+
+ドメインバリデーションを使う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ドメインバリデーションを使うための設定や実装例を示す。
+
+ドメインごとのバリデーションルールを定義したEnumの作成
+  ドメインバリデーションを使用するには、まずドメインごとのバリデーションルールを持つEnum(ドメインEnum)を作成する。
+  このEnumは、必ず `DomainDefinition` インタフェースを実装すること。
+
+  Enumの各列挙子がドメイン名となる。以下の例では ``NAME`` と ``DATE`` の２つのドメインが定義されている。
+
+  .. code-block:: java
+
+    public enum SampleDomain implements DomainDefinition {
+
+        @Length(max = 10)
+        @SystemChar(charsetDef = "全角文字")
+        NAME,
+
+        @Length(min = 8, max = 8)
+        @SystemChar(charsetDef = "半角数字")
+        DATE;
+
+        // インタフェースで定義されているメソッドの実装
+        // 実装する内容は、この例と全く同じとすること
+        @Override
+        public Annotation getConvertorAnnotation() {
+            return DomainValidationHelper.getConvertorAnnotation(this);
+        }
+
+        @Override
+        public List<Annotation> getValidatorAnnotations() {
+            return DomainValidationHelper.getValidatorAnnotations(this);
+        }
+    }
+
+ドメインを表すアノテーションの作成
+  ドメインを表すアノテーションを作成する。
+  `value` 属性には、上記で作成したドメインEnumを指定できるようにする。
+
+  .. code-block:: java
+
+    @ConversionFormat
+    @Validation
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Domain {
+        SampleDomain value();
+    }
+
+バリデーション対象のBeanにドメインを設定
+  上記で作成したドメインを表すアノテーションを設定することで、ドメインバリデーションが行われる。
+
+  この例では、 `userName` に対して `SampleDomain.NAME` に設定したバリデーションが実行される。
+  ※コンバータが設定されている場合は、コンバータによる値の変換も行われる。
+
+  .. code-block:: java
+
+    @Domain(SampleDomain.NAME)
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+ドメインバリデーションを有効にするための設定
+  ドメインバリデーションを有効にするためには、以下の設定が必要となる。
+
+  * :java:extdoc:`DomainValidationHelper <nablarch.core.validation.domain.DomainValidationHelper>` の設定
+  * :java:extdoc:`DomainValidator <nablarch.core.validation.domain.DomainValidator>` の設定
+  * :java:extdoc:`ValidationManager <nablarch.core.validation.ValidationManager>` の設定
+  * 初期化コンポーネントの設定
+
+  以下に例を示す。
+
+  :java:extdoc:`DomainValidationHelper <nablarch.core.validation.domain.DomainValidationHelper>` の設定
+    * :java:extdoc:`domainAnnotationプロパティ <nablarch.core.validation.domain.DomainValidationHelper.setDomainAnnotation(java.lang.String)>`   
+      にドメインを表すアノテーションの完全修飾名(FQCN)を設定する。
+
+    .. code-block:: xml
+
+      <component name="domainValidationHelper"
+          class="nablarch.core.validation.domain.DomainValidationHelper">
+
+        <property name="domainAnnotation" value="sample.Domain" />
+
+      </component>
+
+  :java:extdoc:`DomainValidator <nablarch.core.validation.domain.DomainValidator>` の設定
+    * :java:extdoc:`domainValidationHelperプロパティ <nablarch.core.validation.domain.DomainValidator.setDomainValidationHelper(nablarch.core.validation.domain.DomainValidationHelper)>` 
+      に、上記で設定した :java:extdoc:`DomainValidationHelper <nablarch.core.validation.domain.DomainValidationHelper>` を設定する。
+    * :java:extdoc:`validatorsプロパティ <nablarch.core.validation.domain.DomainValidator.setValidators(java.util.List)>` 
+      にバリデータのリストを設定する。
+
+    .. code-block:: xml
+
+      <component name="domainValidator"
+          class="nablarch.core.validation.domain.DomainValidator">
+
+        <!--
+          DomainValidatorはここには設定しないこと。設定すると循環参照となり、
+          システムリポジトリ初期化時にエラーとなる。
+        -->
+        <property name="validators">
+          <list>
+            <component-ref name="requiredValidator" />
+          </list>
+        </property>
+        <property name="domainValidationHelper" ref="domainValidationHelper" />
+      </component>
+
+
+  :java:extdoc:`ValidationManager <nablarch.core.validation.ValidationManager>` の設定
+    * :java:extdoc:`domainValidationHelperプロパティ <nablarch.core.validation.ValidationManager.setDomainValidationHelper(nablarch.core.validation.domain.DomainValidationHelper)>` 
+      に、上記で設定した :java:extdoc:`DomainValidationHelper <nablarch.core.validation.domain.DomainValidationHelper>` を設定する。
+    * :java:extdoc:`validatorsプロパティ <nablarch.core.validation.ValidationManager.setValidators(java.util.List)>` 
+      にバリデータのリスト(上記で設定した :java:extdoc:`DomainValidator <nablarch.core.validation.domain.DomainValidator>` を忘れずに) を設定する。
+
+
+    .. code-block:: xml
+
+      <component name="validationManager" class="nablarch.core.validation.ValidationManager">
+        <property name="validators">
+          <list>
+            <component-ref name="domainValidator" />
+            <!-- 他のバリデータの記述は省略 -->
+          </list>
+        </property>
+        <property name="domainValidationHelper" ref="domainValidationHelper" />
+      </component>
+
+  初期化コンポーネントの設定
+    上記で設定した、 :java:extdoc:`DomainValidator <nablarch.core.validation.domain.DomainValidator>` と
+    :java:extdoc:`ValidationManager <nablarch.core.validation.ValidationManager>` を初期化対象のリストに設定する。
+    
+    .. code-block:: xml
+
+      <component name="initializer"
+          class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+
+        <property name="initializeList">
+          <list>
+            <component-ref name="validationManager" />
+            <component-ref name="domainValidator" />
+          </list>
+        </property>
+      </component>
+
+ドメインバリデーションに複数のバリデーションルールを設定した場合の挙動
+  ドメインバリデーションにて１つの入力項目に複数のエラーが存在する場合、精査を１つ目のエラーで打ち切る。
+
+  .. code-block:: java
+
+        public enum SampleDomain implements DomainDefinition {
+          @Length(max = 10)
+          @SystemChar(charsetDef = "全角文字")
+          NAME;
+       }
+
+  上記 `NAME` は `Length` バリデーションエラーになった場合、 `SystemChar` バリデーションは行わない。
+
+
+バリデーション対象のBeanを継承する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バリデーション対象のBeanは継承できるが、以下の理由により継承は推奨しない。
+
+安易に継承した場合、親クラスの変更により予期せぬバリデーションが実行されたり、
+複雑なバリデーションの上書きルールを意識したアノテーションを設定しなければならず、間違い(バグ)の原因となる。
+
+なお、Beanを継承した場合は以下の動作となる。
+
+* サブクラス側に :java:extdoc:`@PropertyName <nablarch.core.validation.PropertyName>` のみをつけた場合、親クラス側のバリデータとコンバータが使用される。
+* サブクラス側にバリデータ用のアノテーションを1つでもつけた場合、親クラス側のバリデータアノテーションは無視され
+  サブクラス側のバリデータが使用される。コンバータは親クラスのものが使用される。
+* サブクラス側にコンバータ用のアノテーションを1つでもつけた場合は、親クラスのコンバータのアノテーションは無視され
+  サブクラス側のコンバータが使用される。バリデータは親クラスのものが使用される。
+* サブクラス側にバリデータもコンバータも設定されている場合は、全てサブクラス側の設定が使われる。
+* 親クラス側のコンバータの設定をサブクラス側で削除できない。
+
+
+以下の親子関係のBeanの場合、 `ChildForm` の `value` プロパティに対しては、
+:java:extdoc:`@Digits <nablarch.core.validation.convertor.Digits>` と :java:extdoc:`@NumberRange <nablarch.core.validation.validator.NumberRange>` のバリデーションが実行される。
+
+.. code-block:: java
+
+  // 親Form
+  public class ParentForm {
+    @Digits(integer=5, fraction=3)
+    public void setValue(BigDecimal value) {
+        this.value = value;
+    }
+  }
+
+  // 子Form
+  public class ChildForm extends ParentForm {
+    @Override
+    @NumberRange(min=100.0, max=20000.0)
+    public void setValue(BigDecimal value) {
+        super.setBdValue(value);
+    }
+  }
+
+.. _nablarch_validation-execute:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-nablarch_validation--s1",
+  "title": "Nablarch Validation",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation/nablarch_validation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/date/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/code/validator/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/domain/DomainValidationHelper.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/domain/DomainValidator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/PropertyName.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/Digits.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/NumberRange.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "バリデーション",
+        "型変換",
+        "正規化",
+        "ドメインバリデーション",
+        "nablarch.core.validation.validator",
+        "nablarch.core.validation.convertor",
+        "nablarch.common.date",
+        "nablarch.common.code.validator",
+        "Bean Validation推奨"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core-validation",
+        "nablarch-common-date",
+        "nablarch-common-code",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用するバリデータとコンバータを設定する",
+      "hints": [
+        "ValidationManager",
+        "validationManager",
+        "convertors",
+        "validators",
+        "バリデータ設定",
+        "コンバータ設定",
+        "nablarch.core.validation.ValidationManager"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "バリデーションルールを設定する",
+      "hints": [
+        "@Length",
+        "@SystemChar",
+        "@Required",
+        "@Digits",
+        "setter",
+        "バリデーションアノテーション",
+        "SampleForm",
+        "ドメインバリデーション推奨"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ドメインバリデーションを使う",
+      "hints": [
+        "DomainDefinition",
+        "DomainValidationHelper",
+        "DomainValidator",
+        "@Domain",
+        "ドメインEnum",
+        "domainAnnotation",
+        "循環参照",
+        "BasicApplicationInitializer",
+        "nablarch.core.validation.domain.DomainValidationHelper",
+        "nablarch.core.validation.domain.DomainValidator"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "バリデーション対象のBeanを継承する",
+      "hints": [
+        "Bean継承",
+        "@PropertyName",
+        "@Digits",
+        "@NumberRange",
+        "バリデーション継承ルール",
+        "nablarch.core.validation.PropertyName",
+        "nablarch.core.validation.convertor.Digits",
+        "nablarch.core.validation.validator.NumberRange"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **補足**: :ref:`validation` で説明したように、:doc:`bean_validation` を使用することを推奨する。\n\n- バリデーション、型変換、値の正規化が可能。型変換により、BeanクラスのInteger/Long等の数値型に直接マッピングできる。\n- ドメインごとにバリデーションルールを定義できる（ドメインバリデーション）。Beanクラスのsetterにはドメイン名の指定だけでよく、バリデーションルールの変更が容易。\n- 標準提供のバリデータ・コンバータ: :java:extdoc:`nablarch.core.validation.validator`, :java:extdoc:`nablarch.core.validation.convertor`, :java:extdoc:`nablarch.common.date`, :java:extdoc:`nablarch.common.code.validator`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-validation</artifactId>\n</dependency>\n\n<!-- 日付のバリデータ、コンバータを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-date</artifactId>\n</dependency>\n\n<!-- コード値のバリデータ、コンバータを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-code</artifactId>\n</dependency>\n```",
+    "s3": "> **重要**: バリデータやコンバータの設定がない場合、バリデーション機能は使用できないので必ず設定すること。\n\n- :java:extdoc:`ValidationManager <nablarch.core.validation.ValidationManager>` を `validationManager` という名前でコンポーネント定義する。\n- `convertors` プロパティに使用するコンバータを列挙する。\n- `validators` プロパティに使用するバリデータを列挙する。\n\n```xml\n<component name=\"validationManager\" class=\"nablarch.core.validation.ValidationManager\">\n  <property name=\"convertors\">\n    <list>\n      <!-- ここに使用するコンバータを列挙する -->\n    </list>\n  </property>\n  <property name=\"validators\">\n    <list>\n      <!-- ここに使用するバリデータを列挙する -->\n    </list>\n  </property>\n</component>\n```",
+    "s4": "> **補足**: 個別にアノテーションを設定すると実装ミスが増えメンテナンスコストが大きくなるため、:ref:`nablarch_validation-domain_validation` を使うことを推奨する。\n\nバリデーションルールのアノテーションは、バリデーション対象Beanクラスのプロパティのsetterに設定する。getterには指定不可（指定しても意味がない）。\n\n```java\npublic class SampleForm {\n\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  @Required\n  public void setUserName(String userName) {\n      this.userName = userName;\n  }\n\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  public void setBirthday(String birthday) {\n      this.birthday = birthday;\n  }\n\n  @Digits(integer = 3)\n  public void setAge(Integer age) {\n      this.age = age;\n  }\n}\n```",
+    "s5": "ドメインバリデーションを使用するための実装と設定手順。\n\n**1. ドメインEnumの作成**\n\n`DomainDefinition` インタフェースを実装したEnumを作成する。各列挙子がドメイン名となる。`getConvertorAnnotation()` と `getValidatorAnnotations()` の実装内容は以下の例と全く同じにすること。\n\n```java\npublic enum SampleDomain implements DomainDefinition {\n\n    @Length(max = 10)\n    @SystemChar(charsetDef = \"全角文字\")\n    NAME,\n\n    @Length(min = 8, max = 8)\n    @SystemChar(charsetDef = \"半角数字\")\n    DATE;\n\n    @Override\n    public Annotation getConvertorAnnotation() {\n        return DomainValidationHelper.getConvertorAnnotation(this);\n    }\n\n    @Override\n    public List<Annotation> getValidatorAnnotations() {\n        return DomainValidationHelper.getValidatorAnnotations(this);\n    }\n}\n```\n\n**2. ドメインアノテーションの作成**\n\n`value` 属性にドメインEnumを指定できるアノテーションを作成する。\n\n```java\n@ConversionFormat\n@Validation\n@Target(ElementType.METHOD)\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface Domain {\n    SampleDomain value();\n}\n```\n\n**3. BeanのsetterにドメインアノテーションをBeanに設定**\n\n```java\n@Domain(SampleDomain.NAME)\npublic void setUserName(String userName) {\n    this.userName = userName;\n}\n```\n\n**4. ドメインバリデーション有効化の設定**\n\n:java:extdoc:`DomainValidationHelper <nablarch.core.validation.domain.DomainValidationHelper>` の設定（`domainAnnotation` プロパティにドメインアノテーションのFQCNを指定）:\n\n```xml\n<component name=\"domainValidationHelper\"\n    class=\"nablarch.core.validation.domain.DomainValidationHelper\">\n  <property name=\"domainAnnotation\" value=\"sample.Domain\" />\n</component>\n```\n\n:java:extdoc:`DomainValidator <nablarch.core.validation.domain.DomainValidator>` の設定:\n\n> **重要**: `DomainValidator` 自身を `validators` リストに設定しないこと。設定すると循環参照となり、システムリポジトリ初期化時にエラーとなる。\n\n```xml\n<component name=\"domainValidator\"\n    class=\"nablarch.core.validation.domain.DomainValidator\">\n  <property name=\"validators\">\n    <list>\n      <component-ref name=\"requiredValidator\" />\n    </list>\n  </property>\n  <property name=\"domainValidationHelper\" ref=\"domainValidationHelper\" />\n</component>\n```\n\n:java:extdoc:`ValidationManager <nablarch.core.validation.ValidationManager>` の設定（`DomainValidator` を `validators` リストに含める）:\n\n```xml\n<component name=\"validationManager\" class=\"nablarch.core.validation.ValidationManager\">\n  <property name=\"validators\">\n    <list>\n      <component-ref name=\"domainValidator\" />\n      <!-- 他のバリデータの記述は省略 -->\n    </list>\n  </property>\n  <property name=\"domainValidationHelper\" ref=\"domainValidationHelper\" />\n</component>\n```\n\n初期化コンポーネントの設定（`DomainValidator` と `ValidationManager` を初期化対象リストに設定する）:\n\n```xml\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"validationManager\" />\n      <component-ref name=\"domainValidator\" />\n    </list>\n  </property>\n</component>\n```\n\n**複数バリデーションルール時の挙動**: 1項目に複数エラーが存在する場合、1つ目のエラーで打ち切り（後続のバリデーションは実行しない）。",
+    "s6": "継承は推奨しない（親クラスの変更による予期せぬバリデーション実行や、複雑なオーバーライドルールの意識が必要となり、間違い（バグ）の原因となるため）。\n\n継承した場合の動作ルール:\n- サブクラス側に :java:extdoc:`@PropertyName <nablarch.core.validation.PropertyName>` のみをつけた場合、親クラスのバリデータとコンバータが使用される。\n- サブクラス側にバリデータ用アノテーションを1つでもつけた場合、親クラスのバリデータアノテーションは無視される（コンバータは親クラスのものを使用）。\n- サブクラス側にコンバータ用アノテーションを1つでもつけた場合、親クラスのコンバータアノテーションは無視される（バリデータは親クラスのものを使用）。\n- サブクラス側にバリデータもコンバータも設定された場合、全てサブクラス側の設定が使われる。\n- 親クラス側のコンバータの設定をサブクラス側で削除できない。\n\n```java\n// 親Form\npublic class ParentForm {\n  @Digits(integer=5, fraction=3)\n  public void setValue(BigDecimal value) {\n      this.value = value;\n  }\n}\n\n// 子Form\npublic class ChildForm extends ParentForm {\n  @Override\n  @NumberRange(min=100.0, max=20000.0)\n  public void setValue(BigDecimal value) {\n      super.setBdValue(value);\n  }\n}\n```\n\nこの場合、`ChildForm.value` に対して :java:extdoc:`@Digits <nablarch.core.validation.convertor.Digits>` と :java:extdoc:`@NumberRange <nablarch.core.validation.validator.NumberRange>` の両方のバリデーションが実行される。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

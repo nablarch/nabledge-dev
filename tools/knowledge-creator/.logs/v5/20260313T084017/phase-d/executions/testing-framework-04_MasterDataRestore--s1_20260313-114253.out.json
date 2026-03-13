@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-04_MasterDataRestore--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source lines 11-22)",
+      "description": "The 概要 section is entirely absent from the knowledge file. It explains the motivation: master maintenance testing requires changing master data, but this causes subsequent test classes to fail because the data is in an unintended state. The feature restores master data to its original state when the test method ends. This context is decision-necessary for understanding when and why to use the feature.",
+      "source_evidence": "「テスト中にマスタデータを変更した場合、それ以降のテストクラスのテストでは、マスタデータが意図しない状態になっている為にテストが失敗することがある」「自動テスト中にマスタデータが更新された場合、そのテストメソッドが終了した時点で、マスタデータを元の状態に復旧する機能を提供する」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "特徴 section (source lines 25-29)",
+      "description": "The 特徴 section is entirely absent. It lists three key characteristics: (1) tests can always use correct master data regardless of execution order; (2) restore is automatic so each test class does not need its own restore processing or restore data; (3) batch restore per table from backup schema is faster than INSERT per record. These are decision-necessary for evaluating whether the feature fits a project's needs.",
+      "source_evidence": "「テストの実行順序に依存せずに、常に正しい状態のマスタデータでテストできる」「マスタデータ復旧は自動で行われるので、各テストクラスで復旧処理、復旧用データを用意する必要ない」「バックアップ用スキーマからテーブル毎に一括で復旧するので、1件ずつINSERTする場合に比べて高速に復旧できる」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "必要となるスキーマ section (source lines 32-48)",
+      "description": "The 必要となるスキーマ section is entirely absent. It specifies that two schemas are required: (1) 自動テスト用スキーマ — schema used for automated testing; (2) バックアップ用スキーマ — schema for storing master data to be used for restoration. This is a prerequisite for setup and critical for understanding what infrastructure must be prepared.",
+      "source_evidence": "「本機能を使用するにあたり、以下の２つのスキーマが必要となる」 table with 自動テスト用スキーマ and バックアップ用スキーマ"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "動作イメージ section (source lines 51-63)",
+      "description": "The 動作イメージ section is entirely absent. It describes the operational mechanism: the framework retrieves the watched table list from the component config file; during test execution it monitors SQL logs to detect whether modification SQL was issued against watched tables; after a test method ends, changed tables are restored by first deleting all records then inserting all records from the backup schema. This mechanism description is decision-necessary for understanding behavior, diagnosing failures, and configuring the feature correctly.",
+      "source_evidence": "「自動テストフレームワークはコンポーネント設定ファイルより、監視対象テーブル名一覧を取得する」「SQLログを監視することにより、監視対象テーブルを変更するSQL文が発行されたかどうかを検出する」「いったんテーブル内のレコードを全件削除する。その後、バックアップ用スキーマのテーブルからレコードを全件挿入する」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections top-level structure",
+      "description": "The source has 5 h2-level sections (概要, 特徴, 必要となるスキーマ, 動作イメージ, 環境構築) but the knowledge file only covers the 4 h3-level subsections within 環境構築 (s1–s4). None of the 5 h2-level sections are represented as knowledge sections, causing all content outside 環境構築 to be omitted entirely.",
+      "source_evidence": "RST h2 headings delimited by ==== underlines: 概要, 特徴, 必要となるスキーマ, 動作イメージ, 環境構築"
+    }
+  ]
+}

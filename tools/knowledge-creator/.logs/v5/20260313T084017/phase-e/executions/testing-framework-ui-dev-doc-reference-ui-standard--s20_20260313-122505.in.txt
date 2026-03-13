@@ -1,0 +1,230 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-ui-dev-doc-reference-ui-standard--s20",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "コントロール部品テーブルに登場する `nablarch-widget-button` と `nablarch-widget-link` がs3のhintsに含まれていない。",
+      "source_evidence": "コントロール部品テーブル: ボタン → **nablarch-widget-button**、リンク → **nablarch-widget-link**"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+UI標準2.11. 共通エラー画面の構成
+------------------------------------
+
+共通エラー画面の構成を変更したい
+===================================
+共通エラー画面のテンプレートは **nablarch-template-error** プラグインで定義されているので、
+このプラグイン内の各ファイルを修正すること。
+
+
+------------------------------------
+UI標準3. UI部品 (UI部品カタログ)
+------------------------------------
+
+UI部品の表示・挙動を修正したい
+====================================
+各UI部品は以下の表にあるプラグインで実装されている。
+UI部品を修正する場合は、対応するプラグインをそれぞれ修正すること。
+
+**データ表示部品**
+
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| UI部品                 | UIウィジェット                                                           | 修正対象プラグイン                         |
++========================+==========================================================================+============================================+
+| テーブル               | :doc:`../reference_jsp_widgets/table_plain`                              | **nablarch-widget-table-plain**            |
+|                        +--------------------------------------------------------------------------+--------------------------------------------+
+|                        | :doc:`../reference_jsp_widgets/table_search_result`                      | **nablarch-widget-table-search_result**    |
+|                        +--------------------------------------------------------------------------+--------------------------------------------+
+|                        | :doc:`../reference_jsp_widgets/table_row`                                | **nablarch-widget-table-row**              |
+|                        +--------------------------------------------------------------------------+--------------------------------------------+
+|                        | :doc:`../reference_jsp_widgets/column_label`                             | **nablarch-widget-column-label**           |
+|                        +--------------------------------------------------------------------------+--------------------------------------------+
+|                        | :doc:`../reference_jsp_widgets/column_link`                              | **nablarch-widget-column-link**            |
+|                        +--------------------------------------------------------------------------+--------------------------------------------+
+|                        | :doc:`../reference_jsp_widgets/column_checkbox`                          | **nablarch-widget-column-checkbox**        |
+|                        +--------------------------------------------------------------------------+--------------------------------------------+
+|                        | :doc:`../reference_jsp_widgets/column_radio`                             | **nablarch-widget-column-radio**           |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| 画像                   | :doc:`../reference_jsp_widgets/box_img`                                  | **nablarch-widget-box-img**                |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| 階層(ツリー)表示       | :doc:`../reference_jsp_widgets/table_treelist`                           | **nablarch-widget-table-tree**             |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+
+**入力フォーム部品**
+
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| UI部品                 | UIウィジェット                                                           | 修正対象プラグイン                         |
++========================+==========================================================================+============================================+
+| チェックボックス       | :doc:`../reference_jsp_widgets/field_checkbox`                           | **nablarch-widget-field-checkbox**         |
+|                        +--------------------------------------------------------------------------+                                            |
+|                        | :doc:`../reference_jsp_widgets/field_code_checkbox`                      |                                            |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| ラジオボタン           | :doc:`../reference_jsp_widgets/field_radio`                              | **nablarch-widget-field-radio**            |
+|                        +--------------------------------------------------------------------------+                                            |
+|                        | :doc:`../reference_jsp_widgets/field_code_radio`                         |                                            |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| プルダウンリスト       | :doc:`../reference_jsp_widgets/field_pulldown`                           | **nablarch-widget-field-pulldown**         |
+|                        +--------------------------------------------------------------------------+                                            |
+|                        | :doc:`../reference_jsp_widgets/field_code_pulldown`                      |                                            |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| リストビルダー         | :doc:`../reference_jsp_widgets/field_listbuilder`                        | **nablarch-widget-field-listbuilder**      |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| 単行テキスト入力       | :doc:`../reference_jsp_widgets/field_text`                               | **nablarch-widget-field-text**             |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| 複数行テキスト入力     | :doc:`../reference_jsp_widgets/field_textarea`                           | **nablarch-widget-field-textarea**         |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| パスワード入力         | :doc:`../reference_jsp_widgets/field_password`                           | **nablarch-widget-field-password**         |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| ファイル選択           | :doc:`../reference_jsp_widgets/field_file`                               | **nablarch-widget-field-file**             |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| カレンダー日付入力     | :doc:`../reference_jsp_widgets/field_calendar`                           | **nablarch-widget-field-calendar**         |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| 自動集計               |                                                                          | **nablarch-widget-event-autosum**          |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| フォーカス移動制御     | :ref:`base_layout_tag`                                                   | **nablarch-template-base**                 |
+|                        | (**tabIndexOrder** 属性値の解説を参照)                                   |                                            |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+
+**コントロール部品**
+
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| UI部品                 | UIウィジェット                                                           | 修正対象プラグイン                         |
++========================+==========================================================================+============================================+
+| ボタン                 | :doc:`../reference_jsp_widgets/button_block`                             | **nablarch-widget-button**                 |
+|                        | :doc:`../reference_jsp_widgets/button_submit`                            |                                            |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+| リンク                 | :doc:`../reference_jsp_widgets/link_submit`                              | **nablarch-widget-link**                   |
++------------------------+--------------------------------------------------------------------------+--------------------------------------------+
+
+--------------
+開閉可能領域
+--------------
+
+精査エラー時の開閉可能領域の制御を変更したい
+=============================================
+開閉可能領域は **nablarch-widget-collapsible** にて実装されている。
+
+入力項目に紐づくエラー(単項目精査エラーなど)がある場合、その入力項目のform内にある開閉可能領域、
+入力項目に紐づかないエラー(ページ上部のエラー表示)がある場合、業務領域にある開閉可能領域が開くようになっている。
+
+この制御を変更したい場合は、 **nablarch-widget-collapsible** を修正すること。
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-ui-dev-doc-reference-ui-standard--s20",
+  "title": "UI標準2.11. 共通エラー画面の構成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_ui_standard/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "UI標準2.11. 共通エラー画面の構成",
+      "hints": [
+        "共通エラー画面",
+        "nablarch-template-error",
+        "エラー画面テンプレート",
+        "プラグイン修正"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "UI標準3. UI部品 (UI部品カタログ)",
+      "hints": [
+        "UI部品カタログ",
+        "データ表示部品",
+        "入力フォーム部品",
+        "コントロール部品",
+        "UI部品修正"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "UI部品の表示・挙動を修正したい",
+      "hints": [
+        "UIウィジェット",
+        "nablarch-widget-table-plain",
+        "nablarch-widget-table-search_result",
+        "nablarch-widget-table-row",
+        "nablarch-widget-column-label",
+        "nablarch-widget-column-link",
+        "nablarch-widget-column-checkbox",
+        "nablarch-widget-column-radio",
+        "nablarch-widget-box-img",
+        "nablarch-widget-table-tree",
+        "nablarch-widget-field-checkbox",
+        "nablarch-widget-field-radio",
+        "nablarch-widget-field-pulldown",
+        "nablarch-widget-field-listbuilder",
+        "nablarch-widget-field-text",
+        "nablarch-widget-field-textarea",
+        "nablarch-widget-field-password",
+        "nablarch-widget-field-file",
+        "nablarch-widget-field-calendar",
+        "nablarch-widget-event-autosum",
+        "nablarch-template-base",
+        "フォーカス移動制御",
+        "tabIndexOrder",
+        "プラグイン修正対象"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "開閉可能領域",
+      "hints": [
+        "開閉可能領域",
+        "nablarch-widget-collapsible",
+        "精査エラー",
+        "エラー表示制御",
+        "単項目精査エラー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 共通エラー画面の構成を変更したい\n\n共通エラー画面のテンプレートは **nablarch-template-error** プラグインで定義されている。構成を変更する場合は、このプラグイン内の各ファイルを修正すること。",
+    "s2": "## UI標準3. UI部品 (UI部品カタログ)\n\nUI部品（UI部品カタログ）に関するセクション。各UI部品は専用プラグインで実装されており、UI部品を修正する場合は対応するプラグインを修正すること。",
+    "s3": "## UI部品の表示・挙動を修正したい\n\nUI部品を修正する場合は、対応するプラグインをそれぞれ修正すること。\n\n**データ表示部品**\n\n| UI部品 | UIウィジェット | 修正対象プラグイン |\n|---|---|---|\n| テーブル | :doc:`../reference_jsp_widgets/table_plain` | **nablarch-widget-table-plain** |\n| | :doc:`../reference_jsp_widgets/table_search_result` | **nablarch-widget-table-search_result** |\n| | :doc:`../reference_jsp_widgets/table_row` | **nablarch-widget-table-row** |\n| | :doc:`../reference_jsp_widgets/column_label` | **nablarch-widget-column-label** |\n| | :doc:`../reference_jsp_widgets/column_link` | **nablarch-widget-column-link** |\n| | :doc:`../reference_jsp_widgets/column_checkbox` | **nablarch-widget-column-checkbox** |\n| | :doc:`../reference_jsp_widgets/column_radio` | **nablarch-widget-column-radio** |\n| 画像 | :doc:`../reference_jsp_widgets/box_img` | **nablarch-widget-box-img** |\n| 階層(ツリー)表示 | :doc:`../reference_jsp_widgets/table_treelist` | **nablarch-widget-table-tree** |\n\n**入力フォーム部品**\n\n| UI部品 | UIウィジェット | 修正対象プラグイン |\n|---|---|---|\n| チェックボックス | :doc:`../reference_jsp_widgets/field_checkbox` | **nablarch-widget-field-checkbox** |\n| | :doc:`../reference_jsp_widgets/field_code_checkbox` | |\n| ラジオボタン | :doc:`../reference_jsp_widgets/field_radio` | **nablarch-widget-field-radio** |\n| | :doc:`../reference_jsp_widgets/field_code_radio` | |\n| プルダウンリスト | :doc:`../reference_jsp_widgets/field_pulldown` | **nablarch-widget-field-pulldown** |\n| | :doc:`../reference_jsp_widgets/field_code_pulldown` | |\n| リストビルダー | :doc:`../reference_jsp_widgets/field_listbuilder` | **nablarch-widget-field-listbuilder** |\n| 単行テキスト入力 | :doc:`../reference_jsp_widgets/field_text` | **nablarch-widget-field-text** |\n| 複数行テキスト入力 | :doc:`../reference_jsp_widgets/field_textarea` | **nablarch-widget-field-textarea** |\n| パスワード入力 | :doc:`../reference_jsp_widgets/field_password` | **nablarch-widget-field-password** |\n| ファイル選択 | :doc:`../reference_jsp_widgets/field_file` | **nablarch-widget-field-file** |\n| カレンダー日付入力 | :doc:`../reference_jsp_widgets/field_calendar` | **nablarch-widget-field-calendar** |\n| 自動集計 | | **nablarch-widget-event-autosum** |\n| フォーカス移動制御 | :ref:`base_layout_tag` (**tabIndexOrder** 属性値の解説を参照) | **nablarch-template-base** |\n\n**コントロール部品**\n\n| UI部品 | UIウィジェット | 修正対象プラグイン |\n|---|---|---|\n| ボタン | :doc:`../reference_jsp_widgets/button_block` :doc:`../reference_jsp_widgets/button_submit` | **nablarch-widget-button** |\n| リンク | :doc:`../reference_jsp_widgets/link_submit` | **nablarch-widget-link** |",
+    "s4": "## 精査エラー時の開閉可能領域の制御を変更したい\n\n開閉可能領域は **nablarch-widget-collapsible** にて実装されている。\n\n- 入力項目に紐づくエラー（単項目精査エラーなど）がある場合: その入力項目のform内にある開閉可能領域が開く\n- 入力項目に紐づかないエラー（ページ上部のエラー表示）がある場合: 業務領域にある開閉可能領域が開く\n\n制御を変更したい場合は、**nablarch-widget-collapsible** を修正すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

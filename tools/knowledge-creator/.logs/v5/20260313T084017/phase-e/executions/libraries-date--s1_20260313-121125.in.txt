@@ -1,0 +1,299 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-date--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "`BusinessDateProvider` appears explicitly as the declared variable type in the s5 Java code example (`BusinessDateProvider provider = SystemRepository.get(\"businessDateProvider\");`), but is not listed in s5 hints. A user asking how to update the business date using BusinessDateProvider would not find s5.",
+      "source_evidence": "Source Java code: `BusinessDateProvider provider = SystemRepository.get(\"businessDateProvider\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "The RST anchors `date-system_time_change` and `date-business_date_change` are defined directly above the 拡張例 subsections in the source (e.g., `.. _date-system_time_change:`), making s6 the actual destination content for those anchors. They are listed in s1 hints (which only references them) but omitted from s6 hints where the substantive content lives.",
+      "source_evidence": "Source: `.. _date-system_time_change:` and `.. _date-business_date_change:` anchors are defined at the start of the 拡張例 subsections."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+日付管理
+=====================================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+アプリケーションで使用するシステム日時(OS日時)と業務日付を一元的に管理する機能を提供する。
+
+機能概要
+--------------------------
+
+システム日時(OS日時)と業務日付の切り替えができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能では、コンポーネント定義で指定されたクラスを使用して、システム日時(OS日時)や業務日付を取得する。
+そのため、コンポーネント定義で指定するクラスを差し替えるだけで、
+アプリケーションで使用するシステム日時(OS日時)と業務日付の取得方法を切り替えることができる。
+この切り替えは、テストなどで一時的にシステム日時(OS日時)や業務日付を切り替えたい場合に使用できる。
+
+* :ref:`date-system_time_change`
+* :ref:`date-business_date_change`
+
+モジュール一覧
+---------------------------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core</artifactId>
+  </dependency>
+
+  <!-- 業務日付管理機能を使用する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-jdbc</artifactId>
+  </dependency>
+
+使用方法
+--------------------------------------------------
+
+.. _date-system_time_settings:
+
+システム日時の管理機能を使うための設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+システム日時の管理機能を使うためには、
+:java:extdoc:`BasicSystemTimeProvider <nablarch.core.date.BasicSystemTimeProvider>` の設定をコンポーネント定義に追加する。
+コンポーネント名には **systemTimeProvider** と指定する。
+
+.. code-block:: xml
+
+ <component name="systemTimeProvider" class="nablarch.core.date.BasicSystemTimeProvider" />
+
+システム日時を取得する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+システム日時の取得は、 :java:extdoc:`SystemTimeUtil <nablarch.core.date.SystemTimeUtil>` を使用する。
+
+.. _date-business_date_settings:
+
+業務日付管理機能を使うための設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+業務日付管理機能では、データベースを使用して複数の業務日付を管理する。
+テーブルのレイアウトは以下となる。
+
+================ ===================================================
+区分(PK)         業務日付を識別するための値。文字列型
+日付             業務日付。文字列型で値はyyyyMMdd形式
+================ ===================================================
+
+業務日付管理機能を使うためには、
+:java:extdoc:`BasicBusinessDateProvider <nablarch.core.date.BasicBusinessDateProvider>` の設定をコンポーネント定義に追加する。
+コンポーネント名には **businessDateProvider** と指定する。
+
+.. code-block:: xml
+
+ <component name="businessDateProvider" class="nablarch.core.date.BasicBusinessDateProvider">
+   <!-- テーブル名 -->
+   <property name="tableName" value="BUSINESS_DATE" />
+   <!-- 区分のカラム名 -->
+   <property name="segmentColumnName" value="SEGMENT"/>
+   <!-- 日付のカラム名 -->
+   <property name="dateColumnName" value="BIZ_DATE"/>
+   <!-- 区分を省略して業務日付を取得した場合に使用される区分 -->
+   <property name="defaultSegment" value="00"/>
+   <!-- データベースアクセスに使用するトランザクションマネージャ -->
+   <property name="transactionManager" ref="transactionManager" />
+ </component>
+
+業務日付を取得する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+業務日付の取得は、 :java:extdoc:`BusinessDateUtil <nablarch.core.date.BusinessDateUtil>` を使用する。
+
+業務日付を任意の日付に上書く
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バッチ処理で障害時の再実行時に、過去日付をバッチ実行時の業務日付としたい場合がある。
+このような場合に、再実行するプロセスのみ任意の日付を業務日付として実行できる。
+
+.. tip::
+ ウェブアプリケーションのように、全ての機能が１プロセス内で実行される場合は、
+ 単純にデータベースで管理されている日付を変更すればよい。
+
+業務日付の上書きは、 :ref:`repository-overwrite_environment_configuration` を使用して行う。
+システムプロパティとして、以下の形式で指定する。
+
+システムプロパティの形式
+ BasicBusinessDateProvider.<区分>=日付
+
+ ※日付はyyyyMMdd形式
+
+システムプロパティの例
+ 区分が"batch"の日付を"2016/03/17"に上書きしたい場合
+
+ -DBasicBusinessDateProvider.batch=20160317
+
+業務日付を更新する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+業務日付の更新は、 :java:extdoc:`BasicBusinessDateProvider <nablarch.core.date.BasicBusinessDateProvider>` を使用して行う。
+
+.. code-block:: java
+
+ // システムリポジトリからBasicBusinessDateProviderを取得する
+ BusinessDateProvider provider = SystemRepository.get("businessDateProvider");
+
+ // setDateメソッドを呼び出し、更新する
+ provider.setDate(segment, date);
+
+拡張例
+--------------------------------------------------
+
+.. _date-system_time_change:
+
+システム日時を切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ユニットテストの実行時など、システム日時を切り替えたい場合は、以下の手順で行う。
+
+1. :java:extdoc:`SystemTimeProvider <nablarch.core.date.SystemTimeProvider>` を実装したクラスを作成する。
+2. :ref:`date-system_time_settings` に従い設定する。
+
+.. _date-business_date_change:
+
+業務日付を切り替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ユニットテストの実行時など、業務日付を切り替えたい場合は、以下の手順で行う。
+
+1. :java:extdoc:`BusinessDateProvider <nablarch.core.date.BusinessDateProvider>` を実装したクラスを作成する。
+2. :ref:`date-business_date_settings` に従い設定する。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-date--s1",
+  "title": "日付管理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/date.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/date/BasicSystemTimeProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/date/SystemTimeUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/date/BasicBusinessDateProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/date/BusinessDateUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/date/SystemTimeProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/date/BusinessDateProvider.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "システム日時切り替え",
+        "業務日付切り替え",
+        "日付管理",
+        "テスト用日時差し替え",
+        "date-system_time_change",
+        "date-business_date_change"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core",
+        "nablarch-common-jdbc",
+        "Maven依存関係",
+        "業務日付管理モジュール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "システム日時設定・取得",
+      "hints": [
+        "BasicSystemTimeProvider",
+        "SystemTimeUtil",
+        "systemTimeProvider",
+        "システム日時設定",
+        "システム日時取得",
+        "date-system_time_settings"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "業務日付設定・取得",
+      "hints": [
+        "BasicBusinessDateProvider",
+        "BusinessDateUtil",
+        "businessDateProvider",
+        "tableName",
+        "segmentColumnName",
+        "dateColumnName",
+        "defaultSegment",
+        "transactionManager",
+        "業務日付設定",
+        "業務日付取得",
+        "date-business_date_settings"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "業務日付上書き・更新",
+      "hints": [
+        "BasicBusinessDateProvider",
+        "業務日付上書き",
+        "業務日付更新",
+        "setDate",
+        "SystemRepository",
+        "repository-overwrite_environment_configuration"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "拡張例",
+      "hints": [
+        "SystemTimeProvider",
+        "BusinessDateProvider",
+        "システム日時カスタマイズ",
+        "業務日付カスタマイズ",
+        "date-system_time_settings",
+        "date-business_date_settings"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "コンポーネント定義で指定するクラスを差し替えるだけで、アプリケーションで使用するシステム日時(OS日時)と業務日付の取得方法を切り替えることができる。テストなどで一時的にシステム日時や業務日付を切り替えたい場合に使用する。\n\n- システム日時の切り替え: :ref:`date-system_time_change`\n- 業務日付の切り替え: :ref:`date-business_date_change`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n\n<!-- 業務日付管理機能を使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-jdbc</artifactId>\n</dependency>\n```",
+    "s3": "### システム日時の管理機能を使うための設定\n\n**クラス**: `nablarch.core.date.BasicSystemTimeProvider`\n\nコンポーネント名には `systemTimeProvider` と指定する。\n\n```xml\n<component name=\"systemTimeProvider\" class=\"nablarch.core.date.BasicSystemTimeProvider\" />\n```\n\n### システム日時を取得する\n\nシステム日時の取得は `SystemTimeUtil` を使用する。",
+    "s4": "### 業務日付管理機能を使うための設定\n\n業務日付はデータベースを使用して複数の業務日付を管理する。テーブルレイアウト:\n\n| カラム | 型 | 説明 |\n|---|---|---|\n| 区分(PK) | 文字列型 | 業務日付を識別するための値 |\n| 日付 | 文字列型 | yyyyMMdd形式 |\n\n**クラス**: `nablarch.core.date.BasicBusinessDateProvider`\n\nコンポーネント名には `businessDateProvider` と指定する。\n\n```xml\n<component name=\"businessDateProvider\" class=\"nablarch.core.date.BasicBusinessDateProvider\">\n  <!-- テーブル名 -->\n  <property name=\"tableName\" value=\"BUSINESS_DATE\" />\n  <!-- 区分のカラム名 -->\n  <property name=\"segmentColumnName\" value=\"SEGMENT\"/>\n  <!-- 日付のカラム名 -->\n  <property name=\"dateColumnName\" value=\"BIZ_DATE\"/>\n  <!-- 区分を省略して業務日付を取得した場合に使用される区分 -->\n  <property name=\"defaultSegment\" value=\"00\"/>\n  <!-- データベースアクセスに使用するトランザクションマネージャ -->\n  <property name=\"transactionManager\" ref=\"transactionManager\" />\n</component>\n```\n\n### 業務日付を取得する\n\n業務日付の取得は `BusinessDateUtil` を使用する。",
+    "s5": "### 業務日付を任意の日付に上書く\n\nバッチ処理の障害時再実行時など、特定プロセスのみ任意の業務日付を使用したい場合、:ref:`repository-overwrite_environment_configuration` を使用してシステムプロパティで指定する。\n\nシステムプロパティ形式: `BasicBusinessDateProvider.<区分>=yyyyMMdd`\n\n例: 区分\"batch\"を\"2016/03/17\"に上書きする場合 → `-DBasicBusinessDateProvider.batch=20160317`\n\n> **補足**: ウェブアプリケーションのように全機能が1プロセス内で実行される場合は、DBで管理している日付を直接変更すればよい。\n\n### 業務日付を更新する\n\n`BasicBusinessDateProvider` を使用する。\n\n```java\n// システムリポジトリからBasicBusinessDateProviderを取得する\nBusinessDateProvider provider = SystemRepository.get(\"businessDateProvider\");\n\n// setDateメソッドを呼び出し、更新する\nprovider.setDate(segment, date);\n```",
+    "s6": "### システム日時を切り替える\n\n1. :java:extdoc:`SystemTimeProvider <nablarch.core.date.SystemTimeProvider>` を実装したクラスを作成する。\n2. :ref:`date-system_time_settings` に従い設定する。\n\n### 業務日付を切り替える\n\n1. :java:extdoc:`BusinessDateProvider <nablarch.core.date.BusinessDateProvider>` を実装したクラスを作成する。\n2. :ref:`date-business_date_settings` に従い設定する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

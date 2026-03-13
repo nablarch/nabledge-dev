@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-code--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (名称、略称以外の名称を定義する)",
+      "description": "The source explicitly states that optional name columns are configured via `CodePatternSchema.patternColumnNames` (same property used for pattern columns). The knowledge file only says '設定ファイルに設定することで使用可能' without naming the specific property, which an implementer needs to know.",
+      "source_evidence": "パターン列は、 :java:extdoc:`CodePatternSchema.patternColumnNames <nablarch.common.code.schema.CodePatternSchema.setPatternColumnNames(java.lang.String:A)>` に設定することで使用可能となる。設定ファイルへの設定方法は、 :ref:`code-setup_table` を参照。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (入力値が有効なコード値かチェックする) — domain validation tip",
+      "description": "The source includes a concrete `SampleDomainBean` code example showing how to define PATTERN1 and PATTERN2 domains for FLOW_STATUS. The knowledge file describes the concept but omits this illustrative code example, which helps AI assistants generate correct implementation code.",
+      "source_evidence": "public class SampleDomainBean {\n  @CodeValue(codeId = \"FLOW_STATUS\", pattern = \"PATTERN1\")\n  String flowStatusGeneral;\n  @CodeValue(codeId = \"FLOW_STATUS\", pattern = \"PATTERN2\")\n  String flowStatusGuest;\n}"
+    }
+  ]
+}

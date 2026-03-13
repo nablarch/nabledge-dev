@@ -1,0 +1,231 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/database/functional_comparison.rst`
+- Format: `rst`
+
+```
+.. _`database-functional_comparison`:
+
+ユニバーサルDAOとJSR317(JPA2.0)との機能比較
+----------------------------------------------------------------------------------------------------
+この章では、以下の機能の比較を示す。
+
+* :ref:`ユニバーサルDAO <universal_dao>`
+* |JSR317|
+
+.. important::
+
+  ユニバーサルDAOでは、JPAで定義されているアノテーションのうち、 :ref:`universal_dao_jpa_annotations` に記載のあるものだけをサポートしている。
+  ここに記載のないアノテーションに関連する機能については、使用できない。
+
+.. list-table:: 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+  :header-rows: 1
+  :class: something-special-class
+
+  * - 機能
+    - ユニバーサルDAO
+    - JSR317
+
+  * - リレーションシップに対応できる |br|
+    - × [#relation]_
+    - ○
+
+  * - Entityを元にCRUDが実行できる |br|
+      SQLを作成することなくCRUDのSQLを実行できる
+    - ○ |br| :ref:`解説書へ <universal_dao-execute_crud_sql>`
+    - ○
+
+  * - 検索結果をJava Beansオブジェクトとして取得できる
+    - ○ |br| :ref:`解説書へ <universal_dao-bean_mapping>`
+    - ○
+
+  * - 任意のSQL文を実行できる
+    - ○ |br| :ref:`解説書へ <universal_dao-sql_file>`
+    - ○
+
+  * - SQLの動的組み立てができる
+    - △ [#criteria]_ |br| :ref:`解説書へ <universal_dao-sql_file>`
+    - ○
+
+  * - バッチ実行ができる
+    - ○ |br| :ref:`解説書へ <universal_dao-batch_execute>`
+    - ×
+
+  * - 大量データを取得する際に遅延ロードができる |br|
+      (ヒープを圧迫せずに大量データを処理できる)
+    - ○ |br| :ref:`解説書へ <universal_dao-lazy_load>`
+    - ×
+
+  * - ページング用の範囲指定の検索ができる
+    - ○ |br| :ref:`解説書へ <universal_dao-paging>`
+    - ○
+
+  * - サロゲートキーの値を採番できる
+    - ○ |br| :ref:`解説書へ <universal_dao-generate_surrogate_key>`
+    - ○
+
+  * - Entityの状態をデータベースに反映時に |br| Bean Validationが実行できる
+    - × [#validaiton]_
+    - ○
+
+  * - データベースアクセス前後に |br| 任意の処理(コールバック呼び出し)を実行できる
+    - × [#callback]_
+    - ○
+
+  * - 排他制御ができる
+    - △ [#lock]_ |br| :ref:`解説書へ(楽観ロック) <universal_dao_jpa_optimistic_lock>` |br| :ref:`解説書へ(悲観ロック) <universal_dao_jpa_pessimistic_lock>`
+    - ○
+
+.. [#relation] リレーションシップがあるテーブルの検索はSQLを作成することで対応できる。登録、更新、削除については、テーブル毎に必要な処理を呼び出すことで対応する。
+.. [#criteria] ユニバーサルDAOでは、条件及びソート項目に限り動的な組み立てができる。詳細は、 :ref:`SQLの動的組み立て <database-variable_condition>` を参照
+.. [#validaiton] Nablarchでは、外部からのデータを受け付けたタイミングでバリデーションを実施し、バリデーションエラーがない場合のみEntityへ変換しデータベースへ保存する。
+.. [#callback] 任意の処理が必要となる場合は、ユニバーサルDAOを呼び出す側で処理を行うことで対応する。
+.. [#lock] ユニバーサルDAOでは、楽観的ロックのみサポートする。悲観的ロックやJSRで定義されている検索時のロックモードの指定などはサポートしない。(悲観的ロックは、 ``select for update`` などを使用することで実現できる。)
+
+.. |jsr317| raw:: html
+
+   <a href="https://jcp.org/en/jsr/detail?id=317" target="_blank">JSR317(外部サイト、英語)</a>
+
+.. |br| raw:: html
+
+  <br />
+
+```
+
+## Knowledge File
+
+- ID: `libraries-functional_comparison-database`
+
+```json
+{
+  "id": "libraries-functional_comparison-database",
+  "title": "ユニバーサルDAOとJSR317(JPA2.0)との機能比較",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/database/functional_comparison.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ユニバーサルDAOとJSR317(JPA2.0)との機能比較",
+      "hints": [
+        "ユニバーサルDAO",
+        "JSR317",
+        "JPA2.0",
+        "機能比較",
+        "リレーションシップ",
+        "CRUD",
+        "バッチ実行",
+        "遅延ロード",
+        "ページング",
+        "排他制御",
+        "楽観的ロック",
+        "Bean Validation",
+        "コールバック",
+        "サロゲートキー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: ユニバーサルDAOは、JPAで定義されているアノテーションのうち :ref:`universal_dao_jpa_annotations` に記載のあるものだけをサポートする。記載のないアノテーションに関連する機能は使用不可。\n\n| 機能 | ユニバーサルDAO | JSR317 |\n|---|---|---|\n| リレーションシップに対応 | × [1] | ○ |\n| EntityベースのCRUD実行（SQL作成不要） | ○ :ref:`解説書へ <universal_dao-execute_crud_sql>` | ○ |\n| 検索結果をJava Beansオブジェクトとして取得 | ○ :ref:`解説書へ <universal_dao-bean_mapping>` | ○ |\n| 任意のSQL文を実行 | ○ :ref:`解説書へ <universal_dao-sql_file>` | ○ |\n| SQLの動的組み立て | △ [2] :ref:`解説書へ <universal_dao-sql_file>` | ○ |\n| バッチ実行 | ○ :ref:`解説書へ <universal_dao-batch_execute>` | × |\n| 大量データの遅延ロード（ヒープ圧迫なし） | ○ :ref:`解説書へ <universal_dao-lazy_load>` | × |\n| ページング用範囲指定検索 | ○ :ref:`解説書へ <universal_dao-paging>` | ○ |\n| サロゲートキーの採番 | ○ :ref:`解説書へ <universal_dao-generate_surrogate_key>` | ○ |\n| EntityのDB反映時にBean Validationを実行 | × [3] | ○ |\n| DBアクセス前後に任意処理（コールバック）を実行 | × [4] | ○ |\n| 排他制御 | △ [5] :ref:`解説書へ(楽観ロック) <universal_dao_jpa_optimistic_lock>` :ref:`解説書へ(悲観ロック) <universal_dao_jpa_pessimistic_lock>` | ○ |\n\n[1] リレーションシップのあるテーブルの検索はSQLを作成することで対応可能。登録・更新・削除はテーブル毎に必要な処理を呼び出すことで対応する。\n[2] 条件及びソート項目に限り動的な組み立てができる。詳細は :ref:`database-variable_condition` を参照。\n[3] Nablarchでは外部からのデータを受け付けたタイミングでバリデーションを実施し、エラーがない場合のみEntityへ変換してDBに保存する。\n[4] 任意の処理が必要な場合は、ユニバーサルDAOを呼び出す側で処理を行うことで対応する。\n[5] 楽観的ロックのみサポート。悲観的ロックやJSRで定義されている検索時のロックモードの指定はサポートしない。悲観的ロックは `select for update` などを使用することで実現できる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

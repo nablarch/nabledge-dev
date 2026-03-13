@@ -1,0 +1,39 @@
+{
+  "id": "libraries-exclusive_control--s1",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/exclusive_control.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "楽観的ロック",
+        "悲観的ロック",
+        "排他制御",
+        "排他制御用テーブル",
+        "バージョン番号カラム",
+        "非推奨",
+        "デッドロック防止",
+        "更新順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-exclusivecontrol",
+        "nablarch-common-exclusivecontrol-jdbc",
+        "nablarch-fw-web-tag",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: この機能は非推奨。排他制御には :ref:`universal_dao` を使用すること。理由: (1) :ref:`universal_dao` の排他制御の方が簡単に使用できる（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` 参照）(2) 主キーが非文字列型の場合、DBによっては型不一致でSQL実行時例外が発生する（例: PostgreSQLのように暗黙の型変換が行われないDB）\n\nテーブルにバージョン番号カラムを定義することで楽観的ロック/悲観的ロックを実現する。バージョン番号カラムが定義されたテーブルを**排他制御用テーブル**と呼ぶ。\n\n提供機能:\n- :ref:`exclusive_control-optimistic_lock`\n- :ref:`exclusive_control-optimistic_lock-bulk`\n- :ref:`exclusive_control-pessimistic_lock`\n\n楽観的ロックと悲観的ロックは同じ排他制御用テーブルを使用するため、並行使用しても同一データの同時更新を防げる。\n\n> **補足**: 排他制御用テーブルの単位は業務的な観点で定義する（例: 売上処理と入金処理に関連するテーブルをまとめた単位）。テーブルの親子関係が明確な場合は親の単位で定義する。親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。単位を大きくすると競合可能性が高まり、楽観的ロックの場合は更新失敗、悲観的ロックの場合は処理遅延を招く。\n\n> **重要**: 排他制御用テーブル設計後、更新順序を設計すること。更新順序を定めないとデッドロックが発生する可能性が非常に高くなる。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>\n</dependency>\n\n<!-- 楽観的ロックを行う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```"
+  }
+}

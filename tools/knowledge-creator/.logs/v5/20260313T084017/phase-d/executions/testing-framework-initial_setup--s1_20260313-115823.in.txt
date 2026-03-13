@@ -1,0 +1,556 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/development_environment/initial_setup.rst`
+- Format: `rst`
+
+```
+===================================
+UI開発基盤の導入
+===================================
+
+本節では、Nablarch UI開発基盤をプロジェクトの開発環境に導入する手順を述べる。
+UI開発基盤の導入時に以下の手順を実施すればよく、各担当者が個別に実施する必要はない。
+
+以下の手順で使用するインストール用コマンドの詳細仕様については、
+:doc:`../plugin_build` を参照すること。
+
+.. tip::
+
+   本節では、UI開発基盤用プロジェクトテンプレートを使用したUI開発基盤の導入手順を記載している。
+   UI開発基盤用プロジェクトテンプレートは :doc:`../internals/css_framework` を使用しているため、
+   :doc:`../internals/multicol_css_framework` を使用する場合には、 :ref:`apply-multicol-layout`
+   を参考に設定すること。
+
+.. tip::
+
+   開発作業手順はUI開発基盤を導入したプロジェクトが構成管理にSubversionを使用する想定で記載している。
+   Gitを使用する場合はプロジェクト構成やコマンド名などを読み替えること。
+
+
+0. 事前準備
+===================================
+
+1. Node.jsのインストール
+----------------------------------------------------------
+
+本節の作業をするには Node.js のインストールが必要である。
+インストールイメージを下記URL(2016/10時点)から取得し、インストールする。
+
+ http://nodejs.org/dist/v0.10.26/
+
+バージョンによってはUI開発基盤が動作しないため、動作検証済みのバージョンである 0.10.26 の使用を推奨する。
+
+.. tip::
+
+  なお **Node.js** を必要とするのは初期環境構築をするアーキテクトのみである。
+  通常の設計・開発担当者はインストール不要である。
+
+2. 環境変数 **JAVA_HOME** の設定
+----------------------------------------------------------
+
+本節で使用する :ref:`ui_demo` は環境変数 **JAVA_HOME** の設定が前提となっているため、
+環境変数 **JAVA_HOME** にJDKのインストールディレクトリパスを設定する。
+
+
+1. プロジェクトの作成
+===================================
+下記手順を実行することにより、UI開発基盤を使用するためのプロジェクトを作成する。
+作成したプロジェクトの構成は以下のようになる。
+
+.. tip::
+   
+   ここでは、プロジェクト名は仮想のプロジェクト名(web_project)で示す。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │
+        ├── nablarch_plugins_bundle/
+        │     ├── bin/
+        │     │     ├── setup.bat
+        │     │     └── install.bat
+        │     ├── node_modules/
+        │     │     ├── nablarch-css-base
+        │     │     ├── nablarch-css-color-default
+        │     │     ├── nablarch-css-common
+        │     │     │
+        │     │ ## 後略 ##
+        │     │
+        │     └── package.json
+        │
+        └── web_project/
+              ├── web/
+              ├── ui_demo/
+              ├── ui_plugins/
+              │     └── package.json
+              └── ui_test/
+
+.. tip::
+
+  ここで展開される各ディレクトリの内容については
+  :doc:`../structure/directory_layout` で解説する。
+
+
+1. プロジェクトルートの作成
+----------------------------------------------------------
+
+ローカルマシン上の任意の場所にプロジェクトルートとなるディレクトリを新規作成する。
+
+
+2. UI開発基盤の取得
+----------------------------------------------------------
+
+「git clone」コマンドでUI開発基盤を取得し、プロジェクトルート直下に配置する。
+以下にコマンド例を示す。
+
+.. code-block:: bash
+
+  cd <<プロジェクトルート>>
+  git clone https://github.com/nablarch/nablarch-plugins-bundle.git
+
+.. _clone_project_template:
+
+3. UI開発基盤用プロジェクトテンプレートの取得
+----------------------------------------------------------
+
+「git clone」コマンドでUI開発基盤用プロジェクトテンプレートを取得し、プロジェクトルート直下に配置する。
+以下にコマンド例を示す。
+
+.. code-block:: bash
+
+  cd <<プロジェクトルート>>
+  git clone https://github.com/nablarch/nablarch-ui-development-template.git web_project
+
+
+4. ブランクプロジェクトのセットアップ
+----------------------------------------------------------
+
+ :ref:`clone_project_template` で取得したプロジェクトテンプレートにブランクプロジェクトをセットアップする。
+ セットアップ方法は、 :doc:`../../../../application_framework/application_framework/blank_project/setup_blankProject/setup_Web` を参照すること。
+
+.. tip::
+
+  ここでは、ブランクプロジェクトを生成する際、 ``artifactId`` に `web` と指定すること。
+
+.. tip::
+
+  mavenのインストールや設定をしていない場合には、以下を参考にそれぞれを実施してからセットアップを行うこと。
+  
+  *  :doc:`../../../../application_framework/application_framework/blank_project/maven`
+  *  :doc:`../../../../application_framework/application_framework/blank_project/beforeFirstStep`
+
+
+2. Nablarch UI開発基盤のインストール
+========================================
+下記手順を実行することにより、Nablarch標準プラグインバンドルの内容と、
+各プラグインが依存するサードパーティ製ライブラリがプロジェクトルート配下に取り込まれる。
+
+.. _initial_setup_plugin_setup:
+
+1. プラグインのセットアップ
+----------------------------------------------------------
+
+`nablarch_plugins_bundle/bin/setup.bat` を実行する。
+
+.. tip::
+
+  プロキシ配下でインターネットに接続している場合には、
+  以下の環境変数にプロキシのアドレスを設定すること。
+
+  * **http_proxy** ：例）http_proxy=http://proxy.example.com:8080
+  * **https_proxy** ：例）https_proxy=http://proxy.example.com:8080
+
+
+プラグインのセットアップが実行され、以下のようなログが表示される。
+
+.. code-block:: bash
+
+   >setup.bat
+   
+   >cd <<プロジェクトルート>>/nablarch-plugins-bundle/bin/
+   
+   >call mvn clean compile dependency:copy-dependencies -f ../node_modules/nablarch-dev-tool-server/ui_test/pom.xml
+   [INFO] Scanning for projects...
+   [INFO]
+   [INFO] ------------------------------------------------------------------------
+   [INFO] Building nablarch-dev-tool-server 1.0.0
+   [INFO] ------------------------------------------------------------------------
+   
+   ### 中略 ###
+   
+   [INFO] ------------------------------------------------------------------------
+   [INFO] BUILD SUCCESS
+   [INFO] ------------------------------------------------------------------------
+   [INFO] Total time: 1.949 s
+   [INFO] Finished at: 2016-10-05T16:30:40+09:00
+   [INFO] Final Memory: 21M/211M
+   [INFO] ------------------------------------------------------------------------
+   npm WARN package.json nablarch-css-base@1.0.0 No repository field.
+   npm WARN package.json nablarch-css-base@1.0.0 No README data
+
+   ### 中略 ###
+
+   npm http 200 https://registry.npmjs.org/boom
+   npm http GET https://registry.npmjs.org/delayed-stream/0.0.5
+   npm http 304 https://registry.npmjs.org/delayed-stream/0.0.5
+   shelljs@0.2.6 node_modules/shelljs
+
+   requirejs@2.1.11 node_modules/requirejs
+
+   sugar@1.4.1 node_modules/sugar
+
+   jquery@1.11.0 node_modules/jquery
+
+   less@1.4.2 node_modules/less
+   ├── mkdirp@0.3.5
+   ├── mime@1.2.11
+   ├── ycssmin@1.0.1
+   └── request@2.34.0
+
+   font-awesome@4.0.3 node_modules/font-awesome
+   >
+
+`nablarch_plugins_bundle/bin/setup.bat` では以下の二つの処理を行っており、
+セットアップ後の状態はそれぞれ以下のようになる。
+  
+* :ref:`ui_test_server` で使用するモジュールのビルド
+
+  `nablarch-plugins-bundle/node_modules/nablarch-dev-tool-server/ui_test/tools` 配下に
+  サーバ動作確認用のバイナリとライブラリが追加される。
+  
+  .. code-block:: bash
+
+    プロジェクトルート/
+          │
+          ├── nablarch_plugins_bundle/
+          │     ├── node_modules/
+          │     │     ├── nablarch-dev-tool-server
+          │     │     │     ├── ui_test
+          │     │     │     │     ├── tools
+          │     │     │     │     │     ├── bin # (追加)
+          │     │     │     │     │     ├── lib # (追加)
+          ## (後略) ##
+
+* サードパーティライブラリの取得
+
+  `nablarch_plugins_bundle/node_modules` 配下に
+  サードパーティライブラリが追加される。
+
+  .. code-block:: bash
+
+    プロジェクトルート/
+          │
+          ├── nablarch_plugins_bundle/
+          │     ├── bin/
+          │     │     ├── setup.bat
+          │     │     └── install.bat
+          │     ├── doc/
+          │     ├── guide/
+          │     ├── node_modules/
+          │     │     ├── es6-promise
+          │     │     ├── font-awesome  # (追加)
+          │     │     ├── jquery        # (追加)
+          │     │     ├── less          # (追加)
+          │     │     ├── nablarch-css-base
+          │     │     ├── nablarch-css-color-default
+          │     │     ├── nablarch-css-common
+          │     │     │
+        ## (後略) ##
+
+
+2. プロジェクトで使用するプラグインの選定
+---------------------------------------------------
+`web_project/ui_plugins/package.json` を任意のテキストエディタで開く。
+
+このファイルは以下のような構造を持ち、プロジェクトで使用する
+:doc:`../structure/plugins` の名称とそのバージョンが列挙されている。
+
+.. code-block:: javascript
+
+    //---- 前略 ----//
+
+    "dependencies":
+    { "requirejs"    : "2.1.11"
+    , "sugar"        : "1.4.1"
+    , "jquery"       : "1.11.0"
+    , "requirejs-text": "2.0.10"
+    , "font-awesome": "4.0.3"
+    , "nablarch-css-color-default": "1.0.0"
+    , "nablarch-css-core": "1.0.0"
+    , "nablarch-css-conf-wide": "1.0.0"
+    , "nablarch-css-conf-compact": "1.0.0"
+    , "nablarch-css-conf-narrow": "1.0.0"
+
+    //---- 中略 ----//
+
+    , "nablarch-template-head": "1.0.0"
+    , "nablarch-template-js_include": "1.0.0"
+    , "nablarch-template-page": "1.0.0"
+    }
+
+    //---- 後略 ----//
+
+このエントリを削除することによって、プロジェクト側で使用しないプラグインを
+インストールの対象から除去できる。
+各プラグインの内容については :doc:`../structure/plugins` の項を参照すること。
+
+削除したプラグインがlessファイルを含んでいる場合、プロジェクトではそのlessファイルも
+使用できなくなるため、 :ref:`lessImport_less` から、当該プラグインのlessファイルの
+import定義を削除する必要がある。
+
+:ref:`lessImport_less` には、以下のようにプロジェクトが各表示モードで使用するlessファイルの
+import定義が列挙されている。
+
+.. code-block:: css
+
+   @import "../../node_modules/nablarch-css-core/ui_public/css/core/reset";
+   @import "../../node_modules/nablarch-css-core/ui_public/css/core/css3";
+   @import "../../node_modules/nablarch-css-core/ui_public/css/core/grid";
+
+    //---- 中略 ----//
+
+   @import "../../node_modules/web_project-template-app_nav/ui_public/css/template/topnav";
+   @import "../../node_modules/web_project-template-app_nav/ui_public/css/template/topnav-wide";
+   @import "../../node_modules/web_project-template-error/ui_public/css/template/errorpage";
+
+上記で削除したプラグインに対応するlessファイルは、それぞれの :ref:`lessImport_less` から削除する必要がある。
+本手順の場合は、以下の6ファイルから削除する。
+
+* `web_project/ui_plugins/css/ui_local/compact.less`
+* `web_project/ui_plugins/css/ui_local/narrow.less`
+* `web_project/ui_plugins/css/ui_local/wide.less`
+* `web_project/ui_plugins/css/ui_public/compact.less`
+* `web_project/ui_plugins/css/ui_public/narrow.less`
+* `web_project/ui_plugins/css/ui_public/wide.less`
+
+.. tip::
+
+  使用するプラグインの選別は、開発中であっても随時実施可能である。
+  ただ、その場合でも、開発チーム側での誤用を避けるため、
+  使用しないプラグインはなるべく早い段階で除いておくことが望ましい。
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-initial_setup--s1`
+
+```json
+{
+  "id": "testing-framework-initial_setup--s1",
+  "title": "UI開発基盤の導入",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/development_environment/initial_setup.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "導入前の注意事項",
+      "hints": [
+        "multicol_css_framework",
+        "css_framework",
+        "apply-multicol-layout",
+        "Subversion",
+        "Git",
+        "バージョン管理",
+        "プロジェクトテンプレート前提"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Node.jsのインストール",
+      "hints": [
+        "Node.js インストール",
+        "動作検証済みバージョン",
+        "v0.10.26",
+        "UI開発基盤前提条件",
+        "アーキテクト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "環境変数 JAVA_HOME の設定",
+      "hints": [
+        "JAVA_HOME",
+        "環境変数設定",
+        "JDK",
+        "ui_demo前提条件"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "プロジェクトルートの作成",
+      "hints": [
+        "プロジェクトルート作成",
+        "ディレクトリ作成",
+        "UI開発基盤導入"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "UI開発基盤の取得",
+      "hints": [
+        "nablarch-plugins-bundle",
+        "UI開発基盤取得",
+        "git clone",
+        "nablarch-plugins-bundle取得"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "UI開発基盤用プロジェクトテンプレートの取得",
+      "hints": [
+        "nablarch-ui-development-template",
+        "プロジェクトテンプレート取得",
+        "git clone",
+        "web_project"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ブランクプロジェクトのセットアップ",
+      "hints": [
+        "ブランクプロジェクト セットアップ",
+        "artifactId web",
+        "setup_Web",
+        "maven"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "プラグインのセットアップ",
+      "hints": [
+        "setup.bat",
+        "プラグインセットアップ",
+        "http_proxy",
+        "https_proxy",
+        "プロキシ設定",
+        "サードパーティライブラリ取得"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "プロジェクトで使用するプラグインの選定",
+      "hints": [
+        "package.json",
+        "プラグイン選定",
+        "less import",
+        "lessImport_less",
+        "dependencies",
+        "プラグイン除外"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "UI開発基盤用プロジェクトテンプレートは `css_framework` を使用している。`multicol_css_framework` を使用する場合は、`:ref:`apply-multicol-layout`` を参考に設定すること。\n\n> **補足**: 本ドキュメントの開発作業手順は、構成管理に **Subversion** を使用する想定で記載している。**Git** を使用する場合はプロジェクト構成やコマンド名などを読み替えること。",
+    "s2": "Node.js v0.10.26 のインストールが必要。インストールイメージは [http://nodejs.org/dist/v0.10.26/](http://nodejs.org/dist/v0.10.26/) から取得する。\n\n> **補足**: バージョンによってはUI開発基盤が動作しないため、動作検証済みの v0.10.26 の使用を推奨する。\n\n> **補足**: Node.js が必要なのは初期環境構築を担当するアーキテクトのみ。通常の設計・開発担当者はインストール不要。",
+    "s3": "環境変数 `JAVA_HOME` にJDKのインストールディレクトリパスを設定すること（`:ref:`ui_demo`` の動作前提）。",
+    "s4": "ローカルマシン上の任意の場所にプロジェクトルートとなるディレクトリを新規作成する。",
+    "s5": "以下コマンドでUI開発基盤を取得し、プロジェクトルート直下に配置する:\n\n```bash\ncd <<プロジェクトルート>>\ngit clone https://github.com/nablarch/nablarch-plugins-bundle.git\n```",
+    "s6": "以下コマンドでUI開発基盤用プロジェクトテンプレートを取得し、プロジェクトルート直下に配置する:\n\n```bash\ncd <<プロジェクトルート>>\ngit clone https://github.com/nablarch/nablarch-ui-development-template.git web_project\n```",
+    "s7": "`:doc:`../../../../application_framework/application_framework/blank_project/setup_blankProject/setup_Web`` に従ってブランクプロジェクトをセットアップする。\n\n> **補足**: ブランクプロジェクト生成時、`artifactId` に `web` を指定すること。",
+    "s8": "`nablarch_plugins_bundle/bin/setup.bat` を実行する。\n\nプロキシ配下でインターネット接続する場合、以下の環境変数にプロキシアドレスを設定すること:\n- `http_proxy`: 例）`http://proxy.example.com:8080`\n- `https_proxy`: 例）`http://proxy.example.com:8080`\n\nsetup.bat が実行する処理:\n1. `:ref:`ui_test_server`` で使用するモジュールのビルド（`nablarch-dev-tool-server/ui_test/tools` 配下に追加）\n2. サードパーティライブラリの取得（`nablarch_plugins_bundle/node_modules` 配下に追加）",
+    "s9": "`web_project/ui_plugins/package.json` の `dependencies` セクションで使用するプラグインを管理する。不要なプラグインはエントリを削除することでインストール対象から除外できる。各プラグインの内容は `:doc:`../structure/plugins`` を参照すること。\n\nプラグインを削除する場合、そのプラグインが less ファイルを含んでいれば、以下6ファイルの `:ref:`lessImport_less`` から当該プラグインの less import 定義も削除する必要がある:\n- `web_project/ui_plugins/css/ui_local/compact.less`\n- `web_project/ui_plugins/css/ui_local/narrow.less`\n- `web_project/ui_plugins/css/ui_local/wide.less`\n- `web_project/ui_plugins/css/ui_public/compact.less`\n- `web_project/ui_plugins/css/ui_public/narrow.less`\n- `web_project/ui_plugins/css/ui_public/wide.less`"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,233 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.rst`
+- Format: `rst`
+
+```
+.. _master_data_setup_tool:
+
+==============================
+マスタデータ投入ツール
+==============================
+
+概要
+====
+
+
+データベースにマスタデータを投入する機能を提供する。
+
+
+特徴
+====
+
+* 自動テストのテストデータと同じ形式で記述できる。
+* Nablarch Application Frameworkのコンポーネント設定ファイルを使用するので、別途設定ファイルを用意する必要がない。
+* バックアップ用スキーマ\ [#]_\ へのデータ投入が同時に実行できる。
+
+.. [#]
+  バックアップ用スキーマとは、自動テストフレームワークの\ :doc:`../../06_TestFWGuide/04_MasterDataRestore`\ にて使用するスキーマのことである。バックアップ用スキーマには、自動テスト用スキーマと同じマスタデータを投入する必要があり、本ツールを使用することで2つのスキーマに同時にデータ投入ができる。
+
+.. important::
+
+  本ツールは、マルチスレッド機能には対応していない。
+  マルチスレッド機能のテストは、テスティングフレームワークを使用しないテスト(結合テストなど)で行うこと。
+
+使用方法
+========
+
+前提条件
+----------------
+
+:doc:`02_ConfigMasterDataSetupTool`\ の\ :ref:`master_data_setup_prerequisite`\ 参照
+
+データ作成方法
+----------------
+
+投入したいデータをMASTER_DATA.xlsxに記載する。記載方法は自動テストと同じ。
+データ記載方法については、『\ :ref:`how_to_write_setup_table`\ 』を参照。
+
+実行方法
+----------------
+
+Antビューから、実行したいターゲットをダブルクリックする。
+
+
+.. image:: ./_image/build_file_in_view.png
+   :scale: 100
+
+.. tip::
+  Antビューの設定については、\ :ref:`how_to_setup_ant_view_in_eclipse`\ を参照。
+
+
+ターゲットの詳細は下表を参照。
+
+ +-----------------+----------------------------------------------------------------------------+
+ | ターゲット名    | 説明                                                                       |
+ +=================+============================================================================+
+ |データ投入(main) | mainプロジェクトの設定ファイルを使用してデータベース投入を行う。           |
+ |                 | 取引単体テスト等、APサーバ上でアプリケーションを動作させる際の             |
+ |                 | スキーマにデータが投入される。                                             |
+ +-----------------+----------------------------------------------------------------------------+
+ |データ投入(test) | testプロジェクトの設定ファイルを使用してデータベース投入を行う。           |
+ |                 | 自動テストで使用するスキーマにデータが投入される。                         |
+ |                 | マスタデータバックアップスキーマにも同時にデータ投入を行う。               |
+ +-----------------+----------------------------------------------------------------------------+
+ |マスタデータ投入 | 上記２つのターゲットをまとめて実行する。                                   |
+ +-----------------+----------------------------------------------------------------------------+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-01_MasterDataSetupTool--s1`
+
+```json
+{
+  "id": "testing-framework-01_MasterDataSetupTool--s1",
+  "title": "マスタデータ投入ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/08_TestTools/02_MasterDataSetup/01_MasterDataSetupTool.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "前提条件",
+      "hints": [
+        "マスタデータ投入ツール",
+        "バックアップ用スキーマ",
+        "マルチスレッド非対応",
+        "コンポーネント設定ファイル",
+        "マスタデータ投入",
+        "自動テストデータ形式"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "データ作成方法",
+      "hints": [
+        "MASTER_DATA.xlsx",
+        "マスタデータ記載方法",
+        "テストデータ形式",
+        "how_to_write_setup_table",
+        "データ作成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "実行方法",
+      "hints": [
+        "Antビュー",
+        "データ投入(main)",
+        "データ投入(test)",
+        "マスタデータ投入ターゲット",
+        "実行ターゲット",
+        "how_to_setup_ant_view_in_eclipse"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DBにマスタデータを投入するツール。\n\n特徴:\n- 自動テストのテストデータと同じ形式で記述できる\n- Nablarch Application Frameworkのコンポーネント設定ファイルを使用するので、別途設定ファイルが不要\n- バックアップ用スキーマ（自動テストフレームワークの :doc:`../../06_TestFWGuide/04_MasterDataRestore` で使用するスキーマ）へのデータ投入が同時に実行できる。バックアップ用スキーマには自動テスト用スキーマと同じマスタデータを投入する必要があり、本ツールを使用することで2つのスキーマに同時にデータ投入できる。\n\n> **重要**: 本ツールはマルチスレッド機能に対応していない。マルチスレッド機能のテストは、テスティングフレームワークを使用しないテスト（結合テストなど）で行うこと。\n\n前提条件: :doc:`02_ConfigMasterDataSetupTool` の :ref:`master_data_setup_prerequisite` 参照。",
+    "s2": "投入したいデータをMASTER_DATA.xlsxに記載する。記載方法は自動テストと同じ形式。\n\nデータ記載方法: :ref:`how_to_write_setup_table` 参照。",
+    "s3": "AntビューからターゲットをダブルクリックしてDBに投入する。\n\n> **補足**: Antビューの設定は :ref:`how_to_setup_ant_view_in_eclipse` 参照。\n\n| ターゲット名 | 説明 |\n|---|---|\n| データ投入(main) | mainプロジェクトの設定ファイルを使用してDBに投入。APサーバ上でアプリケーションを動作させる際のスキーマにデータが投入される。 |\n| データ投入(test) | testプロジェクトの設定ファイルを使用してDBに投入。自動テストで使用するスキーマおよびマスタデータバックアップスキーマに同時にデータ投入される。 |\n| マスタデータ投入 | 上記2つのターゲットをまとめて実行する。 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,436 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-plugin_build--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s5 — :ref:`install` の設定 table, UI_PLUGINS_DIRS row, 備考 column",
+      "description": "Knowledge file adds the note \"複数プラグインディレクトリをカンマ区切りで指定\" for UI_PLUGINS_DIRS in the third project configuration (プラグインも個別). The source table's 備考 column for that row is empty.",
+      "source_evidence": "Source table for install.bat in 「デプロイ対象プロジェクト複数の場合(プラグインも個別)」: `UI_PLUGINS_DIRS  \"ui_plugins_public,ui_plugins_manage\"` — no 備考 text present."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Overall section count",
+      "description": "Knowledge file has 7 sections but the source contains at least 8 visible headings plus additional sections referenced in s6 (config-file/pjconf_json detail, generate-file, build-file, build-command) that follow the `.. _pjconf_json:` anchor. These sections are listed in s6 but have no corresponding knowledge sections. If these sections exist in the full source document, they are not covered.",
+      "source_evidence": "Source ends at `.. _pjconf_json:` anchor; s6 references :ref:`config-file`, :ref:`generate-file`, :ref:`build-file`, :ref:`build-command` as sub-items but no knowledge sections exist for them."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=====================================
+プラグインビルドコマンド仕様
+=====================================
+
+-------------------------------
+概要
+-------------------------------
+
+本章では :ref:`project-structure` および :ref:`config-command-detail` を示す。
+
+プラグインビルドコマンドが使用されるプロジェクトの標準的な構成については :doc:`structure/directory_layout` を、
+開発時のフローについては :doc:`development_environment/initial_setup` を参照。
+
+
+.. _project-structure:
+
+-----------------------------------------
+想定されるプロジェクト構成ごとの設定例
+-----------------------------------------
+
+想定されるプロジェクト構成について、プラグインビルドコマンドの設定ファイルや実行ファイルの具体的な設定例を示す。
+下記の設定例に示していない項目については、後述する :ref:`config-file` や :ref:`build-command` を参照し、必要に応じて修正すること。
+
+デプロイ対象プロジェクトが１つの場合
+-------------------------------------------------
+
+  以下にプロジェクトの構成図および設定例を示す。
+  
+  本構成は全ての画面で共通のプラグインを使用する場合に使用する。
+  
+  **構成図**
+
+  Nablarch標準UIプラグイン、プロジェクト固有UIプラグイン、UIローカルデモ用プロジェクト、UI開発基盤テスト用プロジェクト、デプロイ対象プロジェクトがそれぞれ１つずつ配置される。
+  
+    .. image:: ./_image/project_structure1.png
+  
+  
+  **設定例**
+  
+  - :ref:`install` の設定
+  
+    本構成では、以下のファイルとなる。
+    
+      /nablarch_plugins_bundle/bin/install.bat
+    
+    プロジェクトルートおよびプロジェクト固有UIプラグインのフォルダを設定する。
+    
+    ==================== ========================= =====================================================================================
+    環境変数名           設定値                    備考
+    ==================== ========================= =====================================================================================
+    PROJECT_ROOT         "../../web_project"       コマンドの起動フォルダはnablarch_plugins_bundle/binとなるため、そこからの相対パス
+    UI_PLUGINS_DIRS      "ui_plugins"
+    ==================== ========================= =====================================================================================
+
+  - :ref:`pjconf_json` の設定
+  
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins/pjconf.json
+    
+    プロジェクトルートおよび各プロジェクトのフォルダを設定する。
+    
+    ================================ ======================= =============================================================================================
+    設定項目                         設定値                  備考
+    ================================ ======================= =============================================================================================
+    pathSettings/projectRootPath     "../.."                 コマンドの起動フォルダはweb_project/ui_plugins/binとなるため、そこからの相対パス
+    pathSettings/webProjectPath      "web/src/main/webapp"
+    pathSettings/demoProjectPath     "ui_demo"
+    pathSettings/testProjectPath     "ui_test"
+    pathSettings/pluginProjectPath   "ui_plugins"
+    ================================ ======================= =============================================================================================
+
+
+デプロイ対象プロジェクト複数の場合(プラグインは共通)
+-----------------------------------------------------------------
+
+  以下にプロジェクトの構成図および設定例を示す。
+  
+  本構成は外部公開サイトと管理用サイト等、いくつかの画面単位でデプロイ対象プロジェクトを分割する場合で、
+  サイト間で基本的な画面レイアウト等が大きく変化しないような場合（同一のUI標準を適用する場合）に使用する。
+  
+  **構成図**
+
+  Nablarch標準UIプラグイン、プロジェクト固有UIプラグイン、UI開発基盤テスト用プロジェクトがそれぞれ１つ、
+  UIローカルデモ用プロジェクト、デプロイ対象プロジェクトが外部公開サイト用および管理サイト用でそれぞれ２つずつ配置される。
+  
+    .. image:: ./_image/project_structure2.png
+  
+  
+  **設定例**
+  
+  - :ref:`install` の設定
+  
+    本構成では、以下のファイルとなる。
+    
+      /nablarch_plugins_bundle/bin/install.bat
+    
+    プロジェクトルートおよびプロジェクト固有UIプラグインのフォルダを設定する。
+    
+    ==================== ========================= =====================================================================================
+    環境変数名           設定値                    備考
+    ==================== ========================= =====================================================================================
+    PROJECT_ROOT         "../../web_project"       コマンドの起動フォルダはnablarch_plugins_bundle/binとなるため、そこからの相対パス
+    UI_PLUGINS_DIRS      "ui_plugins"
+    ==================== ========================= =====================================================================================
+
+  - :ref:`pjconf_json` の設定(外部公開サイト用)
+  
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins/pjconf_public.json (標準のpjconf.jsonファイルをコピーする)
+    
+    プロジェクトルートおよび各プロジェクトのフォルダを設定する。
+    
+    ================================ ============================= =============================================================================================
+    設定項目                         設定値                        備考
+    ================================ ============================= =============================================================================================
+    pathSettings/projectRootPath     "../.."                       コマンドの起動フォルダはweb_project/ui_plugins/binとなるため、そこからの相対パス
+    pathSettings/webProjectPath      "web_public/src/main/webapp"
+    pathSettings/demoProjectPath     "ui_demo_public"              業務画面は個別で作成するため、管理サイトと分ける
+    pathSettings/testProjectPath     "ui_test"                     プラグインは共通のため、UI開発基盤テスト用プロジェクトは管理サイト用と共用
+    pathSettings/pluginProjectPath   "ui_plugins"                  プラグインは共通のため、プロジェクト固有UIプラグインは管理サイト用と共用
+    ================================ ============================= =============================================================================================
+
+  - :ref:`ui_build` の設定(外部公開サイト用)
+
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins/bin/ui_build_public.bat (標準のui_build.batコマンドをコピーする)
+    
+    外部公開サイト用プロジェクト設定ファイルを設定する。
+    
+    ==================== ========================= =====================================================================================
+    環境変数名           設定値                    備考
+    ==================== ========================= =====================================================================================
+    PROJECT_CONF         "../pjconf_public.json"   コマンドの起動フォルダはnablarch_plugins_bundle/binとなるため、そこからの相対パス
+    ==================== ========================= =====================================================================================
+
+  - :ref:`pjconf_json` の設定(管理サイト用)
+  
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins/pjconf_manage.json (標準のpjconf.jsonファイルをコピーする)
+    
+    プロジェクトルートおよび各プロジェクトのフォルダを設定する。
+    
+    ================================ ============================= =============================================================================================
+    設定項目                         設定値                        備考
+    ================================ ============================= =============================================================================================
+    pathSettings/projectRootPath     "../.."                       コマンドの起動フォルダはweb_project/ui_plugins/binとなるため、そこからの相対パス
+    pathSettings/webProjectPath      "web_manage/src/main/webapp"
+    pathSettings/demoProjectPath     "ui_demo_manage"              業務画面は個別で作成するため、外部公開サイトと分ける
+    pathSettings/testProjectPath     "ui_test"                     プラグインは共通のため、UI開発基盤テスト用プロジェクトは外部公開サイト用と共用
+    pathSettings/pluginProjectPath   "ui_plugins"                  プラグインは共通のため、プロジェクト固有UIプラグインは外部公開サイト用と共用
+    ================================ ============================= =============================================================================================
+
+  - :ref:`ui_build` の設定(管理サイト用)
+
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins/bin/ui_build_manage.bat (標準のui_build.batコマンドをコピーする)
+    
+    管理サイト用プロジェクト設定ファイルを設定する。
+    
+    ==================== ========================= =====================================================================================
+    環境変数名           設定値                    備考
+    ==================== ========================= =====================================================================================
+    PROJECT_CONF         "../pjconf_manage.json"   コマンドの起動フォルダはnablarch_plugins_bundle/binとなるため、そこからの相対パス
+    ==================== ========================= =====================================================================================
+
+
+デプロイ対象プロジェクト複数の場合(プラグインも個別)
+-----------------------------------------------------------------
+
+  以下にプロジェクトの構成図および設定例を示す。
+  
+  本構成は外部公開サイトと管理用サイト等、いくつかの画面単位でデプロイ対象プロジェクトを分割する場合で、
+  サイト間で基本的な画面レイアウト等が大きく変化するような場合（適用するUI標準が変化する場合）に使用する。
+  
+  **構成図**
+
+  Nablarch標準UIプラグインがそれぞれ１つ、
+  プロジェクト固有UIプラグイン、UI開発基盤テスト用プロジェクト、UIローカルデモ用プロジェクト、デプロイ対象プロジェクトが外部公開サイト用および管理サイト用でそれぞれ２つずつ配置される。
+  
+    .. image:: ./_image/project_structure3.png
+  
+  
+  **設定例**
+  
+  - :ref:`install` の設定
+  
+    本構成では、以下のファイルとなる。
+    
+      /nablarch_plugins_bundle/bin/install.bat
+    
+    プロジェクトルートおよびプロジェクト固有UIプラグインのフォルダを設定する。
+    
+    ==================== ============================================= =====================================================================================
+    環境変数名           設定値                                        備考
+    ==================== ============================================= =====================================================================================
+    PROJECT_ROOT         "../../web_project"                           コマンドの起動フォルダはnablarch_plugins_bundle/binとなるため、そこからの相対パス
+    UI_PLUGINS_DIRS      "ui_plugins_public,ui_plugins_manage"
+    ==================== ============================================= =====================================================================================
+
+  - :ref:`pjconf_json` の設定(外部公開サイト用)
+  
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins_public/pjconf.json (標準のui_pluginsフォルダ全体をコピーする)
+    
+    プロジェクトルートおよび各プロジェクトのフォルダを設定する。
+    
+    ================================ =============================== =============================================================================================
+    設定項目                         設定値                          備考
+    ================================ =============================== =============================================================================================
+    pathSettings/projectRootPath     "../.."                         コマンドの起動フォルダはweb_project/ui_plugins_public/binとなるため、そこからの相対パス
+    pathSettings/webProjectPath      "web_public/src/main/webapp"
+    pathSettings/demoProjectPath     "ui_demo_public"                業務画面は個別で作成するため、管理サイトと分ける
+    pathSettings/testProjectPath     "ui_test_public"                プラグインも個別のため、UI開発基盤テスト用プロジェクトも管理サイトと分ける
+    pathSettings/pluginProjectPath   "ui_plugins_public"             プラグインも個別のため、プロジェクト固有UIプラグインも管理サイトと分ける
+    ================================ =============================== =============================================================================================
+
+  - :ref:`pjconf_json` の設定(管理サイト用)
+  
+    本構成では、以下のファイルとなる。
+    
+      /web_project/ui_plugins_manage/pjconf.json (標準のui_pluginsフォルダ全体をコピーする)
+    
+    プロジェクトルートおよび各プロジェクトのフォルダを設定する。
+    
+    ================================ ================================ =============================================================================================
+    設定項目                         設定値                           備考
+    ================================ ================================ =============================================================================================
+    pathSettings/projectRootPath     "../.."                          コマンドの起動フォルダはweb_project/ui_plugins_manage/binとなるため、そこからの相対パス
+    pathSettings/webProjectPath      "web_manage/src/main/webapp"
+    pathSettings/demoProjectPath     "ui_demo_manage"                 業務画面は個別で作成するため、外部公開サイトと分ける
+    pathSettings/testProjectPath     "ui_test_manage"                 プラグインも個別のため、UI開発基盤テスト用プロジェクトも外部公開サイトと分ける
+    pathSettings/pluginProjectPath   "ui_plugins_manage"              プラグインも個別のため、プロジェクト固有UIプラグインも外部公開サイトと分ける
+    ================================ ================================ =============================================================================================
+
+
+.. _config-command-detail:
+
+-----------------------------------------------------------
+プラグインビルドで使用するコマンドや設定ファイルの詳細仕様
+-----------------------------------------------------------
+
+以降はプラグインビルドで使用するコマンドや設定ファイルについての詳細として、以下の項目について記述する。
+
+- :ref:`config-file`
+- :ref:`generate-file`
+- :ref:`build-file`
+- :ref:`build-command`
+
+
+.. _config-file:
+
+-------------------------------
+設定ファイル
+-------------------------------
+
+以下にプラグインビルドコマンドで使用する設定ファイルを示す。
+
+======================================== ============================== ====================================================================
+ファイル名                               実ファイル名                   ファイル概要
+======================================== ============================== ====================================================================
+:ref:`pjconf_json`                       pjconf.json                    環境毎のファイル展開設定ファイル。
+
+:ref:`lessImport_less`                   ${cssMode}.less                表示モードごとにインポートするファイルの定義。
+======================================== ============================== ====================================================================
+
+
+.. _pjconf_json:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-plugin_build--s1",
+  "title": "プラグインビルドコマンド仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/plugin_build.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "プラグインビルドコマンド",
+        "プロジェクト構成",
+        "コマンド仕様",
+        "設定ファイル詳細"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "想定されるプロジェクト構成ごとの設定例",
+      "hints": [
+        "プロジェクト構成",
+        "設定例",
+        "プラグインビルド",
+        "pjconf.json",
+        "install.bat"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "デプロイ対象プロジェクトが１つの場合",
+      "hints": [
+        "デプロイ対象プロジェクト単一",
+        "プラグイン共通",
+        "install.bat",
+        "pjconf.json",
+        "PROJECT_ROOT",
+        "UI_PLUGINS_DIRS",
+        "pathSettings"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "デプロイ対象プロジェクト複数の場合(プラグインは共通)",
+      "hints": [
+        "デプロイ対象プロジェクト複数",
+        "プラグイン共通",
+        "pjconf_public.json",
+        "pjconf_manage.json",
+        "ui_build_public.bat",
+        "ui_build_manage.bat",
+        "PROJECT_CONF",
+        "外部公開サイト",
+        "管理サイト"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "デプロイ対象プロジェクト複数の場合(プラグインも個別)",
+      "hints": [
+        "デプロイ対象プロジェクト複数",
+        "プラグイン個別",
+        "ui_plugins_public",
+        "ui_plugins_manage",
+        "UI_PLUGINS_DIRS",
+        "外部公開サイト",
+        "管理サイト",
+        "UI標準異なる"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "プラグインビルドで使用するコマンドや設定ファイルの詳細仕様",
+      "hints": [
+        "コマンド仕様",
+        "設定ファイル",
+        "生成ファイル",
+        "ビルドファイル",
+        "ビルドコマンド",
+        "config-file",
+        "build-command"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "設定ファイル",
+      "hints": [
+        "pjconf.json",
+        "lessImport.less",
+        "設定ファイル一覧",
+        "ファイル展開設定",
+        "cssMode",
+        "表示モード"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "プラグインビルドコマンドの仕様として :ref:`project-structure` および :ref:`config-command-detail` を説明する。プロジェクトの標準的な構成については :doc:`structure/directory_layout`、開発時のフローについては :doc:`development_environment/initial_setup` を参照。",
+    "s2": "想定されるプロジェクト構成ごとのプラグインビルドコマンド設定例。設定例に示していない項目については :ref:`config-file` や :ref:`build-command` を参照し、必要に応じて修正すること。",
+    "s3": "全ての画面で共通のプラグインを使用する場合のプロジェクト構成。Nablarch標準UIプラグイン、プロジェクト固有UIプラグイン、UIローカルデモ用プロジェクト、UI開発基盤テスト用プロジェクト、デプロイ対象プロジェクトがそれぞれ１つずつ配置される。\n\n## :ref:`install` の設定\n\nファイル: `/nablarch_plugins_bundle/bin/install.bat`\n\n| 環境変数名 | 設定値 | 備考 |\n|---|---|---|\n| PROJECT_ROOT | \"../../web_project\" | コマンド起動フォルダ(nablarch_plugins_bundle/bin)からの相対パス |\n| UI_PLUGINS_DIRS | \"ui_plugins\" | |\n\n## :ref:`pjconf_json` の設定\n\nファイル: `/web_project/ui_plugins/pjconf.json`\n\n| 設定項目 | 設定値 | 備考 |\n|---|---|---|\n| pathSettings/projectRootPath | \"../..\" | コマンド起動フォルダ(web_project/ui_plugins/bin)からの相対パス |\n| pathSettings/webProjectPath | \"web/src/main/webapp\" | |\n| pathSettings/demoProjectPath | \"ui_demo\" | |\n| pathSettings/testProjectPath | \"ui_test\" | |\n| pathSettings/pluginProjectPath | \"ui_plugins\" | |",
+    "s4": "複数のデプロイ対象プロジェクトを分割するが、サイト間で基本的な画面レイアウトが大きく変化しない場合（同一のUI標準を適用する場合）の構成。Nablarch標準UIプラグイン・プロジェクト固有UIプラグイン・UI開発基盤テスト用プロジェクトはそれぞれ１つ、UIローカルデモ用・デプロイ対象プロジェクトは外部公開サイト用および管理サイト用にそれぞれ２つ配置される。\n\n## :ref:`install` の設定\n\nファイル: `/nablarch_plugins_bundle/bin/install.bat`\n\n| 環境変数名 | 設定値 | 備考 |\n|---|---|---|\n| PROJECT_ROOT | \"../../web_project\" | コマンド起動フォルダ(nablarch_plugins_bundle/bin)からの相対パス |\n| UI_PLUGINS_DIRS | \"ui_plugins\" | |\n\n## :ref:`pjconf_json` の設定（外部公開サイト用）\n\nファイル: `/web_project/ui_plugins/pjconf_public.json`（標準のpjconf.jsonをコピー）\n\n| 設定項目 | 設定値 | 備考 |\n|---|---|---|\n| pathSettings/projectRootPath | \"../..\" | コマンド起動フォルダ(web_project/ui_plugins/bin)からの相対パス |\n| pathSettings/webProjectPath | \"web_public/src/main/webapp\" | |\n| pathSettings/demoProjectPath | \"ui_demo_public\" | 業務画面は個別作成のため管理サイトと分ける |\n| pathSettings/testProjectPath | \"ui_test\" | プラグイン共通のため管理サイト用と共用 |\n| pathSettings/pluginProjectPath | \"ui_plugins\" | プラグイン共通のため管理サイト用と共用 |\n\n## :ref:`ui_build` の設定（外部公開サイト用）\n\nファイル: `/web_project/ui_plugins/bin/ui_build_public.bat`（標準のui_build.batをコピー）\n\n| 環境変数名 | 設定値 | 備考 |\n|---|---|---|\n| PROJECT_CONF | \"../pjconf_public.json\" | コマンド起動フォルダ(nablarch_plugins_bundle/bin)からの相対パス |\n\n## :ref:`pjconf_json` の設定（管理サイト用）\n\nファイル: `/web_project/ui_plugins/pjconf_manage.json`（標準のpjconf.jsonをコピー）\n\n| 設定項目 | 設定値 | 備考 |\n|---|---|---|\n| pathSettings/projectRootPath | \"../..\" | コマンド起動フォルダ(web_project/ui_plugins/bin)からの相対パス |\n| pathSettings/webProjectPath | \"web_manage/src/main/webapp\" | |\n| pathSettings/demoProjectPath | \"ui_demo_manage\" | 業務画面は個別作成のため外部公開サイトと分ける |\n| pathSettings/testProjectPath | \"ui_test\" | プラグイン共通のため外部公開サイト用と共用 |\n| pathSettings/pluginProjectPath | \"ui_plugins\" | プラグイン共通のため外部公開サイト用と共用 |\n\n## :ref:`ui_build` の設定（管理サイト用）\n\nファイル: `/web_project/ui_plugins/bin/ui_build_manage.bat`（標準のui_build.batをコピー）\n\n| 環境変数名 | 設定値 | 備考 |\n|---|---|---|\n| PROJECT_CONF | \"../pjconf_manage.json\" | コマンド起動フォルダ(nablarch_plugins_bundle/bin)からの相対パス |",
+    "s5": "複数のデプロイ対象プロジェクトを分割し、サイト間で基本的な画面レイアウトが大きく変化する場合（適用するUI標準が変化する場合）の構成。Nablarch標準UIプラグインは１つ、プロジェクト固有UIプラグイン・UI開発基盤テスト用プロジェクト・UIローカルデモ用プロジェクト・デプロイ対象プロジェクトは外部公開サイト用および管理サイト用にそれぞれ２つ配置される。\n\n## :ref:`install` の設定\n\nファイル: `/nablarch_plugins_bundle/bin/install.bat`\n\n| 環境変数名 | 設定値 | 備考 |\n|---|---|---|\n| PROJECT_ROOT | \"../../web_project\" | コマンド起動フォルダ(nablarch_plugins_bundle/bin)からの相対パス |\n| UI_PLUGINS_DIRS | \"ui_plugins_public,ui_plugins_manage\" | 複数プラグインディレクトリをカンマ区切りで指定 |\n\n## :ref:`pjconf_json` の設定（外部公開サイト用）\n\nファイル: `/web_project/ui_plugins_public/pjconf.json`（標準のui_pluginsフォルダ全体をコピー）\n\n| 設定項目 | 設定値 | 備考 |\n|---|---|---|\n| pathSettings/projectRootPath | \"../..\" | コマンド起動フォルダ(web_project/ui_plugins_public/bin)からの相対パス |\n| pathSettings/webProjectPath | \"web_public/src/main/webapp\" | |\n| pathSettings/demoProjectPath | \"ui_demo_public\" | 業務画面は個別作成のため管理サイトと分ける |\n| pathSettings/testProjectPath | \"ui_test_public\" | プラグイン個別のため管理サイトと分ける |\n| pathSettings/pluginProjectPath | \"ui_plugins_public\" | プラグイン個別のため管理サイトと分ける |\n\n## :ref:`pjconf_json` の設定（管理サイト用）\n\nファイル: `/web_project/ui_plugins_manage/pjconf.json`（標準のui_pluginsフォルダ全体をコピー）\n\n| 設定項目 | 設定値 | 備考 |\n|---|---|---|\n| pathSettings/projectRootPath | \"../..\" | コマンド起動フォルダ(web_project/ui_plugins_manage/bin)からの相対パス |\n| pathSettings/webProjectPath | \"web_manage/src/main/webapp\" | |\n| pathSettings/demoProjectPath | \"ui_demo_manage\" | 業務画面は個別作成のため外部公開サイトと分ける |\n| pathSettings/testProjectPath | \"ui_test_manage\" | プラグイン個別のため外部公開サイトと分ける |\n| pathSettings/pluginProjectPath | \"ui_plugins_manage\" | プラグイン個別のため外部公開サイトと分ける |",
+    "s6": "プラグインビルドで使用するコマンドや設定ファイルの詳細仕様として以下を説明する:\n\n- :ref:`config-file` - 設定ファイル\n- :ref:`generate-file` - 生成ファイル\n- :ref:`build-file` - ビルドファイル\n- :ref:`build-command` - ビルドコマンド",
+    "s7": "プラグインビルドコマンドで使用する設定ファイル一覧:\n\n| ファイル名 | 実ファイル名 | 概要 |\n|---|---|---|\n| :ref:`pjconf_json` | pjconf.json | 環境毎のファイル展開設定ファイル |\n| :ref:`lessImport_less` | ${cssMode}.less | 表示モードごとにインポートするファイルの定義 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

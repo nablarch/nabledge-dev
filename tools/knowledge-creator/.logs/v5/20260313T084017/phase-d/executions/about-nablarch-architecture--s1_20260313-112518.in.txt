@@ -1,0 +1,281 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/nablarch/architecture.rst`
+- Format: `rst`
+
+```
+.. _nablarch_architecture:
+
+アーキテクチャ
+============================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+Nablarchアプリケーションフレームワークのアーキテクチャについて解説する。
+
+.. warning::
+  本項で解説するアーキテクチャは、\ :ref:`jsr352_batch`\ には該当しない（詳細については、\ :ref:`jsr352_batch`\ の\ :ref:`jsr352_architecture`\ を参照）。
+
+
+Nablarchアプリケーションフレームワークの主な構成要素
+------------------------------------------------------------
+Nablarchアプリケーションフレームワークの主な構成要素を以下に示す。
+
+.. image:: images/fw-design.png
+  :scale: 80
+
+.. _nablarch_architecture-handler_queue:
+
+ハンドラキュー(handler queue)
+------------------------------------------------------------
+ハンドラキューとは、リクエストやレスポンスに対する横断的な処理を行うハンドラ群を予め定められた順序に沿って定義したキューを指す。
+
+ハンドラキューは、以下図のようにサーブレットフィルタのチェーン実行と同じように処理を実行する。
+
+.. image:: images/handlers.png
+  :scale: 90
+
+.. _nablarch_architecture-handler_responsibility:
+
+ハンドラでは主に以下の様な処理を行う。
+
+ * リクエストのフィルタリング(アクセス権限のあるリクエストのみ受け付ける処理など)
+ * リクエスト、レスポンスの変換
+ * リソースの取得・解放(データベース接続の取得・開放など)
+
+.. tip::
+
+  リクエストやレスポンスに対する処理や、共通で行うような処理はプロジェクト側でハンドラを実装して対応すること。
+
+  業務ロジックを実装するクラスの親クラスで共通処理を実装するようなケースを多く見かけるが、
+  個別のハンドラとして実装することを推奨する。
+  (個別のハンドラの前後に処理を追加したい場合には :ref:`nablarch_architecture-interceptor` を使用することを推奨する。)
+
+  個別のハンドラで実装した場合
+    個々のハンドラの責務が明確になるため、テストが容易であり保守性が高くなる。
+    また、ハンドラ毎処理が独立しているため、共通処理の抜き差しが容易に出来る。
+
+  親クラスに共通処理を実装した場合
+    共通処理が増えた場合に親クラスが肥大化し複数の責務を持つことになる。
+    これは、メンテナンス時のコストが増大するだけではなく、テストも複雑になり不具合の温床ともなる。
+    本来継承すべきクラスを正しく継承をしなかった場合でも、共通処理の内容によっては異常終了とならずに処理が実行出来るため、
+    不具合を検知しづらい問題もある。
+
+Nablarchは受け取ったリクエストに対し、ハンドラキュー上に定義されたハンドラを先頭から順に処理を実行する。
+リクエストに対するハンドラの処理内でレスポンスが返却された場合、レスポンスに対しこれまでに実行されたハンドラを逆順に実行する。
+
+ハンドラは、前後関係を意識してハンドラキューに設定しないと正常に動作しないものがある。
+ハンドラの制約等(前後関係など)は、各ハンドラの章で説明するので、ハンドラキューを構築する際には各ハンドラのドキュメントを参照すること。
+
+
+.. _nablarch_architecture-interceptor:
+
+インターセプタ(interceptor)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+インターセプタとは、実行時に動的にハンドラキューに追加されるハンドラのことを指す。
+
+例えば、特定のリクエストの場合のみ処理（ハンドラ）を追加する場合や、
+リクエストごとに設定値を切り替えて処理(ハンドラ)を実行したい場合にはハンドラよりもインターセプタが適している。
+
+.. tip::
+  インターセプタは、Java EEのCDI(JSR-346)で定義されているインターセプタと同じように処理を実行する。
+
+.. important::
+  インターセプタの実行順序は、設定ファイルに設定する必要がある。
+  設定がない場合、インターセプタの実行順はJVM依存となるため注意すること。
+
+  Nablarchがデフォルトで提供するインターセプタの実行順は、以下のとおり設定する必要がある。
+
+  #. :java:extdoc:`nablarch.common.web.token.OnDoubleSubmission`
+  #. :java:extdoc:`nablarch.common.web.token.UseToken`
+  #. :java:extdoc:`nablarch.fw.web.interceptor.OnErrors`
+  #. :java:extdoc:`nablarch.fw.web.interceptor.OnError`
+  #. :java:extdoc:`nablarch.common.web.interceptor.InjectForm`
+
+  インターセプタの実行順設定に関する詳細は、\ :java:extdoc:`nablarch.fw.Interceptor.Factory`\ を参照。
+
+ライブラリ(library)
+--------------------------------------------------
+ライブラリとは、データベースアクセスやファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群のことを指す。
+
+Nablarchアプリケーションフレームワークが提供するライブラリは、 :ref:`library` を参照。
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-architecture--s1`
+
+```json
+{
+  "id": "about-nablarch-architecture--s1",
+  "title": "アーキテクチャ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/nablarch/architecture.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/OnDoubleSubmission.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/UseToken.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/interceptor/OnErrors.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/interceptor/OnError.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/interceptor/InjectForm.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Interceptor.Factory.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchアプリケーションフレームワークの主な構成要素",
+      "hints": [
+        "Nablarchアプリケーションフレームワーク",
+        "アーキテクチャ",
+        "構成要素",
+        "フレームワーク概要",
+        "jsr352_batch",
+        "JSR352",
+        "適用範囲",
+        "スコープ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラキュー(handler queue)",
+      "hints": [
+        "ハンドラキュー",
+        "handler queue",
+        "ハンドラ",
+        "インターセプタ",
+        "interceptor",
+        "CDI",
+        "JSR-346",
+        "OnDoubleSubmission",
+        "UseToken",
+        "OnErrors",
+        "OnError",
+        "InjectForm",
+        "Interceptor.Factory",
+        "横断的処理",
+        "リクエスト処理",
+        "レスポンス処理",
+        "ハンドラ実行順序"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ライブラリ(library)",
+      "hints": [
+        "ライブラリ",
+        "library",
+        "データベースアクセス",
+        "ファイルアクセス",
+        "ログ出力",
+        "コンポーネント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **警告**: 本項で解説するアーキテクチャは、JSR352バッチ（jsr352_batch）には該当しない。JSR352バッチのアーキテクチャについては、jsr352_batchのjsr352_architectureを参照。\n\n![Nablarchアプリケーションフレームワークの主な構成要素](assets/about-nablarch-architecture--s1/fw-design.png)",
+    "s2": "ハンドラキューとは、リクエスト/レスポンスへの横断的処理を行うハンドラ群を定められた順序で定義したキュー。サーブレットフィルタのチェーン実行と同様に処理を実行する。\n\n![ハンドラキューの処理フロー](assets/about-nablarch-architecture--s1/handlers.png)\n\nハンドラでの主な処理:\n- リクエストのフィルタリング（アクセス権限のあるリクエストのみ受け付けるなど）\n- リクエスト/レスポンスの変換\n- リソースの取得・解放（DB接続の取得・解放など）\n\n処理フロー:\n1. ハンドラキュー上のハンドラを先頭から順に実行\n2. レスポンス返却時は、これまでに実行されたハンドラを逆順に実行\n\n> **警告**: ハンドラは前後関係を意識してハンドラキューに設定しないと正常に動作しないものがある。各ハンドラのドキュメントを参照してハンドラキューを構築すること。\n\n> **補足**: リクエスト/レスポンス処理や共通処理は、親クラスではなく個別ハンドラとして実装することを推奨。\n> - **個別ハンドラ実装**: 各ハンドラの責務が明確でテスト容易・保守性高。共通処理の抜き差しも容易。\n> - **親クラスへの共通処理実装**: 処理増加で親クラスが肥大化し複数責務を持つことになる。メンテコスト増大・テスト複雑化・不具合検知困難の問題がある。本来継承すべきクラスを継承しなかった場合でも、共通処理の内容によっては異常終了とならずに処理が実行されるため不具合を検知しづらい。\n\n## インターセプタ(interceptor)\n\nインターセプタとは、実行時に動的にハンドラキューに追加されるハンドラ。特定リクエストのみ処理（ハンドラ）を追加する場合や、リクエストごとに設定値を切り替えて処理を実行したい場合は、ハンドラよりインターセプタが適している。\n\n> **補足**: インターセプタは、Java EEのCDI（JSR-346）で定義されているインターセプタと同じように処理を実行する。\n\n> **重要**: インターセプタの実行順序は設定ファイルへの設定が必要。設定がない場合、実行順はJVM依存となる。Nablarchがデフォルトで提供するインターセプタの実行順は以下の順序で設定する必要がある:\n> 1. :java:extdoc:`nablarch.common.web.token.OnDoubleSubmission`\n> 2. :java:extdoc:`nablarch.common.web.token.UseToken`\n> 3. :java:extdoc:`nablarch.fw.web.interceptor.OnErrors`\n> 4. :java:extdoc:`nablarch.fw.web.interceptor.OnError`\n> 5. :java:extdoc:`nablarch.common.web.interceptor.InjectForm`\n>\n> 実行順設定の詳細は :java:extdoc:`nablarch.fw.Interceptor.Factory` を参照。",
+    "s3": "ライブラリとは、データベースアクセス、ファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群。\n\nNablarchアプリケーションフレームワークが提供するライブラリは :ref:`library` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

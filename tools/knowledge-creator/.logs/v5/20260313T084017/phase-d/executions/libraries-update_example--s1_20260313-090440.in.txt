@@ -1,0 +1,238 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/session_store/update_example.rst`
+- Format: `rst`
+
+```
+更新機能での実装例
+=====================================================================
+
+入力画面の初期表示
+---------------------------------------------------------------------
+.. code-block:: java
+
+  // ブラウザを直接閉じた場合などにセッションが残っている場合があるので削除
+  SessionUtil.delete(ctx, "project");
+
+  // 更新対象データの取得処理は省略
+
+  // 更新対象データをセッションストアに保存
+  SessionUtil.put(ctx, "project", project);
+
+  // EntityからFormへ変換
+  ProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);
+
+  // 更新対象データをリクエストスコープに設定
+  context.setRequestScopedVar("form", form);
+
+入力画面から確認画面へ遷移
+---------------------------------------------------------------------
+.. code-block:: java
+
+  // リクエストスコープから入力情報を取得
+  ProjectForm form = context.getRequestScopedVar("form");
+
+  // 更新対象データをセッションストアから取得
+  Project project = SessionUtil.get(context, "project");
+
+  // 入力情報を更新対象データに上書き
+  BeanUtil.copy(form, project);
+
+確認画面から入力画面へ戻る
+---------------------------------------------------------------------
+.. code-block:: java
+
+  // セッションストアから更新対象データを取得
+  Project project = SessionUtil.get(ctx, "project");
+
+  // EntityからFormへ変換
+  ProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);
+
+  // 更新対象データをリクエストスコープに設定
+  context.setRequestScopedVar("form", form);
+
+更新処理を実行
+---------------------------------------------------------------------
+.. code-block:: java
+
+  // セッションストアから更新対象データを取得
+  Project project = SessionUtil.get(ctx, "project");
+
+  // 更新処理は省略
+
+  // セッションストアから更新対象データを削除
+  SessionUtil.delete(ctx, "project");
+```
+
+## Knowledge File
+
+- ID: `libraries-update_example--s1`
+
+```json
+{
+  "id": "libraries-update_example--s1",
+  "title": "更新機能での実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/session_store/update_example.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力画面の初期表示",
+      "hints": [
+        "SessionUtil",
+        "BeanUtil",
+        "ProjectForm",
+        "セッションストア初期表示",
+        "更新画面初期化",
+        "セッション削除",
+        "SessionUtil.delete",
+        "SessionUtil.put",
+        "BeanUtil.createAndCopy"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "入力画面から確認画面へ遷移",
+      "hints": [
+        "SessionUtil",
+        "BeanUtil",
+        "ProjectForm",
+        "入力画面確認画面遷移",
+        "セッションストアデータ取得",
+        "SessionUtil.get",
+        "BeanUtil.copy"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "確認画面から入力画面へ戻る",
+      "hints": [
+        "SessionUtil",
+        "BeanUtil",
+        "ProjectForm",
+        "確認画面戻る処理",
+        "セッションストアデータ取得",
+        "SessionUtil.get",
+        "BeanUtil.createAndCopy"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "更新処理を実行",
+      "hints": [
+        "SessionUtil",
+        "セッションストア削除",
+        "更新処理後セッションクリア",
+        "SessionUtil.get",
+        "SessionUtil.delete"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 入力画面の初期表示\n\nブラウザを直接閉じた場合などにセッションが残っている場合があるので、初期表示時に既存セッションを削除してから新たに保存する。\n\n```java\n// ブラウザを直接閉じた場合などにセッションが残っている場合があるので削除\nSessionUtil.delete(ctx, \"project\");\n\n// 更新対象データをセッションストアに保存\nSessionUtil.put(ctx, \"project\", project);\n\n// EntityからFormへ変換\nProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);\n\n// 更新対象データをリクエストスコープに設定\ncontext.setRequestScopedVar(\"form\", form);\n```",
+    "s2": "## 入力画面から確認画面へ遷移\n\nリクエストスコープから入力情報を取得し、セッションストアの更新対象データに上書きする。\n\n```java\n// リクエストスコープから入力情報を取得\nProjectForm form = context.getRequestScopedVar(\"form\");\n\n// 更新対象データをセッションストアから取得\nProject project = SessionUtil.get(context, \"project\");\n\n// 入力情報を更新対象データに上書き\nBeanUtil.copy(form, project);\n```",
+    "s3": "## 確認画面から入力画面へ戻る\n\nセッションストアから更新対象データを取得し、Formに変換してリクエストスコープに設定する。\n\n```java\n// セッションストアから更新対象データを取得\nProject project = SessionUtil.get(ctx, \"project\");\n\n// EntityからFormへ変換\nProjectForm form = BeanUtil.createAndCopy(ProjectForm.class, project);\n\n// 更新対象データをリクエストスコープに設定\ncontext.setRequestScopedVar(\"form\", form);\n```",
+    "s4": "## 更新処理を実行\n\n更新処理完了後、セッションストアから更新対象データを削除する。\n\n```java\n// セッションストアから更新対象データを取得\nProject project = SessionUtil.get(ctx, \"project\");\n\n// 更新処理は省略\n\n// セッションストアから更新対象データを削除\nSessionUtil.delete(ctx, \"project\");\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,61 @@
+{
+  "id": "testing-framework-04_MasterDataRestore--s1",
+  "title": "マスタデータ復旧機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/04_MasterDataRestore.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バックアップ用スキーマの作成、データ投入",
+      "hints": [
+        "マスタデータ復旧",
+        "バックアップスキーマ作成",
+        "テストデータ投入",
+        "復旧対象テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "外部キーが設定されたテーブルを使用する場合について",
+      "hints": [
+        "外部キー",
+        "親子関係",
+        "slow test",
+        "nablarch.suppress-table-sort",
+        "テーブルソート無効化"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "コンポーネント設定ファイルに監視対象テーブルを記載",
+      "hints": [
+        "MasterDataRestorer",
+        "nablarch.test.core.db.MasterDataRestorer",
+        "backupSchema",
+        "tablesTobeWatched",
+        "testEventListeners",
+        "監視対象テーブル設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ログ出力設定",
+      "hints": [
+        "SQLログ設定",
+        "MasterDataRestorer$SqlLogWatchingFormatter",
+        "NopLogWriter",
+        "nablarch.test.core.log.NopLogWriter",
+        "sqlLogFormatter",
+        "デバッグログ設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "バックアップ用スキーマに自動テスト用スキーマと同じテーブルを作成し、復旧用データを投入する。\n\n> **補足**: バックアップ用スキーマには全テーブルを作成する必要はない。復旧対象テーブルのみ存在すればよい（復旧対象外テーブルがあっても問題ない）。",
+    "s2": "デフォルトの動作: JDBCの機能で親子関係を取得・構築し、削除処理は子テーブルから、挿入処理は親テーブルから順に行う。\n\nテーブル数が膨大なプロジェクトでは、JDBCによる親子関係構築処理でslow test問題が発生する場合がある。\n\n記述順（:ref:`MasterDataRestore-configuration` 参照）でのテーブル削除・挿入処理を行う場合は、環境設定ファイルに以下を追加する:\n\n```jproperties\nnablarch.suppress-table-sort=true\n```",
+    "s3": "**クラス**: `nablarch.test.core.db.MasterDataRestorer`\n\n| 設定項目名 | 説明 | デフォルト値 |\n|---|---|---|\n| backupSchema | マスタデータ復旧用スキーマ名を記載する。 | なし |\n| tablesTobeWatched | 監視対象とするテーブル名をリスト形式で列挙する。 | なし |\n| testEventListeners | テストイベントリスナーの一覧。`nablarch.test.core.db.MasterDataRestorer` を登録するとテストメソッド終了時にマスタデータが復旧される。 | なし |\n\n```xml\n<component name=\"masterDataRestorer\"\n           class=\"nablarch.test.core.db.MasterDataRestorer\">\n  <property name=\"backupSchema\" value=\"nablarch_test_master\"/>\n  <property name=\"tablesTobeWatched\">\n    <list>\n      <value>MESSAGE</value>\n      <value>ID_GENERATE</value>\n      <value>BUSINESS_DATE</value>\n      <value>PERMISSION_UNIT</value>\n      <value>REQUEST</value>\n      <value>PERMISSION_UNIT_REQUEST</value>\n    </list>\n  </property>\n</component>\n```",
+    "s4": "SQLログを監視してマスタデータへの変更を検出するため、SQLログのデバッグレベル以上での出力が必要。\n\n**app-log.properties**: `sqlLogFormatter.className` に本機能提供クラスを指定する。\n\n```\nsqlLogFormatter.className=nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter\n```\n\n**log.properties**: SQLログをDEBUGレベル以上で出力するよう設定する。\n\n```\nloggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory\nwriterNames=stdout,nop\nwriter.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter\nwriter.nop.className=nablarch.test.core.log.NopLogWriter\n\navailableLoggersNamesOrder=sql,root\n\nloggers.root.nameRegex=.*\nloggers.root.level=DEBUG\nloggers.root.writerNames=stdout\n\nloggers.sql.nameRegex=SQL\nloggers.sql.level=DEBUG\nloggers.sql.writerNames=nop\n```"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-http_access_log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — app-log.properties コードブロック冒頭コメント",
+      "description": "ソースの `# HttpAccessLogFormatter` というコメントが、知識ファイルでは `# 設定可能プロパティ（デフォルト値はコメントアウト）` に書き換えられている。この説明文はソースに存在しない。",
+      "source_evidence": "ソース: `# HttpAccessLogFormatter` / 知識ファイル: `# 設定可能プロパティ（デフォルト値はコメントアウト）`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "log.properties のコード例に含まれる PascalCase クラス名 `FileLogWriter` と `BasicLogFormatter` がヒントに含まれていない。",
+      "source_evidence": "ソースコード例: `writer.appLog.className=nablarch.core.log.basic.FileLogWriter` / `writer.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter`"
+    }
+  ]
+}

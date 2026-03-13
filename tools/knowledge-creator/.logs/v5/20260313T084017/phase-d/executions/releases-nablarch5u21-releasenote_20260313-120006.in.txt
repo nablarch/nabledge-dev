@@ -1,0 +1,445 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/releases/nablarch5u21-releasenote.xlsx`
+- Format: `xlsx`
+
+```
+## 5u21
+
+| ■Nablarch 5u21 リリースノート |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5u20からの変更点を記載しています。 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| コンテンツ |  | No. | 分類 | リリース
+区分 | タイトル | 概要 | 修正後のバージョン
+（※1） | 不具合の起因バージョン
+（※2） |  | システムへの
+影響の可能性
+（※3） | システムへの影響の可能性の内容と対処 | 参照先 | JIRA issue
+(※4) |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  | モジュール | Nablarch |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| アプリケーションフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 1 | ログ出力 | 新規 | JSONログ出力機能の追加 | Nablarchが出力するログのフォーマットを、JSON形式にできるようになりました。
+
+従来のログ形式では、ログ解析ツール(Elasticsearch+Kibanaなど)にログを連携する際に、テキストのパースが必要でした。
+ログがJSON形式で出力されることでパースが不要になり、ログ解析ツールとの連携が容易にできるようになります。
+ | nablarch-core 1.6.0
+nablarch-core-applog 1.3.0
+nablarch-core-jdbc 1.5.0
+nablarch-fw-messaging 1.2.0
+nablarch-fw-standalone 1.5.0
+nablarch-fw-web 1.10.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/log.html#json | NAB-392 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 2 | メール送信 | 変更 | メール送信機能の改善 | Nablarchのメール送信機能として提供されている以下の機能を同時に使用できるように改善しました。
+
+・メール送信のマルチプロセス化（以下、マルチプロセス化）
+・メール送信パターンIDを使った未送信データの抽出
+
+これまでは、これらの機能を同時に使用すると、マルチプロセス化の機能が、メール送信パターンIDを無視して悲観ロックを行ってしまうため、タイミングによっては一部のメールが送信されなくなることがありました。
+マルチプロセス化した場合でもメール送信パターンIDを使って未送信データを抽出できるよう改善しました。
+ | nablarch-mail-sender 1.4.2 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/mail.html | NAB-438 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 3 | ウェブアプリケーション | 変更 | Nablarchサーブレットコンテキスト初期化リスナの初期化成否取得メソッドの追加 | Nablarchサーブレットコンテキスト初期化リスナの初期化成否を後続処理で取得できるメソッドを追加しました。
+
+Nablarchサーブレットコンテキスト初期化リスナで処理が失敗していた場合、後続のサーブレットコンテキストリスナはシステムリポジトリを利用できません。後続のリスナではシステムリポジトリを利用する処理が必ず失敗することになります。その際起動時のログには後続のリスナのエラーも出力され、ログの量が多くなることで根本原因であるシステムリポジトリの初期化失敗を特定することが難しくなるという問題がありました。
+初期化成否を取得できるメソッドを利用することで、後続のリスナは初期化成否を判定して処理をスキップできるようになりました。後続のリスナのエラーを抑制することで、原因調査の負担を下げることができるようになります。
+ | nablarch-fw-web 1.10.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web/feature_details/nablarch_servlet_context_listener.html | NAB-447 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 4 | デフォルト設定 | 変更 | プロパティファイルによるメッセージ管理機能の設定を追加 | メッセージのロードに使用されるPropertiesStringResourceLoaderのコンポーネント定義ファイルmessage-by-property-files.xmlを追加しました。
+
+PropertiesStringResourceLoaderはコンポーネント定義ファイルで明示的な設定がない場合にデフォルトで利用されるクラスです。
+コンポーネント定義ファイルに明示的な設定がない状態でアプリケーションを動作させると、このクラスのデフォルトのロケールには、OSのデフォルトロケールが採用されるため、実行する環境に応じて値が変わり障害の原因になる可能性があります。
+
+今回追加したmessage-by-property-files.xmlをimportすることでこの問題を回避することができます。 | nablarch-main-default-configuration 1.4.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/message.html#message-multi-lang | NAB-445 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 5 | ログ出力 | 変更 | EntityMeta初期化時に発生したエラーをログに出力するように変更 | UniversalDaoの「7.3.2.1.1 SQLを書かなくても単純なCRUDができる」機能では、主キーによる検索・更新・削除を実現するために、主キーの情報をデータベースのメタ情報から取得しています。
+
+主キーの情報を取得する処理で例外が発生した場合、検知した例外情報をログに出力せずに処理を続けていました。
+この状態でUniversalDaoのfindByIdなど、主キー情報が必要な機能を利用すると主キー情報が取得できないという例外が発生します。
+しかし、主キー情報が取得できなかった原因はログからは特定することができません。
+
+障害時の調査が困難だったので、主キーの情報を取得する処理で例外を検知したときは、警告ログとして出力するように変更しました。 | nablarch-common-dao 1.6.0 | - | - | あり | UniversalDaoを使用していて主キー情報の取得に失敗しているが、主キーによる検索・更新・削除を行っていない場合に影響があります。
+主キー情報の取得失敗時にログが出力されるようになるため、アプリケーションの作りによっては性能劣化の可能性があります。またログをモニタリングしている場合は新たな警告が検知される可能性があります。
+主キー情報の取得に失敗することは通常起こり得ないことですのでDB設定のミスなどが考えられます。出力されるようになったログを確認して対応をご検討ください。
+対応が困難で、やむを得ずログを無視したい場合は、以下の設定を行うことで出力を抑制することが可能です。
+・環境設定ファイルに、nablarch.entityMeta.hideCauseExceptionLogというプロパティを定義し値をtrueに設定してください。
+ | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/database/universal_dao.html#sqlcrud | NAB-452 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 6 | セッションストア | 変更 | セッションIDだけを変更するAPIを追加 | SessionUtilにはセッションを破棄するinvalidate()メソッドはありましたが、セッションIDだけを変更するメソッドはありませんでした。
+このため、セッション・フィクセーション対策でログイン時にセッションIDを再採番するときに必ずセッションを破棄する必要がありました。
+その結果、もしログイン前後で維持したいセッション情報があった場合、invalidate()の前後でセッション情報を詰めなおす処理を実装する必要がありました。
+
+今回SessionUtilに追加したchangeId()メソッドを使用すると、セッション情報を維持したままセッションIDだけを変更できるようになります。
+ | nablarch-fw-web 1.10.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/session_store.html#session-store-authentication-data | NAB-451 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 7 | ログ出力 | 変更 | HTTPアクセスログで出力できる項目にセッションストアのIDを追加 | これまでHTTPアクセスログではHTTPセッションのIDしか出力することができませんでした。このため、HTTPセッションを使用しないシステムではセッションレベルのログの追跡が簡単にはできませんでした。
+
+今回、HTTPアクセスログでセッションストアのIDを出力できるように修正を行いました。
+これにより、HTTPセッションを使用しないシステムでもセッションレベルのログの追跡が容易に実現できるようになります。
+ | nablarch-fw-web 1.10.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/log/http_access_log.html | NAB-455 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | 解説書 | 8 | ブランクプロジェクト | 新規 | ブランクプロジェクトを Java 17 で動かす際に必要になる修正手順を追加 | ブランクプロジェクトを Java 17 で動かす際に必要になる修正手順を、解説書に追加しました。
+具体的な手順は、参照先に記載しているURLをご確認ください。 | - | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Java17.html | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 9 | ブランクプロジェクト | 変更 | OracleのJDBCドライバの入手方法の説明を修正 | 以前は、OralceのJDBCドライバはMavenセントラルリポジトリに公開されていなかったため、RDBMSをOracleに変更する場合の手順としてローカルのリポジトリにインストールする手順を記載していました。
+
+現在はOracleのJDBCドライバもセントラルリポジトリで公開されているため、RDBMSを切り替える手順をセントラルリポジトリのJDBCドライバを使用する方法に修正しました。
+ | - | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/CustomizeDB.html#oracle | NAB-433 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 10 | Nablarch SQL Executor | 変更 | セントラルリポジトリのOracleのJDBCドライバを使用するようにdependencyを修正 | No.9と同じように、OracleのJDBCドライバにセントラルリポジトリのJDBCドライバを使うようにdependencyの記述を修正しました。 | - | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html#pom-xml | NAB-433 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | ブランクプロジェクト | 11 | 全ブランクプロジェクト | 変更 | Java 17 に対応 | Java 17 でもビルド・実行できるように、使用しているライブラリやMavenプラグインのバージョンを更新しました。
+なお、Java 17で動かす際にはNo.8の手順を実施する必要があります。 | nablarch-web 5u21
+nablarch-jaxrs 5u21
+nablarch-batch 5u21
+nablarch-batch-ee 5u21
+nablarch-container-web 5u21
+nablarch-container-jaxrs 5u21
+nablarch-container-batch 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/index.html | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 12 | 前提条件 | 変更 | ブランクプロジェクトで使用するMavenの前提バージョンを変更 | ブランクプロジェクトを Java 17 でビルドできるようにするため、 Maven のプラグインを更新しました。
+更新後のプラグインを使用するためには、 Maven のバージョンを更新する必要があります。
+このため、ブランクプロジェクトが前提とする Maven のバージョンを 3.0.5 から 3.6.3 に変更しました。
+ | - | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/beforeFirstStep.html#firststeppreamble | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 13 | Webサービス | 変更 | JAX-RSのバージョンを変更 | JAX-RSのアノテーションを使ったルーティング設定で＠PATCHを使えるよう、javax.ws.rs-apiのバージョンを2.0から2.1.1に変更しました。 | nablarch-jaxrs 5u21
+nablarch-container-jaxrs 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/adaptors/router_adaptor.html#jax-rspath | NAB-448 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 14 | 全ブランクプロジェクト | 変更 | JUnit5を使用するように変更 | 疎通確認で組み込まれているJUnitのテストコードを、JUnit4ベースのものからJUnit5ベースのものに書き換えました。
+また、自動テストフレームワークをJUnit5で使用するための拡張機能を組み込みました。
+
+これにより、プロジェクトを新規作成した段階からすぐにJUnit5でテストコードを書けるようになります。
+ | nablarch-web 5u21
+nablarch-jaxrs 5u21
+nablarch-batch 5u21
+nablarch-batch-ee 5u21
+nablarch-container-web 5u21
+nablarch-container-jaxrs 5u21
+nablarch-container-batch 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html | NAB-442 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 15 | 全ブランクプロジェクト | 変更 | プロパティファイルによるメッセージ管理機能の設定を追加 | ブランクプロジェクトでメッセージをロードする際に設定されるデフォルト言語がOS環境によって変動しないようにNo4で追加した、message-by-property-files.xmlをimportするように変更しました。 | nablarch-web 5u21
+nablarch-jaxrs 5u21
+nablarch-batch 5u21
+nablarch-batch-ee 5u21
+nablarch-container-web 5u21
+nablarch-container-jaxrs 5u21
+nablarch-container-batch 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/_downloads/%E3%83%87%E3%83%95%E3%82%A9%E3%83%AB%E3%83%88%E8%A8%AD%E5%AE%9A%E4%B8%80%E8%A6%A7.xlsx | NAB-445 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| Example |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 16 | JSPとカスタムタグを使用したサンプル | 変更 | Java 17 に対応 | Java 17 でもビルド・実行できるように、使用しているMavenプラグインのバージョンを更新しました。
+なお、Java 17で動かす際にはNo.8の手順を実施する必要があります。 | nablarch-example-web 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web/getting_started/index.html | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 17 | RESTfulウェブサービス | 変更 | Java 17 に対応 | 内容はNo.16と同じです。 | nablarch-example-rest 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web_service/rest/getting_started/index.html | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 18 | Thymeleafを使用したサンプル | 変更 | Java 17 に対応 | 内容はNo.16と同じです。 | nablarch-example-thymeleaf-web 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/application_framework/example/index.html | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 19 | 全Example | 変更 | JUnit5を使用するように変更 | JUnit4で書かれていたテストコードを、JUnit5を用いたものに書き換えました。 | nablarch-example-batch 5u21
+nablarch-example-batch-ee 5u21
+nablarch-example-db-queue 5u21
+nablarch-example-http-messaging 5u21
+nablarch-example-http-messaging-send 5u21
+nablarch-example-mom-delayed-receive 5u21
+nablarch-example-mom-delayed-send 5u21
+nablarch-example-mom-sync-receive 5u21
+nablarch-example-mom-sync-send-batch 5u21
+nablarch-example-mom-testing-common 5u21
+nablarch-example-rest 5u21
+nablarch-example-web 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html | NAB-442 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| ワークフローライブラリ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 20 | Example | 変更 | Java 17 に対応 | Java 17 でもビルド・実行できるように、使用しているMavenプラグインとライブラリのバージョンを更新しました。
+なお、Java 17で動かす際にはNo.8の手順を実施する必要があります。 | nablarch-example-workflow 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/extension_components/workflow/doc/index.html | NAB-437 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| テスティングフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | オブジェクトコード、ソースコード | 21 | 使用不許可APIチェックツール | 変更 | 使用不許可APIチェックツールの分離 | 使用不許可APIチェックツールは静的解析ツールとして単体テストとは別に使用するツールです。テスティングフレームワークの機能とは独立した機能ですが、テスティングフレームワークの一部として配布されていました。
+そのため使用不許可APIチェックツールを改修した場合にテスティングフレームワークの機能に影響がなくともテスティングフレームワークのバージョンアップが必要でした。
+
+この問題に対応するため、テスティングフレームワークと使用不許可APIチェックツールを分離し、使用不許可APIチェックツールを独立したモジュールとしました。 | nablarch-unpublished-api-checker-findbugs 1.0.0 | - | - | あり(開発) | 使用不許可APIチェックツールを利用している場合に影響があります。
+
+EclipseのSpotbugsプラグインやMavenのSpotbugsプラグインに、使用不許可APIチェックツールを設定する箇所でnablarch-testingではなくnablarch-unpublished-api-checker-findbugsを使用するよう修正してください。
+設定の詳細は参照先に記載のページを参照してください。
+※参照先のページではNo.22で作成したSpotBugs 4.X用のモジュールを設定しています。従来通りSpotBugs 3.Xを利用する場合はnablarch-unpublished-api-checker-findbugsに読み替えてください。Mavenで実行する際の設定例は「使用不許可APIチェックツールの設定方法」シートを参照してください。 | https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/unpublished-api/README.md | NAB-435 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 22 | 使用不許可APIチェックツール | 新規 | SpotBugs 4.Xで実行できる使用不許可APIチェックツールの追加 | 従来の使用不許可APIチェックツールはSpotBugs3.Xでは動作しますが、SpotBugs 4.Xでは正しく使用不許可APIを検知することができませんでした。
+SpotBugs 4.Xでも使用不許可APIを検知できるツールを作成しました。 | nablarch-unpublished-api-checker 1.0.0 | - | - | なし | - | https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/unpublished-api/README.md | NAB-436 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 23 | Webサービス用テスティングフレームワーク | 変更 | PATCHメソッドの追加 | 自動テストでHTTPメソッド=PATCHのリクエストを生成できるAPIを追加しました。あわせて任意のHTTPメソッドでリクエストを生成できるAPIを追加しました。
+使用例としてExampleに@PATCHアノテーションによるルーティングとそれに対応する自動テストを追加しました。 | nablarch-testing-rest 1.1.0
+nablarch-example-rest 5u21 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html#rest-test-helper | NAB-448 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 24 | 自動テストフレームワーク | 新規 | JUnit5で使用するための拡張機能を追加 | JUnit5で書かれたテストの中で自動テストフレームワークを使用できるようにするために、拡張機能(nablarch-testing-junit5)を追加しました。
+
+本拡張機能を利用することで、ネストされたテストやパラメータ化テストなどのJUnit5が提供する便利な機能と自動テストフレームワークを組み合わせて利用できるようになります。
+
+なお、本拡張機能を追加しない限りNablarchのバージョンを上げただけでJUnitのバージョンが勝手に4から5に上がるということはありません。既存のJUnit4で書かれたコードは、そのまま実行し続けることができます。 | nablarch-testing-junit5 1.0.0
+nablarch-testing-rest 1.1.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html | NAB-442 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 25 | 自動テストフレームワーク | 変更 | ServletExecutionContextのモッククラスを追加 | ServletExecutionContext は HttpServletRequest などの Servlet API に依存しておりインスタンス生成に手間がかかるため、単体テストで使いづらいという課題がありました。
+
+追加された MockServletExecutionContext は、 Servlet API のインスタンスを用意しなくてもインスタンス化ができます。
+これにより、ServletExecutionContext に依存したハンドラなどの単体テストが、これまでより少ない実装コストで作成できるようになります。 | nablarch-testing 1.4.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/publishedApi/nablarch-testing/publishedApiDoc/architect/nablarch/fw/web/servlet/MockServletExecutionContext.html | NAB-441 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  | 26 | 自動テストフレームワーク | 変更 | Excelファイルに日付のテストデータを記述するときに、時刻の省略ができるように変更 | 自動テストで使用するExcelファイルにテストデータを記述するとき、
+これまではJDBCタイムスタンプエスケープ形式(yyyy-MM-dd HH:mm:ss.SSS)で日時を記述する場合、時刻を省略した日付だけの記述（yyyy-MM-dd）は許容されていませんでした。
+上記形式で記述する場合でも時刻の省略を許容するように変更しました。 | nablarch-testing 1.4.0 | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html#id17 | NAB-450 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  | 解説書 | 27 | 自動テストフレームワーク | 新規 | JUnit 5 で動かすための手順を追加 | 自動テストフレームワークを、Junit 5のJUnit Vintageを使って実行するための手順を追加しました。
+具体的な手順は、参照先に記載しているURLをご確認ください。 | - | - | - | なし | - | https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html#run-ntf-on-junit5-with-vintage-engine | NAB-442 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+
+## バージョンアップ手順
+
+| ■バージョンアップ手順 |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+| 本リリースの適用手順は、次の通りです。 |  |  |  |  |  |
+|  | No | 適用手順 |  |  |  |
+|  | 1 | pom.xmlの<dependencyManagement>セクションに指定されているnablarch-bomのバージョンを5u21に書き換える |  |  |  |
+|  | 2 | mavenのビルドを再実行する |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+|  |  |  |  |  |  |
+
+## 使用不許可APIチェックツールの設定方法
+
+| 使用不許可APIチェックツールの設定方法 |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |  |
+|  | SpotBugs 4.Xを利用する場合 |  | SpotBugs 3.Xを利用する場合 |  |  |  |  |
+|  |  | <plugin> |  | <plugin> |  |  |  |
+|  |  |   <groupId>com.github.spotbugs</groupId> |  |   <groupId>com.github.spotbugs</groupId> |  |  |  |
+|  |  |   <artifactId>spotbugs-maven-plugin</artifactId> |  |   <artifactId>spotbugs-maven-plugin</artifactId> |  |  |  |
+|  |  |   <version>4.5.0.0</version> |  |   <version>3.1.3</version> |  |  |  |
+|  |  |   <dependencies> |  |   <dependencies> |  |  |  |
+|  |  |     <dependency> |  |     <dependency> |  |  |  |
+|  |  |       <groupId>com.github.spotbugs</groupId> |  |       <groupId>com.github.spotbugs</groupId> |  |  |  |
+|  |  |       <artifactId>spotbugs</artifactId> |  |       <artifactId>spotbugs</artifactId> |  |  |  |
+|  |  |       <version>4.5.0</version> |  |       <version>3.1.3</version> |  |  |  |
+|  |  |     </dependency> |  |     </dependency> |  |  |  |
+|  |  |   </dependencies> |  |   </dependencies> |  |  |  |
+|  |  |   <configuration> |  |   <configuration> |  |  |  |
+|  |  |     <xmlOutput>true</xmlOutput> |  |     <xmlOutput>true</xmlOutput> |  |  |  |
+|  |  |     <!-- チェックを除外するフィルターファイル --> |  |     <!-- チェックを除外するフィルターファイル --> |  |  |  |
+|  |  |     <excludeFilterFile>spotbugs/spotbugs_exclude_for_production.xml</excludeFilterFile> |  |     <excludeFilterFile>spotbugs/spotbugs_exclude_for_production.xml</excludeFilterFile> |  |  |  |
+|  |  |     <!-- 使用不許可APIチェックツールの設定ファイル --> |  |     <!-- 使用不許可APIチェックツールの設定ファイル --> |  |  |  |
+|  |  |     <jvmArgs>-Dnablarch-findbugs-config=spotbugs/published-config/production</jvmArgs> |  |     <jvmArgs>-Dnablarch-findbugs-config=spotbugs/published-config/production</jvmArgs> |  |  |  |
+|  |  |     <!-- ヒープサイズが足りない場合は増やすことも可能 --> |  |     <!-- ヒープサイズが足りない場合は増やすことも可能 --> |  |  |  |
+|  |  |     <maxHeap>1024</maxHeap> |  |     <maxHeap>1024</maxHeap> |  |  |  |
+|  |  |     <plugins> |  |     <plugins> |  |  |  |
+|  |  |       <plugin> |  |       <plugin> |  |  |  |
+|  |  |         <groupId>com.nablarch.framework</groupId> |  |         <groupId>com.nablarch.framework</groupId> |  |  |  |
+|  |  |         <artifactId>nablarch-unpublished-api-checker</artifactId> |  |         <artifactId>nablarch-unpublished-api-checker-findbugs</artifactId> |  |  |  |
+|  |  |         <version>1.0.0</version> |  |         <version>1.0.0</version> |  |  |  |
+|  |  |       </plugin> |  |       </plugin> |  |  |  |
+|  |  |     </plugins> |  |     </plugins> |  |  |  |
+|  |  |   </configuration> |  |   </configuration> |  |  |  |
+|  |  | </plugin> |  | </plugin> |  |  |  |
+|  | 解説は以下参照。 |  |  |  |  |  |  |
+|  | https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/spotbugs/docs/Maven-settings.md#spotbugs-maven-plugin%E3%82%92%E7%B5%84%E3%81%BF%E8%BE%BC%E3%82%80 |  |  |  |  |  |  |
+
+```
+
+## Knowledge File
+
+- ID: `releases-nablarch5u21-releasenote`
+
+```json
+{
+  "id": "releases-nablarch5u21-releasenote",
+  "title": "Nablarch 5u21 リリースノート",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/log.html#json",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/mail.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web/feature_details/nablarch_servlet_context_listener.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/message.html#message-multi-lang",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/database/universal_dao.html#sqlcrud",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/session_store.html#session-store-authentication-data",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/log/http_access_log.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Java17.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/CustomizeDB.html#oracle",
+    "https://nablarch.github.io/docs/5u21/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html#pom-xml",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/index.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/beforeFirstStep.html#firststeppreamble",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/adaptors/router_adaptor.html#jax-rspath",
+    "https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html",
+    "https://nablarch.github.io/docs/5u21/doc/_downloads/%E3%83%87%E3%83%95%E3%82%A9%E3%83%AB%E3%83%88%E8%A8%AD%E5%AE%9A%E4%B8%80%E8%A6%A7.xlsx",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web/getting_started/index.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web_service/rest/getting_started/index.html",
+    "https://nablarch.github.io/docs/5u21/doc/application_framework/example/index.html",
+    "https://nablarch.github.io/docs/5u21/doc/extension_components/workflow/doc/index.html",
+    "https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/unpublished-api/README.md",
+    "https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html#rest-test-helper",
+    "https://nablarch.github.io/docs/5u21/publishedApi/nablarch-testing/publishedApiDoc/architect/nablarch/fw/web/servlet/MockServletExecutionContext.html",
+    "https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html#id17",
+    "https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html#run-ntf-on-junit5-with-vintage-engine",
+    "https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/spotbugs/docs/Maven-settings.md#spotbugs-maven-plugin%E3%82%92%E7%B5%84%E3%81%BF%E8%BE%BC%E3%82%80"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アプリケーションフレームワーク変更点（No.1–15）",
+      "hints": [
+        "JSONログ出力",
+        "メール送信マルチプロセス化",
+        "セッションID変更",
+        "HTTPアクセスログ セッションストアID",
+        "PropertiesStringResourceLoader",
+        "message-by-property-files.xml",
+        "nablarch.entityMeta.hideCauseExceptionLog",
+        "UniversalDao 主キー警告ログ",
+        "SessionUtil.changeId",
+        "サーブレットコンテキスト初期化リスナ",
+        "Java 17 ブランクプロジェクト",
+        "Maven 3.6.3",
+        "JAX-RS @PATCH",
+        "JUnit5 ブランクプロジェクト",
+        "nablarch-core 1.6.0",
+        "nablarch-fw-web 1.10.0",
+        "nablarch-mail-sender 1.4.2",
+        "nablarch-common-dao 1.6.0",
+        "nablarch-main-default-configuration 1.4.0"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Example・ワークフローライブラリ変更点（No.16–20）",
+      "hints": [
+        "Example Java 17対応",
+        "全Example JUnit5化",
+        "ワークフローライブラリ Java 17",
+        "nablarch-example-web 5u21",
+        "nablarch-example-rest 5u21",
+        "nablarch-example-thymeleaf-web 5u21",
+        "nablarch-example-workflow 5u21",
+        "nablarch-example-batch 5u21"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テスティングフレームワーク変更点（No.21–27）",
+      "hints": [
+        "使用不許可APIチェックツール 分離",
+        "SpotBugs 4.X対応",
+        "nablarch-unpublished-api-checker",
+        "nablarch-unpublished-api-checker-findbugs",
+        "PATCHメソッド テスト",
+        "JUnit5拡張機能 nablarch-testing-junit5",
+        "MockServletExecutionContext",
+        "Excelテストデータ 時刻省略",
+        "JUnit Vintage",
+        "nablarch-testing 1.4.0",
+        "nablarch-testing-rest 1.1.0",
+        "nablarch-testing-junit5 1.0.0"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "バージョンアップ手順",
+      "hints": [
+        "バージョンアップ手順",
+        "nablarch-bom 5u21",
+        "pom.xml dependencyManagement",
+        "5u20から5u21"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "使用不許可APIチェックツールの設定方法",
+      "hints": [
+        "spotbugs-maven-plugin 設定",
+        "SpotBugs 4.X 設定例",
+        "SpotBugs 3.X 設定例",
+        "nablarch-unpublished-api-checker Maven設定",
+        "nablarch-findbugs-config",
+        "spotbugs_exclude_for_production.xml"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## アプリケーションフレームワーク変更点（No.1–15）\n\nNablarch 5u20からの変更点。\n\n### No.1: JSONログ出力機能の追加（新規）\n\nNablarchが出力するログをJSON形式にできる機能を追加。Elasticsearch+Kibanaなどのログ解析ツールとの連携でテキストパースが不要になる。\n\n**更新モジュール**: nablarch-core 1.6.0, nablarch-core-applog 1.3.0, nablarch-core-jdbc 1.5.0, nablarch-fw-messaging 1.2.0, nablarch-fw-standalone 1.5.0, nablarch-fw-web 1.10.0\n\n参照: [JSONログ](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/log.html#json)\n\n### No.2: メール送信機能の改善（変更）\n\nメール送信のマルチプロセス化とメール送信パターンIDによる未送信データ抽出を同時使用できるよう改善。従来は同時使用時にマルチプロセス化がパターンIDを無視して悲観ロックを行い、タイミングによっては一部のメールが送信されないことがあった。\n\n**更新モジュール**: nablarch-mail-sender 1.4.2\n\n参照: [メール送信](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/mail.html)\n\n### No.3: Nablarchサーブレットコンテキスト初期化リスナの初期化成否取得メソッドの追加（変更）\n\n初期化成否を取得できるメソッドを追加。後続のサーブレットコンテキストリスナがこのメソッドで初期化失敗を判定して処理をスキップできるようになり、根本原因（システムリポジトリの初期化失敗）の特定が容易になる。\n\n**更新モジュール**: nablarch-fw-web 1.10.0\n\n参照: [Nablarchサーブレットコンテキスト初期化リスナ](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web/feature_details/nablarch_servlet_context_listener.html)\n\n### No.4: プロパティファイルによるメッセージ管理機能の設定を追加（変更）\n\n`message-by-property-files.xml`コンポーネント定義ファイルを追加。`PropertiesStringResourceLoader`はコンポーネント定義ファイルで明示的な設定がない場合にデフォルト利用されるクラスだが、このとき実行環境のOSのデフォルトロケールが採用されるため障害の原因になる可能性がある。`message-by-property-files.xml`をimportすることでこの問題を回避できる。\n\n**更新モジュール**: nablarch-main-default-configuration 1.4.0\n\n参照: [メッセージ管理（多言語対応）](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/message.html#message-multi-lang)\n\n### No.5: EntityMeta初期化時に発生したエラーをログに出力するように変更（変更）\n\nUniversalDaoの主キー情報取得処理で例外が発生した場合、警告ログとして出力するよう変更。\n\n> **警告**: UniversalDaoを使用していて主キー情報の取得に失敗しているが、主キーによる検索・更新・削除を行っていない場合に影響がある。ログ出力により性能劣化の可能性あり。ログ監視時に新たな警告が検知される可能性あり。ログ出力を抑制したい場合は環境設定ファイルに`nablarch.entityMeta.hideCauseExceptionLog=true`を設定する。\n\n**更新モジュール**: nablarch-common-dao 1.6.0\n\n参照: [UniversalDao](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/database/universal_dao.html#sqlcrud)\n\n### No.6: セッションIDだけを変更するAPIを追加（変更）\n\n`SessionUtil.changeId()`メソッドを追加。セッション情報を維持したままセッションIDだけを変更できる（セッション・フィクセーション対策）。従来は`invalidate()`でセッションを破棄するしかなく、ログイン前後でセッション情報を維持するには破棄前後に詰め替え処理が必要だった。\n\n**更新モジュール**: nablarch-fw-web 1.10.0\n\n参照: [セッションストア](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/session_store.html#session-store-authentication-data)\n\n### No.7: HTTPアクセスログで出力できる項目にセッションストアのIDを追加（変更）\n\nHTTPアクセスログでセッションストアのIDを出力できるよう修正。HTTPセッションを使用しないシステムでもセッションレベルのログ追跡が可能になる。\n\n**更新モジュール**: nablarch-fw-web 1.10.0\n\n参照: [HTTPアクセスログ](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/libraries/log/http_access_log.html)\n\n### No.8: ブランクプロジェクトをJava 17で動かす際の修正手順を追加（新規・解説書）\n\nブランクプロジェクトをJava 17で動かす際に必要な修正手順を解説書に追加。\n\n参照: [Java 17対応手順](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Java17.html)\n\n### No.9: OracleのJDBCドライバの入手方法の説明を修正（変更・解説書）\n\nOracleのJDBCドライバがMavenセントラルリポジトリで公開されるようになったため、ローカルリポジトリへのインストール手順からセントラルリポジトリのJDBCドライバを使用する方法に修正。\n\n参照: [OracleへのDB切替](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/CustomizeDB.html#oracle)\n\n### No.10: Nablarch SQL ExecutorのOracleのJDBCドライバdependency修正（変更・解説書）\n\nNo.9と同様にOracleのJDBCドライバにセントラルリポジトリのものを使用するようdependency記述を修正。\n\n参照: [SQL Executor pom.xml](https://nablarch.github.io/docs/5u21/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html#pom-xml)\n\n### No.11: 全ブランクプロジェクト Java 17対応（変更）\n\nJava 17でもビルド・実行できるよう、使用しているライブラリとMavenプラグインのバージョンを更新。Java 17で動かす際にはNo.8の手順を実施する必要がある。\n\n**更新モジュール**: nablarch-web 5u21, nablarch-jaxrs 5u21, nablarch-batch 5u21, nablarch-batch-ee 5u21, nablarch-container-web 5u21, nablarch-container-jaxrs 5u21, nablarch-container-batch 5u21\n\n参照: [ブランクプロジェクト](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/index.html)\n\n### No.12: ブランクプロジェクトのMavenの前提バージョンを変更（変更）\n\nJava 17対応のためMavenプラグイン更新に伴い、前提Mavenバージョンを3.0.5から**3.6.3**に変更。\n\n参照: [ブランクプロジェクト前提条件](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/blank_project/beforeFirstStep.html#firststeppreamble)\n\n### No.13: JAX-RSのバージョンを変更（変更）\n\nJAX-RSのアノテーションを使ったルーティング設定で`@PATCH`を使えるよう、`javax.ws.rs-api`のバージョンを2.0から**2.1.1**に変更。\n\n**更新モジュール**: nablarch-jaxrs 5u21, nablarch-container-jaxrs 5u21\n\n参照: [JAX-RSルーティング](https://nablarch.github.io/docs/5u21/doc/application_framework/adaptors/router_adaptor.html#jax-rspath)\n\n### No.14: 全ブランクプロジェクト JUnit5化（変更）\n\n疎通確認テストをJUnit4からJUnit5ベースに書き換え。自動テストフレームワークをJUnit5で使用するための拡張機能も組み込み済み。\n\n**更新モジュール**: nablarch-web 5u21, nablarch-jaxrs 5u21, nablarch-batch 5u21, nablarch-batch-ee 5u21, nablarch-container-web 5u21, nablarch-container-jaxrs 5u21, nablarch-container-batch 5u21\n\n参照: [JUnit5拡張機能](https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html)\n\n### No.15: 全ブランクプロジェクト プロパティファイルメッセージ管理設定追加（変更）\n\nNo.4で追加した`message-by-property-files.xml`をimportするよう変更。デフォルト言語がOS環境によって変動しなくなる。\n\n**更新モジュール**: nablarch-web 5u21, nablarch-jaxrs 5u21, nablarch-batch 5u21, nablarch-batch-ee 5u21, nablarch-container-web 5u21, nablarch-container-jaxrs 5u21, nablarch-container-batch 5u21\n\n参照: [デフォルト設定一覧](https://nablarch.github.io/docs/5u21/doc/_downloads/%E3%83%87%E3%83%95%E3%82%A9%E3%83%AB%E3%83%88%E8%A8%AD%E5%AE%9A%E4%B8%80%E8%A6%A7.xlsx)",
+    "s2": "## Example・ワークフローライブラリ変更点（No.16–20）\n\n### No.16: JSPとカスタムタグを使用したサンプル Java 17対応（変更）\n\nJava 17でもビルド・実行できるよう、使用しているMavenプラグインのバージョンを更新。Java 17で動かす際にはNo.8の手順を実施する必要がある。\n\n**更新モジュール**: nablarch-example-web 5u21\n\n参照: [Webアプリケーション Getting Started](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web/getting_started/index.html)\n\n### No.17: RESTfulウェブサービスExampleのJava 17対応（変更）\n\nNo.16と同じ内容。\n\n**更新モジュール**: nablarch-example-rest 5u21\n\n参照: [RESTful Webサービス Getting Started](https://nablarch.github.io/docs/5u21/doc/application_framework/application_framework/web_service/rest/getting_started/index.html)\n\n### No.18: Thymeleafを使用したサンプルのJava 17対応（変更）\n\nNo.16と同じ内容。\n\n**更新モジュール**: nablarch-example-thymeleaf-web 5u21\n\n参照: [Example](https://nablarch.github.io/docs/5u21/doc/application_framework/example/index.html)\n\n### No.19: 全Example JUnit5化（変更）\n\nJUnit4で書かれていたテストコードをJUnit5を用いたものに書き換え。\n\n**更新モジュール**: nablarch-example-batch 5u21, nablarch-example-batch-ee 5u21, nablarch-example-db-queue 5u21, nablarch-example-http-messaging 5u21, nablarch-example-http-messaging-send 5u21, nablarch-example-mom-delayed-receive 5u21, nablarch-example-mom-delayed-send 5u21, nablarch-example-mom-sync-receive 5u21, nablarch-example-mom-sync-send-batch 5u21, nablarch-example-mom-testing-common 5u21, nablarch-example-rest 5u21, nablarch-example-web 5u21\n\n参照: [JUnit5拡張機能](https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html)\n\n### No.20: ワークフローライブラリExample Java 17対応（変更）\n\nJava 17でもビルド・実行できるよう、使用しているMavenプラグインとライブラリのバージョンを更新。Java 17で動かす際にはNo.8の手順を実施する必要がある。\n\n**更新モジュール**: nablarch-example-workflow 5u21\n\n参照: [ワークフローライブラリ](https://nablarch.github.io/docs/5u21/doc/extension_components/workflow/doc/index.html)",
+    "s3": "## テスティングフレームワーク変更点（No.21–27）\n\n### No.21: 使用不許可APIチェックツールの分離（変更）\n\n使用不許可APIチェックツールをテスティングフレームワークから分離し、独立したモジュール（`nablarch-unpublished-api-checker-findbugs`）とした。\n\n> **警告**: 使用不許可APIチェックツールを利用している場合に影響がある。EclipseのSpotbugsプラグインやMavenのSpotbugsプラグインの設定で`nablarch-testing`の代わりに`nablarch-unpublished-api-checker-findbugs`を使用するよう修正が必要。SpotBugs 4.Xを利用する場合はNo.22で追加した`nablarch-unpublished-api-checker`を使用すること。\n\n**更新モジュール**: nablarch-unpublished-api-checker-findbugs 1.0.0\n\n参照: [使用不許可APIチェックツール README](https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/unpublished-api/README.md)\n\n### No.22: SpotBugs 4.Xで実行できる使用不許可APIチェックツールの追加（新規）\n\n従来の使用不許可APIチェックツール（nablarch-unpublished-api-checker-findbugs）はSpotBugs 3.Xでは動作するが、SpotBugs 4.Xでは正しく使用不許可APIを検知できなかった。SpotBugs 4.Xでも使用不許可APIを検知できるツール（`nablarch-unpublished-api-checker`）を追加。\n\n**更新モジュール**: nablarch-unpublished-api-checker 1.0.0\n\n参照: [使用不許可APIチェックツール README](https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/unpublished-api/README.md)\n\n### No.23: Webサービス用テスティングフレームワーク PATCHメソッド追加（変更）\n\n自動テストでHTTPメソッド=PATCHのリクエストを生成できるAPIを追加。あわせて任意のHTTPメソッドでリクエストを生成できるAPIも追加。\n\n**更新モジュール**: nablarch-testing-rest 1.1.0, nablarch-example-rest 5u21\n\n参照: [RESTfulウェブサービステスト](https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_rest.html#rest-test-helper)\n\n### No.24: 自動テストフレームワーク JUnit5拡張機能の追加（新規）\n\nJUnit5で書かれたテストの中で自動テストフレームワークを使用できるよう、拡張機能`nablarch-testing-junit5`を追加。JUnit5のネストテスト・パラメータ化テストなどと自動テストフレームワークを組み合わせて利用できる。\n\n> **重要**: Nablarchのバージョンを上げただけでJUnitのバージョンが自動的に4から5に上がることはない。既存のJUnit4で書かれたコードはそのまま実行し続けられる。\n\n**更新モジュール**: nablarch-testing-junit5 1.0.0, nablarch-testing-rest 1.1.0\n\n参照: [JUnit5拡張機能](https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html)\n\n### No.25: 自動テストフレームワーク MockServletExecutionContextの追加（変更）\n\n`MockServletExecutionContext`を追加。`ServletExecutionContext`はHttpServletRequestなどのServlet APIに依存しておりインスタンス生成に手間がかかるが、`MockServletExecutionContext`はServlet APIのインスタンスなしでインスタンス化できる。ServletExecutionContextに依存したハンドラなどの単体テストが少ない実装コストで作成可能になる。\n\n**更新モジュール**: nablarch-testing 1.4.0\n\n**クラス**: `nablarch.fw.web.servlet.MockServletExecutionContext`\n\n参照: [MockServletExecutionContext Javadoc](https://nablarch.github.io/docs/5u21/publishedApi/nablarch-testing/publishedApiDoc/architect/nablarch/fw/web/servlet/MockServletExecutionContext.html)\n\n### No.26: 自動テストフレームワーク Excelファイルで時刻省略可能に変更（変更）\n\nExcelファイルのテストデータでJDBCタイムスタンプエスケープ形式（`yyyy-MM-dd HH:mm:ss.SSS`）で日時を記述する際、時刻を省略した`yyyy-MM-dd`形式を許容するよう変更。\n\n**更新モジュール**: nablarch-testing 1.4.0\n\n参照: [自動テストフレームワーク概要](https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html#id17)\n\n### No.27: 自動テストフレームワーク JUnit 5で動かすための手順を追加（新規・解説書）\n\n自動テストフレームワークをJUnit 5のJUnit Vintageを使って実行するための手順を追加。\n\n参照: [JUnit5 Vintage Engineでの実行手順](https://nablarch.github.io/docs/5u21/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/01_Abstract.html#run-ntf-on-junit5-with-vintage-engine)",
+    "s4": "## バージョンアップ手順\n\nNablarch 5u20から5u21へのバージョンアップ手順:\n\n1. `pom.xml`の`<dependencyManagement>`セクションに指定されている`nablarch-bom`のバージョンを`5u21`に書き換える\n2. Mavenのビルドを再実行する",
+    "s5": "## 使用不許可APIチェックツールの設定方法\n\nSpotBugs 4.XとSpotBugs 3.Xで使用するモジュールが異なる:\n\n- **SpotBugs 4.X**: `nablarch-unpublished-api-checker`（artifactId）\n- **SpotBugs 3.X**: `nablarch-unpublished-api-checker-findbugs`（artifactId）\n\n**SpotBugs 4.X設定例（Maven）**:\n```xml\n<plugin>\n  <groupId>com.github.spotbugs</groupId>\n  <artifactId>spotbugs-maven-plugin</artifactId>\n  <version>4.5.0.0</version>\n  <dependencies>\n    <dependency>\n      <groupId>com.github.spotbugs</groupId>\n      <artifactId>spotbugs</artifactId>\n      <version>4.5.0</version>\n    </dependency>\n  </dependencies>\n  <configuration>\n    <xmlOutput>true</xmlOutput>\n    <excludeFilterFile>spotbugs/spotbugs_exclude_for_production.xml</excludeFilterFile>\n    <jvmArgs>-Dnablarch-findbugs-config=spotbugs/published-config/production</jvmArgs>\n    <maxHeap>1024</maxHeap>\n    <plugins>\n      <plugin>\n        <groupId>com.nablarch.framework</groupId>\n        <artifactId>nablarch-unpublished-api-checker</artifactId>\n        <version>1.0.0</version>\n      </plugin>\n    </plugins>\n  </configuration>\n</plugin>\n```\n\n**SpotBugs 3.X設定例（Maven）**:\n```xml\n<plugin>\n  <groupId>com.github.spotbugs</groupId>\n  <artifactId>spotbugs-maven-plugin</artifactId>\n  <version>3.1.3</version>\n  <dependencies>\n    <dependency>\n      <groupId>com.github.spotbugs</groupId>\n      <artifactId>spotbugs</artifactId>\n      <version>3.1.3</version>\n    </dependency>\n  </dependencies>\n  <configuration>\n    <xmlOutput>true</xmlOutput>\n    <excludeFilterFile>spotbugs/spotbugs_exclude_for_production.xml</excludeFilterFile>\n    <jvmArgs>-Dnablarch-findbugs-config=spotbugs/published-config/production</jvmArgs>\n    <maxHeap>1024</maxHeap>\n    <plugins>\n      <plugin>\n        <groupId>com.nablarch.framework</groupId>\n        <artifactId>nablarch-unpublished-api-checker-findbugs</artifactId>\n        <version>1.0.0</version>\n      </plugin>\n    </plugins>\n  </configuration>\n</plugin>\n```\n\n参照: [spotbugs-maven-pluginの組み込み](https://github.com/nablarch-development-standards/nablarch-style-guide/blob/3.1/java/staticanalysis/spotbugs/docs/Maven-settings.md#spotbugs-maven-plugin%E3%82%92%E7%B5%84%E3%81%BF%E8%BE%BC%E3%82%80)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

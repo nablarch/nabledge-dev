@@ -1,0 +1,220 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-client_create1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 - ### メニューリンク",
+      "description": "メニューリンクのコードスニペットは含まれているが、どのファイルに追加するかを示すファイルパス `/src/main/webapp/WEB-INF/view/common/menu.jsp` が省略されている。ソースでは明示的にファイルパスが指定されており、開発者がどのファイルを編集すべきか判断するために必要な情報。",
+      "source_evidence": "/src/main/webapp/WEB-INF/view/common/menu.jsp\n  .. code-block:: jsp\n\n    <ul class=\"nav navbar-nav\">\n      ...\n      <n:a href=\"/action/client\">顧客登録</n:a>"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 - hints",
+      "description": "`ClientAction` クラス名がソースに登場している（「ClientAction に、以下の処理を行う業務アクションメソッドを追加する」）が、hintsに含まれていない。",
+      "source_evidence": "ClientAction.java\n  .. code-block:: java\n\n    public HttpResponse input(HttpRequest request, ExecutionContext context) {"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`client_create_1`:
+
+登録画面初期表示の作成
+==========================================
+本章では、登録画面の初期表示について解説する。
+
+登録画面のJSPを作成する
+  ひな形となるJSPを `/src/main/webapp/WEB-INF/view/client` 配下に配置する。
+
+     :download:`create.jsp <../downloads/client_create/create.jsp>`
+
+画面に初期表示する部分を実装する
+  create.jspに登録画面の内容を追加する。
+
+  /src/main/webapp/WEB-INF/view/client/create.jsp
+    .. code-block:: jsp
+
+      <n:form>
+          <div class="form-group label-static is-empty">
+              <label class="control-label">顧客名</label>
+              <!-- 顧客名のテキストボックス -->
+              <!-- フォーム作成前なので、name属性には仮の値を指定する -->
+              <n:text name="tmp" cssClass="form-control input-text"/>
+          </div>
+          <div class="form-group label-static is-empty">
+              <label class="control-label">業種</label>
+              <!-- 業種のプルダウン -->
+              <!-- フォーム作成前なので、name属性には仮の値を指定する -->
+              <n:select
+                      listName="industries"
+                      elementValueProperty="industryCode"
+                      elementLabelProperty="industryName"
+                      name="tmp"
+                      withNoneOption="true"
+                      cssClass="btn dropdown-toggle"/>
+          </div>
+          <div class="button-nav">
+              <!-- 登録ボタン -->
+              <!-- 登録内容確認画面は作成前なので、uri属性には仮の値を指定する -->
+              <n:button
+                      uri="tmp"
+                      cssClass="btn btn-raised btn-success">登録</n:button>
+          </div>
+      </n:form>
+
+  この実装のポイント
+    * :ref:`tag` を使用し、テキスト入力フォーム、プルダウンを作成する。
+      :ref:`tag-input_form` を参照。
+    * :ref:`tag-select_tag` の `listName` 属性に、
+      後述の初期表示メソッドでリクエストスコープに登録する業種リストの名称を指定し、プルダウンに表示する。
+      :ref:`tag-selection` を参照。
+
+業務アクションに初期表示メソッドを作成する
+  `ClientAction` に、以下の処理を行う業務アクションメソッドを追加する
+
+    * プルダウンに表示するデータを取得しリクエストスコープに登録する。
+    * 初期表示画面のJSPへフォーワードする。
+
+    ClientAction.java
+      .. code-block:: java
+
+        public HttpResponse input(HttpRequest request, ExecutionContext context) {
+            EntityList<Industry> industries = UniversalDao.findAll(Industry.class);
+            context.setRequestScopedVar("industries", industries);
+            return new HttpResponse("/WEB-INF/view/client/create.jsp");
+        }
+
+    業務アクションメソッドのシグネチャは以下とすること。
+    業務アクションメソッドが以下のシグネチャを満たさない場合、404エラーが発生する。
+
+    .. java:method:: public HttpResponse methodName(HttpRequest request, ExecutionContext context)
+
+      :param request: フレームワークから受け渡されるリクエストオブジェクト
+
+      :param context: フレームワークから受け渡される実行コンテキスト
+
+      :param return: 遷移先を設定したレスポンスオブジェクト
+
+
+    この実装のポイント
+      * 登録画面に業種のプルダウンを表示するために、:ref:`universal_dao` を使用してデータベースから業種情報を全件取得する。
+      * JSPへ値を受け渡すために、取得した業種リストをリクエストスコープに登録する。
+
+URLと業務アクションのマッピングを行う
+  マッピング処理はOSSライブラリである `http_request_router(外部サイト) <https://github.com/kawasima/http-request-router>`_ を使用して行う。
+  指定したURLと初期表示処理をマッピングするための設定を追加する。
+
+    routes.xml
+      .. code-block:: xml
+
+        <routes>
+          <!-- 上から評価されるので、他のマッピングより前に設定する -->
+          <get path="/action/client" to="Client#input"/>
+          <!-- その他の設定は省略 -->
+        </routes>
+
+    .. tip::
+      routes.xmlの指定方法は、`ライブラリのREADMEドキュメント(外部サイト) <https://github.com/kawasima/http-request-router/blob/master/README.ja.md>`_ を参照。
+
+登録画面へのリンクを作成する
+  ヘッダメニューに顧客登録画面へのリンクを作成する。
+
+  /src/main/webapp/WEB-INF/view/common/menu.jsp
+    .. code-block:: jsp
+
+      <ul class="nav navbar-nav">
+        <!-- その他のリンクは省略 -->
+        <li>
+          <n:a href="/action/client">顧客登録</n:a>
+        </li>
+      </ul>
+
+  この実装のポイント
+    * :ref:`tag` の :ref:`tag-a_tag` を使用してリンクを作成する。
+
+動作確認を行う
+  以下の手順で動作確認を行う。
+
+  1. アプリケーションにログインし、ヘッダメニューに「顧客登録」リンクが作成されていることを確認する。
+
+    .. image:: ../images/client_create/header_menu.png
+
+  2. 「顧客登録」リンクを押下すると顧客登録画面に遷移し、「顧客名」フォーム、「業種」プルダウン、登録ボタンが表示されていることを確認する。
+
+    .. image:: ../images/client_create/initial_display.png
+
+  3. 「業種」プルダウンが選択できることを確認する。
+
+    .. image:: ../images/client_create/initial_display_select.png
+
+:ref:`次へ<client_create_2>`
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-client_create1",
+  "title": "登録画面初期表示の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/client_create/client_create1.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "登録画面初期表示の作成",
+      "hints": [
+        "HttpResponse",
+        "HttpRequest",
+        "ExecutionContext",
+        "EntityList",
+        "UniversalDao",
+        "登録画面初期表示",
+        "プルダウン実装",
+        "URLマッピング",
+        "業務アクション",
+        "リクエストスコープ",
+        "routes.xml",
+        "n:select",
+        "n:text",
+        "n:form"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "### JSP実装\n\n:ref:`tag` を使用してフォームを作成する。\n\n- `n:text`: テキスト入力フォーム（:ref:`tag-input_form` 参照）\n- `n:select`: プルダウン。`listName` 属性にリクエストスコープの業種リスト名を指定（:ref:`tag-selection` 参照）\n\n```jsp\n<n:form>\n    <n:text name=\"tmp\" cssClass=\"form-control input-text\"/>\n    <n:select\n            listName=\"industries\"\n            elementValueProperty=\"industryCode\"\n            elementLabelProperty=\"industryName\"\n            name=\"tmp\"\n            withNoneOption=\"true\"\n            cssClass=\"btn dropdown-toggle\"/>\n    <n:button uri=\"tmp\" cssClass=\"btn btn-raised btn-success\">登録</n:button>\n</n:form>\n```\n\n### 業務アクションメソッド\n\n業務アクションメソッドのシグネチャが以下を満たさない場合、**404エラーが発生する**:\n\n```java\npublic HttpResponse methodName(HttpRequest request, ExecutionContext context)\n```\n\nプルダウン用データは :ref:`universal_dao` で全件取得し、リクエストスコープに登録してJSPに渡す:\n\n```java\npublic HttpResponse input(HttpRequest request, ExecutionContext context) {\n    EntityList<Industry> industries = UniversalDao.findAll(Industry.class);\n    context.setRequestScopedVar(\"industries\", industries);\n    return new HttpResponse(\"/WEB-INF/view/client/create.jsp\");\n}\n```\n\n### URLマッピング（routes.xml）\n\n`http_request_router` でURLと業務アクションをマッピングする。\n\n> **補足**: routes.xmlは上から評価されるため、他のマッピングより前に設定する。\n\n```xml\n<routes>\n  <get path=\"/action/client\" to=\"Client#input\"/>\n</routes>\n```\n\n### メニューリンク\n\n:ref:`tag-a_tag` を使用してリンクを作成する:\n\n```jsp\n<n:a href=\"/action/client\">顧客登録</n:a>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

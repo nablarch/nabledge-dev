@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-RequestUnitTest_rest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (概要セクション)",
+      "description": "ソースの「主なクラス, リソース」テーブルの内容が知識ファイルに含まれていない。具体的には、HttpServerクラスの役割（内蔵サーバ。サーブレットコンテナとして動作する）、リクエスト単体テストクラスの作成単位（テスト対象クラス(Action)につき１つ作成）、テスト対象クラス(Action)の作成単位（取引につき1クラス作成）、およびテストデータ（Excelファイル）の役割（テーブルに格納する準備データや期待する結果、HTTPパラメータなどを記載）と作成単位が欠落している。",
+      "source_evidence": "主なクラス, リソース テーブル全体（HttpServer: 内蔵サーバ。サーブレットコンテナとして動作する。テストクラス作成単位: テスト対象クラス(Action)につき１つ作成、取引につき1クラス作成）"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2, s3",
+      "description": "RST形式のマークアップ（:doc:、:ref:）が変換されずにMarkdownの知識ファイル内に残っており、AIエージェントに対してガベージテキストとして表示される。s2には「:doc:`RESTfulウェブサービスのブランクプロジェクト <../../../../../...>`」、s3には「:ref:`テスティングフレームワーク <unitTestGuide>`」「:ref:`自動テストで使用するJettyのモジュール変更 <setup_java11_jetty9>`」「:doc:`RESTfulウェブサービス <.../setup_WebService>`」「:doc:`ウェブプロジェクト <.../setup_Web>`」「:doc:`バッチプロジェクト <.../setup_NablarchBatch>`」が含まれている。",
+      "source_evidence": "ソースRSTでは内部参照として :doc: および :ref: 構文を使用しているが、知識ファイルはMarkdown形式であり、これらの構文はそのまま変換されるべきだった。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "s1セクションはassertStatusCodeメソッドを扱っており、そのシグネチャには `HttpResponse` クラスがパラメータ型として登場するが、s1のhintsに `HttpResponse` が含まれていない。",
+      "source_evidence": "void assertStatusCode(String message, HttpResponse.Status expected, HttpResponse response); — HttpResponse は独立したクラス名としてAPIシグネチャに使用されている。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3セクションはsendRequestメソッド（`HttpResponse sendRequest(HttpRequest request)`）を扱っているが、引数型の `HttpRequest` と戻り値型の `HttpResponse` がhintsに含まれていない。",
+      "source_evidence": "HttpResponse sendRequest(HttpRequest request) — HttpRequest および HttpResponse はs3のコアAPIで使用されるPascalCaseクラス名。"
+    }
+  ]
+}

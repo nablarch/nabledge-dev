@@ -1,0 +1,542 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-log--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — failure code properties table",
+      "description": "The source provides message configuration examples (メッセージの設定例) and default log output text (デフォルトで出力するログ) for each of the 4 failure code properties. The knowledge file table only includes property name, failure content, and log level — omitting the message format templates (including the `{0}` placeholder for lock file path) and the default English log messages.",
+      "source_evidence": "failureCodeCreateLockFile :メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。 :デフォルトで出力するログ(障害コードなどは出力されない): failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}]."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`BasicLogFormatter` and `outputBufferSize` appear in the s1 configuration example but are absent from s1 hints.",
+      "source_evidence": "writer.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter and writer.monitorLog.outputBufferSize=8 in the configuration example"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`onWritten` method name appears in the s2 code example (`public void onWritten(LogContext context)`) but is absent from s2 hints.",
+      "source_evidence": "public void onWritten(LogContext context) { // LogContext を使った処理を実装する }"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+SynchronousFileLogWriterを使用するにあたっての注意事項
+--------------------------------------------------------------------------
+
+.. important::
+ :java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>`
+ は複数プロセスからの書き込み用に作成したものであるが、 :ref:`障害通知ログ <failure_log>` のように出力頻度が低いログ出力にのみ使用することを想定している。
+ 頻繁にログの出力が行われる場面で :java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使用すると
+ ロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性があるので、アプリケーションログやアクセスログのように出力頻度の高いログの出力に
+ :java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使用してはいけない。
+
+ また、:java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>`
+ には以下の制約があるため、使用にあたっては十分検討すること。
+
+ * ログのローテーションができない。
+ * 出力されるログの内容が正常でない場合がある。
+
+
+:java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` は、
+ロックファイルを用いて排他制御を行いながらファイルにログを書き込む。
+そして、ロック取得の待機時間を超えてもロックを取得できない場合、強制的にロックファイルを削除し、
+自身のスレッド用のロックファイルを生成してからログを出力する。
+
+もし強制的にロックファイルを削除できない場合は、ロックを取得していない状態で強制的にログを出力する。
+また、ロックファイルの生成に失敗した場合および、ロック取得待ちの際に割り込みが発生した場合も、
+ロックを取得していない状態で強制的にログを出力する。
+
+**ロックを取得しない状態で強制的にログを出力する場合に、複数プロセスからのログ出力が競合するとログが正常に出力されない場合がある点に注意すること。**
+
+このような障害が発生した場合には、強制出力したログに加えて、同一のログファイルに障害のログを出力する。
+デフォルトでは本フレームワークが用意したログが出力されるが、
+:java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>`
+のプロパティに障害コードを設定することで、障害通知ログのフォーマット(障害コードを含む)でログを出力できる。
+障害通知ログのフォーマットで出力することで通常の障害通知ログと同様の方法でログの監視が可能となるので、
+障害コードを設定することを推奨する。
+
+障害コードを設定するプロパティ名を以下に示す。
+
+failureCodeCreateLockFile
+ :障害の内容: ロックファイルが生成できない
+ :ログレベル: FATAL
+ :メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。
+ :デフォルトで出力するログ(障害コードなどは出力されない): failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].
+
+failureCodeReleaseLockFile
+ :障害の内容: 生成したロックファイルを解放(削除)できない
+ :ログレベル: FATAL
+ :メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの削除に失敗しました。ロックファイルパス=[{0}]。
+ :デフォルトで出力するログ(障害コードなどは出力されない): failed to delete lock file. lock file path=[{0}].
+
+failureCodeForceDeleteLockFile
+ :障害の内容: 解放されないロックファイルを強制削除できない
+ :ログレベル: FATAL
+ :メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの強制削除に失敗しました。ロックファイルが不正に開かれています。ロックファイルパス=[{0}]。
+ :デフォルトで出力するログ(障害コードなどは出力されない): failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}].
+
+failureCodeInterruptLockWait
+ :障害の内容: ロック取得待ちでスレッドをスリープしている際に、割り込みが発生
+ :ログレベル: FATAL
+ :メッセージの設定例: ロック取得中に割り込みが発生しました。
+ :デフォルトで出力するログ(障害コードなどは出力されない): interrupted while waiting for lock retry.
+
+.. important::
+ 障害コードを設定した場合、障害通知ログのフォーマットで同一のログファイルにログが出力されるが、
+ 障害解析ログは出力されない点に注意すること。
+
+:java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>`
+の設定例を以下に示す。
+
+.. code-block:: properties
+
+ writerNames=monitorLog
+
+ # SynchronousFileLogWriterクラスを指定する。
+ writer.monitorLog.className=nablarch.core.log.basic.SynchronousFileLogWriter
+ # 書き込み先のファイルパスを指定する。
+ writer.monitorLog.filePath=/var/log/app/monitor.log
+ # 書き込み時に使用する文字エンコーディングを指定する。
+ writer.monitorLog.encoding=UTF-8
+ # 出力バッファのサイズを指定する。(単位はキロバイト。1000バイトを1キロバイトと換算する。指定しなければ8KB)
+ writer.monitorLog.outputBufferSize=8
+ # ログフォーマッタのクラス名を指定する。
+ writer.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ # LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する。
+ writer.monitorLog.level=ERROR
+ # ロックファイルのファイル名を指定する。
+ writer.monitorLog.lockFilePath=/var/log/lock/monitor.lock
+ # ロック取得の再試行間隔(ミリ秒)を指定する。
+ writer.monitorLog.lockRetryInterval=10
+ # ロック取得の待機時間(ミリ秒)を指定する。
+ writer.monitorLog.lockWaitTime=3000
+ # ロックファイルが生成できない場合の障害通知コードを指定する。
+ writer.monitorLog.failureCodeCreateLockFile=MSG00101
+ # 生成したロックファイルを解放(削除)できない場合の障害通知コードを指定する。
+ writer.monitorLog.failureCodeReleaseLockFile=MSG00102
+ # 解放されないロックファイルを強制削除できない場合の障害通知コードを指定する。
+ writer.monitorLog.failureCodeForceDeleteLockFile=MSG00103
+ # ロック待ちでスレッドをスリープしている際に、割り込みが発生した場合の障害通知コードを指定する。
+ writer.monitorLog.failureCodeInterruptLockWait=MSG00104
+
+.. important::
+
+ maxFileSizeプロパティを指定するとログのローテーションが発生し、
+ ログの出力が出来なくなることがあるので指定しないこと。
+
+.. _log-publisher_usage:
+
+LogPublisherの使い方
+--------------------------------------------------
+
+:java:extdoc:`LogPublisher <nablarch.core.log.basic.LogPublisher>` は、出力されたログの情報(:java:extdoc:`LogContext <nablarch.core.log.basic.LogContext>`)を登録された :java:extdoc:`LogListener <nablarch.core.log.basic.LogListener>` に連携する機能を提供する。
+出力されたログ情報に対して何らかの処理をプログラム的に行いたい場合に、この機能が使用できる。
+
+``LogPublisher`` を使用するには、まず ``LogPublisher`` を ``LogWriter`` として設定する。
+
+.. code-block:: properties
+
+  # ...省略
+
+  # writerNames に LogPublisher の writer を追加する
+  writerNames=monitorFile,appFile,stdout,logPublisher
+
+  # logPublisher を定義する
+  writer.logPublisher.className=nablarch.core.log.basic.LogPublisher
+  writer.logPublisher.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+  # ...省略
+
+  # ログ情報を処理したい logger の writerNames に、 LogPublisher の writer を追加する
+  # ROO
+  loggers.ROO.nameRegex=.*
+  loggers.ROO.level=INFO
+  loggers.ROO.writerNames=appFile,stdout,logPublisher
+
+  # MON
+  loggers.MON.nameRegex=MONITOR
+  loggers.MON.level=ERROR
+  loggers.MON.writerNames=monitorFile,logPublisher
+
+  # ...省略
+
+
+次に、 ``LogWriter`` に登録する ``LogListener`` の実装クラスを作成する。
+
+.. code-block:: java
+
+  package example.micrometer.log;
+
+  import nablarch.core.log.basic.LogContext;
+  import nablarch.core.log.basic.LogListener;
+
+  public class CustomLogListener implements LogListener {
+
+      @Override
+      public void onWritten(LogContext context) {
+          // LogContext を使った処理を実装する
+      }
+  }
+
+最後に、作成した ``LogListener`` のインスタンスを ``LogPublisher`` に登録する。
+``LogListener`` の登録は、 ``LogPublisher`` の ``static`` メソッドを介して行う。
+
+.. code-block:: java
+
+  LogListener listener = new CustomLogListener();
+  LogPublisher.addListener(listener);
+
+以上で、 ``LogPublisher`` に対して出力されたログ情報が ``CustomLogListener`` に連携されるようになる。
+
+登録した ``LogListener`` は、 :java:extdoc:`removeListener(LogListener) <nablarch.core.log.basic.LogPublisher.removeListener(nablarch.core.log.basic.LogListener)>` または :java:extdoc:`removeAllListeners() <nablarch.core.log.basic.LogPublisher.removeAllListeners()>` で削除できる。
+
+.. _log-log_level:
+
+ログレベルの定義
+--------------------------------------------------
+本機能では、以下のログレベルを使用する。
+
+.. list-table:: ログレベルの定義
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 15,85
+
+   * - ログレベル
+     - 説明
+
+   * - FATAL
+     - アプリケーションの継続が不可能になる深刻な問題が発生したことを示す。
+       監視が必須で即通報および即対応が必要となる。
+
+   * - ERROR
+     - アプリケーションの継続に支障をきたす問題が発生したことを示す。
+       監視が必須であるが、通報および対応にFATALレベルほどの緊急性がない。
+
+   * - WARN
+     - すぐには影響を与えないが、放置しておくとアプリケーションの継続に支障をきたす問題になる恐れがある事象が発生したことを示す。
+       できれば監視した方がよいが、ERRORレベルほどの緊急性がない。
+
+   * - INFO
+     - 本番運用時にアプリケーションの情報を出力するログレベル。アクセスログや統計ログが該当する。
+
+   * - DEBUG
+     - 開発時にデバッグ情報を出力するログレベル。SQLログや性能ログが該当する。
+
+   * - TRACE
+     - 開発時にデバッグ情報より、さらに細かい情報を出力したい場合に使用するログレベル。
+
+ログレベルは、6段階とし、FATALからTRACEに向かって順にレベルが低くなる。
+そして、ログ出力機能では、設定で指定されたレベル以上のログを全て出力する。
+例えば、WARNレベルが設定で指定された場合は、FATALレベル,ERRORレベル,WARNレベルが指定されたログのみ出力する。
+
+.. tip::
+ 本番運用時は、INFOレベルでログを出力することを想定している。
+ ログファイルのサイズが肥大化しないように、プロジェクト毎にログの出力内容を規定すること。
+
+.. tip::
+ 本フレームワークでも、ログ出力機能を使ってログを出力している。
+ フレームワークが出力するログについては、 :ref:`log-fw_log_policy` を参照すること。
+
+.. _log-fw_log_policy:
+
+フレームワークのログ出力方針
+--------------------------------------------------
+本フレームワークでは、下記の出力方針に基づきログ出力を行う。
+
+.. list-table:: フレームワークのログ出力方針
+    :header-rows: 1
+    :class: white-space-normal
+    :widths: 15,85
+
+    * - ログレベル
+      - 出力方針
+
+    * - FATAL/ERROR
+      - 障害ログの出力時にFATAL/ERRORレベルで出力する。
+
+        障害ログは、障害監視の対象であり、障害発生時の1次切り分けの起点ともなる為、
+        原則として1件の障害に対して、1件の障害ログを出力する方針としている。
+
+        このため、実行制御基盤では単一のハンドラ(例外を処理するハンドラ)により、
+        障害通知ログを出力する方針としている。
+
+    * - WARN
+      - 障害発生時に連鎖して例外が発生した場合など、
+        障害ログとして出力できない例外をWARNレベルで出力する。
+
+        例えば、業務処理とトランザクションの終了処理の2つで例外が発生した場合は、
+        業務処理の例外を障害ログに出力し、トランザクションの終了処理の例外をWARNレベルで出力する。
+
+    * - INFO
+      - アプリケーションの実行状況に関連するエラーを検知した場合にINFOレベルで出力する。
+
+        例えば、URLパラメータの改竄エラーや認可チェックエラーが発生した場合にINFOレベルで出力する。
+
+    * - DEBUG
+      - アプリケーション開発時に使用するデバッグ情報を出力する。
+
+        アプリケーション開発時は、DEBUGレベルを設定することで開発に必要な情報が出力されるよう考慮している。
+
+    * - TRACE
+      - フレームワーク開発時に使用するデバッグ情報を出力する。アプリケーション開発での使用は想定していない。
+
+.. _log-functional_comparison:
+
+log4jとの機能比較
+--------------------------------------------------
+ここでは、本機能と `log4j(外部サイト、英語) <https://logging.apache.org/log4j/1.x/>`_ との機能比較を示す。
+
+.. list-table:: 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+  :header-rows: 1
+  :class: white-space-normal
+  :widths: 50, 25, 25
+
+  * - 機能
+    - Nablarch
+    - log4j
+
+  * - ログの出力有無をログレベルで制御できる
+    - ○
+      |br|
+      :ref:`解説書へ <log-basic_setting>`
+    - ○
+
+  * - ログの出力有無をカテゴリ(パッケージ単位や名前など)で制御できる
+    - ○
+      |br|
+      :ref:`解説書へ <log-basic_setting>`
+    - ○
+
+  * - 1つのログを複数の出力先に出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <log-basic_setting>`
+    - ○
+
+  * - ログを標準出力に出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <log-log_writers>`
+    - ○
+
+  * - ログをファイルに出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <log-log_writers>`
+    - ○
+
+  * - ファイルサイズによるログファイルのローテーションができる
+    - △ [#logrolate]_
+      |br|
+      :ref:`解説書へ <log-rotation>`
+    - ○
+
+  * - 日時によるログファイルのローテーションができる
+    - △ [#logrolate]_
+      |br|
+      :ref:`解説書へ <log-rotation>`
+    - ○
+
+  * - ログをメールで送信できる
+    - × [#extends_or_log4j]_
+    - ○
+
+  * - ログをTelnetで送信できる
+    - × [#extends_or_log4j]_
+    - ○
+
+  * - ログをSyslogで送信できる
+    - × [#extends_or_log4j]_
+    - ○
+
+  * - ログをWindows NTのイベントログに追加できる
+    - × [#extends_or_log4j]_
+    - ○
+
+  * - データベースにログを出力できる
+    - × [#extends_or_log4j]_
+    - ○
+
+  * - ログを非同期で出力できる
+    - × [#extends_or_log4j]_
+    - ○
+
+  * - ログのフォーマットをパターン文字列で指定できる
+    - ○
+      |br|
+      :ref:`解説書へ <log-log_format>`
+    - ○
+
+  * - 障害ログを出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <failure_log>`
+    - －
+
+  * - HTTPアクセスログを出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <http_access_log>`
+    - －
+
+  * - SQLログを出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <sql_log>`
+    - －
+
+  * - パフォーマンスログを出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <performance_log>`
+    - －
+
+  * - メッセージングログを出力できる
+    - ○
+      |br|
+      :ref:`解説書へ <messaging_log>`
+    - －
+
+.. [#logrolate] Nablarchのログ出力は、ファイルの世代管理を提供していないので、一部提供ありとしている。
+
+.. [#extends_or_log4j] :ref:`log_adaptor` を使用する。
+                       または、プロジェクトで作成する。作成方法は、 :ref:`log-add_log_writer` を参照。
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-log--s11",
+  "title": "ログ出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/SynchronousFileLogWriter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogPublisher.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogListener.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/LogContext.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SynchronousFileLogWriterを使用するにあたっての注意事項",
+      "hints": [
+        "SynchronousFileLogWriter",
+        "nablarch.core.log.basic.SynchronousFileLogWriter",
+        "failureCodeCreateLockFile",
+        "failureCodeReleaseLockFile",
+        "failureCodeForceDeleteLockFile",
+        "failureCodeInterruptLockWait",
+        "lockFilePath",
+        "lockRetryInterval",
+        "lockWaitTime",
+        "maxFileSize",
+        "複数プロセス書き込み",
+        "ロックファイル排他制御",
+        "障害通知ログフォーマット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "LogPublisherの使い方",
+      "hints": [
+        "LogPublisher",
+        "LogListener",
+        "LogContext",
+        "nablarch.core.log.basic.LogPublisher",
+        "nablarch.core.log.basic.LogListener",
+        "nablarch.core.log.basic.LogContext",
+        "addListener",
+        "removeListener",
+        "removeAllListeners",
+        "ログイベント連携",
+        "ログリスナー登録"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ログレベルの定義",
+      "hints": [
+        "FATAL",
+        "ERROR",
+        "WARN",
+        "INFO",
+        "DEBUG",
+        "TRACE",
+        "ログレベル定義",
+        "ログ出力制御",
+        "本番運用ログレベル"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "フレームワークのログ出力方針",
+      "hints": [
+        "フレームワークログ出力方針",
+        "障害ログ出力",
+        "WARNレベル連鎖例外",
+        "INFOレベル認可エラー",
+        "DEBUGレベルデバッグ情報"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "log4jとの機能比較",
+      "hints": [
+        "log4j",
+        "機能比較",
+        "ログローテーション",
+        "log_adaptor",
+        "log-add_log_writer",
+        "ログ出力機能一覧",
+        "非同期ログ出力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.core.log.basic.SynchronousFileLogWriter`\n\n> **重要**: :java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` は複数プロセスからの書き込み用だが、:ref:`障害通知ログ <failure_log>` のように出力頻度が低いログ出力にのみ使用すること。アプリケーションログやアクセスログのように出力頻度の高いログに :java:extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使用してはいけない。ロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性がある。\n\n> **重要**: 以下の制約がある。\n> - ログのローテーションができない\n> - 出力されるログの内容が正常でない場合がある\n\nロックファイルで排他制御しながらログを書き込む。ロック取得の待機時間を超えた場合、強制的にロックファイルを削除して書き込む。強制削除失敗・ロックファイル生成失敗・割り込み発生時はロック未取得状態で強制出力する。\n\n**ロックを取得しない状態で強制的にログを出力する場合に、複数プロセスからのログ出力が競合するとログが正常に出力されない場合がある。** 障害発生時は同一ログファイルに障害ログも出力する。障害コードを設定することで障害通知ログのフォーマット（障害コードを含む）で出力でき、通常の障害通知ログと同様の方法で監視が可能になるため推奨。\n\n障害コードのプロパティ:\n\n| プロパティ名 | 障害の内容 | ログレベル |\n|---|---|---|\n| failureCodeCreateLockFile | ロックファイルが生成できない | FATAL |\n| failureCodeReleaseLockFile | 生成したロックファイルを解放(削除)できない | FATAL |\n| failureCodeForceDeleteLockFile | 解放されないロックファイルを強制削除できない | FATAL |\n| failureCodeInterruptLockWait | ロック取得待ちでスリープ中に割り込みが発生 | FATAL |\n\n> **重要**: 障害コードを設定した場合、障害通知ログのフォーマットで同一ログファイルに出力されるが、障害解析ログは出力されない。\n\n設定例:\n\n```properties\nwriterNames=monitorLog\n\nwriter.monitorLog.className=nablarch.core.log.basic.SynchronousFileLogWriter\nwriter.monitorLog.filePath=/var/log/app/monitor.log\nwriter.monitorLog.encoding=UTF-8\nwriter.monitorLog.outputBufferSize=8\nwriter.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.monitorLog.level=ERROR\nwriter.monitorLog.lockFilePath=/var/log/lock/monitor.lock\nwriter.monitorLog.lockRetryInterval=10\nwriter.monitorLog.lockWaitTime=3000\nwriter.monitorLog.failureCodeCreateLockFile=MSG00101\nwriter.monitorLog.failureCodeReleaseLockFile=MSG00102\nwriter.monitorLog.failureCodeForceDeleteLockFile=MSG00103\nwriter.monitorLog.failureCodeInterruptLockWait=MSG00104\n```\n\n> **重要**: `maxFileSize` プロパティを指定するとログのローテーションが発生し、ログ出力ができなくなることがあるため指定しないこと。",
+    "s2": "**クラス**: `nablarch.core.log.basic.LogPublisher`, `nablarch.core.log.basic.LogListener`, `nablarch.core.log.basic.LogContext`\n\n:java:extdoc:`LogPublisher <nablarch.core.log.basic.LogPublisher>` は、出力されたログ情報（:java:extdoc:`LogContext <nablarch.core.log.basic.LogContext>`）を登録された :java:extdoc:`LogListener <nablarch.core.log.basic.LogListener>` に連携する機能を提供する。出力されたログ情報に対してプログラム的な処理を行いたい場合に使用する。\n\n**使用手順:**\n\n1. `LogPublisher` を `LogWriter` として設定し、ログ情報を処理したいloggerの `writerNames` に追加する\n\n```properties\nwriterNames=monitorFile,appFile,stdout,logPublisher\n\nwriter.logPublisher.className=nablarch.core.log.basic.LogPublisher\nwriter.logPublisher.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appFile,stdout,logPublisher\n\nloggers.MON.nameRegex=MONITOR\nloggers.MON.level=ERROR\nloggers.MON.writerNames=monitorFile,logPublisher\n```\n\n2. `LogListener` の実装クラスを作成する\n\n```java\npublic class CustomLogListener implements LogListener {\n    @Override\n    public void onWritten(LogContext context) {\n        // LogContext を使った処理を実装する\n    }\n}\n```\n\n3. `LogListener` のインスタンスを `LogPublisher` の `static` メソッドで登録する\n\n```java\nLogListener listener = new CustomLogListener();\nLogPublisher.addListener(listener);\n```\n\n登録した `LogListener` の削除: :java:extdoc:`removeListener(LogListener) <nablarch.core.log.basic.LogPublisher.removeListener(nablarch.core.log.basic.LogListener)>` または :java:extdoc:`removeAllListeners() <nablarch.core.log.basic.LogPublisher.removeAllListeners()>` で削除できる。",
+    "s3": "ログレベルは6段階（高い順）。設定で指定されたレベル以上のログを全て出力する。例えばWARNが設定された場合、FATAL・ERROR・WARNのみ出力する。\n\n| ログレベル | 説明 |\n|---|---|\n| FATAL | アプリケーションの継続が不可能になる深刻な問題。監視必須で即通報・即対応が必要。 |\n| ERROR | アプリケーション継続に支障をきたす問題。監視必須だがFATALほどの緊急性なし。 |\n| WARN | すぐには影響しないが放置するとアプリ継続に支障をきたす恐れがある事象。できれば監視。 |\n| INFO | 本番運用時のアプリ情報出力レベル。アクセスログや統計ログが該当。 |\n| DEBUG | 開発時のデバッグ情報出力レベル。SQLログや性能ログが該当。 |\n| TRACE | DEBUGより細かい情報を出力したい場合に使用。 |\n\n> **補足**: 本番運用時はINFOレベルでの出力を想定。ログファイルサイズ肥大化を防ぐため、プロジェクト毎にログ出力内容を規定すること。\n\n> **補足**: フレームワーク自身のログ出力方針については :ref:`log-fw_log_policy` を参照。",
+    "s4": "| ログレベル | 出力方針 |\n|---|---|\n| FATAL/ERROR | 障害ログ出力時に使用。原則として1件の障害に対して1件の障害ログを出力する。実行制御基盤では単一のハンドラ（例外処理ハンドラ）により障害通知ログを出力する。 |\n| WARN | 障害発生時に連鎖して例外が発生した場合など、障害ログとして出力できない例外を出力する。例: 業務処理とトランザクション終了処理の両方で例外が発生した場合、業務処理の例外は障害ログ、トランザクション終了処理の例外はWARNレベルで出力する。 |\n| INFO | アプリケーション実行状況に関連するエラー検知時に出力。例: URLパラメータ改竄エラー、認可チェックエラー。 |\n| DEBUG | アプリ開発時に使用するデバッグ情報を出力。DEBUGレベル設定で開発に必要な情報が出力される。 |\n| TRACE | フレームワーク開発時に使用するデバッグ情報。アプリ開発での使用は想定外。 |",
+    "s5": "log4jとの機能比較（○：提供あり　△：一部提供あり　×：提供なし　－：対象外）\n\n| 機能 | Nablarch | log4j |\n|---|---|---|\n| ログの出力有無をログレベルで制御できる | ○ | ○ |\n| ログの出力有無をカテゴリ(パッケージ単位や名前など)で制御できる | ○ | ○ |\n| 1つのログを複数の出力先に出力できる | ○ | ○ |\n| ログを標準出力に出力できる | ○ | ○ |\n| ログをファイルに出力できる | ○ | ○ |\n| ファイルサイズによるログファイルのローテーションができる | △[1] | ○ |\n| 日時によるログファイルのローテーションができる | △[1] | ○ |\n| ログをメールで送信できる | ×[2] | ○ |\n| ログをTelnetで送信できる | ×[2] | ○ |\n| ログをSyslogで送信できる | ×[2] | ○ |\n| ログをWindows NTのイベントログに追加できる | ×[2] | ○ |\n| データベースにログを出力できる | ×[2] | ○ |\n| ログを非同期で出力できる | ×[2] | ○ |\n| ログのフォーマットをパターン文字列で指定できる | ○ | ○ |\n| 障害ログを出力できる | ○ | — |\n| HTTPアクセスログを出力できる | ○ | — |\n| SQLログを出力できる | ○ | — |\n| パフォーマンスログを出力できる | ○ | — |\n| メッセージングログを出力できる | ○ | — |\n\n[1] Nablarchのログ出力はファイルの世代管理を提供していないため、一部提供ありとしている。\n[2] :ref:`log_adaptor` を使用するか、プロジェクトで作成する（作成方法は :ref:`log-add_log_writer` を参照）。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

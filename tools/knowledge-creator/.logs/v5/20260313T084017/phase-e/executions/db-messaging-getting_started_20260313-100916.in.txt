@@ -1,0 +1,102 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "db-messaging-getting_started",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "前提条件 section",
+      "description": "The prerequisite that this chapter is based on the example application and users must build the Example application environment in advance is missing. This is a concrete precondition for following this Getting Started guide.",
+      "source_evidence": "前提条件: 本章は :ref:`example_application` をベースに解説する。Exampleアプリケーションの動作環境を事前に構築しておくこと。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`db_messaging_getting_started`:
+
+Getting Started
+========================================
+本章を通読することで、Nablarchのテーブルをキューとして使ったメッセージング方式の開発イメージを掴むことができる。
+
+.. tip::
+ ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。
+ 
+ 本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。
+
+
+前提条件
+  本章は :ref:`example_application` をベースに解説する。
+  Exampleアプリケーションの動作環境を事前に構築しておくこと。
+
+  .. tip::
+    Exampleアプリケーションに関する以下の事項は、本章では解説しない。
+    以下の事項については、 :ref:`example_application` を参照すること。
+
+    - Exampleアプリケーションの環境構築および実行
+    - Exampleアプリケーションの設定
+    - 使用しているOSSプラグインについて
+
+.. toctree::
+  :maxdepth: 1
+
+  getting_started/table_queue
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "db-messaging-getting_started",
+  "title": "Getting Started",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/db/getting_started.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Getting Started",
+      "hints": [
+        "DBメッセージング Getting Started",
+        "テーブルをキューとして使ったメッセージング",
+        "Exampleアプリケーション",
+        "blank_project",
+        "table_queue"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **補足**: ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,259 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/web/nablarch_tag_handler.rst`
+- Format: `rst`
+
+```
+.. _nablarch_tag_handler:
+
+Nablarchカスタムタグ制御ハンドラ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+Nablarchの :ref:`tag` に必要なリクエスト処理を行うハンドラ。
+
+本ハンドラでは、以下の処理を行う。
+
+* カスタムタグのデフォルト値をJSPで参照できるように、
+  :java:extdoc:`CustomTagConfig<nablarch.common.web.tag.CustomTagConfig>` をリクエストスコープに設定する。
+* :ref:`hidden暗号化<tag-hidden_encryption>` に対応する改竄チェックと復号処理を行う。
+* :ref:`チェックボックスのチェックなしに対する値を指定する<tag-checkbox_off_value>` ために、リクエストにチェックなしに対応する値を設定する。
+* :ref:`ボタン又はリンク毎のパラメータ追加<tag-submit_change_parameter>` のために、リクエストにパラメータを追加する。
+* :ref:`http_access_log` のリクエストパラメータを出力する。
+* :ref:`複合キーを扱える<tag-composite_key>` ようにするため、複合キーを復元する。
+
+.. tip::
+ GETリクエストの場合、カスタムタグではhiddenパラメータを出力しない。
+ hiddenパラメータを出力しない理由は、 :ref:`tag-using_get` を参照。
+
+ カスタムタグに合わせて、本ハンドラでも、GETリクエストの場合はhiddenパラメータに関連する処理を行わず、
+ 複合キーの復元処理のみを行う。
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/NablarchTagHandler/NablarchTagHandler_flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.common.web.handler.NablarchTagHandler`
+
+モジュール一覧
+---------------------------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-tag</artifactId>
+  </dependency>
+
+制約
+------------------------------
+:ref:`multipart_handler` より後ろに設定すること
+  本ハンドラは、 :ref:`tag` に必要なリクエスト処理でリクエストパラメータにアクセスするため。
+
+:ref:`hidden暗号化<tag-hidden_encryption>` 使用時は、:ref:`thread_context_handler` より後ろに設定すること
+  hidden暗号化対象のリクエストか否かを判定するために、スレッドコンテキストからリクエストIDを取得するため。
+
+復号に失敗(改竄エラー、セッション無効化エラー)した場合のエラーページを設定する
+------------------------------------------------------------------------------------
+:ref:`hidden暗号化<tag-hidden_encryption>` の復号処理は、次の2つのケースにおいて失敗する可能性がある。
+改竄の判定基準は、 :ref:`復号処理<tag-hidden_encryption_decryption>` を参照。
+
+* 暗号化したデータが改竄された場合(改竄エラー)
+* セッションから復号に使う鍵を取得できない場合(セッション無効化エラー)
+
+それぞれ、
+:java:extdoc:`NablarchTagHandler<nablarch.common.web.handler.NablarchTagHandler>` の設定で、
+エラー発生時のエラーページとステータスコードを指定できる。
+
+.. code-block:: xml
+
+  <component name="nablarchTagHandler"
+             class="nablarch.common.web.handler.NablarchTagHandler">
+    <!--
+      改竄エラー発生時の設定
+    -->
+    <property name="path" value="/TAMPERING-DETECTED.jsp" />
+    <property name="statusCode" value="400" />
+    <!--
+      セッション無効化エラー発生時の設定
+      省略した場合は改竄エラー発生時の設定が使用される。
+    -->
+    <property name="sessionExpirePath" value="/SESSION-EXPIRED.jsp" />
+    <property name="sessionExpireStatusCode" value="400" />
+
+  </component>
+```
+
+## Knowledge File
+
+- ID: `handlers-nablarch_tag_handler--s1`
+
+```json
+{
+  "id": "handlers-nablarch_tag_handler--s1",
+  "title": "Nablarchカスタムタグ制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/nablarch_tag_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/tag/CustomTagConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/handler/NablarchTagHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "NablarchTagHandler",
+        "CustomTagConfig",
+        "カスタムタグ制御ハンドラ",
+        "hidden暗号化",
+        "複合キー復元",
+        "GETリクエスト",
+        "リクエストスコープ設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web-tag",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "multipart_handler",
+        "thread_context_handler",
+        "ハンドラ設定順序",
+        "制約",
+        "hidden暗号化使用時"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "復号に失敗(改竄エラー、セッション無効化エラー)した場合のエラーページを設定する",
+      "hints": [
+        "NablarchTagHandler",
+        "改竄エラー",
+        "セッション無効化エラー",
+        "エラーページ設定",
+        "path",
+        "statusCode",
+        "sessionExpirePath",
+        "sessionExpireStatusCode"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":ref:`tag` に必要なリクエスト処理を行うハンドラ。\n\n以下の処理を行う：\n1. :java:extdoc:`CustomTagConfig<nablarch.common.web.tag.CustomTagConfig>` をリクエストスコープに設定（カスタムタグのデフォルト値をJSPで参照可能にする）\n2. :ref:`hidden暗号化<tag-hidden_encryption>` の改竄チェックと復号処理\n3. チェックボックスのチェックなしに対応する値をリクエストに設定（:ref:`tag-checkbox_off_value` 対応）\n4. ボタン又はリンク毎のパラメータ追加のためリクエストにパラメータを追加（:ref:`tag-submit_change_parameter` 対応）\n5. :ref:`http_access_log` のリクエストパラメータを出力\n6. 複合キーの復元（:ref:`tag-composite_key` 対応）\n\n> **補足**: GETリクエストの場合、hiddenパラメータ関連処理は行わず、複合キーの復元処理のみ行う。\n\n**クラス**: `nablarch.common.web.handler.NablarchTagHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```",
+    "s3": "- :ref:`multipart_handler` より後ろに設定すること（リクエストパラメータにアクセスするため）\n- :ref:`hidden暗号化<tag-hidden_encryption>` 使用時は :ref:`thread_context_handler` より後ろに設定すること（スレッドコンテキストからリクエストIDを取得するため）",
+    "s4": ":ref:`hidden暗号化<tag-hidden_encryption>` の復号処理が失敗するケース：\n1. 暗号化データが改竄された場合（改竄エラー）\n2. セッションから復号鍵を取得できない場合（セッション無効化エラー）\n\n:java:extdoc:`NablarchTagHandler<nablarch.common.web.handler.NablarchTagHandler>` でエラーページとステータスコードを設定可能。`sessionExpirePath`/`sessionExpireStatusCode` を省略した場合は改竄エラーの設定が使用される。\n\n```xml\n<component name=\"nablarchTagHandler\"\n           class=\"nablarch.common.web.handler.NablarchTagHandler\">\n  <property name=\"path\" value=\"/TAMPERING-DETECTED.jsp\" />\n  <property name=\"statusCode\" value=\"400\" />\n  <property name=\"sessionExpirePath\" value=\"/SESSION-EXPIRED.jsp\" />\n  <property name=\"sessionExpireStatusCode\" value=\"400\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

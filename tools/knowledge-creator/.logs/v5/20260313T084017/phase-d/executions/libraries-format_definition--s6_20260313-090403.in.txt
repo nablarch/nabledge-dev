@@ -1,0 +1,478 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/data_io/data_format/format_definition.rst`
+- Format: `rst`
+
+```
+フィールドタイプ一覧
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+標準で提供するデータタイプ定義一覧を以下に示す。
+
+Fixed(固定長)データ形式で使用可能なフィールドタイプ一覧
+  .. list-table::
+    :class: white-space-normal
+    :header-rows: 1
+    :widths: 13 15 72
+
+    * - タイプ
+      - Java型
+      - 説明
+
+    * - .. _data_format-field_type-single_byte_character_string:
+
+        X
+      - String
+      - シングルバイト文字列(バイト長 = 文字列長)
+
+        デフォルトでは、半角空白による右トリム及びパディングが行われる。
+
+        :引数: バイト長(数値) ``必須``
+
+        出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+        読み込んだ値が空文字列の場合は、 ``null`` に変換する。
+        空文字列を ``null`` に変換したくない場合は、
+        :java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setConvertEmptyToNull(boolean)>` に ``false`` を設定する。
+
+    * - N
+      - String
+      - ダブルバイト文字列 (バイト長 = 文字数 ÷ 2)
+
+        デフォルトでは、全角空白による右トリム・パディングを行う。
+
+        :引数: バイト長(数値) ``必須``
+
+        ※バイト長が2の倍数でない場合は構文エラーとなる。
+
+        出力対象の値が ``null`` の場合や、読み込んだ値が空文字列の場合の扱いは、
+        :ref:`シングルバイト文字列のフィールドタイプ <data_format-field_type-single_byte_character_string>` と同じ。
+
+    * - XN
+      - String
+      - マルチバイト文字列
+
+        UTF-8のようにバイト長の異なる文字が混在するフィールドを扱う場合に、このフィールドタイプを指定する。
+
+        また、全角文字列（ダブルバイト文字列）のパディングに半角スペースを使用する場合にも本フィールドタイプを使用する。
+
+        デフォルトでは、半角空白による右トリム・パディングを行う。
+
+        :引数: バイト長(数値) ``必須``
+
+        出力対象の値が ``null`` の場合や、読み込んだ値が空文字列の場合の扱いは、
+        :ref:`シングルバイト文字列のフィールドタイプ <data_format-field_type-single_byte_character_string>` と同じ。
+
+    * - .. _data_format-field_type-zoned_decimal:
+
+        Z
+      - BigDecimal
+      - ゾーン数値(バイト長 = 桁数)
+
+        デフォルトでは、 ``0`` による左トリム・パディングを行う。
+
+        :引数1: バイト長(数値) ``必須``
+        :引数2: 小数点以下桁数(数値) ``任意`` デフォルト: ``0``
+
+        出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+        読み込んだ値のバイト数が ``0`` の場合は、 ``null`` に変換する。
+        バイト数が ``0`` の場合に ``null`` に変換したくない場合は、
+        :java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setConvertEmptyToNull(boolean)>` に ``false`` を設定する。
+
+    * - SZ
+      - BigDecimal
+      - 符号付きゾーン数値 (バイト長 = 桁数)
+
+        デフォルトでは、 ``0`` による左トリム・パディングを行う。
+
+        :引数1: バイト長(数値) ``必須``
+        :引数2: 少数点以下桁数(数値) ``任意`` デフォルト: ``0``
+        :引数3: ゾーン部に設定する正符号(16進表記の文字列) ``任意``
+        :引数4: ゾーン部に設定する負符号(16進表記の文字列) ``任意``
+
+        引数3及び引数4は、 :ref:`符号付きゾーン数値の正符号 <data_format-positive_zone_sign_nibble>` 及び
+        :ref:`符号付きゾーン数値の負符号 <data_format-negative_zone_sign_nibble>` を上書きする場合に設定する。
+
+        出力対象の値が ``null`` の場合や、読み込んだ値のバイト数が ``0`` の場合の扱いは、
+        :ref:`ゾーン数値のフィールドタイプ <data_format-field_type-zoned_decimal>` と同じ。
+
+    * - P
+      - BigDecimal
+      - パック数値 (バイト長 = 桁数 ÷ 2 [端数切り上げ])
+
+        デフォルトでは、 ``0`` による左トリム・パディングを行う。
+
+        :引数1: バイト長(数値) ``必須``
+        :引数2: 少数点以下桁数(数値) ``任意`` デフォルト: ``0``
+
+        出力対象の値が ``null`` の場合や、読み込んだ値のバイト数が ``0`` の場合の扱いは、
+        :ref:`ゾーン数値のフィールドタイプ <data_format-field_type-zoned_decimal>` と同じ。
+
+    * - SP
+      - BigDecimal
+      - 符号付きパック数値 (バイト長 = (桁数 + 1) ÷ 2 [端数切り上げ])
+
+        デフォルトでは、 ``0`` による左トリム・パディングを行う。
+
+        :引数1: バイト長(数値) ``必須``
+        :引数2: 少数点以下桁数(数値) ``任意`` デフォルト: ``0``
+        :引数3: 符号ビットに設定する正符号 (16進表記の文字列) ``任意``
+        :引数4: 符号ビットに設定する負符号 (16進表記の文字列) ``任意``
+
+        引数3及び引数4は、 :ref:`符号付きパック数値の正符号 <data_format-positive_pack_sign_nibble>` 及び
+        :ref:`符号付きパック数値の負符号 <data_format-negative_pack_sign_nibble>` を上書きする場合に設定する。
+
+        出力対象の値が ``null`` の場合や、読み込んだ値のバイト数が ``0`` の場合の扱いは、
+        :ref:`ゾーン数値のフィールドタイプ <data_format-field_type-zoned_decimal>` と同じ。
+
+    * - B
+      - byte[]
+      - バイナリ列
+
+        パディングやトリムは行わない。
+
+        :引数: バイト長(数値) ``必須``
+
+        出力対象の値が ``null`` の場合の変換仕様はアプリケーションごとに様々である。
+        そのため、本フィールドタイプではその場合でも値の変換は行わず、
+        :java:extdoc:`InvalidDataFormatException <nablarch.core.dataformat.InvalidDataFormatException>`
+        を送出する。
+
+        本フィールドタイプを使用する場合、要件に合わせてアプリケーション側で明示的に値を設定すること。
+
+    * - X9
+      - BigDecimal
+      - 符号無し数値文字列 (バイト長 = 文字数)
+
+        フィールド中のシングルバイト文字列(X)を数値として扱う。
+
+        デフォルトでは、 ``0`` による左トリム・パディングを行う。
+        文字列中に小数点記号( ``.`` )を含めることできる。
+
+        :引数1: バイト長(数値) ``必須``
+        :引数2: 固定小数点の場合の小数点以下桁数(数値) ``任意`` デフォルト: ``0``
+
+        出力対象の値が ``null`` の場合の扱いは、
+        :ref:`ゾーン数値のフィールドタイプ <data_format-field_type-zoned_decimal>` と同じ。
+
+        読み込んだ値が空文字列の場合の扱いは、
+        :ref:`シングルバイト文字列のフィールドタイプ <data_format-field_type-single_byte_character_string>` と同じ。
+
+
+    * - SX9
+      - BigDecimal
+      - 符号付き数値文字列 (バイト長 = 文字数)
+
+        フィールド中のシングルバイト文字列(X)を符号付き数値として扱う。
+        デフォルトでは、 ``0`` による左トリム・パディングを行う。
+
+        :引数1: バイト長(数値) ``必須``
+        :引数2: 固定小数点の場合の小数点以下桁数(数値) ``任意`` デフォルト: ``0``
+
+        出力対象の値が ``null`` の場合の扱いは、
+        :ref:`ゾーン数値のフィールドタイプ <data_format-field_type-zoned_decimal>` と同じ。
+
+        読み込んだ値が空文字列の場合の扱いは、
+        :ref:`シングルバイト文字列のフィールドタイプ <data_format-field_type-single_byte_character_string>` と同じ。
+
+        符号文字(``+`` 、``-``)を変更したい場合は、以下のクラスの実装を参考にプロジェクト固有のフィールドタイプを作成して対応する。
+
+        * :java:extdoc:`SignedNumberStringDecimal <nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal>`
+
+        フィールドタイプの追加については、 :ref:`data_format-field_type_add` を参照。
+
+Variable(可変長)データ形式で使用可能なフィールドタイプ一覧
+  .. list-table::
+    :class: white-space-normal
+    :header-rows: 1
+    :widths: 13 15 72
+
+    * - タイプ
+      - Java型
+      - 説明
+
+    * - X |br|
+        N |br|
+        XN |br|
+        X9 |br|
+        SX9
+      - String
+      - 可変長データ形式では、すべてのフィールドを文字列（String）として読み書きする。
+
+        どのタイプ識別子を指定しても動作は変わらない。
+        また、フィールド長の概念が無いので、引数は不要である。
+
+        もし、文字列を数値形式(BigDecimal)として読み書きしたい場合は、
+        :ref:`numberコンバータ <data_format-number_convertor>`
+        または :ref:`signed_numberコンバータ <data_format-signed_number_convertor>` を使用すること。
+
+        出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+        
+        読み込んだ値が空文字列の場合は、 ``null`` に変換する。
+        空文字列を ``null`` に変換したくない場合は、 :java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.VariableLengthConvertorSetting.setConvertEmptyToNull(boolean)>` に ``false`` を設定する。
+
+
+JSONおよびXMLデータ形式で使用可能なフィールドタイプ一覧
+  .. list-table::
+    :class: white-space-normal
+    :header-rows: 1
+    :widths: 13 15 72
+
+    * - タイプ
+      - Java型
+      - 説明
+
+    * - .. _data_format-field_type-nullable_string:
+
+        X |br|
+        N |br|
+        XN
+      - String
+      - 文字列データタイプ
+
+        パディングなどの編集は行わない。
+
+        JSONの場合は、出力時に値がダブルクォート ``"`` で括られる。
+
+        出力対象の値が ``null`` の場合、JSONでは値の変換は行わなず、
+        XMLでは空文字に変換する。
+
+    * - X9 |br|
+        SX9 |br|
+      - String
+      - 数値文字列タイプ
+
+        パディングなどのデータ編集は行わない。出力時は値がそのまま出力される。
+
+        もし、文字列を数値形式(BigDecimal)として読み書きしたい場合は、
+        :ref:`numberコンバータ <data_format-number_convertor>`
+        または :ref:`signed_numberコンバータ <data_format-signed_number_convertor>` 使用すること。
+
+        出力対象の値が ``null`` の場合の扱いは、
+        :ref:`文字列データタイプのフィールドタイプ <data_format-field_type-nullable_string>` と同じ。
+
+    * - BL
+      - String	
+      - 文字列（ ``true`` or ``false`` を文字列で表したもの）
+
+        パディングなどのデータ編集は行わない。出力時は値がそのまま出力される。
+
+        出力対象の値が ``null`` の場合の扱いは、
+        :ref:`文字列データタイプのフィールドタイプ <data_format-field_type-nullable_string>` と同じ。
+
+    * - .. _data_format-nest_object:
+
+        OB
+      - \-
+      - ネストされたレコードタイプを指定する場合に使用する。
+
+        フィールド名に対応した、レコードタイプがネストした要素として入出力される。
+
+        出力対象の値が ``null`` の場合の扱いは、
+        :ref:`文字列データタイプのフィールドタイプ <data_format-field_type-nullable_string>` と同じ。
+
+        以下に使用例を示す。
+
+        json
+          .. code-block:: json
+
+            {
+              "users": [
+                {
+                  "name"    : "名前",
+                  "age"     : 30,
+                  "address" : "住所"
+                },
+                {
+                  "name"    : "名前1",
+                  "age"     : 31,
+                  "address" : "住所1"
+                }
+              ]
+            }
+
+        xml
+          .. code-block:: xml
+            
+            <users>
+              <user>
+                <name>名前</name>
+                <age>30</age>
+                <address>住所</address>
+              </user>
+              <user>
+                <name>名前1</name>
+                <age>31</age>
+                <address>住所1</address>
+              </user>
+            </users>
+
+        上記のjson及びxmlに対応したフォーマット定義ファイルは以下のとおり。
+
+        .. code-block:: bash
+
+          [users]       # ルート要素
+          1 user [1..*] OB
+
+          [user]        # ネストした要素
+          1 name    N   # 最下層の要素
+          2 age     X9
+          3 address N
+
+
+.. _data_format-field_convertor_list:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-format_definition--s6`
+
+```json
+{
+  "id": "libraries-format_definition--s6",
+  "title": "フィールドタイプ一覧",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format/format_definition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/FixedLengthConvertorSetting.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/InvalidDataFormatException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/datatype/SignedNumberStringDecimal.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/dataformat/convertor/VariableLengthConvertorSetting.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フィールドタイプ一覧",
+      "hints": [
+        "固定長フィールドタイプ",
+        "可変長フィールドタイプ",
+        "JSONフィールドタイプ",
+        "XMLフィールドタイプ",
+        "ゾーン数値",
+        "パック数値",
+        "バイナリ列",
+        "ネストレコード",
+        "convertEmptyToNull",
+        "FixedLengthConvertorSetting",
+        "VariableLengthConvertorSetting",
+        "InvalidDataFormatException",
+        "SignedNumberStringDecimal",
+        "X",
+        "N",
+        "XN",
+        "Z",
+        "SZ",
+        "P",
+        "SP",
+        "B",
+        "X9",
+        "SX9",
+        "BL",
+        "OB"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Fixed(固定長)データ形式フィールドタイプ一覧\n\n| タイプ | Java型 | 説明 |\n|---|---|---|\n| X | String | シングルバイト文字列(バイト長 = 文字列長)。デフォルト: 半角空白による右トリム・パディング。引数: バイト長(数値) 必須。出力値null→空文字変換して処理。読み込み空文字列→null変換。null変換を無効化する場合は:java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setConvertEmptyToNull(boolean)>`にfalseを設定 |\n| N | String | ダブルバイト文字列(バイト長 = 文字数 ÷ 2)。デフォルト: 全角空白による右トリム・パディング。引数: バイト長(数値) 必須。バイト長が2の倍数でない場合は構文エラー。null/空文字扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ |\n| XN | String | マルチバイト文字列(UTF-8等バイト長の異なる文字が混在するフィールド、または全角文字列のパディングに半角スペースを使用する場合に指定)。デフォルト: 半角空白による右トリム・パディング。引数: バイト長(数値) 必須。null/空文字扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ |\n| Z | BigDecimal | ゾーン数値(バイト長 = 桁数)。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 小数点以下桁数(数値) 任意(デフォルト: 0)。出力値null→0変換。読み込みバイト数0→null変換。null変換を無効化する場合は:java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.FixedLengthConvertorSetting.setConvertEmptyToNull(boolean)>`にfalseを設定 |\n| SZ | BigDecimal | 符号付きゾーン数値(バイト長 = 桁数)。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 少数点以下桁数(数値) 任意(デフォルト: 0)、引数3: ゾーン部正符号(16進表記) 任意、引数4: ゾーン部負符号(16進表記) 任意。引数3・4は:ref:`data_format-positive_zone_sign_nibble`/:ref:`data_format-negative_zone_sign_nibble`を上書きする場合に設定。null/バイト数0の扱いは:ref:`data_format-field_type-zoned_decimal`と同じ |\n| P | BigDecimal | パック数値(バイト長 = 桁数 ÷ 2 [端数切り上げ])。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 少数点以下桁数(数値) 任意(デフォルト: 0)。null/バイト数0の扱いは:ref:`data_format-field_type-zoned_decimal`と同じ |\n| SP | BigDecimal | 符号付きパック数値(バイト長 = (桁数 + 1) ÷ 2 [端数切り上げ])。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 少数点以下桁数(数値) 任意(デフォルト: 0)、引数3: 符号ビット正符号(16進表記) 任意、引数4: 符号ビット負符号(16進表記) 任意。引数3・4は:ref:`data_format-positive_pack_sign_nibble`/:ref:`data_format-negative_pack_sign_nibble`を上書きする場合に設定。null/バイト数0の扱いは:ref:`data_format-field_type-zoned_decimal`と同じ |\n| B | byte[] | バイナリ列。パディング・トリムなし。引数: バイト長(数値) 必須。出力値nullの場合は変換を行わず:java:extdoc:`InvalidDataFormatException <nablarch.core.dataformat.InvalidDataFormatException>`を送出。アプリケーション側で明示的に値を設定すること |\n| X9 | BigDecimal | 符号無し数値文字列(バイト長 = 文字数)。Xフィールドを数値として扱う。デフォルト: 0による左トリム・パディング。文字列中に小数点記号(.)を含めることができる。引数1: バイト長(数値) 必須、引数2: 固定小数点の小数点以下桁数(数値) 任意(デフォルト: 0)。出力値nullの扱いは:ref:`data_format-field_type-zoned_decimal`と同じ。読み込み空文字列の扱いは:ref:`data_format-field_type-single_byte_character_string`と同じ |\n| SX9 | BigDecimal | 符号付き数値文字列(バイト長 = 文字数)。Xフィールドを符号付き数値として扱う。デフォルト: 0による左トリム・パディング。引数1: バイト長(数値) 必須、引数2: 固定小数点の小数点以下桁数(数値) 任意(デフォルト: 0)。出力値null/読み込み空文字列の扱いは同じ。符号文字(+/-)変更時は:java:extdoc:`SignedNumberStringDecimal <nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal>`を参考にプロジェクト固有フィールドタイプを作成。フィールドタイプ追加は:ref:`data_format-field_type_add`参照 |\n\n## Variable(可変長)データ形式フィールドタイプ一覧\n\n| タイプ | Java型 | 説明 |\n|---|---|---|\n| X / N / XN / X9 / SX9 | String | 可変長データ形式では全フィールドをStringとして読み書きする。タイプ識別子による動作の違いはない。フィールド長の概念がないため引数不要。BigDecimalとして読み書きする場合は:ref:`numberコンバータ <data_format-number_convertor>`または:ref:`signed_numberコンバータ <data_format-signed_number_convertor>`を使用。出力値null→空文字変換。読み込み空文字列→null変換。null変換を無効化する場合は:java:extdoc:`convertEmptyToNull <nablarch.core.dataformat.convertor.VariableLengthConvertorSetting.setConvertEmptyToNull(boolean)>`にfalseを設定 |\n\n## JSONおよびXMLデータ形式フィールドタイプ一覧\n\n| タイプ | Java型 | 説明 |\n|---|---|---|\n| X / N / XN | String | 文字列データタイプ。パディング等の編集なし。JSON出力時は値がダブルクォートで括られる。出力値null: JSONは変換なし、XMLは空文字に変換 |\n| X9 / SX9 | String | 数値文字列タイプ。パディング等のデータ編集なし。出力時は値がそのまま出力される。BigDecimalとして読み書きする場合は:ref:`numberコンバータ <data_format-number_convertor>`または:ref:`signed_numberコンバータ <data_format-signed_number_convertor>`を使用。出力値nullの扱いは:ref:`data_format-field_type-nullable_string`と同じ |\n| BL | String | boolean値(true/falseを文字列で表したもの)。パディング等の編集なし。出力時は値がそのまま出力される。出力値nullの扱いは:ref:`data_format-field_type-nullable_string`と同じ |\n| OB | - | ネストされたレコードタイプ指定に使用。フィールド名に対応したレコードタイプがネスト要素として入出力される。出力値nullの扱いは:ref:`data_format-field_type-nullable_string`と同じ |\n\nOBタイプの使用例:\n\n```json\n{\n  \"users\": [\n    {\n      \"name\"    : \"名前\",\n      \"age\"     : 30,\n      \"address\" : \"住所\"\n    }\n  ]\n}\n```\n\n```xml\n<users>\n  <user>\n    <name>名前</name>\n    <age>30</age>\n    <address>住所</address>\n  </user>\n</users>\n```\n\n対応するフォーマット定義ファイル:\n\n```\n[users]       # ルート要素\n1 user [1..*] OB\n\n[user]        # ネストした要素\n1 name    N   # 最下層の要素\n2 age     X9\n3 address N\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,42 @@
+{
+  "id": "libraries-mail--s1",
+  "title": "メール送信",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/mail.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "メール送信",
+        "ディレードオンライン処理",
+        "非同期メール送信",
+        "テンプレートエンジン",
+        "定型メール",
+        "TinyTemplateEngineMailProcessor",
+        "キャンペーンメール",
+        "一斉送信非対応",
+        "メール送信要求",
+        "1対1",
+        "1通"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-mail-sender",
+        "nablarch-common-idgenerator",
+        "nablarch-common-idgenerator-jdbc",
+        "モジュール依存関係",
+        "メール送信モジュール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "メール送信はディレードオンライン処理を採用。即時送信ではなく、メール送信要求をDBに格納し、:ref:`常駐バッチ<nablarch_batch-resident_batch>` で非同期送信する。\n\n採用理由:\n- メール送信をアプリケーションの業務トランザクションに含められる\n- メールサーバ/ネットワーク障害時もアプリケーション処理に影響しない\n\n提供する機能:\n- :ref:`メール送信要求をDBに登録する機能<mail-request>`\n- :ref:`メール送信要求に基づいてメールを送信するバッチ機能<mail-send>`\n\nアプリケーションがメール送信要求を出す毎に1つのメール送信要求を作成し、メール送信要求1つにつきメールを1通送信する。\n\n> **補足**: 即時メール送信APIは提供していない。即時送信が必要な場合はJavaMailを直接使用すること。\n\n## テンプレートを使った定型メール\n\n同じ文言で一部のみ異なるメール送信向けに、テンプレートのプレースホルダを変換して件名・本文を生成する機能を提供。詳細は:ref:`mail-request`を参照。\n\n> **重要**: Nablarch 5u13からテンプレートエンジンを使用した定型メールがサポートされた。5u12以前の`TinyTemplateEngineMailProcessor`は以下の制限がある:\n> - プレースホルダに設定できるのは単純な文字列のみ（構造化オブジェクト不可）\n> - 条件分岐・繰り返し等の制御構文が非対応\n>\n> 既存の定型メール機能の代わりに、以下のテンプレートエンジンを使用することを推奨:\n> - :ref:`mail_sender_freemarker_adaptor`\n> - :ref:`mail_sender_thymeleaf_adaptor`\n> - :ref:`mail_sender_velocity_adaptor`\n\n## キャンペーンメール等の大量一斉送信非対応\n\n本機能はキャンペーン通知等の一斉送信には対応していない。以下に該当する場合は専用プロダクトの使用を推奨:\n- キャンペーン通知やメールマガジンなど大量メールの一括送信\n- 配信メールの開封率・クリックカウント計測\n- メールアドレスからクライアント種別（フィーチャーフォン等）を判別した送信切り替え",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-mail-sender</artifactId>\n</dependency>\n\n<!-- メール送信要求IDの採番に使用する -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-idgenerator</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-idgenerator-jdbc</artifactId>\n</dependency>\n```"
+  }
+}

@@ -1,0 +1,336 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/extension_components/report/index.rst`
+- Format: `rst`
+
+```
+リソースの配置と実装
+-------------------------------
+
+**リソースの配置例**
+
+ .. code-block:: bash
+
+   sample_application/
+      ├─ src/
+      │   ├─ main/
+      │   │   ├─ java/     # java fileなど
+      │   │   │   └─ please/
+      │   │   │         └─ change/
+      │   │   │           ## 中略 ##
+      │   │   │
+      │   │   └─ resource/
+      │   │       ├─ batch/
+      │   │       ├─ web/
+      │   │       └─ report/    # 帳票テンプレートのルート。FilePathSettingで指定する。
+      │   │            ├─ R001/ # REPORT ID = R001用ディレクトリ。ここからは業務コードにて指定。
+      │   │            │      ├─ index.jasper     # デフォルトで利用するテンプレート
+      │   │            │      └─ userdata.jasper  # テンプレート名指定で利用できるテンプレート
+      │   │          ## 後略 ##
+
+
+
+ 
+**実装例**
+
+ .. code-block:: java
+
+    /**
+     * R001/index.jsaperテンプレートを利用して帳票を出力する。 
+     *
+     * @param data 帳票に出力するkeyとdataを持つMap
+     * @return 出力した帳票ファイルオブジェクト
+     **/
+    private File printReport(Map<String,String> data) {
+        // R001配下の帳票テンプレートを利用。テンプレートの指定がないのでindex.jasperを利用する。
+        ReportParam param = new ReportParam(data);
+        ReportContext ctx = new ReportContext("R001");
+        ctx.addReportParam(param);
+        
+        return ReportManager.createReport(ctx);
+    }
+
+    /**
+     * R001/userdata.jsaperテンプレートを利用して帳票を出力する。 
+     *
+     * @param data 帳票に出力するkeyとdataを持つMap
+     * @return 出力した帳票ファイルオブジェクト
+     **/
+    private File printReport(Map<String,String> data) {
+        // テンプレートを指定しているのでuserdata.jasperを利用する。
+        ReportParam param = new ReportParam("userdata", data);
+        ReportContext ctx = new ReportContext("R001");
+        ctx.addReportParam(param);
+        
+        return ReportManager.createReport(ctx);
+    }
+
+ .. tip::
+   
+   帳票のテストは出力結果のPDFファイルを目視で確認すること。
+
+
+**コンポーネントファイル定義設定例(report)**
+
+  .. code-block:: xml
+
+    <!-- 帳票作成処理コンポーネントの設定 -->
+    <!-- デフォルトのコンポーネント名は「reportCreator」 -->
+    <component name="reportCreator" class="nablarch.integration.report.creator.BasicReportCreator">
+
+     <!-- 帳票テンプレートファイル解決コンポーネントの設定 -->
+     <property name="reportTemplateResolver">
+       <component class="nablarch.integration.report.templateresolver.BasicReportTemplateResolver" />
+     </property>
+
+     <!-- 帳票出力処理コンポーネントの設定 -->
+     <property name="reportExporter">
+       <component class="nablarch.integration.report.exporter.BasicReportExporter">
+
+         <!-- 帳票出力先解決コンポーネントの設定 -->
+         <property name="reportOutputResolver">
+           <component class="nablarch.integration.report.outputresolver.BasicReportOutputResolver" />
+         </property>
+
+       </component>
+     </property>
+    </component>
+
+
+**コンポーネントファイル定義設定例(FilePathSetting)**
+
+  .. code-block:: bash
+
+    # 帳票ベースフォルダ
+    file.path.report=classpath:report
+ 
+ 
+  .. code-block:: xml
+
+    <component name="filePathSetting"
+               class="nablarch.core.util.FilePathSetting" autowireType="None">
+     <property name="basePathSettings">
+       <map>
+         <entry key="report" value="${file.path.report}" />
+       </map>
+     </property>
+   </component>
+
+
+.. _i18n:
+
+帳票テンプレートの言語指定
+============================
+
+ 言語ごとに帳票テンプレートを用意し、プログラム側でjava.util.Localeを指定することで、使用する帳票テンプレートを切り替える仕組みで対応する。
+
+ 「BasicReportTemplateResolver」では、帳票テンプレートのファイル名に java.util.Locale#getLanguage の値をアンダースコア付きで末尾付与したファイル名を探す。
+
+ java.util.Locale.USを指定した場合
+
+ =================== ======================
+     指定前                指定後
+ =================== ======================
+   index.jasper         index_en.jasper
+ =================== ======================
+
+ index_en.jasperファイルが見つからない場合は、index.jasperファイルを探す。
+
+ java.util.Localeのプログラム側での設定方法に関しては、 :download:`帳票アプリケーション開発ガイド <development_guide/帳票アプリケーション開発ガイド.docx>` を参照すること。
+
+
+帳票テンプレートのコンパイルAntタスク
+=====================================
+
+アプリケーションをパッケージングする際、全てのjrxmlはjasperファイルにコンパイルしておく必要がある。
+
+下記に指定ディレクトリ配下に存在するjrxmlを同一フォルダに、jasperファイルとしてコンパイルするAntタスクの実装例を示す。
+
+  .. tip::
+
+   [...] となっている箇所はプロジェクトに適したパスに置き換えること。
+
+  .. code-block:: xml
+  
+    <path id="classpath">
+        <fileset dir="[JasperReportsライブラリ格納フォルダ]">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+  
+    <target name="compile">
+        <taskdef name="jrc" classname="net.sf.jasperreports.ant.JRAntCompileTask">
+            <classpath refid="classpath" />
+        </taskdef>
+        <jrc destdir="[コンパイルファイル出力先]" tempdir="[コンパイルファイル出力先]" keepjava="false">
+            <src>
+                <fileset dir="[帳票テンプレート(jrxml)格納先ルートフォルダ]">
+                    <include name="**/*.jrxml" />
+                </fileset>
+            </src>
+            <classpath refid="classpath" />
+        </jrc>
+    </target>
+```
+
+## Knowledge File
+
+- ID: `report-report--s9`
+
+```json
+{
+  "id": "report-report--s9",
+  "title": "リソースの配置と実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/extension_components/report/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リソースの配置と実装",
+      "hints": [
+        "BasicReportCreator",
+        "BasicReportTemplateResolver",
+        "BasicReportExporter",
+        "BasicReportOutputResolver",
+        "ReportParam",
+        "ReportContext",
+        "ReportManager",
+        "FilePathSetting",
+        "帳票テンプレート配置",
+        "reportCreator",
+        "帳票出力"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "帳票テンプレートの言語指定",
+      "hints": [
+        "BasicReportTemplateResolver",
+        "java.util.Locale",
+        "Locale",
+        "言語切り替え",
+        "ロケール指定",
+        "i18n",
+        "多言語"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "帳票テンプレートのコンパイルAntタスク",
+      "hints": [
+        "jrxmlコンパイル",
+        "JRAntCompileTask",
+        "jasper",
+        "jrxml",
+        "Ant",
+        "パッケージング"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## リソースの配置\n\n帳票テンプレートのルートは `FilePathSetting` で `report` キーとして指定する。\n\n```bash\nsrc/main/resource/\n└─ report/           # FilePathSettingで\"report\"として指定\n    └─ R001/         # REPORT ID = R001用ディレクトリ（業務コードで指定）\n        ├─ index.jasper      # デフォルトテンプレート\n        └─ userdata.jasper   # テンプレート名指定で利用\n```\n\n## 実装例\n\n**クラス**: `ReportParam`, `ReportContext`, `ReportManager`\n\nテンプレート名未指定の場合は `index.jasper` を使用:\n\n```java\nReportParam param = new ReportParam(data);\nReportContext ctx = new ReportContext(\"R001\");\nctx.addReportParam(param);\nreturn ReportManager.createReport(ctx);\n```\n\n`ReportParam` の第1引数でテンプレート名を指定した場合はそのテンプレートを使用:\n\n```java\nReportParam param = new ReportParam(\"userdata\", data);\nReportContext ctx = new ReportContext(\"R001\");\nctx.addReportParam(param);\nreturn ReportManager.createReport(ctx);\n```\n\n> **補足**: 帳票のテストは出力結果のPDFファイルを目視で確認すること。\n\n## コンポーネント設定\n\n**クラス**: `nablarch.integration.report.creator.BasicReportCreator`, `nablarch.integration.report.templateresolver.BasicReportTemplateResolver`, `nablarch.integration.report.exporter.BasicReportExporter`, `nablarch.integration.report.outputresolver.BasicReportOutputResolver`\n\nデフォルトのコンポーネント名は `reportCreator`:\n\n```xml\n<component name=\"reportCreator\" class=\"nablarch.integration.report.creator.BasicReportCreator\">\n  <property name=\"reportTemplateResolver\">\n    <component class=\"nablarch.integration.report.templateresolver.BasicReportTemplateResolver\" />\n  </property>\n  <property name=\"reportExporter\">\n    <component class=\"nablarch.integration.report.exporter.BasicReportExporter\">\n      <property name=\"reportOutputResolver\">\n        <component class=\"nablarch.integration.report.outputresolver.BasicReportOutputResolver\" />\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n`FilePathSetting` でレポートベースフォルダを設定:\n\n```properties\nfile.path.report=classpath:report\n```\n\n```xml\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"report\" value=\"${file.path.report}\" />\n    </map>\n  </property>\n</component>\n```",
+    "s2": "## 帳票テンプレートの言語指定\n\n言語ごとに帳票テンプレートを用意し、プログラム側で `java.util.Locale` を指定することで、使用する帳票テンプレートを切り替える。\n\n`BasicReportTemplateResolver` は `java.util.Locale#getLanguage` の値をアンダースコア付きで末尾に付与したファイル名を探す。\n\n| 指定前 | 指定後（`java.util.Locale.US` の場合） |\n|--------|----------------------------------------|\n| index.jasper | index_en.jasper |\n\n`index_en.jasper` が見つからない場合は、`index.jasper` にフォールバックする。\n\nロケール設定方法は「帳票アプリケーション開発ガイド」を参照すること。",
+    "s3": "## 帳票テンプレートのコンパイル（Antタスク）\n\nアプリケーションパッケージング時、全ての `.jrxml` は `.jasper` ファイルにコンパイルしておく必要がある。\n\n`net.sf.jasperreports.ant.JRAntCompileTask` を使ったAntタスク実装例（`[...]` 箇所はプロジェクトに適したパスに置き換える）:\n\n```xml\n<path id=\"classpath\">\n    <fileset dir=\"[JasperReportsライブラリ格納フォルダ]\">\n        <include name=\"**/*.jar\" />\n    </fileset>\n</path>\n\n<target name=\"compile\">\n    <taskdef name=\"jrc\" classname=\"net.sf.jasperreports.ant.JRAntCompileTask\">\n        <classpath refid=\"classpath\" />\n    </taskdef>\n    <jrc destdir=\"[コンパイルファイル出力先]\" tempdir=\"[コンパイルファイル出力先]\" keepjava=\"false\">\n        <src>\n            <fileset dir=\"[帳票テンプレート(jrxml)格納先ルートフォルダ]\">\n                <include name=\"**/*.jrxml\" />\n            </fileset>\n        </src>\n        <classpath refid=\"classpath\" />\n    </jrc>\n</target>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

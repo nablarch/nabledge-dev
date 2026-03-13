@@ -1,0 +1,240 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/exclusive_control.rst`
+- Format: `rst`
+
+```
+.. _exclusive_control:
+
+排他制御
+=====================================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+この機能では、データベースのデータ更新に対する排他制御を行う。
+この機能により、データベースの同一データに対して、
+複数のトランザクション（ウェブやバッチ）から同時に更新した場合でも、
+データの整合性を保つことができる。
+
+.. _exclusive_control-deprecated:
+
+.. important::
+ この機能は、以下の理由により **非推奨** である。
+ 排他制御には、 :ref:`universal_dao` を使用すること。
+
+ * :ref:`universal_dao` の排他制御は、本機能より簡単に使用できる。
+    :ref:`universal_dao_jpa_optimistic_lock` 、 :ref:`universal_dao_jpa_pessimistic_lock` を参照。
+ * 主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。
+    この機能は、主キーの値を全て文字列型( `java.lang.String` )で保持している。
+    主キーのカラム定義が非文字列型(charやvarchar以外)の場合に、
+    データベースによっては型の不一致でSQL文の実行時例外が発生する。
+    例えば、PostgreSQLのように暗黙の型変換が行われないデータベースの場合、この問題が発生する。
+
+機能概要
+---------------------------------------------------------------------
+
+楽観的ロック/悲観的ロックができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能では、テーブルにバージョン番号カラムを定義することで、楽観的ロック/悲観的ロックを行う。
+本フレームワークでは、バージョン番号カラムが定義されたテーブルを **排他制御用テーブル** と呼ぶ。
+
+この機能では以下のことが実現できる。
+
+* :ref:`exclusive_control-optimistic_lock`
+* :ref:`exclusive_control-optimistic_lock-bulk`
+* :ref:`exclusive_control-pessimistic_lock`
+
+この機能が提供する楽観的ロック/悲観的ロックは、同じ排他制御用テーブルを使用して実現するため、
+楽観的ロックと悲観的ロックを並行で使用しても、同一データが同時に更新されるのを防ぐことができる。
+たとえば、楽観的ロックを使用するウェブと、悲観的ロックを使用するバッチを並行稼働させても、
+データの整合性を保つことができる。
+
+排他制御用テーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。
+たとえば、「ユーザ」という大きな単位でロックすることが業務的に許容されるならば、
+その単位で排他制御用テーブルを定義する。
+ただし、単位を大きくすると、競合する可能性が高くなり、
+更新失敗(楽観的ロックの場合)や処理遅延(悲観的ロックの場合)を招く点に注意すること。
+
+.. tip::
+ 通常、排他制御用テーブルの単位は、業務的な観点で定義する。
+ たとえば、売上処理と入金処理による更新が同時に行われる場合は、
+ それらの処理に関連するテーブルをまとめた単位で排他制御用テーブルを定義する。
+
+ また、テーブル設計の観点からも排他制御用テーブルの単位を定義できる。
+ たとえば、ヘッダ部(親)と明細部(子)など、テーブルの親子関係が明確であれば、
+ 親の単位で排他制御用テーブルを定義する。
+ 親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。
+
+.. important::
+
+ 排他制御用テーブルの設計が終わったら、更新順序を設計する。
+ 各テーブルの更新順序を定めることで、デッドロックの防止、及び更新時のデータ整合性の保証を実現する。
+ データベースでは、レコードを更新すると行ロックがかかるので、
+ 更新順序を定めておかなければデッドロックが発生する可能性が非常に高くなる。
+
+モジュール一覧
+---------------------------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-exclusivecontrol</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>
+  </dependency>
+
+  <!-- 楽観的ロックを行う場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-tag</artifactId>
+  </dependency>
+
+```
+
+## Knowledge File
+
+- ID: `libraries-exclusive_control--s1`
+
+```json
+{
+  "id": "libraries-exclusive_control--s1",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/exclusive_control.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "楽観的ロック",
+        "悲観的ロック",
+        "排他制御",
+        "排他制御用テーブル",
+        "バージョン番号カラム",
+        "非推奨",
+        "デッドロック防止",
+        "更新順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-exclusivecontrol",
+        "nablarch-common-exclusivecontrol-jdbc",
+        "nablarch-fw-web-tag",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: この機能は非推奨。排他制御には :ref:`universal_dao` を使用すること。理由: (1) :ref:`universal_dao` の排他制御の方が簡単に使用できる（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` 参照）(2) 主キーが非文字列型の場合、DBによっては型不一致でSQL実行時例外が発生する（例: PostgreSQLのように暗黙の型変換が行われないDB）\n\nテーブルにバージョン番号カラムを定義することで楽観的ロック/悲観的ロックを実現する。バージョン番号カラムが定義されたテーブルを**排他制御用テーブル**と呼ぶ。\n\n提供機能:\n- :ref:`exclusive_control-optimistic_lock`\n- :ref:`exclusive_control-optimistic_lock-bulk`\n- :ref:`exclusive_control-pessimistic_lock`\n\n楽観的ロックと悲観的ロックは同じ排他制御用テーブルを使用するため、並行使用しても同一データの同時更新を防げる。\n\n> **補足**: 排他制御用テーブルの単位は業務的な観点で定義する（例: 売上処理と入金処理に関連するテーブルをまとめた単位）。テーブルの親子関係が明確な場合は親の単位で定義する。単位を大きくすると競合可能性が高まり、楽観的ロックの場合は更新失敗、悲観的ロックの場合は処理遅延を招く。\n\n> **重要**: 排他制御用テーブル設計後、更新順序を設計すること。更新順序を定めないとデッドロックが発生する可能性が非常に高くなる。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>\n</dependency>\n\n<!-- 楽観的ロックを行う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

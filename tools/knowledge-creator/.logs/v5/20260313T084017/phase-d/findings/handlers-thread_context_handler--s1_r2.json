@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-thread_context_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — ハンドラの実装例",
+      "description": "The handler implementation code example references `getLanguage(request, \"user.language\")` but omits the private helper method implementation. The source includes the full method: `private String getLanguage(HttpRequest request, String paramName) { if (!request.getParamMap().containsKey(paramName)) { return null; } return request.getParam(paramName)[0]; }`. Without this, the code example is incomplete and non-compilable as shown.",
+      "source_evidence": "Source section 'ユーザが言語を選択する画面を作る' — ハンドラの実装例 contains the full private method `private String getLanguage(HttpRequest request, String paramName)`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — ハンドラの実装例",
+      "description": "The handler implementation code example references `getTimeZone(request, \"user.timeZone\")` but omits the private helper method implementation. The source includes the full method: `private String getTimeZone(HttpRequest request, String paramName) { if (!request.getParamMap().containsKey(paramName)) { return null; } return request.getParam(paramName)[0]; }`. Without this, the code example is incomplete and non-compilable as shown.",
+      "source_evidence": "Source section 'ユーザがタイムゾーンを選択する画面を作る' — ハンドラの実装例 contains the full private method `private String getTimeZone(HttpRequest request, String paramName)`"
+    }
+  ]
+}

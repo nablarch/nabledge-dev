@@ -1,0 +1,126 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-project_structure",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — WEB-INF row",
+      "description": "The source states 'WEB-INF配下の構成は、サーバ上の構成と同じであり、中に含まれるファイルも原則同じものを使用する' — i.e., not only is the directory structure the same as the server, but the actual files contained are also principally the same ones used on the server. The knowledge file only says 'サーバ上の構成と同じ', omitting the important clarification that the files themselves should principally be the same as on the server.",
+      "source_evidence": "WEB-INF行: 'WEB-INF配下の構成は、サーバ上の構成と同じであり、中に含まれるファイルも原則同じものを使用する。'"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+業務画面JSP作成時のディレクトリ構造
+==========================================
+
+作成した業務画面JSPのレイアウトや動作をブラウザで確認するためには、以下のようなディレクトリ構造に従ってファイルを配置した上で「ローカル画面確認.bat」を実行する。
+
+.. image:: _image/project_structure.png
+   :align: center
+   :scale: 90
+
+
+なお、上記ディレクトリに格納されるファイルの詳細は以下の通りとなっている。
+
+====================== ========================================================================================
+ファイル・ディレクトリ    コンテンツ
+====================== ========================================================================================
+WEB-INF                  WEB-INF配下の構成は、サーバ上の構成と同じであり、中に含まれるファイルも原則同じものを使用する。|br|
+                         以下のようなファイルが含まれている。|br|
+                         * 業務画面テンプレート |br|
+                         * 業務画面部品（ウィジェット）|br|
+                         * 業務画面JSP
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。
+---------------------- ----------------------------------------------------------------------------------------
+業務画面JSP              サブシステムIDのディレクトリ直下（ **ss11AC/** など）に、作成する業務画面JSPを配置する。|br|
+                         ファイル名は、「 **画面ID.jsp** 」とする。|br|
+                         モック動作させる場合、これらのファイルをサブディレクトリには配置できない。
+                         
+                         ※WEB-INF配下に配置する
+---------------------- ----------------------------------------------------------------------------------------
+include                  業務画面内の共通領域の内容を実装したJSPファイル群が配置されている。|br|
+                         テンプレートファイルからインクルードされている。|br|
+                         
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。 |br|
+                         ※WEB-INF配下に配置する
+---------------------- ----------------------------------------------------------------------------------------
+js                       ブラウザ上で動作するスクリプトが配置されている。|br|
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。
+---------------------- ----------------------------------------------------------------------------------------
+css                      CSSファイルが配置されている。|br|
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。
+---------------------- ----------------------------------------------------------------------------------------
+img                      画面表示に使用する画像ファイルが配置されている。|br|
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。
+---------------------- ----------------------------------------------------------------------------------------
+fonts                    画面表示に使用するアイコン用フォントが配置されている。|br|
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。
+---------------------- ----------------------------------------------------------------------------------------
+tools                    UI部品の動作デモに使用するツールが含まれる。|br|
+                         ※本ディレクトリのコンテンツは、業務設計者・業務開発者は直接修正しない。
+====================== ========================================================================================
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-project_structure",
+  "title": "業務画面JSP作成時のディレクトリ構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/guide/widget_usage/project_structure.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務画面JSP作成時のディレクトリ構造",
+      "hints": [
+        "ディレクトリ構造",
+        "業務画面JSP",
+        "ローカル画面確認",
+        "モック動作",
+        "WEB-INF配置",
+        "サブシステムID"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面JSPのローカル確認用ディレクトリ構造。「ローカル画面確認.bat」を実行して動作を確認する。\n\n| ファイル・ディレクトリ | 内容 |\n|---|---|\n| WEB-INF | サーバ上の構成と同じ。業務画面テンプレート・ウィジェット・業務画面JSPを含む。**業務設計者・業務開発者は直接修正しない** |\n| 業務画面JSP | サブシステムIDディレクトリ直下（`ss11AC/`など）に配置。ファイル名は`画面ID.jsp`。**モック動作時はサブディレクトリへの配置不可**。WEB-INF配下に配置 |\n| include | 共通領域JSPファイル群。テンプレートからインクルードされる。**業務設計者・業務開発者は直接修正しない**。WEB-INF配下に配置 |\n| js | ブラウザ上で動作するスクリプト。**業務設計者・業務開発者は直接修正しない** |\n| css | CSSファイル。**業務設計者・業務開発者は直接修正しない** |\n| img | 画面表示用画像ファイル。**業務設計者・業務開発者は直接修正しない** |\n| fonts | アイコン用フォント。**業務設計者・業務開発者は直接修正しない** |\n| tools | UI部品の動作デモ用ツール。**業務設計者・業務開発者は直接修正しない** |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

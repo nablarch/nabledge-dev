@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-universal_dao--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 (検索結果を遅延ロードする)",
+      "description": "JDBC fetch size information is omitted. Source states that with lazy loading, Universal DAO loads one record at a time, but memory usage varies based on JDBC fetch size, and developers should refer to the DB vendor's manual for fetch size details. This is decision-necessary information for tuning memory usage in large data processing scenarios.",
+      "source_evidence": "遅延ロードを使用すると、ユニバーサルDAOとしては1件ずつロードするが、JDBCのフェッチサイズによってメモリの使用量が変わる。フェッチサイズの詳細は、データベースベンダー提供のマニュアルを参照。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 (型を変換する)",
+      "description": "Class names java.sql.Date, java.lang.Integer, and java.lang.Long are referenced in the section content as type mapping examples but are absent from the hints array.",
+      "source_evidence": "例えば、DBがdate型の場合には、多くのデータベースではプロパティの型は java.sql.Date となる。また、DBが数値型(integerやbigint、number)などの場合は、プロパティの型は int (java.lang.Integer) や long (java.lang.Long) となる。"
+    }
+  ]
+}

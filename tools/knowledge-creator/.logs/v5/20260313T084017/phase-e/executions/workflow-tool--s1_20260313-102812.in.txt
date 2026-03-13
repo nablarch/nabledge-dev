@@ -1,0 +1,255 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "workflow-tool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 (使用方法)",
+      "description": "The source h2 section '使用方法' is large (>2000 chars plain text) and contains 4 h3 subsections (プラグインに対する設定、プラグインを実行する、バリデーション内容、Java11で使用する場合の設定), but the knowledge file combines all of them into a single section s2 without splitting.",
+      "source_evidence": "Source h3 headings under 使用方法: プラグインに対する設定 (~~ line), プラグインを実行する (~~ line), バリデーション内容 (~~ line), Java11で使用する場合の設定 (~~ line)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _workflow_tool:
+
+ワークフロー定義データ生成ツール
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+  
+本ツールは、BPMN2.0に準拠したワークフロー定義ファイル(xmlファイル)を読み込み、 :ref:`ワークフロー関連テーブル <workflow-table_definition>` に投入用のCSVファイルを出力するMavenプラグインである。
+CSVファイルの出力時には、ワークフロー定義ファイルの内容が、 :ref:`workflow` で利用できるかのバリデーションも行う。
+
+モジュール一覧
+--------------------------------------------------
+プラグインに対する設定値の詳細は、 :ref:`workflow_tool-plugin_configuration` を参照。
+
+.. code-block:: xml
+
+  <plugin>
+    <groupId>com.nablarch.workflow</groupId>
+    <artifactId>nablarch-workflow-tool</artifactId>
+  </plugin>
+
+使用方法
+--------------------------------------------------
+
+.. _workflow_tool-plugin_configuration:
+
+プラグインに対する設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本プラグインを使用するためには、幾つか設定する必要がある。
+以下に設定値の詳細を及び設定例を示す。
+
+outputPath
+  CSVの出力先ディレクトリ
+  
+workflowBpmnDir
+  ワークフロー用のワークフロー定義ファイルの配置ディレクトリ
+  
+  本ディレクトリ配下のワークフロー定義(拡張子が ``bpmn`` のファイル)が自動的に読み込まれ、CSVに出力される。
+  
+stateMachineBpmnDir
+  ステートマシン用のワークフロー定義ファイルの配置ディレクトリ
+  
+  本ディレクトリ配下のステートマシン定義(拡張子が ``bpmn`` のファイル)が自動的に読み込まれ、CSVに出力される。
+  
+configurationFilePath
+  テーブル名やカラム名を定義したコンポーネント設定ファイルのパス
+
+設定例
+  .. code-block:: xml
+  
+    <plugin>
+      <groupId>com.nablarch.workflow</groupId>
+      <artifactId>nablarch-workflow-tool</artifactId>
+      <version>1.1.0</version>
+      <configuration>
+        <!-- CSV出力先ディレクトリ -->
+        <outputPath>src/test/resources/data</outputPath>
+        <!-- テーブル名やカラム名を定義したコンポーネント設定ファイル -->
+        <configurationFilePath>src/design/workflow-tool.xml</configurationFilePath>
+        <!-- ワークフローのワークフロー定義ファイルの配置ディレクトリ -->
+        <workflowBpmnDir>src/design/workflow</workflowBpmnDir>
+        <!-- ステートマシンのワークフロー定義ファイルの配置ディレクトリ -->
+        <stateMachineBpmnDir>src/design/statemachine</stateMachineBpmnDir>
+      </configuration>
+    </plugin>
+
+プラグインを実行する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本プラグインのゴールである ``generate-csv`` を実行することで、設定に従いCSVファイルが出力される。
+なお、以下の定義例のようにMavenのビルドプロセス内に組み込むことで、ビルド時に自動的にCSVファイルが生成されるようになる。
+
+.. code-block:: xml
+
+  <plugin>
+    <groupId>com.nablarch.workflow</groupId>
+    <artifactId>nablarch-workflow-tool</artifactId>
+    <version>1.1.0</version>
+    
+    <executions>
+      <execution>
+        <id>generate-csv</id>
+        <phase>generate-resources</phase>
+        <goals>
+          <goal>generate-csv</goal>
+        </goals>
+        <configuration>
+          <!-- 設定値は省略 -->
+        </configuration>
+      </execution>
+    </executions>
+  </plugin>
+
+バリデーション内容
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本ツールでは、 :ref:`workflow` が想定している要素のみを使用しているかや、各要素がシーケンスフローでつながっているかなどの簡易的なバリデーションを行う。
+
+バリデーション内容は以下の通り
+
+* 想定している要素のみを使用しているか
+
+  * プール
+  * レーン
+  * ユーザタスク(ワークフローの場合)
+  * タスク(ステートマシンの場合)
+  * XORゲートウェイ
+  * 開始イベント
+  * 停止イベント
+  * 中断メッセージ境界イベント
+  * シーケンスフロー
+* 遷移可能な要素となっているか
+* 開始イベントから始まり停止イベントで終了できるか
+
+バリデーションエラーがある場合は、エラー内容を標準エラー出力に出力する。
+
+エラーの出力例
+  .. code-block:: text
+
+    [ERROR] sm1_ステートマシン_ver1_20170101.bpmn
+    [ERROR] 	境界イベントに遷移先が設定されていません。 id:manual_sinsa_message, name:null
+    [ERROR] wf1_ワークフロー_ver1_20170101.bpmn
+    [ERROR] 	ゲートウェイから伸びるシーケンスフローの場合、フロー進行条件は必須です。[条件]を設定してください。 id = [SequenceFlow_06] name = [確認OK]
+    [ERROR] 	サポート対象外の要素です。 id = [T001] name = [確認]
+
+
+Java11で使用する場合の設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. important::
+
+  本プラグインをJava11で使用する場合は、Mavenのバージョンを3.6.1以上にする必要がある。
+
+本プラグインをJava11で使用するためには、以下の設定をします。
+
+.. code-block:: xml
+
+  <plugin>
+    <groupId>com.nablarch.workflow</groupId>
+    <artifactId>nablarch-workflow-tool</artifactId>
+    <version>1.1.0</version>
+    <!-- 中略 -->
+    <dependencies>
+      <!-- 以下を追加する。 -->
+      <dependency>
+        <groupId>com.sun.activation</groupId>
+        <artifactId>javax.activation</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+    </dependencies>
+  </plugin>
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "workflow-tool--s1",
+  "title": "ワークフロー定義データ生成ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/extension_components/workflow/tool/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-workflow-tool",
+        "com.nablarch.workflow",
+        "ワークフロー定義データ生成ツール",
+        "BPMN",
+        "CSV生成",
+        "Mavenプラグイン"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "hints": [
+        "outputPath",
+        "workflowBpmnDir",
+        "stateMachineBpmnDir",
+        "configurationFilePath",
+        "generate-csv",
+        "バリデーション",
+        "ワークフロー定義",
+        "Java11",
+        "JAXB",
+        "プラグイン設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "BPMN2.0準拠のワークフロー定義ファイル(xmlファイル)を読み込み、:ref:`ワークフロー関連テーブル <workflow-table_definition>` 投入用CSVファイルを出力するMavenプラグイン。CSV出力時に :ref:`workflow` で利用できるかのバリデーションも実施する。\n\n**モジュール**:\n```xml\n<plugin>\n  <groupId>com.nablarch.workflow</groupId>\n  <artifactId>nablarch-workflow-tool</artifactId>\n</plugin>\n```",
+    "s2": "## プラグインに対する設定\n\n| プロパティ名 | 説明 |\n|---|---|\n| outputPath | CSVの出力先ディレクトリ |\n| workflowBpmnDir | ワークフロー用のワークフロー定義ファイルの配置ディレクトリ。配下の拡張子`bpmn`ファイルが自動読み込みされCSV出力される |\n| stateMachineBpmnDir | ステートマシン用のワークフロー定義ファイルの配置ディレクトリ。配下の拡張子`bpmn`ファイルが自動読み込みされCSV出力される |\n| configurationFilePath | テーブル名やカラム名を定義したコンポーネント設定ファイルのパス |\n\n設定例:\n```xml\n<plugin>\n  <groupId>com.nablarch.workflow</groupId>\n  <artifactId>nablarch-workflow-tool</artifactId>\n  <version>1.1.0</version>\n  <configuration>\n    <outputPath>src/test/resources/data</outputPath>\n    <configurationFilePath>src/design/workflow-tool.xml</configurationFilePath>\n    <workflowBpmnDir>src/design/workflow</workflowBpmnDir>\n    <stateMachineBpmnDir>src/design/statemachine</stateMachineBpmnDir>\n  </configuration>\n</plugin>\n```\n\n## プラグインを実行する\n\nゴール `generate-csv` を実行するとCSVファイルが出力される。Mavenビルドプロセスへの組み込み例:\n```xml\n<plugin>\n  <groupId>com.nablarch.workflow</groupId>\n  <artifactId>nablarch-workflow-tool</artifactId>\n  <version>1.1.0</version>\n  <executions>\n    <execution>\n      <id>generate-csv</id>\n      <phase>generate-resources</phase>\n      <goals>\n        <goal>generate-csv</goal>\n      </goals>\n    </execution>\n  </executions>\n</plugin>\n```\n\n## バリデーション内容\n\n以下の内容でバリデーションを実施する:\n\n- 想定している要素のみを使用しているか（プール、レーン、ユーザタスク(ワークフロー)、タスク(ステートマシン)、XORゲートウェイ、開始イベント、停止イベント、中断メッセージ境界イベント、シーケンスフロー）\n- 遷移可能な要素となっているか\n- 開始イベントから始まり停止イベントで終了できるか\n\nバリデーションエラーは標準エラー出力に出力される:\n```\n[ERROR] sm1_ステートマシン_ver1_20170101.bpmn\n[ERROR] \t境界イベントに遷移先が設定されていません。 id:manual_sinsa_message, name:null\n[ERROR] wf1_ワークフロー_ver1_20170101.bpmn\n[ERROR] \tゲートウェイから伸びるシーケンスフローの場合、フロー進行条件は必須です。[条件]を設定してください。 id = [SequenceFlow_06] name = [確認OK]\n[ERROR] \tサポート対象外の要素です。 id = [T001] name = [確認]\n```\n\n## Java11で使用する場合の設定\n\n> **重要**: Java11で使用する場合はMavenのバージョンを3.6.1以上にする必要がある。\n\nJava11で使用する場合、以下の依存関係をプラグインに追加する:\n```xml\n<dependencies>\n  <dependency>\n    <groupId>com.sun.activation</groupId>\n    <artifactId>javax.activation</artifactId>\n    <version>1.2.0</version>\n  </dependency>\n  <dependency>\n    <groupId>javax.xml.bind</groupId>\n    <artifactId>jaxb-api</artifactId>\n    <version>2.3.0</version>\n  </dependency>\n  <dependency>\n    <groupId>com.sun.xml.bind</groupId>\n    <artifactId>jaxb-core</artifactId>\n    <version>2.3.0</version>\n  </dependency>\n  <dependency>\n    <groupId>com.sun.xml.bind</groupId>\n    <artifactId>jaxb-impl</artifactId>\n    <version>2.3.0</version>\n  </dependency>\n</dependencies>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

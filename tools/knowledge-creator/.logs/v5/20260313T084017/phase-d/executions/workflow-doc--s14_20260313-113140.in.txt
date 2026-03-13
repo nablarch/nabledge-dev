@@ -1,0 +1,420 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/extension_components/workflow/doc/index.rst`
+- Format: `rst`
+
+```
+ワークフロー申請の引き戻しを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+既に進行中の承認処理の途中で、申請者が申請内容の修正などを行うために自身のタスクにフローを強制的に戻す場合などに使用する。
+
+:ref:`取り消し <workflow-cancel>` と同じように、引き戻し可能なタスクに対して境界イベントを設定する。
+境界イベントの遷移先には、申請者が処理可能なタスク（例えば再申請タスク）などを指定する。
+
+ワークフロー定義
+  下記の定義のように、境界イベントを設定し遷移先を申請者のタスクとする。
+  詳細な定義方法や実装例は、 :ref:`取り消し <workflow-cancel>` を参照。
+  
+  .. image:: images/pullback.png
+    :scale: 70
+
+
+.. _workflow-statemachine_trigger:
+
+ステートマシンの状態を遷移させる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ステートマシンの状態を遷移させる場合は、
+:java:extdoc:`WorkflowInstance#triggerEvent <nablarch.integration.workflow.WorkflowInstance.triggerEvent(java.lang.String)>`
+を使用して状態を遷移させることができる。
+対象の :java:extdoc:`WorkflowInstance <nablarch.integration.workflow.WorkflowInstance>` は、
+ワークフロー開始時 にアプリケーション側で保持したインスタンスIDを使用して事前に取得する必要がある。
+
+なお、 :java:extdoc:`WorkflowInstance#triggerEvent <nablarch.integration.workflow.WorkflowInstance.triggerEvent(java.lang.String-java.util.Map)>`
+にパラメータを指定することで、 :ref:`workflow-flow_condition` を実現できる。
+
+タスク完了後のワークフローの状態の取得方法は、 :ref:`workflow-status` を参照。
+
+ステートマシン定義
+  ステートマシンの場合は、タスクから遷移するシーケンスフローは全て境界イベント(①)として定義する。
+  境界イベントの\ ``Message Name``\ (②)に定義した値が、``triggerEvent`` に指定する値となる。
+  
+  .. image:: images/statemachine-trigger.png
+    :scale: 75
+
+実装例
+  .. code-block:: java
+  
+    // 対象のWorkflowInstanceを取得する。
+    final WorkflowInstance workflowInstance = WorkflowManager.findInstance(instanceId);
+    
+    // triggerEventを呼び出し状態を遷移させる
+    workflowInstance.triggerEvent("return");
+
+.. _workflow-subprocess:
+ 
+ステートマシンでサブプロセスを定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ステートマシンでは、サブプロセスを使用することで、状態遷移の流れの見通しを良くできる。
+サブプロセスは、BPMNのモデリングツールでの定義でのみ使用し、本ライブラリがステートマシンの進行時にサブプロセスを意識することはない。
+このため、アプリケーションの実装時もサブプロセスを意識する必要はなく、 状態遷移は :ref:`workflow-statemachine_trigger` を使用して行えば良い。
+
+サブプロセスの定義例
+  サブプロセスは下記のように定義する。親子間のサブプロセスの状態遷移は以下の通り。
+  
+  * タスク１からサブプロセスに遷移すると、サブタスク１がアクティブ状態となる。(①の流れ)
+  * サブプロセス内で停止イベントに遷移すると、タスク２がアクティブ状態となる。（②の流れ）
+  
+  .. image:: images/subprocess.png
+    :scale: 75
+
+.. _workflow-status:
+
+ワークフロー（ステートマシン）の現在の状態を取得する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ワークフロー（ステートマシン）の状態遷移後の状態を取得できる。
+これにより、 :ref:`分岐 <workflow-flow_condition>` を使用した場合に、どのタスクがアクティブとなったかやワークフロー（ステートマシン）が完了したかを判断できるようになる。
+
+ワークフロー（ステートマシン）の状態は、
+:java:extdoc:`WorkflowInstance#isActive <nablarch.integration.workflow.WorkflowInstance.isActive(java.lang.String)>` や
+:java:extdoc:`WorkflowInstance#isCompleted <nablarch.integration.workflow.WorkflowInstance.isCompleted()>`
+を使用して問い合わせることができる。
+
+定義
+  .. image:: images/status.png
+    :scale: 75
+    
+実装例
+  .. code-block:: java
+  
+    // 対象のWorkflowInstanceを取得する。
+    final WorkflowInstance instance = WorkflowManager.findInstance(instanceId);
+  
+    // 上記の定義の場合で、再申請がアクティブの場合trueとなる。
+    if (instance.isActive("task1")) {
+    }
+    
+    // 上記の定義の場合で、承認がアクティブの場合trueとなる。
+    if (instance.isActive("task2")) {
+      
+    }
+    
+    // 上記の定義の場合で却下となり停止イベントに遷移した場合trueとなる
+    if (instance.isCompleted()) {
+    
+    }
+
+.. _workflow-version:
+
+ワークフロー（ステートマシン）の定義を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ワークフロー（ステートマシン）の定義を変更する際に、既に進行中のものについては旧バージョンの定義に従い進行できる機能を提供する。
+この機能を使用することで、進行中のフローに影響をあたえることなく、ある日時点から新しいバージョンのフローを進行できるようになる。
+
+バージョンは、ワークフロー（ステートマシン）開始時点で有効なものが自動的に適用される。
+ワークフロー定義テーブルの適用日が :ref:`システム日付 <date-system_time_settings>` 以前で最もバージョンの大きいものが自動的に適用される。
+
+.. tip::
+
+  ワークフロー（ステートマシン）の定義の変更によっては、アプリケーションのロジックに影響をあたえるものがある。
+  そのような場合は、アプリケーション側で進行中のフローのバージョンを取得しロジックを切り替える必要がある。
+  
+  バージョンの取得例
+    .. code-block:: java
+    
+      // 対象のWorkflowInstanceを取得する。
+      final WorkflowInstance instance = WorkflowManager.findInstance(instanceId);
+        
+      if (instance.getVersion() == 1L) {
+        // バージョン1の処理を行う
+      } else {
+        // バージョン2以降の処理を行う
+      }
+
+
+.. _workflow-xor_flow:
+
+XORゲートウェイの進行先ノードの判定方法
+--------------------------------------------------
+XORゲートウェイの進行先ノードは、シーケンスフローテーブルのフロー進行条件により判定する。
+フロー進行条件には、条件を判定するクラスの完全修飾名を格納する。
+
+条件を判定するクラスは、 :java:extdoc:`FlowProceedCondition <nablarch.integration.workflow.condition.FlowProceedCondition>` を実装し作成する。
+本機能で提供するクラスは、 :java:extdoc:`nablarch.integration.workflow.condition` パッケージ配下に格納されている。
+
+FlowProceedCondition実装クラスの例
+  * 実装クラスはコンストラクタでパラメータを受け取る事ができる。（パラメータはString限定)
+    パラメータを受け取るクラスを使用する場合、テーブルのフロー進行条件には ``sample.SampleFlowProceedCondition("key", "value")`` 
+    のように引数に設定する値を含めて格納する必要がある。
+  * :java:extdoc:`isMatch <nablarch.integration.workflow.condition.FlowProceedCondition.isMatch(java.lang.String-java.util.Map-nablarch.integration.workflow.definition.SequenceFlow)>`
+    で指定のシーケンスフローに対して遷移可能かどうかの結果を返す。
+    
+  .. code-block:: java
+  
+    public class SampleFlowProceedCondition implements FlowProceedCondition {
+
+      // コンストラクタ
+      // パラメータを受け取る場合は、文字列型(String)で定義する。
+      public StringEqualFlowProceedCondition(String paramKey, String expectedValue) {
+      }
+
+      // isMatchで指定されたSequenceFlowに遷移可能かどうかを判定する。
+      @Override
+      public boolean isMatch(String instanceId, Map<String, ?> param, SequenceFlow sequenceFlow) {
+      }
+    }
+    
+.. _workflow-multi_completion:
+
+マルチインスタンスの完了条件の判定方法
+--------------------------------------------------
+マルチインスタンの完了は、タスクテーブルの完了条件により判定する。
+完了条件には、条件を判定するクラスの完全修飾名を格納する。
+
+条件を判定するクラスは、 :java:extdoc:`CompletionCondition <nablarch.integration.workflow.condition.CompletionCondition>` を実装し作成する。
+本機能で提供するクラスは、 :java:extdoc:`nablarch.integration.workflow.condition` パッケージ配下に格納されている。
+
+CompletionConditionの実装例
+  * 実装クラスはコンストラクタでパラメータを受け取る事ができる。（パラメータはString限定)
+    パラメータを受け取るクラスを使用する場合、テーブルのフロー進行条件には ``sample.SampleCompletionCondition("1")`` 
+    のように引数に設定する値を含めて格納する必要がある。
+  * :java:extdoc:`isCompletedUserTask <nablarch.integration.workflow.condition.CompletionCondition.isCompletedUserTask(java.util.Map-java.lang.String-nablarch.integration.workflow.definition.Task)>`
+    でユーザタスクの完了判定を行う。
+  * :java:extdoc:`isCompletedGroupTask <nablarch.integration.workflow.condition.CompletionCondition.isCompletedGroupTask(java.util.Map-java.lang.String-nablarch.integration.workflow.definition.Task)>`
+    でグループタスクの完了判定を行う。
+  
+  .. code-block:: java
+  
+    public class OrCompletionCondition implements CompletionCondition {
+    
+      // コンストラクタ
+      // パラメータを受け取る場合は、文字列型(String)で定義する。
+      public OrCompletionCondition(String threshold) {
+      }
+    
+      // ユーザタスクの完了判定を行う。
+      @Override
+      public boolean isCompletedUserTask(Map<String, ?> param, String instanceId, Task task) {
+      }
+  
+      // グループタスクの完了判定を行う。
+      @Override
+      public boolean isCompletedGroupTask(Map<String, ?> param, String instanceId, Task task) {
+      }
+    }
+    
+    
+```
+
+## Knowledge File
+
+- ID: `workflow-doc--s14`
+
+```json
+{
+  "id": "workflow-doc--s14",
+  "title": "ワークフロー申請の引き戻しを行う",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/extension_components/workflow/doc/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/workflow/WorkflowInstance.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/workflow/condition/FlowProceedCondition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/workflow/condition/package-summary.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/workflow/condition/CompletionCondition.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ワークフロー申請の引き戻しを行う",
+      "hints": [
+        "ワークフロー引き戻し",
+        "境界イベント",
+        "申請者タスク返戻",
+        "フロー強制返戻",
+        "workflow-cancel"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ステートマシンの状態を遷移させる",
+      "hints": [
+        "WorkflowInstance",
+        "WorkflowManager",
+        "triggerEvent",
+        "findInstance",
+        "ステートマシン状態遷移",
+        "境界イベントMessage Name",
+        "workflow-flow_condition"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ステートマシンでサブプロセスを定義する",
+      "hints": [
+        "サブプロセス定義",
+        "ステートマシン",
+        "BPMN",
+        "サブタスク状態遷移",
+        "workflow-statemachine_trigger"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ワークフロー（ステートマシン）の現在の状態を取得する",
+      "hints": [
+        "WorkflowInstance",
+        "WorkflowManager",
+        "isActive",
+        "isCompleted",
+        "findInstance",
+        "ワークフロー状態取得",
+        "アクティブタスク確認",
+        "完了確認"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ワークフロー（ステートマシン）の定義を変更する",
+      "hints": [
+        "WorkflowInstance",
+        "getVersion",
+        "ワークフロー定義バージョン管理",
+        "旧バージョン継続実行",
+        "バージョン切り替え",
+        "date-system_time_settings"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "XORゲートウェイの進行先ノードの判定方法",
+      "hints": [
+        "FlowProceedCondition",
+        "XORゲートウェイ",
+        "フロー進行条件",
+        "シーケンスフロー",
+        "FlowProceedCondition実装",
+        "isMatch"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "マルチインスタンスの完了条件の判定方法",
+      "hints": [
+        "CompletionCondition",
+        "isCompletedUserTask",
+        "isCompletedGroupTask",
+        "マルチインスタンス完了条件",
+        "CompletionCondition実装",
+        "ユーザタスク完了判定",
+        "グループタスク完了判定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ワークフロー申請の引き戻しは、進行中の承認処理の途中で申請者が自身のタスクにフローを強制的に戻す場合に使用する。\n\n:ref:`取り消し <workflow-cancel>` と同様に、引き戻し可能なタスクに対して境界イベントを設定する。境界イベントの遷移先には、申請者が処理可能なタスク（例: 再申請タスク）を指定する。\n\n**ワークフロー定義**: 境界イベントを設定し遷移先を申請者のタスクとする。詳細な定義方法や実装例は :ref:`取り消し <workflow-cancel>` を参照。\n\n![引き戻し定義例](assets/workflow-doc--s14/pullback.png)",
+    "s2": "ステートマシンの状態を遷移させるには :java:extdoc:`WorkflowInstance#triggerEvent <nablarch.integration.workflow.WorkflowInstance.triggerEvent(java.lang.String)>` を使用する。対象の :java:extdoc:`WorkflowInstance <nablarch.integration.workflow.WorkflowInstance>` は、ワークフロー開始時にアプリケーション側で保持したインスタンスIDを使用して事前に取得する必要がある。\n\n:java:extdoc:`WorkflowInstance#triggerEvent <nablarch.integration.workflow.WorkflowInstance.triggerEvent(java.lang.String-java.util.Map)>` にパラメータを指定することで :ref:`workflow-flow_condition` を実現できる。\n\n**ステートマシン定義**: タスクから遷移するシーケンスフローは全て境界イベントとして定義する。境界イベントの `Message Name` に定義した値が `triggerEvent` に指定する値となる。\n\n![ステートマシントリガー定義例](assets/workflow-doc--s14/statemachine-trigger.png)\n\n```java\n// 対象のWorkflowInstanceを取得する。\nfinal WorkflowInstance workflowInstance = WorkflowManager.findInstance(instanceId);\n\n// triggerEventを呼び出し状態を遷移させる\nworkflowInstance.triggerEvent(\"return\");\n```",
+    "s3": "ステートマシンではサブプロセスを使用することで、状態遷移の流れの見通しを良くできる。\n\n- サブプロセスはBPMNのモデリングツールでの定義でのみ使用する。本ライブラリはステートマシンの進行時にサブプロセスを意識しない。\n- アプリケーションの実装時もサブプロセスを意識する必要はなく、状態遷移は :ref:`workflow-statemachine_trigger` を使用して行えば良い。\n\n**サブプロセスの状態遷移**:\n1. タスク１からサブプロセスに遷移すると、サブタスク１がアクティブ状態となる\n2. サブプロセス内で停止イベントに遷移すると、タスク２がアクティブ状態となる\n\n![サブプロセス定義例](assets/workflow-doc--s14/subprocess.png)",
+    "s4": "ワークフロー（ステートマシン）の状態遷移後の状態を取得できる。:ref:`分岐 <workflow-flow_condition>` を使用した場合に、どのタスクがアクティブとなったかやワークフローが完了したかを判断できる。\n\n- :java:extdoc:`WorkflowInstance#isActive <nablarch.integration.workflow.WorkflowInstance.isActive(java.lang.String)>`: 指定タスクIDがアクティブかどうかを判定\n- :java:extdoc:`WorkflowInstance#isCompleted <nablarch.integration.workflow.WorkflowInstance.isCompleted()>`: ワークフローが完了したかどうかを判定\n\n```java\n// 対象のWorkflowInstanceを取得する。\nfinal WorkflowInstance instance = WorkflowManager.findInstance(instanceId);\n\n// 再申請がアクティブの場合trueとなる。\nif (instance.isActive(\"task1\")) {\n}\n\n// 承認がアクティブの場合trueとなる。\nif (instance.isActive(\"task2\")) {\n}\n\n// 却下となり停止イベントに遷移した場合trueとなる\nif (instance.isCompleted()) {\n}\n```",
+    "s5": "ワークフロー（ステートマシン）の定義を変更する際、既に進行中のものについては旧バージョンの定義に従い進行できる。これにより、進行中のフローに影響を与えることなく、ある日時点から新しいバージョンのフローを進行できる。\n\nバージョンはワークフロー開始時点で有効なものが自動的に適用される。ワークフロー定義テーブルの適用日が :ref:`システム日付 <date-system_time_settings>` 以前で最もバージョンの大きいものが自動的に適用される。\n\n> **補足**: 定義変更によってアプリケーションのロジックに影響を与える場合は、アプリケーション側で進行中のフローのバージョンを取得しロジックを切り替える必要がある。\n\n```java\n// 対象のWorkflowInstanceを取得する。\nfinal WorkflowInstance instance = WorkflowManager.findInstance(instanceId);\n\nif (instance.getVersion() == 1L) {\n  // バージョン1の処理を行う\n} else {\n  // バージョン2以降の処理を行う\n}\n```",
+    "s6": "XORゲートウェイの進行先ノードは、シーケンスフローテーブルのフロー進行条件により判定する。フロー進行条件には、条件を判定するクラスの完全修飾名を格納する。\n\n条件クラスは :java:extdoc:`FlowProceedCondition <nablarch.integration.workflow.condition.FlowProceedCondition>` を実装して作成する。提供クラスは :java:extdoc:`nablarch.integration.workflow.condition` パッケージ配下に格納されている。\n\n- 実装クラスはコンストラクタでパラメータを受け取ることができる（パラメータはString限定）\n- パラメータを受け取るクラスを使用する場合、テーブルのフロー進行条件に `sample.SampleFlowProceedCondition(\"key\", \"value\")` のように引数を含めて格納する必要がある\n- :java:extdoc:`isMatch <nablarch.integration.workflow.condition.FlowProceedCondition.isMatch(java.lang.String-java.util.Map-nablarch.integration.workflow.definition.SequenceFlow)>` で指定シーケンスフローへの遷移可否を返す\n\n```java\npublic class SampleFlowProceedCondition implements FlowProceedCondition {\n\n  // パラメータを受け取る場合は、文字列型(String)で定義する。\n  public StringEqualFlowProceedCondition(String paramKey, String expectedValue) {\n  }\n\n  @Override\n  public boolean isMatch(String instanceId, Map<String, ?> param, SequenceFlow sequenceFlow) {\n  }\n}\n```",
+    "s7": "マルチインスタンスの完了は、タスクテーブルの完了条件により判定する。完了条件には、条件を判定するクラスの完全修飾名を格納する。\n\n条件クラスは :java:extdoc:`CompletionCondition <nablarch.integration.workflow.condition.CompletionCondition>` を実装して作成する。提供クラスは :java:extdoc:`nablarch.integration.workflow.condition` パッケージ配下に格納されている。\n\n- 実装クラスはコンストラクタでパラメータを受け取ることができる（パラメータはString限定）\n- パラメータを受け取るクラスを使用する場合、テーブルのフロー進行条件には `sample.SampleCompletionCondition(\"1\")` のように引数に設定する値を含めて格納する必要がある\n- :java:extdoc:`isCompletedUserTask <nablarch.integration.workflow.condition.CompletionCondition.isCompletedUserTask(java.util.Map-java.lang.String-nablarch.integration.workflow.definition.Task)>`: ユーザタスクの完了判定\n- :java:extdoc:`isCompletedGroupTask <nablarch.integration.workflow.condition.CompletionCondition.isCompletedGroupTask(java.util.Map-java.lang.String-nablarch.integration.workflow.definition.Task)>`: グループタスクの完了判定\n\n```java\npublic class OrCompletionCondition implements CompletionCondition {\n\n  // パラメータを受け取る場合は、文字列型(String)で定義する。\n  public OrCompletionCondition(String threshold) {\n  }\n\n  @Override\n  public boolean isCompletedUserTask(Map<String, ?> param, String instanceId, Task task) {\n  }\n\n  @Override\n  public boolean isCompletedGroupTask(Map<String, ?> param, String instanceId, Task task) {\n  }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

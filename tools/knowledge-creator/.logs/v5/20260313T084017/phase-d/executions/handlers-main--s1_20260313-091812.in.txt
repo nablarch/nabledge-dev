@@ -1,0 +1,349 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/standalone/main.rst`
+- Format: `rst`
+
+```
+.. _`main`:
+
+共通起動ランチャ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+スタンドアロンで起動するアプリケーションの起点となるハンドラ。
+
+javaコマンドから直接起動することで、システムリポジトリの初期化を行い、そこに定義されたハンドラキューを実行させることができる。
+
+本ハンドラでは、以下の処理を行う。
+処理の詳細は、カッコ内のJavadocを参照。
+
+* コマンドライン引数のパース( :java:extdoc:`CommandLine<nablarch.fw.launcher.CommandLine>` )
+* 起動ログの出力( :java:extdoc:`LauncherLogFormatter#getStartLogFormat<nablarch.fw.launcher.logging.LauncherLogFormatter.getStartLogFormat()>` )
+* システムリポジトリの初期化
+* 実行コンテキストの初期化( :java:extdoc:`Main#setupExecutionContext <nablarch.fw.launcher.Main.setupExecutionContext(nablarch.fw.launcher.CommandLine-nablarch.fw.ExecutionContext)>` )
+* アプリケーション設定ログの出力( :java:extdoc:`ApplicationSettingLogFormatter<nablarch.core.log.app.ApplicationSettingLogFormatter>` )
+* ハンドラキューの実行
+* 例外及びエラーに応じたログの出力
+* 終了ログの出力( :java:extdoc:`LauncherLogFormatter#getEndLogFormat<nablarch.fw.launcher.logging.LauncherLogFormatter.getEndLogFormat()>` )
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/Main/Main_flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.launcher.Main`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-standalone</artifactId>
+  </dependency>
+
+.. _main-run_application:
+
+アプリケーションを起動する
+--------------------------------------------------
+javaコマンドで :java:extdoc:`Mainクラス<nablarch.fw.launcher.Main>` を指定してアプリケーションを起動する。
+
+フレームワークの動作に必要となる以下の3つのオプションは、必ず指定する必要がある。
+以下のオプションのうちいずれかが欠けていた場合は、即座に異常終了する。(終了コード = 127)
+
+\-diConfig
+ システムリポジトリの設定ファイルのパスを指定する。
+ このオプションで指定されたパスを使ってシステムリポジトリを初期化する。
+
+\-requestPath
+ 実行するアクションとリクエストIDを指定する。
+
+ 以下の書式で定義される文字列を設定する。
+
+ .. code-block:: bash
+
+  実行するアクションのクラス名/リクエストID
+
+ このオプションで指定されたリクエストパスを
+ :java:extdoc:`Request#getRequestPath<nablarch.fw.Request.getRequestPath()>`
+ が返すようになる。
+
+\-userId
+ ユーザIDを設定する。
+ この値はセッションコンテキスト変数に ``user.id`` という名前で格納される。
+
+以下に実行例を示す。
+
+.. code-block:: bash
+
+ java nablarch.fw.launcher.Main \
+   -diConfig file:./batch-config.xml \
+   -requestPath admin.DataUnloadBatchAction/BC0012 \
+   -userId testUser
+
+.. _main-option_parameter:
+
+アプリケーション起動に任意のオプションを設定する
+--------------------------------------------------
+:java:extdoc:`Mainクラス<nablarch.fw.launcher.Main>` 起動時に、任意のオプションパラメータを指定することが出来る。
+
+オプションパラメータは、「オプション名称」と「オプションの値」のペアで設定する。
+
+例えば、オプション名称が ``optionName`` で 値が ``optionValue`` の場合は、以下のように指定する。
+
+.. code-block:: bash
+
+ java nablarch.fw.launcher.Main \
+   -optionName optionValue
+
+アプリケーションでオプションを使用する場合は、 :java:extdoc:`ExecutionContext <nablarch.fw.ExecutionContext>` から取得する。
+
+.. code-block:: java
+
+     @Override
+    public Result handle(String inputData, ExecutionContext ctx) {
+      // getSessionScopedVarにオプション名称を指定して、値を取得する。
+      final String value = ctx.getSessionScopedVar("optionName");
+
+      // 処理
+
+      return new Result.Success();
+    } 
+
+.. tip::
+
+  アプリケーション起動時に必ず指定する必要があるオプションは、 :ref:`main-run_application` を参照
+
+例外及びエラーに応じた処理内容
+--------------------------------------------------
+このハンドラでは捕捉した例外及びエラーの内容に応じて、以下の処理と結果を返す。
+
+.. list-table::
+  :header-rows: 1
+  :class: white-space-normal
+  :widths: 25 75
+
+  * - 例外クラス
+    - 処理内容
+
+  * - :java:extdoc:`Result.Error <nablarch.fw.Result.Error>`
+
+      (サブクラス含む)
+
+    - FATALレベルのログ出力を行う。
+
+      ログ出力後、ハンドラの処理結果として、以下の値を返す。
+
+       ステータスコードが0～127の場合
+        ステータスコードをそのまま返す。
+
+       ステータスコードが0～127以外の場合
+        127を返す。
+
+  * - 上記以外の例外クラス
+
+    - FATALレベルのログ出力を行う。
+
+      ログ出力後、ハンドラの処理結果として、127を返す。
+```
+
+## Knowledge File
+
+- ID: `handlers-main--s1`
+
+```json
+{
+  "id": "handlers-main--s1",
+  "title": "共通起動ランチャ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/standalone/main.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/CommandLine.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/logging/LauncherLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/Main.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/ApplicationSettingLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/ExecutionContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Result.Error.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Request.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "nablarch.fw.launcher.Main",
+        "Main",
+        "CommandLine",
+        "nablarch.fw.launcher.CommandLine",
+        "ApplicationSettingLogFormatter",
+        "nablarch.core.log.app.ApplicationSettingLogFormatter",
+        "LauncherLogFormatter",
+        "共通起動ランチャ",
+        "スタンドアロン起動",
+        "ハンドラキュー実行",
+        "システムリポジトリ初期化"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-standalone",
+        "com.nablarch.framework",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "アプリケーションを起動する",
+      "hints": [
+        "diConfig",
+        "requestPath",
+        "userId",
+        "アプリケーション起動",
+        "コマンドライン引数",
+        "終了コード 127",
+        "nablarch.fw.launcher.Main",
+        "Request#getRequestPath",
+        "nablarch.fw.Request.getRequestPath",
+        "user.id",
+        "必須オプション"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "アプリケーション起動に任意のオプションを設定する",
+      "hints": [
+        "getSessionScopedVar",
+        "ExecutionContext",
+        "nablarch.fw.ExecutionContext",
+        "オプションパラメータ",
+        "任意オプション",
+        "セッションスコープ変数"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "例外及びエラーに応じた処理内容",
+      "hints": [
+        "Result.Error",
+        "nablarch.fw.Result.Error",
+        "例外ハンドリング",
+        "終了コード 127",
+        "FATALログ",
+        "異常終了"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "スタンドアロンアプリケーションの起点となるハンドラ。javaコマンドから直接起動し、システムリポジトリを初期化してハンドラキューを実行する。\n\n**クラス名**: `nablarch.fw.launcher.Main`\n\n処理の流れ:\n1. コマンドライン引数のパース（:java:extdoc:`CommandLine<nablarch.fw.launcher.CommandLine>`）\n2. 起動ログの出力（:java:extdoc:`LauncherLogFormatter#getStartLogFormat<nablarch.fw.launcher.logging.LauncherLogFormatter.getStartLogFormat()>`）\n3. システムリポジトリの初期化\n4. 実行コンテキストの初期化（:java:extdoc:`Main#setupExecutionContext<nablarch.fw.launcher.Main.setupExecutionContext(nablarch.fw.launcher.CommandLine-nablarch.fw.ExecutionContext)>`）\n5. アプリケーション設定ログの出力（:java:extdoc:`ApplicationSettingLogFormatter<nablarch.core.log.app.ApplicationSettingLogFormatter>`）\n6. ハンドラキューの実行\n7. 例外・エラーに応じたログの出力\n8. 終了ログの出力（:java:extdoc:`LauncherLogFormatter#getEndLogFormat<nablarch.fw.launcher.logging.LauncherLogFormatter.getEndLogFormat()>`）",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-standalone</artifactId>\n</dependency>\n```",
+    "s3": "javaコマンドで :java:extdoc:`Main<nablarch.fw.launcher.Main>` を起動する。以下の3オプションは必須（いずれかが欠けると即座に異常終了、終了コード=127）。\n\n| オプション | 説明 |\n|---|---|\n| `-diConfig` | システムリポジトリ設定ファイルのパス |\n| `-requestPath` | `実行アクションクラス名/リクエストID` 形式。:java:extdoc:`Request#getRequestPath<nablarch.fw.Request.getRequestPath()>` が返す値として設定される |\n| `-userId` | ユーザID。セッションコンテキスト変数 `user.id` に格納 |\n\n```bash\njava nablarch.fw.launcher.Main \\\n  -diConfig file:./batch-config.xml \\\n  -requestPath admin.DataUnloadBatchAction/BC0012 \\\n  -userId testUser\n```",
+    "s4": "任意のオプションパラメータを「オプション名称」と「オプションの値」のペアで指定可能。\n\n```bash\njava nablarch.fw.launcher.Main \\\n  -optionName optionValue\n```\n\nアプリケーションでは :java:extdoc:`ExecutionContext<nablarch.fw.ExecutionContext>` の `getSessionScopedVar` でオプション名称を指定して取得する。\n\n```java\nfinal String value = ctx.getSessionScopedVar(\"optionName\");\n```\n\n> **補足**: 必須オプションは :ref:`main-run_application` を参照",
+    "s5": "| 例外クラス | 処理内容 |\n|---|---|\n| :java:extdoc:`Result.Error<nablarch.fw.Result.Error>`（サブクラス含む） | FATALログ出力後、ステータスコードが0〜127の場合はそのまま返す。0〜127以外の場合は127を返す |\n| 上記以外の例外クラス | FATALログ出力後、127を返す |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

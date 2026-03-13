@@ -1,0 +1,154 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "jakarta-batch-pessimistic_lock",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "PascalCase class names `ProjectId` and `Project` appear in the code examples but are absent from the hints array.",
+      "source_evidence": "Source code uses `DeferredEntityList<ProjectId>`, `UniversalDao.defer().findAllBySqlFile(ProjectId.class, ...)`, and `UniversalDao.findBySqlFile(Project.class, ...)` — both are domain-level class names referenced in the implementation pattern."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+JSR352に準拠したバッチアプリケーションの悲観的ロック
+============================================================
+本項では、JSR352に準拠したバッチアプリケーションで悲観的ロックを行うための実装例を示す。
+以下に示す例を参考に実装することで、ロック時間が短縮され他プロセスへの影響を抑えることができる。
+
+ポイント
+ * `ItemReader` では処理対象レコードの主キーのみ取得する。
+ * `ItemProcessor` で主キーをもとに処理対象レコードを取得して悲観的ロックを行う。
+   :ref:`universal_dao` を使用した悲観的ロックについては :ref:`universal_dao_jpa_pessimistic_lock` を参照。
+
+.. code-block:: java
+
+  @Dependent
+  @Named
+  public class SampleReader extends AbstractItemReader {
+
+      private DeferredEntityList<ProjectId> list;
+
+      private Iterator<ProjectId> iterator;
+
+      @Override
+      public void open(Serializable checkpoint) throws Exception {
+
+          // 検索条件の取得処理は省略
+
+          list = (DeferredEntityList<ProjectId>) UniversalDao.defer()
+                  .findAllBySqlFile(ProjectId.class, "GET_ID", condition);
+          iterator = list.iterator();
+      }
+
+      @Override
+      public Object readItem() {
+          if (iterator.hasNext()) {
+              return iterator.next();
+          }
+          return null;
+      }
+
+      @Override
+      public void close() throws Exception {
+          list.close();
+      }
+  }
+
+  @Dependent
+  @Named
+  public class SampleProcessor implements ItemProcessor {
+
+      @Override
+      public Object processItem(Object item) {
+          final Project project =
+                  UniversalDao.findBySqlFile(Project.class, "FIND_BY_ID_WITH_LOCK", item);
+
+          // 業務処理のため省略
+
+          return project;
+      }
+  }
+
+  @Dependent
+  @Named
+  public class SampleWriter extends AbstractItemWriter {
+
+      @Override
+      public void writeItems(List<Object> items) {
+          UniversalDao.batchUpdate(items);
+      }
+  }
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "jakarta-batch-pessimistic_lock",
+  "title": "JSR352に準拠したバッチアプリケーションの悲観的ロック",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/feature_details/pessimistic_lock.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "悲観的ロックの実装パターン",
+      "hints": [
+        "悲観的ロック",
+        "ItemReader",
+        "ItemProcessor",
+        "ItemWriter",
+        "JSR352",
+        "バッチ処理",
+        "ロック時間短縮",
+        "主キー取得",
+        "SampleReader",
+        "SampleProcessor",
+        "SampleWriter",
+        "AbstractItemReader",
+        "AbstractItemWriter",
+        "DeferredEntityList",
+        "UniversalDao",
+        "@Dependent",
+        "@Named"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 悲観的ロックの実装パターン\n\n**実装ポイント**:\n- `ItemReader` では処理対象レコードの主キーのみ取得する（ロック時間を短縮し他プロセスへの影響を抑えるため）\n- `ItemProcessor` で主キーをもとに処理対象レコードを取得して悲観的ロックを行う\n- :ref:`universal_dao` を使用した悲観的ロックの詳細は :ref:`universal_dao_jpa_pessimistic_lock` を参照\n\n```java\n@Dependent\n@Named\npublic class SampleReader extends AbstractItemReader {\n\n    private DeferredEntityList<ProjectId> list;\n    private Iterator<ProjectId> iterator;\n\n    @Override\n    public void open(Serializable checkpoint) throws Exception {\n        list = (DeferredEntityList<ProjectId>) UniversalDao.defer()\n                .findAllBySqlFile(ProjectId.class, \"GET_ID\", condition);\n        iterator = list.iterator();\n    }\n\n    @Override\n    public Object readItem() {\n        if (iterator.hasNext()) {\n            return iterator.next();\n        }\n        return null;\n    }\n\n    @Override\n    public void close() throws Exception {\n        list.close();\n    }\n}\n\n@Dependent\n@Named\npublic class SampleProcessor implements ItemProcessor {\n\n    @Override\n    public Object processItem(Object item) {\n        final Project project =\n                UniversalDao.findBySqlFile(Project.class, \"FIND_BY_ID_WITH_LOCK\", item);\n        return project;\n    }\n}\n\n@Dependent\n@Named\npublic class SampleWriter extends AbstractItemWriter {\n\n    @Override\n    public void writeItems(List<Object> items) {\n        UniversalDao.batchUpdate(items);\n    }\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

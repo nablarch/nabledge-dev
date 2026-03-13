@@ -1,0 +1,564 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/real.rst`
+- Format: `rst`
+
+```
+.. _`real_request_test`:
+
+============================================================
+リクエスト単体テストの実施方法(同期応答メッセージ受信処理)
+============================================================
+
+--------------------
+テストクラスの書き方
+--------------------
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象のActionクラスと同じとする。
+* <Actionクラス名>RequestTestというクラス名でテストクラスを作成する。
+* \ ``nablarch.test.core.http.MessagingRequestTestSupport``\ を継承する。
+
+例えば、テスト対象のActionクラスが、\ ``nablarch.sample.ss21AA.RM21AA001Action``\ だとすると、\
+テストクラスは以下のようになる。
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  
+  // ～中略～
+
+  public class RM21AA001ActionRequestTest extends MessagingRequestTestSupport {
+
+
+
+------------------
+テストメソッド分割
+------------------
+
+１テストクラスにつき１テストメソッド、１テストシートを原則とする。
+
+ケースが複雑であったりデータ量が多い場合は、メソッドやシートを分割しても良い。
+
+--------------------
+テストデータの書き方
+--------------------
+
+テストデータを記載したExcelファイルは、クラス単体テストと同様に\
+テストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。
+
+テストデータの記述方法詳細については、「\ :ref:`how_to_write_excel`\ 」を参照。
+
+
+テストクラスで共通のデータベース初期値
+======================================
+
+ウェブアプリケーションの場合と同様である。「\ :ref:`request_test_setup_db`\ 」を参照。
+
+
+テストショット一覧
+==================
+
+LIST_MAPのデータタイプで１テストメソッド分のテストショット表を記載する。IDは、\ **testShots**\ とする。
+
+..    .. image:: ./_image/new_testCases.png
+..    :scale: 80
+
+
+１ケース毎に以下の要素を持たせる。
+
+================== ========================================================================================== =====
+カラム名           説明                                                                                       必須 
+================== ========================================================================================== =====
+no                 テストケース番号を1からの連番で記載する。                                                  必須
+description        そのテストケースの説明を記載する。                                                         必須       
+expectedStatusCode 期待するステータスコード                                                                   必須 
+setUpTable         各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの\ 
+                   :ref:`グループID<tips_groupId>`\ を記載する\ [1]_\ 。データの投入は自動テストフレーム
+                   ワークにより行われる。                                                         
+expectedTable      データベースの内容を比較する場合、期待するテーブルの\ :ref:`グループID<tips_groupId>`\ 
+                   を記載する\ [1]_\ 。                                                                 
+expectedLog        期待するログメッセージのIDを記載する。そのログメッセージが実際に出力されたかどうか、
+                   自動テストフレームワークにて検証される。                                            
+diConfig           常駐プロセスを実行する際のコンポーネント設定ファイルへのパスを記載する        。           必須
+                   (\ :ref:`コマンドライン引数 <main-run_application>`\ を参照)\ [2]_\                       
+requestPath        常駐プロセスを実行する際のリクエストパスを記載する。                                       必須
+                   (\ :ref:`コマンドライン引数 <main-run_application>`\ を参照)\ [2]_\                                       
+userId             常駐プロセス実行ユーザIDを記載する。                                                       必須
+                   (\ :ref:`コマンドライン引数 <main-run_application>`\ を参照)\ [2]_\
+================== ========================================================================================== =====                                                                                                                 
+
+
+\
+
+.. [1]
+ デフォルトのグループIDを使用したい（グループIDを使わない）場合は、\ `default`\ と記載する。
+ デフォルトのグループIDと個別のグループは併用可能である。
+ 両方のデータが混在した場合、デフォルトのグループIDのデータとグループID指定のデータ両方が有効になる。
+
+.. [2]
+ ここで言う「常駐プロセス」とは、メッセージ送受信を行うプロセスのことである。
+
+各種準備データ
+==============
+
+テスト実施に際して必要となる各種準備データの記述方法を説明する。
+バッチでは、データベース、リクエストメッセージを準備する。
+
+
+データベースの準備
+------------------
+
+:ref:`オンライン<request_test_testcases>`\ と同様に、グループIDで対応付けを行う。
+
+.. image:: ./_image/msg_shot_to_db.png
+
+
+`テストショット一覧`_\ にて、setUpTableの欄がない場合、または空欄の場合、データベース準備は行われない。
+
+
+リクエストメッセージ
+--------------------
+
+テストの入力データとなる要求電文を記載する。以下に例を示す。
+
+-----
+
+ MESSAGE=setUpMessages
+
+ // 共通情報（ディレクティブ、フレームワーク制御ヘッダ）
+
+ +------------------+--------------+------------+
+ | text-encoding    | Windows-31J  |            |
+ +------------------+--------------+------------+
+ | record-separator | CRLF         |            |
+ +------------------+--------------+------------+
+ | requestId        | RM11AC0101   |            |
+ +------------------+--------------+------------+
+
+ // メッセージボディ
+
+ +------------------+--------------+------------+
+ | no               | レコード区分 |   ユーザID |
+ +------------------+--------------+------------+
+ |                  | 半角         |       半角 |
+ +------------------+--------------+------------+
+ |                  | 1            |         10 |
+ +==================+==============+============+
+ | 1                | 7            | 0000000001 |
+ +------------------+--------------+------------+
+ | 2                | 2            | 0000000001 |
+ +------------------+--------------+------------+
+
+------
+
+1. 先頭行
+
+ テスト対象リクエストに対する要求電文を準備する。名前は、\ ``MESSAGE=setUpMessages``\ 固定とする。
+
+2. 共通情報
+
+ 名前の次行以降には以下の情報を記載する。これらの値は、リクエストメッセージの全メッセージで共通の値となる。
+
+ * ディレクティブ
+ * フレームワーク制御ヘッダ
+
+ 書式は、key-value形式である。
+
+  +----+----+
+  |キー|値  |
+  +----+----+
+
+.. important::
+
+  フレームワーク制御ヘッダの項目をPJで変更している場合、
+  以下のようにpropertiesファイルに ``reader.fwHeaderfields`` というキーでフレームワーク制御ヘッダ名を指定する必要がある。
+
+  .. code-block:: properties
+
+    # フレームワーク制御ヘッダ名をカンマ区切りで指定する。
+    reader.fwHeaderfields=requestId,addHeader
+
+
+3. メッセージボディ
+
+フレームワーク制御ヘッダ以降のメッセージを記載する。
+1行目～3行目は、外部インターフェース設計書の記載内容と同じであり、
+設計書から行列を入れ替えてコピーすると効率良く作成できる。
+
+ +------------+---------------+--------------------------+
+ |行          |記述内容       |備考                      |
+ +============+===============+==========================+
+ |1行目       |フィールド名称 |先頭セルは"no"とする。    |
+ +------------+---------------+--------------------------+
+ |2行目       |データタイプ   |先頭セルは空白            |
+ +------------+---------------+--------------------------+
+ |3行目       |フィールド長   |先頭セルは空白            |
+ +------------+---------------+--------------------------+
+ |4行目以降   |データ         |先頭セルは1からの通番     |
+ +------------+---------------+--------------------------+
+
+.. important::
+ フィールド名称に\ **重複した名称は許容されない**\ 。
+ 例えば、「氏名」というフィールドが2つ以上存在してはならない。
+ （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）
+
+ 
+
+本表は、\ `テストショット一覧`_\ のnoと対応関係にある。\
+すなわち、テストショットno1で使用される要求電文は、本表の1行目（no 1）のデータとなる。
+
+.. image:: ./_image/msg_shot_to_req.png
+
+
+各種期待値
+==========
+
+検索結果、データベースを期待値と比較する場合は、
+それぞれのデータとテストケース一覧とをIDで紐付けする。
+
+
+レスポンスメッセージ
+--------------------
+
+\ `リクエストメッセージ`_\ と同じ。
+
+ただし、名前が\ ``MESSAGE=expectedMessages``\ となる。
+
+また、テストデータのディレクティブに設定されたfile-typeの値により、以下のように応答電文のアサート方法が変化する。
+
+ +------------------------+---------------------------------------------------------------------+
+ | file-typeの値          | アサート方法                                                        |
+ +========================+=====================================================================+
+ | Fixed または 指定なし  | テストデータに記載された項目単位に電文を分割し、アサートを行う。    |
+ +------------------------+---------------------------------------------------------------------+
+ | その他の値             | 電文全体を文字列として扱い、アサートを行う。                        |
+ +------------------------+---------------------------------------------------------------------+
+
+フォーマット定義ファイルではなく、テストデータにfile-typeを設定する必要があるので、注意すること。
+
+なお、項目単位にアサートを行うfile-typeの値は以下の値を環境設定ファイルに定義することにより変更可能である。
+
+  .. code-block:: text
+  
+    messaging.assertAsMapFileType=<カンマ区切りのfile-typeリスト>
+
+.. tip::
+ | XMLやJSONでは電文ごとに電文長が異なるため、テストデータの内容に応じて自動計算される。
+ | テストデータの電文長に合わせて実電文を読み込むため、実電文とテストデータの電文長が異なると正常に読み込めない場合がある。
+ | そのためXMLやJSONを使用する場合は必ずfile-typeを設定し、電文全体を文字列としてアサートを行う必要がある。
+
+
+
+期待するデータベースの状態
+--------------------------
+
+`データベースの準備`_ と同様に、期待するデータベースの状態をテストケース一覧とリンクさせる。
+
+
+----------------------
+テストメソッドの書き方
+----------------------
+
+スーパクラスについて
+====================
+
+``MessagingRequestTestSupport``\ クラスを継承する。
+このクラスでは、準備したテストデータを元に以下の手順でリクエスト単体テストを実行する。
+
+
+テストメソッド作成
+==================
+
+準備したテストシートに対応するメソッドを作成する。
+
+
+.. code-block:: java
+    
+    @Test
+    public void testRegisterUser() {
+    }
+
+
+スーパクラスのメソッド呼び出し
+==============================
+
+テストメソッド内で、スーパクラスの以下のいずれかのメソッドを呼び出す。
+
+* void execute()
+* void execute(String sheetName)
+
+引数ありのexecuteメソッドでは、テストデータのシート名を指定できる。
+引数なしのexecuteメソッドを使用すると、引数ありのexecuteメソッドに
+テストデータのシート名にテストメソッド名を指定した場合と同じ動作となる。
+
+通常、テストシート名とテストメソッド名は同一であるので、
+引数なしのexecuteメソッドを使用するとよい。
+
+.. code-block:: java
+    
+    @Test
+    public void testRegisterUser() {
+        execute();   // 【説明】execute("testRegisterUser") と等価
+    }
+
+
+--------------
+テスト起動方法
+--------------
+
+クラス単体テストと同様。通常のJUnitテストと同じように実行する。
+
+
+--------------
+テスト結果検証
+--------------
+
+自動テストフレームワーク側で以下の結果検証が行われる。
+
+* レスポンスメッセージの結果検証（必須）
+* データベースの結果検証
+* ログの結果検証
+
+データベースとログの結果検証は、\ `テストショット一覧`_\ に期待値の記載が無い場合（空欄であれば）、
+スキップされる。
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-real--s1`
+
+```json
+{
+  "id": "testing-framework-real--s1",
+  "title": "リクエスト単体テストの実施方法(同期応答メッセージ受信処理)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/05_UnitTestGuide/02_RequestUnitTest/real.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingRequestTestSupport",
+        "テストクラス命名規則",
+        "リクエスト単体テスト",
+        "同期応答メッセージ受信処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストメソッド分割",
+      "hints": [
+        "テストメソッド分割",
+        "テストシート分割",
+        "テストクラス構成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "testShots",
+        "LIST_MAP",
+        "テストショット一覧",
+        "setUpTable",
+        "expectedTable",
+        "expectedLog",
+        "diConfig",
+        "requestPath",
+        "userId",
+        "テストデータExcel",
+        "グループID"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データベースの準備",
+      "hints": [
+        "setUpTable",
+        "グループID",
+        "データベース初期化",
+        "テストデータ準備"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "リクエストメッセージ",
+      "hints": [
+        "MESSAGE=setUpMessages",
+        "reader.fwHeaderfields",
+        "フレームワーク制御ヘッダ",
+        "メッセージボディ",
+        "要求電文",
+        "ディレクティブ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "レスポンスメッセージ",
+      "hints": [
+        "MESSAGE=expectedMessages",
+        "messaging.assertAsMapFileType",
+        "file-type",
+        "応答電文アサート",
+        "電文検証"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "期待するデータベースの状態",
+      "hints": [
+        "expectedTable",
+        "データベース期待値",
+        "DB検証",
+        "グループID"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "テストメソッドの書き方",
+      "hints": [
+        "MessagingRequestTestSupport",
+        "execute()",
+        "execute(String sheetName)",
+        "テストメソッド作成"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "テスト起動方法",
+      "hints": [
+        "JUnit",
+        "テスト実行",
+        "テスト起動"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "テスト結果検証",
+      "hints": [
+        "レスポンスメッセージ検証",
+        "データベース検証",
+        "ログ検証",
+        "自動テストフレームワーク",
+        "expectedTable",
+        "expectedLog"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象Actionクラスと同一パッケージ (2) クラス名は `{Action名}RequestTest` (3) **クラス**: `nablarch.test.core.http.MessagingRequestTestSupport` を継承",
+    "s2": "原則1テストクラス=1テストメソッド=1テストシート。ケースが複雑またはデータ量が多い場合はメソッドやシートを分割可能。",
+    "s3": "テストデータExcelファイルはテストソースコードと同じディレクトリに同じ名前（拡張子のみ異なる）で格納。テストデータの記述方法詳細は :ref:`how_to_write_excel` 参照。\n\nテストショット一覧はLIST_MAPデータタイプで記載。IDは `testShots` 固定。\n\n| カラム名 | 説明 | 必須 |\n|---|---|---|\n| no | テストケース番号（1からの連番） | ○ |\n| description | テストケースの説明 | ○ |\n| expectedStatusCode | 期待するステータスコード | ○ |\n| setUpTable | 各テストケース実行前にDBに登録するデータの :ref:`グループID<tips_groupId>` | |\n| expectedTable | DB比較に使う期待テーブルの :ref:`グループID<tips_groupId>` | |\n| expectedLog | 期待するログメッセージのID | |\n| diConfig | 常駐プロセスのコンポーネント設定ファイルパス（:ref:`コマンドライン引数 <main-run_application>` 参照） | ○ |\n| requestPath | 常駐プロセスのリクエストパス（:ref:`コマンドライン引数 <main-run_application>` 参照） | ○ |\n| userId | 常駐プロセス実行ユーザID（:ref:`コマンドライン引数 <main-run_application>` 参照） | ○ |\n\nデフォルトのグループIDを使用したい場合は `default` と記載。デフォルトと個別グループIDの併用可能（両方のデータが有効になる）。「常駐プロセス」はメッセージ送受信を行うプロセスのこと。",
+    "s4": "データベースの準備は :ref:`オンライン<request_test_testcases>` と同様にグループIDで対応付けを行う。テストショット一覧にてsetUpTableの欄がない場合、または空欄の場合、データベース準備は行われない。\n\n![テストショットとDBの対応](assets/testing-framework-real--s1/msg_shot_to_db.png)",
+    "s5": "リクエストメッセージ（要求電文）の記述形式（名前は `MESSAGE=setUpMessages` 固定）:\n\n1. 共通情報（ディレクティブ・フレームワーク制御ヘッダ）: key-value形式で記載。全メッセージ共通の値となる。\n2. メッセージボディ:\n\n| 行 | 記述内容 | 備考 |\n|---|---|---|\n| 1行目 | フィールド名称 | 先頭セルは \"no\" |\n| 2行目 | データタイプ | 先頭セルは空白 |\n| 3行目 | フィールド長 | 先頭セルは空白 |\n| 4行目以降 | データ | 先頭セルは1からの通番 |\n\nテストショット一覧のnoと対応（テストショットno1の要求電文=本表の1行目データ）。\n\n> **重要**: フレームワーク制御ヘッダをPJで変更している場合は、propertiesファイルに `reader.fwHeaderfields` キーでヘッダ名をカンマ区切りで指定する必要がある。\n\n```properties\n# フレームワーク制御ヘッダ名をカンマ区切りで指定する。\nreader.fwHeaderfields=requestId,addHeader\n```\n\n> **重要**: フィールド名称に重複した名称は許容されない（例: 「氏名」フィールドが2つ以上存在してはならない）。\n\n![テストショットとリクエストメッセージの対応](assets/testing-framework-real--s1/msg_shot_to_req.png)",
+    "s6": "レスポンスメッセージは `MESSAGE=expectedMessages` として記述。file-typeの値によってアサート方法が変化:\n\n| file-typeの値 | アサート方法 |\n|---|---|\n| Fixed または指定なし | テストデータに記載された項目単位に電文を分割してアサート |\n| その他の値 | 電文全体を文字列としてアサート |\n\n> **注意**: file-typeはフォーマット定義ファイルではなく、テストデータに設定する必要がある。\n\n> **補足**: XMLやJSONは電文ごとに電文長が異なるため自動計算される。実電文とテストデータの電文長が異なると正常に読み込めない場合がある。XMLやJSONを使用する場合は必ずfile-typeを設定し、電文全体を文字列としてアサートすること。\n\n項目単位にアサートするfile-typeの値は、環境設定ファイルの `messaging.assertAsMapFileType` にカンマ区切りで指定することで変更可能。\n\n```\nmessaging.assertAsMapFileType=<カンマ区切りのfile-typeリスト>\n```",
+    "s7": "期待するデータベースの状態は、データベースの準備（:ref:`データベースの準備<s4>`）と同様にテストケース一覧とグループIDでリンクさせる。",
+    "s8": "`MessagingRequestTestSupport` を継承したクラスでテストメソッドを作成し、スーパクラスの以下のいずれかのメソッドを呼び出す:\n\n- `void execute()` — 引数なし（テストメソッド名をシート名として使用）\n- `void execute(String sheetName)` — テストデータのシート名を明示指定\n\n通常テストシート名とテストメソッド名は同一なので、引数なし `execute()` を使用するとよい。",
+    "s9": "通常のJUnitテストと同じように実行する（クラス単体テストと同様）。",
+    "s10": "自動テストフレームワークが行う結果検証:\n\n- レスポンスメッセージの結果検証（必須）\n- データベースの結果検証（テストショット一覧のexpectedTableに期待値がない場合はスキップ）\n- ログの結果検証（テストショット一覧のexpectedLogに期待値がない場合はスキップ）"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 10 < source headings 18
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

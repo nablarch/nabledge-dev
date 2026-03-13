@@ -1,0 +1,541 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/system_messaging/http_system_messaging.rst`
+- Format: `rst`
+
+```
+.. _http_system_messaging:
+
+HTTPメッセージング
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+HTTPを使ったメッセージの送受信を行う機能を提供する。
+
+HTTPメッセージングでは、 :ref:`http_system_messaging-data_model` に示したデータモデルを前提としている。
+また、メッセージのフォーマットには、 :ref:`data_format` を使用する。
+
+.. important::
+ :ref:`http_system_messaging-data_model` の中で、
+ :ref:`フレームワーク制御ヘッダ<mom_system_messaging-fw_header>` については、
+ Nablarchで独自に規定している項目となり、 :ref:`メッセージボディ<http_system_messaging-message_body>` に含めることを想定している。
+
+ プロジェクト側で電文フォーマットを設計できる場合は問題ないが、外部システムにより既に電文フォーマットが規定されている場合は、この想定が適合しない場合がある。
+
+ このため、本機能ではなく以下の機能を使用することを推奨する。
+
+ * サーバサイド(メッセージ受信)については、 :ref:`RESTfulウェブサービス <restful_web_service>` の使用を推奨する。
+ * クライアントサイド(メッセージ送信)については、JSR339(JAX-RS2.0)にて提供されるClient機能の使用を推奨する。
+
+ なお、本機能をやむを得ない事情にて使用しなければならない場合は、 :ref:`http_system_messaging-change_fw_header` を参照し、プロジェクトで実装を追加して対応すること。
+
+HTTPメッセージングは送受信の種類により、想定している実行制御基盤が異なる。
+
+.. list-table::
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 50, 50
+
+   * - 送受信の種類
+     - 実行制御基盤
+   * - :ref:`HTTPメッセージ受信<http_system_messaging-message_receive>`
+     - :ref:`HTTPメッセージング<http_messaging>`
+   * - :ref:`HTTPメッセージ送信<http_system_messaging-message_send>`
+     - 実行制御基盤に依存しない
+
+機能概要
+--------------------------
+
+:ref:`mom_system_messaging` と同じ作り方ができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HTTPメッセージングでは、メッセージの送受信の実装を :ref:`mom_system_messaging` と同じ以下のAPIで行う。
+そのため、 :ref:`mom_system_messaging` の経験があれば、少ない学習時間で実装できる。
+
+* :java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>`
+* :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-messaging</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-messaging-http</artifactId>
+  </dependency>
+
+使用方法
+---------------------------
+
+.. _http_system_messaging-settings:
+
+HTTPメッセージングを使うための設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+メッセージ受信の場合は、実行制御基盤のハンドラ構成以外に特に設定は不要である。
+
+メッセージ送信の場合は、以下のクラスをコンポーネント定義に追加する。
+
+* :java:extdoc:`MessageSenderClient<nablarch.fw.messaging.MessageSenderClient>` の実装クラス (HTTPの送受信)
+
+以下に設定例を示す。
+
+ポイント
+  * :java:extdoc:`MessageSenderClient<nablarch.fw.messaging.MessageSenderClient>` のデフォルト実装として
+    :java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>` を提供している。
+  * ルックアップして使用されるため、コンポーネント名は ``messageSenderClient`` と指定する。
+
+.. code-block:: xml
+
+ <component name="messageSenderClient"
+            class="nablarch.fw.messaging.realtime.http.client.HttpMessagingClient" />
+
+.. _http_system_messaging-message_receive:
+
+メッセージを受信する(HTTPメッセージ受信)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+外部システムからメッセージを受信し、その応答を送信する。
+
+.. image:: ../images/system_messaging/http_system_messaging-message_receive.png
+  :scale: 80
+
+実装例
+ ポイント
+   * HTTPメッセージ受信は、 :java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` で作成する。
+   * 応答電文は、 :java:extdoc:`RequestMessage.reply<nablarch.fw.messaging.RequestMessage.reply()>` で作成する。
+
+ .. code-block:: java
+
+  public class SampleAction extends MessagingAction {
+      protected ResponseMessage onReceive(RequestMessage request,
+                                          ExecutionContext context) {
+          // 受信データ処理
+          Map<String, Object> reqData = request.getParamMap();
+
+          // (省略)
+
+          // 応答データ返却
+          return request.reply()
+                  .setStatusCodeHeader("200")
+                  .addRecord(new HashMap() {{     // メッセージボディの内容
+                       put("FIcode",     "9999");
+                       put("FIname",     "ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ");
+                       put("officeCode", "111");
+                       /*
+                        * (後略)
+                        */
+                    }});
+      }
+  }
+
+.. _http_system_messaging-message_send:
+
+メッセージを送信する(HTTPメッセージ送信)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+外部システムに対してメッセージを送信し、その応答を受信する。
+応答メッセージを受信するか、待機タイムアウト時間が経過するまで待機する。
+
+規定時間内に応答を受信できずにタイムアウトした場合は、何らかの補償処理を行う必要がある。
+
+.. image:: ../images/system_messaging/http_system_messaging-message_send.png
+  :scale: 80
+
+実装例
+ ポイント
+   * 要求電文は、 :java:extdoc:`SyncMessage<nablarch.fw.messaging.SyncMessage>` で作成する。
+   * メッセージ送信には、 :java:extdoc:`MessageSender#sendSync<nablarch.fw.messaging.MessageSender.sendSync(nablarch.fw.messaging.SyncMessage)>` を使用する。
+     使い方の詳細は、リンク先のJavadocを参照。
+
+ .. code-block:: java
+
+  // 要求電文の作成
+  SyncMessage requestMessage = new SyncMessage("RM11AC0202")        // メッセージIDを設定
+                                 .addDataRecord(new HashMap() {{    // メッセージボディの内容
+                                      put("FIcode",     "9999");
+                                      put("FIname",     "ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ");
+                                      put("officeCode", "111");
+                                      /*
+                                       * (後略)
+                                       */
+                                  }})
+  // 要求電文の送信
+  SyncMessage responseMessage = MessageSender.sendSync(requestMessage);
+
+ また、HTTPヘッダとして独自の項目を送信したい場合は、下記のように作成したメッセージのヘッダレコードに設定する。
+
+ .. code-block:: java
+
+  // メッセージヘッダの内容
+  requestMessage.getHeaderRecord().put("Accept-Charset", "UTF-8");
+
+拡張例
+--------------------------------------------------
+
+.. _http_system_messaging-change_fw_header:
+
+フレームワーク制御ヘッダの読み書きを変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+外部システムで既に電文フォーマットが規定されている場合など、
+フレームワーク制御ヘッダの読み書きを変更したい場合がある。
+この場合は、プロジェクトで実装を追加することで対応する。
+以下に、送受信の種類ごとに対応方法を示す。
+
+HTTPメッセージ送信の場合
+ フレームワーク制御ヘッダの読み書きは、メッセージボディのフォーマット定義により行う。
+ そのため、変更内容に合わせてメッセージボディのフォーマット定義を変更すればよい。
+
+HTTPメッセージ受信の場合
+ フレームワーク制御ヘッダの読み書きは、
+ :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスが行う。
+ デフォルトでは、 :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>` が使用される。
+
+ そのため、 :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>` を参考に、
+ プロジェクトで :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスを作成し、
+ :ref:`http_messaging_request_parsing_handler` と :ref:`http_messaging_response_building_handler` に設定すればよい。
+
+.. tip::
+
+  フレームワーク制御ヘッダを使用するか否かは任意に選択できる。
+  このため、特別要件がない限りフレームワーク制御ヘッダを使用する必要はない。
+
+.. _http_system_messaging-change_http_client_process:
+
+HTTPメッセージ送信のHTTPクライアント処理を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HTTPメッセージ送信では、 :ref:`http_system_messaging-settings` で説明した通り、
+:java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>` を使用している。
+
+:java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>`
+では、HTTPクライアントとして様々な処理を行っている。
+例えば、送信するメッセージのHTTPヘッダに、 ``Accept: text/json,text/xml`` が固定で設定される。
+
+もし、:java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>`
+のデフォルト動作がプロジェクトの要件に合わない場合は、
+:java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>`
+を継承したクラスを作成し、 :ref:`http_system_messaging-settings` に示した方法でコンポーネント定義に追加することでカスタマイズを行うこと。
+
+.. _http_system_messaging-data_model:
+
+送受信電文のデータモデル
+--------------------------------------------------
+HTTPメッセージングでは、送受信電文の内容を以下のデータモデルで表現する。
+
+.. image:: ../images/system_messaging/http_system_messaging-data_model.png
+  :scale: 80
+
+.. _http_system_messaging-protocol_header:
+
+プロトコルヘッダ
+ 主にウェブコンテナによるメッセージ送受信処理において使用される情報を格納したヘッダ領域である。
+ プロトコルヘッダはMapインターフェースでアクセスすることが可能となっている。
+
+.. _http_system_messaging-common_protocol_header:
+
+共通プロトコルヘッダ
+ プロトコルヘッダのうち、フレームワークが使用する以下のヘッダについては、特定のキー名でアクセスできる。
+ キー名をカッコで示す。
+
+ メッセージID(X-Message-Id)
+  電文ごとに一意採番される文字列
+
+  :送信時: 送信処理の際に採番した値
+  :受信時: 送信側が発番した値
+
+ 関連メッセージID(X-Correlation-Id)
+  電文が関連する電文のメッセージID
+
+  :応答電文: 要求電文のメッセージID
+  :再送要求: 応答再送を要求する要求電文のメッセージID
+
+.. _http_system_messaging-message_body:
+
+メッセージボディ
+ HTTPリクエストのデータ領域をメッセージボディと呼ぶ。
+ フレームワーク機能は、原則としてプロトコルヘッダ領域のみを使用する。
+ それ以外のデータ領域については、未解析の単なるバイナリデータとして扱うものとする。
+
+ メッセージボディの解析は、 :ref:`data_format` によって行う。
+ これにより、電文の内容をフィールド名をキーとするMap形式で読み書き可能である。
+
+.. _http_system_messaging-fw_header:
+
+フレームワーク制御ヘッダ
+ 本フレームワークが提供する機能の中には、電文中に特定の制御項目が定義されていることを前提として設計されているものが多く存在する。
+ そのような制御項目のことを ``フレームワーク制御ヘッダ`` とよぶ。
+
+ フレームワーク制御ヘッダとそれを使用するハンドラの対応は以下のとおり。
+
+ リクエストID
+  この電文を受信したアプリケーションが実行すべき業務処理を識別するためのID。
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`request_path_java_package_mapping`
+  | :ref:`message_resend_handler`
+  | :ref:`permission_check_handler`
+  | :ref:`ServiceAvailabilityCheckHandler`
+
+ ユーザID
+  この電文の実行権限を表す文字列
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`permission_check_handler`
+
+ 再送要求フラグ
+  再送要求電文の送信時に設定されるフラグ
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`message_resend_handler`
+
+ ステータスコード
+  要求電文に対する処理結果を表すコード値
+
+  このヘッダを使用する主要なハンドラ：
+
+  | :ref:`message_reply_handler`
+
+ フレームワーク制御ヘッダは、デフォルトの設定では、
+ メッセージボディの最初のデータレコード中に、それぞれ以下のフィールド名で定義されている必要がある。
+
+  :リクエストID: requestId
+  :ユーザID: userId
+  :再送要求フラグ: resendFlag
+  :ステータスコード: statusCode
+
+ 以下は、標準的なフレームワーク制御ヘッダの定義例である。
+
+ .. code-block:: bash
+
+  #===================================================================
+  # フレームワーク制御ヘッダ部 (50byte)
+  #===================================================================
+  [NablarchHeader]
+  1   requestId   X(10)       # リクエストID
+  11  userId      X(10)       # ユーザID
+  21  resendFlag  X(1)  "0"   # 再送要求フラグ (0: 初回送信 1: 再送要求)
+  22  statusCode  X(4)  "200" # ステータスコード
+  26 ?filler      X(25)       # 予備領域
+  #====================================================================
+
+ フォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、
+ フレームワーク制御ヘッダの任意ヘッダ項目としてアクセスでき、
+ プロジェクト毎にフレームワーク制御ヘッダを簡易的に拡張する目的で使用できる。
+
+ また、将来的な任意項目の追加およびフレームワークの機能追加に伴うヘッダ追加に対応するため、
+ 予備領域を設けておくことを強く推奨する。
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-http_system_messaging--s1`
+
+```json
+{
+  "id": "libraries-http_system_messaging--s1",
+  "title": "HTTPメッセージング",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/system_messaging/http_system_messaging.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/MessagingAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSender.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/MessageSenderClient.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/realtime/http/client/HttpMessagingClient.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/RequestMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/SyncMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/FwHeaderDefinition.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/StandardFwHeaderDefinition.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "HTTPメッセージング",
+        "MessagingAction",
+        "MessageSender",
+        "送受信の種類",
+        "実行制御基盤",
+        "MOMメッセージング",
+        "mom_system_messaging"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-messaging",
+        "nablarch-fw-messaging-http",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用方法",
+      "hints": [
+        "MessageSenderClient",
+        "HttpMessagingClient",
+        "MessagingAction",
+        "RequestMessage",
+        "ResponseMessage",
+        "SyncMessage",
+        "MessageSender",
+        "messageSenderClient",
+        "HTTPメッセージ受信",
+        "HTTPメッセージ送信",
+        "設定方法",
+        "sendSync"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "拡張例",
+      "hints": [
+        "FwHeaderDefinition",
+        "StandardFwHeaderDefinition",
+        "HttpMessagingClient",
+        "http_messaging_request_parsing_handler",
+        "http_messaging_response_building_handler",
+        "フレームワーク制御ヘッダ変更",
+        "HTTPクライアントカスタマイズ",
+        "Accept"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "送受信電文のデータモデル",
+      "hints": [
+        "プロトコルヘッダ",
+        "共通プロトコルヘッダ",
+        "メッセージボディ",
+        "フレームワーク制御ヘッダ",
+        "X-Message-Id",
+        "X-Correlation-Id",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "データモデル",
+        "NablarchHeader",
+        "ServiceAvailabilityCheckHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: フレームワーク制御ヘッダは :ref:`メッセージボディ<http_system_messaging-message_body>` に含めることを想定しているため、外部システムで既に電文フォーマットが規定されている場合は適合しない可能性がある。推奨代替機能:\n> - サーバサイド(メッセージ受信): :ref:`restful_web_service` を使用推奨\n> - クライアントサイド(メッセージ送信): JSR339(JAX-RS2.0)のClient機能を使用推奨\n>\n> やむを得ず本機能を使用する場合は :ref:`http_system_messaging-change_fw_header` を参照してプロジェクトで実装を追加すること。\n\n送受信の種類と実行制御基盤:\n\n| 送受信の種類 | 実行制御基盤 |\n|---|---|\n| :ref:`http_system_messaging-message_receive` (HTTPメッセージ受信) | :ref:`http_messaging` |\n| :ref:`http_system_messaging-message_send` (HTTPメッセージ送信) | 実行制御基盤に依存しない |\n\n:ref:`mom_system_messaging` と同じ以下のAPIでメッセージ送受信を実装できる:\n- :java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>`\n- :java:extdoc:`MessageSender<nablarch.fw.messaging.MessageSender>`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging-http</artifactId>\n</dependency>\n```",
+    "s3": "### HTTPメッセージングを使うための設定\n\n- メッセージ受信: 実行制御基盤のハンドラ構成以外に特に設定不要\n- メッセージ送信: :java:extdoc:`MessageSenderClient<nablarch.fw.messaging.MessageSenderClient>` の実装クラスをコンポーネント定義に追加する\n\nデフォルト実装の :java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>` を使用する場合、コンポーネント名は `messageSenderClient` と指定する:\n\n```xml\n<component name=\"messageSenderClient\"\n           class=\"nablarch.fw.messaging.realtime.http.client.HttpMessagingClient\" />\n```\n\n### メッセージを受信する(HTTPメッセージ受信)\n\n:java:extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` を継承して作成する。応答電文は :java:extdoc:`RequestMessage.reply<nablarch.fw.messaging.RequestMessage.reply()>` で作成する。\n\n```java\npublic class SampleAction extends MessagingAction {\n    protected ResponseMessage onReceive(RequestMessage request, ExecutionContext context) {\n        Map<String, Object> reqData = request.getParamMap();\n        return request.reply()\n                .setStatusCodeHeader(\"200\")\n                .addRecord(new HashMap() {{\n                     put(\"FIcode\",     \"9999\");\n                     put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n                     put(\"officeCode\", \"111\");\n                  }});\n    }\n}\n```\n\n### メッセージを送信する(HTTPメッセージ送信)\n\n- 要求電文は :java:extdoc:`SyncMessage<nablarch.fw.messaging.SyncMessage>` で作成する\n- 送信には :java:extdoc:`MessageSender.sendSync<nablarch.fw.messaging.MessageSender.sendSync(nablarch.fw.messaging.SyncMessage)>` を使用する\n- 規定時間内に応答を受信できずにタイムアウトした場合は補償処理が必要\n\n```java\nSyncMessage requestMessage = new SyncMessage(\"RM11AC0202\")\n                               .addDataRecord(new HashMap() {{\n                                    put(\"FIcode\",     \"9999\");\n                                    put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n                                    put(\"officeCode\", \"111\");\n                                }});\nSyncMessage responseMessage = MessageSender.sendSync(requestMessage);\n```\n\nHTTPヘッダに独自項目を追加する場合はヘッダレコードに設定する:\n\n```java\nrequestMessage.getHeaderRecord().put(\"Accept-Charset\", \"UTF-8\");\n```",
+    "s4": "### フレームワーク制御ヘッダの読み書きを変更する\n\n- **HTTPメッセージ送信の場合**: メッセージボディのフォーマット定義を変更する\n- **HTTPメッセージ受信の場合**: :java:extdoc:`FwHeaderDefinition<nablarch.fw.messaging.FwHeaderDefinition>` インタフェースを実装したクラスを作成し、:ref:`http_messaging_request_parsing_handler` と :ref:`http_messaging_response_building_handler` に設定する。デフォルト実装は :java:extdoc:`StandardFwHeaderDefinition<nablarch.fw.messaging.StandardFwHeaderDefinition>`\n\n> **補足**: フレームワーク制御ヘッダの使用は任意。特別要件がない限り使用不要。\n\n### HTTPメッセージ送信のHTTPクライアント処理を変更する\n\n:java:extdoc:`HttpMessagingClient<nablarch.fw.messaging.realtime.http.client.HttpMessagingClient>` のデフォルト動作がプロジェクト要件に合わない場合は、同クラスを継承したクラスを作成し、:ref:`http_system_messaging-settings` の方法でコンポーネント定義に追加する。\n\nデフォルト動作例: HTTPヘッダに `Accept: text/json,text/xml` が固定設定される。",
+    "s5": "![送受信電文のデータモデル](assets/libraries-http_system_messaging--s1/http_system_messaging-data_model.png)\n\n**プロトコルヘッダ**: ウェブコンテナによるメッセージ送受信処理で使用される情報を格納したヘッダ領域。Mapインターフェースでアクセス可能。\n\n**共通プロトコルヘッダ** (フレームワークが使用する特定キーでアクセス可能):\n\n| ヘッダ名 | キー名 | 説明 |\n|---|---|---|\n| メッセージID | X-Message-Id | 電文ごとに一意採番。送信時は送信処理で採番した値、受信時は送信側が発番した値 |\n| 関連メッセージID | X-Correlation-Id | 応答電文では要求電文のメッセージID、再送要求では応答再送を要求する要求電文のメッセージID |\n\n**メッセージボディ**: HTTPリクエストのデータ領域。:ref:`data_format` で解析し、フィールド名をキーとするMap形式で読み書き可能。フレームワーク機能はプロトコルヘッダ領域のみを使用し、それ以外は未解析のバイナリデータとして扱う。\n\n**フレームワーク制御ヘッダ** (デフォルトではメッセージボディの最初のデータレコードに定義):\n\n| 制御項目 | フィールド名 | 使用ハンドラ |\n|---|---|---|\n| リクエストID | requestId | :ref:`request_path_java_package_mapping`, :ref:`message_resend_handler`, :ref:`permission_check_handler`, :ref:`ServiceAvailabilityCheckHandler` |\n| ユーザID | userId | :ref:`permission_check_handler` |\n| 再送要求フラグ | resendFlag | :ref:`message_resend_handler` |\n| ステータスコード | statusCode | :ref:`message_reply_handler` |\n\nフォーマット定義例:\n```\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n```\n\nフォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、任意ヘッダ項目としてアクセスでき、フレームワーク制御ヘッダを簡易拡張できる。将来的な項目追加に備え予備領域を設けることを強く推奨する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

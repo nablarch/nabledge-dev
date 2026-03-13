@@ -1,0 +1,20 @@
+{
+  "file_id": "adapters-micrometer_adaptor--s9",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — tip section about PrometheusMeterRegistry",
+      "description": "The tip in the source explicitly states two important constraints that are absent from the knowledge file: (1) `PrometheusMeterRegistry` の `MeterRegistryFactory` は本アダプタでは提供していない (the adapter does NOT provide a MeterRegistryFactory for PrometheusMeterRegistry), and (2) if a user wants to try PrometheusMeterRegistry, they must implement a custom factory class. A full `PrometheusMeterRegistryFactory` Java implementation example is provided in the source. The knowledge file only mentions that `OtlpMeterRegistry` is the sole histogram-bucket-supporting registry, omitting the explicit statement that Prometheus requires a custom user-supplied factory.",
+      "source_evidence": "「ただし、PrometheusMeterRegistry の MeterRegistryFactory は、本アダプタでは提供していない。実際に PrometheusMeterRegistry を試したい場合は、以下のようなクラスを自前で用意すること。」followed by a complete PrometheusMeterRegistryFactory Java code example."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints array",
+      "description": "Section s1 hints are missing `OtlpMeterRegistry`, `PrometheusMeterRegistry`, and `MeterRegistryFactory`, all of which appear in the tip sub-section of the source and are relevant class/type names a user might search for.",
+      "source_evidence": "Source tip: 「本アダプタで提供している MeterRegistry では OtlpMeterRegistry のみがヒストグラムバケットをサポートする」and 「PrometheusMeterRegistry の MeterRegistryFactory は、本アダプタでは提供していない」."
+    }
+  ]
+}

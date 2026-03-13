@@ -1,0 +1,556 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/message.rst`
+- Format: `rst`
+
+```
+.. _message:
+
+メッセージ管理
+======================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+メッセージとは、画面の固定文言(項目タイトルなど)やエラーメッセージのことを指す。
+
+画面の固定文言は、国際化の要件がなければJSPに直接埋め込んでも問題ない。
+
+.. tip::
+
+  メッセージは、安易に共通化せずに出来るだけ個別に定義すること。
+
+  安易に共通化を行った場合、以下の問題が発生する可能性がある。
+
+  例えば、他業務のメッセージに使えそうなメッセージがあるからとそのメッセージを使用したとする。
+  他業務の仕様変更でそのメッセージが変更されると、そのメッセージを使っていた箇所に関係のないメッセージが表示される。
+
+機能概要
+--------------------------
+
+メッセージの定義場所を指定できる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+メッセージは、データベースやプロパティファイルで管理できる。デフォルトでは、プロパティファイルでの管理となる。
+
+プロパティファイルをデフォルトとしている理由は以下のとおり。
+
+プロパティファイルで管理した場合、メッセージの追加・変更や確認を簡単に行える。
+例えば、メッセージを追加する際にデータベースへinsertするよりも、プロパティファイルに行追加するほうがはるかに楽である。
+
+プロパティファイルでの管理の詳細は以下を参照。
+
+* :ref:`message-property_unit`
+* :ref:`message-property_definition`
+
+.. tip::
+ メッセージの定義場所に関わらず、本機能では、アプリケーションの実行中に、メッセージを更新する機能は提供していない。
+ メッセージを更新する場合は、アプリケーションの再起動が必要となる。
+
+メッセージをフォーマットすることが出来る
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+メッセージは :java:extdoc:`java.text.MessageFormat` の拡張機能を使用してフォーマットする。
+実行時に保持している値をメッセージに埋め込みたい場合は、 :ref:`message-format-spec` に従いパターン文字列を定義する。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-message</artifactId>
+  </dependency>
+
+  <!-- メッセージをデータベースで管理する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-jdbc</artifactId>
+  </dependency>
+
+使用方法
+---------------------------
+
+.. _message-property_unit:
+
+プロパティファイルの作成単位
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+アプリケーション単位に作成する。
+1つのシステムであっても、社内向けとコンシューマ向けのアプリケーションがある場合は、それぞれにプロパティファイルを作成する。
+
+アプリケーション単位に作成することで、メッセージの影響範囲をアプリケーション内に限定できるメリットがある。
+（よくある、「そのアプリケーションで使っているとは思ってませんでした」による、障害を未然に防ぐことができる）
+
+例
+  コンシューマ向けアプリケーション
+    consumer/main/resources/messages.properties
+
+  社員向けアプリケーション
+    intra/main/resources/messages.properties
+
+.. _message-property_definition:
+
+プロパティファイルにメッセージを定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+デフォルトの設定では、プロパティファイルのパスは ``classpath:messages.properties`` となる。
+
+メッセージは、 :java:extdoc:`java.util.Properties` を使用してロードする。
+なお、NablarchはJava6以上を想定しているため、 **UTF-8** で作成すればよくユニコード変換(native2ascii)は必要ない。
+
+プロパティファイルの例
+  .. code-block:: properties
+
+    label.user.register.title=ユーザ登録画面
+    errors.login.alreadyExist=入力されたログインIDは既に登録されています。別のログインIDを入力してください。
+    errors.login=ログインに失敗しました。ログインIDまたはパスワードが誤っています。
+    errors.compare.date={0}は{1}より後の日付を入力してください。
+    success.delete.project=プロジェクトの削除が完了しました。
+    success.update.project=プロジェクトの更新が完了しました。
+
+.. _message-multi_lang:
+
+多言語化対応
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+メッセージの多言語化を行う場合には、言語ごとのプロパティファイルを用意し、サポートする言語を :java:extdoc:`PropertiesStringResourceLoader.locales <nablarch.core.message.PropertiesStringResourceLoader.setLocales(java.util.List)>` に設定する。
+なお、デフォルトのロケールに対応する言語については、サポートする言語に追加しなくても良い。
+
+.. important:: 
+
+  デフォルトのロケールは、:java:extdoc:`PropertiesStringResourceLoader.defaultLocale  <nablarch.core.message.PropertiesStringResourceLoader.setDefaultLocale(java.lang.String)>` (デフォルトの言語)で設定する。設定しなかった場合、デフォルトのロケールは :java:extdoc:`Locale.getDefault().getLanguage() <java.util.Locale.getLanguage()>` の値が採用される。
+  
+  :java:extdoc:`Locale.getDefault().getLanguage() <java.util.Locale.getLanguage()>` の値はOSの設定によって変化するため、この値をデフォルトのロケールとして使用すると実行する環境に応じて値が変わり障害の原因になる可能性がある。必ずデフォルトの言語を設定すること。
+
+メッセージ取得時にどの言語が使用されるかは、 :java:extdoc:`ThreadContext#getLanguage <nablarch.core.ThreadContext.getLanguage()>` が返すロケールによって決定される。
+もし、 :java:extdoc:`ThreadContext#getLanguage <nablarch.core.ThreadContext.getLanguage()>` からロケールが取得できない場合は :java:extdoc:`Locale.getDefault() <java.util.Locale.getDefault()>` が使用される。
+
+  
+PropertiesStringResourceLoaderへの言語設定
+  サポートする言語として、 ``en`` 、 ``zh`` 、 ``de`` を設定する場合の例を示す。
+
+  .. code-block:: xml
+
+    <component class="nablarch.core.cache.BasicStaticDataCache" name="messageCache">
+      <property name="loader">
+        <!-- 多言語化したPropertiesStringResourceLoaderの定義 -->
+        <component class="nablarch.core.message.PropertiesStringResourceLoader">
+          <!-- サポートする言語 -->
+          <property name="locales">
+            <list>
+              <value>en</value>
+              <value>zh</value>
+              <value>de</value>
+            </list>
+          </property>
+
+          <!-- デフォルトの言語 -->
+          <property name="defaultLocale" value="ja" />
+        </component>
+      </property>
+    </component>
+
+    <component name="stringResourceHolder" class="nablarch.core.message.StringResourceHolder">
+      <!-- 多言語化したPropertiesStringResourceLoaderを持つBasicStaticDataCacheを設定する -->
+      <property name="stringResourceCache" ref="messageCache" />
+    </component>
+
+    <component name="initializer" 
+               class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+      <property name="initializeList">
+        <list>
+          <!-- BasicStaticDataCacheを初期化対象に追加する -->
+          <component-ref name="messageCache" />
+        </list>
+      </property>
+    </component>
+
+
+言語ごとのプロパティファイルの作成
+  上記の :java:extdoc:`PropertiesStringResourceLoader <nablarch.core.message.PropertiesStringResourceLoader>` に設定したサポート言語に対応するプロパティファイルの作成例を示す。
+
+  :java:extdoc:`PropertiesStringResourceLoader <nablarch.core.message.PropertiesStringResourceLoader>` に設定した言語に対応するプロパティファイルを作成する。
+  ファイル名は、 **messages_言語.properties** とする。
+
+  デフォルトのロケールに対応するプロパティファイルは、言語を入れずに **messages.properties** として作成する。
+  **messages.properties** が存在していない場合は、エラーとして処理を終了するので注意すること。
+
+  .. code-block:: none
+
+    main/resources/messages.properties       # デフォルトの言語に対応したファイル
+                   messages_en.properties    # enに対応したファイル
+                   messages_zh.properties    # zhに対応したファイル
+                   messages_de.properties    # deに対応したファイル
+
+メッセージを持つ業務例外を送出する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+プロパティファイルに設定されたメッセージを持つ業務例外( :java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` ) を送出する例を示す。
+
+プロパティファイルに設定されたメッセージを取得するには、 :java:extdoc:`MessageUtil <nablarch.core.message.MessageUtil>` クラスを使用する。
+:java:extdoc:`MessageUtil <nablarch.core.message.MessageUtil>` から取得した :java:extdoc:`Message <nablarch.core.message.Message>` を元に業務例外( :java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` )を生成し送出する。
+
+
+プロパティファイル
+  .. code-block:: properties
+
+    errors.login.alreadyExist=入力されたログインIDは既に登録されています。別のログインIDを入力してください。
+
+実装例
+  .. code-block:: java
+
+    Message message = MessageUtil.createMessage(MessageLevel.ERROR, "errors.login.alreadyExist");
+
+    throw new ApplicationException(message);
+
+.. _message-format-spec:
+
+埋め込み文字を使用する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:java:extdoc:`java.text.MessageFormat` 形式での埋め込み文字に対応している。
+メッセージに埋め込む値に :java:extdoc:`Map <java.util.Map>` のみを指定した場合は、
+:java:extdoc:`java.text.MessageFormat` を使用せずに :java:extdoc:`Map <java.util.Map>` のキー値を元に値を埋め込む拡張機能を使用する。
+
+埋め込み文字を使用する場合には、メッセージにパターン文字を使用し、メッセージ取得時に埋め込み文字を指定する。
+
+埋め込み文字に :java:extdoc:`Map <java.util.Map>` 以外を使用した場合
+  プロパティファイル
+    :java:extdoc:`java.text.MessageFormat` の仕様に従い、メッセージを定義する。
+
+    .. code-block:: properties
+
+      success.upload.project={0}件のプロジェクトを登録しました。
+
+
+  実装例
+    `projects.size()` が **5** を返した場合、取得されるメッセージは「5件のプロジェクトを登録しました。」となる。
+
+    .. code-block:: java
+
+      MessageUtil.createMessage(MessageLevel.INFO, "success.upload.project", projects.size());
+
+埋め込み文字に :java:extdoc:`Map <java.util.Map>` のみを使用した場合
+  プロパティファイル
+    埋め込み文字部分には、 :java:extdoc:`Map <java.util.Map>` のキー名を ``{`` 、 ``}`` で囲んで定義する。
+
+    .. code-block:: properties
+
+      success.upload.project={projectCount}件のプロジェクトを登録しました。
+
+  実装例
+    メッセージ取得時に指定する埋め込み文字に :java:extdoc:`Map <java.util.Map>` を指定する。
+
+    `projects.size()` が **5** を返した場合、取得されるメッセージは「5件のプロジェクトを登録しました。」となる。
+
+    .. code-block:: java
+
+      Map<String, Object> options = new HashMap<>();
+      options.put("projectCount", projects.size());
+
+      MessageUtil.createMessage(MessageLevel.INFO, "success.upload.project", options);
+
+    .. important:: 
+
+      埋め込み文字に指定できる値は、 :java:extdoc:`Map <java.util.Map>` のみとなる。
+      複数の :java:extdoc:`Map <java.util.Map>` や、 :java:extdoc:`Map <java.util.Map>` 以外の値とセットで指定された場合は、
+      :java:extdoc:`java.text.MessageFormat` を使用した値の埋め込み処理をおこなう。
+
+メッセージのフォーマット方法を変更したい場合は、 :ref:`message-change_formatter` を参照し対応すること。
+
+画面の固定文言をメッセージから取得する    
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+画面の固定文言にメッセージの値を出力したい場合は、カスタムタグライブラリの `message` タグを使用する。
+
+`message` タグの詳細な使用方法は、 :ref:`tag-write_message` を参照。
+
+プロパティファイル
+  .. code-block:: properties
+
+    login.title=ログイン
+
+JSP
+  .. code-block:: jsp
+
+    <div class="title-nav">
+      <span><n:message messageId="login.title" /></span>
+    </div>
+
+画面表示結果
+  プロパティファイルに定義したメッセージが固定文言として表示される。
+
+  .. image:: images/message/jsp_title.png
+
+.. _message-level:
+
+メッセージレベルを使い分ける
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+メッセージレベルを使い分けることで、画面表示時のスタイルを切り替えることができる。
+スタイルの切り替えは、カスタムタグライブラリの :ref:`errors <tag-write_error_errors_tag>` タグを使用することで実現できる。
+
+.. important::
+
+  メッセージレベルとカスタムタグを使用したスタイル変更は以下の問題点がある。
+
+  * カスタムタグライブラリが出力するDOM構造に制約があり、一般的なCSSフレームワークとの相性が悪い
+  * メッセージレベルが3種類しかなくそれより細かい分類ができない
+  * JSP以外のテンプレートエンジンで使用できない
+  
+  このため、 :ref:`errorsタグを使用したメッセージレベルに応じたスタイル切り替え <message-level_with_tag>` を使用するのではなく以下の実装方法を推奨する。
+
+  サーバサイド
+    サーバサイドでメッセージ文字列を構築し、リクエストスコープに設定する。
+    メッセージを生成する際にはメッセージレベルが必須なため、INFOレベルを指定すれば良い。
+
+    .. code-block:: java
+
+      context.setRequestScopedVar("message", 
+          MessageUtil.createMessage(MessageLevel.INFO, "login.message").formatMessage());
+
+  View
+    View(JSP等)では、リクエストスコープに設定したメッセージを出力する。
+    JSPを使用する場合は、 :ref:`write <tag-write_tag>` タグを使用してリクエストスコープに設定したメッセージを出力する。
+
+    .. code-block:: jsp
+        
+       <div class="alert alert-success" role="alert">
+         <n:write name="message" />
+       </div>
+
+.. _message-level_with_tag:
+
+errorsタグを使用したメッセージレベルに応じたスタイル切り替え例
+  メッセージレベルは、 `INFO` 、 `WARN` 、 `ERROR` の3種類があり、
+  :java:extdoc:`MessageLevel <nablarch.core.message.MessageLevel>` に定義されている。
+
+  errorsタグを使用すると、メッセージレベルに応じて以下のcssクラスが適用される。
+  `errors` タグの詳細な使用方法は、 :ref:`tag-write_error` を参照。
+
+  :INFO: nablarch_info
+  :WARN: nablarch_warn
+  :ERROR: nablarch_error
+
+  .. tip::
+
+    :doc:`バリデーション機能 <validation>` から送出される業務例外( :java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` )が持つメッセージは、
+    全て `ERROR` レベルとなる。
+
+
+  プロパティファイル
+    .. code-block:: properties
+
+      info=インフォメーション
+      warn=ワーニング
+      error=エラー
+
+  スタイルシート
+    メッセージレベルに対応したスタイルを定義する。
+
+    .. code-block:: css
+
+      .nablarch_info {
+        color: #3333BB;
+      }
+
+      .nablarch_warn {
+        color: #EA8128;
+      }
+
+      .nablarch_error {
+        color: #ff0000;
+      }
+
+  action class
+    `errors` タグで出力するメッセージは、 :java:extdoc:`WebUtil.notifyMessages <nablarch.common.web.WebUtil.notifyMessages(nablarch.fw.ExecutionContext-nablarch.core.message.Message...)>` を使ってリクエストスコープに格納する。
+
+    .. code-block:: java
+
+      WebUtil.notifyMessages(context, MessageUtil.createMessage(MessageLevel.INFO, "info"));
+      WebUtil.notifyMessages(context, MessageUtil.createMessage(MessageLevel.WARN, "warn"));
+      WebUtil.notifyMessages(context, MessageUtil.createMessage(MessageLevel.ERROR, "error"));
+
+  JSP
+    `errors` タグを使用して、 :java:extdoc:`WebUtil <nablarch.common.web.WebUtil>` に格納したメッセージを画面表示する。
+
+    .. code-block:: jsp
+
+      <n:errors />
+
+  画面表示結果
+    メッセージレベルに応じてスタイルが切り替わっていることがわかる。
+
+    .. image:: images/message/message_level.png
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-message--s1`
+
+```json
+{
+  "id": "libraries-message--s1",
+  "title": "メッセージ管理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/message.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/text/MessageFormat.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/PropertiesStringResourceLoader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Locale.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/ThreadContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/ApplicationException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/MessageUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/Message.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Properties.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/util/Map.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/message/MessageLevel.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/WebUtil.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "メッセージ管理",
+        "メッセージ定義場所",
+        "プロパティファイル管理",
+        "メッセージフォーマット",
+        "MessageFormat",
+        "メッセージ共通化"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core",
+        "nablarch-core-message",
+        "nablarch-common-jdbc",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用方法",
+      "hints": [
+        "PropertiesStringResourceLoader",
+        "ApplicationException",
+        "MessageUtil",
+        "MessageLevel",
+        "ThreadContext",
+        "messages.properties",
+        "多言語化",
+        "業務例外",
+        "埋め込み文字",
+        "errorsタグ",
+        "defaultLocale",
+        "StringResourceHolder"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "メッセージとは、画面の固定文言（項目タイトルなど）やエラーメッセージのことを指す。国際化の要件がなければJSPに直接埋め込んでも問題ない。\n\n> **補足**: メッセージは安易に共通化せずに個別に定義すること。共通化すると、他業務の仕様変更でメッセージが変更された際に無関係なメッセージが表示される問題が発生する。\n\n## メッセージの定義場所\n\nデータベースまたはプロパティファイルで管理できる。デフォルトはプロパティファイル。\n\n> **補足**: アプリケーション実行中にメッセージを更新する機能は提供していない。メッセージ更新にはアプリケーションの再起動が必要。\n\n## メッセージのフォーマット\n\n:java:extdoc:`java.text.MessageFormat` の拡張機能を使用してフォーマットする。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-message</artifactId>\n</dependency>\n\n<!-- メッセージをデータベースで管理する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-jdbc</artifactId>\n</dependency>\n```",
+    "s3": "## プロパティファイルの作成単位\n\nアプリケーション単位に作成する。1システムでも社内向けとコンシューマ向けが別アプリの場合は各々作成する。これによりメッセージの影響範囲をアプリケーション内に限定できる。\n\n例:\n- コンシューマ向け: `consumer/main/resources/messages.properties`\n- 社員向け: `intra/main/resources/messages.properties`\n\n## プロパティファイルへのメッセージ定義\n\nデフォルトパス: `classpath:messages.properties`。:java:extdoc:`java.util.Properties` を使用してロード。**UTF-8**で作成すればよくユニコード変換（native2ascii）は不要。\n\n```properties\nlabel.user.register.title=ユーザ登録画面\nerrors.login.alreadyExist=入力されたログインIDは既に登録されています。別のログインIDを入力してください。\nerrors.compare.date={0}は{1}より後の日付を入力してください。\n```\n\n## 多言語化対応\n\n言語ごとのプロパティファイルを用意し、:java:extdoc:`PropertiesStringResourceLoader.locales <nablarch.core.message.PropertiesStringResourceLoader.setLocales(java.util.List)>` にサポート言語を設定する。\n\n> **重要**: :java:extdoc:`PropertiesStringResourceLoader.defaultLocale <nablarch.core.message.PropertiesStringResourceLoader.setDefaultLocale(java.lang.String)>` を必ず設定すること。未設定の場合 :java:extdoc:`Locale.getDefault().getLanguage() <java.util.Locale.getLanguage()>` が使われるが、OS設定に依存するため実行環境によって値が変わり障害の原因になる。\n\nメッセージ取得時のロケールは :java:extdoc:`ThreadContext#getLanguage <nablarch.core.ThreadContext.getLanguage()>` の値を使用する。取得できない場合は :java:extdoc:`Locale.getDefault() <java.util.Locale.getDefault()>` を使用。\n\nXML設定例（en/zh/deをサポート、デフォルトja）:\n```xml\n<component class=\"nablarch.core.cache.BasicStaticDataCache\" name=\"messageCache\">\n  <property name=\"loader\">\n    <component class=\"nablarch.core.message.PropertiesStringResourceLoader\">\n      <property name=\"locales\">\n        <list>\n          <value>en</value>\n          <value>zh</value>\n          <value>de</value>\n        </list>\n      </property>\n      <property name=\"defaultLocale\" value=\"ja\" />\n    </component>\n  </property>\n</component>\n<component name=\"stringResourceHolder\" class=\"nablarch.core.message.StringResourceHolder\">\n  <property name=\"stringResourceCache\" ref=\"messageCache\" />\n</component>\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"messageCache\" />\n    </list>\n  </property>\n</component>\n```\n\nファイル名: `messages_言語.properties`（例: `messages_en.properties`）。デフォルトロケール用は `messages.properties`（言語なし）。`messages.properties` が存在しない場合はエラーで処理終了。\n\n## 業務例外の送出\n\n:java:extdoc:`MessageUtil <nablarch.core.message.MessageUtil>` でメッセージを取得し、:java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` を生成して送出する。\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"errors.login.alreadyExist\");\nthrow new ApplicationException(message);\n```\n\n## 埋め込み文字\n\n:java:extdoc:`java.text.MessageFormat` 形式に対応。埋め込み値に :java:extdoc:`Map <java.util.Map>` **のみ**を指定した場合は、Mapのキー名を `{キー名}` 形式で記述する拡張機能を使用する。\n\n> **重要**: 複数のMapや、Map以外の値とセットで指定した場合は :java:extdoc:`java.text.MessageFormat` を使用した値の埋め込み処理を行う（拡張機能は使われない）。\n\nMap以外（`{0}` 形式）:\n```properties\nsuccess.upload.project={0}件のプロジェクトを登録しました。\n```\n```java\nMessageUtil.createMessage(MessageLevel.INFO, \"success.upload.project\", projects.size());\n```\n\nMapのみ（`{キー名}` 形式）:\n```properties\nsuccess.upload.project={projectCount}件のプロジェクトを登録しました。\n```\n```java\nMap<String, Object> options = new HashMap<>();\noptions.put(\"projectCount\", projects.size());\nMessageUtil.createMessage(MessageLevel.INFO, \"success.upload.project\", options);\n```\n\n## 画面固定文言の取得\n\nカスタムタグライブラリの `message` タグ（:ref:`tag-write_message` 参照）でメッセージ値を出力する。\n\n```jsp\n<n:message messageId=\"login.title\" />\n```\n\n## メッセージレベル\n\n:java:extdoc:`MessageLevel <nablarch.core.message.MessageLevel>` に定義される `INFO`、`WARN`、`ERROR` の3種類。\n\n> **重要**: errorsタグによるメッセージレベルのスタイル切り替えは以下の問題があるため非推奨: (1) CSSフレームワークとの相性が悪い (2) メッセージレベルが3種類のみで細かい分類ができない (3) JSP以外のテンプレートエンジンで使用不可。推奨実装: サーバサイドでメッセージ文字列を構築しINFOレベルでリクエストスコープに設定し、View側で :ref:`write <tag-write_tag>` タグで出力する。\n\nerrorsタグ使用時のCSSクラス:\n- `INFO` → `nablarch_info`\n- `WARN` → `nablarch_warn`\n- `ERROR` → `nablarch_error`\n\n> **補足**: :doc:`バリデーション機能 <validation>` から送出される :java:extdoc:`ApplicationException <nablarch.core.message.ApplicationException>` のメッセージは全て `ERROR` レベル。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

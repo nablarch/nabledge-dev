@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-13--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The `使用方法` section (s3) contains 5 h3 subsections (依存ライブラリの追加, log.propertiesの設定, Logbookの構成, JAX-RSクライアントにLogbookを登録, リクエスト/レスポンスのログを出力) with plain text clearly exceeding 2000 characters, but all content is merged into a single section s3 without splitting.",
+      "source_evidence": "Source h2 `使用方法` contains 5 h3 subsections each with substantial code examples and explanations. Knowledge file maps all to s3."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "PascalCase class name `BasicLogFormatter` is missing from s3 hints. It appears in the log.properties configuration code block as `writer.stdout.formatter.className=nablarch.core.log.basic.BasicLogFormatter`.",
+      "source_evidence": "Source: `writer.stdout.formatter.className=nablarch.core.log.basic.BasicLogFormatter`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "PascalCase class name `JsonPathBodyFilters` is missing from s3 hints. It appears in the Logbook configuration code example for masking array fields.",
+      "source_evidence": "Source: `Logbook logbook = Logbook.builder()\n        .bodyFilter(JsonPathBodyFilters.jsonPath(\"$[*].id\").replace(\"*****\"))\n        .bodyFilter(JsonPathBodyFilters.jsonPath(\"$[*].username\").replace(\"*****\"))\n        .build();`"
+    }
+  ]
+}

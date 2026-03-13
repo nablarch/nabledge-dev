@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-http_response_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — 言語毎のコンテンツパスの切り替え",
+      "description": "DirectoryBasedResourcePathRule と FilenameBasedResourcePathRule の具体的なディレクトリ/ファイル配置例が省略されている。ソースにはディレクトリツリー構造の例（コンテキストルート下に en/ja ディレクトリを作成する例、search_en.jsp / search_ja.jsp のようなファイル名サフィックス例）が記載されており、開発者がファイル配置を理解する上で有用な情報。",
+      "source_evidence": "ソースの DirectoryBasedResourcePathRule 説明内: 「コンテキストルート\\n├─en\\n│  └─management\\n│      └─user\\n│           search.jsp\\n└─ja\\n    └─management\\n        └─user\\n             search.jsp」。FilenameBasedResourcePathRule 説明内: 「コンテキストルート\\n└─management\\n        └─user\\n             search_en.jsp\\n             search_ja.jsp」。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8 — 本ハンドラ内で発生した致命的エラーの対応",
+      "description": "ソースの important ブロックに含まれる「このレスポンスは、本ハンドラ内で例外が発生するレアケースのみでしか使われることはない。このため、通常この仕様が問題になることはないが」という文脈が省略されている。この記述は開発者が本仕様への対応を判断する際の前提条件として有用。",
+      "source_evidence": "ソース important ブロック: 「このレスポンスは、本ハンドラ内で例外が発生するレアケースのみでしか使われることはない。このため、通常この仕様が問題になることはないが、どんなことがあってもこのレスポンスを出してはいけないシステムにおいては、本ハンドラを参考にハンドラの自作を検討すること。」"
+    }
+  ]
+}

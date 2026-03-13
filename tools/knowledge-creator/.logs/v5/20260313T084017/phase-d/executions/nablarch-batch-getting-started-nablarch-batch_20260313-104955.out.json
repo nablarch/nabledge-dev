@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-getting-started-nablarch-batch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "住所ファイル登録バッチ実行手順 (steps 1-3)",
+      "description": "The batch execution procedure (steps 1-3) is entirely absent from the knowledge file. The source contains the Maven launch command with Nablarch-specific parameters (requestPath format: `ImportZipCodeFileAction/ImportZipCodeFile`, diConfig: `classpath:import-zip-code-file.xml`, userId: `105`), the prerequisite SQL (`TRUNCATE TABLE ZIP_CODE_DATA;`), and the verification SQL (`SELECT * FROM ZIP_CODE_DATA;`). The requestPath format in particular is decision-necessary information for understanding how Nablarch batch jobs are invoked.",
+      "source_evidence": "$mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^ -Dexec.args=\"'-requestPath' 'ImportZipCodeFileAction/ImportZipCodeFile' '-diConfig' 'classpath:import-zip-code-file.xml' '-userId' '105'\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "`FileNotFoundException` appears in the DataReader code example within section s1 of the knowledge file (`catch (FileNotFoundException e)`) but is not listed in the hints array.",
+      "source_evidence": "catch (FileNotFoundException e) { throw new IllegalStateException(e); }"
+    }
+  ]
+}

@@ -1,0 +1,275 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/biz_samples/03/index.rst`
+- Format: `rst`
+
+```
+ページ番号(ページ番号をラベルとして使用するためラベル指定がない)
+---------------------------------------------------------------------------------------------------------------------------------
+usePageNumberSubmit                    ページ番号のページに遷移するサブミットを使用するか否か。|br|
+                                       デフォルトはfalse。
+pageNumberSubmitCss                    ページ番号のページに遷移するサブミットをラップするdivタグのclass属性。|br|
+                                       デフォルトは"nablarch_pageNumberSubmit"。
+pageNumberSubmitName                   ページ番号のページに遷移するサブミットに使用するタグのname属性。|br|
+                                       デフォルトは"pageNumberSubmit"。|br|
+                                       ページ番号とページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。|br|
+                                       例えば、デフォルトかつ表示位置が上側でページ番号が3の場合は"pageNumberSubmit3_top"となる。
+次へ
+---------------------------------------------------------------------------------------------------------------------------------
+useNextSubmit                          次のページに遷移するサブミットを使用するか否か。|br|
+                                       デフォルトはtrue。
+nextSubmitCss                          次のページに遷移するサブミットをラップするdivタグのclass属性。|br|
+                                       デフォルトは"nablarch_nextSubmit"。
+nextSubmitLabel                        次のページに遷移するサブミットに使用するラベル。|br|
+                                       デフォルトは"次へ"。
+nextSubmitName                         次のページに遷移するサブミットに使用するタグのname属性。|br|
+                                       デフォルトは"nextSubmit"。|br|
+                                       ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。|br|
+                                       例えば、デフォルトかつ表示位置が上側の場合は"nextSubmit_top"となる。
+最後
+---------------------------------------------------------------------------------------------------------------------------------
+useLastSubmit                          最後のページに遷移するサブミットを使用するか否か。|br|
+                                       デフォルトはfalse。
+lastSubmitCss                          最後のページに遷移するサブミットをラップするdivタグのclass属性。|br|
+                                       デフォルトは"nablarch_lastSubmit"。
+lastSubmitLabel                        最後のページに遷移するサブミットに使用するラベル。|br|
+                                       デフォルトは"最後"。
+lastSubmitName                         最後のページに遷移するサブミットに使用するタグのname属性。|br|
+                                       デフォルトは"lastSubmit"。 |br|
+                                       ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。|br|
+                                       例えば、デフォルトかつ表示位置が上側の場合は"lastSubmit_top"となる。
+====================================== ==========================================================================================
+
+|
+
+.. image:: ./_images/ListSearchResult_PagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+検索結果
+---------------------------------------------------------------------------------------------------------------------------------
+showResult                             検索結果を表示するか否か。デフォルトはtrue。
+resultSetName(必須)                    :java:extdoc:`ユニバーサルDAOの検索結果 <nablarch.common.dao.EntityList>` をリクエストスコープから取得する際に使用する名前。検索結果には、ページネーションのためのページ数や検索条件に一致した件数なども含まれる。
+resultSetCss                           検索結果テーブルのclass属性。|br|
+                                       デフォルトは"nablarch_resultSet"。
+headerRowFragment                      ヘッダ行のJSPフラグメント。
+bodyRowFragment                        ボディ行のJSPフラグメント。
+varRowName                             ボディ行のフラグメントで行データ(c:forEachタグのvar属性)を参照する際に使用する変数名。|br|
+                                       デフォルトは"row"。
+varStatusName                          ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。|br|
+                                       デフォルトは"status"。
+                                       
+                                       .. tip::
+                                       
+                                        n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\
+                                        エラーが発生し値を取得できない。\
+                                        n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\
+                                        下記に使用例を示す。
+                                        
+                                        .. code-block:: jsp
+                                        
+                                         <n:set var="rowCount" value="${status.count}" />
+                                         <n:write name="rowCount" />
+                                       
+varCountName                           ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。|br|
+                                       デフォルトは"count"。
+varRowCountName                        検索結果のカウント(検索結果の取得開始位置＋ステータスのカウント)を参照する際に使用する変数名。|br|
+                                       デフォルトは"rowCount"。
+varOddEvenName                         ボディ行のclass属性を参照する際に使用する変数名。|br|
+                                       この変数名は、1行おきにclass属性の値を変更したい場合に使用する。|br|
+                                       デフォルトは"oddEvenCss"。
+oddValue                               ボディ行の奇数行に使用するclass属性。|br|
+                                       デフォルトは"nablarch_odd"。
+evenValue                              ボディ行の偶数行に使用するclass属性。|br|
+                                       デフォルトは"nablarch_even"。
+====================================== ==========================================================================================
+
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `biz-samples-03--s31`
+
+```json
+{
+  "id": "biz-samples-03--s31",
+  "title": "ListSearchResult ページングと検索結果の属性",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/03/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/EntityList.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ページ番号(ページ番号をラベルとして使用するためラベル指定がない)",
+      "hints": [
+        "usePageNumberSubmit",
+        "pageNumberSubmitCss",
+        "pageNumberSubmitName",
+        "ページ番号ページング",
+        "ページ番号サブミット",
+        "name属性サフィックス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "次へ",
+      "hints": [
+        "useNextSubmit",
+        "nextSubmitCss",
+        "nextSubmitLabel",
+        "nextSubmitName",
+        "次ページ遷移サブミット",
+        "ページング次へボタン"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "最後",
+      "hints": [
+        "useLastSubmit",
+        "lastSubmitCss",
+        "lastSubmitLabel",
+        "lastSubmitName",
+        "最終ページ遷移サブミット",
+        "ページング最後ボタン"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "検索結果",
+      "hints": [
+        "showResult",
+        "resultSetName",
+        "resultSetCss",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "EntityList",
+        "検索結果テーブル",
+        "JSPフラグメント",
+        "ページネーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ページ番号（ページ番号をラベルとして使用するためラベル指定がない）\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| usePageNumberSubmit | | | false | ページ番号のページに遷移するサブミットを使用するか否か |\n| pageNumberSubmitCss | | | \"nablarch_pageNumberSubmit\" | ページ番号のページに遷移するサブミットをラップするdivタグのclass属性 |\n| pageNumberSubmitName | | | \"pageNumberSubmit\" | ページ番号のページに遷移するサブミットに使用するタグのname属性。ページ番号とページングの表示位置を表すサフィックス（上側は\"_top\"、下側は\"_bottom\"）を付けて出力する。例: デフォルトかつ上側でページ番号3の場合は\"pageNumberSubmit3_top\" |",
+    "s2": "## 次へ\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| useNextSubmit | | | true | 次のページに遷移するサブミットを使用するか否か |\n| nextSubmitCss | | | \"nablarch_nextSubmit\" | 次のページに遷移するサブミットをラップするdivタグのclass属性 |\n| nextSubmitLabel | | | \"次へ\" | 次のページに遷移するサブミットに使用するラベル |\n| nextSubmitName | | | \"nextSubmit\" | 次のページに遷移するサブミットに使用するタグのname属性。ページングの表示位置を表すサフィックス（上側は\"_top\"、下側は\"_bottom\"）を付けて出力する。例: デフォルトかつ上側の場合は\"nextSubmit_top\" |",
+    "s3": "## 最後\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| useLastSubmit | | | false | 最後のページに遷移するサブミットを使用するか否か |\n| lastSubmitCss | | | \"nablarch_lastSubmit\" | 最後のページに遷移するサブミットをラップするdivタグのclass属性 |\n| lastSubmitLabel | | | \"最後\" | 最後のページに遷移するサブミットに使用するラベル |\n| lastSubmitName | | | \"lastSubmit\" | 最後のページに遷移するサブミットに使用するタグのname属性。ページングの表示位置を表すサフィックス（上側は\"_top\"、下側は\"_bottom\"）を付けて出力する。例: デフォルトかつ上側の場合は\"lastSubmit_top\" |\n\n![ListSearchResultページングテーブル全表示](assets/biz-samples-03--s31/ListSearchResult_PagingTableFull.jpg)",
+    "s4": "## 検索結果\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| showResult | | | true | 検索結果を表示するか否か |\n| resultSetName | | ○ | | :java:extdoc:`EntityList<nablarch.common.dao.EntityList>` をリクエストスコープから取得する際に使用する名前。ページネーションのためのページ数や検索条件に一致した件数も含まれる |\n| resultSetCss | | | \"nablarch_resultSet\" | 検索結果テーブルのclass属性 |\n| headerRowFragment | | | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | | | | ボディ行のJSPフラグメント |\n| varRowName | | | \"row\" | ボディ行のフラグメントで行データ（c:forEachタグのvar属性）を参照する際の変数名 |\n| varStatusName | | | \"status\" | ボディ行のフラグメントでステータス（c:forEachタグのstatus属性）を参照する際の変数名 |\n| varCountName | | | \"count\" | ステータスのcountプロパティを参照する際の変数名 |\n| varRowCountName | | | \"rowCount\" | 検索結果のカウント（取得開始位置＋ステータスカウント）を参照する際の変数名 |\n| varOddEvenName | | | \"oddEvenCss\" | ボディ行のclass属性を参照する際の変数名（1行おきにclass属性を変更する場合に使用） |\n| oddValue | | | \"nablarch_odd\" | ボディ行の奇数行に使用するclass属性 |\n| evenValue | | | \"nablarch_even\" | ボディ行の偶数行に使用するclass属性 |\n\n> **補足**: `varStatusName`で指定した変数をn:writeタグでアクセスすると、EL式とアクセス方法が異なるためエラーが発生し値を取得できない。n:setタグを使用してステータスにアクセスすることでこのエラーを回避できる。\n\n```jsp\n<n:set var=\"rowCount\" value=\"${status.count}\" />\n<n:write name=\"rowCount\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

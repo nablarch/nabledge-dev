@@ -1,0 +1,81 @@
+{
+  "id": "testing-framework-02_DbAccessTest--s14",
+  "title": "デフォルト値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/02_DbAccessTest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/SqlPStatement.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "関係のあるカラムのみを記載した場合（良い例）",
+      "hints": [
+        "関係カラムのみ記載",
+        "EXPECTED_COMPLETE_TABLE",
+        "SETUP_TABLE",
+        "準備データ",
+        "可読性向上",
+        "期待値"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定項目一覧",
+      "hints": [
+        "BasicDefaultValues",
+        "charValue",
+        "numberValue",
+        "dateValue",
+        "デフォルト値設定",
+        "nablarch.test.core.db.BasicDefaultValues"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "コンポーネント設定ファイルの記述例",
+      "hints": [
+        "BasicDefaultValues",
+        "BasicTestDataParser",
+        "testDataParser",
+        "コンポーネント設定",
+        "nablarch.test.core.reader.BasicTestDataParser"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "デフォルト値",
+      "hints": [
+        "デフォルト値",
+        "数値型",
+        "文字列型",
+        "日付型",
+        "カラムデフォルト値",
+        "default_values_when_column_omitted"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "注意点",
+      "hints": [
+        "setUpDb",
+        "assertTableEquals",
+        "assertSqlResultSetEquals",
+        "ThreadContext",
+        "外部キー",
+        "Timestamp",
+        "SqlPStatement",
+        "using_ThreadContext",
+        "using_transactions",
+        "MasterDataRestore-fk_key"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "関係のあるカラムのみ記述することで可読性・保守性が向上し、テーブル定義変更時も無関係カラムであれば影響を受けない。\n\n準備データには実行テストに関係するカラムのみ記述する（PK_1、PK_2、有効期限、削除フラグ）:\n\n```\nSETUP_TABLE=SAMPLE_TABLE\n\n| PK_1 | PK_2 | 有効期限 | 削除フラグ |\n|---|---|---|---|\n| 01 | 0001 | 20101231 | 0 |\n| 02 | 0002 | 20110101 | 0 |\n```\n\n期待値には`EXPECTED_TABLE`の代わりに`EXPECTED_COMPLETE_TABLE`を使用する:\n\n```\nEXPECTED_COMPLETE_TABLE=SAMPLE_TABLE\n\n| PK_1 | PK_2 | 有効期限 | 削除フラグ |\n|---|---|---|---|\n| 01 | 0001 | 20101231 | 1 |\n| 02 | 0002 | 20110101 | 0 |\n```",
+    "s2": "**クラス**: `nablarch.test.core.db.BasicDefaultValues`\n\nコンポーネント設定ファイルで以下の値を設定できる:\n\n| 設定項目名 | 説明 | 設定値 |\n|---|---|---|\n| charValue | 文字列型のデフォルト値 | 1文字のASCII文字 |\n| numberValue | 数値型のデフォルト値 | 0または正の整数 |\n| dateValue | 日付型のデフォルト値 | JDBCタイムスタンプエスケープ形式 (yyyy-mm-dd hh:mm:ss.fffffffff) |",
+    "s3": "```xml\n<!-- TestDataParser -->\n<component name=\"testDataParser\" class=\"nablarch.test.core.reader.BasicTestDataParser\">\n  <!-- データベースデフォルト値 -->\n  <property name=\"defaultValues\">\n    <component class=\"nablarch.test.core.db.BasicDefaultValues\">\n      <property name=\"charValue\" value=\"a\"/>\n      <property name=\"dateValue\" value=\"2000-01-01 12:34:56.123456789\"/>\n      <property name=\"numberValue\" value=\"1\"/>\n    </component>\n  </property>\n</component>\n```",
+    "s4": "コンポーネント設定ファイルで明示的に指定していない場合、以下のデフォルト値が使用される:\n\n| カラム型 | デフォルト値 |\n|---|---|\n| 数値型 | 0 |\n| 文字列型 | 半角スペース |\n| 日付型 | 1970-01-01 00:00:00.0 |",
+    "s5": "## setUpDbメソッドに関する注意点\n\n- Excelファイルに全カラムを記述する必要はない。省略されたカラムにはデフォルト値が設定される。\n- 1シート内に複数のテーブルを記述できる。`setUpDb(String sheetName)`実行時、指定シート内の`SETUP_TABLE`全てが登録対象となる。\n\n## assertTableEqualsメソッドに関する注意点\n\n- 期待値で省略されたカラムは比較対象外となる。\n- レコードの順番が異なっていても主キーを突合して正しく比較できる（順序を意識してデータを作成する必要はない）。\n- 1シート内に複数のテーブルを記述できる。`assertTableEquals(String sheetName)`実行時、指定シート内の`EXPECTED_TABLE`全てが比較対象となる。\n- `java.sql.Timestamp`型のフォーマットは`yyyy-mm-dd hh:mm:ss.fffffffff`（fffffffffはナノ秒）。ナノ秒未設定でも`0`として表示される（例: 2010-01-01 12:34:56.0）。Excelに期待値を記載する場合は末尾の`.0`を付与すること。\n\n## assertSqlResultSetEqualsメソッドに関する注意点\n\n- SELECT文で指定された全カラム（別名含む）が比較対象となり、特定カラムを比較対象外にはできない。\n- レコードの順序が異なる場合は等価でないとみなす（アサート失敗）。理由: SELECTカラムに主キーが含まれるとは限らない、ORDER BY指定がある場合は順序も厳密に比較する必要があるため。\n\n## クラス単体テストにおける登録・更新系テストの注意点\n\n- 自動設定項目を利用してDBに登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前に設定すること（:ref:`using_ThreadContext`）。\n- デフォルト以外のトランザクションを使用する場合は、本フレームワークにトランザクション制御を行わせる必要がある（:ref:`using_transactions`）。\n\n## 外部キーが設定されたテーブルへのデータセットアップ\n\n:ref:`master_data_backup`と同じ機能を用いてテーブルの親子関係を判断しデータを削除・登録する。詳細は:ref:`MasterDataRestore-fk_key`を参照。\n\n## Excelファイルに記述できるカラムのデータ型\n\n:java:extdoc:`SqlPStatement <nablarch.core.db.statement.SqlPStatement>`で対応している型のカラムのみテストデータとして記述できる。OracleのROWIDやPostgreSQLのOIDなどその他のデータ型は記述できない。"
+  }
+}

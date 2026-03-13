@@ -1,0 +1,60 @@
+{
+  "id": "nablarch-batch-architecture--s1",
+  "title": "アーキテクチャ概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/architecture.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/DataReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/DispatchHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Result.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/StatusCodeConvertHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchバッチアプリケーションの構成",
+      "hints": [
+        "都度起動バッチ",
+        "常駐バッチ",
+        "db_messaging推奨",
+        "スタンドアロン",
+        "Main",
+        "アーキテクチャ構成",
+        "取り込み遅延",
+        "マルチスレッド"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リクエストパスによるアクションとリクエストIDの指定",
+      "hints": [
+        "-requestPath",
+        "リクエストパス",
+        "アクションクラス",
+        "リクエストID",
+        "コマンドライン引数"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Nablarchバッチアプリケーションの処理の流れ",
+      "hints": [
+        "DataReader",
+        "DispatchHandler",
+        "StatusCodeConvertHandler",
+        "Result",
+        "処理フロー",
+        "ハンドラキュー",
+        "nablarch.fw.DataReader",
+        "nablarch.fw.handler.DispatchHandler",
+        "nablarch.fw.Result",
+        "nablarch.fw.handler.StatusCodeConvertHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchバッチアプリケーションは以下の2種別に分かれる。\n\n**都度起動バッチ**: 日次・月次など定期的にプロセスを起動してバッチ処理を実行する。\n\n**常駐バッチ**: プロセスを起動し続け、一定間隔でバッチ処理を実行する。オンライン処理で作成された要求データを定期的に一括処理する場合などに使用する。\n\n> **重要**: 常駐バッチはマルチスレッド実行時に、処理が遅いスレッドの終了を他のスレッドが待つことで、要求データの取り込み遅延が発生する可能性がある。新規開発プロジェクトでは常駐バッチではなく :ref:`db_messaging` を使用することを推奨する。既存プロジェクトで上記問題が発生する可能性がある場合（既に発生している場合）は :ref:`db_messaging` への変更を検討すること。\n\nNablarchバッチアプリケーションはjavaコマンドから直接起動するスタンドアロンアプリケーションとして実行する。\n\n![アプリケーション構成](assets/nablarch-batch-architecture--s1/application_structure.png)\n\n**:ref:`main` (Main)**: 起点となるメインクラス。javaコマンドから直接起動し、システムリポジトリやログの初期化処理を行い、ハンドラキューを実行する。",
+    "s2": "コマンドライン引数 `-requestPath` で実行するアクションクラスとリクエストIDを指定する。\n\n```properties\n# 書式\n-requestPath=アクションのクラス名/リクエストID\n\n# 指定例\n-requestPath=com.sample.SampleBatchAction/BATCH0001\n```\n\nリクエストIDは各バッチプロセスの識別子として用いられる。同一の業務アクションクラスを実行するプロセスを複数起動する場合などは、リクエストIDが識別子となる。",
+    "s3": "1. :ref:`共通起動ランチャ(Main) <main>` がハンドラキューを実行する。\n2. :java:extdoc:`データリーダ(DataReader)<nablarch.fw.DataReader>` が入力データを読み込み、データレコードを1件ずつ提供する。\n3. :java:extdoc:`ディスパッチハンドラ(DispatchHandler) <nablarch.fw.handler.DispatchHandler>` がコマンドライン引数（-requestPath）で指定するリクエストパスを元にアクションクラスを特定し、ハンドラキューの末尾に追加する。\n4. アクションクラスはフォームクラスやエンティティクラスを使用して、データレコード1件ごとの業務ロジックを実行する。\n5. アクションクラスは処理結果を示す :java:extdoc:`Result <nablarch.fw.Result>` を返却する。\n6. 処理対象データがなくなるまで2〜5を繰り返す。\n7. :java:extdoc:`ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler) <nablarch.fw.handler.StatusCodeConvertHandler>` が処理結果のステータスコードをプロセス終了コードに変換し、バッチアプリケーションの処理結果として返す。"
+  }
+}

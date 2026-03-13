@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s8 (テストソースコード実装例（更新系）)",
+      "description": "ソースコード中のクラス名が修正されている。知識ファイルは `DbAccessTestSupport` と記載しているが、ソースファイルの更新系テストのコード例では `DbAccsessTestSupport`（余分な 's' を含む誤記）と記載されている。",
+      "source_evidence": "public class DbAccessTestSample extends DbAccsessTestSupport { （ソース 更新系テストソースコード実装例）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s11 (データベーステストデータの省略記述方法)",
+      "description": "カラム省略機能の利点（可読性向上・保守性向上）および「特に更新系テストケースに有効である」という適用指針がいずれも省略されている。ユーザーがこの機能をいつ使うべきかを判断するための重要な案内情報。",
+      "source_evidence": "この機能を使用することにより、テストデータの可読性が向上する。また、テーブル定義が変更された場合でも、関係無いカラムであればテストデータ修正作業は発生しなくなる為、保守性が向上する。この機能は特に更新系テストケースに有効である。多くのカラムのうち１カラムだけが更新される場合、不要なカラムを記述する必要がなくなる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s12 (テストケース例)",
+      "description": "テストケース例の前提条件として記載されている脚注「本テスト実施時の日付は2011/01/01とする。」が省略されている。有効期限の判定に関わるテストケースの前提条件であるため、理解に必要なコンテキスト情報。",
+      "source_evidence": ".. [#] 本テスト実施時の日付は2011/01/01とする。"
+    }
+  ]
+}

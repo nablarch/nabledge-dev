@@ -1,0 +1,348 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/batch/nablarch_batch/feature_details.rst`
+- Format: `rst`
+
+```
+機能詳細
+========================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+バッチアプリケーションの起動方法
+--------------------------------------------------
+* :ref:`Nablarchバッチアプリケーションの起動方法<main-run_application>`
+
+システムリポジトリの初期化
+--------------------------------------------------
+システムリポジトリの初期化は、アプリケーション起動時にシステムリポジトリの設定ファイルのパスを指定することで行う。
+詳細は、:ref:`Nablarchバッチアプリケーションの起動方法<main-run_application>` を参照。
+
+入力値のチェック
+--------------------------------------------------
+* :ref:`入力値のチェック <validation>`
+
+データベースアクセス
+--------------------------------------------------
+* :ref:`データベースアクセス <database_management>`
+* 標準提供のデータリーダ
+
+  * :java:extdoc:`DatabaseRecordReader (データベース読み込み) <nablarch.fw.reader.DatabaseRecordReader>`
+
+ファイル入出力
+--------------------------------------------------
+* :ref:`ファイル入出力<data_converter>`
+
+* 標準提供のデータリーダ
+
+  * :java:extdoc:`FileDataReader (ファイル読み込み)<nablarch.fw.reader.FileDataReader>`
+  * :java:extdoc:`ValidatableFileDataReader (バリデージョン機能付きファイル読み込み)<nablarch.fw.reader.ValidatableFileDataReader>`
+  * :java:extdoc:`ResumeDataReader (レジューム機能付き読み込み)<nablarch.fw.reader.ResumeDataReader>`
+
+排他制御
+--------------------------------------------------
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    feature_details/nablarch_batch_pessimistic_lock
+
+排他制御は、以下の2種類の方法を提供しているが、
+:ref:`UniversalDaoを推奨する理由 <exclusive_control-deprecated>` に記載がある通り、
+:ref:`universal_dao` の使用を推奨する。
+
+* :ref:`exclusive_control`
+* :ref:`universal_dao`
+
+  * :ref:`悲観的ロック<nablarch_batch_pessimistic_lock>`
+
+バッチ処理の実行制御
+--------------------------------------------------
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  feature_details/nablarch_batch_error_process
+  feature_details/nablarch_batch_retention_state
+
+* :ref:`バッチ処理のプロセス終了コード<status_code_convert_handler-rules>`
+* :ref:`バッチ処理のエラー処理<nablarch_batch_error_process>`
+* :ref:`バッチ処理の並列実行(マルチスレッド化)<multi_thread_execution_handler>`
+* :ref:`バッチ処理のコミット間隔の制御 <loop_handler-commit_interval>`
+* :ref:`1回のバッチ処理の処理件数制限 <data_read_handler-max_count>`
+  |br| (大量データを処理するバッチ処理を数日に分けて処理させる場合など)
+
+MOMメッセージ送信
+----------------------------------------
+* :ref:`同期応答メッセージ送信<mom_system_messaging-sync_message_send>`
+* :ref:`応答不要メッセージ送信<mom_system_messaging-async_message_send>`
+
+バッチ実行中の状態の保持
+----------------------------------------
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  feature_details/nablarch_batch_retention_state
+
+* :ref:`nablarch_batch_retention_state`
+
+常駐バッチのマルチプロセス化
+----------------------------------------
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  feature_details/nablarch_batch_multiple_process
+  
+* :ref:`nablarch_batch_multiple_process`
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-feature_details--s1`
+
+```json
+{
+  "id": "nablarch-batch-feature_details--s1",
+  "title": "機能詳細",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/feature_details.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/reader/DatabaseRecordReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/reader/FileDataReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/reader/ValidatableFileDataReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/reader/ResumeDataReader.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチアプリケーションの起動方法",
+      "hints": [
+        "バッチアプリケーション起動",
+        "main-run_application",
+        "起動方法",
+        "Nablarchバッチ起動"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システムリポジトリの初期化",
+      "hints": [
+        "システムリポジトリ初期化",
+        "設定ファイルパス",
+        "アプリケーション起動時初期化",
+        "main-run_application"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力値のチェック",
+      "hints": [
+        "入力値チェック",
+        "バリデーション",
+        "validation",
+        "入力検証"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データベースアクセス",
+      "hints": [
+        "DatabaseRecordReader",
+        "データベース読み込み",
+        "データリーダ",
+        "database_management",
+        "データベースアクセス"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ファイル入出力",
+      "hints": [
+        "FileDataReader",
+        "ValidatableFileDataReader",
+        "ResumeDataReader",
+        "ファイル読み込み",
+        "レジューム機能",
+        "バリデーション付きファイル読み込み",
+        "data_converter"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "排他制御",
+      "hints": [
+        "排他制御",
+        "universal_dao",
+        "exclusive_control",
+        "悲観的ロック",
+        "nablarch_batch_pessimistic_lock",
+        "UniversalDao推奨",
+        "exclusive_control-deprecated"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "バッチ処理の実行制御",
+      "hints": [
+        "プロセス終了コード",
+        "エラー処理",
+        "マルチスレッド",
+        "コミット間隔",
+        "処理件数制限",
+        "並列実行",
+        "nablarch_batch_error_process",
+        "status_code_convert_handler",
+        "loop_handler",
+        "data_read_handler"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "MOMメッセージ送信",
+      "hints": [
+        "MOMメッセージ送信",
+        "同期応答メッセージ送信",
+        "応答不要メッセージ送信",
+        "mom_system_messaging"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "バッチ実行中の状態の保持",
+      "hints": [
+        "状態保持",
+        "nablarch_batch_retention_state",
+        "バッチ実行中状態",
+        "常駐バッチ状態"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "常駐バッチのマルチプロセス化",
+      "hints": [
+        "常駐バッチ",
+        "マルチプロセス",
+        "nablarch_batch_multiple_process",
+        "複数プロセス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":ref:`Nablarchバッチアプリケーションの起動方法<main-run_application>`",
+    "s2": "システムリポジトリの初期化は、アプリケーション起動時にシステムリポジトリの設定ファイルのパスを指定することで行う。詳細は :ref:`Nablarchバッチアプリケーションの起動方法<main-run_application>` を参照。",
+    "s3": "バッチアプリケーションでの入力値チェック（バリデーション）には、Nablarchの標準バリデーション機能を使用する。詳細は :ref:`入力値のチェック <validation>` を参照。",
+    "s4": ":ref:`データベースアクセス <database_management>`\n\n**標準提供データリーダ**:\n- :java:extdoc:`DatabaseRecordReader (データベース読み込み) <nablarch.fw.reader.DatabaseRecordReader>`",
+    "s5": ":ref:`ファイル入出力<data_converter>`\n\n**標準提供データリーダ**:\n- :java:extdoc:`FileDataReader (ファイル読み込み)<nablarch.fw.reader.FileDataReader>`\n- :java:extdoc:`ValidatableFileDataReader (バリデーション機能付きファイル読み込み)<nablarch.fw.reader.ValidatableFileDataReader>`\n- :java:extdoc:`ResumeDataReader (レジューム機能付き読み込み)<nablarch.fw.reader.ResumeDataReader>`",
+    "s6": "> **重要**: :ref:`exclusive_control` は非推奨。:ref:`UniversalDaoを推奨する理由 <exclusive_control-deprecated>` に記載がある通り、:ref:`universal_dao` の使用を推奨する。\n\n排他制御の実装方法:\n- :ref:`exclusive_control`（非推奨）\n- :ref:`universal_dao`（推奨）\n  - :ref:`悲観的ロック<nablarch_batch_pessimistic_lock>`",
+    "s7": "- :ref:`バッチ処理のプロセス終了コード<status_code_convert_handler-rules>`\n- :ref:`バッチ処理のエラー処理<nablarch_batch_error_process>`\n- :ref:`バッチ処理の並列実行(マルチスレッド化)<multi_thread_execution_handler>`\n- :ref:`バッチ処理のコミット間隔の制御 <loop_handler-commit_interval>`\n- :ref:`1回のバッチ処理の処理件数制限 <data_read_handler-max_count>`（大量データを数日に分けて処理する場合など）",
+    "s8": "- :ref:`同期応答メッセージ送信<mom_system_messaging-sync_message_send>`\n- :ref:`応答不要メッセージ送信<mom_system_messaging-async_message_send>`",
+    "s9": "バッチ実行中に状態を保持する方法については、:ref:`nablarch_batch_retention_state` を参照。",
+    "s10": "常駐バッチをマルチプロセス化する方法については、:ref:`nablarch_batch_multiple_process` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

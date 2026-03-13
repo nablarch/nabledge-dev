@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-multi_thread_execution_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6",
+      "description": "Source states that BOTH parent thread and sub-threads require a transaction control handler alongside the DB connection management handler: '(親スレッド、サブスレッドともに、データベース接続とセットでトランザクションを制御するハンドラも必要となる)'. The knowledge file only mentions the transaction control handler requirement for sub-threads, omitting this requirement for the parent thread. This is a configuration prerequisite that can lead to incorrect implementation.",
+      "source_evidence": "親スレッド側の処理でデータベース接続が必要となる場合には、本ハンドラ以前に database_connection_management_handler の設定が必要になる。サブスレッド側でデータベースに対するアクセスが必要な場合には、本ハンドラ以降のサブスレッドで実行されるハンドラ構成に database_connection_management_handler の設定が必要となる。(親スレッド、サブスレッドともに、データベース接続とセットでトランザクションを制御するハンドラも必要となる)"
+    }
+  ]
+}

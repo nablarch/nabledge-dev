@@ -1,0 +1,376 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "restful-web-service-resource_signature--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s3 — UserSearchForm code example",
+      "description": "The knowledge file renders the UserSearchForm class definition as `public class UserSearchForm {`, adding the `class` keyword. The source file omits `class`, showing `public UserSearchForm {`. While the source appears to contain a typo, the knowledge file modified the code beyond faithful extraction.",
+      "source_evidence": "Source: `public UserSearchForm {\\n  private String name;\\n  // 省略\\n}`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) — hints",
+      "description": "ValidatorUtil is a PascalCase class name used in the s3 implementation example (`ValidatorUtil.validate(form)`) but is absent from the s3 hints array.",
+      "source_evidence": "Source: `ValidatorUtil.validate(form)` in the クエリーパラメータ section implementation example"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) — hints",
+      "description": "UniversalDao is a PascalCase class name used in the s2 implementation example (`UniversalDao.findById(User.class, id)`) but is absent from the s2 hints array.",
+      "source_evidence": "Source: `return UniversalDao.findById(User.class, id);` in the パスパラメータ section implementation example"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+リソース(アクション)クラスの実装に関して
+==================================================
+
+
+.. _rest_feature_details-method_signature:
+
+リソースクラスのメソッドのシグネチャ
+--------------------------------------------------
+リソースクラスのメソッドの引数及び戻り値で使用できる型について示す。
+
+メソッド引数
+  .. list-table::
+    :header-rows: 1
+    :class: white-space-normal
+    :widths: 30 70
+
+    * - 引数定義
+      - 説明
+
+    * - 引数無し
+      - パラメータやリクエストボディを必要としない場合には、引数無しとしてメソッドを定義できる。
+
+        例
+          .. code-block:: java
+
+            public HttpResponse sample() {
+              // 省略
+            }
+
+    * - フォーム(Java Beans)
+      - リクエストボディから変換したフォームを元に処理を行う場合には、引数としてフォームを定義する。
+      
+        例
+          .. code-block:: java
+
+            public HttpResponse sample(SampleForm form) {
+              // 省略
+            }
+
+    * - :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>`\ [#]_\
+      - :ref:`パスパラメータ <rest_feature_details-path_param>` や :ref:`クエリパラメータ <rest_feature_details-query_param>`
+        を使う場合やHTTPヘッダの値などを取得したい場合には、引数として :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` を定義する。
+
+        例
+          .. code-block:: java
+
+            public HttpResponse sample(JaxRsHttpRequest request) {
+              // 省略
+            }
+
+    * - :java:extdoc:`ExecutionContext <nablarch.fw.ExecutionContext>`
+      - :java:extdoc:`ExecutionContext <nablarch.fw.ExecutionContext>` が提供するスコープ変数にアクセスしたい場合は、
+        引数として :java:extdoc:`ExecutionContext <nablarch.fw.ExecutionContext>` を定義する。
+        
+        例
+          .. code-block:: java
+
+            public HttpResponse sample(ExecutionContext context) {
+              // 省略
+            }
+
+    * - 組み合わせ
+      - 用途に応じて上記の型を組み合わせることが出来る。
+        
+        例えば、HTTPヘッダ情報とリクエストボディから変換されたFormを必要とするメソッドでは、以下の定義となる。
+
+        .. code-block:: java
+
+          public HttpResponse sample(SampleForm form, JaxRsHttpRequest request) {
+            // 省略
+          }
+
+.. [#] 
+  後方互換性維持のためHttpRequestも使用できるが、原則JaxRsHttpRequestを使用する。  
+
+メソッド戻り値
+  .. list-table::
+    :header-rows: 1
+    :class: white-space-normal
+    :widths: 30 70
+
+    * - 戻り値の型
+      - 説明
+
+    * - void
+      - レスポンスのボディが空であることを示す ``204: NoContent`` をクライアントに返却する。
+
+    * - フォーム(Java Beans)
+      - メソッドから戻されたフォームを :ref:`body_convert_handler` で、レスポンスボディに出力する内容に変換しクライアントに返却する。
+
+    * - :java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>`
+      - メソッドから戻された :java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>` の情報を、クライアントに返却する。
+
+
+
+.. _rest_feature_details-path_param:
+
+パスパラメータを扱う
+--------------------------------------------------
+検索や更新、削除対象のリソースを示す値をパスパラメータとして指定する場合の実装方法を示す。
+
+URLの例
+  ``GET /users/123`` の ``123`` をパスパラメータとする。
+
+ルーティングの設定
+  URLとアクションとのマッピング時にパスパラメータ部に任意の名前を設定する。
+  この例では、 ``id`` という名前を設定し、数値のみを許容する設定としている。
+  
+  詳細は、 :ref:`router_adaptor` を参照。
+
+  .. code-block:: xml
+
+    <routes>
+      <get path="users/:id" to="UsersResource#find">
+        <requirements>
+          <requirement name="id" value="\d+$" />
+        </requirements>
+      </get>
+    </routes>
+
+リソースクラスのメソッドの実装
+  パスパラメータは、 :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得する。
+  このため、リソースのメソッドには、仮引数として :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` を定義する。
+
+  :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` に指定するパラメータ名には、
+  ルーティングの設定で指定したパスパラメータの名前を使用する。
+
+  .. code-block:: java
+
+    @Produces(MediaType.APPLICATION_JSON)
+    public User delete(JaxRsHttpRequest req) {
+      // JaxRsHttpRequestからパスパラメータの値を取得する
+      Long id = Long.valueOf(req.getPathParam("id"));
+      return UniversalDao.findById(User.class, id);
+    }
+
+.. important::
+  JSRで規定されている :java:extdoc:`PathParam <javax.ws.rs.PathParam>` は使用できないので注意すること。
+
+.. _rest_feature_details-query_param:
+
+クエリーパラメータを扱う
+--------------------------------------------------
+リソースの検索処理で、検索条件をクエリーパラメータとして指定させたい場合がある。
+このような場合の実装方法を以下に示す。
+
+URLの例
+  ``GET /users/search?name=Duke``
+
+ルーティングの設定
+  ルーティングの設定では、クエリーパラメータを除いたパスを元に、リソースクラスとのマッピングを行う。
+
+  .. code-block:: xml
+
+    <routes>
+      <get path="users/search" to="Users#search"/>
+    </routes>
+
+リソースクラスのメソッドの実装
+  クエリーパラメータは、 :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得する。
+  このため、リソースのメソッドには、仮引数として :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` を定義する。
+
+  :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得したパラメータを :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` を使ってFormクラスにマッピングする。
+
+  .. code-block:: java
+
+    public HttpResponse search(JaxRsHttpRequest req) {
+
+      // リクエストパラメータをBeanに変換
+      UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());
+
+      // バリデーションの実行
+      ValidatorUtil.validate(form)
+
+      // 業務ロジックを実行する(省略)
+    }
+
+    // クエリーパラメータをマッピングするForm
+    public UserSearchForm {
+      private String name;
+      // 省略
+    }
+
+.. important::
+  JSRで規定されている :java:extdoc:`QueryParam <javax.ws.rs.QueryParam>` は使用できないので注意すること。
+
+.. _rest_feature_details-response_header:
+
+レスポンスヘッダを設定する
+--------------------------------------------------
+リソースクラスのメソッドで個別にレスポンスヘッダを指定したい場合がある。
+
+.. important::
+  アプリケーション全体で共通となるレスポンスヘッダを指定したい場合はハンドラで設定すること。
+  セキュリティ関連のレスポンスヘッダを指定したい場合は :ref:`secure_handler` を使用すればよい。
+
+リソースクラスのメソッドで :java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>` を作成する場合は、
+HttpResponseにレスポンスヘッダを指定すればよい。
+
+  .. code-block:: java
+
+    public HttpResponse something(JaxRsHttpRequest request) {
+
+        // 処理は省略
+
+        HttpResponse response = new HttpResponse();
+        response.setHeader("Cache-Control", "no-store"); // レスポンスヘッダを指定
+        return response;
+    }
+
+Producesアノテーションを使用し、リソースクラスのメソッドがエンティティ（Bean）を返す場合は、
+そのままではレスポンスヘッダを指定できない。
+
+  .. code-block:: java
+
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Client> something(JaxRsHttpRequest request, ExecutionContext context) {
+
+        // 処理は省略
+        List<Client> clients = service.findClients(condition);
+
+        return clients;
+    }
+
+フレームワークではProducesアノテーションを使用した場合にレスポンスヘッダとステータスコードを指定するために、
+:java:extdoc:`EntityResponse <nablarch.fw.jaxrs.EntityResponse>` を提供している。
+エンティティの代わりにEntityResponseを返すように実装すればよい。
+
+  .. code-block:: java
+
+    @Produces(MediaType.APPLICATION_JSON)
+    public EntityResponse something(JaxRsHttpRequest request, ExecutionContext context) {
+
+        // 処理は省略
+        List<Client> clients = service.findClients(condition);
+
+        EntityResponse response = new EntityResponse();
+        response.setEntity(clients); // エンティティを指定
+        response.setStatusCode(HttpResponse.Status.OK.getStatusCode()); // ステータスコードを指定
+        response.setHeader("Cache-Control", "no-store"); // レスポンスヘッダを指定
+        return response;
+    }
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "restful-web-service-resource_signature--s1",
+  "title": "リソース(アクション)クラスの実装に関して",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/JaxRsHttpRequest.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/ExecutionContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/HttpResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/beans/BeanUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/EntityResponse.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/ws/rs/PathParam.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/ws/rs/QueryParam.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リソースクラスのメソッドのシグネチャ",
+      "hints": [
+        "JaxRsHttpRequest",
+        "ExecutionContext",
+        "HttpResponse",
+        "メソッドシグネチャ",
+        "引数定義",
+        "戻り値型",
+        "フォーム引数",
+        "void戻り値"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "パスパラメータを扱う",
+      "hints": [
+        "JaxRsHttpRequest",
+        "PathParam",
+        "パスパラメータ取得",
+        "getPathParam",
+        "ルーティング設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "クエリーパラメータを扱う",
+      "hints": [
+        "JaxRsHttpRequest",
+        "BeanUtil",
+        "QueryParam",
+        "クエリーパラメータ取得",
+        "createAndCopy",
+        "getParamMap"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "レスポンスヘッダを設定する",
+      "hints": [
+        "HttpResponse",
+        "EntityResponse",
+        "レスポンスヘッダ設定",
+        "setHeader",
+        "@Produces",
+        "ステータスコード設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## メソッド引数\n\n| 引数定義 | 説明 |\n|---|---|\n| 引数無し | パラメータやリクエストボディ不要な場合 |\n| フォーム(Java Beans) | リクエストボディから変換したフォームで処理する場合 |\n| :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` | :ref:`パスパラメータ <rest_feature_details-path_param>`・:ref:`クエリパラメータ <rest_feature_details-query_param>`、HTTPヘッダ値を取得する場合 |\n| :java:extdoc:`ExecutionContext <nablarch.fw.ExecutionContext>` | スコープ変数にアクセスしたい場合 |\n| 組み合わせ | 上記の型を組み合わせ可能 |\n\n> **補足**: 後方互換性維持のためHttpRequestも使用できるが、原則 :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` を使用する。\n\n```java\n// 引数無し\npublic HttpResponse sample() { }\n\n// フォーム\npublic HttpResponse sample(SampleForm form) { }\n\n// JaxRsHttpRequest\npublic HttpResponse sample(JaxRsHttpRequest request) { }\n\n// ExecutionContext\npublic HttpResponse sample(ExecutionContext context) { }\n\n// 組み合わせ\npublic HttpResponse sample(SampleForm form, JaxRsHttpRequest request) { }\n```\n\n## メソッド戻り値\n\n| 戻り値の型 | 説明 |\n|---|---|\n| void | `204: NoContent` をクライアントに返却 |\n| フォーム(Java Beans) | :ref:`body_convert_handler` でレスポンスボディに変換してクライアントに返却 |\n| :java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>` | HttpResponseの情報をそのままクライアントに返却 |",
+    "s2": "パスパラメータは :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得する。リソースメソッドの引数に :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` を定義し、ルーティング設定で指定したパラメータ名で `getPathParam()` を呼び出す。\n\nルーティング設定例（`GET /users/:id`、数値のみ許容）:\n\n```xml\n<routes>\n  <get path=\"users/:id\" to=\"UsersResource#find\">\n    <requirements>\n      <requirement name=\"id\" value=\"\\d+$\" />\n    </requirements>\n  </get>\n</routes>\n```\n\n実装例:\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic User delete(JaxRsHttpRequest req) {\n  Long id = Long.valueOf(req.getPathParam(\"id\"));\n  return UniversalDao.findById(User.class, id);\n}\n```\n\n> **重要**: JSRで規定されている :java:extdoc:`PathParam <javax.ws.rs.PathParam>` は使用できない。",
+    "s3": "クエリーパラメータは :java:extdoc:`JaxRsHttpRequest <nablarch.fw.jaxrs.JaxRsHttpRequest>` から取得する。`getParamMap()` で取得したパラメータを :java:extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` の `createAndCopy()` でFormクラスにマッピングする。\n\nルーティング設定例（`GET /users/search`）:\n\n```xml\n<routes>\n  <get path=\"users/search\" to=\"Users#search\"/>\n</routes>\n```\n\n実装例:\n\n```java\npublic HttpResponse search(JaxRsHttpRequest req) {\n  UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());\n  ValidatorUtil.validate(form);\n  // 業務ロジックを実行する(省略)\n}\n\npublic class UserSearchForm {\n  private String name;\n  // 省略\n}\n```\n\n> **重要**: JSRで規定されている :java:extdoc:`QueryParam <javax.ws.rs.QueryParam>` は使用できない。",
+    "s4": "> **重要**: アプリケーション全体で共通のレスポンスヘッダはハンドラで設定すること。セキュリティ関連のレスポンスヘッダは :ref:`secure_handler` を使用する。\n\n:java:extdoc:`HttpResponse <nablarch.fw.web.HttpResponse>` を返す場合は `setHeader()` でレスポンスヘッダを指定する:\n\n```java\npublic HttpResponse something(JaxRsHttpRequest request) {\n    HttpResponse response = new HttpResponse();\n    response.setHeader(\"Cache-Control\", \"no-store\");\n    return response;\n}\n```\n\n`@Produces` アノテーションを使用してBeanを返す場合はそのままではレスポンスヘッダを指定できない。この場合は :java:extdoc:`EntityResponse <nablarch.fw.jaxrs.EntityResponse>` を返すように実装する:\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic EntityResponse something(JaxRsHttpRequest request, ExecutionContext context) {\n    List<Client> clients = service.findClients(condition);\n    EntityResponse response = new EntityResponse();\n    response.setEntity(clients);\n    response.setStatusCode(HttpResponse.Status.OK.getStatusCode());\n    response.setHeader(\"Cache-Control\", \"no-store\");\n    return response;\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

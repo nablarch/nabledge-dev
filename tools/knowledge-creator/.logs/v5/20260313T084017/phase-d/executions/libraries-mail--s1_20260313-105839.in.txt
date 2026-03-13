@@ -1,0 +1,250 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/mail.rst`
+- Format: `rst`
+
+```
+.. _mail:
+
+メール送信
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+.. |JavaMail| raw:: html
+
+  <a href="https://javamail.java.net/nonav/docs/api/" target="_blank">JavaMail API(外部サイト、英語)</a>
+
+メールを送信する機能を提供する。
+
+この機能では、ディレードオンライン処理と呼ばれる方式を採用しており、
+メール送信を即時に行うのではなく、一旦、メール送信要求をデータベースに格納しておき、
+:ref:`常駐バッチ<nablarch_batch-resident_batch>` を使い非同期にメールを送信する。
+
+.. image:: images/mail/mail_system.png
+  :scale: 60
+
+この方式を採用した理由は以下の通り。
+
+* メール送信要求を出すアプリケーションで、メール送信を業務トランザクションに含めることができる。
+* メールサーバやネットワークの障害により、メール送信が失敗しても、アプリケーションの処理に影響を与えない。
+
+この機能では、上記方式を実現するため、2つの機能を提供する。
+
+* :ref:`メール送信要求をデータベースに登録する機能<mail-request>`
+* :ref:`メール送信要求に基づいてメールを送信するバッチ機能<mail-send>`
+
+アプリケーションがメール送信要求を出す毎に1つのメール送信要求を作成し、
+メール送信要求1つにつきメールを1通送信する。
+
+.. tip::
+  本機能は、即時にメールを送信するAPIは提供していない。
+  この場合は、 |JavaMail| を直接使用すること。
+
+機能概要
+--------------------------------------------------
+
+.. _`mail-template`:
+
+テンプレートを使った定型メールを送信できる。
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+システムのメール送信では、登録完了通知メールのように、同じ文言で、一部の項目のみ異なるメールを送信することが多い。
+そこで、本機能では、テンプレートを用意しておき、プレースホルダを変換して、件名と本文を作成する機能を提供している。
+機能の詳細は、 :ref:`mail-request` を参照。
+
+.. important::
+
+ Nablarch 5u13からテンプレートエンジンを使用した定型メールがサポートされた。
+ 
+ 5u12までの定型メール機能もテンプレートエンジンの1つとして残されており、
+ ``TinyTemplateEngineMailProcessor`` を設定することで使用可能だが、以下のように機能が限定的である。
+
+ * プレースホルダを置換できる値は単純な文字列のみで、構造化されたオブジェクトをサポートしていない
+ * 条件分岐や繰り返しといった制御構文をサポートしていない
+
+ 既存の定型メール機能の代わりに、より高機能な下記のテンプレートエンジンを使用した定型メール機能を推奨する。
+
+ * :ref:`mail_sender_freemarker_adaptor`
+ * :ref:`mail_sender_thymeleaf_adaptor`
+ * :ref:`mail_sender_velocity_adaptor`
+
+.. _`do-not-use-for-campaign-mail`:
+
+キャンペーン通知のような大量メールの一斉送信には対応していない
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本機能では、キャンペーン通知のような一斉送信には対応していない。
+下記に当てはまる場合は、プロダクトの使用を推奨する。
+
+* キャンペーン通知やメールマガジンなど、一括で大量のメールを送信する。
+* 配信したメールの開封率、クリックカウントの効果を測定する。
+* メールアドレスからクライアント(例えば、フィーチャーフォンか否か)を判別し、送信するメールを切り替える。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-mail-sender</artifactId>
+  </dependency>
+
+  <!-- メール送信要求IDの採番に使用する -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-idgenerator</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-idgenerator-jdbc</artifactId>
+  </dependency>
+
+```
+
+## Knowledge File
+
+- ID: `libraries-mail--s1`
+
+```json
+{
+  "id": "libraries-mail--s1",
+  "title": "メール送信",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/mail.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "メール送信",
+        "ディレードオンライン処理",
+        "非同期メール送信",
+        "テンプレートエンジン",
+        "定型メール",
+        "TinyTemplateEngineMailProcessor",
+        "キャンペーンメール",
+        "一斉送信非対応",
+        "メール送信要求",
+        "1対1",
+        "1通"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-mail-sender",
+        "nablarch-common-idgenerator",
+        "nablarch-common-idgenerator-jdbc",
+        "モジュール依存関係",
+        "メール送信モジュール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "メール送信はディレードオンライン処理を採用。即時送信ではなく、メール送信要求をDBに格納し、:ref:`常駐バッチ<nablarch_batch-resident_batch>` で非同期送信する。\n\n採用理由:\n- メール送信をアプリケーションの業務トランザクションに含められる\n- メールサーバ/ネットワーク障害時もアプリケーション処理に影響しない\n\n提供する機能:\n- :ref:`メール送信要求をDBに登録する機能<mail-request>`\n- :ref:`メール送信要求に基づいてメールを送信するバッチ機能<mail-send>`\n\nアプリケーションがメール送信要求を出す毎に1つのメール送信要求を作成し、メール送信要求1つにつきメールを1通送信する。\n\n> **補足**: 即時メール送信APIは提供していない。即時送信が必要な場合はJavaMailを直接使用すること。\n\n## テンプレートを使った定型メール\n\n同じ文言で一部のみ異なるメール送信向けに、テンプレートのプレースホルダを変換して件名・本文を生成する機能を提供。詳細は:ref:`mail-request`を参照。\n\n> **重要**: Nablarch 5u13からテンプレートエンジンを使用した定型メールがサポートされた。5u12以前の`TinyTemplateEngineMailProcessor`は以下の制限がある:\n> - プレースホルダに設定できるのは単純な文字列のみ（構造化オブジェクト不可）\n> - 条件分岐・繰り返し等の制御構文が非対応\n>\n> 既存の定型メール機能の代わりに、以下のテンプレートエンジンを使用することを推奨:\n> - :ref:`mail_sender_freemarker_adaptor`\n> - :ref:`mail_sender_thymeleaf_adaptor`\n> - :ref:`mail_sender_velocity_adaptor`\n\n## キャンペーンメール等の大量一斉送信非対応\n\n本機能はキャンペーン通知等の一斉送信には対応していない。以下に該当する場合は専用プロダクトの使用を推奨:\n- キャンペーン通知やメールマガジンなど大量メールの一括送信\n- 配信メールの開封率・クリックカウント計測\n- メールアドレスからクライアント種別（フィーチャーフォン等）を判別した送信切り替え",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-mail-sender</artifactId>\n</dependency>\n\n<!-- メール送信要求IDの採番に使用する -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-idgenerator</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-idgenerator-jdbc</artifactId>\n</dependency>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

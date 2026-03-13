@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-plugin_build--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — libraryDeployMappings description",
+      "description": "Two implementation-relevant constraints for libraryDeployMappings are missing: (1) 展開元のファイルはパッケージ内の相対パスで指定する (source path is relative to within the package, not the project root), and (2) 展開元のファイルとしてフォルダが指定された場合、フォルダ配下のファイルが全て展開される (if a folder is specified as source, all files under it are deployed). The knowledge file only mentions 展開先はui_test等からの相対パス and リネーム可能, omitting the source-path convention and folder expansion behavior.",
+      "source_evidence": "展開元のファイルはパッケージ内の相対パスで指定する。展開元のファイルとしてフォルダが指定された場合、フォルダ配下のファイルが全て展開される。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections — overall structure",
+      "description": "The automated pre-check reports 12 source headings but only 9 knowledge sections exist. The provided source excerpt is truncated at `.. _install:`, indicating that the full source file contains at least 3 additional sections (likely individual command detail sections for install, ui_build, ui_genless, and/or other build commands listed in s9). These command detail sections may contain substantive configuration, option, and usage information that is entirely absent from the knowledge file.",
+      "source_evidence": "Source ends with `.. _install:` label after the ビルドコマンド table; automated check: S9 Section count 9 < source headings 12"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "The hints for s1 include 'pathSettings' but omit the five individual sub-property names: projectRootPath, webProjectPath, demoProjectPath, testProjectPath, pluginProjectPath. These are all named configuration properties with their own required/optional status and defaults, and users are likely to query them by name.",
+      "source_evidence": "pathSettings sub-table lists: projectRootPath（必須）, webProjectPath（必須）, demoProjectPath（任意）, testProjectPath（任意）, pluginProjectPath（任意）"
+    }
+  ]
+}

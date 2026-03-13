@@ -1,0 +1,41 @@
+{
+  "file_id": "biz-samples-12--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "IDトークンの検証 — CognitoRSAKeyProvider class declaration",
+      "description": "The knowledge file omits that CognitoRSAKeyProvider implements both RSAKeyProvider AND Initializable interfaces. The Initializable interface is a Nablarch-specific lifecycle interface that causes the DI container to call initialize() automatically. Without knowing the class implements Initializable, an implementer would not know how to wire up auto-initialization in the Nablarch component lifecycle.",
+      "source_evidence": "public class CognitoRSAKeyProvider implements RSAKeyProvider, Initializable {"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections — s1",
+      "description": "The source file's top-level h2 section '使用方法' contains 6 distinct h3 subsections (依存ライブラリの追加, 環境依存値の設定, コンポーネント定義の設定, IDトークンの検証, 認証用業務アクションのパス設定, 認証および成功時のログイン状態設定) with total plain-text content well over 2000 characters, yet the knowledge file uses only a single section s1 without splitting.",
+      "source_evidence": "~~~~~~~~~~~~~~~~~~~~~~~~~\n依存ライブラリの追加\n~~~~~~~~~~~~~~~~~~~~~~~~~\n...\n~~~~~~~~~~~~~~~~~~~~~~~~~\n環境依存値の設定\n~~~~~~~~~~~~~~~~~~~~~~~~~\n...(4 more ~~~ subsections)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "JWTVerificationException is missing from hints. It is explicitly caught in the verifyIdToken method shown in the knowledge file and is the exception type callers must handle when token verification fails.",
+      "source_evidence": "} catch (JWTVerificationException e) { ... throw new HttpErrorResponse(HttpResponse.Status.UNAUTHORIZED.getStatusCode()); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "JwkProviderBuilder is missing from hints. It is the concrete builder class used directly in the initialize() code block preserved in the knowledge file to construct the JWKS provider with caching and rate-limiting settings.",
+      "source_evidence": "this.provider = new JwkProviderBuilder(createUserPoolUrl(region, userPoolId))\n        .cached(true)\n        .cached(4, 1, TimeUnit.HOURS)\n        .rateLimited(true)\n        .rateLimited(10, 1, TimeUnit.MINUTES)\n        .proxied(Proxy.NO_PROXY)\n        .build();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "RSAKeyProvider is missing from hints. It is the interface that CognitoRSAKeyProvider implements and is also referenced as a property type in the CognitoSignatureAlgorithmProvider component definition.",
+      "source_evidence": "public class CognitoRSAKeyProvider implements RSAKeyProvider, Initializable { ... private RSAKeyProvider rsaKeyProvider;"
+    }
+  ]
+}

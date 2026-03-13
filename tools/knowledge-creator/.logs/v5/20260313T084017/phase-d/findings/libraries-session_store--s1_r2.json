@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-session_store--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The 使用方法 h2 section contains 6 h3 subsections and approximately 8,000 characters of content but is mapped to a single section (s4) without splitting. Per V3 rules, RST h2 sections with ≥2000 chars plain text and h3 headings should be split. The 6 subsections (セッションストアを使用するための設定 / 入力～確認～完了画面間で入力情報を保持する / 認証情報を保持する / JSPからセッション変数の値を参照する / HIDDENストアの暗号化設定をカスタマイズする / セッション変数に値が存在しない場合の遷移先画面を指定する) are all merged into s4.",
+      "source_evidence": "Source lines 98–369: 使用方法 h2 with 6 distinct h3 subsections, ~8000 Unicode characters including markup"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1 hints are missing `ExecutionContext`, which appears as a PascalCase class name in the s1 content (in the important deprecated-API warning: `:java:extdoc:`ExecutionContext<nablarch.fw.ExecutionContext>` のセッションスコープにアクセスするAPI`).",
+      "source_evidence": "Source: `.. important::` block — `* :java:extdoc:`ExecutionContext<nablarch.fw.ExecutionContext>` のセッションスコープにアクセスするAPI`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "s4 hints are missing several PascalCase class/annotation names that appear in the s4 content and code examples: `OnError` (@OnError annotation used in リクエスト毎遷移先指定 example), `HttpErrorResponse` (used in SampleErrorHandler example), and `Handler` (interface implemented in SampleErrorHandler).",
+      "source_evidence": "Source: `@OnError(type = SessionKeyNotFoundException.class, path = \"redirect://error\")`, `throw new HttpErrorResponse(HttpResponse.Status.BAD_REQUEST.getStatusCode(), ...)`, `public class SampleErrorHandler implements Handler<Object, Object>`"
+    }
+  ]
+}

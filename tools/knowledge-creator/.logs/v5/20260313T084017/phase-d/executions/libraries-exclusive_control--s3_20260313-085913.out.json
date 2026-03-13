@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-exclusive_control--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新で楽観的ロックを行う",
+      "description": "一括更新の楽観的ロックにおけるバージョン番号の準備ステップ（prepareVersions）が完全に省略されている。ソースでは複合主キー・非複合主キーの両ケースとも「バージョン番号の取得部分は HttpExclusiveControlUtil#prepareVersions を呼び出すだけ」と明記されており、このメソッド（Listを受け取る複数件版）が一括更新フローの必須ステップであることが示されている。知識ファイルはチェック・更新操作のみを示し、バージョン準備ステップを全く言及していないため、AI エージェントが一括楽観的ロックの完全な実装手順を案内できない。",
+      "source_evidence": "「バージョン番号の取得部分は、:java:extdoc:`HttpExclusiveControlUtil#prepareVersions <nablarch.common.web.exclusivecontrol.HttpExclusiveControlUtil.prepareVersions(nablarch.fw.ExecutionContext-java.util.List)>` を呼び出すだけなので、実装例を省略する。」（複合主キーでない場合・複合主キーの場合、両セクションに記述）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 一括更新で楽観的ロックを行う（複合主キーの場合）",
+      "description": "複合主キーの値をリクエストパラメータとして送る際、主キー値を区切り文字で結合した文字列として指定すること、および区切り文字は「主キーの値にはなり得ない文字」を選ぶ必要があるという制約が省略されている。これは実装時に区切り文字を選択する際の決定に必要な制約情報である。",
+      "source_evidence": "「複合主キーの場合は、区切り文字(任意、ただし主キーの値にはなり得ないこと)で結合した文字列を指定する。」（複合主キーの場合の HTML コメント内）"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "ソースの h2 セクション「使用方法」は 2000 文字を大幅に超え、かつ 4 つの h3 サブセクション（排他制御を使うために準備する、楽観的ロックを行う、一括更新で楽観的ロックを行う、悲観的ロックを行う）を持つにもかかわらず、知識ファイルでは s1 の単一セクションにすべて統合されており、分割されていない。",
+      "source_evidence": "h2「使用方法」配下の h3: 「排他制御を使うために準備する」「楽観的ロックを行う」「一括更新で楽観的ロックを行う」「悲観的ロックを行う」（各セクションに ~~~~~ アンダーライン）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — index hints",
+      "description": "s1 のコンテンツ内で言及されている @OnError / @OnErrors アノテーションが hints に含まれていない。知識ファイルの本文中に「`@OnError` で遷移先を指定」と記載されており、これらはソースコード例にも明示されているため hints に追加すべきである。",
+      "source_evidence": "ソースの confirm / update メソッドに `@OnErrors({ @OnError(type = OptimisticLockException.class, path = ...) })` が記述されており、知識ファイル本文にも「（`@OnError` で遷移先を指定）」と言及されている。"
+    }
+  ]
+}

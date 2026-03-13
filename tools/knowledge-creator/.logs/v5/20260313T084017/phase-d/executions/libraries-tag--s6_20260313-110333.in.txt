@@ -1,0 +1,590 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/tag.rst`
+- Format: `rst`
+
+```
+選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+選択項目には、次のカスタムタグを使用する。
+
+* :ref:`tag-select_tag` (プルダウン)
+* :ref:`tag-radio_buttons_tag` (複数のラジオボタン)
+* :ref:`tag-checkboxes_tag` (複数のチェックボックス)
+
+アクション側で選択肢リスト(選択肢のラベルと値をもつオブジェクトのリスト)をリクエストスコープに設定し、
+カスタムタグで選択肢リストを使用して表示する。
+
+.. tip::
+ 選択状態の判定は、選択された値と選択肢の値をともに
+ :java:extdoc:`Object#toString <java.lang.Object.toString()>` してから行う。
+
+実装例
+ \
+
+ 選択肢のクラス
+  \
+
+  .. code-block:: java
+
+   public class Plan {
+
+       // 選択肢の値
+       private String planId;
+
+       // 選択肢のラベル
+       private String planName;
+
+       public Plan(String planId, String planName) {
+           this.planId = planId;
+           this.planName = planName;
+       }
+
+       // カスタムタグはこのプロパティから選択肢の値を取得する。
+       public String getPlanId() {
+           return planId;
+       }
+
+       // カスタムタグはこのプロパティから選択肢のラベルを取得する。
+       public String getPlanName() {
+           return planName;
+       }
+   }
+
+ アクション
+  \
+
+  .. code-block:: java
+
+   // 選択肢リストをリクエストスコープに設定する。
+   List<Plan> plans = Arrays.asList(new Plan("A", "フリー"),
+                                    new Plan("B", "ベーシック"),
+                                    new Plan("C", "プレミアム"));
+
+   // カスタムタグはここで指定した名前を使ってリクエストスコープから選択肢リストを取得する。
+   context.setRequestScopedVar("plans", plans);
+
+ プルダウン
+  JSP
+   .. code-block:: jsp
+
+    <!--
+      以下の属性指定により、選択肢の内容にアクセスする。
+      listName属性: 選択肢リストの名前
+      elementLabelProperty属性: ラベルを表すプロパティ名
+      elementValueProperty属性: 値を表すプロパティ名
+    -->
+    <n:select name="form.plan1"
+              listName="plans"
+              elementLabelProperty="planName"
+              elementValueProperty="planId" />
+
+  出力されるHTML
+   .. code-block:: html
+
+    <!--
+      "form.plan1"の値が"A"だった場合。
+    -->
+    <select name="form.plan1">
+      <option value="A" selected="selected">フリー</option>
+      <option value="B">ベーシック</option>
+      <option value="C">プレミアム</option>
+    </select>
+
+ ラジオボタン
+  JSP
+   .. code-block:: jsp
+
+    <!-- 属性指定はselectタグと同じ。 -->
+    <n:radioButtons name="form.plan2"
+                    listName="plans"
+                    elementLabelProperty="planName"
+                    elementValueProperty="planId" />
+
+  出力されるHTML
+   .. code-block:: html
+
+    <!--
+     "form.plan2"の値が"B"だった場合。
+     デフォルトだとbrタグで出力する。
+     listFormat属性を指定して、divタグ、spanタグ、ulタグ、olタグ、スペース区切りに変更できる。
+    -->
+    <input id="nablarch_radio1" type="radio" name="form.plan2" value="A" />
+    <label for="nablarch_radio1">フリー</label><br />
+    <input id="nablarch_radio2" type="radio" name="form.plan2" value="B" checked="checked" />
+    <label for="nablarch_radio2">ベーシック</label><br />
+    <input id="nablarch_radio3" type="radio" name="form.plan2" value="C" />
+    <label for="nablarch_radio3">プレミアム</label><br />
+
+ チェックボックス
+  JSP
+   .. code-block:: jsp
+
+    <!-- 属性指定はselectタグと同じ。 -->
+    <n:checkboxes name="form.plan4"
+                  listName="plans"
+                  elementLabelProperty="planName"
+                  elementValueProperty="planId" />
+
+  出力されるHTML
+   .. code-block:: html
+
+    <!--
+     "form.plan4"の値が"C"だった場合。
+     デフォルトだとbrタグで出力する。
+     listFormat属性を指定して、divタグ、spanタグ、ulタグ、olタグ、スペース区切りに変更できる。
+    -->
+    <input id="nablarch_checkbox1" type="checkbox" name="form.plan4" value="A"
+           checked="checked" />
+    <label for="nablarch_checkbox1">フリー</label><br />
+    <input id="nablarch_checkbox2" type="checkbox" name="form.plan4" value="B" />
+    <label for="nablarch_checkbox2">ベーシック</label><br />
+    <input id="nablarch_checkbox3" type="checkbox" name="form.plan4" value="C" />
+    <label for="nablarch_checkbox3">プレミアム</label><br />
+
+.. important::
+ :ref:`tag-radio_buttons_tag` と :ref:`tag-checkboxes_tag` は、
+ 簡単に選択項目を出力できる反面、カスタムタグで選択肢をすべて出力するので、
+ どうしても出力されるHTMLに制限が出てくる。
+ そのため、デザイン会社が作成したHTMLをベースに開発する場合など、プロジェクトでデザインをコントロールできない場合は、
+ :ref:`tag-radio_buttons_tag` と :ref:`tag-checkboxes_tag` が出力するHTMLがデザインに合わないケースが出てくる。
+
+ このような場合は、JSTLのc:forEachタグと :ref:`tag-radio_tag` または :ref:`tag-checkbox_tag` を使って実装すれば、
+ 選択肢を表示するHTMLを自由に実装できる。
+
+ .. code-block:: jsp
+
+  <c:forEach items="${plans}" var="plan">
+    <!-- 前後に好きなHTMLを追加できる。 -->
+    <n:radioButton name="form.plan3" label="${plan.planName}" value="${plan.planId}" />
+  </c:forEach>
+
+.. _`tag-checkbox_off_value`:
+
+チェックボックスでチェックなしに対する値を指定する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HTMLのcheckboxタグは、チェックなしの場合にリクエストパラメータが送信されない。
+単一の入力項目としてcheckboxタグを使用する場合は、データベース上でフラグとして表現されたデータ項目に対応することが多く、
+通常はチェックなしの場合にも何らかの値を設定する。
+そのため、 :ref:`tag-checkbox_tag` では、チェックなしに対応する値を指定できる機能を提供する。
+
+実装例
+ .. code-block:: jsp
+
+  <!--
+   以下の属性指定により、チェックなしの場合の動作を制御する。
+   useOffValue属性: チェックなしの値設定を使用するか否か。デフォルトはtrue
+                    一括削除などで複数選択させる場合にfalseを指定する。
+   offLabel属性: チェックなしの場合に使用するラベル。
+                 入力画面と確認画面を共通化した場合に確認画面で表示されるラベル。
+   offValue属性: チェックなしの場合に使用する値。デフォルトは0。
+  -->
+  <n:checkbox name="form.useMail" value="true" label="使用する"
+              offLabel="使用しない" offValue="false" />
+
+.. tip::
+ この機能は、:ref:`nablarch_tag_handler` と :ref:`hidden暗号化 <tag-hidden_encryption>` を使って実現している。
+ checkboxタグ出力時にチェックなしに対応する値をhiddenタグに出力しておき、
+ :ref:`nablarch_tag_handler` がリクエスト受付時に、checkboxタグがチェックされていない場合のみ、
+ リクエストパラメータにチェックなしに対応する値を設定する。
+
+.. _`tag-window_scope`:
+
+入力データを画面間で持ち回る(ウィンドウスコープ)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. important::
+ 入力データ保持は、ここで説明するウィンドウスコープを使う方法と、
+ ライブラリの :ref:`session_store` を使う方法の2通りがある。
+ 以下の理由から、画面間での入力データ保持には、 :ref:`session_store` を使用すること。
+
+ * ウィンドウスコープでは、データをキー/値のペアで保持するため、Beanをそのまま格納できない。
+   Beanが保持するデータを格納したい場合は、データをバラすことになり、とても実装が煩雑となる。
+
+   .. code-block:: java
+
+    // こんなBeanがあるとする。
+    Person person = new Person();
+    person.setName("名前");
+    person.setAge("年齢");
+
+    // ウィンドウスコープへの設定(アクションで行う場合)
+    request.setParam("person.name", person.getName());
+    request.setParam("person.age", person.getAge());
+
+    // ウィンドウスコープへの設定(JSPで行う場合)
+    <n:hidden name="person.name" />
+    <n:hidden name="person.age" />
+
+ * ウィンドウスコープへの入力データの設定は、カスタムタグの属性指定により行うため、動きが把握しにくい。(実装難易度が高い)
+
+入力データは、クライアント側にhiddenタグとして保持する。
+クライアント側に保持することで、サーバ側(セッション)に保持する場合に比べ、
+複数ウィンドウの使用やブラウザの戻るボタンの使用など、ブラウザの使用制限を減らし、柔軟な画面設計が可能となる。
+
+ここでは、クライアント側に保持するデータの格納先をウィンドウスコープと呼ぶ。
+ウィンドウスコープのデータは、 :ref:`hidden暗号化<tag-hidden_encryption>` により暗号化する。
+
+.. important::
+ ウィンドウスコープのデータは、:ref:`hidden暗号化<tag-hidden_encryption>` により暗号化されhiddenタグに出力される。
+ そのため、Ajaxを使って取得したデータで書き換えるなど、クライアント側でウィンドウスコープの内容を書き換えることはできない。
+
+ウィンドウスコープにデータを設定するには、 :ref:`tag-form_tag` のwindowScopePrefixes属性を指定する。
+
+.. important::
+ windowScopePrefixes属性を指定すると、リクエストパラメータのうち、
+ パラメータ名がこの属性に指定された値に **前方一致** するパラメータが、
+ ウィンドウスコープに設定される。
+
+ 例えば、 ``windowScopePrefixes="user"`` と指定すると、
+ ``users`` で始まるパラメータもウィンドウスコープに設定される。
+
+実装例
+ 検索機能の検索条件、更新機能の入力データを画面間で持ち回る。
+ 画面遷移とhiddenに格納されるデータの動きは以下のとおり。
+
+ .. image:: images/tag/window_scope.png
+
+ \ 検索条件のリクエストパラメータは ``searchCondition.*`` 、
+ 入力データのリクエストパラメータは ``user.*`` とする。
+
+ 検索画面
+  .. code-block:: jsp
+
+   <!-- ウィンドウスコープのデータを送信しない。 -->
+   <n:form>
+
+ 更新画面
+  .. code-block:: jsp
+
+   <!-- 検索条件だけ送信する。 -->
+   <n:form windowScopePrefixes="searchCondition">
+
+ 更新確認画面
+  .. code-block:: jsp
+
+   <!--
+     検索条件と入力データを送信する。
+     複数指定する場合はカンマ区切りで指定する。
+   -->
+   <n:form windowScopePrefixes="searchCondition,user">
+
+ 更新完了画面
+  .. code-block:: jsp
+
+   <!-- 検索条件だけ送信する。 -->
+   <n:form windowScopePrefixes="searchCondition">
+
+.. important::
+ データベースのデータについては、更新対象データを特定する主キーや楽観ロック用のデータなど、必要最低限に留めること。
+ 特に入力画面と確認画面で表示するデータ(入力項目ではなく、表示するだけの項目)等は、
+ hiddenで引き回すのではなくデータが必要となる度にデータベースから取得すること。
+ hiddenのデータ量が増えると、通信速度の低下、メモリ圧迫につながるため。
+
+.. important::
+ ウィンドウスコープに格納したデータは、hiddenタグに出力し、リクエストパラメータとして画面間を持ち回っている。
+ そのため、アクション側でウィンドウスコープに格納したデータを使用する場合は、
+ :ref:`バリデーション<validation>` を行う必要がある。
+
+.. tip::
+ :ref:`tag-form_tag` では、一律リクエストパラメータを全てhiddenタグに出力するのではなく、
+ 既に入力項目として出力したリクエストパラメータはhiddenタグの出力から除外する。
+
+.. tip::
+ ログイン情報など、全ての業務に渡って必要になる情報はサーバ側(セッション)に保持する。
+
+.. _`tag-hidden_encryption`:
+
+クライアントに保持するデータを暗号化する(hidden暗号化)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`ウィンドウスコープ<tag-window_scope>` や :ref:`tag-hidden_tag` の値は、
+クライアント側で改竄されたり、HTMLソースから容易に値を参照できる。
+そのため、hiddenタグの改竄や参照を防ぐことを目的に、カスタムタグではhidden暗号化機能を提供する。
+
+デフォルトで全ての :ref:`tag-form_tag` で暗号化を行い、全てのリクエストで復号及び改竄チェックを行う。
+このため、アプリケーションプログラマは、hidden暗号化機能に関して実装する必要がない。
+
+.. important::
+ 
+ 仕様が複雑であり容易に使用できない、また :ref:`ウィンドウスコープ <tag-window_scope>` にあるように
+ 暗号化対象のデータの使用が非推奨であるため本機能も非推奨とする。
+ このため、特に理由がない限り :ref:`useHiddenEncryption <tag-use_hidden_encryption>` には ``false`` を設定すること。
+
+hidden暗号化
+ hidden暗号化は、 :ref:`tag-form_tag` と :ref:`nablarch_tag_handler` により実現する。
+ hidden暗号化の処理イメージを以下に示す。
+ :ref:`tag-form_tag` が暗号化、 :ref:`nablarch_tag_handler` が復号及び改竄チェックを行う。
+
+ .. image:: images/tag/hidden_encryption.png
+
+ \
+
+暗号化処理
+ 暗号化は、 :java:extdoc:`Encryptor <nablarch.common.encryption.Encryptor>` インタフェースを実装したクラスが行う。
+ フレームワークでは、デフォルトの暗号化アルゴリズムとして ``AES(128bit)`` を使用する。
+ 暗号化アルゴリズムを変更したい場合は、
+ :java:extdoc:`Encryptor <nablarch.common.encryption.Encryptor>` を実装したクラスを
+ コンポーネント定義に ``hiddenEncryptor`` という名前で追加する。
+
+ 暗号化では、:ref:`tag-form_tag` 毎に、 :ref:`tag-form_tag` に含まれる以下のデータをまとめて暗号化し、
+ 1つのhiddenタグで出力する。
+
+ * カスタムタグの :ref:`tag-hidden_tag` で明示的に指定したhiddenパラメータ
+ * :ref:`ウィンドウスコープ<tag-window_scope>` の値
+ * :ref:`サブミットを行うカスタムタグ <tag_reference_submit>` で指定したリクエストID
+ * :ref:`サブミットを行うカスタムタグ <tag_reference_submit>` で追加した :ref:`パラメータ<tag-submit_change_parameter>`
+
+ さらに、暗号化では、改竄を検知するために、上記のデータから生成したハッシュ値を含める。
+ リクエストIDは、異なる入力フォーム間で暗号化した値を入れ替えた場合の改ざんを検知するために、
+ ハッシュ値は、値の書き換えによる改竄を検知するために使用する。
+ 暗号化した結果は、BASE64でエンコードしhiddenタグに出力する。
+
+ .. tip::
+  カスタムタグの :ref:`tag-hidden_tag` で明示的に指定したhiddenパラメータは、
+  暗号化に含まれるため、クライアント側でJavaScriptを使用して値を操作できない。
+  クライアント側のJavaScriptでhiddenパラメータを操作したい場合は、
+  :ref:`tag-plain_hidden_tag` を使用して、暗号化しないhiddenタグを出力する。
+
+.. _`tag-hidden_encryption_decryption`:
+
+復号処理
+ 復号処理は、 :ref:`nablarch_tag_handler` が行う。
+ :ref:`nablarch_tag_handler` では以下の場合に改竄と判定し、設定で指定された画面に遷移させる。
+
+ * 暗号化したhiddenパラメータ(nablarch_hidden)が存在しない。
+ * BASE64のデコードに失敗する。
+ * 復号に失敗する。
+ * 暗号化時に生成したハッシュ値と復号した値で生成したハッシュ値が一致しない。
+ * 暗号化時に追加したリクエストIDと受け付けたリクエストのリクエストIDが一致しない。
+
+暗号化に使用する鍵の保存場所
+ 暗号化に使用する鍵は、鍵の有効期間をできるだけ短くするため、セッション毎に生成する。
+ このため、同じユーザであってもログインをやり直すと、ログイン前に使用していた画面から処理を継続できない。
+
+hidden暗号化の設定
+ hidden暗号化では、 :ref:`tag-setting` により、以下の設定ができる。
+
+ .. _tag-use_hidden_encryption:
+ 
+ useHiddenEncryptionプロパティ
+  hidden暗号化を使用するか否か。
+  デフォルトはtrue。
+
+ noHiddenEncryptionRequestIdsプロパティ
+  hidden暗号化を行わないリクエストID。
+
+ noHiddenEncryptionRequestIdsプロパティには、以下のように、hidden暗号化を使用できないリクエストを指定する。
+
+ * ログイン画面など、アプリケーションの入口となるリクエスト
+ * ブックマークから遷移してくるリクエスト
+ * 外部サイトから遷移してくるリクエスト
+
+ これらのリクエストは、暗号化したhiddenパラメータ(nablarch_hidden)が存在しない、
+ またはセッション毎に生成する鍵が存在しないため、noHiddenEncryptionRequestIdsプロパティを設定しないと改竄エラーとなる。
+
+ noHiddenEncryptionRequestIdsプロパティの設定値は、
+ :ref:`tag-form_tag` と :ref:`nablarch_tag_handler` が、
+ それぞれ暗号化と復号の際に参照して処理を行う。
+
+ :ref:`tag-form_tag`
+  :ref:`tag-form_tag` に暗号化対象のリクエストIDが1つでも含まれていれば暗号化する。
+  反対に、暗号化対象のリクエストIDが1つも含まれていない場合、 :ref:`tag-form_tag` は暗号化しない。
+
+ :ref:`nablarch_tag_handler`
+  リクエストされたリクエストIDが暗号化対象のリクエストIDの場合のみ、復号する。
+
+.. _`tag-composite_key`:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-tag--s6`
+
+```json
+{
+  "id": "libraries-tag--s6",
+  "title": "カスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/tag.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/Object.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/encryption/Encryptor.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する",
+      "hints": [
+        "n:select",
+        "n:radioButtons",
+        "n:checkboxes",
+        "n:radioButton",
+        "n:checkbox",
+        "Plan",
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty",
+        "listFormat",
+        "選択項目表示",
+        "プルダウン",
+        "ラジオボタン",
+        "チェックボックス",
+        "カスタムタグ",
+        "nablarch_radio1",
+        "nablarch_checkbox1",
+        "生成HTML"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "チェックボックスでチェックなしに対する値を指定する",
+      "hints": [
+        "n:checkbox",
+        "useOffValue",
+        "offLabel",
+        "offValue",
+        "チェックボックスオフ値",
+        "チェックなし値",
+        "nablarch_tag_handler"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力データを画面間で持ち回る(ウィンドウスコープ)",
+      "hints": [
+        "n:form",
+        "windowScopePrefixes",
+        "ウィンドウスコープ",
+        "入力データ引き回し",
+        "hiddenタグ",
+        "画面間データ保持",
+        "session_store",
+        "前方一致"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "クライアントに保持するデータを暗号化する(hidden暗号化)",
+      "hints": [
+        "Encryptor",
+        "nablarch.common.encryption.Encryptor",
+        "hiddenEncryptor",
+        "nablarch_tag_handler",
+        "useHiddenEncryption",
+        "noHiddenEncryptionRequestIds",
+        "hidden暗号化",
+        "改竄チェック",
+        "AES暗号化",
+        "nablarch_hidden",
+        "BASE64",
+        "リクエストID改竄検知",
+        "ハッシュ値改竄検知"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する\n\n使用するカスタムタグ:\n- :ref:`tag-select_tag`（プルダウン）\n- :ref:`tag-radio_buttons_tag`（ラジオボタン）\n- :ref:`tag-checkboxes_tag`（チェックボックス）\n\nアクション側で選択肢リストをリクエストスコープに設定し、カスタムタグで表示する。\n\n> **補足**: 選択状態の判定は、選択された値と選択肢の値をともに :java:extdoc:`Object#toString <java.lang.Object.toString()>` してから行う。\n\n選択肢クラス（`planId`: 値、`planName`: ラベル）:\n\n```java\npublic class Plan {\n    private String planId;\n    private String planName;\n    public String getPlanId() { return planId; }\n    public String getPlanName() { return planName; }\n}\n```\n\nアクションでリクエストスコープに設定:\n\n```java\nList<Plan> plans = Arrays.asList(new Plan(\"A\", \"フリー\"), new Plan(\"B\", \"ベーシック\"), new Plan(\"C\", \"プレミアム\"));\ncontext.setRequestScopedVar(\"plans\", plans);\n```\n\nカスタムタグの属性:\n- `listName`: 選択肢リストの名前\n- `elementLabelProperty`: ラベルを表すプロパティ名\n- `elementValueProperty`: 値を表すプロパティ名\n\nプルダウン (`n:select`):\n```jsp\n<n:select name=\"form.plan1\" listName=\"plans\" elementLabelProperty=\"planName\" elementValueProperty=\"planId\" />\n```\n\n出力されるHTML（`form.plan1` の値が `\"A\"` の場合）:\n```html\n<select name=\"form.plan1\">\n  <option value=\"A\" selected=\"selected\">フリー</option>\n  <option value=\"B\">ベーシック</option>\n  <option value=\"C\">プレミアム</option>\n</select>\n```\n\nラジオボタン (`n:radioButtons`):\n```jsp\n<n:radioButtons name=\"form.plan2\" listName=\"plans\" elementLabelProperty=\"planName\" elementValueProperty=\"planId\" />\n```\n\n出力されるHTML（`form.plan2` の値が `\"B\"` の場合）。IDは `nablarch_radio1`、`nablarch_radio2`、... の連番で生成される:\n```html\n<input id=\"nablarch_radio1\" type=\"radio\" name=\"form.plan2\" value=\"A\" />\n<label for=\"nablarch_radio1\">フリー</label><br />\n<input id=\"nablarch_radio2\" type=\"radio\" name=\"form.plan2\" value=\"B\" checked=\"checked\" />\n<label for=\"nablarch_radio2\">ベーシック</label><br />\n<input id=\"nablarch_radio3\" type=\"radio\" name=\"form.plan2\" value=\"C\" />\n<label for=\"nablarch_radio3\">プレミアム</label><br />\n```\n\nデフォルトは `<br>` タグで区切り。`listFormat` 属性でdiv/span/ul/ol/スペース区切りに変更可能。\n\nチェックボックス (`n:checkboxes`):\n```jsp\n<n:checkboxes name=\"form.plan4\" listName=\"plans\" elementLabelProperty=\"planName\" elementValueProperty=\"planId\" />\n```\n\n出力されるHTML（`form.plan4` の値が `\"C\"` の場合）。IDは `nablarch_checkbox1`、`nablarch_checkbox2`、... の連番で生成される:\n```html\n<input id=\"nablarch_checkbox1\" type=\"checkbox\" name=\"form.plan4\" value=\"A\" checked=\"checked\" />\n<label for=\"nablarch_checkbox1\">フリー</label><br />\n<input id=\"nablarch_checkbox2\" type=\"checkbox\" name=\"form.plan4\" value=\"B\" />\n<label for=\"nablarch_checkbox2\">ベーシック</label><br />\n<input id=\"nablarch_checkbox3\" type=\"checkbox\" name=\"form.plan4\" value=\"C\" />\n<label for=\"nablarch_checkbox3\">プレミアム</label><br />\n```\n\nデフォルトは `<br>` タグで区切り。`listFormat` 属性で変更可能。\n\n> **重要**: :ref:`tag-radio_buttons_tag` と :ref:`tag-checkboxes_tag` はカスタムタグが選択肢をすべて出力するため出力HTMLに制限がある。デザイン会社が作成したHTMLベースで開発するなどプロジェクトでデザインをコントロールできない場合は、JSTLの `c:forEach` タグと :ref:`tag-radio_tag` または :ref:`tag-checkbox_tag` を使って自由にHTMLを実装すること。\n\n`c:forEach` + `n:radioButton` の実装例:\n```jsp\n<c:forEach items=\"${plans}\" var=\"plan\">\n  <n:radioButton name=\"form.plan3\" label=\"${plan.planName}\" value=\"${plan.planId}\" />\n</c:forEach>\n```",
+    "s2": "## チェックボックスでチェックなしに対する値を指定する\n\nHTMLの `checkbox` タグはチェックなしの場合にリクエストパラメータが送信されない。:ref:`tag-checkbox_tag` ではチェックなしに対応する値を指定できる機能を提供する。\n\n実装例:\n```jsp\n<n:checkbox name=\"form.useMail\" value=\"true\" label=\"使用する\"\n            offLabel=\"使用しない\" offValue=\"false\" />\n```\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| useOffValue | true | チェックなしの値設定を使用するか否か。一括削除など複数選択の場合は `false` を指定 |\n| offLabel | | チェックなしの場合のラベル（入力画面と確認画面を共通化した場合に確認画面で表示） |\n| offValue | 0 | チェックなしの場合の値 |\n\n> **補足**: この機能は :ref:`nablarch_tag_handler` と :ref:`hidden暗号化 <tag-hidden_encryption>` で実現。checkboxタグ出力時にオフ値をhiddenタグに出力し、:ref:`nablarch_tag_handler` がリクエスト受付時にチェックなしの場合のみリクエストパラメータにオフ値を設定する。",
+    "s3": "## 入力データを画面間で持ち回る(ウィンドウスコープ)\n\n> **重要**: 画面間での入力データ保持には、ウィンドウスコープではなく :ref:`session_store` を使用すること。理由: (1) ウィンドウスコープはキー/値ペアのみ保持のためBeanをそのまま格納できず実装が煩雑になる (2) カスタムタグの属性指定で動きが把握しにくく実装難易度が高い。\n\nウィンドウスコープは入力データをクライアント側のhiddenタグとして保持する。データは :ref:`hidden暗号化<tag-hidden_encryption>` により暗号化される。\n\n> **重要**: ウィンドウスコープの内容はhidden暗号化により暗号化されているため、Ajaxで取得したデータによる書き換えなど、クライアント側での書き換えはできない。\n\nウィンドウスコープへの設定は :ref:`tag-form_tag` の `windowScopePrefixes` 属性で行う。\n\n> **重要**: `windowScopePrefixes` 属性はパラメータ名の**前方一致**で一致したパラメータをウィンドウスコープに設定する。例えば `windowScopePrefixes=\"user\"` と指定すると `users` で始まるパラメータもウィンドウスコープに設定される。\n\n実装例（検索条件パラメータ: `searchCondition.*`、入力データパラメータ: `user.*`）:\n\n```jsp\n<!-- 検索画面: ウィンドウスコープのデータを送信しない -->\n<n:form>\n\n<!-- 更新画面: 検索条件だけ送信 -->\n<n:form windowScopePrefixes=\"searchCondition\">\n\n<!-- 更新確認画面: 検索条件と入力データを送信。複数はカンマ区切り -->\n<n:form windowScopePrefixes=\"searchCondition,user\">\n\n<!-- 更新完了画面: 検索条件だけ送信 -->\n<n:form windowScopePrefixes=\"searchCondition\">\n```\n\n> **重要**: データベースのデータは主キーや楽観ロック用データなど必要最低限に留めること。表示のみのデータはhiddenで引き回さず必要な都度データベースから取得すること。hiddenデータ量の増加は通信速度低下・メモリ圧迫につながる。\n\n> **重要**: ウィンドウスコープに格納したデータをアクション側で使用する場合は、:ref:`バリデーション<validation>` を行うこと。\n\n> **補足**: :ref:`tag-form_tag` は既に入力項目として出力したリクエストパラメータはhiddenタグの出力から除外する。ログイン情報など全業務で必要な情報はサーバ側（セッション）に保持すること。",
+    "s4": "## クライアントに保持するデータを暗号化する(hidden暗号化)\n\n> **重要**: 仕様が複雑で容易に使用できず、:ref:`ウィンドウスコープ <tag-window_scope>` の使用も非推奨のため本機能も非推奨。特に理由がない限り :ref:`useHiddenEncryption <tag-use_hidden_encryption>` には `false` を設定すること。\n\nhidden暗号化は :ref:`tag-form_tag`（暗号化）と :ref:`nablarch_tag_handler`（復号・改竄チェック）により実現する。\n\n**暗号化処理**:\n- 暗号化クラス: :java:extdoc:`Encryptor <nablarch.common.encryption.Encryptor>` インタフェースを実装\n- デフォルトアルゴリズム: AES(128bit)\n- アルゴリズム変更: `Encryptor` 実装クラスをコンポーネント定義に `hiddenEncryptor` という名前で追加\n- :ref:`tag-form_tag` ごとに以下をまとめて暗号化し1つのhiddenタグで出力:\n  1. :ref:`tag-hidden_tag` で明示的に指定したhiddenパラメータ\n  2. :ref:`ウィンドウスコープ<tag-window_scope>` の値\n  3. :ref:`サブミットを行うカスタムタグ <tag_reference_submit>` で指定したリクエストID\n  4. :ref:`サブミットを行うカスタムタグ <tag_reference_submit>` で追加したパラメータ\n- 改竄検知のため、リクエストIDとハッシュ値を含める（それぞれ異なる改竄を検知）:\n  - **リクエストID**: 異なる入力フォーム間で暗号化した値を入れ替えた場合の改竄を検知\n  - **ハッシュ値**: 値の書き換えによる改竄を検知\n- 暗号化した結果はBASE64エンコードしてhiddenタグに出力\n\n> **補足**: :ref:`tag-hidden_tag` で明示的に指定したhiddenパラメータは暗号化対象のためクライアント側JavaScriptで値を操作できない。クライアント側でJavaScriptによる操作が必要な場合は :ref:`tag-plain_hidden_tag` を使用すること。\n\n**復号処理**: :ref:`nablarch_tag_handler` が行う。以下の場合に改竄と判定し設定された画面に遷移:\n- 暗号化したhiddenパラメータ（nablarch_hidden）が存在しない\n- BASE64のデコードに失敗\n- 復号に失敗\n- 暗号化時のハッシュ値と復号後のハッシュ値が一致しない\n- 暗号化時のリクエストIDと受け付けたリクエストIDが一致しない\n\n**暗号化キー**: セッションごとに生成。同じユーザでもログインし直すとログイン前の画面から処理を継続できない。\n\n**設定プロパティ** (:ref:`tag-setting` で設定):\n\n| プロパティ名 | デフォルト値 | 説明 |\n|---|---|---|\n| useHiddenEncryption | true | hidden暗号化を使用するか否か |\n| noHiddenEncryptionRequestIds | | hidden暗号化を行わないリクエストID |\n\n`noHiddenEncryptionRequestIds` に指定すべきリクエスト（暗号化したhiddenパラメータが存在しないかセッションキーが存在しないため、未設定だと改竄エラーとなる）:\n- ログイン画面などアプリケーションの入口\n- ブックマークから遷移してくるリクエスト\n- 外部サイトから遷移してくるリクエスト\n\n:ref:`tag-form_tag`: 暗号化対象のリクエストIDが1つでも含まれていれば暗号化する。1つも含まれていない場合は暗号化しない。\n\n:ref:`nablarch_tag_handler`: リクエストされたリクエストIDが暗号化対象の場合のみ復号する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

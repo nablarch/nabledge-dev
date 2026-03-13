@@ -1,0 +1,154 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-on_errors--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The source contains a bullet list before the code example that describes each exception type, including the explicit statement that UserLockedException is a subclass of AuthenticationException (「アカウントロックエラー。`AuthenticationException` のサブクラス」). This inheritance relationship is relevant context for understanding why the ordering requirement in the important note matters. The knowledge file omits this list entirely.",
+      "source_evidence": "* `ApplicationException` (業務エラー)\n* `AuthenticationException` (認証エラー)\n* `UserLockedException` (アカウントロックエラー。 `AuthenticationException` のサブクラス)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _on_errors_interceptor:
+
+OnErrorsインターセプタ
+============================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+業務アクションでの例外発生時に、指定したレスポンスを返却するインターセプタ。
+複数の例外に対してレスポンスを指定できる。
+
+このインターセプタは、業務アクションのメソッドに対して、 :java:extdoc:`OnErrors <nablarch.fw.web.interceptor.OnErrors>` を設定することで有効となる。
+
+インターセプタクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.web.interceptor.OnErrors`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+
+OnErrorsを使用する
+--------------------------------------------------
+:java:extdoc:`OnErrors <nablarch.fw.web.interceptor.OnErrors>` アノテーションを、
+業務アクションのリクエストを処理するメソッドに対して設定する。
+
+それぞれの例外に対するレスポンスの指定は、 :java:extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` を使用して行う。
+
+業務アクションのメソッド内で以下の例外を送出する場合の実装例を示す。
+
+* `ApplicationException` (業務エラー)
+* `AuthenticationException` (認証エラー)
+* `UserLockedException` (アカウントロックエラー。 `AuthenticationException` のサブクラス)
+
+.. code-block:: java
+
+  @OnErrors({
+          @OnError(type = UserLockedException.class, path = "/WEB-INF/view/login/locked.jsp"),
+          @OnError(type = AuthenticationException.class, path = "/WEB-INF/view/login/index.jsp"),
+          @OnError(type = ApplicationException.class, path = "/WEB-INF/view/login/index.jsp")
+  })
+  public HttpResponse handle(HttpRequest request, ExecutionContext context) {
+      // 業務処理は省略
+  }
+
+.. important::
+
+  :java:extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` の定義順に例外を処理するため、
+  継承関係にある例外を定義する場合は、必ずサブクラスの例外から先に定義すること。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-on_errors--s1",
+  "title": "OnErrorsインターセプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web_interceptor/on_errors.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/interceptor/OnErrors.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/interceptor/OnError.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "インターセプタクラス名",
+      "hints": [
+        "OnErrors",
+        "nablarch.fw.web.interceptor.OnErrors",
+        "インターセプタ",
+        "例外レスポンス返却"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "OnErrorsを使用する",
+      "hints": [
+        "@OnErrors",
+        "@OnError",
+        "UserLockedException",
+        "AuthenticationException",
+        "ApplicationException",
+        "例外ハンドリング",
+        "エラーレスポンス設定",
+        "サブクラス優先定義"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務アクションでの例外発生時に指定したレスポンスを返却するインターセプタ。複数の例外に対してレスポンスを指定できる。\n\n**クラス**: `nablarch.fw.web.interceptor.OnErrors`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+    "s3": "業務アクションのリクエストを処理するメソッドに :java:extdoc:`OnErrors <nablarch.fw.web.interceptor.OnErrors>` アノテーションを設定する。各例外に対するレスポンスの指定は :java:extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` を使用する。\n\n**アノテーション**: `@OnErrors`, `@OnError`\n\n```java\n@OnErrors({\n        @OnError(type = UserLockedException.class, path = \"/WEB-INF/view/login/locked.jsp\"),\n        @OnError(type = AuthenticationException.class, path = \"/WEB-INF/view/login/index.jsp\"),\n        @OnError(type = ApplicationException.class, path = \"/WEB-INF/view/login/index.jsp\")\n})\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理は省略\n}\n```\n\n> **重要**: :java:extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` の定義順に例外を処理するため、継承関係にある例外を定義する場合は、必ずサブクラスの例外から先に定義すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

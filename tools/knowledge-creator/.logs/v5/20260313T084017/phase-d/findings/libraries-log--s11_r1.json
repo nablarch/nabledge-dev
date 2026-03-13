@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-log--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — failure code properties table",
+      "description": "The source provides message configuration examples (メッセージの設定例) and default log output text (デフォルトで出力するログ) for each of the 4 failure code properties. The knowledge file table only includes property name, failure content, and log level — omitting the message format templates (including the `{0}` placeholder for lock file path) and the default English log messages.",
+      "source_evidence": "failureCodeCreateLockFile :メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。 :デフォルトで出力するログ(障害コードなどは出力されない): failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}]."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`BasicLogFormatter` and `outputBufferSize` appear in the s1 configuration example but are absent from s1 hints.",
+      "source_evidence": "writer.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter and writer.monitorLog.outputBufferSize=8 in the configuration example"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`onWritten` method name appears in the s2 code example (`public void onWritten(LogContext context)`) but is absent from s2 hints.",
+      "source_evidence": "public void onWritten(LogContext context) { // LogContext を使った処理を実装する }"
+    }
+  ]
+}

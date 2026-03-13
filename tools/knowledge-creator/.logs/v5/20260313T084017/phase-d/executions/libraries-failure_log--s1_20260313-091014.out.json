@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-failure_log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 障害ログの設定 (記述ルール tip about 派生元実行時情報)",
+      "description": "The tip explaining that $data$ placeholder can output 派生元実行時情報 (derived source execution info) — e.g., request ID and execution ID from a web request that triggered a batch process — is omitted. This tip also explains the purpose of `failureLogFormatter.derivedRequestIdPropName` and `failureLogFormatter.derivedUserIdPropName`, which appear in the configuration example (s3) but are undocumented elsewhere in the knowledge file. Without this context, users cannot understand what those two properties do.",
+      "source_evidence": "ソース tip (障害ログの設定 section): 「処理対象データの出力により、障害ログに派生元実行時情報を出力できる。派生元実行時情報とは、例えば、ウェブからバッチ処理にデータ連携する場合であれば、画面処理を実行した時点の実行時情報(リクエストIDや実行時IDなど)がバッチ処理での派生元実行時情報となる。派生元実行時情報の出力方法は、:ref:`failure_log-output_src_exe_info` を参照。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Property names `derivedRequestIdPropName` and `derivedUserIdPropName` appear in the configuration example in s3 but are absent from the hints array. Users searching for these property names would not match to this section.",
+      "source_evidence": "Source 記述例: `failureLogFormatter.derivedRequestIdPropName=insertRequestId` and `failureLogFormatter.derivedUserIdPropName=updatedUserId`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 障害ログを出力する (tip about failure code conventions)",
+      "description": "The tip recommending that failure code naming conventions be defined per project is omitted: 「障害コードのコード体系は、プロジェクト毎に規定すること。」 This is a best-practice guidance note for teams implementing failure logging.",
+      "source_evidence": "ソース tip (障害ログを出力する section): 「上記例のように、障害ログの出力では、ログから障害内容を特定するために障害コードを指定する。障害コードのコード体系は、プロジェクト毎に規定すること。」"
+    }
+  ]
+}

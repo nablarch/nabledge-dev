@@ -1,0 +1,358 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-initial_setup--s9",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s4",
+      "description": "知識ファイルは「インデックスページ（全テスト一覧）に遷移する」と記述しているが、ソースのテキストには「以下のような画面に遷移する」とあるのみで「全テスト一覧」という説明は存在しない。図のファイル名（ui_test_server_indexpage.png）からの推測であり、ソースに根拠がない記述が追加されている。",
+      "source_evidence": "ブラウザに表示されているリンクを押すと、以下のような画面に遷移する。（その後に図が続く）"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+3. プロジェクトへのプラグインインストール
+---------------------------------------------------
+インストールコマンドにプロジェクトルートを設定し実行する。
+(コマンドの詳細については :doc:`../plugin_build` を参照)
+
+**1. PROJECT_ROOTの設定**
+  `nablarch_plugins_bundle/bin/install.bat` を任意のテキストエディタで開き、
+  コメントアウトされているプロジェクトルートを以下のように設定する。
+
+.. code-block:: bat
+
+   @setlocal
+
+   cd %~dp0
+   @echo off
+   set PROJECT_ROOT=../../web_project # (設定)
+   ###(後略)###
+
+**2. インストールコマンドの実行**
+  `nablarch_plugins_bundle/bin/install.bat` を実行する。
+
+.. tip::
+
+  なお、このスクリプトは完了までに通常5から10分程度の時間がかかる。
+
+以下のようなログが表示される。
+
+.. code-block:: bash
+
+  > install.bat
+  setup plugin: ../node_modules/es6-promise
+  setup plugin: ../node_modules/font-awesome
+  setup plugin: ../node_modules/jquery
+  setup plugin: ../node_modules/less
+
+  ## (中略) ##
+
+  npm http 200 http://127.0.0.1:3000/nablarch-css-conf-compact/-/nablarch-css-conf-compact-1.0.0/package.tgz
+  npm http 200 http://127.0.0.1:3000/nablarch-css-conf-wide/-/nablarch-css-conf-wide-1.0.0/package.tgz
+  nablarch-css-conf-compact@1.0.0 node_modules/nablarch-css-conf-compact
+  nablarch-css-conf-narrow@1.0.0 node_modules/nablarch-css-conf-narrow
+  nablarch-css-conf-wide@1.0.0 node_modules/nablarch-css-conf-wide
+
+  halting local repository ...
+
+  ... local repository shutdown.
+  >
+
+この処理により、先の手順で **package.json** に指定されていたプラグインが
+`web_project/ui_plugins/node_modules` 配下にインストールされる。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │
+        ├── nablarch_plugins_bundle/
+        │     │
+        │     │
+        │   ##(後略)##
+        │
+        └── web_project/
+              ├── web/
+              ├── ui_demo/
+              ├── ui_plugins/
+              │     ├── .npm/  # (追加)
+              │     ├── package.json
+              │     ├── bin/
+              │     │
+              │     └── node_modules/
+              │           ├── jquery/                       # (追加)
+              │           ├── less/                         # (追加)
+              │           ├── nablarch-css-base/            # (追加)
+              │           ├── nablarch-css-color-default/   # (追加)
+              │           ├── nablarch-css-common/          # (追加)
+              │           │
+              │       ##(後略)##
+              │
+              └── ui_test/
+
+
+.. _executing_ui_build:
+
+4. UI部品のビルドと配置
+---------------------------------------------------
+ビルドコマンド用設定ファイルにデプロイ対象プロジェクトを設定しUIビルドコマンドを実行する。
+(設定ファイルとコマンドの詳細については :doc:`../plugin_build` を参照)
+
+**1. デプロイ対象プロジェクトの設定**
+  `web_project/ui_plugins/pjconf.json` を任意のテキストエディタで開き、
+  デプロイ対象プロジェクト(pathSettings/webProjectPath)を以下のように設定する。
+
+.. code-block:: javascript
+
+   {
+     "pathSettings" :
+     { "projectRootPath"   : "../.."
+     , "webProjectPath"    : "web/src/main/webapp"  // (設定)
+     , "demoProjectPath"   : "ui_demo"
+     , "testProjectPath"   : "ui_test"
+     , "pluginProjectPath" : "ui_plugins"
+     }
+     // ###(後略)###
+
+**2. UIビルドコマンドの実行**
+  `web_project/ui_plugins/bin/ui_build.bat` を実行する。
+
+  これにより `web_project` 配下の以下のディレクトリに各プラグインから抽出された
+  UI資源が展開される。
+
+  =========== ===================================== ========================================================================================
+  パス        名称                                  用途
+  =========== ===================================== ========================================================================================
+  ui_demo/    業務画面モック開発用プロジェクト      | 主に設計工程で作成する業務画面JSPを格納するプロジェクト。
+                                                    | サーバサイドの仕組みなしで、画面の表示や動作のデモを行うことができる。
+                                                    | 使用方法については、 :ref:`ui_dev-howto_make_jsp` を参照すること。
+  
+  ui_test/    UI開発基盤テスト用プロジェクト        | UI開発基盤自体の開発に用いるテストスイートを格納するプロジェクト。
+                                                    | プロジェクト側でUI基盤のカスタマイズを行う際に、既存機能への影響を確認する場合に
+                                                      使用することができる。
+                                                    | また、UI基盤部品で問題が発生した場合に、Nablarchの標準プラグインの問題なのか、
+                                                      PJ側でのカスタマイズの問題なのかを確認する際にも使用する。
+  
+  web/        デプロイ対象プロジェクト              | 実際にサーバ環境にデプロイされる資源を格納するプロジェクト。
+  
+  =========== ===================================== ========================================================================================
+
+
+5. UIローカルデモ用プロジェクトの動作確認
+---------------------------------------------------
+`web_project/ui_demo/ローカル画面確認.bat`
+を実行すると、ブラウザが起動し、以下の画面が表示される。
+
+.. figure:: ../_image/ui_demo_server_indexpage.png
+   :scale: 80
+   :align: center
+
+この画面には `web_project/ui_demo` 配下にある全てのJSPファイルへのリンクが
+表示される。
+各リンクを開くことで、当該画面のJSPがJavaScriptによって解釈され、
+下記のようなデモ画面を表示できる。
+
+.. figure:: ../_image/ui_demo_server_preview.png
+   :scale: 80
+   :align: center
+
+.. _ui_test_server:
+
+6. UI開発基盤テスト用プロジェクトの動作確認
+---------------------------------------------------
+`web_project/ui_test/サーバ動作確認.bat`
+を実行すると、ブラウザが起動し、以下の画面が表示される。
+
+.. figure:: ../_image/ui_test_server_top.png
+   :scale: 80
+   :align: center
+
+コマンドを実行したコンソール内に以下のようなメッセージが表示されるのを確認できるまで待つ。
+
+.. code-block:: bash
+
+  2014-05-05 16:28:24.022:INFO::Logging to STDERR via org.mortbay.log.StdErrLog
+  2014-05-05 16:28:24.058:INFO::jetty-6.1.24
+  2014-05-05 16:28:24.300 -INFO- ROO [null] load component config file. file = classpath:web-component-configuration.xml
+  2014-05-05 16:28:24.331 -INFO- ROO [null] [nablarch.fw.web.servlet.NablarchServletContextListener#contextInitialized] initialization completed.
+  2014-05-05 16:28:24.383:INFO::Started SocketConnector@0.0.0.0:7777
+
+メッセージが確認できたら
+ブラウザに表示されているリンクを押すと、以下のような画面に遷移する。
+
+.. figure:: ../_image/ui_test_server_indexpage.png
+   :scale: 80
+   :align: center
+
+左のメニューから、各UI部品の動作確認用ページに遷移できる。
+
+
+7. 開発リポジトリへの登録
+---------------------------------------------------
+ここまでセットアップした開発基盤を、リポジトリに登録する。
+
+.. important::
+
+  ここでリポジトリへの登録を怠ると、以降のプロジェクト側で行うカスタマイズと、
+  Nablarch開発元で行う改修とを正しくマージすることが困難、もしくは不可能となるので、
+  必ず実施すること。
+
+
+**1. UI開発基盤インストール作業ファイルの削除**
+  下記のディレクトリおよびその配下のファイルについては、
+  インストール作業完了後は不要となるので、コミット前に削除しておく。
+
+  - **nablarch_plugins_bundle/**
+  - **web_project/ui_plugins/.npm/**
+
+**2. コミット**
+  上述の削除により、プロジェクトのファイル構成は以下の図のようになる。
+  これをプロジェクトのリポジトリにコミットする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │
+        └── web_project/
+              ├── web/
+              │     │
+              │   ##(後略)##
+              │
+              ├── ui_demo/
+              │     ├── .project
+              │     │
+              │   ##(後略)##
+              │
+              ├── ui_plugins/
+              │     ├── package.json
+              │     ├── bin/
+              │     │     ├── ui_build.bat
+              │     │     ├── ui_build.sh
+              │     │     │
+              │     │
+              │     └── node_modules/
+              │           ├── jquery/
+              │           ├── less/
+              │           ├── nablarch-css-base/
+              │           ├── nablarch-css-color-default/
+              │           ├── nablarch-css-common/
+              │           │
+              │       ##(後略)##
+              │
+              └── ui_test/
+                    ├── .project
+                    ├── .classpath
+                    │
+                  ##(後略)##
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-initial_setup--s9",
+  "title": "開発環境初期セットアップ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/development_environment/initial_setup.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "3. プロジェクトへのプラグインインストール",
+      "hints": [
+        "プラグインインストール",
+        "install.bat",
+        "PROJECT_ROOT",
+        "nablarch_plugins_bundle",
+        "ui_plugins/node_modules",
+        "UIプラグイン導入"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "4. UI部品のビルドと配置",
+      "hints": [
+        "UI部品ビルド",
+        "ui_build.bat",
+        "pjconf.json",
+        "pathSettings",
+        "webProjectPath",
+        "ui_demo",
+        "ui_test",
+        "web/",
+        "UIビルド配置"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "5. UIローカルデモ用プロジェクトの動作確認",
+      "hints": [
+        "UIローカルデモ",
+        "ローカル画面確認.bat",
+        "JSP表示確認",
+        "デモ画面"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "6. UI開発基盤テスト用プロジェクトの動作確認",
+      "hints": [
+        "UI開発基盤テスト",
+        "サーバ動作確認.bat",
+        "SocketConnector",
+        "Jetty",
+        "UI部品動作確認"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "7. 開発リポジトリへの登録",
+      "hints": [
+        "リポジトリ登録",
+        "nablarch_plugins_bundle削除",
+        "ui_plugins/.npm削除",
+        "コミット",
+        "マージ競合防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`nablarch_plugins_bundle/bin/install.bat` の `PROJECT_ROOT` にプロジェクトルートを設定して実行する。\n\n```bat\nset PROJECT_ROOT=../../web_project\n```\n\n> **補足**: このスクリプトは完了までに通常5〜10分程度かかる。\n\n実行後、`package.json` に指定されたプラグインが `web_project/ui_plugins/node_modules` 配下にインストールされる。",
+    "s2": "`web_project/ui_plugins/pjconf.json` の `pathSettings/webProjectPath` にデプロイ対象プロジェクトを設定して `web_project/ui_plugins/bin/ui_build.bat` を実行する。\n\n```javascript\n{\n  \"pathSettings\" :\n  { \"projectRootPath\"   : \"../..\"\n  , \"webProjectPath\"    : \"web/src/main/webapp\"\n  , \"demoProjectPath\"   : \"ui_demo\"\n  , \"testProjectPath\"   : \"ui_test\"\n  , \"pluginProjectPath\" : \"ui_plugins\"\n  }\n}\n```\n\n展開先:\n\n| パス | 名称 | 用途 |\n|---|---|---|\n| `ui_demo/` | 業務画面モック開発用プロジェクト | 設計工程で作成する業務画面JSPを格納。サーバサイドなしで画面表示・動作デモが可能 |\n| `ui_test/` | UI開発基盤テスト用プロジェクト | UI基盤のテストスイートを格納。UI基盤カスタマイズ時の影響確認や標準プラグインとPJカスタマイズの問題切り分けに使用 |\n| `web/` | デプロイ対象プロジェクト | 実際にサーバ環境にデプロイされる資源を格納 |",
+    "s3": "`web_project/ui_demo/ローカル画面確認.bat` を実行するとブラウザが起動し、`web_project/ui_demo` 配下の全JSPファイルへのリンクが表示される。各リンクを開くとJavaScriptで解釈されたデモ画面が表示される。",
+    "s4": "`web_project/ui_test/サーバ動作確認.bat` を実行する。コンソールに以下のメッセージが表示されるまで待つ。\n\n```\nStarted SocketConnector@0.0.0.0:7777\n```\n\nメッセージ確認後、ブラウザに表示されているリンクを押すとインデックスページ（全テスト一覧）に遷移する。左のメニューから各UI部品の動作確認用ページに遷移できる。",
+    "s5": "> **重要**: リポジトリへの登録を怠ると、プロジェクト側のカスタマイズとNablarch開発元の改修を正しくマージすることが困難または不可能になるため、必ず実施すること。\n\nコミット前に以下のディレクトリを削除する:\n\n- `nablarch_plugins_bundle/`\n- `web_project/ui_plugins/.npm/`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

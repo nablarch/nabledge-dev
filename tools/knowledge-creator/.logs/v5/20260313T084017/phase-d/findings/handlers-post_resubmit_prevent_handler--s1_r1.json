@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-post_resubmit_prevent_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The source XML comment clarifies that forwardPathMapping specifically configures the destination when the redirected GET request is sent multiple times (error/fallback case where session data is already consumed). Knowledge file describes it generically without this context.",
+      "source_evidence": "XML comment in source config block: リダイレクト後のGETリクエストが複数回送信された場合の遷移先パスのマッピングを設定する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The concrete example illustrating the longest-match rule is omitted: request ID /action/func1/index matches both / and /action/func1/, and the longer key /action/func1/ wins, selecting redirect:///action/error/index2.",
+      "source_evidence": "この設定例でリクエストID「/action/func1/index」のように、複数のリクエストIDの前方一致で複数マッチするリクエストIDについては、最も長いキーにマッチしたリダイレクト先(上記の場合、redirect:///action/error/index2)が選択される。"
+    }
+  ]
+}

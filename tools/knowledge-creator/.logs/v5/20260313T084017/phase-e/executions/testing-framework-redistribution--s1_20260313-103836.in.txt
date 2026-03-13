@@ -1,0 +1,230 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-redistribution--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction / 画面設計担当者向けワークスペースの取得",
+      "description": "The entire section on obtaining the screen-designer workspace is missing. The source specifies checking out the `ui_demo/` directory to a local disk path and references the usage guide `:ref:`ui_dev-howto_make_jsp``. There is no section in the knowledge file covering this workspace type.",
+      "source_evidence": "「画面設計担当者向けワークスペースは、前節で作成したリポジトリの **ui_demo/** ディレクトリをローカルディスクの任意の位置にチェックアウトする」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "開発担当者向けワークスペースの展開",
+      "description": "The entire section on deploying the developer workspace is missing. This includes: (1) the instruction to check out the `web_project/` directory; (2) the Eclipse tip about running `ui_plugins/tool/wtptool` with ant to enable JSP/tag file completion; and (3) a critical `.. important::` warning that before deploying to the developer workspace, `main/webapp/WEB-INF/include/js_include.jsp` must be verified and switched to production (minified JS) because XHR dynamic loading is blocked during unit test HTML verification and JavaScript will not work.",
+      "source_evidence": "「開発担当者向けワークスペースに展開する前には `main/webapp/WEB-INF/include/js_include.jsp` を確認し、本番用に切り替えること。(minifyされたjsファイルを読み込むようにする。)」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction (本節冒頭)",
+      "description": "The introductory overview describing the three workspace types and their purposes is entirely absent. In particular, the description of UIデモ実行用アーカイブ as a file that can be sent to customers or used for meetings by stakeholders who cannot access the development repository directly is decision-relevant context that is not captured anywhere in the knowledge file.",
+      "source_evidence": "「客先に送信して、ミーティングで使用したり、開発リポジトリに直接アクセスできない顧客側の担当者にUIを直接確認してもらう場合などに用いる。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index",
+      "description": "The source has three top-level h2 sections (画面設計担当者向けワークスペースの取得, 開発担当者向けワークスペースの展開, UIデモ実行用アーカイブの作成), but the knowledge file contains only 2 sections (s1, s2), both of which correspond only to the sub-headings of the third h2. The first two major h2 sections are entirely unrepresented in the index."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+====================================
+UI開発基盤の展開
+====================================
+本節では、前節 :doc:`../development_environment/initial_setup`
+で作成した開発基盤をプロジェクト内に展開する方法について述べる。
+開発基盤の用途は、その目的によって以下の3つにわかれる。
+
+**1.画面設計担当者向けワークスペース**
+  外部設計工程において、業務画面設計者が作業するためのワークスペース。
+
+**2.開発担当者向けワークスペース**
+  PG/UT工程において、画面機能の実装担当者が作業するためのワークスペース。
+
+**3.UIデモ実行用アーカイブ**
+  業務画面のUIデモを実施するためのアーカイブ。
+  本ファイルとブラウザがあれば、UIデモを実施できる。
+  客先に送信して、ミーティングで使用したり、
+  開発リポジトリに直接アクセスできない顧客側の担当者に
+  UIを直接確認してもらう場合などに用いる。
+
+ここでは、用途に応じた開発基盤の取得方法について述べる。
+
+画面設計担当者向けワークスペースの取得
+=========================================
+画面設計担当者向けワークスペースは、前節で作成したリポジトリの
+**ui_demo/** ディレクトリ(下図)をローカルディスクの任意の位置にチェックアウトする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │  
+        └── web_project/
+              ├── web/
+              ├── ui_demo/        #### ← ここからチェックアウト####
+              │     ├── .project
+              │     ├── ローカル画面確認.bat
+              │     │
+              │
+              ├── ui_plugins/
+              └── ui_test/
+
+.. tip::
+
+  チェックアウトしたワークスペースの使用方法については :ref:`ui_dev-howto_make_jsp` を参照すること。
+
+
+開発担当者向けワークスペースの展開
+=========================================
+開発担当者向けワークスペースは、前節で作成したリポジトリの
+**web_project/** ディレクトリ(下図)をローカルディスクの任意の位置にチェックアウトする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │  
+        └── web_project/      #### ← ここからチェックアウト####
+              ├── web/
+              │     ├── .classpath
+              │     ├── .project
+              │     │
+              │  
+              ├── ui_demo/
+              │     ├── .project
+              │     ├── ローカル画面確認.bat
+              │     │
+              │  
+              ├── ui_plugins/
+              └── ui_test/
+                    ├── .classpath
+                    ├── .project
+                    │
+
+.. tip::
+
+  Eclipseを使用する場合、 ui_plugins/tool/wtptoolをantで実行すると、ui_plugins配下のjsp, tagファイルの入力補完や構文チェックが有効になる。
+
+.. important::
+
+  リクエスト単体テストでhtmlを確認したとき動的読み込み(XHR)が許可されず、JavaScriptが動作しないため、
+  開発担当者向けワークスペースに展開する前には
+  `main/webapp/WEB-INF/include/js_include.jsp` を確認し、本番用に切り替えること。(minifyされたjsファイルを読み込むようにする。)
+
+
+UIデモ実行用アーカイブの作成
+=========================================
+
+作成手順
+----------------------
+
+1. UI開発基盤リポジトリの **ui_demo/** ディレクトリ(下図)をローカルディスクの任意の位置にエクスポートする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │  
+        └── web_project/
+              ├── web/
+              ├── ui_demo/        #### ← ここからエクスポート####
+              │     ├── .project
+              │     ├── ローカル画面確認.bat
+              │     │
+              │
+              ├── ui_plugins/
+              └── ui_test/
+
+.. tip::
+
+  ここで、デモに不要な業務画面JSPを削除してもよい。
+  (**ローカル画面確認.bat** で表示されるリンク一覧には自動的に反映される。)
+
+
+2. エクスポートしたディレクトリを圧縮ソフトで圧縮する。(ファイル名は任意)
+
+
+確認手順
+----------------------------
+1. 作成したアーカイブを任意の別ディレクトリに展開する。
+
+2. 展開したディレクトリ直下の **ローカル画面確認.bat** を実行する。
+
+3. ブラウザが起動し、各業務画面JSPのリンク一覧が表示されるので
+   デモ表示を行いたい画面のリンクをクリックする。
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-redistribution--s1",
+  "title": "UI開発基盤の展開",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/development_environment/redistribution.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "作成手順",
+      "hints": [
+        "UIデモ実行用アーカイブ",
+        "ui_demo",
+        "ローカル画面確認.bat",
+        "アーカイブ作成",
+        "JSP削除",
+        "エクスポート"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "確認手順",
+      "hints": [
+        "UIデモ確認",
+        "ローカル画面確認.bat",
+        "UIデモ実行",
+        "業務画面JSP",
+        "ブラウザ起動"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "UIデモ実行用アーカイブは、リポジトリの `ui_demo/` ディレクトリをエクスポートし、圧縮して作成する。\n\n> **補足**: エクスポート後、デモに不要な業務画面JSPを削除してもよい。削除内容は `ローカル画面確認.bat` で表示されるリンク一覧に自動的に反映される。",
+    "s2": "展開ディレクトリ直下の `ローカル画面確認.bat` を実行するとブラウザが起動し、業務画面JSPのリンク一覧が表示される。デモ表示したい画面のリンクをクリックする。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

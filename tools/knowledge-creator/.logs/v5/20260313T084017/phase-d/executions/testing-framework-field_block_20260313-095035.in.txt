@@ -1,0 +1,278 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/reference_jsp_widgets/field_block.rst`
+- Format: `rst`
+
+```
+=================================================
+入力フォームブロック
+=================================================
+:doc:`field_block` は、入力フォームの論理的なまとまりを定義し、見出しを表示するウィジェットである。
+(HTMLにおける<filedset>タグに相当する。)
+
+コードサンプル
+==================================
+
+**実装成果物(サーバ動作)**
+
+.. code-block:: jsp
+
+    <field:block
+      title="ユーザ基本情報"
+      id="user">
+
+      <field:text title="ログインID"
+                  domain="ログインID"
+                  required="true"
+                  maxlength="20"
+                  hint="半角英数記号20文字以内"
+                  name="W11AC02.systemAccount.loginId"
+                  sample="test01">
+      </field:text>
+      <field:password title="パスワード"
+                      domain="パスワード"
+                      required="true"
+                      maxlength="20"
+                      name="W11AC02.newPassword"
+                      sample="password">
+      </field:password>
+   </field:block>
+
+仕様
+=============================================
+このウィジェットは **title** 属性に設定されたタイトルの見出しを表示し、
+その後にボディ部に記述されたフォームの内容をそのまま出力する。
+
+見出しを表示したくない場合は、 **showTitle** をfalseに指定する。
+
+また **collapsible** 属性を指定することで、フォームの内容を開閉可能にできる。
+なお、このウィジェットは、サーバ動作でもローカル動作でも挙動は同一である。
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+==================== ============================== ============== ========== ========= ==========================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ==========================================
+title                ブロックの見出し文字列         文字列         ○          ○
+id                   htmlのid属性                   文字列         ○          ○
+showTitle            ブロックの見出し文字列を表示   真偽値         ○          ○         デフォルトはtrue
+                     するかどうか
+collapsible          ブロックを開閉可能とするか     真偽値         ○          ○         デフォルトはfalse.
+                                                                                        showTitle="true" でなければ無効
+name                 ブロックの開閉状態を保持す\    文字列         ○          ○         collapsible="true"の場合は必須\
+                     るフォームの入力要素名                                             (falseの場合は無効)
+
+                                                                                        name属性に設定した値を本ウィジェットと
+                                                                                        同一form内にn:plainHiddenで
+                                                                                        書きだすことで状態が保持される。
+
+                                                                                        以下に例を示す。
+
+                                                                                        .. code-block:: jsp
+                                                                                         
+                                                                                          <n:form>
+
+                                                                                             <%--
+                                                                                                field:blockと同一form内にfield:blockの
+                                                                                                name属性と同一のname属性を指定した
+                                                                                                n:plainHidden出力する
+                                                                                             --%>
+
+                                                                                             <n:plainHidden name="block_status" />
+                                                                                             <field:block
+                                                                                                title="ユーザ基本情報"
+                                                                                                collapsible="true"
+                                                                                                name="block_status"
+                                                                                                value="basic_info"
+                                                                                                collapsed="true">
+                                                                                             </field:block>
+
+                                                                                          </n:form>
+
+
+
+value                ブロックが開かれていた場合に   文字列         ○          ○         collapsible="true"の場合は必須\
+                     サーバ側に送信する値                                               (falseの場合は無効)
+collapsed            初期表示時にブロックを         真偽値         ○          ○         デフォルトはfalse.
+                     閉じるかどうか。                                                   collapsible="true"でなければ無効
+
+==================== ============================== ============== ========== ========= ==========================================
+
+
+
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/block.tag           :doc:`field_block` の実体となるタグファイル
+
+============================================== ==================================================
+  
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-field_block`
+
+```json
+{
+  "id": "testing-framework-field_block",
+  "title": "入力フォームブロック",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_jsp_widgets/field_block.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "field:block",
+        "field:text",
+        "field:password",
+        "入力フォームブロック実装例",
+        "JSPウィジェット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "field:block",
+        "title",
+        "showTitle",
+        "collapsible",
+        "name",
+        "value",
+        "collapsed",
+        "n:plainHidden",
+        "見出し表示制御",
+        "開閉可能フォームブロック",
+        "入力フォームブロック属性一覧"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "block.tag",
+        "field:blockタグファイル",
+        "/WEB-INF/tags/widget/field/block.tag",
+        "ウィジェット実装ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**実装例 (JSP)**\n\n```jsp\n<field:block\n  title=\"ユーザ基本情報\"\n  id=\"user\">\n\n  <field:text title=\"ログインID\"\n              domain=\"ログインID\"\n              required=\"true\"\n              maxlength=\"20\"\n              hint=\"半角英数記号20文字以内\"\n              name=\"W11AC02.systemAccount.loginId\"\n              sample=\"test01\">\n  </field:text>\n  <field:password title=\"パスワード\"\n                  domain=\"パスワード\"\n                  required=\"true\"\n                  maxlength=\"20\"\n                  name=\"W11AC02.newPassword\"\n                  sample=\"password\">\n  </field:password>\n</field:block>\n```",
+    "s2": "`field:block` は `title` 属性に設定された見出しを表示し、ボディ部に記述されたフォーム内容をそのまま出力するウィジェット。見出しを非表示にするには `showTitle=\"false\"` を指定する。`collapsible` 属性を指定するとフォーム内容を開閉可能にできる。サーバ動作・ローカル動作で挙動は同一。\n\n**属性値一覧** (○: 任意属性)\n\n| 名称 | 内容 | タイプ | デフォルト値 | 備考 |\n|---|---|---|---|---|\n| title | ブロックの見出し文字列 | 文字列 | | |\n| id | htmlのid属性 | 文字列 | | |\n| showTitle | ブロックの見出しを表示するか | 真偽値 | true | |\n| collapsible | ブロックを開閉可能とするか | 真偽値 | false | showTitle=\"true\" でなければ無効 |\n| name | ブロックの開閉状態を保持するフォームの入力要素名 | 文字列 | | collapsible=\"true\" の場合は必須 (false の場合は無効)。同一 form 内に n:plainHidden で同名の name 属性を出力することで状態が保持される |\n| value | ブロックが開かれていた場合にサーバ側に送信する値 | 文字列 | | collapsible=\"true\" の場合は必須 (false の場合は無効) |\n| collapsed | 初期表示時にブロックを閉じるか | 真偽値 | false | collapsible=\"true\" でなければ無効 |\n\n**collapsible 使用時の name 属性設定例:**\n\n```jsp\n<n:form>\n\n  <%-- field:block と同一 form 内に field:block の name 属性と同一の name 属性を指定した n:plainHidden を出力する --%>\n\n  <n:plainHidden name=\"block_status\" />\n  <field:block\n    title=\"ユーザ基本情報\"\n    collapsible=\"true\"\n    name=\"block_status\"\n    value=\"basic_info\"\n    collapsed=\"true\">\n  </field:block>\n\n</n:form>\n```",
+    "s3": "**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/field/block.tag | :doc:`field_block` の実体となるタグファイル |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

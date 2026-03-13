@@ -1,0 +1,232 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "biz-samples-12--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 概要 (本サンプルで取り扱う範囲 subsection)",
+      "description": "The explicit scope limitation statement from the '本サンプルで取り扱う範囲' subsection is missing: 'フロントエンドアプリケーション（Web、モバイルアプリ等）で行うIDトークンの取得方法については本サンプルの対象外とする。' This is useful for an AI to inform users that the sample does not cover frontend ID token acquisition.",
+      "source_evidence": "本サンプルで取り扱うのはNablarchを使用するバックエンドアプリケーションのみとし、フロントエンドアプリケーション（Web、モバイルアプリ等）で行うIDトークンの取得方法については本サンプルの対象外とする。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 概要 (package usage guidance)",
+      "description": "The guidance that 'cognito パッケージのサンプルをベースとして説明する' and that 'adb2c パッケージを使用する場合は、適宜対応するコンポーネントに読み替えること' is missing. This is decision-necessary for users of the adb2c package who need to know they must substitute the corresponding components and that documentation is cognito-focused.",
+      "source_evidence": "考え方はどちらのパッケージでも同じであるため、本ページでは、cognito パッケージのサンプルをベースとして説明する。adb2c パッケージを使用する場合は、適宜対応するコンポーネントに読み替えること。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+======================================
+OIDCのIDトークンを用いた認証サンプル
+======================================
+
+--------------
+提供パッケージ
+--------------
+
+`ソースコード <https://github.com/nablarch/nablarch-biz-sample-all/tree/v5-main>`_
+
+本サンプルは、以下のパッケージで提供される。
+
+  *please.change.me.*\ **common.oidc.verification**
+
+--------------
+概要
+--------------
+
+本サンプルは、OpenID Connect（以下OIDC）で発行されるIDトークンを用いて認証を行うサンプルである。
+
+IDトークンの取得方法や実装場所などはアプリケーション構成によって様々あるが、本サンプルでは以下の構成を想定している。
+
+* Nablarchを使用したRESTfulウェブサービスのアプリケーションを、バックエンドとして稼働させる
+* IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信する
+* 認証成功時にログインセッションを確立し、認証後はステートフルなセッション管理を行う
+* 認証処理は業務アクションで実装する
+
+OIDCは様々なサービスで対応しているが、本サンプルでは以下のユーザー管理サービスで発行されるIDトークンを取り扱う。
+
+* Amazon Web Services（以下AWS）
+
+  * `Amazon Cognito ユーザープール <https://aws.amazon.com/jp/cognito/>`_ （以下ユーザープール）
+
+* Microsoft Azure（以下Azure）
+
+  * `Azure Active Directory B2C <https://learn.microsoft.com/ja-jp/azure/active-directory-b2c/>`_ （以下ADB2C）
+
+提供パッケージ内では、対象のサービス別にさらにパッケージを分けている。
+
+ユーザープールが発行するIDトークンを取り扱うサンプル
+
+  *please.change.me.common.oidc.verification.*\ **cognito**
+
+ADB2Cが発行するIDトークンを取り扱うサンプル
+
+  *please.change.me.common.oidc.verification.*\ **adb2c**
+
+考え方はどちらのパッケージでも同じであるため、本ページでは、cognito パッケージのサンプルをベースとして説明する。
+adb2c パッケージを使用する場合は、適宜対応するコンポーネントに読み替えること。
+
+.. tip::
+
+  本サンプルは、2023年3月時点のユーザープール、ADB2Cの仕様に合わせて実装している。
+  必ず利用するサービスの最新の仕様を確認し、適宜カスタマイズすること。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+本サンプルで取り扱う範囲
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+全体の処理の流れ、および本サンプルで取り扱う範囲について、以下に示す。
+
+.. image:: ./_images/nablarch-example-oidc-scope.drawio.png
+
+本サンプルで取り扱うのはNablarchを使用するバックエンドアプリケーションのみとし、フロントエンドアプリケーション（Web、モバイルアプリ等）で行うIDトークンの取得方法については本サンプルの対象外とする。
+
+--------------
+構成
+--------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+クラス図
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+本サンプルで提供するクラスについて、クラス図を以下に示す。
+
+.. image:: ./_images/nablarch-example-oidc-class.drawio.png
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+各クラスの責務
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+各クラスの責務については、以下のとおりである。
+
+^^^^^^^^^^^^^^^^
+インタフェース
+^^^^^^^^^^^^^^^^
+
+================================== =================================================================================================
+インタフェース名                      概要
+================================== =================================================================================================
+IdTokenVerifier                    IDトークンが有効であるか検証するための機能を提供する
+SignatureAlgorithmProvider         トークンの署名検証に使用するアルゴリズムを提供する
+================================== =================================================================================================
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+クラス（コンポーネント）
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+================================== =================================================================================================
+クラス名                             概要
+================================== =================================================================================================
+CognitoIdTokenVerifier             Cognitoが提供するIDトークンが有効であるか検証するための機能を提供する
+CognitoSignatureAlgorithmProvider  Cognitoが提供するトークンの署名検証に使用するアルゴリズムを提供する
+CognitoRSAKeyProvider              Cognitoが発行するトークンの検証に使用するRSA公開鍵を提供する
+================================== =================================================================================================
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+クラス（業務アクション）
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+================================== =================================================================================================
+クラス名                             概要
+================================== =================================================================================================
+LoginAction                        認証処理の業務アクション
+LoginRequestForm                   認証のリクエスト情報を格納するフォーム
+================================== =================================================================================================
+
+--------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "biz-samples-12--s1",
+  "title": "OIDCのIDトークンを用いた認証サンプル",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/12/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.common.oidc.verification",
+        "OIDCサンプル",
+        "IDトークン認証",
+        "パッケージ構成",
+        "ソースコード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "please.change.me.common.oidc.verification.cognito",
+        "please.change.me.common.oidc.verification.adb2c",
+        "OIDC認証",
+        "IDトークン",
+        "Amazon Cognito",
+        "Azure Active Directory B2C",
+        "RESTfulウェブサービス",
+        "認証処理",
+        "業務アクション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "構成",
+      "hints": [
+        "IdTokenVerifier",
+        "SignatureAlgorithmProvider",
+        "CognitoIdTokenVerifier",
+        "CognitoSignatureAlgorithmProvider",
+        "CognitoRSAKeyProvider",
+        "LoginAction",
+        "LoginRequestForm",
+        "クラス図",
+        "インタフェース",
+        "業務アクション",
+        "署名検証"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/v5-main)\n\n**パッケージ**: `please.change.me.common.oidc.verification`",
+    "s2": "OpenID Connect（OIDC）で発行されるIDトークンを用いて認証を行うサンプル。\n\n**想定構成**:\n- NablarchのRESTfulウェブサービスをバックエンドとして稼働\n- IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信\n- 認証成功時にログインセッションを確立し、認証後はステートフルなセッション管理\n- 認証処理は業務アクションで実装\n\n**対応サービス**:\n- [Amazon Cognito ユーザープール](https://aws.amazon.com/jp/cognito/)\n- [Azure Active Directory B2C](https://learn.microsoft.com/ja-jp/azure/active-directory-b2c/)\n\n**パッケージ構成**:\n- Cognito用: `please.change.me.common.oidc.verification.cognito`\n- ADB2C用: `please.change.me.common.oidc.verification.adb2c`\n\n> **補足**: 本サンプルは2023年3月時点のユーザープール・ADB2Cの仕様に合わせて実装している。必ず利用するサービスの最新の仕様を確認し、適宜カスタマイズすること。",
+    "s3": "**インタフェース**:\n\n| インタフェース名 | 概要 |\n|---|---|\n| `IdTokenVerifier` | IDトークンが有効であるか検証する機能を提供 |\n| `SignatureAlgorithmProvider` | トークンの署名検証に使用するアルゴリズムを提供 |\n\n**クラス（コンポーネント）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `CognitoIdTokenVerifier` | CognitoのIDトークンが有効であるか検証する機能を提供 |\n| `CognitoSignatureAlgorithmProvider` | Cognitoのトークン署名検証に使用するアルゴリズムを提供 |\n| `CognitoRSAKeyProvider` | Cognitoが発行するトークンの検証に使用するRSA公開鍵を提供 |\n\n**クラス（業務アクション）**:\n\n| クラス名 | 概要 |\n|---|---|\n| `LoginAction` | 認証処理の業務アクション |\n| `LoginRequestForm` | 認証のリクエスト情報を格納するフォーム |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

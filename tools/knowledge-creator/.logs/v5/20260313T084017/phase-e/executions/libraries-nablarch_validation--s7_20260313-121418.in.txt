@@ -1,0 +1,546 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-nablarch_validation--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "`LiteralCharsetDef` は s3 の本文中に「`LiteralCharsetDef`で明示的に定義していても不可」として登場する PascalCase クラス名だが、hints に含まれていない。",
+      "source_evidence": "（例え `LiteralCharsetDef` で明示的にサロゲートペアの文字を定義していても許容しない）"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+バリデーションを実行する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バリデーションは、 :java:extdoc:`ValidationUtil <nablarch.core.validation.ValidationUtil>` で提供されるメソッドを呼び出すことで実行できる。
+
+実装例
+  まず、入力値からBeanオブジェクトを生成するため、バリデーション対象のBeanにMapを引数に取るコンストラクタを実装する。
+
+  次にバリデーション対象のBeanにバリデーションを行うためのstaticメソッドを実装する。
+  このメソッドには、 :java:extdoc:`@ValidateFor <nablarch.core.validation.ValidateFor>` アノテーションを設定し、バリデーションを識別するための任意の値を引数で指定する。
+
+  このメソッドに必要となる処理は、  :java:extdoc:`ValidationUtil <nablarch.core.validation.ValidationUtil>` を使用してバリデーションを実行すること。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+      public SampleForm(Map<String, Object> params) {
+          userName = (String) params.get("userName");
+          birthDay = (String) params.get("birthDay");
+          age = (Integer) params.get("age");
+      }
+
+      @Domain(SampleDomain.NAME)
+      @Required
+      public void setUserName(String userName) {
+          this.userName = userName;
+      }
+
+      @Domain(SampleDomain.DATE)
+      public void setBirthday(String birthday) {
+          this.birthday = birthday;
+      }
+
+      @Domain(SampleDomain.AGE)
+      public void setAge(Integer age) {
+          this.age = age;
+      }
+
+      @ValidateFor("validate")
+      public static void validate(ValidationContext<SampleForm> context) {
+        // userNameとbirthdayとageに対してバリデーションを実行
+        ValidationUtil.validate(context, new String[] {"userName", "birthday", "age"});
+      }
+    }
+
+  上記のBeanを使って入力値の `request` をバリデーションするには、以下のように  :java:extdoc:`ValidationUtil <nablarch.core.validation.ValidationUtil>` を使用する。
+  なお、ウェブアプリケーションの場合には `ウェブアプリケーションのユーザ入力値のチェックを行う`_ でより簡易的にバリデーションが行える。
+
+  .. code-block:: java
+
+    // バリデーションの実行
+    // SampleFormを使って入力パラメータのrequestをチェックする。
+    //
+    // 最後の引数にはSampleFormのどのバリデーションメソッドを使用してバリデーションを行うのかを指定する。
+    // この例では、validateを指しているので、SampleFormの@ValidateForアノテーションに
+    // validateと指定されているメソッドを使ってバリデーションが実行される。
+    ValidationContext<SampleForm> validationContext =
+            ValidationUtil.validateAndConvertRequest(SampleForm.class, request, "validate");
+
+    // バリデーションエラーが発生している場合、abortIfInvalidで例外が送出される
+    validationContext.abortIfInvalid();
+
+    // Mapを引数に取るコンストラクタを使用してFormを生成する。
+    // (入力値のrequestが変換されたFormが取得できる)
+    SampleForm form = validationContext.createObject();
+
+.. _nablarch_validation-execute_explicitly:
+
+バリデーションの明示的な実行
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`バリデーションを実行する`_ では、Beanのプロパティ(setter)に設定したアノテーションベースでバリデーションが実行されたが、
+ここではアノテーションを設定するのではなく直接バリデーションを実行する方法を説明する。
+
+原則、 `バリデーションを実行する`_ の方法でバリデーションを行うが、個別にバリデーションを実行する必要がある場合には、
+この方法でバリデーションを行うこと。
+例えば、 :ref:`コード管理のパターン<code-use_pattern>` を使っていて、
+特定の画面だけパターンを変えてバリデーションしたい場合に、個別にバリデーションを実行する。
+
+
+実装例
+  明示的なバリデーションの実行は、Beanクラスの  :java:extdoc:`@ValidateFor <nablarch.core.validation.ValidateFor>` アノテーションが設定されたメソッドから行う。
+  なお、明示的バリデーションの実行時に指定できるアノテーションは、 :java:extdoc:`DirectCallableValidator <nablarch.core.validation.DirectCallableValidator>` を実装しているものに限定される。
+  (コンバータは指定できない。)
+
+  .. code-block:: java
+
+    public class SampleForm {
+      // 属性は省略
+
+      @ValidateFor("validate")
+      public static void validate(ValidationContext<SampleForm> context) {
+
+          ValidationUtil.validate(context, new String[]{"userName", "prefectureCode"});
+
+          // userNameに対して必須チェックを実施
+          ValidationUtil.validate(context, "userName", Required.class);
+
+          // アノテーションのパラメータはMapで指定する
+          Map<String, Object> params = new HashMap<String, Object>();
+          params.put("codeId", "1052");     // コードID
+          params.put("pattern", "A");       // 使用するコードパターン名
+          params.put("messageId", "M4865"); // エラーメッセージのID
+          ValidationUtil.validate(context, "prefectureCode", CodeValue.class, params);
+      }
+    }
+
+  .. important::
+
+    明示的なバリデーションを行うには、対象の項目に対し予めバリデーションを実施しておく必要がある。
+    詳細は :ref:`nablarch_validation-execute` を参照
+
+.. _nablarch_validation-system_char_validator:
+
+文字種バリデーションを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+文字種バリデーションの定義方法は、 :ref:`bean_validation` と同じである。
+詳細な設定方法は、 :ref:`Bean Validationの文字種バリデーションを行う <bean_validation-system_char_validator>` を参照。
+ただし、サロゲートペアを許容する設定は :ref:`bean_validation` と異なるので下記を参照すること。
+
+なお、使用するアノテーションは、 :java:extdoc:`@SystemChar <nablarch.core.validation.validator.unicode.SystemChar>` で、
+:ref:`bean_validation` とは完全修飾名が異なる(アノテーション名は同一)ので注意すること。
+
+サロゲートペアを許容する
+  このバリデーションでは、デフォルトではサロゲートペアを許容しない。
+  （例え `LiteralCharsetDef` で明示的にサロゲートペアの文字を定義していても許容しない）
+
+  サロゲートペアを許容する場合は次のようにコンポーネント設定ファイルに :java:extdoc:`SystemCharValidator#allowSurrogatePair <nablarch.core.validation.validator.unicode.SystemCharValidator.setAllowSurrogatePair(boolean)>` を設定する必要がある。
+
+  .. code-block:: xml
+
+    <component name="systemCharValidator" class="nablarch.core.validation.validator.unicode.SystemCharValidator">
+      <!-- サロゲートペアを許容する -->
+      <property name="allowSurrogatePair" value="true"/>
+  
+      <!-- その他のプロパティは省略 -->
+    </component>
+
+.. _nablarch_validation-correlation_validation:
+
+相関バリデーションを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+複数の項目を使用した相関バリデーションは、Beanクラスの :java:extdoc:`@ValidateFor <nablarch.core.validation.ValidateFor>` アノテーションを設定したメソッドで実装する。
+このメソッドでまずは項目ごとのバリデーションを実施し、エラーが発生しなかった場合に複数項目を使用したバリデーションを実行する。
+
+実装例
+  この例では、mailAddressとconfirmMailAddressを使用した相関バリデーションを行っている。
+
+  相関バリデーションでエラーとなった場合は、ユーザに通知すべきメッセージを示すメッセージIDを明示的に :java:extdoc:`ValidationContext <nablarch.core.validation.ValidationContext>` に追加する。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+      @Domain(SampleDomain.MAIL)
+      @Required
+      public void setMailAddress(String mailAddress) {
+          this.mailAddress = mailAddress;
+      }
+
+      @Domain(SampleDomain.MAIL)
+      @Required
+      public void setConfirmMailAddress(String confirmMailAddress) {
+          this.confirmMailAddress = confirmMailAddress;
+      }
+
+      @ValidateFor("validate")
+      public static void validate(ValidationContext<SampleForm> context) {
+          // mailAddressとconfirmMailAddressのバリデーションを実施
+          ValidationUtil.validate(context, new String[] {"mailAddress", "confirmMailAddress"});
+
+          // エラーが発生した場合は、相関バリデーションを実施しない
+          if (!context.isValid()) {
+              return;
+          }
+
+          // formオブジェクトを生成し、相関バリデーションを実施
+          SampleForm form = context.createObject();
+          if (!Objects.equals(form.mailAddress, form.confirmMailAddress)) {
+              // mailAddressとconfirmMailAddressが一致していない場合エラー
+              context.addMessage("compareMailAddress");
+          }
+      }
+    }
+
+.. _nablarch_validation-nest_bean:
+
+一括登録のようなBeanの配列を入力とする機能でバリデーションを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+一括登録のように同一の情報を複数入力するケースがある。
+このような場合には、バリデーション対象のBeanに対してネストしたBeanを定義することで対応する。
+
+ネストしたBeanのsetterには  :java:extdoc:`@ValidationTarget <nablarch.core.validation.ValidationTarget>` アノテーションを設定し、ネストしたBeanのサイズを指定する。
+要素数が固定(コンパイル時に決まっている)の場合には :java:extdoc:`size <nablarch.core.validation.ValidationTarget.size()>` 属性に指定する。可変の場合には、
+:java:extdoc:`sizeKey <nablarch.core.validation.ValidationTarget.sizeKey()>` 属性にサイズを持つプロパティの名前を設定する。
+
+この例では `AddressForm` の情報を一括で入力できるため、 `SampleForm` は `AddressForm` を配列として保持している。
+また、サイズはコンパイル時には決まっていないため、 :java:extdoc:`sizeKey <nablarch.core.validation.ValidationTarget.sizeKey()>` を使用している。
+
+.. code-block:: java
+
+  public class SampleForm {
+      private AddressForm[] addressForms;
+      // addressFormsのサイズ
+      // 画面のhiddenなどから送信すること
+      private Integer addressSize;
+
+      @ValidationTarget(sizeKey = "addressSize")
+      public void setAddressForms(AddressForm[] addressForms) {
+          this.addressForms = addressForms;
+      }
+
+      @Domain(SampleDomain.SIZE)
+      @Required
+      public void setAddressSize(Integer addressSize) {
+          this.addressSize = addressSize;
+      }
+
+      @ValidateFor("validate")
+      public static void validate(ValidationContext<SampleForm> context) {
+          ValidationUtil.validate(context, new String[] {"addressSize", "addressForms"});
+      }
+  }
+
+  public class AddressForm {
+      // 省略
+  }
+
+.. _nablarch_validation-conditional:
+
+ラジオボタンやリストボックスの選択値に応じてバリデーション項目を変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:java:extdoc:`WebUtil <nablarch.common.web.WebUtil>` クラスを使うことで、ラジオボタンやリストボックスなどの選択値に応じてバリデーション項目を切り替えることが出来る。
+
+この例では、画面から送信された **form.radio** の値が **ptn1** の場合に、 `item1` のみバリデーションを行う。
+**ptn1** 以外の場合には、 `item1` と `item2` のバリデーションを行う。
+
+.. code-block:: java
+
+  public class SampleForm {
+
+      // プロパティは省略
+
+      @ValidateFor("validate")
+      public static void validate(ValidationContext<SampleForm> context) {
+          if (WebUtil.containsPropertyKeyValue(context, "form.radio", "ptn1")) {
+              ValidationUtil.validate(context, new String[] {"item1"});
+          } else {
+              ValidationUtil.validate(context, new String[] {"item1", "item2"});
+          }
+      }
+  }
+
+.. tip::
+
+  この例では、 :java:extdoc:`WebUtil.containsPropertyKeyValue <nablarch.common.web.WebUtil.containsPropertyKeyValue(nablarch.core.validation.ValidationContext-java.lang.String-java.lang.String)>` を使って、送信された値までチェックを行っているが、
+  単純にラジオボタンのチェック有無だけを調べたいのであれば :java:extdoc:`WebUtil.containsPropertyKey <nablarch.common.web.WebUtil.containsPropertyKey(nablarch.core.validation.ValidationContext-java.lang.String)>` を使う。
+
+
+特定の項目に紐づくバリデーションエラーのメッセージを作りたい
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`Bean Validationの特定の項目に紐づくバリデーションエラーのメッセージを作りたい <bean_validation-create_message_for_property>` を参照。
+
+.. _nablarch_validation-property_name:
+
+バリデーションエラー時のメッセージに項目名を埋め込みたい
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+メッセージに項目名を埋め込むには、 :java:extdoc:`@PropertyName <nablarch.core.validation.PropertyName>` アノテーションを使用して、バリデーション対象の項目の項目名を指定する。
+
+実装例
+  メッセージには、項目名を埋め込むためのパターン文字を使用する。
+  項目名は、必ず先頭に指定されるので項目名を埋め込む箇所には、 **{0}** と指定する。
+
+  .. code-block:: properties
+
+    required.message = {0}を入力してください。
+
+  バリデーション対象の項目に、バリデーション用のアノテーションとともに項目名を設定する `@PropertyName` アノテーションを設定する。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+        @Domain(SampleDomain.NAME)
+        @Required
+        @PropertyName("名前")
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        @Domain(SampleDomain.DATE)
+        @PropertyName("誕生日")
+        public void setBirthday(String birthday) {
+            this.birthday = birthday;
+        }
+    }
+
+生成されるメッセージ
+  上記実装で、 `username` プロパティで必須エラーが発生すると、生成されるメッセージは **「名前を入力してください。」** となる。
+
+数値型への型変換
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バリデーション後にBeanクラスの数値型に入力値を変換したい場合、その項目には必ず :java:extdoc:`@Digits <nablarch.core.validation.convertor.Digits>` アノテーションが必要となる。
+※ドメインバリデーションの場合、ドメインEnumに対して設定が必要となる。
+
+なお、数値型へ変換するためのコンバータが :ref:`nablarch_validation-definition_validator_convertor` の手順に従い設定されていることが前提となる。
+
+実装例
+  この例では、setterに指定しているが、ドメインバリデーションを使用したドメインEnumへの指定を推奨する。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+        @PropertyName("年齢")
+        @Digits(integer = 3)
+        public void setAge(Integer age) {
+            this.age = age;
+        }
+    }
+
+.. _nablarch_validation-database:
+
+データベースとの相関バリデーションを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データベースとの相関バリデーションは、業務アクションで行う。
+
+業務アクションで行う理由は、:ref:`Bean Validationのデータベースとの相関バリデーション <bean_validation-database_validation>` を参照。
+
+ウェブアプリケーションのユーザ入力値のチェックを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ウェブアプリケーションのユーザ入力値のチェックは :ref:`inject_form_interceptor` を使用して行う。
+詳細は、 :ref:`inject_form_interceptor` を参照
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-nablarch_validation--s7",
+  "title": "Nablarchバリデーション",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation/nablarch_validation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidateFor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationContext.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/DirectCallableValidator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/SystemChar.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/SystemCharValidator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ValidationTarget.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/WebUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/PropertyName.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/convertor/Digits.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデーションを実行する",
+      "hints": [
+        "ValidationUtil",
+        "ValidationContext",
+        "ValidateFor",
+        "@ValidateFor",
+        "@Domain",
+        "@Required",
+        "validateAndConvertRequest",
+        "abortIfInvalid",
+        "createObject",
+        "バリデーション実行"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バリデーションの明示的な実行",
+      "hints": [
+        "DirectCallableValidator",
+        "ValidationUtil",
+        "@ValidateFor",
+        "明示的バリデーション",
+        "個別バリデーション実行",
+        "CodeValue",
+        "Required"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "文字種バリデーションを行う",
+      "hints": [
+        "SystemChar",
+        "SystemCharValidator",
+        "@SystemChar",
+        "nablarch.core.validation.validator.unicode.SystemChar",
+        "文字種バリデーション",
+        "サロゲートペア",
+        "allowSurrogatePair"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "相関バリデーションを行う",
+      "hints": [
+        "ValidationContext",
+        "@ValidateFor",
+        "相関バリデーション",
+        "addMessage",
+        "isValid",
+        "createObject",
+        "複数項目バリデーション"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "一括登録のようなBeanの配列を入力とする機能でバリデーションを行う",
+      "hints": [
+        "ValidationTarget",
+        "@ValidationTarget",
+        "sizeKey",
+        "size",
+        "一括登録",
+        "ネストBean",
+        "配列バリデーション"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ラジオボタンやリストボックスの選択値に応じてバリデーション項目を変更する",
+      "hints": [
+        "WebUtil",
+        "containsPropertyKeyValue",
+        "containsPropertyKey",
+        "ラジオボタン",
+        "リストボックス",
+        "条件付きバリデーション",
+        "nablarch.common.web.WebUtil"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "特定の項目に紐づくバリデーションエラーのメッセージを作りたい",
+      "hints": [
+        "バリデーションエラーメッセージ",
+        "項目紐づきメッセージ",
+        "bean_validation-create_message_for_property"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "バリデーションエラー時のメッセージに項目名を埋め込みたい",
+      "hints": [
+        "@PropertyName",
+        "PropertyName",
+        "nablarch.core.validation.PropertyName",
+        "メッセージ項目名埋め込み",
+        "{0}",
+        "required.message"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "数値型への型変換",
+      "hints": [
+        "@Digits",
+        "Digits",
+        "nablarch.core.validation.convertor.Digits",
+        "数値型変換",
+        "integer属性",
+        "ドメインバリデーション"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "データベースとの相関バリデーションを行う",
+      "hints": [
+        "データベース相関バリデーション",
+        "業務アクション",
+        "bean_validation-database_validation"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "ウェブアプリケーションのユーザ入力値のチェックを行う",
+      "hints": [
+        "inject_form_interceptor",
+        "ウェブアプリケーション",
+        "ユーザ入力値チェック"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.core.validation.ValidationUtil`, `nablarch.core.validation.ValidationContext`\n**アノテーション**: `@ValidateFor`, `@Domain`, `@Required`\n\nバリデーション実行手順:\n1. バリデーション対象BeanにMapを引数に取るコンストラクタを実装する\n2. Beanのstaticメソッドに`@ValidateFor`アノテーションを設定し、バリデーション識別子（任意の文字列）を指定する\n3. そのメソッド内で`ValidationUtil.validate()`を呼び出す\n\n```java\npublic class SampleForm {\n  public SampleForm(Map<String, Object> params) {\n    userName = (String) params.get(\"userName\");\n    birthDay = (String) params.get(\"birthDay\");\n    age = (Integer) params.get(\"age\");\n  }\n\n  @Domain(SampleDomain.NAME)\n  @Required\n  public void setUserName(String userName) { this.userName = userName; }\n\n  @ValidateFor(\"validate\")\n  public static void validate(ValidationContext<SampleForm> context) {\n    ValidationUtil.validate(context, new String[] {\"userName\", \"birthday\", \"age\"});\n  }\n}\n\n// バリデーション実行\nValidationContext<SampleForm> validationContext =\n    ValidationUtil.validateAndConvertRequest(SampleForm.class, request, \"validate\");\nvalidationContext.abortIfInvalid();\nSampleForm form = validationContext.createObject();\n```\n\n`validateAndConvertRequest`の第3引数でBeanの`@ValidateFor`に指定した識別子を指定し、対応するstaticメソッドでバリデーションが実行される。ウェブアプリケーションの場合は :ref:`inject_form_interceptor` でより簡易的にバリデーションができる。",
+    "s2": "**クラス**: `nablarch.core.validation.DirectCallableValidator`\n**アノテーション**: `@ValidateFor`\n\nアノテーションを使わず、`ValidationUtil` を直接呼び出してバリデーションを実行する方法。原則は通常のアノテーションベースのバリデーションを使用し、個別にバリデーションを実行する必要がある場合（例：特定の画面だけコードパターンを変えてバリデーション）に限りこの方法を使う。\n\n> **重要**: 明示的なバリデーションを実施する前に、対象項目のバリデーションを実施済みである必要がある。詳細は :ref:`nablarch_validation-execute` を参照。\n\n指定できるアノテーションは`DirectCallableValidator`を実装しているものに限定される（コンバータは指定不可）。\n\n```java\n@ValidateFor(\"validate\")\npublic static void validate(ValidationContext<SampleForm> context) {\n  ValidationUtil.validate(context, new String[]{\"userName\", \"prefectureCode\"});\n\n  // 個別バリデーション（アノテーションクラスを直接指定）\n  ValidationUtil.validate(context, \"userName\", Required.class);\n\n  // パラメータ付き個別バリデーション\n  Map<String, Object> params = new HashMap<String, Object>();\n  params.put(\"codeId\", \"1052\");\n  params.put(\"pattern\", \"A\");\n  params.put(\"messageId\", \"M4865\");\n  ValidationUtil.validate(context, \"prefectureCode\", CodeValue.class, params);\n}\n```",
+    "s3": "**アノテーション**: `@SystemChar` (`nablarch.core.validation.validator.unicode.SystemChar`)\n**クラス**: `nablarch.core.validation.validator.unicode.SystemCharValidator`\n\n定義方法は :ref:`bean_validation` と同じ（詳細は :ref:`bean_validation-system_char_validator` を参照）。\n\n> **重要**: `@SystemChar`の完全修飾名は :ref:`bean_validation` のものと異なるので注意（アノテーション名は同一）。\n\nサロゲートペアはデフォルトで許容しない（`LiteralCharsetDef`で明示的に定義していても不可）。サロゲートペアを許容する場合は`SystemCharValidator`の`allowSurrogatePair`プロパティを`true`に設定する。\n\n```xml\n<component name=\"systemCharValidator\" class=\"nablarch.core.validation.validator.unicode.SystemCharValidator\">\n  <property name=\"allowSurrogatePair\" value=\"true\"/>\n</component>\n```",
+    "s4": "**クラス**: `nablarch.core.validation.ValidationContext`\n**アノテーション**: `@ValidateFor`\n\n相関バリデーションは`@ValidateFor`アノテーションを設定したstaticメソッドで実装する。\n\n実装パターン:\n1. `ValidationUtil.validate()`で各項目のバリデーションを実施\n2. `context.isValid()`でエラー確認し、エラーがある場合は相関バリデーションをスキップ\n3. `context.createObject()`でFormを生成して複数項目を検証\n4. 相関バリデーションエラーの場合は`context.addMessage(\"メッセージID\")`でメッセージを追加\n\n```java\n@ValidateFor(\"validate\")\npublic static void validate(ValidationContext<SampleForm> context) {\n  ValidationUtil.validate(context, new String[] {\"mailAddress\", \"confirmMailAddress\"});\n  if (!context.isValid()) {\n    return;\n  }\n  SampleForm form = context.createObject();\n  if (!Objects.equals(form.mailAddress, form.confirmMailAddress)) {\n    context.addMessage(\"compareMailAddress\");\n  }\n}\n```",
+    "s5": "**アノテーション**: `@ValidationTarget` (`nablarch.core.validation.ValidationTarget`)\n\n同一情報の複数入力（一括登録等）では、バリデーション対象BeanにネストしたBeanを定義して対応する。ネストしたBeanのsetterに`@ValidationTarget`アノテーションを設定してネストBeanのサイズを指定する。\n\n| 属性 | 用途 |\n|---|---|\n| `size` | 要素数固定（コンパイル時に決定）の場合 |\n| `sizeKey` | 要素数可変（実行時に決定）の場合。サイズを保持するプロパティ名を指定 |\n\n```java\npublic class SampleForm {\n  private AddressForm[] addressForms;\n  private Integer addressSize;  // hiddenなどから送信\n\n  @ValidationTarget(sizeKey = \"addressSize\")\n  public void setAddressForms(AddressForm[] addressForms) { this.addressForms = addressForms; }\n\n  @Domain(SampleDomain.SIZE)\n  @Required\n  public void setAddressSize(Integer addressSize) { this.addressSize = addressSize; }\n\n  @ValidateFor(\"validate\")\n  public static void validate(ValidationContext<SampleForm> context) {\n    ValidationUtil.validate(context, new String[] {\"addressSize\", \"addressForms\"});\n  }\n}\n```",
+    "s6": "**クラス**: `nablarch.common.web.WebUtil`\n\n`WebUtil` を使うことで、ラジオボタンやリストボックスの選択値に応じてバリデーション項目を切り替えられる。\n\n| メソッド | 用途 |\n|---|---|\n| `containsPropertyKeyValue(context, key, value)` | 送信キーと値の両方をチェック |\n| `containsPropertyKey(context, key)` | キーの存在のみチェック（ラジオボタンのチェック有無のみ確認する場合） |\n\n```java\n@ValidateFor(\"validate\")\npublic static void validate(ValidationContext<SampleForm> context) {\n  if (WebUtil.containsPropertyKeyValue(context, \"form.radio\", \"ptn1\")) {\n    ValidationUtil.validate(context, new String[] {\"item1\"});\n  } else {\n    ValidationUtil.validate(context, new String[] {\"item1\", \"item2\"});\n  }\n}\n```",
+    "s7": ":ref:`Bean Validationの特定の項目に紐づくバリデーションエラーのメッセージを作りたい <bean_validation-create_message_for_property>` を参照。",
+    "s8": "**アノテーション**: `@PropertyName` (`nablarch.core.validation.PropertyName`)\n\nバリデーション対象項目のsetterに`@PropertyName`アノテーションで項目名を設定する。メッセージには項目名を埋め込む箇所に`{0}`を指定する（項目名は必ず先頭に配置されるため`{0}`を使用）。\n\n```properties\nrequired.message = {0}を入力してください。\n```\n\n```java\npublic class SampleForm {\n  @Domain(SampleDomain.NAME)\n  @Required\n  @PropertyName(\"名前\")\n  public void setUserName(String userName) { this.userName = userName; }\n\n  @Domain(SampleDomain.DATE)\n  @PropertyName(\"誕生日\")\n  public void setBirthday(String birthday) { this.birthday = birthday; }\n}\n```\n\n`userName`プロパティで必須エラーが発生すると、生成されるメッセージは「名前を入力してください。」となる。",
+    "s9": "**アノテーション**: `@Digits` (`nablarch.core.validation.convertor.Digits`)\n\nバリデーション後にBeanの数値型プロパティに変換する場合、その項目に`@Digits`アノテーションが必須。ドメインバリデーションの場合はドメインEnumに`@Digits`を設定すること（推奨）。数値型変換コンバータが :ref:`nablarch_validation-definition_validator_convertor` の手順で設定済みであることが前提。\n\n```java\n@PropertyName(\"年齢\")\n@Digits(integer = 3)\npublic void setAge(Integer age) { this.age = age; }\n```",
+    "s10": "データベースとの相関バリデーションは業務アクションで実施する。理由は :ref:`bean_validation-database_validation` を参照。",
+    "s11": "ウェブアプリケーションのユーザ入力値のチェックは :ref:`inject_form_interceptor` を使用して行う。詳細は :ref:`inject_form_interceptor` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,222 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/batch/jsr352/feature_details/database_reader.rst`
+- Format: `rst`
+
+```
+データベースを入力とするChunkステップ
+======================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+  
+データベースから処理対象データを抽出する場合は、JSR352で提供されているリーダではなく
+本機能で提供する :java:extdoc:`BaseDatabaseItemReader <nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader>` を実装すること。
+
+:java:extdoc:`BaseDatabaseItemReader <nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader>` を実装することで、
+リーダ専用のデータベース接続を使用してデータを抽出できる。
+これにより、トランザクション制御時にカーソルを自動的にクローズするデータベースの場合でも、
+データベースを入力とするChunkステップを実現できる。
+
+以下に実装例を示す。
+
+.. code-block:: java
+
+  @Dependent
+  @Named
+  public class EmployeeSearchReader extends BaseDatabaseItemReader {
+  
+    /** データベースからの取得結果(リソース解放用) */
+    private DeferredEntityList<EmployeeForm> list;
+
+    /** データベースからの取得結果を保持するイテレータ */
+    private Iterator<EmployeeForm> iterator;
+
+    /** 進捗管理Bean */
+    private final ProgressManager progressManager;
+
+    /**
+     * コンストラクタ。
+     * @param progressManager 進捗管理Bean
+     */
+    @Inject
+    public EmployeeSearchReader(ProgressManager progressManager) {
+      this.progressManager = progressManager;
+    }
+  
+    /**
+     * BaseDatabaseItemReaderが提供するdoOpenを実装して、データベースから処理対象データを抽出する。
+     * 大量データを取得する場合には、ヒープを圧迫しないよう遅延ロードを行うこと
+     */
+    @Override
+    public void doOpen(Serializable checkpoint) throws Exception {
+      progressManager.setInputCount(
+          UniversalDao.countBySqlFile(EmployeeForm.class, "SELECT_EMPLOYEE"));
+
+      list = (DeferredEntityList<EmployeeForm>) UniversalDao.defer()
+              .findAllBySqlFile(EmployeeForm.class, "SELECT_EMPLOYEE");
+      iterator = list.iterator();
+    }
+
+    /**
+     * readItemでは、次の1レコードを返す。
+     * なお、データが存在しない場合や最後まで処理した場合はnullを返す。
+     */
+    @Override
+    public Object readItem() {
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
+    }
+
+    /**
+     * リソースの解放が必要な場合は、doCloseを実装する。
+     */
+    @Override
+    public void doClose() throws Exception {
+        list.close();
+    }
+  }
+
+```
+
+## Knowledge File
+
+- ID: `jakarta-batch-database_reader`
+
+```json
+{
+  "id": "jakarta-batch-database_reader",
+  "title": "データベースを入力とするChunkステップ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/feature_details/database_reader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/batch/ee/chunk/BaseDatabaseItemReader.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースを入力とするChunkステップ",
+      "hints": [
+        "BaseDatabaseItemReader",
+        "nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader",
+        "DeferredEntityList",
+        "UniversalDao",
+        "ProgressManager",
+        "doOpen",
+        "readItem",
+        "doClose",
+        "データベース入力",
+        "Chunkステップ",
+        "遅延ロード",
+        "リーダ専用DB接続",
+        "@Dependent",
+        "@Named",
+        "@Inject"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データベースから処理対象データを抽出する場合、JSR352提供のリーダではなく :java:extdoc:`BaseDatabaseItemReader <nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader>` を実装すること。\n\n:java:extdoc:`BaseDatabaseItemReader <nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader>` を実装することで、リーダ専用のDB接続を使用してデータ抽出が可能。トランザクション制御時にカーソルが自動クローズされるDBでも動作する。\n\n**クラス**: `nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader`\n\n実装パターン:\n- `doOpen(Serializable checkpoint)`: 処理対象データを取得する。大量データの場合は遅延ロード（`UniversalDao.defer().findAllBySqlFile()`）を使用してヒープ圧迫を避けること\n- `readItem()`: 次の1レコードを返す。データなし/最後まで処理済みの場合は `null` を返す\n- `doClose()`: リソース解放が必要な場合に実装する\n\n```java\n@Dependent\n@Named\npublic class EmployeeSearchReader extends BaseDatabaseItemReader {\n  private DeferredEntityList<EmployeeForm> list;\n  private Iterator<EmployeeForm> iterator;\n  private final ProgressManager progressManager;\n\n  @Inject\n  public EmployeeSearchReader(ProgressManager progressManager) {\n    this.progressManager = progressManager;\n  }\n\n  @Override\n  public void doOpen(Serializable checkpoint) throws Exception {\n    progressManager.setInputCount(\n        UniversalDao.countBySqlFile(EmployeeForm.class, \"SELECT_EMPLOYEE\"));\n    list = (DeferredEntityList<EmployeeForm>) UniversalDao.defer()\n            .findAllBySqlFile(EmployeeForm.class, \"SELECT_EMPLOYEE\");\n    iterator = list.iterator();\n  }\n\n  @Override\n  public Object readItem() {\n    if (iterator.hasNext()) {\n      return iterator.next();\n    }\n    return null;\n  }\n\n  @Override\n  public void doClose() throws Exception {\n    list.close();\n  }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

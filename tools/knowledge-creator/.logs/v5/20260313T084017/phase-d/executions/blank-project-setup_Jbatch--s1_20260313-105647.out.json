@@ -1,0 +1,34 @@
+{
+  "file_id": "blank-project-setup_Jbatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Expected console output for successful `mvn test` execution is omitted. The source shows the exact success indicator output including 'Tests run: 1, Failures: 0, Errors: 0, Skipped: 0' and 'BUILD SUCCESS'. This is useful for an AI to tell users what successful test output looks like.",
+      "source_evidence": "Source section '自動テスト': 実行に成功すると、以下のようなログがコンソールに出力される。[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 / [INFO] BUILD SUCCESS"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Expected CSV output content for the chunk batch application is omitted. The source provides the exact 10-row data that should appear in testdata/output/outputdata.csv (ユーザID 1-10 with names 名部楽 一郎〜十郎). This is concrete verification data for confirming correct execution.",
+      "source_evidence": "Source section 'chunk方式のバッチアプリケーションの起動': また、testdata/output/outputdata.csvに以下のデータが出力される。ユーザID,氏名 / 1,名部楽 一郎 / ... / 10,名部楽 十郎"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[0] (s1)",
+      "description": "The index title for s1 is 'mvnコマンドの実行' but the section content begins with the full project overview (生成するプロジェクトの概要), then covers blank project creation and mvn command execution. The title does not reflect the full content scope of the section.",
+      "source_evidence": "s1 content starts with '## ブランクプロジェクト概要' covering the project overview table, then covers the mvn command. Source has separate headings: '生成するプロジェクトの概要' and 'mvnコマンドの実行'."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3)",
+      "description": "s3 hints are missing 'progress.log', which is the explicit output file named in the source for all three batch application runs (batchlet, ETL, chunk). Users may ask where batch execution output is written.",
+      "source_evidence": "Source repeatedly states: '実行に成功すると、以下のようなログが ./progress.log に出力される' for batchlet, ETL, and chunk batch jobs."
+    }
+  ]
+}

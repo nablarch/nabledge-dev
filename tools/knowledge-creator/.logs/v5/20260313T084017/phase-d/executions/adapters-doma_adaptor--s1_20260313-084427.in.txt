@@ -1,0 +1,681 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/adaptors/doma_adaptor.rst`
+- Format: `rst`
+
+```
+.. _doma_adaptor:
+
+Domaアダプタ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+`Doma2(外部サイト、英語) <https://doma.readthedocs.io/en/stable/>`_ を使用したデータベースアクセスを行うためのアダプタを提供する。
+
+データベースアクセスにDomaを使用することで以下のメリットが得られる。
+
+* Nablarchと同じように、実行時に動的にSQL文を構築できる。
+* 2waySQLなので、NablarchのようにSQL文を書き換える必要がなく、SQLツール等でそのまま実行できる。
+
+また、本アダプタを使用することで、 :java:extdoc:`Transactional<nablarch.integration.doma.Transactional>` インターセプタで
+指定したアクションのみトランザクション管理対象にできるため、
+不要なトランザクション制御処理を削減でき、パフォーマンスの向上が期待できる。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <!-- Domaアダプタ -->
+  <dependency>
+    <groupId>com.nablarch.integration</groupId>
+    <artifactId>nablarch-doma-adaptor</artifactId>
+  </dependency>
+  
+.. tip::
+
+  Domaのバージョン2.16.0を使用してテストを行っている。
+  バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
+
+Domaアダプタを使用するための設定を行う
+--------------------------------------------------
+本アダプタを使用するためには、プロジェクトで使用するRDBMSに合わせてDomaのダイアレクトやデータソースをコンポーネント設定ファイルに定義する必要がある。
+
+H2を使用する場合の設定例を以下に示す。
+
+ポイント
+ * 定義するダイアレクトは ``org.seasar.doma.jdbc.dialect.Dialect`` の実装クラスとすること
+ * ダイアレクトのコンポーネント名は ``domaDialect`` とすること
+ * データソースのコンポーネント名は ``dataSource`` とすること
+
+.. code-block:: xml
+
+  <component name="domaDialect" class="org.seasar.doma.jdbc.dialect.H2Dialect"  />
+  <component name="dataSource" class="org.h2.jdbcx.JdbcDataSource">
+    <!-- プロパティは省略 -->
+  </component>
+
+Domaを使用してデータベースにアクセスする
+--------------------------------------------------
+Domaを使用したデータベースアクセスを行うための手順を以下に示す。
+
+Daoインタフェースを作成する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+データベースアクセスを行うためのDao(Data Access Object)インタフェースを作成する。
+
+ポイント
+ * Daoアノテーションのconfig属性には :java:extdoc:`DomaConfig<nablarch.integration.doma.DomaConfig>` を指定する
+
+.. code-block:: java
+
+  @Dao(config = DomaConfig.class)
+  public interface ProjectDao {
+      // 省略
+  }
+
+データベースアクセス処理を実装する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+業務アクションのメソッドにデータベースアクセス処理を実装する。
+
+ポイント
+ * 業務アクションメソッドをトランザクション管理対象とするため、
+   :java:extdoc:`Transactional<nablarch.integration.doma.Transactional>` インターセプタを設定する
+ * :java:extdoc:`DomaDaoRepository#get<nablarch.integration.doma.DomaDaoRepository.get(java.lang.Class)>` を使用してDaoの実装クラスをルックアップする
+
+  .. tip::
+
+    Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。
+    そのため、本アダプタではDaoの実装クラスをルックアップする機能として :java:extdoc:`DomaDaoRepository<nablarch.integration.doma.DomaDaoRepository>` を提供している。
+
+.. code-block:: java
+
+    @Transactional
+    public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
+        final Project project = SessionUtil.delete(context, "project");
+
+        DomaDaoRepository.get(ProjectDao.class).insert(project);
+
+        return new HttpResponse("redirect://complete");
+    }
+
+別トランザクションで実行する
+--------------------------------------------------
+:java:extdoc:`Transactional<nablarch.integration.doma.Transactional>` インターセプタによって開始されたトランザクションではなく、
+別のトランザクションを使用してデータベースアクセスを行いたい場合がある。
+
+その場合は、 :java:extdoc:`DomaConfig#getTransactionManager <nablarch.integration.doma.DomaConfig.getTransactionManager()>` で取得した
+`TransactionManager` を使用して別トランザクションで制御する。
+
+実装例を以下に示す。
+
+.. code-block:: java
+
+  DomaConfig.singleton()
+          .getTransactionManager()
+          .requiresNew(() ->
+                  DomaDaoRepository.get(ProjectDao.class).insert(project);
+
+
+JSR352に準拠したバッチアプリケーションで使用する
+----------------------------------------------------------------
+JSR352に準拠したバッチアプリケーションでDomaを使用するために、
+本アダプタでは以下のリスナーを提供している。
+
+* :java:extdoc:`DomaTransactionStepListener<nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener>`
+* :java:extdoc:`DomaTransactionItemWriteListener<nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener>`
+
+これらのリスナーをリスナーリストに定義することで、
+JSR352に準拠したバッチアプリケーションでもDomaを使用したデータベースアクセスを行うことができる。
+
+設定例を以下に示す。
+
+.. code-block:: xml
+
+  <list name="stepListeners">
+    <!-- その他のリスナーは省略 -->
+    <component class="nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener" />
+  </list>
+
+  <list name="itemWriteListeners">
+    <!-- その他のリスナーは省略 -->
+    <component class="nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener" />
+  </list>
+
+.. important::
+
+  :ref:`Chunkステップ <jsr352-batch_type_chunk>` のItemWriterでデータベースに対してバッチ更新(バッチinsertやバッチupdateなど)する場合、バッチサイズの指定を明示的に行う必要がある。
+  ※Chunkステップのitem-countのサイズがバッチサイズとなるわけではないので注意すること
+
+  これを行わなかった場合、Domaのデフォルト値が適用されるため、バッチ更新を使用してもパフォーマンスが向上しない可能性がある。
+
+  実装例
+    例えば、1000件ごとにバッチinsertを行う場合には、Daoのメソッドを以下のように実装する。
+
+    .. code-block:: java
+
+      @BatchInsert(batchSize = 1000)
+      int[] batchInsert(List<Bonus> bonuses);
+
+
+JSR352に準拠したバッチアプリケーションで遅延ロードを行う
+---------------------------------------------------------
+JSR352に準拠したバッチアプリケーションで大量データの読み込みを行う際に、遅延ロードを使用したい場合がある。
+
+その場合は、Daoアノテーションのconfig属性に
+:java:extdoc:`DomaTransactionNotSupportedConfig<nablarch.integration.doma.DomaTransactionNotSupportedConfig>` を指定する。
+
+.. important::
+
+  config属性に :java:extdoc:`DomaConfig<nablarch.integration.doma.DomaConfig>` を使用すると、
+  :java:extdoc:`DomaTransactionItemWriteListener<nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener>`
+  によるトランザクションのコミットでストリームがクローズされるため、後続のレコードが読み込めなくなってしまう。
+
+実装例を以下に示す。
+
+Daoインタフェース
+  ポイント
+    * Daoアノテーションのconfig属性には、
+      :java:extdoc:`DomaTransactionNotSupportedConfig<nablarch.integration.doma.DomaTransactionNotSupportedConfig>` を指定する。
+    * 検索結果は :java:extdoc:`Stream<java.util.stream.Stream>` で取得する。
+
+  .. code-block:: java
+
+    @Dao(config = DomaTransactionNotSupportedConfig.class)
+    public interface ProjectDao {
+
+        @Select(strategy = SelectType.RETURN)
+        Stream<Project> search();
+    }
+
+ItemReaderクラス
+  ポイント
+     * openメソッドで検索結果のストリームを取得する。
+     * リソースの解放漏れを防ぐため、closeメソッドで必ずストリームを閉じる。
+
+  .. code-block:: java
+
+    @Dependent
+    @Named
+    public class ProjectReader extends AbstractItemReader {
+
+        private Iterator<Project> iterator;
+
+        private Stream<Project> stream;
+
+        @Override
+        public void open(Serializable checkpoint) throws Exception {
+            final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class);
+            stream = dao.search();
+            iterator = stream.iterator();
+        }
+
+        @Override
+        public Object readItem() {
+            if (iterator.hasNext()) {
+                return iterator.next();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            stream.close();
+        }
+    }
+
+ETLで使用する
+--------------------------------------------------
+ETL使用時に、プロジェクトで追加したステップの中でDomaを使用したい場合がある。
+その場合は、ジョブ名およびステップ名を指定したリスナーリストを定義して対応する。
+
+設定例を以下に示す。
+
+ジョブ定義ファイル
+  .. code-block:: xml
+
+    <job id="sampleJob" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+      <step id="sampleStep">
+        <listeners>
+          <listener ref="nablarchStepListenerExecutor" />
+          <listener ref="nablarchItemWriteListenerExecutor" />
+        </listeners>
+        <chunk>
+          <reader ref="sampleItemReader" />
+          <writer ref="sampleItemWriter" />
+        </chunk>
+      </step>
+    </job>
+
+コンポーネント設定ファイル
+  .. code-block:: xml
+
+    <list name="sampleJob.sampleStep.stepListeners">
+      <!-- その他のリスナーは省略 -->
+      <component
+          class="nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener" />
+    </list>
+
+    <list name="sampleJob.sampleStep.itemWriteListeners">
+      <!-- その他のリスナーは省略 -->
+      <component
+          class="nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener" />
+    </list>
+
+複数のデータベースにアクセスする
+--------------------------------------------------
+複数のデータベースにアクセスする必要がある場合は、新しくConfigクラスを作成し、
+別のデータベースへのアクセスはそのConfigクラスを使用して行うように実装する。
+
+実装例を以下に示す。
+
+コンポーネント設定ファイル
+  .. code-block:: xml
+
+    <component name="customDomaDialect" class="org.seasar.doma.jdbc.dialect.OracleDialect"  />
+    <component name="customDataSource" class="oracle.jdbc.pool.OracleDataSource">
+      <!-- プロパティは省略 -->
+    </component>
+
+Configクラス
+  .. code-block:: java
+
+    @SingletonConfig
+    public final class CustomConfig implements Config {
+
+        private CustomConfig() {
+            dialect = SystemRepository.get("customDomaDialect");
+            localTransactionDataSource =
+                    new LocalTransactionDataSource(SystemRepository.get("customDataSource"));
+            localTransaction = localTransactionDataSource.getLocalTransaction(getJdbcLogger());
+            localTransactionManager = new LocalTransactionManager(localTransaction);
+        }
+
+        // その他のフィールド、メソッドはDomaConfigを参考に実装すること
+    }
+
+Daoインタフェース
+  .. code-block:: java
+
+    @Dao(config = CustomConfig.class)
+    public interface ProjectDao {
+        // 省略
+    }
+
+
+業務アクションクラス
+  .. code-block:: java
+
+    public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
+        final Project project = SessionUtil.delete(context, "project");
+
+        CustomConfig.singleton()
+                .getTransactionManager()
+                .requiresNew(() ->
+                        DomaDaoRepository.get(ProjectDao.class).insert(project);
+
+        return new HttpResponse("redirect://complete");
+    }
+    
+DomaとNablarchのデータベースアクセスを併用する
+--------------------------------------------------
+データベースアクセスにDomaを採用した場合でも、 :ref:`Nablarch提供のデータベースアクセス <database_management>` を使用したい場合がある。
+例えば、 :ref:`メール送信ライブラリ <mail>` を使用する場合が該当する。(:ref:`メール送信要求 <mail-request>` で :ref:`database` を使用している。)
+
+この問題を解決するため、Nablarchのデータベースアクセス処理が、Domaと同じトランザクション(データベース接続)を使用できる機能を提供している。
+
+利用手順
+  コンポーネント設定ファイルに以下の定義を追加する。
+  これにより、Nablarchのデータベースアクセスが、自動的にDomaのトランザクション配下で実行されるようにある。
+  
+  * コンポーネント設定ファイルに :java:extdoc:`ConnectionFactoryFromDomaConnection <nablarch.integration.doma.ConnectionFactoryFromDomaConnection>` を定義する。
+    コンポーネント名は、 ``connectionFactoryFromDoma`` とする。
+  * JSR352用のDomaのトランザクションを制御するリスナーに、ConnectionFactoryFromDomaConnectionを設定する。
+
+  .. code-block:: xml
+
+    <!-- コンポーネント名は、connectionFactoryFromDomaとする -->
+    <component name="connectionFactoryFromDoma"
+        class="nablarch.integration.doma.ConnectionFactoryFromDomaConnection">
+        
+      <!-- プロパティに対する設定は省略 -->
+      
+    </component>
+    
+    <!-- 
+    JSR352に準拠したバッチアプリケーションで使用する場合は、Domaのトランザクションを制御するリスナーに
+    上記で定義したconnectionFactoryFromDomaを設定する。
+     -->
+    <component class="nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener">
+      <property name="connectionFactory" ref="connectionFactoryFromDoma" />
+    </component>
+
+    <component class="nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener">
+      <property name="connectionFactory" ref="connectionFactoryFromDoma" />
+    </component>
+
+ロガーを切り替える
+--------------------------------------------------
+本アダプタではDomaが使うロガーの実装として、Nablarchのロガーを使用する :java:extdoc:`NablarchJdbcLogger<nablarch.integration.doma.NablarchJdbcLogger>` を提供している。
+デフォルトでは :java:extdoc:`NablarchJdbcLogger<nablarch.integration.doma.NablarchJdbcLogger>` が使用されるが、他のものに差し替える場合はコンポーネント定義ファイルに設定する必要がある。
+
+``org.seasar.doma.jdbc.UtilLoggingJdbcLogger`` を使用する場合の設定例を以下に示す。
+
+ポイント
+ * 定義するロガーは ``org.seasar.doma.jdbc.JdbcLogger`` の実装クラスとすること
+ * ロガーのコンポーネント名は ``domaJdbcLogger`` とすること
+
+.. code-block:: xml
+
+  <component name="domaJdbcLogger" class="org.seasar.doma.jdbc.UtilLoggingJdbcLogger"  />
+
+java.sql.Statementに関する設定を行う
+--------------------------------------------------
+フェッチサイズやクエリタイムアウトなど、 ``java.sql.Statement`` に関する項目をプロジェクト全体に設定したい場合がある。
+
+その場合はコンポーネント設定ファイルに :java:extdoc:`DomaStatementProperties<nablarch.integration.doma.DomaStatementProperties>` を設定する。
+
+設定できる項目には下記のものがある。
+
+* 最大行数の制限値
+* フェッチサイズ
+* クエリタイムアウト（秒）
+* バッチサイズ
+
+設定例を以下に示す。
+
+ポイント
+ * コンポーネント名は ``domaStatementProperties`` とすること
+
+.. code-block:: xml
+
+  <component class="nablarch.integration.doma.DomaStatementProperties" name="domaStatementProperties">
+    <!-- 最大行数の制限値を1000行に設定する -->
+    <property name="maxRows" value="1000" />
+    <!-- フェッチサイズを200行に設定する -->
+    <property name="fetchSize" value="200" />
+    <!-- クエリタイムアウトを30秒に設定する -->
+    <property name="queryTimeout" value="30" />
+    <!-- バッチサイズを400に設定する -->
+    <property name="batchSize" value="400" />
+  </component>
+```
+
+## Knowledge File
+
+- ID: `adapters-doma_adaptor--s1`
+
+```json
+{
+  "id": "adapters-doma_adaptor--s1",
+  "title": "Domaアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/doma_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/Transactional.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaDaoRepository.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/batch/ee/listener/DomaTransactionStepListener.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/batch/ee/listener/DomaTransactionItemWriteListener.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaTransactionNotSupportedConfig.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/ConnectionFactoryFromDomaConnection.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/NablarchJdbcLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/doma/DomaStatementProperties.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-doma-adaptor",
+        "Doma2",
+        "DomaAdapter",
+        "Transactional",
+        "データベースアクセス",
+        "トランザクション管理",
+        "2waySQL"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Domaアダプタを使用するための設定を行う",
+      "hints": [
+        "domaDialect",
+        "dataSource",
+        "H2Dialect",
+        "Dialect",
+        "コンポーネント設定",
+        "データソース設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Domaを使用してデータベースにアクセスする",
+      "hints": [
+        "DomaConfig",
+        "DomaDaoRepository",
+        "Transactional",
+        "@Dao",
+        "Daoインタフェース",
+        "DomaDaoRepository#get",
+        "データベースアクセス実装"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "別トランザクションで実行する",
+      "hints": [
+        "DomaConfig",
+        "getTransactionManager",
+        "TransactionManager",
+        "requiresNew",
+        "別トランザクション"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "JSR352に準拠したバッチアプリケーションで使用する",
+      "hints": [
+        "DomaTransactionStepListener",
+        "DomaTransactionItemWriteListener",
+        "stepListeners",
+        "itemWriteListeners",
+        "@BatchInsert",
+        "batchSize",
+        "JSR352",
+        "バッチ更新"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "JSR352に準拠したバッチアプリケーションで遅延ロードを行う",
+      "hints": [
+        "DomaTransactionNotSupportedConfig",
+        "遅延ロード",
+        "Stream",
+        "AbstractItemReader",
+        "大量データ読み込み",
+        "DomaTransactionItemWriteListener"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ETLで使用する",
+      "hints": [
+        "ETL",
+        "stepListeners",
+        "itemWriteListeners",
+        "ジョブ定義",
+        "DomaTransactionStepListener",
+        "DomaTransactionItemWriteListener",
+        "ジョブ名",
+        "ステップ名"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "複数のデータベースにアクセスする",
+      "hints": [
+        "CustomConfig",
+        "SingletonConfig",
+        "Config",
+        "複数データベース",
+        "OracleDialect",
+        "SystemRepository",
+        "LocalTransactionDataSource"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "DomaとNablarchのデータベースアクセスを併用する",
+      "hints": [
+        "ConnectionFactoryFromDomaConnection",
+        "connectionFactoryFromDoma",
+        "connectionFactory",
+        "Nablarchデータベースアクセス",
+        "併用",
+        "DomaTransactionItemWriteListener",
+        "DomaTransactionStepListener"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "ロガーを切り替える",
+      "hints": [
+        "NablarchJdbcLogger",
+        "domaJdbcLogger",
+        "JdbcLogger",
+        "UtilLoggingJdbcLogger",
+        "ロガー設定"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "java.sql.Statementに関する設定を行う",
+      "hints": [
+        "DomaStatementProperties",
+        "domaStatementProperties",
+        "maxRows",
+        "fetchSize",
+        "queryTimeout",
+        "batchSize",
+        "フェッチサイズ",
+        "クエリタイムアウト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Doma2を使用したデータベースアクセスを行うためのアダプタ。:java:extdoc:`Transactional<nablarch.integration.doma.Transactional>` インターセプタで指定したアクションのみトランザクション管理対象にでき、不要なトランザクション制御処理を削減してパフォーマンス向上が期待できる。\n\nメリット:\n- Nablarchと同様に実行時に動的SQL文構築可能\n- 2waySQLなのでSQLツールでそのまま実行可能\n\n**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-doma-adaptor</artifactId>\n</dependency>\n```\n\n> **補足**: Domaバージョン2.16.0でテスト済み。バージョン変更時はプロジェクト側でテストを行うこと。",
+    "s2": "RDBMSに合わせてDomaのダイアレクトとデータソースをコンポーネント設定ファイルに定義する。\n\n- ダイアレクトは `org.seasar.doma.jdbc.dialect.Dialect` の実装クラスを指定\n- ダイアレクトのコンポーネント名は `domaDialect`\n- データソースのコンポーネント名は `dataSource`\n\nH2使用時の設定例:\n```xml\n<component name=\"domaDialect\" class=\"org.seasar.doma.jdbc.dialect.H2Dialect\" />\n<component name=\"dataSource\" class=\"org.h2.jdbcx.JdbcDataSource\">\n  <!-- プロパティは省略 -->\n</component>\n```",
+    "s3": "**Daoインタフェースの作成**:\n- `@Dao` のconfig属性には :java:extdoc:`DomaConfig<nablarch.integration.doma.DomaConfig>` を指定\n\n```java\n@Dao(config = DomaConfig.class)\npublic interface ProjectDao {\n    // 省略\n}\n```\n\n**データベースアクセス処理の実装**:\n- 業務アクションメソッドに :java:extdoc:`Transactional<nablarch.integration.doma.Transactional>` インターセプタを設定してトランザクション管理対象にする\n- :java:extdoc:`DomaDaoRepository#get<nablarch.integration.doma.DomaDaoRepository.get(java.lang.Class)>` でDaoの実装クラスをルックアップする\n\n> **補足**: Domaは注釈処理によりコンパイル時にDao実装クラスを自動生成するため、コーディング時には実装クラスが存在しない。DomaDaoRepositoryがDao実装クラスのルックアップ機能を提供する。\n\n```java\n@Transactional\npublic HttpResponse create(final HttpRequest request, final ExecutionContext context) {\n    final Project project = SessionUtil.delete(context, \"project\");\n    DomaDaoRepository.get(ProjectDao.class).insert(project);\n    return new HttpResponse(\"redirect://complete\");\n}\n```",
+    "s4": ":java:extdoc:`Transactional<nablarch.integration.doma.Transactional>` インターセプタで開始されたトランザクションとは別のトランザクションを使用する場合は、:java:extdoc:`DomaConfig#getTransactionManager<nablarch.integration.doma.DomaConfig.getTransactionManager()>` で取得した `TransactionManager` を使用して制御する。\n\n```java\nDomaConfig.singleton()\n        .getTransactionManager()\n        .requiresNew(() ->\n                DomaDaoRepository.get(ProjectDao.class).insert(project));\n```",
+    "s5": "JSR352準拠のバッチアプリケーションでDomaを使用するため、以下のリスナーをリスナーリストに定義する:\n- :java:extdoc:`DomaTransactionStepListener<nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener>`\n- :java:extdoc:`DomaTransactionItemWriteListener<nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener>`\n\n```xml\n<list name=\"stepListeners\">\n  <!-- その他のリスナーは省略 -->\n  <component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener\" />\n</list>\n\n<list name=\"itemWriteListeners\">\n  <!-- その他のリスナーは省略 -->\n  <component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener\" />\n</list>\n```\n\n> **重要**: :ref:`Chunkステップ <jsr352-batch_type_chunk>` のItemWriterでバッチ更新（バッチinsert/updateなど）する場合、バッチサイズを明示的に指定すること。Chunkステップのitem-countのサイズがバッチサイズになるわけではない。未指定の場合はDomaのデフォルト値が適用され、バッチ更新のパフォーマンスが向上しない可能性がある。\n\n1000件ごとにバッチinsertする実装例:\n```java\n@BatchInsert(batchSize = 1000)\nint[] batchInsert(List<Bonus> bonuses);\n```",
+    "s6": "大量データの遅延ロードを行う場合は、Daoアノテーションのconfig属性に :java:extdoc:`DomaTransactionNotSupportedConfig<nablarch.integration.doma.DomaTransactionNotSupportedConfig>` を指定する。\n\n> **重要**: config属性に :java:extdoc:`DomaConfig<nablarch.integration.doma.DomaConfig>` を使用すると、:java:extdoc:`DomaTransactionItemWriteListener<nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener>` によるトランザクションコミットでストリームがクローズされ、後続のレコードが読み込めなくなる。\n\n**Daoインタフェース**（config属性に `DomaTransactionNotSupportedConfig` を指定、検索結果は :java:extdoc:`Stream<java.util.stream.Stream>` で取得）:\n```java\n@Dao(config = DomaTransactionNotSupportedConfig.class)\npublic interface ProjectDao {\n    @Select(strategy = SelectType.RETURN)\n    Stream<Project> search();\n}\n```\n\n**ItemReaderクラス**（openメソッドでストリーム取得、closeメソッドで必ずストリームを閉じること）:\n```java\n@Dependent\n@Named\npublic class ProjectReader extends AbstractItemReader {\n    private Iterator<Project> iterator;\n    private Stream<Project> stream;\n\n    @Override\n    public void open(Serializable checkpoint) throws Exception {\n        final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class);\n        stream = dao.search();\n        iterator = stream.iterator();\n    }\n\n    @Override\n    public Object readItem() {\n        if (iterator.hasNext()) {\n            return iterator.next();\n        } else {\n            return null;\n        }\n    }\n\n    @Override\n    public void close() throws Exception {\n        stream.close();\n    }\n}\n```",
+    "s7": "ETL使用時にプロジェクトで追加したステップでDomaを使用する場合は、ジョブ名およびステップ名を指定したリスナーリストを定義する。\n\nジョブ定義ファイル:\n```xml\n<job id=\"sampleJob\" xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\" version=\"1.0\">\n  <step id=\"sampleStep\">\n    <listeners>\n      <listener ref=\"nablarchStepListenerExecutor\" />\n      <listener ref=\"nablarchItemWriteListenerExecutor\" />\n    </listeners>\n    <chunk>\n      <reader ref=\"sampleItemReader\" />\n      <writer ref=\"sampleItemWriter\" />\n    </chunk>\n  </step>\n</job>\n```\n\nコンポーネント設定ファイル（リスト名は `{ジョブ名}.{ステップ名}.stepListeners` / `{ジョブ名}.{ステップ名}.itemWriteListeners`）:\n```xml\n<list name=\"sampleJob.sampleStep.stepListeners\">\n  <!-- その他のリスナーは省略 -->\n  <component\n      class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener\" />\n</list>\n\n<list name=\"sampleJob.sampleStep.itemWriteListeners\">\n  <!-- その他のリスナーは省略 -->\n  <component\n      class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener\" />\n</list>\n```",
+    "s8": "複数のデータベースにアクセスする場合は、新しいConfigクラスを作成し、別DBへのアクセスはそのConfigクラスを使用する。\n\nコンポーネント設定ファイル:\n```xml\n<component name=\"customDomaDialect\" class=\"org.seasar.doma.jdbc.dialect.OracleDialect\" />\n<component name=\"customDataSource\" class=\"oracle.jdbc.pool.OracleDataSource\">\n  <!-- プロパティは省略 -->\n</component>\n```\n\nConfigクラス（`@SingletonConfig` 付与、`Config` を実装）:\n```java\n@SingletonConfig\npublic final class CustomConfig implements Config {\n    private CustomConfig() {\n        dialect = SystemRepository.get(\"customDomaDialect\");\n        localTransactionDataSource =\n                new LocalTransactionDataSource(SystemRepository.get(\"customDataSource\"));\n        localTransaction = localTransactionDataSource.getLocalTransaction(getJdbcLogger());\n        localTransactionManager = new LocalTransactionManager(localTransaction);\n    }\n    // その他のフィールド、メソッドはDomaConfigを参考に実装\n}\n```\n\nDaoインタフェースのconfig属性に `CustomConfig` を指定:\n```java\n@Dao(config = CustomConfig.class)\npublic interface ProjectDao {\n    // 省略\n}\n```\n\n業務アクションでCustomConfigのTransactionManagerを使用:\n```java\nCustomConfig.singleton()\n        .getTransactionManager()\n        .requiresNew(() ->\n                DomaDaoRepository.get(ProjectDao.class).insert(project));\n```",
+    "s9": "NablarchのDBアクセス処理をDomaと同じトランザクション（DB接続）で実行するには、:java:extdoc:`ConnectionFactoryFromDomaConnection<nablarch.integration.doma.ConnectionFactoryFromDomaConnection>` をコンポーネント定義ファイルに定義し、コンポーネント名を `connectionFactoryFromDoma` にする。JSR352用のDomaトランザクション制御リスナーに `ConnectionFactoryFromDomaConnection` を設定することで、NablarchのDBアクセスが自動的にDomaのトランザクション配下で実行される。\n\n```xml\n<!-- コンポーネント名は connectionFactoryFromDoma とする -->\n<component name=\"connectionFactoryFromDoma\"\n    class=\"nablarch.integration.doma.ConnectionFactoryFromDomaConnection\">\n  <!-- プロパティに対する設定は省略 -->\n</component>\n\n<!-- JSR352バッチアプリケーションで使用する場合 -->\n<component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener\">\n  <property name=\"connectionFactory\" ref=\"connectionFactoryFromDoma\" />\n</component>\n\n<component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener\">\n  <property name=\"connectionFactory\" ref=\"connectionFactoryFromDoma\" />\n</component>\n```",
+    "s10": "本アダプタのデフォルトロガーは :java:extdoc:`NablarchJdbcLogger<nablarch.integration.doma.NablarchJdbcLogger>`（Nablarchのロガーを使用するDomaのJDBCロガー実装）。別のロガーに切り替える場合はコンポーネント定義ファイルに設定する。\n\n- ロガーは `org.seasar.doma.jdbc.JdbcLogger` の実装クラスを指定\n- コンポーネント名は `domaJdbcLogger`\n\n`org.seasar.doma.jdbc.UtilLoggingJdbcLogger` を使用する場合:\n```xml\n<component name=\"domaJdbcLogger\" class=\"org.seasar.doma.jdbc.UtilLoggingJdbcLogger\" />\n```",
+    "s11": "`java.sql.Statement` に関する項目（フェッチサイズ、クエリタイムアウト等）をプロジェクト全体に設定するには、:java:extdoc:`DomaStatementProperties<nablarch.integration.doma.DomaStatementProperties>` をコンポーネント設定ファイルに設定する。コンポーネント名は `domaStatementProperties`。\n\n設定可能な項目: 最大行数の制限値、フェッチサイズ、クエリタイムアウト（秒）、バッチサイズ\n\n```xml\n<component class=\"nablarch.integration.doma.DomaStatementProperties\" name=\"domaStatementProperties\">\n  <!-- 最大行数の制限値を1000行に設定する -->\n  <property name=\"maxRows\" value=\"1000\" />\n  <!-- フェッチサイズを200行に設定する -->\n  <property name=\"fetchSize\" value=\"200\" />\n  <!-- クエリタイムアウトを30秒に設定する -->\n  <property name=\"queryTimeout\" value=\"30\" />\n  <!-- バッチサイズを400に設定する -->\n  <property name=\"batchSize\" value=\"400\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

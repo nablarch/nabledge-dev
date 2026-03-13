@@ -1,0 +1,258 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-body_convert_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 content is approximately 48 characters, which is below the 50-character threshold. Content: `**クラス名**: \\`nablarch.fw.jaxrs.BodyConvertHandler\\``",
+      "source_evidence": "Source section 'ハンドラクラス名' contains only the single class reference `nablarch.fw.jaxrs.BodyConvertHandler`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "XML code example comments have been abbreviated. Source comments describe these as 'リクエスト・レスポンスのコンバータ' (converters for both request and response), but the knowledge file shortens them to just 'コンバータ', omitting the bidirectional nature of the converters.",
+      "source_evidence": "Source: `<!-- application/xmlに対応したリクエスト・レスポンスのコンバータ -->` and `<!-- application/x-www-form-urlencodedに対応したリクエスト・レスポンスのコンバータ -->`. Knowledge file: `<!-- application/xmlに対応したコンバータ -->` and `<!-- application/x-www-form-urlencodedに対応したコンバータ -->`."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _body_convert_handler:
+
+リクエストボディ変換ハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラでは、リクエストボディとレスポンスボディの変換処理を行う。
+
+変換時に使用するフォーマットは、リクエストを処理するリソース(アクション)クラスのメソッドに設定された
+:java:extdoc:`Consumes <javax.ws.rs.Consumes>` 及び :java:extdoc:`Produces <javax.ws.rs.Produces>` アノテーションで指定する。
+
+本ハンドラでは、以下の処理を行う。
+
+* リクエストボディをリソース(アクション)クラスで受け付けるFormに変換する。
+  詳細は、:ref:`body_convert_handler-convert_request` を参照。
+
+* リソース(アクション)クラスの処理結果をレスポンスボディに変換する。
+  詳細は、:ref:`body_convert_handler-convert_response` を参照。
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/BodyConvertHandler/flow.png
+  :scale: 75
+  
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.jaxrs.BodyConvertHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-jaxrs</artifactId>
+  </dependency>
+
+制約
+------------------------------
+本ハンドラは :ref:`router_adaptor` よりも後ろに設定すること
+  このハンドラは、リソース(アクション)クラスのメソッドに設定された、アノテーションの情報を元に
+  リクエスト及びレスポンスの変換処理を行う。
+  このため、ディスパッチ先を特定する :ref:`router_adaptor` よりも後ろに設定する必要がある。
+
+変換処理を行うコンバータを設定する
+--------------------------------------------------
+このハンドラでは、 :java:extdoc:`bodyConverters <nablarch.fw.jaxrs.BodyConvertHandler.setBodyConverters(java.util.List)>` プロパティに設定された、
+:java:extdoc:`BodyConverter <nablarch.fw.jaxrs.BodyConverter>` の実装クラスを使用してリクエスト及びレスポンスの変換処理を行う。
+:java:extdoc:`bodyConverters <nablarch.fw.jaxrs.BodyConvertHandler.setBodyConverters(java.util.List)>` プロパティには、
+プロジェクトで使用するMIMEに対応した、 :java:extdoc:`BodyConverter <nablarch.fw.jaxrs.BodyConverter>` を設定すること。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.jaxrs.BodyConvertHandler">
+    <property name="bodyConverters">
+      <list>
+        <!-- application/xmlに対応したリクエスト・レスポンスのコンバータ -->
+        <component class="nablarch.fw.jaxrs.JaxbBodyConverter" />
+        <!-- application/x-www-form-urlencodedに対応したリクエスト・レスポンスのコンバータ -->
+        <component class="nablarch.fw.jaxrs.FormUrlEncodedConverter" />
+      </list>
+    </property>
+  </component>
+
+.. tip::
+  :java:extdoc:`bodyConverters <nablarch.fw.jaxrs.BodyConvertHandler.setBodyConverters(java.util.List)>` プロパティに設定されたコンバータで、
+  変換出来ないMIMEが使用された場合、サポートしていないメディアタイプであることを示すステータスコード(``415``)を返却する。
+
+.. _body_convert_handler-convert_request:
+
+リクエストボディをFormに変換する
+--------------------------------------------------
+リクエストボディの変換処理で使用するフォーマットは、リクエストを処理するメソッドに設定された :java:extdoc:`Consumes <javax.ws.rs.Consumes>` により決まる。
+もし、 :java:extdoc:`Consumes <javax.ws.rs.Consumes>` に設定されたMIMEと異なるMIMEがリクエストヘッダのContent-Typeに設定されていた場合は、
+サポートしていないメディアタイプであることを示すステータスコード(``415``)を返却する。
+
+リソース(アクション)のメソッドの実装例を以下に示す。
+
+この例では、 ``MediaType.APPLICATION_JSON`` が示す ``application/json`` に対応した
+:java:extdoc:`BodyConverter <nablarch.fw.jaxrs.BodyConverter>` でリクエストボディが ``Person`` に変換される。
+
+.. code-block:: java
+
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Valid
+  public HttpResponse saveJson(Person person) {
+      UniversalDao.insert(person);
+      return new HttpResponse();
+  }
+
+.. _body_convert_handler-convert_response:
+
+リソース(アクション)の処理結果をレスポンスボディに変換する
+----------------------------------------------------------------------
+レスポンスボディへの変換処理で使用するフォーマットは、リクエストを処理したメソッドに設定された :java:extdoc:`Produces <javax.ws.rs.Produces>` により決まる。
+
+リソース(アクション)のメソッドの実装例を以下に示す。
+
+この例では、 ``MediaType.APPLICATION_JSON`` が示す ``application/json`` に対応した
+:java:extdoc:`BodyConverter <nablarch.fw.jaxrs.BodyConverter>` でリクエストボディが ``Person`` に変換される。
+
+.. code-block:: java
+
+  GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Person> findJson() {
+      return UniversalDao.findAll(Person.class);
+  }
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-body_convert_handler--s1",
+  "title": "リクエストボディ変換ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/rest/body_convert_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/BodyConvertHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/ws/rs/Consumes.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/ws/rs/Produces.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/BodyConverter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/JaxbBodyConverter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/FormUrlEncodedConverter.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "BodyConvertHandler",
+        "nablarch.fw.jaxrs.BodyConvertHandler",
+        "ハンドラクラス名",
+        "リクエストボディ変換ハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-jaxrs",
+        "com.nablarch.framework",
+        "モジュール依存",
+        "Maven依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "router_adaptor",
+        "設定順序",
+        "ハンドラ配置制約",
+        "ディスパッチ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "変換処理を行うコンバータを設定する",
+      "hints": [
+        "bodyConverters",
+        "BodyConverter",
+        "JaxbBodyConverter",
+        "FormUrlEncodedConverter",
+        "MIMEタイプ",
+        "415ステータスコード",
+        "コンバータ設定"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "リクエストボディをFormに変換する",
+      "hints": [
+        "@Consumes",
+        "Consumes",
+        "Content-Type",
+        "415ステータスコード",
+        "リクエストボディ変換",
+        "MediaType.APPLICATION_JSON"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "リソース(アクション)の処理結果をレスポンスボディに変換する",
+      "hints": [
+        "@Produces",
+        "Produces",
+        "レスポンスボディ変換",
+        "MediaType.APPLICATION_JSON",
+        "findJson"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.jaxrs.BodyConvertHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n```",
+    "s3": ":ref:`router_adaptor` よりも後ろに設定すること。このハンドラはリソース(アクション)クラスのメソッドに設定されたアノテーション情報を元にリクエスト及びレスポンスの変換処理を行うため、ディスパッチ先を特定する :ref:`router_adaptor` よりも後ろに設定する必要がある。",
+    "s4": ":java:extdoc:`bodyConverters <nablarch.fw.jaxrs.BodyConvertHandler.setBodyConverters(java.util.List)>` プロパティに、プロジェクトで使用するMIMEに対応した :java:extdoc:`BodyConverter <nablarch.fw.jaxrs.BodyConverter>` の実装クラスを設定する。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.BodyConvertHandler\">\n  <property name=\"bodyConverters\">\n    <list>\n      <!-- application/xmlに対応したコンバータ -->\n      <component class=\"nablarch.fw.jaxrs.JaxbBodyConverter\" />\n      <!-- application/x-www-form-urlencodedに対応したコンバータ -->\n      <component class=\"nablarch.fw.jaxrs.FormUrlEncodedConverter\" />\n    </list>\n  </property>\n</component>\n```\n\n> **補足**: `bodyConverters` に設定されたコンバータで変換できないMIMEが使用された場合、サポートしていないメディアタイプを示すステータスコード(`415`)を返却する。",
+    "s5": "リクエストボディの変換フォーマットは、メソッドに設定された :java:extdoc:`Consumes <javax.ws.rs.Consumes>` アノテーションで決まる。`@Consumes` に設定されたMIMEとリクエストヘッダのContent-Typeが異なる場合、ステータスコード(`415`)を返却する。\n\n```java\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse saveJson(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```",
+    "s6": "レスポンスボディへの変換フォーマットは、メソッドに設定された :java:extdoc:`Produces <javax.ws.rs.Produces>` アノテーションで決まる。\n\n```java\nGET\n@Produces(MediaType.APPLICATION_JSON)\npublic List<Person> findJson() {\n    return UniversalDao.findAll(Person.class);\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

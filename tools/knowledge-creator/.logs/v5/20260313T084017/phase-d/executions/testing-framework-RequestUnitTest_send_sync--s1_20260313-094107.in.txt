@@ -1,0 +1,367 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_send_sync.rst`
+- Format: `rst`
+
+```
+=====================================================================
+ リクエスト単体テスト（同期応答メッセージ送信処理）
+=====================================================================
+
+
+概要
+====
+
+リクエスト単体テスト（同期応答メッセージ送信処理)では、
+要求電文1件をキューに送信し、結果を同期的に受信する際の動作を擬似的に再現し、テストを行う。
+    
+
+.. tip:: 
+ リクエスト単体テストそのものの概要については、
+ :ref:`message_sendSyncMessage_test`
+ を参照。
+
+
+全体像
+------
+
+バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。
+
+.. image:: ./_images/send_sync.png
+   :scale: 70
+
+
+
+.. tip:: 
+ 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。
+
+ * StandaloneTestSupportTemplate
+ * AbstractHttpRequestTestTemplate
+
+
+
+主なクラス, リソース
+====================
+
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|名称                                          |役割                                                  | 作成単位                             |
++==============================================+======================================================+======================================+
+|リクエスト単体\                               |テストロジックを実装する。                            |テスト対象クラス(Action)につき１つ作成|
+|テストクラス                                  |                                                      |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|Excelファイル\                                |要求電文の期待値および応答電文などの                  |テストクラスにつき１つ作成            |
+|（テストデータ）                              |テストデータを記載する。\                             |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|StandaloneTest\                               |Action実行後に、MockMessagingContextを用いて          | \－                                  |
+|SupportTemplate                               |要求電文のアサートを実行する。                        |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|AbstractHttpRequest\                          |Action実行後に、MockMessagingContextを用いて          | \－                                  |
+|TestTemplate                                  |要求電文のアサートを実行する。                        |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|MessageSender                                 |同期応答メッセージ送信処理を行う際に\                 | \－                                  |
+|                                              |使用するコンポーネント。                              |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|RequestTestingMessagingProvider               |リクエスト単体テストにおいて、\                       | \－                                  |
+|                                              |要求電文のアサート機能および\                         |                                      |
+|                                              |応答電文の生成・返却機能を提供する。                  |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|TestDataConvertor                             |Excelから読み込んだテストデータを編集するための\      | \－                                  |
+|                                              |インタフェース。                                      |                                      |
+|                                              |必要に応じてデータ種別ごとにアーキテクトが実装する。  |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+
+
+構造
+====
+
+
+StandaloneTestSupportTemplate
+----------------------------------------
+
+Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
+
+同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
+本クラスもしくはAbstractHttpRequestTestTemplateを実装したテストケースを使用する必要がある。
+
+
+
+AbstractHttpRequestTestTemplate
+---------------------------------------------------
+
+Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
+
+同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
+本クラスもしくはStandaloneTestSupportTemplateを実装したテストケースを使用する必要がある。
+
+
+RequestTestingMessagingProvider
+-------------------------------------------------
+
+要求電文のアサートおよび、応答電文の生成・返却する機能を提供するクラス。
+
+また、Excelに記載された要求電文の期待値と、応答電文の読み込みも実行する。
+
+本クラスは、以下の準備処理、結果確認機能を提供する。
+
+ +----------------------------+--------------------------+
+ | 準備処理                   | 結果確認                 |
+ +============================+==========================+
+ |応答電文の生成              |要求電文のアサート        |
+ +----------------------------+--------------------------+
+
+.. tip:: 
+ 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。
+
+
+
+MessageSender
+---------------------------------
+
+同期応答メッセージ送信処理で使用するコンポーネント。
+
+主に以下の機能を提供する。
+
+* Actionなどの呼び出し元から渡されたパラメータから、要求電文を生成する。
+* 要求電文を元にMockMessagingContextを実行する。
+* MockMessagingContextから返却された応答電文をパースする。
+* パース結果のオブジェクトを呼び出し元に返却する。
+
+
+
+TestDataConvertor
+-----------------
+
+Excelから読み込んだテストデータを編集するためのインタフェース。
+必要に応じてXMLやJSONなどのデータ種別ごとにアーキテクトが実装する。
+
+実装クラスでは以下の機能を実装する。
+
+* Excelから読み込んだデータを任意の値に編集する。
+* 編集したデータを読み込むためのレイアウト定義データを動的に生成する。
+
+本インタフェースを実装することで、例えばExcelに日本語で記述されたデータをURLエンコーディングする等の処理を追加可能である。
+
+実装クラスは "TestDataConverter_<データ種別>" というキー名でテスト用のコンポーネント設定ファイルに登録する必要がある。
+
+
+テストデータ
+============
+
+同期応答メッセージ送信処理固有のテストデータについて説明する。
+
+
+同期応答メッセージ送信処理
+-----------------------------
+
+基本的な記述方法は、\
+\ :ref:`send_sync_request_write_test_data`\
+を参照。
+
+.. tip::
+ パディングおよびバイナリデータの扱いは、\ :ref:`about_fixed_length_file`\ と同様である。
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-RequestUnitTest_send_sync--s1`
+
+```json
+{
+  "id": "testing-framework-RequestUnitTest_send_sync--s1",
+  "title": "リクエスト単体テスト（同期応答メッセージ送信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/RequestUnitTest_send_sync.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "全体像",
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "MockMessagingContext",
+        "MessageSender",
+        "RequestTestingMessagingProvider",
+        "TestDataConvertor",
+        "同期応答メッセージ送信処理",
+        "リクエスト単体テスト全体像"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "StandaloneTestSupportTemplate",
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "MockMessagingContext",
+        "AbstractHttpRequestTestTemplate",
+        "要求電文アサート",
+        "同期応答メッセージ送信処理テスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "AbstractHttpRequestTestTemplate",
+      "hints": [
+        "AbstractHttpRequestTestTemplate",
+        "MockMessagingContext",
+        "StandaloneTestSupportTemplate",
+        "要求電文アサート",
+        "HTTPリクエストテスト"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "RequestTestingMessagingProvider",
+      "hints": [
+        "RequestTestingMessagingProvider",
+        "MockMessagingContext",
+        "応答電文生成",
+        "要求電文アサート",
+        "テストデータ読み込み"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "MessageSender",
+      "hints": [
+        "MessageSender",
+        "MockMessagingContext",
+        "要求電文生成",
+        "応答電文パース",
+        "同期メッセージ送信"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "TestDataConvertor",
+      "hints": [
+        "TestDataConvertor",
+        "テストデータ編集",
+        "レイアウト定義データ生成",
+        "コンポーネント設定ファイル登録",
+        "URLエンコーディング"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "同期応答メッセージ送信処理",
+      "hints": [
+        "send_sync_request_write_test_data",
+        "about_fixed_length_file",
+        "パディング",
+        "バイナリデータ",
+        "テストデータ記述方法"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **補足**: 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。\n> - `StandaloneTestSupportTemplate`\n> - `AbstractHttpRequestTestTemplate`\n\n![同期応答メッセージ送信処理の全体像](assets/testing-framework-RequestUnitTest_send_sync--s1/send_sync.png)\n\n## 主なクラス・リソース\n\n| 名称 | 役割 | 作成単位 |\n|---|---|---|\n| リクエスト単体テストクラス | テストロジックを実装する | テスト対象クラス(Action)につき１つ |\n| Excelファイル（テストデータ） | 要求電文の期待値および応答電文などのテストデータを記載する | テストクラスにつき１つ |\n| `StandaloneTestSupportTemplate` | Action実行後に`MockMessagingContext`を用いて要求電文のアサートを実行する | — |\n| `AbstractHttpRequestTestTemplate` | Action実行後に`MockMessagingContext`を用いて要求電文のアサートを実行する | — |\n| `MessageSender` | 同期応答メッセージ送信処理を行う際に使用するコンポーネント | — |\n| `RequestTestingMessagingProvider` | 要求電文のアサート機能および応答電文の生成・返却機能を提供する | — |\n| `TestDataConvertor` | Excelから読み込んだテストデータを編集するためのインタフェース | — |",
+    "s2": "**クラス**: `StandaloneTestSupportTemplate`\n\nAction実行後に`MockMessagingContext`を用いて要求電文のアサートを行う機能。\n\n> **補足**: 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、処理の形態に合わせて本クラスもしくは`AbstractHttpRequestTestTemplate`を実装したテストケースを使用する必要がある。",
+    "s3": "**クラス**: `AbstractHttpRequestTestTemplate`\n\nAction実行後に`MockMessagingContext`を用いて要求電文のアサートを行う機能。\n\n> **補足**: 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、処理の形態に合わせて本クラスもしくは`StandaloneTestSupportTemplate`を実装したテストケースを使用する必要がある。",
+    "s4": "**クラス**: `RequestTestingMessagingProvider`\n\n要求電文のアサートおよび応答電文の生成・返却機能を提供するクラス。Excelに記載された要求電文の期待値と応答電文の読み込みも実行する。\n\n| 準備処理 | 結果確認 |\n|---|---|\n| 応答電文の生成 | 要求電文のアサート |\n\n> **補足**: 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。",
+    "s5": "**クラス**: `MessageSender`\n\n同期応答メッセージ送信処理で使用するコンポーネント。主な機能:\n\n1. 呼び出し元から渡されたパラメータから要求電文を生成する\n2. 要求電文を元に`MockMessagingContext`を実行する\n3. `MockMessagingContext`から返却された応答電文をパースする\n4. パース結果のオブジェクトを呼び出し元に返却する",
+    "s6": "**クラス**: `TestDataConvertor`\n\nExcelから読み込んだテストデータを編集するためのインタフェース。XMLやJSONなどのデータ種別ごとにアーキテクトが実装する。\n\n実装クラスで実装する機能:\n1. Excelから読み込んだデータを任意の値に編集する\n2. 編集したデータを読み込むためのレイアウト定義データを動的に生成する\n\n実装クラスは `\"TestDataConverter_<データ種別>\"` というキー名でテスト用のコンポーネント設定ファイルに登録する必要がある。\n\nExcelに日本語で記述されたデータをURLエンコーディングする等の処理を追加可能。",
+    "s7": "テストデータの基本的な記述方法は :ref:`send_sync_request_write_test_data` を参照。\n\n> **補足**: パディングおよびバイナリデータの扱いは、:ref:`about_fixed_length_file` と同様である。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

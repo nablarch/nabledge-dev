@@ -1,0 +1,259 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-process_resident_handler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source intro (before any heading)",
+      "description": "The handler's purpose and use-case description is absent from all sections. The source states that this is a handler that repeatedly executes subsequent handler queue contents at regular intervals, and is used for resident batch processing that periodically monitors data sources. This 'when to use' guidance is technology-selection information an AI needs to answer questions like whether ProcessResidentHandler is appropriate for a given resident batch scenario.",
+      "source_evidence": "後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。本ハンドラは、特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、いわゆる常駐起動型のバッチ処理で用いられる。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _process_resident_handler:
+
+プロセス常駐化ハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。
+本ハンドラは、特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、いわゆる常駐起動型のバッチ処理で用いられる。
+
+本ハンドラでは、以下の処理を行う。
+
+* 一定間隔(データの監視間隔)毎に後続ハンドラの呼び出し。
+* 後続ハンドラで例外発生時に、このハンドラの継続有無などを判断する。
+  詳細は、 :ref:`process_resident_handler-exception` を参照。
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/ProcessResidentHandler/flow.png
+  :scale: 80
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.handler.ProcessResidentHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-standalone</artifactId>
+  </dependency>
+
+制約
+------------------------------
+本ハンドラは、リトライハンドラよりも後ろに設定すること
+  本ハンドラで実行時例外を捕捉した場合、リトライ可能例外( :java:extdoc:`RetryableException <nablarch.fw.handler.retry.RetryableException>` )でラップしてから再送出し、
+  プロセスの継続制御を :ref:`retry_handler` に委譲する。
+  このため、このハンドラはリトライハンドラより後に設定する必要がある。
+
+データの監視間隔を設定する
+--------------------------------------------------
+データの監視間隔は、 :java:extdoc:`dataWatchInterval <nablarch.fw.handler.ProcessResidentHandler.setDataWatchInterval(int)>` プロパティにミリ秒で設定する。
+設定を省略した場合のデフォルト値は、1000ミリ秒(1秒)となっている。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component name="settingsProcessResidentHandler"
+      class="nablarch.fw.handler.ProcessResidentHandler">
+
+    <!-- データの監視間隔に5秒(5000)を設定 -->
+    <property name="dataWatchInterval" value="5000" />
+    <!-- その他のプロパティは省略 -->
+  </component>
+
+.. _process_resident_handler-normal_end:
+
+プロセス常駐化ハンドラの終了方法
+--------------------------------------------------
+このハンドラはプロセスの正常終了を示す例外が送出された場合に、後続のハンドラの呼び出しを止め処理を終了する。
+デフォルトでは、 :ref:`process_stop_handler` が送出する処理停止を示す例外( :java:extdoc:`ProcessStop <nablarch.fw.handler.ProcessStopHandler.ProcessStop>` (サブクラス含む))が送出された場合に、このハンドラは処理を終了する。
+
+プロセスの正常終了を示す例外を変更したい場合には、 :java:extdoc:`normalEndExceptions <nablarch.fw.handler.ProcessResidentHandler.setNormalEndExceptions(java.util.List)>` プロパティに例外クラスのリストを設定する。
+なお、例外リストを設定する場合にはデフォルトの設定が上書きされるため、 :java:extdoc:`ProcessStop <nablarch.fw.handler.ProcessStopHandler.ProcessStop>` の設定を忘れずに行う必要がある。
+
+以下に例を示す。
+
+.. code-block:: xml
+
+  <component name="settingsProcessResidentHandler"
+      class="nablarch.fw.handler.ProcessResidentHandler">
+
+    <!-- プロセスの正常終了を示す例外リスト -->
+    <property name="normalEndExceptions">
+      <list>
+        <!-- Nablarchデフォルトのプロセス停止を示す例外クラス -->
+        <value>nablarch.fw.handler.ProcessStopHandler$ProcessStop</value>
+        <!-- プロジェクトカスタムなプロセス停止を示す例外クラス(サブクラスも対象となる) -->
+        <value>sample.CustomProcessStop</value>
+      </list>
+    </property>
+
+    <!-- その他のプロパティは省略 -->
+  </component>
+
+.. _process_resident_handler-exception:
+
+後続ハンドラで発生した例外の扱い
+--------------------------------------------------
+このハンドラでは、後続のハンドラで発生した例外の種類に応じて、処理を継続するか、終了するかが切り替わる。
+
+以下に例外毎の処理内容を示す。
+
+サービス閉塞中例外( :java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>` )
+  サービス閉塞中例外の場合には、データ監視間隔に設定された時間分待機後に、再度後続ハンドラを実行する。
+
+リトライ可能例外
+  リトライ可能例外( :java:extdoc:`RetryUtil#isRetryable() <nablarch.fw.handler.retry.RetryUtil.isRetryable(java.lang.Throwable)>` が真を返す場合)の場合は、
+  何もせずに捕捉した例外を再送出する。
+
+プロセスを異常終了する例外
+  プロセスを異常終了させることを示す例外の場合は、なにもせずに捕捉した例外を再送出する。
+
+  プロセスを異常終了させる例外は、 :java:extdoc:`abnormalEndExceptions <nablarch.fw.handler.ProcessResidentHandler.setAbnormalEndExceptions(java.util.List)>` 
+  プロパティに設定する。
+  デフォルトでは、 :java:extdoc:`ProcessAbnormalEnd <nablarch.fw.launcher.ProcessAbnormalEnd>` (サブクラス含む)が、異常終了対象クラスとなる。
+
+プロセスを正常終了させる例外
+  後続のハンドラから戻された結果オブジェクトを、本ハンドラの戻り値として処理を終了する。
+
+  プロセスを正常終了させる例外については、 :ref:`process_resident_handler-normal_end` を参照。
+
+上記以外の例外
+  例外情報をログに記録し、リトライ可能例外 ( :java:extdoc:`RetryableException <nablarch.fw.handler.retry.RetryableException>` )でラップし再送出する。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-process_resident_handler--s1",
+  "title": "プロセス常駐化ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/batch/process_resident_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/ProcessResidentHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/retry/RetryableException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/ProcessStopHandler.ProcessStop.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/results/ServiceUnavailable.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/retry/RetryUtil.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/ProcessAbnormalEnd.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "ProcessResidentHandler",
+        "nablarch.fw.handler.ProcessResidentHandler",
+        "プロセス常駐化ハンドラ",
+        "常駐起動型バッチ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-standalone",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "RetryableException",
+        "nablarch.fw.handler.retry.RetryableException",
+        "リトライハンドラ配置順",
+        "retry_handler",
+        "制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データの監視間隔を設定する",
+      "hints": [
+        "dataWatchInterval",
+        "監視間隔",
+        "ミリ秒",
+        "ProcessResidentHandler設定"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "プロセス常駐化ハンドラの終了方法",
+      "hints": [
+        "normalEndExceptions",
+        "ProcessStop",
+        "nablarch.fw.handler.ProcessStopHandler.ProcessStop",
+        "process_stop_handler",
+        "正常終了",
+        "プロセス停止"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "後続ハンドラで発生した例外の扱い",
+      "hints": [
+        "ServiceUnavailable",
+        "nablarch.fw.results.ServiceUnavailable",
+        "RetryableException",
+        "ProcessAbnormalEnd",
+        "nablarch.fw.launcher.ProcessAbnormalEnd",
+        "abnormalEndExceptions",
+        "RetryUtil",
+        "例外ハンドリング",
+        "プロセス継続制御"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ProcessResidentHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-standalone</artifactId>\n</dependency>\n```",
+    "s3": "> **重要**: 本ハンドラは :ref:`retry_handler` よりも後ろに設定すること。実行時例外を捕捉した場合、:java:extdoc:`RetryableException <nablarch.fw.handler.retry.RetryableException>` でラップして再送出し、プロセスの継続制御を :ref:`retry_handler` に委譲するため。",
+    "s4": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| dataWatchInterval | int | | 1000 | データの監視間隔（ミリ秒） |\n\n```xml\n<component name=\"settingsProcessResidentHandler\"\n    class=\"nablarch.fw.handler.ProcessResidentHandler\">\n  <!-- データの監視間隔に5秒(5000)を設定 -->\n  <property name=\"dataWatchInterval\" value=\"5000\" />\n</component>\n```",
+    "s5": "プロセスの正常終了を示す例外が送出された場合に、後続ハンドラの呼び出しを停止して処理を終了する。\n\nデフォルトでは :ref:`process_stop_handler` が送出する :java:extdoc:`ProcessStop <nablarch.fw.handler.ProcessStopHandler.ProcessStop>`（サブクラス含む）が正常終了例外として扱われる。\n\n正常終了例外を変更する場合は `normalEndExceptions` プロパティに例外クラスのリストを設定する。\n\n> **重要**: 例外リストを設定するとデフォルト設定が上書きされるため、:java:extdoc:`ProcessStop <nablarch.fw.handler.ProcessStopHandler.ProcessStop>` の設定を忘れないこと。\n\n```xml\n<component name=\"settingsProcessResidentHandler\"\n    class=\"nablarch.fw.handler.ProcessResidentHandler\">\n  <property name=\"normalEndExceptions\">\n    <list>\n      <!-- Nablarchデフォルトのプロセス停止を示す例外クラス -->\n      <value>nablarch.fw.handler.ProcessStopHandler$ProcessStop</value>\n      <!-- プロジェクトカスタムなプロセス停止を示す例外クラス(サブクラスも対象) -->\n      <value>sample.CustomProcessStop</value>\n    </list>\n  </property>\n</component>\n```",
+    "s6": "後続ハンドラで発生した例外の種類に応じて、処理継続または終了を切り替える。\n\n| 例外の種類 | 処理内容 |\n|---|---|\n| :java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>` | データ監視間隔分待機後、後続ハンドラを再実行 |\n| リトライ可能例外（:java:extdoc:`RetryUtil#isRetryable() <nablarch.fw.handler.retry.RetryUtil.isRetryable(java.lang.Throwable)>` が真） | 何もせず捕捉した例外を再送出 |\n| 異常終了例外（`abnormalEndExceptions` プロパティに設定、デフォルト: :java:extdoc:`ProcessAbnormalEnd <nablarch.fw.launcher.ProcessAbnormalEnd>`（サブクラス含む）） | 何もせず捕捉した例外を再送出 |\n| 正常終了例外（:ref:`process_resident_handler-normal_end` 参照） | 後続ハンドラの結果オブジェクトを戻り値として処理終了 |\n| 上記以外の例外 | 例外情報をログに記録し、:java:extdoc:`RetryableException <nablarch.fw.handler.retry.RetryableException>` でラップして再送出 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

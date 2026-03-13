@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-date--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 (使用方法)",
+      "description": "Source 使用方法 h2 section contains >= 2000 characters of plain text with 6 h3 subsections (システム日時設定, システム日時取得, 業務日付設定, 業務日付取得, 業務日付上書き, 業務日付更新), but the knowledge file does not split this into separate sections — all content is combined into s3.",
+      "source_evidence": "RST h2 '使用方法' spans from the heading to '拡張例', containing six ~~ h3 subsections with multiple code blocks and a table."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`SystemRepository` is a PascalCase class name referenced in the s3 Java code example (`SystemRepository.get(\"businessDateProvider\")`) but is absent from s3's hints array.",
+      "source_evidence": "Source: `BusinessDateProvider provider = SystemRepository.get(\"businessDateProvider\");`"
+    }
+  ]
+}

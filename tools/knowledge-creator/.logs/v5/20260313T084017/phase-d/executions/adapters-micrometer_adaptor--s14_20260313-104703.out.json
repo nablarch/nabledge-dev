@@ -1,0 +1,41 @@
+{
+  "file_id": "adapters-micrometer_adaptor--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Tomcat output example",
+      "description": "The confirmatory LoggingMeterRegistry output for the Tomcat thread-pool example is absent. Source shows: `thread.count.current{} value=10`. This helps users verify the metric name format and that collection is working.",
+      "source_evidence": "以上の設定で ``LoggingMeterRegistry`` を使用した場合、以下のようにメトリクスが出力されることが確認できる。\n`thread.count.current{} value=10`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — HikariCP normal-state output example",
+      "description": "The normal-operation LoggingMeterRegistry output for HikariCP (pool established, value=0 / value=5) is absent. The knowledge file only shows the NaN output in the warning section, which may mislead an AI into thinking NaN is the only possible output format.",
+      "source_evidence": "2020-12-24 16:37:57.143 [INFO ] i.m.c.i.l.LoggingMeterRegistry: db.pool.active{} value=0\n2020-12-24 16:37:57.143 [INFO ] i.m.c.i.l.LoggingMeterRegistry: db.pool.total{} value=5"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — warning log suppression workaround explanation",
+      "description": "The default metrics-sending interval of 1 minute is not mentioned. The source uses this fact to explain why the Initializable workaround is effective in most cases ('たいていの場合メトリクス送信よりも前にコネクションプールが作成されるようになる'). Without it, the knowledge file's caveat about 'very short intervals' lacks context.",
+      "source_evidence": "メトリクスの送信間隔はデフォルトで１分なので、たいていの場合メトリクス送信よりも前にコネクションプールが作成されるようになる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — warning log section",
+      "description": "The actual warning log message text ('Failed to apply the value function for the gauge') is absent. Users encountering this message in their logs need to be able to match it to this explanation. The knowledge file describes the cause conceptually but omits the recognizable log text.",
+      "source_evidence": "io.micrometer.core.util.internal.logging.WarnThenDebugLogger.log Failed to apply the value function for the gauge 'db.pool.active'. Note that subsequent logs will be logged at debug level."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`LoggingMeterRegistry` is a PascalCase class referenced in the source (output examples, section headings) but is absent from the hints array.",
+      "source_evidence": "以上の設定で ``LoggingMeterRegistry`` を使用した場合、以下のようにメトリクスが出力されることが確認できる。"
+    }
+  ]
+}

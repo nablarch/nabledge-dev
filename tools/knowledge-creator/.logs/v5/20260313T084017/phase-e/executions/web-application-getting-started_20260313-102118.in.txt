@@ -1,0 +1,120 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-getting-started",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "前提条件 section",
+      "description": "The prerequisites section is entirely absent from the knowledge file. It contains a constraint that users must set up the Example application environment before proceeding ('Exampleアプリケーションの動作環境を事前に構築しておくこと'), and the clarification that this chapter is based on the Example application ('本章は :ref:`example_application` をベースに解説する'). Additionally, the inner tip listing what is NOT covered by this chapter (環境構築および実行, 設定, OSSプラグイン, UIフレームワーク) is also omitted. These are prerequisites/constraints that an AI assistant needs to communicate to users asking how to get started.",
+      "source_evidence": "前提条件: 本章は :ref:`example_application` をベースに解説する。Exampleアプリケーションの動作環境を事前に構築しておくこと。 / tip: Exampleアプリケーションに関する以下の事項は、本章では解説しない: 環境構築および実行, 設定, OSSプラグイン, UIフレームワーク"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`getting_started`:
+
+Getting Started
+==========================================
+
+本章を通読することで、Nablarchを用いたウェブアプリケーション開発のイメージを掴むことができる。
+
+本章では詳細な機能説明を行わないため、実装する際には、適宜 :doc:`../feature_details`
+や :doc:`../../libraries/index` 、及び `APIドキュメント` を参照する必要がある。
+
+.. tip::
+ ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。
+ 
+ 本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。
+
+
+前提条件
+  本章は  :ref:`example_application`  をベースに解説する。
+  Exampleアプリケーションの動作環境を事前に構築しておくこと。
+
+  .. tip::
+    Exampleアプリケーションに関する以下の事項は、本章では解説しない。
+    以下の事項については、 :ref:`example_application` を参照すること。
+    
+    - Exampleアプリケーションの環境構築および実行
+    - Exampleアプリケーションの設定
+    - 使用しているOSSプラグインについて
+    - 使用しているUIフレームワークについて
+
+.. toctree::
+  :maxdepth: 1
+
+  client_create/index
+  project_search/index
+  project_update/index
+  project_delete/index
+  project_upload/index
+  project_download/index
+  popup/index
+  project_bulk_update/index
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-getting-started",
+  "title": "Getting Started",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/index.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Getting Started",
+      "hints": [
+        "Webアプリケーション開発",
+        "サンプルアプリケーション",
+        "ブランクプロジェクト",
+        "Exampleアプリケーション",
+        "client_create",
+        "project_search",
+        "project_update",
+        "project_delete",
+        "project_upload",
+        "project_download",
+        "popup",
+        "project_bulk_update"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **補足**: ExampleはNablarchの機能の使用方法を示した実装例であり、Exampleを改修して本格的なアプリケーションを作成することは想定していない。本格的なアプリケーションを作成する場合は :ref:`blank_project` から作成すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

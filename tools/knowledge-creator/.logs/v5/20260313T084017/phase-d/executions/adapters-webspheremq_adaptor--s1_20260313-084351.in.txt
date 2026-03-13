@@ -1,0 +1,296 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/adaptors/webspheremq_adaptor.rst`
+- Format: `rst`
+
+```
+.. _webspheremq_adaptor:
+
+IBM MQアダプタ
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+:ref:`NablarchのMOMメッセージング機能 <mom_messaging>` で `IBM MQ(外部サイト、英語) <https://www.ibm.com/docs/en/ibm-mq/9.3?topic=mq-about>`_ を使用するためのアダプタを提供する。
+
+IBM MQの仕様及び構築手順などは、IBM社のオフィシャルサイト及びマニュアルを参照すること。
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.integration</groupId>
+    <artifactId>nablarch-wmq-adaptor</artifactId>
+  </dependency>
+
+.. important::
+
+  テストでは、IBM MQ 9.3のライブラリを使用している。
+  バージョンを変更する際には、プロジェクト側でテストを行い問題ないことを確認すること。
+
+本アダプタを使用するための設定
+--------------------------------------------------
+本アダプタは、以下の手順にてコンポーネントを定義することで有効になる。
+
+1.  ``nablarch.integration.messaging.wmq.provider.WmqMessagingProvider`` をコンポーネント設定ファイルに定義を追加する。
+2. ``1`` で設定した、 ``WmqMessagingProvider`` を :ref:`messaging_context_handler` に設定する。
+
+
+以下に設定例を示す。
+
+.. code-block:: xml
+
+  <!-- IBM MQアダプタ用のプロバイダ実装 -->
+  <component name="wmqMessagingProvider"
+      class="nablarch.integration.messaging.wmq.provider.WmqMessagingProvider">
+    <!-- 設定値はJavadocを参照 -->
+  </component>
+
+  <!--
+  メッセージコンテキスト管理ハンドラ
+
+  上で定義したWmqMessagingProviderを、messagingProviderプロパティに設定する。
+  -->
+  <component class="nablarch.fw.messaging.handler.MessagingContextHandler">
+    <property name="messagingProvider" ref="wmqMessagingProvider" />
+  </component>
+
+分散トランザクションを使用する
+--------------------------------------------------
+本アダプタには、IBM MQをトランザクションマネージャとして、分散トランザクションを実現する機能が含まれている。
+
+この機能は、外部システムとメッセージの送受信を行う際に、取り込み漏れや2重取り込みを防止する目的で使用する。
+
+分散トランザクションを使用するための手順を以下に示す。
+
+1. 分散トランザクションに対応したデータソース( :java:extdoc:`javax.sql.XADataSource` を実装したクラス)を定義する。
+
+2. 分散トランザクションに対応したデータベース接続を生成するファクトリクラスを定義する。 |br|
+   (``nablarch.integration.messaging.wmq.xa.WmqXADbConnectionFactoryForXADataSource`` を定義する。)
+
+3. ``2`` で定義したファクトリクラスを、 :ref:`database_connection_management_handler` に設定する。
+
+4. 分散トランザクション用のトランザクションのオブジェクトを生成するファクトリクラスを定義する。 |br|
+   (``nablarch.integration.messaging.wmq.xa.WmqXATransactionFactory`` を定義する。)
+
+5. ``4`` で定義したファクトリクラスを :ref:`transaction_management_handler` に設定する。
+
+以下に設定例を示す。
+
+.. code-block:: xml
+
+  <!--
+  XA用のデータソースの設定
+  使用するデータベース製品のJDBC実装内のXA用のデータソースを設定する。
+
+  この例では、Oracleデータベース用の設定となる。
+  -->
+  <component name="xaDataSource" class="oracle.jdbc.xa.client.OracleXADataSource">
+    <!-- プロパティへの設定は省略 -->
+  </component>
+
+  <!-- XA用のデータベース接続を生成するクラスの設定-->
+  <component name="xaConnectionFactory"
+      class="nablarch.integration.messaging.wmq.xa.WmqXADbConnectionFactoryForXADataSource">
+
+    <!-- xaDataSourceプロパティにXA用のデータソースを設定する。-->
+    <property name="xaDataSource" ref="xaDataSource" />
+
+    <!-- 上記以外のプロパティは省略 -->
+  </component>
+
+  <!-- 分散トランザクション用のDB接続ハンドラの設定 -->
+  <component class="nablarch.common.handler.DbConnectionManagementHandler">
+    <!-- DB接続ファクトリには、上記で設定したXA用のデータベース接続を生成するクラスを設定する。 -->
+    <property name="connectionFactory" ref="xaConnectionFactory" />
+
+    <!-- 上記以外のプロパティは省略 -->
+  </component>
+
+  <!-- XA用のトランザクション制御オブジェクトを生成するクラスの設定 -->
+  <component name="xaTransactionFactory"
+      class="nablarch.integration.messaging.wmq.xa.WmqXATransactionFactory" />
+
+  <!-- 分散トランザクション用のトランザクションハンドラの設定 -->
+  <component class="nablarch.common.handler.TransactionManagementHandler">
+    <!-- トランザクションファクトリには、上記で設定した
+    XA用のトランザクション制御オブジェクトを生成するクラスを設定する。
+    -->
+    <property name="transactionFactory" ref="xaTransactionFactory" />
+
+    <!-- 上記以外のプロパティは省略 -->
+  </component>
+
+.. important::
+
+  分散トランザクションを使用するためには、IBM MQに対するXA リソース・マネージャーの設定や、データベースに対する権限付与が必要となる。
+  詳細な設定方法や必要な権限などは、使用する製品のマニュアルを参照すること。
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `adapters-webspheremq_adaptor--s1`
+
+```json
+{
+  "id": "adapters-webspheremq_adaptor--s1",
+  "title": "IBM MQアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/webspheremq_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/sql/XADataSource.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-wmq-adaptor",
+        "WmqMessagingProvider",
+        "IBM MQアダプタ",
+        "モジュール設定",
+        "Maven依存関係",
+        "IBM MQ 9.3"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "本アダプタを使用するための設定",
+      "hints": [
+        "WmqMessagingProvider",
+        "MessagingContextHandler",
+        "nablarch.integration.messaging.wmq.provider.WmqMessagingProvider",
+        "nablarch.fw.messaging.handler.MessagingContextHandler",
+        "IBM MQアダプタ設定",
+        "MOMメッセージング",
+        "コンポーネント定義"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "分散トランザクションを使用する",
+      "hints": [
+        "WmqXADbConnectionFactoryForXADataSource",
+        "WmqXATransactionFactory",
+        "javax.sql.XADataSource",
+        "DbConnectionManagementHandler",
+        "TransactionManagementHandler",
+        "分散トランザクション",
+        "XAトランザクション",
+        "2重取り込み防止",
+        "取り込み漏れ防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-wmq-adaptor</artifactId>\n</dependency>\n```\n\n> **重要**: テストではIBM MQ 9.3のライブラリを使用している。バージョンを変更する際には、プロジェクト側でテストを行い問題ないことを確認すること。",
+    "s2": ":ref:`messaging_context_handler` にIBM MQを使用するためのコンポーネント設定手順:\n\n1. `nablarch.integration.messaging.wmq.provider.WmqMessagingProvider` をコンポーネント設定ファイルに定義する。\n2. `WmqMessagingProvider` を :ref:`messaging_context_handler` の `messagingProvider` プロパティに設定する。\n\n```xml\n<component name=\"wmqMessagingProvider\"\n    class=\"nablarch.integration.messaging.wmq.provider.WmqMessagingProvider\">\n  <!-- 設定値はJavadocを参照 -->\n</component>\n\n<component class=\"nablarch.fw.messaging.handler.MessagingContextHandler\">\n  <property name=\"messagingProvider\" ref=\"wmqMessagingProvider\" />\n</component>\n```",
+    "s3": "外部システムとのメッセージ送受信における取り込み漏れや2重取り込みを防止する目的で使用する。\n\n分散トランザクション設定手順:\n\n1. :java:extdoc:`javax.sql.XADataSource` を実装したXA対応データソースを定義する。\n2. `nablarch.integration.messaging.wmq.xa.WmqXADbConnectionFactoryForXADataSource` を定義する。\n3. `WmqXADbConnectionFactoryForXADataSource` を :ref:`database_connection_management_handler` に設定する。\n4. `nablarch.integration.messaging.wmq.xa.WmqXATransactionFactory` を定義する。\n5. `WmqXATransactionFactory` を :ref:`transaction_management_handler` に設定する。\n\n```xml\n<!-- XA用データソース（例: Oracle） -->\n<component name=\"xaDataSource\" class=\"oracle.jdbc.xa.client.OracleXADataSource\" />\n\n<component name=\"xaConnectionFactory\"\n    class=\"nablarch.integration.messaging.wmq.xa.WmqXADbConnectionFactoryForXADataSource\">\n  <property name=\"xaDataSource\" ref=\"xaDataSource\" />\n</component>\n\n<component class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n  <property name=\"connectionFactory\" ref=\"xaConnectionFactory\" />\n</component>\n\n<component name=\"xaTransactionFactory\"\n    class=\"nablarch.integration.messaging.wmq.xa.WmqXATransactionFactory\" />\n\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <property name=\"transactionFactory\" ref=\"xaTransactionFactory\" />\n</component>\n```\n\n> **重要**: 分散トランザクションを使用するためには、IBM MQに対するXAリソース・マネージャーの設定や、データベースに対する権限付与が必要となる。詳細は使用する製品のマニュアルを参照すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

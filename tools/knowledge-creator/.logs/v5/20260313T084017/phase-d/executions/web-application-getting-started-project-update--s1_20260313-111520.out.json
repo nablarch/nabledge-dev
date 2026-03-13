@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-getting-started-project-update--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "s1 hints are missing `Client` and `MessageLevel`, both of which appear in the confirmOfUpdate action code. `Client.class` is passed to `UniversalDao.exists(Client.class, ...)`, and `MessageLevel.ERROR` is used in `MessageUtil.createMessage(...)`.",
+      "source_evidence": "if (!UniversalDao.exists(Client.class, \"FIND_BY_CLIENT_ID\", new Object[] {Integer.parseInt(form.getClientId())})) { throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"errors.nothing.client\", form.getClientId())); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "s2 hints are missing `SessionUtil`, which is used in the update action method: `SessionUtil.delete(context, \"project\")`.",
+      "source_evidence": "Project targetProject = SessionUtil.delete(context, \"project\");\nUniversalDao.update(targetProject);"
+    }
+  ]
+}

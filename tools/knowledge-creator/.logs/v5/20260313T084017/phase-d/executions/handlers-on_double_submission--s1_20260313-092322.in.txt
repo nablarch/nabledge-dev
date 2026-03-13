@@ -1,0 +1,268 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/web_interceptor/on_double_submission.rst`
+- Format: `rst`
+
+```
+.. _on_double_submission_interceptor:
+
+OnDoubleSubmissionインターセプタ
+=====================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+:ref:`二重サブミット(同一リクエストの二重送信)のチェック <tag-double_submission_server_side>` を行うインターセプタ。
+
+このインターセプタを使用するためには、
+:ref:`jspでのformタグによるトークン設定 <tag-double_submission_token_setting>`
+または
+:ref:`UseTokenインターセプタによるトークン設定 <use_token_interceptor>`
+が必要である。
+
+インターセプタクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.common.web.token.OnDoubleSubmission`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-tag</artifactId>
+  </dependency>
+
+OnDoubleSubmissionを使用する
+--------------------------------------------------
+:java:extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>` アノテーションを、
+アクションのメソッドに対して設定する。
+
+.. code-block:: java
+
+ // 二重サブミットと判定した場合の遷移先をpath属性に指定する。
+ @OnDoubleSubmission(path = "/WEB-INF/view/error/userError.jsp")
+ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
+     // 省略。
+ }
+
+OnDoubleSubmissionのデフォルト値を指定する
+--------------------------------------------------
+アプリケーション全体で使用する
+:java:extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>` アノテーションのデフォルト値を設定する場合は、
+:java:extdoc:`BasicDoubleSubmissionHandler <nablarch.common.web.token.BasicDoubleSubmissionHandler>`
+をコンポーネント定義に ``doubleSubmissionHandler`` という名前で追加する。
+
+:java:extdoc:`BasicDoubleSubmissionHandler <nablarch.common.web.token.BasicDoubleSubmissionHandler>`
+では、アノテーションの属性が指定されなかった場合に、自身のプロパティに設定されたリソースパス、メッセージID、ステータスコードを使用する。
+
+設定例
+ .. code-block:: xml
+
+  <component name="doubleSubmissionHandler"
+             class="nablarch.common.web.token.BasicDoubleSubmissionHandler">
+    <!-- 二重サブミットと判定した場合の遷移先のリソースパス -->
+    <property name="path" value="/WEB-INF/view/error/userError.jsp" />
+    <!-- 二重サブミットと判定した場合の遷移先画面に表示するエラーメッセージに使用するメッセージID -->
+    <property name="messageId" value="DOUBLE_SUBMISSION_ERROR" />
+    <!-- 二重サブミットと判定した場合のレスポンスステータス。デフォルトは400 -->
+    <property name="statusCode" value="200" />
+  </component>
+
+.. important::
+ :java:extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>`
+ と :java:extdoc:`BasicDoubleSubmissionHandler <nablarch.common.web.token.BasicDoubleSubmissionHandler>` の
+ どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。
+
+ このため、 :ref:`トークンを使用した二重サブミットの防止 <tag-double_submission_server_side>`
+ を使用するアプリケーションでは、必ずどちらかのpathを指定すること。
+
+OnDoubleSubmissionの振る舞いを変更する
+--------------------------------------------------
+:java:extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>` アノテーションの振る舞いは、
+:java:extdoc:`DoubleSubmissionHandler <nablarch.common.web.token.DoubleSubmissionHandler>`
+インタフェースを実装することで変更できる。実装したクラスをコンポーネント定義に ``doubleSubmissionHandler`` という名前で追加する。
+
+```
+
+## Knowledge File
+
+- ID: `handlers-on_double_submission--s1`
+
+```json
+{
+  "id": "handlers-on_double_submission--s1",
+  "title": "OnDoubleSubmissionインターセプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web_interceptor/on_double_submission.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/OnDoubleSubmission.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/BasicDoubleSubmissionHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/web/token/DoubleSubmissionHandler.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "インターセプタクラス名",
+      "hints": [
+        "OnDoubleSubmission",
+        "nablarch.common.web.token.OnDoubleSubmission",
+        "二重サブミットチェック",
+        "インターセプタ",
+        "トークン設定が必要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web-tag",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "OnDoubleSubmissionを使用する",
+      "hints": [
+        "@OnDoubleSubmission",
+        "OnDoubleSubmission",
+        "二重サブミット防止",
+        "アノテーション設定",
+        "path属性"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "OnDoubleSubmissionのデフォルト値を指定する",
+      "hints": [
+        "BasicDoubleSubmissionHandler",
+        "nablarch.common.web.token.BasicDoubleSubmissionHandler",
+        "doubleSubmissionHandler",
+        "path",
+        "messageId",
+        "statusCode",
+        "デフォルト値設定",
+        "コンポーネント定義"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "OnDoubleSubmissionの振る舞いを変更する",
+      "hints": [
+        "DoubleSubmissionHandler",
+        "nablarch.common.web.token.DoubleSubmissionHandler",
+        "振る舞い変更",
+        "インタフェース実装",
+        "doubleSubmissionHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.common.web.token.OnDoubleSubmission`\n\n:ref:`tag-double_submission_server_side` (二重サブミットチェック) を行うインターセプタ。使用するには、:ref:`tag-double_submission_token_setting` (JSPのformタグによるトークン設定) または :ref:`use_token_interceptor` (UseTokenインターセプタによるトークン設定) が必要。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```",
+    "s3": "**アノテーション**: `@OnDoubleSubmission`\n\nアクションのメソッドに `@OnDoubleSubmission` アノテーションを設定する。`path` 属性に二重サブミット判定時の遷移先を指定する。\n\n```java\n@OnDoubleSubmission(path = \"/WEB-INF/view/error/userError.jsp\")\npublic HttpResponse register(HttpRequest req, ExecutionContext ctx) {\n    // 省略。\n}\n```",
+    "s4": "アプリケーション全体のデフォルト値を設定する場合は、:java:extdoc:`BasicDoubleSubmissionHandler <nablarch.common.web.token.BasicDoubleSubmissionHandler>` をコンポーネント定義に `doubleSubmissionHandler` という名前で追加する。アノテーション属性が未指定の場合、コンポーネントのプロパティ値（リソースパス、メッセージID、ステータスコード）が使用される。\n\n```xml\n<component name=\"doubleSubmissionHandler\"\n           class=\"nablarch.common.web.token.BasicDoubleSubmissionHandler\">\n  <property name=\"path\" value=\"/WEB-INF/view/error/userError.jsp\" />\n  <property name=\"messageId\" value=\"DOUBLE_SUBMISSION_ERROR\" />\n  <property name=\"statusCode\" value=\"200\" />\n</component>\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| path | 二重サブミット判定時の遷移先リソースパス |\n| messageId | エラーメッセージに使用するメッセージID |\n| statusCode | レスポンスステータス（デフォルト: 400） |\n\n> **重要**: :java:extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>` と :java:extdoc:`BasicDoubleSubmissionHandler <nablarch.common.web.token.BasicDoubleSubmissionHandler>` のどちらも `path` が未指定の場合、二重サブミット判定時に遷移先が不明となりシステムエラーになる。:ref:`tag-double_submission_server_side` を使用するアプリケーションでは必ずどちらかの `path` を指定すること。",
+    "s5": "`@OnDoubleSubmission` の振る舞いを変更するには、:java:extdoc:`DoubleSubmissionHandler <nablarch.common.web.token.DoubleSubmissionHandler>` インタフェースを実装し、コンポーネント定義に `doubleSubmissionHandler` という名前で追加する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

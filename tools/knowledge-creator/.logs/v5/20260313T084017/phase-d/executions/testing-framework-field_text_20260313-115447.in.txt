@@ -1,0 +1,302 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/reference_jsp_widgets/field_text.rst`
+- Format: `rst`
+
+```
+=================================================
+単行テキスト入力項目ウィジェット
+=================================================
+:doc:`field_text` は **UI標準 UI部品 単行テキスト入力**
+の内容に準拠したテキストボックスを出力する。
+
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <field:text title="漢字氏名"
+                hint="全角50文字以内で入力してください。"
+                required="true"
+                maxlength="50">
+    </field:text>
+
+
+**実装成果物(サーバ動作)**
+
+  .. code-block:: jsp
+
+    <field:text title="漢字氏名"
+                required="true"
+                maxlength="50"
+                hint="全角50文字以内"
+                name="W11AC02.users.kanjiName">
+    </field:text>
+
+
+仕様
+=============================================
+
+このウィジェットは :doc:`field_base` を用いて実装している。
+:doc:`field_base` が実装する共通仕様についてはここでは記述しない。
+
+**ローカル動作時の挙動**
+  入力画面では **sample** に指定した文字列を初期表示するテキストボックスを表示する。
+
+  確認画面では、 **sample** に指定した文字列をラベル表示する。
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+(:doc:`field_base` の共通属性は省略)
+
+==================== ============================== ============== ========== ========= ================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ================================
+domain               項目のドメイン型               文字列         ○          ○
+readonly             編集可能かどうか               真偽値         ○          ○         デフォルトは 'false'
+disabled             サーバに対する入力値の送信を   真偽値         ○          ○         デフォルトは 'false'
+                     抑制するかどうか
+id                   HTMLのid属性値                 文字列         ○          ○
+                     (省略時はname属性と同じ
+                     値を使用する)
+cssClass             HTMLのclass属性値              文字列         ○          ○
+maxlength            入力文字数の上限               文字列         ○          ○
+example              具体的な入力例を表すテキスト   文字列         ○          ○
+                     (placeholderなどの形式で
+                     表示する)
+nameAlias            一つのエラーメッセージに       文字列         ○          ×
+                     対して複数の入力項目を
+                     ハイライト表示する場合に
+                     指定する。
+valueFormat          出力する値のフォーマット指定   文字列         ○          ×
+                     (確認画面用)
+sample               ローカル動作時にテキスト       文字列         ×          ○
+                     ボックスに表示する文字列
+
+unit                 入力欄の右側に表示する単位     文字列         ○          ○         確認画面の場合は、表示する値が空の場合\
+                                                                                        単位は表示しない
+
+
+                                                                                        .. tip::
+
+                                                                                         ローカル表示で本属性を使用する場合は
+                                                                                         name属性に値を設定すること。
+
+                                                                                         name属性が未設定（ブランク）の場合、
+                                                                                         確認画面では単位はブランク表示となる。
+
+dataFrom             表示するデータの取得元         文字列         ×          ×           画面項目定義に記載する、
+                                                                                          「表示情報取得元」.「表示項目名」
+                                                                                          の形式で設定する。
+
+comment              テキスト入力項目についての備考 文字列         ×          ×           設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+
+formatSpec           編集仕様に関する説明           文字列         ×          ×           設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「編集仕様」に表示される。
+
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×           設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+==================== ============================== ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/text.tag            :doc:`field_text`
+
+/WEB-INF/tags/widget/field/base.tag            :doc:`field_base`
+
+/js/jsp/taglib/nablarch.js                     `<n:text>` のエミュレーション機能を実装する
+                                               タグライブラリスタブJS
+
+/css/style/base.less                           基本HTMLの要素のスタイル定義。|br|
+                                               チェックボックスに関する定義もここに含まれる。
+============================================== ==================================================
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `testing-framework-field_text`
+
+```json
+{
+  "id": "testing-framework-field_text",
+  "title": "単行テキスト入力項目ウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_jsp_widgets/field_text.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "単行テキスト入力項目ウィジェット コードサンプル",
+      "hints": [
+        "field:text",
+        "field_text",
+        "単行テキスト入力",
+        "テキストボックス",
+        "JSPウィジェット",
+        "コードサンプル",
+        "ローカル動作",
+        "サーバ動作"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "単行テキスト入力項目ウィジェット 仕様・属性値一覧",
+      "hints": [
+        "field_base",
+        "属性値一覧",
+        "domain",
+        "readonly",
+        "disabled",
+        "id",
+        "cssClass",
+        "maxlength",
+        "example",
+        "nameAlias",
+        "valueFormat",
+        "sample",
+        "unit",
+        "dataFrom",
+        "comment",
+        "formatSpec",
+        "initialValueDesc",
+        "ローカル動作時の挙動"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "単行テキスト入力項目ウィジェット 内部構造・改修時の留意点",
+      "hints": [
+        "部品一覧",
+        "text.tag",
+        "base.tag",
+        "nablarch.js",
+        "base.less",
+        "内部構造",
+        "改修"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 単行テキスト入力項目ウィジェット コードサンプル\n\n`field:text` は **UI標準 UI部品 単行テキスト入力** の内容に準拠したテキストボックスを出力する。\n\n**設計成果物(ローカル動作)**\n\n```jsp\n<field:text title=\"漢字氏名\"\n            hint=\"全角50文字以内で入力してください。\"\n            required=\"true\"\n            maxlength=\"50\">\n</field:text>\n```\n\n**実装成果物(サーバ動作)**\n\n```jsp\n<field:text title=\"漢字氏名\"\n            required=\"true\"\n            maxlength=\"50\"\n            hint=\"全角50文字以内\"\n            name=\"W11AC02.users.kanjiName\">\n</field:text>\n```",
+    "s2": "## 単行テキスト入力項目ウィジェット 仕様・属性値一覧\n\nこのウィジェットは `field_base` を用いて実装している。`field_base` が実装する共通仕様についてはここでは記述しない。\n\n### ローカル動作時の挙動\n\n- 入力画面: `sample` に指定した文字列を初期表示するテキストボックスを表示する。\n- 確認画面: `sample` に指定した文字列をラベル表示する。\n\n### 属性値一覧\n\n[◎ 必須属性 ○ 任意属性 × 無効(指定しても効果なし)]（`field_base` の共通属性は省略）\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| domain | 項目のドメイン型 | 文字列 | ○ | ○ | |\n| readonly | 編集可能かどうか | 真偽値 | ○ | ○ | デフォルトは `false` |\n| disabled | サーバに対する入力値の送信を抑制するかどうか | 真偽値 | ○ | ○ | デフォルトは `false` |\n| id | HTMLのid属性値（省略時はname属性と同じ値を使用） | 文字列 | ○ | ○ | |\n| cssClass | HTMLのclass属性値 | 文字列 | ○ | ○ | |\n| maxlength | 入力文字数の上限 | 文字列 | ○ | ○ | |\n| example | 具体的な入力例テキスト（placeholder等の形式で表示） | 文字列 | ○ | ○ | |\n| nameAlias | 複数入力項目を一つのエラーメッセージでハイライト表示する場合に指定 | 文字列 | ○ | × | |\n| valueFormat | 出力する値のフォーマット指定（確認画面用） | 文字列 | ○ | × | |\n| sample | ローカル動作時にテキストボックスに表示する文字列 | 文字列 | × | ○ | |\n| unit | 入力欄の右側に表示する単位 | 文字列 | ○ | ○ | 確認画面で表示値が空の場合、単位は表示しない。ローカル表示で使用する場合はname属性に値を設定すること。name属性が未設定の場合、確認画面では単位はブランク表示となる。 |\n| dataFrom | 表示するデータの取得元 | 文字列 | × | × | 設計書の「表示情報取得元.表示項目名」形式で設定 |\n| comment | テキスト入力項目についての備考 | 文字列 | × | × | 設計書の画面項目定義一覧の「備考」に表示 |\n| formatSpec | 編集仕様に関する説明 | 文字列 | × | × | 設計書の画面項目定義一覧の「編集仕様」に表示 |\n| initialValueDesc | 初期表示内容に関する説明 | 文字列 | × | × | 設計書の画面項目定義一覧の「備考」に表示 |",
+    "s3": "## 単行テキスト入力項目ウィジェット 内部構造・改修時の留意点\n\n### 部品一覧\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/field/text.tag | `field_text` |\n| /WEB-INF/tags/widget/field/base.tag | `field_base` |\n| /js/jsp/taglib/nablarch.js | `<n:text>` のエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/base.less | 基本HTMLの要素のスタイル定義（チェックボックスに関する定義も含む） |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

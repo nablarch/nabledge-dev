@@ -1,0 +1,227 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/code.rst`
+- Format: `rst`
+
+```
+.. _code:
+
+コード管理
+==================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+アプリケーションで使用する値と名称とのマッピングを管理する機能を提供する。
+
+例えば、以下の様な性別区分と表示名称のマッピング情報を管理する。
+
+=======   ======== =============
+値        名称     略称
+=======   ======== =============
+male      男性     男
+female    女性     女
+=======   ======== =============
+
+
+.. important::
+
+  この機能では、静的なコード情報(値と名称とのマッピング)を管理するものであり、\
+  「商品コード」や「企業コード」といった値に紐づく情報が動的に変化するものは管理対象外とする。
+  このような情報は、アプリケーションでマスタ用のテーブルを作成し、対処すること。
+
+
+.. important::
+
+  この機能を使用すると、コードの名称を持つテーブルとコード値を持つテーブルにRDBMSの参照整合性制約を設定できない。
+  このような制約のチェックには :ref:`code-validation` を使用すること。
+
+
+.. tip::
+
+  静的なコード情報については、以下の理由によりenumで表現したほうが良い。
+
+  * 値と名称の単純なマッピングを行いたいだけの場合、データベースを使用したコード定義は大掛かりであり、メンテナンスのコストが掛かる。
+  * データベースを使ったコード定義の場合、Java上でコード値を扱うための数値型定数を定義することが多いため二重メンテナンスが発生する。
+
+  しかし、Nablarchはenumの値とデータベースの値との相互変換の機能を持っておらず、enumの値をデータベースに登録できない。
+
+  Domaを使用することで、enumの値をデータベース登録できる。
+  Domaを使用する際は、 :ref:`doma_adaptor` を参照して設定すること。
+
+
+機能概要
+--------------------------------------------------
+国際化に対応できる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能は、言語ごとに名称を管理することが出来る。
+
+詳細は、 :ref:`code-use_multilingualization` を参照。
+
+.. _code-table:
+
+コード情報はテーブルで管理する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能は、値及び名称の情報をデータベース上で管理する。
+このため、事前にデータベースにテーブルを作成し、静的なコード情報をテーブル上に登録しておくこと。
+
+詳細は、 :ref:`code-setup_table` を参照。
+
+モジュール一覧
+---------------------------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-code</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-code-jdbc</artifactId>
+  </dependency>
+
+```
+
+## Knowledge File
+
+- ID: `libraries-code--s1`
+
+```json
+{
+  "id": "libraries-code--s1",
+  "title": "コード管理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/code.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "コード管理",
+        "値と名称のマッピング",
+        "国際化対応",
+        "コードテーブル",
+        "参照整合性制約",
+        "DomaAdaptor",
+        "静的コード情報",
+        "enum推奨"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-code",
+        "nablarch-common-code-jdbc",
+        "Maven依存関係",
+        "モジュール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "値と名称（略称）のマッピング情報を管理する機能。\n\n> **重要**: 静的なコード情報（値と名称のマッピング）のみ管理対象。「商品コード」「企業コード」のような動的に変化する情報は管理対象外。動的情報はアプリケーション側でマスタテーブルを作成して対処すること。\n\n> **重要**: この機能を使用すると、コードの名称を持つテーブルとコード値を持つテーブルにRDBMSの参照整合性制約を設定できない。この制約のチェックには :ref:`code-validation` を使用すること。\n\n> **補足**: 静的コード情報にはenumの使用を推奨。DBを使ったコード定義はメンテナンスコストが高く、Java上のコード値定数との二重メンテナンスが発生する。ただし、NablarchにはenumとDB値の相互変換機能がない。enumをDBに登録するには :ref:`doma_adaptor` を参照して設定すること。\n\n**国際化対応**: 言語ごとに名称を管理できる。\n\n**テーブル管理**: 値と名称の情報をDB上で管理する。事前にDBにテーブルを作成し、静的なコード情報を登録しておくこと。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-code</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-code-jdbc</artifactId>\n</dependency>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

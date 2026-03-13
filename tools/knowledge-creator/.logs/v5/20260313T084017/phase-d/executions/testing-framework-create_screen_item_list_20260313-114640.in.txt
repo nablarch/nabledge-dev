@@ -1,0 +1,185 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/guide/widget_usage/create_screen_item_list.rst`
+- Format: `rst`
+
+```
+業務画面JSPから画面項目定義を作成する
+------------------------------------------
+
+作成した業務画面JSPをブラウザで開き、表示された画面上で右クリックすると
+下図のようなメニューが表示される。
+
+   .. image:: _image/right_click_menu.png
+      :align: center
+      :scale: 70
+
+メニューの最上段に表示される「設計書ビューを開く」を選択すると
+以下のような画面が別ウィンドウ(タブ)に表示される。
+
+   .. image:: _image/screen_item_list.png
+      :align: center
+      :scale: 60
+
+設計書ビューの各項目は、 **Ctrl** キーを押しながらマウスでドラッグすることにより、
+セル単位で選択できる。
+
+   .. image:: _image/selecting_cells_on_specsheet_view.png
+      :align: center
+      :scale: 70
+
+選択したセルは **Ctrl + C** でコピーすることで、
+システム機能設計書のExcelシートに直接貼り付けることができる。
+
+.. important::
+
+  設計書ビューの左下に表示される `画面設計ボタン` はクリックしないこと。
+  誤ってクリックした場合には、「設計書ビューを構築しています…」の状態で画面が固まるため、
+  設計書ビューウィンドウをクローズし、再度「設計書ビューを開く」から設計書ビューを開くこと。
+
+.. tip::
+
+  画面項目一覧に表示する項目は、業務画面JSPに直接記述した項目のみである。
+
+  **<jsp:include>** などを経由して描画する項目はJSPのプレビューには表示されるが、
+  画面項目一覧には表示されない。
+
+  これは、通常、共通化された表示項目は共通部品として個別に設計され、
+  各画面の設計書から参照される形となるためである。
+
+.. tip::
+
+  上掲の図は、いずれもNablarch標準のシステム機能設計書の様式に沿ったものである。
+  プロジェクト側で標準様式を修正している場合は、ここの図とは異なる表示になる。
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-create_screen_item_list`
+
+```json
+{
+  "id": "testing-framework-create_screen_item_list",
+  "title": "業務画面JSPから画面項目定義を作成する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/guide/widget_usage/create_screen_item_list.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務画面JSPから画面項目定義を作成する",
+      "hints": [
+        "設計書ビュー",
+        "画面項目一覧",
+        "業務画面JSP",
+        "画面項目定義作成",
+        "システム機能設計書",
+        "設計書ビューを開く"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面JSPをブラウザで開き、画面上で右クリック → メニュー最上段「設計書ビューを開く」を選択 → 設計書ビューが別ウィンドウ(タブ)に表示される。\n\n設計書ビューのセル選択: **Ctrl** キーを押しながらマウスでドラッグ（セル単位で選択可能）。選択セルは **Ctrl+C** でコピーし、システム機能設計書のExcelシートに直接貼り付け可能。\n\n> **重要**: 設計書ビューの左下に表示される「画面設計ボタン」はクリックしないこと。誤ってクリックした場合は「設計書ビューを構築しています…」の状態で画面が固まる。その場合は設計書ビューウィンドウをクローズし、再度「設計書ビューを開く」から設計書ビューを開くこと。\n\n> **補足**: 画面項目一覧に表示される項目は、業務画面JSPに直接記述した項目のみ。`<jsp:include>` などを経由して描画する項目はJSPのプレビューには表示されるが、画面項目一覧には表示されない（共通化された表示項目は共通部品として個別に設計され、各画面の設計書から参照される形となるため）。\n\n> **補足**: 表示される図はNablarch標準のシステム機能設計書の様式に沿ったもの。プロジェクト側で標準様式を修正している場合は、図とは異なる表示になる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

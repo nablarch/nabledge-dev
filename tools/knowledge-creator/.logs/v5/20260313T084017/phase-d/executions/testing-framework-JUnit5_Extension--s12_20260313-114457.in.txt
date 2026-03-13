@@ -1,0 +1,492 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.rst`
+- Format: `rst`
+
+```
+独自の拡張を加える
+-------------------
+
+自動テストフレームワークが提供するクラスを継承し、独自の拡張を加える場合の対応方法について説明する。
+
+.. tip::
+  ここで説明する手順は、JUnit 4で書かれた既存の独自拡張クラスを本拡張機能用に使用する場合にも適用できる。
+
+独自拡張クラスを作成する場合は、大きく次のようにして対応する。
+
+#. 自動テストフレームワークが提供するクラスを継承し、独自拡張クラスを作成する
+#. 継承元のクラスに対応するExtensionクラスを継承した独自拡張用のExtensionを作成し、独自拡張クラスのインスタンスを生成するように実装する
+#. ``ExtendWith`` アノテーションを使って独自Extensionクラスをテストクラスに適用する
+
+独自拡張クラスを作成する
+========================
+
+ここでは、 :java:extdoc:`TestSupport <nablarch.test.TestSupport>` を拡張したクラスを作成する場合を例にして説明する。
+
+まず、 :java:extdoc:`TestSupport <nablarch.test.TestSupport>` を継承した独自拡張クラスを作成する。
+
+.. code-block:: java
+
+  public class CustomTestSupport extends TestSupport {
+      // テストクラスの Class インスタンスを TestSupport のコンストラクタに渡せるように実装する
+      public CustomTestSupport(Class<?> testClass) {
+          super(testClass);
+      }
+
+      // 独自の拡張メソッドを実装する
+  }
+
+基本的に、自動テストフレームワークが提供するクラスは、インスタンス生成時にテストクラスの ``Class`` オブジェクトを渡す必要がある。
+したがって、独自拡張クラスにはテストクラスの ``Class`` オブジェクトを受け取れるようにコンストラクタを定義する必要がある。
+
+.. tip::
+  :java:extdoc:`SimpleRestTestSupport <nablarch.test.core.http.SimpleRestTestSupport>` は、テストクラスの ``Class`` オブジェクトをコンストラクタで渡さなくても使用できる。
+
+独自拡張用のExtensionを作成する
+====================================
+
+次に、拡張元のクラスに対応するExtensionクラスを継承し、独自拡張用のExtensionを作成する。
+例では :java:extdoc:`TestSupport <nablarch.test.TestSupport>` を継承しているので、対応するExtensionクラスは :java:extdoc:`TestSupportExtension <nablarch.test.junit5.extension.TestSupportExtension>` になる。
+
+.. tip::
+  :java:extdoc:`AbstractHttpRequestTestTemplate <nablarch.test.core.http.AbstractHttpRequestTestTemplate>` を直接継承した独自拡張クラスを使用する場合、対応するExtensionとしては :java:extdoc:`BasicHttpRequestTestExtension <nablarch.test.junit5.extension.http.BasicHttpRequestTestExtension>` が使用できる。
+
+.. code-block:: java
+
+  public class CustomTestSupportExtension extends TestSupportExtension {
+  
+      // createSupport() をオーバーライドし、独自拡張クラスのインスタンスを返すように実装する
+      @Override
+      protected TestEventDispatcher createSupport(Object testInstance, ExtensionContext context) {
+          return new CustomTestSupport(testInstance.getClass());
+      }
+  }
+
+独自拡張用のExtensionでは、 ``createSupport()`` メソッドをオーバーライドする。
+そして、先ほど作成した独自拡張クラスのインスタンスを返却するように実装する。
+
+なお、 ``createSupport()`` メソッドで生成した独自拡張クラスのインスタンスは、親クラスの :java:extdoc:`TestEventDispatcherExtension <nablarch.test.junit5.extension.event.TestEventDispatcherExtension>` に定義された ``support`` という :java:extdoc:`TestEventDispatcher <nablarch.test.event.TestEventDispatcher>` 型のインスタンスフィールドに保存される。
+このフィールドは ``protected`` なので、サブクラスから参照できる。
+
+
+ExtendWithでテストクラスに適用する
+====================================
+
+作成した独自拡張用のExtensionは、 ``ExtendWith`` アノテーションを使ってテストクラスに適用できる。
+以下に実装例を示す。
+
+.. code-block:: java
+
+  ..
+  import org.junit.jupiter.api.extension.ExtendWith;
+  
+  // 1. ExtendWith で独自拡張用のExtensionをテストクラスに適用する
+  @ExtendWith(CustomTestSupportExtension.class)
+  class YourTest {
+      // 2. 独自拡張クラスをインスタンス変数で宣言する
+      CustomTestSupport support;
+
+      @Test
+      void test() {
+          // 3. テスト内で独自拡張クラスを使用する
+          support.customMethod();
+      }
+  }
+
+BasicHttpRequestTestTemplateを拡張する場合はアノテーションも作成する
+====================================================================
+
+:java:extdoc:`BasicHttpRequestTestTemplate <nablarch.test.core.http.BasicHttpRequestTestTemplate>` または :java:extdoc:`AbstractHttpRequestTestTemplate <nablarch.test.core.http.AbstractHttpRequestTestTemplate>` を拡張する場合は、 ``baseUri`` を独自拡張クラスのインスタンスに連携する必要がある。
+``ExtendWith`` ではパラメータの連携ができないので、アノテーションも独自に作成する必要がある。
+
+以下に、 :java:extdoc:`BasicHttpRequestTestTemplate <nablarch.test.core.http.BasicHttpRequestTestTemplate>` での実装例を示す。
+
+.. code-block:: java
+
+  public class CustomHttpRequestTestSupport extends BasicHttpRequestTestTemplate {
+      private final String baseUri;
+     
+      // baseUri を外部から連携できるように実装しておく
+      public CustomHttpRequestTestSupport(Class<?> testClass, String baseUri) {
+          super(testClass);
+          this.baseUri = baseUri;
+      }
+  
+      @Override
+      protected String getBaseUri() {
+          return baseUri;
+      }
+  }
+
+まず、 :java:extdoc:`BasicHttpRequestTestTemplate <nablarch.test.core.http.BasicHttpRequestTestTemplate>` を継承して独自拡張クラスを作成する。
+このとき、コンストラクタではテストクラスと ``baseUri`` を渡せるようにしておく。
+
+次に、独自拡張クラス用の合成アノテーションを作成する。
+
+.. code-block:: java
+
+  import org.junit.jupiter.api.extension.ExtendWith;
+  
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Retention;
+  import java.lang.annotation.RetentionPolicy;
+  import java.lang.annotation.Target;
+  
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  // この後作成する独自拡張用のExtensionを指定する
+  @ExtendWith(CustomHttpRequestTestExtension.class)
+  public @interface CustomHttpRequestTest {
+      // baseUri を渡せるように宣言する
+      String baseUri();
+  }
+
+合成アノテーションでは、 ``baseUri`` を渡せるように宣言する。
+``ExtendWith`` で指定する独自拡張用のExtensionは、以下のようにして実装する。
+
+.. code-block:: java
+
+  public class CustomHttpRequestTestExtension extends BasicHttpRequestTestExtension {
+  
+      @Override
+      protected TestEventDispatcher createSupport(Object testInstance, ExtensionContext context) {
+          // テストクラスからアノテーションの情報を取得する
+          CustomHttpRequestTest annotation = findAnnotation(testInstance, CustomHttpRequestTest.class);
+          // 独自拡張クラスのコンストラクタに baseUri の情報を連携する
+          return new CustomHttpRequestTestSupport(testInstance.getClass(), annotation.baseUri());
+      }
+  }
+
+``findAnnotation(Object, Class)`` を使用すると、テストクラスに設定されたアノテーションの情報を取得できる。
+これを利用することで、独自拡張クラスに ``baseUri`` の値を連携できる。
+
+最後に、独自の合成アノテーションを使って次のように実装することで、 :java:extdoc:`BasicHttpRequestTestTemplate <nablarch.test.core.http.BasicHttpRequestTestTemplate>` を継承した独自拡張クラスを使用できるようになる。
+
+.. code-block:: java
+
+  // 独自の合成アノテーションをテストクラスに設定する(baseUri も設定する)
+  @CustomHttpRequestTest(baseUri = "/custom/")
+  class YourTest {
+      // 独自拡張クラスをフィールドで宣言する
+      CustomHttpRequestTestSupport support;
+  
+      @Test
+      void test() {
+          // 独自拡張クラスをテストで使用する
+          support.customMethod();
+      }
+  }
+
+事前処理・事後処理を実装する
+=============================
+
+独自拡張用のExtensionでは、以下のメソッドをオーバーライドすることによってテストの事前処理・事後処理を実装できる。
+
+* beforeAll
+* beforeEach
+* afterAll
+* afterEach
+
+``beforeAll`` と ``afterAll`` では、テストクラス全体での事前・事後処理を実装できる。
+そして、 ``beforeEach`` と ``afterEach`` では、テストメソッドごとの事前・事後処理を実装できる。
+
+それぞれのメソッドをオーバーライドするときは、必ず以下のようにして親クラスの同メソッドを実行する必要がある。
+そうしない場合、親クラスで定義された事前・事後処理が呼ばれなくなる。
+
+.. code-block:: java
+
+  @Override
+  public void beforeAll(ExtensionContext context) {
+      // 必ず最初に親のメソッドを実行する
+      super.beforeAll(context);
+
+      // 独自の事前処理を実装する
+      ...
+  }
+
+JUnit 4のTestRuleを再現する
+=============================
+
+既存プロジェクトなどで作成した独自拡張クラスがあり、その中でJUnit 4の ``TestRule`` を使用している場合に、本拡張機能に移植する方法を説明する。
+
+例えば、以下のような独自拡張クラスが存在したとする。
+
+.. code-block:: java
+
+  import org.junit.Rule;
+  import org.junit.rules.Timeout;
+  import java.util.concurrent.TimeUnit;
+  
+  public class CustomTestSupport extends TestSupport {
+      // JUnit 4のTestRuleを使用している
+      @Rule
+      public Timeout timeout = new Timeout(1000, TimeUnit.MILLISECONDS);
+  
+      public CustomTestSupport(Class<?> testClass) {
+          super(testClass);
+      }
+  }
+
+これを本拡張機能に移植する場合は、独自拡張用のExtensionクラスを次のようにして実装する。
+
+.. code-block:: java
+
+  public class CustomTestSupportExtension extends TestSupportExtension {
+  
+      @Override
+      protected TestEventDispatcher createSupport(Object testInstance, ExtensionContext context) {
+          return new CustomTestSupport(testInstance.getClass());
+      }
+  
+      // 1. resolveTestRules メソッドをオーバーライドする
+      @Override
+      protected List<TestRule> resolveTestRules() {
+          // 2. 親クラスの resolveTestRules() の結果をベースにしてリストを生成する
+          List<TestRule> rules = new ArrayList<>(super.resolveTestRules());
+          // 3. 独自拡張クラスで定義しているTestRuleをリストに追加する
+          rules.add(((CustomTestSupport) support).timeout);
+          // 4. 生成したリストを返却する
+          return rules;
+      }
+  }
+
+独自拡張用のExtensionでは、 ``resolveTestRules()`` というメソッドをオーバーライドできる。
+このメソッドで、再現させたいJUnit 4の ``TestRule`` をリストにして返却するように実装する。
+これにより、JUnit 5のテスト上でもJUnit 4の ``TestRule`` を再現できるようになる。
+
+なお、 ``resolveTestRules()`` をオーバーライドするときは、必ず親クラスの ``resolveTestRules()`` が返すリストをベースにすること。
+そうしない場合、親クラスで登録している ``TestRule`` が再現されなくなる。
+
+
+-------------------------------
+RegisterExtensionで使用する
+-------------------------------
+
+JUnit 5では、Extensionのインスタンスを手続き的に生成してテストクラスに適用するためにRegisterExtensionという仕組みが用意されている。
+
+.. tip::
+  RegisterExtensionの説明については、 `公式ガイドの「5.2.2. Programmatic Extension Registration」(外部サイト、英語) <https://junit.org/junit5/docs/5.8.2/user-guide/#extensions-registration-programmatic>`_ を参照のこと。
+
+本拡張機能が提供するExtensionは、RegisterExtensionを使っても利用できる。
+ただし、その場合は必ずstaticフィールドで使用すること。
+インスタンスフィールドで使用した場合、 ``beforeAll`` や ``afterAll`` などの処理が実行されないため、Extensionが正常に動作しなくなる。
+
+以下に、実装例を示す。
+
+.. code-block:: java
+
+  class YourTest {
+      // 1. static フィールドで RegisterExtension を使用する
+      @RegisterExtension
+      static TestSupportExtension extension = new TestSupportExtension();
+  
+      // 2. 自動テストフレームワークが提供するクラスのインスタンスフィールドを宣言する
+      TestSupport support;
+  
+      @Test
+      void test() {
+          // 3. support をテストで使用する
+          ...
+      }
+  }
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-JUnit5_Extension--s12`
+
+```json
+{
+  "id": "testing-framework-JUnit5_Extension--s12",
+  "title": "独自の拡張を加える",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/JUnit5_Extension.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/TestSupport.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/core/http/SimpleRestTestSupport.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/junit5/extension/TestSupportExtension.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/core/http/AbstractHttpRequestTestTemplate.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/junit5/extension/http/BasicHttpRequestTestExtension.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/junit5/extension/event/TestEventDispatcherExtension.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/event/TestEventDispatcher.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/test/core/http/BasicHttpRequestTestTemplate.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "独自の拡張を加える",
+      "hints": [
+        "TestSupport",
+        "SimpleRestTestSupport",
+        "TestSupportExtension",
+        "AbstractHttpRequestTestTemplate",
+        "BasicHttpRequestTestExtension",
+        "TestEventDispatcherExtension",
+        "TestEventDispatcher",
+        "@ExtendWith",
+        "createSupport",
+        "独自拡張クラス",
+        "JUnit5 Extension作成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "BasicHttpRequestTestTemplateを拡張する場合",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "CustomHttpRequestTest",
+        "findAnnotation",
+        "baseUri",
+        "BasicHttpRequestTestExtension",
+        "独自合成アノテーション",
+        "CustomHttpRequestTestSupport",
+        "getBaseUri"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "事前処理・事後処理を実装する",
+      "hints": [
+        "beforeAll",
+        "afterAll",
+        "beforeEach",
+        "afterEach",
+        "事前処理",
+        "事後処理",
+        "super.beforeAll"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "JUnit 4のTestRuleを再現する",
+      "hints": [
+        "TestRule",
+        "resolveTestRules",
+        "JUnit4移植",
+        "JUnit 4",
+        "Timeout",
+        "super.resolveTestRules"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "RegisterExtensionで使用する",
+      "hints": [
+        "TestSupportExtension",
+        "TestSupport",
+        "@RegisterExtension",
+        "RegisterExtension",
+        "staticフィールド",
+        "プログラマティック登録"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "独自拡張クラスとJUnit5 Extensionを作成し、テストクラスに適用する手順。\n\n> **補足**: JUnit 4の既存独自拡張クラスをJUnit5拡張機能に移植する場合にも適用できる。\n\n## 作成手順\n\n1. フレームワーク提供クラスを継承して独自拡張クラスを作成する\n2. 継承元に対応するExtensionクラスを継承した独自拡張用Extensionを作成し、独自拡張クラスのインスタンスを生成するよう実装する\n3. `@ExtendWith`で独自Extensionクラスをテストクラスに適用する\n\n## 独自拡張クラスの作成\n\nフレームワーク提供クラスはインスタンス生成時にテストクラスの`Class`オブジェクトを渡す必要がある。独自拡張クラスにはテストクラスの`Class`オブジェクトを受け取るコンストラクタを定義すること。\n\n> **補足**: `SimpleRestTestSupport` は`Class`オブジェクトをコンストラクタで渡さなくても使用できる。\n\n```java\npublic class CustomTestSupport extends TestSupport {\n    public CustomTestSupport(Class<?> testClass) {\n        super(testClass);\n    }\n    // 独自の拡張メソッドを実装する\n}\n```\n\n## 独自拡張用Extensionの作成\n\n継承元クラスと対応するExtensionクラスの対応:\n\n| 継承元クラス | 対応するExtensionクラス |\n|---|---|\n| `TestSupport` | `TestSupportExtension` |\n| `AbstractHttpRequestTestTemplate` の直接継承 | `BasicHttpRequestTestExtension` |\n\n`createSupport()`をオーバーライドして独自拡張クラスのインスタンスを返す。生成インスタンスは `TestEventDispatcherExtension` の`support`フィールド（`protected`、`TestEventDispatcher`型）に保存される。\n\n```java\npublic class CustomTestSupportExtension extends TestSupportExtension {\n    @Override\n    protected TestEventDispatcher createSupport(Object testInstance, ExtensionContext context) {\n        return new CustomTestSupport(testInstance.getClass());\n    }\n}\n```\n\n## テストクラスへの適用\n\n```java\nimport org.junit.jupiter.api.extension.ExtendWith;\n\n@ExtendWith(CustomTestSupportExtension.class)\nclass YourTest {\n    CustomTestSupport support;\n\n    @Test\n    void test() {\n        support.customMethod();\n    }\n}\n```",
+    "s2": "`BasicHttpRequestTestTemplate` または `AbstractHttpRequestTestTemplate` を拡張する場合、`baseUri`を独自拡張クラスのインスタンスに連携する必要がある。`@ExtendWith`ではパラメータ連携ができないため、独自アノテーションも作成する必要がある。\n\n## 独自拡張クラスの作成\n\nまず、`BasicHttpRequestTestTemplate` を継承して独自拡張クラスを作成する。コンストラクタにはテストクラスと`baseUri`を渡せるようにしておく:\n\n```java\npublic class CustomHttpRequestTestSupport extends BasicHttpRequestTestTemplate {\n    private final String baseUri;\n\n    public CustomHttpRequestTestSupport(Class<?> testClass, String baseUri) {\n        super(testClass);\n        this.baseUri = baseUri;\n    }\n\n    @Override\n    protected String getBaseUri() {\n        return baseUri;\n    }\n}\n```\n\n## 独自合成アノテーションの作成\n\n次に、独自拡張クラス用の合成アノテーションを作成する。`baseUri`を渡せるように宣言し、この後作成する独自Extensionを`@ExtendWith`で指定する:\n\n```java\nimport org.junit.jupiter.api.extension.ExtendWith;\nimport java.lang.annotation.ElementType;\nimport java.lang.annotation.Retention;\nimport java.lang.annotation.RetentionPolicy;\nimport java.lang.annotation.Target;\n\n@Retention(RetentionPolicy.RUNTIME)\n@Target(ElementType.TYPE)\n@ExtendWith(CustomHttpRequestTestExtension.class)\npublic @interface CustomHttpRequestTest {\n    String baseUri();\n}\n```\n\n## 独自Extensionの実装\n\n独自Extensionでは`findAnnotation(Object, Class)`を使ってアノテーション情報を取得し、`baseUri`を独自拡張クラスに連携する:\n\n```java\npublic class CustomHttpRequestTestExtension extends BasicHttpRequestTestExtension {\n    @Override\n    protected TestEventDispatcher createSupport(Object testInstance, ExtensionContext context) {\n        CustomHttpRequestTest annotation = findAnnotation(testInstance, CustomHttpRequestTest.class);\n        return new CustomHttpRequestTestSupport(testInstance.getClass(), annotation.baseUri());\n    }\n}\n```\n\n## テストクラスへの適用\n\n独自の合成アノテーションを使って次のように実装することで、`BasicHttpRequestTestTemplate`を継承した独自拡張クラスを使用できる:\n\n```java\n@CustomHttpRequestTest(baseUri = \"/custom/\")\nclass YourTest {\n    CustomHttpRequestTestSupport support;\n\n    @Test\n    void test() {\n        support.customMethod();\n    }\n}\n```",
+    "s3": "Extensionで以下のメソッドをオーバーライドすることによってテストの事前処理・事後処理を実装できる:\n\n- `beforeAll` / `afterAll`: テストクラス全体での事前・事後処理\n- `beforeEach` / `afterEach`: テストメソッドごとの事前・事後処理\n\n> **重要**: オーバーライド時は必ず最初に親クラスの同メソッド（`super.beforeAll(context)`等）を実行すること。実行しない場合、親クラスで定義された事前・事後処理が呼ばれなくなる。\n\n```java\n@Override\npublic void beforeAll(ExtensionContext context) {\n    // 必ず最初に親のメソッドを実行する\n    super.beforeAll(context);\n    // 独自の事前処理を実装する\n}\n```",
+    "s4": "独自拡張クラスでJUnit 4の`TestRule`を使用している場合、Extensionで`resolveTestRules()`をオーバーライドすることで再現させたい`TestRule`をリストで返す。\n\n例えば次のような独自拡張クラスが存在したとする:\n\n```java\nimport org.junit.Rule;\nimport org.junit.rules.Timeout;\nimport java.util.concurrent.TimeUnit;\n\npublic class CustomTestSupport extends TestSupport {\n    @Rule\n    public Timeout timeout = new Timeout(1000, TimeUnit.MILLISECONDS);\n\n    public CustomTestSupport(Class<?> testClass) {\n        super(testClass);\n    }\n}\n```\n\nこれを本拡張機能に移植する場合、Extensionクラスを次のように実装する:\n\n```java\npublic class CustomTestSupportExtension extends TestSupportExtension {\n    @Override\n    protected TestEventDispatcher createSupport(Object testInstance, ExtensionContext context) {\n        return new CustomTestSupport(testInstance.getClass());\n    }\n\n    @Override\n    protected List<TestRule> resolveTestRules() {\n        // 親クラスの resolveTestRules() の結果をベースにしてリストを生成する\n        List<TestRule> rules = new ArrayList<>(super.resolveTestRules());\n        // 独自拡張クラスで定義しているTestRuleをリストに追加する\n        rules.add(((CustomTestSupport) support).timeout);\n        return rules;\n    }\n}\n```\n\n> **重要**: `resolveTestRules()`オーバーライド時は必ず`super.resolveTestRules()`が返すリストをベースにすること。そうしない場合、親クラスで登録した`TestRule`が再現されなくなる。",
+    "s5": "> **重要**: `@RegisterExtension`で使用する場合は必ず**staticフィールド**で使用すること。インスタンスフィールドで使用した場合、`beforeAll`や`afterAll`等の処理が実行されず、Extensionが正常に動作しなくなる。\n\n```java\nclass YourTest {\n    // static フィールドで RegisterExtension を使用する\n    @RegisterExtension\n    static TestSupportExtension extension = new TestSupportExtension();\n\n    // 自動テストフレームワークが提供するクラスのインスタンスフィールドを宣言する\n    TestSupport support;\n\n    @Test\n    void test() {\n        // support を使用する\n    }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

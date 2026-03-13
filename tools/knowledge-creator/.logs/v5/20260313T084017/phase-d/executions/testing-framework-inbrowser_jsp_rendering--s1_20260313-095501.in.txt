@@ -1,0 +1,512 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/internals/inbrowser_jsp_rendering.rst`
+- Format: `rst`
+
+```
+=====================================
+業務画面JSPローカル表示機能
+=====================================
+
+-----------------
+概要
+-----------------
+:doc:`inbrowser_jsp_rendering` とは、ローカルディスク上の
+業務画面JSPファイルを通常のブラウザで直接開けるようにする仕組みである。
+
+これにより、開発用アプリケーションサーバが用意されていない
+設計工程の最初期においても画面のイメージや動作デモを簡単に実施できる。
+また、JSPの内容に応じた画面項目の一覧を表示できる。
+次の図は、以下のJSPをブラウザで直接開いて表示した例である。
+
+**ブラウザで直接開いた結果(左: 画面プレビュー表示 / 右:画面項目定義書表示**
+
+  .. figure:: ../_image/rendering_image.png
+     :scale:  60
+     :align: center
+
+
+**ソースコード**
+
+  .. code-block:: jsp
+
+      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+      <!-- <%/* --><script src="js/devtool.js"></script><meta charset="utf-8"><body><!-- */%> -->
+      <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+      <%@ taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+      <%@ taglib prefix="field" tagdir="/WEB-INF/tags/widget/field" %>
+      <%@ taglib prefix="button" tagdir="/WEB-INF/tags/widget/button" %>
+      <%@ taglib prefix="t" tagdir="/WEB-INF/tags/template" %>
+      <%@ taglib prefix="tab" tagdir="/WEB-INF/tags/widget/tab" %>
+      <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+
+      <t:page_template
+          title="ユーザ情報登録"
+          confirmationPageTitle="ユーザ情報登録確認">
+        <jsp:attribute name="contentHtml">
+
+        <n:form windowScopePrefixes="W11AC02,11AC_W11AC01">
+          <tab:group name="tab">
+          <tab:content title="ユーザ基本情報" selected="true">
+            <field:text title="ログインID"
+                        domain="LOGIN_ID"
+                        required="true"
+                        maxlength="20"
+                        hint="半角英数記号20文字以内"
+                        name="W11AC02.systemAccount.loginId"
+                        sample="test01">
+            </field:text>
+            <field:password title="パスワード"
+                            domain="PASSWORD"
+                            required="true"
+                            maxlength="20"
+                            name="W11AC02.newPassword"
+                            sample="password">
+            </field:password>
+            <field:password title="パスワード（確認用）"
+                            domain="PASSWORD"
+                            required="true"
+                            maxlength="20"
+                            name="W11AC02.confirmPassword"
+                            sample="password">
+            </field:password>
+            <field:hint>半角英数記号20文字以内</field:hint>
+          </tab:content>
+
+          <tab:content title="権限情報">
+            <field:text title="漢字氏名"
+                        domain="KANJI_NAME"
+                        required="true"
+                        maxlength="50"
+                        hint="全角50文字以内"
+                        name="W11AC02.users.kanjiName"
+                        sample="名部　楽太郎">
+            </field:text>
+            <field:pulldown title="グループ"
+                            required="true"
+                            name="W11AC02.ugroupSystemAccount.ugroupId"
+                            listName="allGroup"
+                            elementLabelProperty="ugroupName"
+                            elementValueProperty="ugroupId"
+                            hint="所属グループを選択してください。"
+                            sample="[お客様グループ]|一般グループ">
+            </field:pulldown>
+          </tab:content>
+          </tab:group>
+
+
+          <button:block>
+            <button:back
+                  label="一覧照会画面へ"
+                  size="4"
+                  uri="/action/ss11AC/W11AC01Action/${searchRequestId}">
+              </button:back>
+              <button:check
+                  uri="/action/ss11AC/W11AC02Action/RW11AC0202">
+              </button:check>
+         </button:block>
+        </n:form>
+        </jsp:attribute>
+      </t:page_template>
+
+
+
+.. **i**
+
+ローカルデモ用のJSPレンダリング処理を行う際に必要となる資源は、大きく分けて以下の3つである。
+
+ 1. **ローカルデモの対象となる業務画面JSPファイル**
+ 2. **UI共通部品群(UI部品ウィジェット/業務画面テンプレート/JavaScript UI部品)**
+ 3. **ローカルデモ用JSPレンダリングエンジン**
+
+上記のうち **1.** と **2.** は、実際の開発で使用しているものをそのまま用いる。
+つまり、デモ用に何かを作成したりする必要はなく、サーバ開発でそのまま使用する成果物を用いて
+ローカルレンダリングを行うことができる。
+
+以下は、これらの3つの資源の関係を表した図である。
+
+  .. figure:: ../_image/rendering_function.png
+     :scale:  80
+     :align: center
+
+
+
+ローカルJSPレンダリング機能の有効化
+------------------------------------
+業務画面JSPファイルの冒頭に以下のソースコードを記述することで、ローカルJSPレンダリング機能が有効となる。
+
+.. code-block:: jsp
+
+      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+      <!-- <%/* --><script src="js/devtool.js"></script><meta charset="utf-8"><body><!-- */%> -->
+
+
+
+.. **i**
+
+業務画面JSPを記述する際の制約事項
+------------------------------------
+本機能を使用するには、業務画面JSPの記述に関して以下の制約事項が存在する。
+
+なお、これらの制約はブラウザで直接開くJSPに対するものなので、
+:doc:`jsp_widgets` や :doc:`jsp_page_templates` には影響しない。
+
+1. 明示的な閉じタグが必ず必要
+
+  本機能を使用するには、業務画面JSP内の全てのJSPタグについて、明示的に閉じタグを記述する必要がある。
+  閉じタグを記述しない場合、以降のタグがレンダリングされなくなる。
+
+  **正しい例**
+
+  .. code-block:: jsp
+
+    <n:set name="var" value="val"></n:set>
+
+  **誤った例**
+
+  .. code-block:: jsp
+
+    <n:set name="var" value="val" />
+
+
+2. disabled属性値の内容が無視される(IE8限定)
+
+  IE8では、タグ上に **disabled** 属性が設定されていた場合、その属性値の内容に関わらず
+  常に `disabled="disabled"` が設定されているものとみなされる。
+  このため `disabled="false"` のように記述した場合に意図した通りの表示とならない。
+  このような場合は単に **disabled** 属性を削除すること。
+
+.. _localrendering-limitation-eventconfirmtag:
+
+3. イベントに関連した動作が不安定(ブラウザによって挙動も異なる)
+
+  eventタグを使用した場合やJavaScriptでnablarch/ui/event.jsで定義されたイベントに対するリスナーを登録した場合の動作が、
+  ブラウザによってことなったりリスナーがコールバックされないと言った問題がある。
+  
+  このため、これらの実装部分の確認はアプリケーションサーバにデプロイし行うこと。
+
+
+-----------------------------------
+ローカル表示の仕組み
+-----------------------------------
+本機能は大きく以下の2つの部分に分けることができる。
+
+  1. 業務画面JSPパーサー(`/js/jsp.js <../../../../_static/ui_dev/yuidoc/files/nablarch-dev-ui_demo-core_ui_local_js_jsp.js.html>`_)
+  2. タグライブラリ スタブJS  (`/js/jsp/taglib/*.js`)
+
+前者は業務画面JSPファイル内のJSPをパースし、タグライブラリごとに後者のスタブJSを呼び出す機能である。
+後者の機能はタグライブラリごとに、ローカル表示時の挙動を実装するものである。
+
+標準では以下のタグライブラリについてスタブJSを実装しており、
+:doc:`jsp_page_templates` や :doc:`jsp_widgets` を使用して業務画面JSPを作成しているのであれば
+問題なくローカル表示が可能である。
+
+================= ==================================================================================================================================
+名前空間          スタブJSの仕様(APIドキュメント)
+================= ==================================================================================================================================
+**jsp:**          `JSPタグライブラリJSスタブ <../../../../_static/ui_dev/yuidoc/classes/jsp.taglib.jsp.html>`_
+**c:**            `JSTL coreタグライブラリJSスタブ <../../../../_static/ui_dev/yuidoc/classes/jsp.taglib.jstl.html>`_
+**fn:**           `JSTL FunctionsタグライブラリJSスタブ <../../../../_static/ui_dev/yuidoc/classes/jsp.taglib.function.html>`_
+**n:**            `NablarchタグライブラリJSスタブ <../../../../_static/ui_dev/yuidoc/classes/jsp.taglib.nablarch.html>`_
+================= ==================================================================================================================================
+
+ただし、新規の :doc:`jsp_widgets` を追加したり、外部のタグライブラリを使用したりする場合は、
+必要に応じてプロジェクト側で タグライブラリスタブJS を追加する必要がある。
+
+
+-----------------------
+構造
+-----------------------
+
+構成ファイル一覧
+------------------------
+
+============================ ======== ======= =================================== ========================================================
+名称                         動作環境 [#1]_   パス                                内容
+---------------------------- ---------------- ----------------------------------- --------------------------------------------------------
+_                            ローカル サーバ  _                                _
+============================ ======== ======= =================================== ========================================================
+ミニファイ済みスクリプト     ○        ×       /js/devtool.js                      ローカルレンダリングに必要な資源をミニファイしたもの
+
+初期ロードスクリプト         △        ×       /js/devtool-loader.js               ローカルレンダリングに必要なスクリプト群を初期ロード
+                                                                                  するスクリプト
+                                                                                  また、JSPのレンダリングが完了するまでの一定期間、
+                                                                                  画面の表示を隠すなどの初期処理もあわせて行う。
+
+ミニファイ対象資源一覧       ×        ×       /js/build/devtool_conf.js           プロジェクト内で使用しているタグファイルや
+                                                                                  インクルードファイルなどの資源の一覧。
+                                                                                  JSPローカルレンダリングではこれらの資源の内容を参照
+                                                                                  するため、ミニファイ処理の事前処理として自動作成される。
+
+ローカルデモUI               △        ×       /js/devtool/\*.js                   ローカルレンダリングに付随するUI機能。
+                                                                                  主に画面項目定義の表示機能と、それを操作するためのUI
+                                                                                  が含まれる。
+
+設計書画面テンプレート       △        ×       /specsheet_template/                画面詳細設計書のExcelシートを「Webページ」として保存した
+                                              SpecSheetTemplate.htm               もの。設計書ビューの表示機能では、このテンプレートを
+                                                                                  使用してJSP上の設計情報を表示する。
+
+タグ定義                     △        ×       /js/devtool/resource/               各JSPウィジェットのローカル表示及び設計書ビューを
+                                              タグ定義.js                         表示するために必要な捕捉情報を記述する設定ファイル。
+                                                                                  JSPウィジェットを追加した場合は
+                                                                                  ここの定義を追加する必要がある。
+                                                                                  記述書式などの詳細については
+                                                                                  :doc:`./configuration_files` を参照すること。
+
+JSPローカルレンダラ          △        ×       /js/jsp.js                          JSPのローカルレンダリングを行うメインスクリプト
+                                                                                  一応、jQueryプラグインの形態をとっている。
+
+コンテキスト変数設定         △        ×       /js/jsp/context.js                  JSPのローカルレンダリングを行う際に、参照する
+                                                                                  セッション・リクエスト・ページの各コンテキスト変数
+                                                                                  のダミー定義を記述する。
+
+EL式簡易パーサ               △        ×       /js/jsp/el.js                       EL式の簡易パーサ
+タグライブラリスタブ         △        ×       /js/jsp/taglib/nablarch.js |br|      各タグファイル・タグライブラリのスタブ動作を実装する
+                                              /js/jsp/taglib/jstl.js |br|          スクリプト群。 **/js/jsp.js** から呼ばれる。
+                                              /js/jsp/taglib/jsp.js |br|           タグライブラリの名前空間毎に別スクリプトとなっている。
+                                              /js/jsp/taglib/html.js |br|
+                                              /js/jsp/taglib/field.js |br|
+                                              /js/jsp/taglib/button.js |br|
+                                              /js/jsp/taglib/link.js |br|
+                                              /js/jsp/taglib/template.js |br|
+                                              /js/jsp/taglib/table.js |br|
+                                              /js/jsp/taglib/column.js |br|
+                                              /js/jsp/taglib/tab.js |br|
+                                              /js/jsp/taglib/event.js |br|
+
+
+============================ ======== ======= =================================== ========================================================
+
+.. [#1]
+  **「サーバ」:**
+    実働環境にデプロイして使用するかどうか
+  **「ローカル」:**
+    ローカル動作時に使用するかどうか
+  **○ :**
+    使用する
+  **△ :**
+    直接は使用しないがミニファイしたファイルの一部として使用する。
+  **× :**
+    使用しない
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `testing-framework-inbrowser_jsp_rendering--s1`
+
+```json
+{
+  "id": "testing-framework-inbrowser_jsp_rendering--s1",
+  "title": "業務画面JSPローカル表示機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/internals/inbrowser_jsp_rendering.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "業務画面JSPローカル表示機能",
+        "ローカルレンダリング概要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "ローカル表示機能",
+        "業務画面JSP",
+        "UI共通部品",
+        "画面プレビュー",
+        "アプリケーションサーバ不要",
+        "JSPレンダリングエンジン"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ローカルJSPレンダリング機能の有効化",
+      "hints": [
+        "有効化",
+        "devtool.js",
+        "JSP冒頭記述",
+        "ローカルレンダリング有効化"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "業務画面JSPを記述する際の制約事項",
+      "hints": [
+        "閉じタグ必須",
+        "disabled属性",
+        "IE8制限",
+        "イベント動作不安定",
+        "JSP記述制約"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "ローカル表示の仕組み"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ローカル表示の仕組み",
+      "hints": [
+        "JSPパーサー",
+        "タグライブラリスタブ",
+        "jsp.js",
+        "スタブJS",
+        "名前空間",
+        "JSTL",
+        "NablarchタグライブラリJSスタブ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "",
+      "hints": [
+        "構造",
+        "構成ファイル"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "構造",
+      "hints": [
+        "ローカルレンダリング構造",
+        "構成ファイル一覧"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "構成ファイル一覧",
+      "hints": [
+        "devtool.js",
+        "devtool-loader.js",
+        "jsp.js",
+        "タグライブラリスタブ",
+        "context.js",
+        "el.js",
+        "タグ定義.js",
+        "構成ファイル一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "なし",
+    "s2": "業務画面JSPローカル表示機能は、ローカルディスク上の業務画面JSPファイルを通常のブラウザで直接開けるようにする仕組み。開発用アプリケーションサーバが用意されていない設計工程の初期においても画面のプレビューや動作デモが実施可能。JSPの内容に応じた画面項目一覧の表示もできる。\n\nローカルデモ用JSPレンダリング処理に必要な3つの資源:\n\n1. ローカルデモ対象の業務画面JSPファイル\n2. UI共通部品群（UI部品ウィジェット/業務画面テンプレート/JavaScript UI部品）\n3. ローカルデモ用JSPレンダリングエンジン\n\n上記のうち1・2は実際の開発で使用しているものをそのまま利用可能。デモ専用の成果物を新たに作成する必要はない。\n\n![3つの資源の関係図](assets/testing-framework-inbrowser_jsp_rendering--s1/rendering_function.png)",
+    "s3": "業務画面JSPファイルの冒頭に以下のコードを記述することでローカルJSPレンダリング機能が有効になる。\n\n```jsp\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<!-- <%/* --><script src=\"js/devtool.js\"></script><meta charset=\"utf-8\"><body><!-- */%> -->\n```",
+    "s4": "以下の制約はブラウザで直接開くJSPに対するものであり、:doc:`jsp_widgets` や :doc:`jsp_page_templates` には影響しない。\n\n1. **明示的な閉じタグが必須**: 業務画面JSP内の全JSPタグに明示的な閉じタグが必要。省略するとそれ以降のタグがレンダリングされなくなる。\n   - 正しい例: `<n:set name=\"var\" value=\"val\"></n:set>`\n   - 誤った例: `<n:set name=\"var\" value=\"val\" />`（自己終了タグは使用不可）\n\n2. **disabled属性値の無視（IE8限定）**: IE8ではdisabled属性が設定されていると属性値に関わらず常に`disabled=\"disabled\"`として扱われる。`disabled=\"false\"`のように記述しても意図通りに動作しない。disabled属性を削除すること。\n\n3. **イベント関連の動作が不安定**: eventタグの使用や`nablarch/ui/event.js`で定義されたイベントへのリスナー登録は、ブラウザによって動作が異なる、またはリスナーがコールバックされない問題がある。これらの確認はアプリケーションサーバにデプロイして行うこと。",
+    "s5": "なし",
+    "s6": "ローカル表示は以下の2つの部分で構成される。\n\n1. **業務画面JSPパーサー** (`/js/jsp.js`): 業務画面JSPファイル内のJSPをパースし、タグライブラリごとにスタブJSを呼び出す\n2. **タグライブラリスタブJS** (`/js/jsp/taglib/*.js`): タグライブラリごとにローカル表示時の挙動を実装\n\n:doc:`jsp_page_templates` や :doc:`jsp_widgets` を使用して作成した業務画面JSPであれば、標準で以下のタグライブラリのスタブJSが実装済みであり問題なくローカル表示が可能。\n\n| 名前空間 | 内容 |\n|---|---|\n| `jsp:` | JSPタグライブラリJSスタブ |\n| `c:` | JSTL coreタグライブラリJSスタブ |\n| `fn:` | JSTL FunctionsタグライブラリJSスタブ |\n| `n:` | NablarchタグライブラリJSスタブ |\n\n> **注意**: 新規の :doc:`jsp_widgets` を追加したり外部のタグライブラリを使用したりする場合は、プロジェクト側でタグライブラリスタブJSを追加する必要がある。",
+    "s7": "なし",
+    "s8": "なし",
+    "s9": "動作環境の記号: ○=使用する、△=直接は使用しないがミニファイ済みファイルの一部として使用、×=使用しない\n\n| 名称 | ローカル | サーバ | パス | 内容 |\n|---|---|---|---|---|\n| ミニファイ済みスクリプト | ○ | × | `/js/devtool.js` | ローカルレンダリングに必要な資源をミニファイしたもの |\n| 初期ロードスクリプト | △ | × | `/js/devtool-loader.js` | ローカルレンダリングに必要なスクリプト群の初期ロード。JSPレンダリング完了まで画面を隠す初期処理も実施 |\n| ミニファイ対象資源一覧 | × | × | `/js/build/devtool_conf.js` | タグファイルやインクルードファイルなどの資源一覧。ミニファイ処理の事前処理として自動作成 |\n| ローカルデモUI | △ | × | `/js/devtool/*.js` | 画面項目定義の表示機能とそれを操作するUI |\n| 設計書画面テンプレート | △ | × | `/specsheet_template/SpecSheetTemplate.htm` | 画面詳細設計書のExcelシートをWebページとして保存したもの。設計書ビュー表示に使用 |\n| タグ定義 | △ | × | `/js/devtool/resource/タグ定義.js` | JSPウィジェットのローカル表示・設計書ビュー表示に必要な補足情報の設定ファイル。JSPウィジェット追加時は定義の追加が必要。記述書式の詳細は :doc:`./configuration_files` を参照 |\n| JSPローカルレンダラ | △ | × | `/js/jsp.js` | JSPのローカルレンダリングを行うメインスクリプト（jQueryプラグイン形態） |\n| コンテキスト変数設定 | △ | × | `/js/jsp/context.js` | ローカルレンダリング時に参照するセッション・リクエスト・ページのコンテキスト変数のダミー定義 |\n| EL式簡易パーサ | △ | × | `/js/jsp/el.js` | EL式の簡易パーサ |\n| タグライブラリスタブ | △ | × | `/js/jsp/taglib/nablarch.js` 他11ファイル | 各タグライブラリのスタブ動作実装。`/js/jsp.js`から呼ばれる。名前空間ごとに別スクリプト |\n\nタグライブラリスタブの全ファイル: `nablarch.js`, `jstl.js`, `jsp.js`, `html.js`, `field.js`, `button.js`, `link.js`, `template.js`, `table.js`, `column.js`, `tab.js`, `event.js`"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

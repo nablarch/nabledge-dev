@@ -1,0 +1,251 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/reference_jsp_widgets/field_label_id_value.rst`
+- Format: `rst`
+
+```
+=================================================
+ID:値セット項目表示ウィジェット
+=================================================
+:doc:`field_label_id_value` は、 **ID:値** の組を
+他の入力項目と並べて表示するウィジェットである。
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+.. code-block:: jsp
+
+    <field:label_id_value
+        title="グループ"
+        sample="0000000000: お客様グループ">
+    </field:label_id_value>
+
+
+**実装成果物(サーバ動作)**
+
+.. code-block:: jsp
+
+    <field:label_id_value
+        title="グループ"
+        idName="ugroupInfo.ugroupId"
+        valueName="ugroupInfo.ugroupName"
+        sample="0000000000: お客様グループ">
+    </field:label_id_value>
+
+仕様
+=============================================
+**サーバ動作時の挙動**
+  入力画面、確認画面ともに **idName** 属性に指定した変数の値と **valueName** 属性に指定した変数の値とを
+  セパレータ **":"** で連結した文字列を表示する。
+
+**ローカル動作時の挙動**
+  入力画面、確認画面ともに **sample** に指定した文字列を出力する。
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+==================== ============================== ============== ========== ========= ================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ================================
+title                項目名                         文字列         ◎          ◎
+domain               項目のドメイン型               文字列         ○          ○
+idName               ID値として表示する変数名       文字列         ◎          ○ 
+valueName            名称として表示する変数名       文字列         ◎          ○ 
+sample               ローカル動作時に表示する文字列 文字列         ×          ○
+dataFrom             表示するデータの取得元         文字列         ×          ×           画面項目定義に記載する、
+                                                                                          「表示情報取得元」.「表示項目名」
+                                                                                          の形式で設定する。
+comment              表示項目についての備考         文字列         ×          ×           設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×           設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+
+
+==================== ============================== ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/label_id_value.tag  :doc:`field_label_id_value` の実体となるタグファイル
+
+ /js/jsp/taglib/nablarch.js                    `<n:write>` のエミュレーション機能を実装する
+                                               タグライブラリスタブJS
+
+ 
+============================================== ==================================================
+  
+  
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-field_label_id_value`
+
+```json
+{
+  "id": "testing-framework-field_label_id_value",
+  "title": "ID:値セット項目表示ウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_jsp_widgets/field_label_id_value.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "field:label_id_value",
+        "ID値セット項目表示ウィジェット",
+        "JSPウィジェット",
+        "ローカル動作",
+        "サーバ動作",
+        "コードサンプル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "title",
+        "domain",
+        "idName",
+        "valueName",
+        "sample",
+        "dataFrom",
+        "comment",
+        "initialValueDesc",
+        "属性一覧",
+        "ID値表示",
+        "セパレータ連結",
+        "入力画面",
+        "確認画面"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "label_id_value.tag",
+        "nablarch.js",
+        "タグファイル",
+        "タグライブラリスタブJS",
+        "内部構造",
+        "部品一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**設計成果物(ローカル動作)**:\n```jsp\n<field:label_id_value\n    title=\"グループ\"\n    sample=\"0000000000: お客様グループ\">\n</field:label_id_value>\n```\n\n**実装成果物(サーバ動作)**:\n```jsp\n<field:label_id_value\n    title=\"グループ\"\n    idName=\"ugroupInfo.ugroupId\"\n    valueName=\"ugroupInfo.ugroupName\"\n    sample=\"0000000000: お客様グループ\">\n</field:label_id_value>\n```",
+    "s2": "**サーバ動作時の挙動**: 入力画面・確認画面ともに `idName` 属性に指定した変数の値と `valueName` 属性に指定した変数の値をセパレータ `\":\"` で連結した文字列を表示する。\n\n**ローカル動作時の挙動**: 入力画面・確認画面ともに `sample` に指定した文字列を出力する。\n\n**属性値一覧** [◎ 必須属性 ○ 任意属性 × 無効]\n\n| 名称 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| title | 項目名 | 文字列 | ◎ | ◎ | |\n| domain | 項目のドメイン型 | 文字列 | ○ | ○ | |\n| idName | ID値として表示する変数名 | 文字列 | ◎ | ○ | |\n| valueName | 名称として表示する変数名 | 文字列 | ◎ | ○ | |\n| sample | ローカル動作時に表示する文字列 | 文字列 | × | ○ | |\n| dataFrom | 表示するデータの取得元 | 文字列 | × | × | 「表示情報取得元」.「表示項目名」の形式で設定 |\n| comment | 表示項目についての備考 | 文字列 | × | × | 設計書の画面項目定義の「備考」に表示 |\n| initialValueDesc | 初期表示内容に関する説明 | 文字列 | × | × | 設計書の画面項目定義の「備考」に表示 |",
+    "s3": "**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| `/WEB-INF/tags/widget/field/label_id_value.tag` | :doc:`field_label_id_value` の実体となるタグファイル |\n| `/js/jsp/taglib/nablarch.js` | `<n:write>` のエミュレーション機能を実装するタグライブラリスタブJS |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

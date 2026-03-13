@@ -1,0 +1,213 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-resource_mapping--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (introduction)",
+      "description": "The introductory description of the handler's basic purpose is omitted: 「本ハンドラは、業務アクションを経由せずにレスポンスを返却する機能を提供する。本機能は、静的リソースをNablarchのハンドラを経由してダウンロードする際に使用する。」 This sentence concisely states the handler's role (returning responses without going through business actions) and its primary use case.",
+      "source_evidence": "本ハンドラは、業務アクションを経由せずにレスポンスを返却する機能を提供する。本機能は、静的リソースをNablarchのハンドラを経由してダウンロードする際に使用する。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _resource_mapping:
+
+リソースマッピングハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+本ハンドラは、業務アクションを経由せずにレスポンスを返却する機能を提供する。
+本機能は、静的リソースをNablarchのハンドラを経由してダウンロードする際に使用する。
+
+.. important::
+  本ハンドラを使用して静的リソースをダウンロードする方法には、「ログが大量に出力される」、
+  「大量アクセスがあるサーバで、アプリケーションサーバの負荷が大きい」といったデメリットがある。
+
+  このため、ハンドラを経由させる必要がない静的リソースのダウンロードについては、
+  本ハンドラの使用を推奨しない。
+  静的リソースについては、ウェブコンテナまたはウェブサーバの機能でダウンロードし、
+  本ハンドラを使用するのは「コンテンツのダウンロードに認可チェックを行う必要がある」など、
+  他のハンドラを経由する必要のあるコンテンツに限って使用すること。
+
+本ハンドラでは、以下の処理を行う。
+
+* 静的リソースをダウンロードするレスポンスを返す
+
+.. important::
+  本ハンドラは主に、 :ref:`request_handler_entry` と組み合わせて 「特定の拡張子の場合に静的リソースを
+  ダウンロードする」 機能の実現に使用する。
+
+  この用途での使用例は :ref:`リクエストハンドラエントリの使用例 <request_handler_entry_usage>` を参照。
+
+処理の流れは以下のとおり。
+なお、図にある通り本ハンドラは後続のハンドラを呼び出さない。
+
+.. image:: ../images/ResourceMapping/flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.web.handler.ResourceMapping`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+
+制約
+------------------------------
+
+:ref:`forwarding_handler` よりも後に配置すること
+  本ハンドラは、 :ref:`forwarding_handler` の機能により提供される ``forward://`` スキームを使用できる。
+  このため、本ハンドラは :ref:`forwarding_handler` より後に配置する必要がある。
+
+:ref:`http_response_handler` よりも後に配置すること
+  本ハンドラは、 :ref:`http_response_handler` の機能により提供される ``servlet://`` 、 ``file://`` 、 ``classpath://`` スキームを使用できる。
+  また、エラーが発生した際は 404(Not Found)の応答を返す。
+  これらの応答を処理するため、本ハンドラは :ref:`http_response_handler` より後に配置する必要がある。
+
+.. _resource_mapping_usage:
+
+静的リソースのダウンロード
+------------------------------
+
+本ハンドラの主たる用途である、静的リソースをダウンロードする際には ``baseUri`` と ``basePath`` 2つのプロパティを以下のように設定する。
+
+.. code-block:: xml
+
+  <!-- 画像ファイルの静的リソースダウンロードを行うハンドラ -->
+  <component name="imgMapping"
+             class="nablarch.fw.web.handler.ResourceMapping">
+    <property name="baseUri" value="/"/>
+    <property name="basePath" value="servlet:///"/>
+  </component>
+
+それぞれの設定項目の意味は下記の通り
+
+============================= ==========================================================
+設定項目                      意味
+============================= ==========================================================
+baseUri                       処理対象のURL。このURLにマッチしない場合、ハンドラは
+                              |br|
+                              HTTPステータス404(NotFound)の応答を返す。
+basePath                      baseUriにマッチした場合のレスポンスのベースURL。
+                              |br|
+                              スキーマ指定を省略した場合、 ``servlet://`` スキーマが使用される。
+============================= ==========================================================
+
+ただし、上記設定のハンドラを単純にハンドラキューに入れた場合、サーバに送られたすべてのURLの処理が
+静的リソースとして処理される。
+つまり、ハンドラキュー上の本ハンドラ以降のハンドラすべてが実行されなくなる。
+
+このため、  :ref:`request_handler_entry_usage` に記載のとおり、 :ref:`request_handler_entry` と組み合わせて使用する必要がある。
+
+
+
+.. |br| raw:: html
+
+   <br />
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-resource_mapping--s1",
+  "title": "リソースマッピングハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/web/resource_mapping.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/ResourceMapping.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "ResourceMapping",
+        "nablarch.fw.web.handler.ResourceMapping",
+        "リソースマッピングハンドラ",
+        "静的リソースダウンロード",
+        "認可チェック",
+        "後続ハンドラを呼び出さない"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-web",
+        "com.nablarch.framework",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "forwarding_handler",
+        "http_response_handler",
+        "ハンドラ配置順序",
+        "forward://スキーム",
+        "servlet://スキーム",
+        "file://スキーム",
+        "classpath://スキーム"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "静的リソースのダウンロード",
+      "hints": [
+        "baseUri",
+        "basePath",
+        "request_handler_entry",
+        "静的リソース設定",
+        "ResourceMappingプロパティ",
+        "404 NotFound",
+        "servlet://スキーマ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.ResourceMapping`\n\n> **重要**: 本ハンドラを使用して静的リソースをダウンロードする方法には、「ログが大量に出力される」、「大量アクセスがあるサーバでアプリケーションサーバの負荷が大きい」といったデメリットがある。静的リソースはウェブコンテナまたはウェブサーバの機能でダウンロードし、本ハンドラは認可チェックが必要なコンテンツなど、他のハンドラを経由する必要のあるコンテンツにのみ使用すること。\n\n> **重要**: 本ハンドラは主に :ref:`request_handler_entry` と組み合わせて「特定の拡張子の場合に静的リソースをダウンロードする」機能の実現に使用する。使用例は :ref:`リクエストハンドラエントリの使用例 <request_handler_entry_usage>` を参照。\n\n本ハンドラは後続のハンドラを呼び出さない。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+    "s3": "- :ref:`forwarding_handler` より後に配置すること: 本ハンドラは `forward://` スキームを使用するため。\n- :ref:`http_response_handler` より後に配置すること: 本ハンドラは `servlet://`、`file://`、`classpath://` スキームを使用し、エラー発生時は404(Not Found)応答を返すため。",
+    "s4": "`baseUri` と `basePath` の2つのプロパティを設定する。\n\n```xml\n<component name=\"imgMapping\"\n           class=\"nablarch.fw.web.handler.ResourceMapping\">\n  <property name=\"baseUri\" value=\"/\"/>\n  <property name=\"basePath\" value=\"servlet:///\"/>\n</component>\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| baseUri | 処理対象のURL。マッチしない場合は404(NotFound)を返す。 |\n| basePath | baseUriにマッチした場合のレスポンスのベースURL。スキーマ省略時は `servlet://` スキーマが使用される。 |\n\n> **重要**: 上記設定のハンドラを単純にハンドラキューに入れると、サーバに送られたすべてのURLが静的リソースとして処理され、本ハンドラ以降のハンドラがすべて実行されなくなる。:ref:`request_handler_entry` と組み合わせて使用すること（:ref:`request_handler_entry_usage` 参照）。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

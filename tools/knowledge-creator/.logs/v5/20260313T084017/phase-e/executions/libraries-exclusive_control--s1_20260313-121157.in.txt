@@ -1,0 +1,183 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-exclusive_control--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 排他制御用テーブルの定義単位",
+      "description": "The source states the key design principle: \"排他制御用テーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する\" (define at the maximum unit where conflict is acceptable). This principle is absent from the knowledge file. The knowledge file mentions that larger units increase conflict probability, but omits the actionable guideline that the unit should be the *maximum* where conflict is still acceptable.",
+      "source_evidence": "排他制御用テーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 更新順序の重要性 (important block)",
+      "description": "The source explains the mechanism behind deadlock risk: \"データベースでは、レコードを更新すると行ロックがかかる\" (updating a record causes a row lock). This causal explanation is omitted from the knowledge file. The knowledge file states the conclusion (deadlock risk) but not the underlying reason (row-level locking on update), which aids understanding of why ordering matters.",
+      "source_evidence": "データベースでは、レコードを更新すると行ロックがかかるので、更新順序を定めておかなければデッドロックが発生する可能性が非常に高くなる。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _exclusive_control:
+
+排他制御
+=====================================================================
+
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+この機能では、データベースのデータ更新に対する排他制御を行う。
+この機能により、データベースの同一データに対して、
+複数のトランザクション（ウェブやバッチ）から同時に更新した場合でも、
+データの整合性を保つことができる。
+
+.. _exclusive_control-deprecated:
+
+.. important::
+ この機能は、以下の理由により **非推奨** である。
+ 排他制御には、 :ref:`universal_dao` を使用すること。
+
+ * :ref:`universal_dao` の排他制御は、本機能より簡単に使用できる。
+    :ref:`universal_dao_jpa_optimistic_lock` 、 :ref:`universal_dao_jpa_pessimistic_lock` を参照。
+ * 主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。
+    この機能は、主キーの値を全て文字列型( `java.lang.String` )で保持している。
+    主キーのカラム定義が非文字列型(charやvarchar以外)の場合に、
+    データベースによっては型の不一致でSQL文の実行時例外が発生する。
+    例えば、PostgreSQLのように暗黙の型変換が行われないデータベースの場合、この問題が発生する。
+
+機能概要
+---------------------------------------------------------------------
+
+楽観的ロック/悲観的ロックができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+この機能では、テーブルにバージョン番号カラムを定義することで、楽観的ロック/悲観的ロックを行う。
+本フレームワークでは、バージョン番号カラムが定義されたテーブルを **排他制御用テーブル** と呼ぶ。
+
+この機能では以下のことが実現できる。
+
+* :ref:`exclusive_control-optimistic_lock`
+* :ref:`exclusive_control-optimistic_lock-bulk`
+* :ref:`exclusive_control-pessimistic_lock`
+
+この機能が提供する楽観的ロック/悲観的ロックは、同じ排他制御用テーブルを使用して実現するため、
+楽観的ロックと悲観的ロックを並行で使用しても、同一データが同時に更新されるのを防ぐことができる。
+たとえば、楽観的ロックを使用するウェブと、悲観的ロックを使用するバッチを並行稼働させても、
+データの整合性を保つことができる。
+
+排他制御用テーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。
+たとえば、「ユーザ」という大きな単位でロックすることが業務的に許容されるならば、
+その単位で排他制御用テーブルを定義する。
+ただし、単位を大きくすると、競合する可能性が高くなり、
+更新失敗(楽観的ロックの場合)や処理遅延(悲観的ロックの場合)を招く点に注意すること。
+
+.. tip::
+ 通常、排他制御用テーブルの単位は、業務的な観点で定義する。
+ たとえば、売上処理と入金処理による更新が同時に行われる場合は、
+ それらの処理に関連するテーブルをまとめた単位で排他制御用テーブルを定義する。
+
+ また、テーブル設計の観点からも排他制御用テーブルの単位を定義できる。
+ たとえば、ヘッダ部(親)と明細部(子)など、テーブルの親子関係が明確であれば、
+ 親の単位で排他制御用テーブルを定義する。
+ 親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。
+
+.. important::
+
+ 排他制御用テーブルの設計が終わったら、更新順序を設計する。
+ 各テーブルの更新順序を定めることで、デッドロックの防止、及び更新時のデータ整合性の保証を実現する。
+ データベースでは、レコードを更新すると行ロックがかかるので、
+ 更新順序を定めておかなければデッドロックが発生する可能性が非常に高くなる。
+
+モジュール一覧
+---------------------------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-exclusivecontrol</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>
+  </dependency>
+
+  <!-- 楽観的ロックを行う場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web-tag</artifactId>
+  </dependency>
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-exclusive_control--s1",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/exclusive_control.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "楽観的ロック",
+        "悲観的ロック",
+        "排他制御",
+        "排他制御用テーブル",
+        "バージョン番号カラム",
+        "非推奨",
+        "デッドロック防止",
+        "更新順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-common-exclusivecontrol",
+        "nablarch-common-exclusivecontrol-jdbc",
+        "nablarch-fw-web-tag",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: この機能は非推奨。排他制御には :ref:`universal_dao` を使用すること。理由: (1) :ref:`universal_dao` の排他制御の方が簡単に使用できる（:ref:`universal_dao_jpa_optimistic_lock`、:ref:`universal_dao_jpa_pessimistic_lock` 参照）(2) 主キーが非文字列型の場合、DBによっては型不一致でSQL実行時例外が発生する（例: PostgreSQLのように暗黙の型変換が行われないDB）\n\nテーブルにバージョン番号カラムを定義することで楽観的ロック/悲観的ロックを実現する。バージョン番号カラムが定義されたテーブルを**排他制御用テーブル**と呼ぶ。\n\n提供機能:\n- :ref:`exclusive_control-optimistic_lock`\n- :ref:`exclusive_control-optimistic_lock-bulk`\n- :ref:`exclusive_control-pessimistic_lock`\n\n楽観的ロックと悲観的ロックは同じ排他制御用テーブルを使用するため、並行使用しても同一データの同時更新を防げる。\n\n> **補足**: 排他制御用テーブルの単位は業務的な観点で定義する（例: 売上処理と入金処理に関連するテーブルをまとめた単位）。テーブルの親子関係が明確な場合は親の単位で定義する。親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。単位を大きくすると競合可能性が高まり、楽観的ロックの場合は更新失敗、悲観的ロックの場合は処理遅延を招く。\n\n> **重要**: 排他制御用テーブル設計後、更新順序を設計すること。更新順序を定めないとデッドロックが発生する可能性が非常に高くなる。",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-exclusivecontrol-jdbc</artifactId>\n</dependency>\n\n<!-- 楽観的ロックを行う場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-tag</artifactId>\n</dependency>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

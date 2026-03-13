@@ -1,0 +1,363 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/reference_jsp_widgets/table_treelist.rst`
+- Format: `rst`
+
+```
+============================================
+階層(ツリー)表示テーブルウィジェット
+============================================
+:doc:`table_treelist` はデータベースなどからの検索結果を
+**UI標準 UI部品 階層(ツリー)表示** の内容に準拠した階層テーブルを画面に出力するUI部品である。
+検索結果を特定のカラムの値によって自動的にソート・階層化して表示できるが、
+仕様上、ページング機能には対応していない。
+
+テーブル内の各カラムの内容は、カラムの種別ごとに用意された個別のウィジェットを配置することによって定義する。
+
+- :doc:`column_label`
+- :doc:`column_code`
+- :doc:`column_link`
+- :doc:`column_checkbox`
+- :doc:`column_radio`
+
+:doc:`column_label` については、tree_indent属性をtrueに指定することでカラム内の表示項目が階層の深さに応じて
+インデントされて表示される。
+
+なお、階層表示を使用するためには、少なくとも一つのカラムが、tree_toggler属性がtrueに指定されている
+:doc:`column_link` である必要がある。
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <table:treelist
+      title="リクエストID一覧"
+      name="treeStatus"
+      key="id"
+      hierarchy="chars:6|2|2"
+      sampleResults="5">
+
+      <column:label
+        title="リクエストID"
+        key="id"
+        tree_indent="true"
+        tree_toggler="true"
+        sample="RW11AA|RW11AA0101|RW11AA0102|RW11AB|RW11AB0101">
+      </column:label>
+
+      <column:label
+        title="リクエスト名"
+        key="name"
+        tree_indent="true"
+        sample="ログイン機能|ログイン画面初期表示処理|ログイン処理|メニュー|メニュー表示処理">
+      </column:label>
+
+      <column:checkbox
+        title="閉局中"
+        name="availableRequestIds"
+        key="id">
+      </column:checkbox>
+
+    </table:treelist>
+
+
+**設計成果物(サーバ動作)**
+
+  .. code-block:: jsp
+
+    <table:treelist
+      title="リクエストID一覧"
+      name="formdata.treeStatus"
+      key="id"
+      hierarchy="chars:6|2|2"
+      resultSetName="searchResult"
+      sampleResults="5">
+
+      <column:label
+        title="リクエストID"
+        key="id"
+        tree_indent="true"
+        tree_toggler="true"
+        sample="RW11AA|RW11AA0101|RW11AA0102|RW11AB|RW11AB0101">
+      </column:label>
+
+      <column:label
+        title="リクエスト名"
+        key="name"
+        tree_indent="true"
+        sample="ログイン機能|ログイン画面初期表示処理|ログイン処理|メニュー|メニュー表示処理">
+      </column:label>
+
+      <column:checkbox
+        title="閉局中"
+        name="formdata.availableRequestIds"
+        key="id">
+      </column:checkbox>
+
+    </table:treelist>
+
+仕様
+=============================================
+
+**階層構造の定義**
+
+検索結果は **key** 属性値に指定したカラムの値に従って、自動的にソート・階層化して表示する。
+階層構造は **hirarchy** 属性値に指定した定義式によって定まり、以下の2つの書式のいずれかによって定義する。
+
+1. chars:(数値)|(数値)|...|(数値)
+   各要素のid属性値を先頭からの文字数で分割し階層を決定する方法。
+
+2. separator:(区切り文字列)
+   各要素のid属性値を区切り文字列で分割し階層を決定する方法。
+
+
+**ローカル動作時の挙動**
+  ローカル動作では **sampleResults** に指定した件数分だけデータ行を表示する。
+  カラムの内容は各カラムウィジェットの **sample** 属性に指定した
+  **"|"** 区切りの文字列を順に表示する。(レコード件数の方が多い場合はループする。)
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ================================
+title                     見出し文字列                     文字列         ◎          ◎
+id                        テーブルを一意に識別するid       文字列         ×          ×           ページ内に、複数のテーブルが
+                                                                                                 存在する場合は必須。
+name                      ツリーの開閉状態を保持する\      文字列         ◎          ◎
+                          フォーム要素名
+key                       階層構造を決定するレコード\      文字列         ◎          ◎
+                          の属性名
+hirarchy                  階層構造を決定する定義式         文字列         ◎          ◎
+resultSetName             検索結果を格納する変数名         文字列         ◎          ×
+resultSetCss              検索結果表示領域に適用する       文字列         ○          ○
+                          CSSクラス
+sampleResults             サンプルで表示する件数           数値           ×          ◎
+sortCondition             テーブルの初期ソート条件         文字列         ×          ×           設計書の表示時に、
+                                                                                                 画面概要の一覧表示のリストで、
+                                                                                                 「ソート条件」に表示される。
+comment                   テーブルについての備考           文字列         ×          ×           設計書の表示時に、
+                                                                                                 画面概要の一覧表示のリストで、
+                                                                                                 「備考」に表示される。
+estimatedMaxSearchResults 検索結果として想定される最大件数 文字列         ×          ×           設計書の表示時に、
+                                                                                                 画面概要の一覧表示のリストで、
+                                                                                                 「想定検索最大件数」に表示
+                                                                                                 される。
+
+========================= ================================ ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+テーブル機能は内部的に Nabalrchが提供している **<listSearchResult:table>** タグで実装されており、
+Nablarch側の設定の変更によって、ページングリストの出力パターンなどを変更できる。
+詳細は、「Nablarch アーキテクチャ解説書」を参照。
+
+
+**部品一覧**
+
+============================================== ===============================================
+パス                                           内容
+============================================== ===============================================
+/WEB-INF/tags/widget/table/treelist.tag        ツリーリストウィジェット
+
+/WEB-INF/tags/widget/column/\*.tag             テーブルカラムウィジェット群
+
+/WEB-INF/tags/listSearchResult/\*.tag          Nablarch検索結果テーブルタグファイル
+
+/css/style/nablarch.less                       Nablarch関連スタイル定義
+                                               テーブルの配色などを定義している。
+
+/css/style/content.less                        業務画面領域スタイル定義
+                                               テーブルサイズを定義している。
+
+/js/nablarch/ui/TreeList.js                    ツリーリストUI部品
+
+/css/ui/treelist.less                          ツリーリストのスタイル定義
+                                               各階層ごとの配色などを定義している。
+
+============================================== ===============================================
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-table_treelist`
+
+```json
+{
+  "id": "testing-framework-table_treelist",
+  "title": "階層(ツリー)表示テーブルウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_jsp_widgets/table_treelist.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "table:treelist",
+        "コードサンプル",
+        "ローカル動作",
+        "サーバ動作",
+        "column:label",
+        "column:checkbox",
+        "resultSetName",
+        "sampleResults",
+        "tree_toggler",
+        "tree_indent",
+        "hierarchy"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "ページング非対応",
+        "tree_toggler",
+        "tree_indent",
+        "階層構造定義",
+        "hirarchy",
+        "chars",
+        "separator",
+        "属性値一覧",
+        "resultSetName",
+        "sampleResults",
+        "key属性",
+        "階層テーブル",
+        "title",
+        "id",
+        "name",
+        "resultSetCss",
+        "sortCondition",
+        "comment",
+        "estimatedMaxSearchResults"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "listSearchResult:table",
+        "TreeList.js",
+        "treelist.tag",
+        "内部構造",
+        "部品一覧",
+        "nablarch.less",
+        "treelist.less",
+        "content.less"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ローカル動作\n\n```jsp\n<table:treelist\n  title=\"リクエストID一覧\"\n  name=\"treeStatus\"\n  key=\"id\"\n  hierarchy=\"chars:6|2|2\"\n  sampleResults=\"5\">\n\n  <column:label\n    title=\"リクエストID\"\n    key=\"id\"\n    tree_indent=\"true\"\n    tree_toggler=\"true\"\n    sample=\"RW11AA|RW11AA0101|RW11AA0102|RW11AB|RW11AB0101\">\n  </column:label>\n\n  <column:label\n    title=\"リクエスト名\"\n    key=\"name\"\n    tree_indent=\"true\"\n    sample=\"ログイン機能|ログイン画面初期表示処理|ログイン処理|メニュー|メニュー表示処理\">\n  </column:label>\n\n  <column:checkbox\n    title=\"閉局中\"\n    name=\"availableRequestIds\"\n    key=\"id\">\n  </column:checkbox>\n\n</table:treelist>\n```\n\n## サーバ動作\n\n```jsp\n<table:treelist\n  title=\"リクエストID一覧\"\n  name=\"formdata.treeStatus\"\n  key=\"id\"\n  hierarchy=\"chars:6|2|2\"\n  resultSetName=\"searchResult\"\n  sampleResults=\"5\">\n\n  <column:label\n    title=\"リクエストID\"\n    key=\"id\"\n    tree_indent=\"true\"\n    tree_toggler=\"true\"\n    sample=\"RW11AA|RW11AA0101|RW11AA0102|RW11AB|RW11AB0101\">\n  </column:label>\n\n  <column:label\n    title=\"リクエスト名\"\n    key=\"name\"\n    tree_indent=\"true\"\n    sample=\"ログイン機能|ログイン画面初期表示処理|ログイン処理|メニュー|メニュー表示処理\">\n  </column:label>\n\n  <column:checkbox\n    title=\"閉局中\"\n    name=\"formdata.availableRequestIds\"\n    key=\"id\">\n  </column:checkbox>\n\n</table:treelist>\n```",
+    "s2": "- ページング機能には対応していない。\n- 階層表示を使用するには、少なくとも一つのカラムが `tree_toggler=\"true\"` の :doc:`column_link` である必要がある。\n- :doc:`column_label` で `tree_indent=\"true\"` を指定すると、カラム内の表示項目が階層の深さに応じてインデントされる。\n\n## 階層構造の定義\n\n**key** 属性値のカラム値に従って自動的にソート・階層化。**hirarchy** 属性値の定義式で階層構造を指定する:\n\n1. `chars:(数値)|(数値)|...|(数値)` — id属性値を先頭からの文字数で分割して階層を決定\n2. `separator:(区切り文字列)` — id属性値を区切り文字列で分割して階層を決定\n\n## ローカル動作時の挙動\n\n**sampleResults** に指定した件数分だけデータ行を表示。カラム内容は各カラムウィジェットの **sample** 属性に指定した `\"|\"` 区切り文字列を順に表示（レコード件数の方が多い場合はループ）。\n\n## 属性値一覧\n\n◎=必須、○=任意、×=無効\n\n| 名称 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| title | 見出し文字列 | 文字列 | ◎ | ◎ | |\n| id | テーブルを一意に識別するid | 文字列 | × | × | ページ内に複数のテーブルが存在する場合は必須 |\n| name | ツリーの開閉状態を保持するフォーム要素名 | 文字列 | ◎ | ◎ | |\n| key | 階層構造を決定するレコードの属性名 | 文字列 | ◎ | ◎ | |\n| hirarchy | 階層構造を決定する定義式 | 文字列 | ◎ | ◎ | |\n| resultSetName | 検索結果を格納する変数名 | 文字列 | ◎ | × | |\n| resultSetCss | 検索結果表示領域に適用するCSSクラス | 文字列 | ○ | ○ | |\n| sampleResults | サンプルで表示する件数 | 数値 | × | ◎ | |\n| sortCondition | テーブルの初期ソート条件 | 文字列 | × | × | 設計書の表示時に「ソート条件」に表示される |\n| comment | テーブルについての備考 | 文字列 | × | × | 設計書の表示時に「備考」に表示される |\n| estimatedMaxSearchResults | 検索結果として想定される最大件数 | 文字列 | × | × | 設計書の表示時に「想定検索最大件数」に表示される |",
+    "s3": "テーブル機能は内部的に `<listSearchResult:table>` タグで実装。Nablarch側の設定変更によってページングリストの出力パターンなどを変更できる。\n\n## 部品一覧\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/table/treelist.tag | ツリーリストウィジェット |\n| /WEB-INF/tags/widget/column/*.tag | テーブルカラムウィジェット群 |\n| /WEB-INF/tags/listSearchResult/*.tag | Nablarch検索結果テーブルタグファイル |\n| /css/style/nablarch.less | Nablarch関連スタイル定義（テーブルの配色など） |\n| /css/style/content.less | 業務画面領域スタイル定義（テーブルサイズ） |\n| /js/nablarch/ui/TreeList.js | ツリーリストUI部品 |\n| /css/ui/treelist.less | ツリーリストのスタイル定義（各階層ごとの配色など） |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

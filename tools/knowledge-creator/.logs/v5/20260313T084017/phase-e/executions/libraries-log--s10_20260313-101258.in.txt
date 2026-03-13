@@ -1,0 +1,469 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-log--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "ApplicationSettingLogFormatter および LauncherLogFormatter（差し替え元のクラス）がhints未記載。また、ApplicationSettingJsonLogFormatterおよびLauncherJsonLogFormatterの設定テーブルに含まれる以下のプロパティ名がhints未記載: appSettingTargets, appSettingWithDateTargets, systemSettingItems, startTargets, endTargets, startLogMsgLabel, endLogMsgLabel",
+      "source_evidence": "ソースの各設定テーブル第1列: applicationSettingLogFormatter.appSettingTargets, .appSettingWithDateTargets, .systemSettingItems, launcherLogFormatter.startTargets, .endTargets, .startLogMsgLabel, .endLogMsgLabel。クラス名: ApplicationSettingLogFormatter, LauncherLogFormatter"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+JSON形式の構造化ログとして出力する
+--------------------------------------------------------------------------
+
+LogWriterや各種ログで使用するフォーマッタをJSON出力用のクラスに差し替えることで、ログの出力をJSON形式にできる。
+
+具体的には、以下のとおり修正することで、ログをJSON形式にできる。
+
+* :ref:`log-json_set_jsonlogformatter_for_logwriter`
+* :ref:`log-json_app_logs`
+* :ref:`log-json_for_batch`
+
+
+.. _log-json_set_jsonlogformatter_for_logwriter:
+
+LogWriterで使用するフォーマッタをJsonLogFormatterに変更する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+LogWriterで使用するフォーマッタを :java:extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` に変更することで、
+ログの出力をJSON形式にできる。
+
+使用方法
+ :java:extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` の設定例を以下に示す。 
+ 
+ .. code-block:: properties
+ 
+  # JSON形式でログを出力する場合はJsonLogFormatterを指定する。
+  writer.appLog.formatter.className=nablarch.core.log.basic.JsonLogFormatter
+ 
+  # 出力項目を指定する。
+  writer.appLog.formatter.targets=date,logLevel,message,information,stackTrace
+ 
+  # 日時のフォーマットに使用するパターンを指定する。
+  # 指定しなければ"yyyy-MM-dd HH:mm:ss.SSS"となる。
+  writer.appLog.formatter.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+ 
+ :java:extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` では、
+ ``targets`` プロパティにカンマ区切りで出力項目を指定する。 
+ 使用できる出力項目については、下記の通り。
+ なお、デフォルトでは全ての項目が出力される。
+ 
+ .. list-table:: targetsプロパティで指定できる出力項目
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 20,80
+ 
+   * - 出力項目
+     - 説明
+ 
+   * - date
+     - このログ出力を要求した時点の日時。
+ 
+   * - logLevel
+     - このログ出力のログレベル。
+ 
+   * - loggerName
+     - このログ出力が対応するロガー設定の名称。
+ 
+   * - runtimeLoggerName
+     - 実行時に、 :java:extdoc:`LoggerManager <nablarch.core.log.LoggerManager>` からロガー取得に指定した名称。
+ 
+   * - bootProcess
+     - 起動プロセスを識別する名前。
+ 
+   * - processingSystem
+     - 処理方式を識別する名前。
+ 
+   * - requestId
+     - このログ出力を要求した時点のリクエストID。
+ 
+   * - executionId
+     - このログ出力を要求した時点の実行時ID。
+ 
+   * - userId
+     - このログ出力を要求した時点のログインユーザのユーザID。
+ 
+   * - message
+     - このログ出力のメッセージ。
+ 
+   * - stackTrace
+     - エラー情報に指定された例外オブジェクトのスタックトレース。
+ 
+   * - payload
+     - オプション情報に指定されたオブジェクト。
+ 
+ .. tip::
+  ``datePattern`` および ``label`` (ログレベルの文言指定)は、 :java:extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` と同様に機能する。
+  
+ 記述例
+  .. code-block:: java
+  
+   // クラスを指定してLoggerを取得する。
+   // Loggerはクラス変数に保持する。
+   private static final Logger LOGGER = LoggerManager.get(UserManager.class);
+  
+  .. code-block:: java
+  
+   LOGGER.logInfo("hello");
+ 
+  (出力結果)
+
+  .. code-block:: none
+
+   {"date":"2021-02-04 12:34:56.789","logLevel":"INFO","message":"hello"}
+
+項目を独自に追加する
+ 出力対象に ``payload`` を含む場合、オプション情報に指定されたMap<String, Object>オブジェクトをJSONオブジェクトとして出力する。
+ オブジェクトの変換ルールは下記の通り。
+
+ .. list-table:: 出力可能なオブジェクト
+   :header-rows: 1
+   :class: white-space-normal
+   :widths: 40,60
+ 
+   * - 出力可能なJavaのクラス
+     - JSONによる出力
+ 
+   * - :java:extdoc:`String <java.lang.String>`
+     - JSONの文字列として出力する。
+
+   * - :java:extdoc:`Number <java.lang.Number>` 及びそのサブクラス |br|
+       （ :java:extdoc:`Integer <java.lang.Integer>` , 
+       :java:extdoc:`Long <java.lang.Long>` , 
+       :java:extdoc:`Short <java.lang.Short>` , 
+       :java:extdoc:`Byte <java.lang.Byte>` , 
+       :java:extdoc:`Float <java.lang.Float>` , 
+       :java:extdoc:`Double <java.lang.Double>` , 
+       :java:extdoc:`BigDecimal <java.math.BigDecimal>` , 
+       :java:extdoc:`BigInteger <java.math.BigInteger>` , 
+       :java:extdoc:`AtomicInteger <java.util.concurrent.atomic.AtomicInteger>` , 
+       :java:extdoc:`AtomicLong <java.util.concurrent.atomic.AtomicLong>` ）
+     - ``toString()`` メソッドの戻り値をJSONの数値として出力する。
+       NaN及び無限大はJSONの文字列として出力する。
+
+   * - :java:extdoc:`Boolean <java.lang.Boolean>`
+     - JSONの真理値（ ``true`` / ``false`` ）として出力する。
+   
+   * - :java:extdoc:`Date <java.util.Date>` |br|
+       :java:extdoc:`Calendar <java.util.Calendar>`  及びそのサブクラス |br|
+       :java:extdoc:`LocalDateTime <java.time.LocalDateTime>` ※Java8以降
+     - JSONの文字列として出力する。デフォルトの書式は、 ``"yyyy-MM-dd HH:mm:ss.SSS"`` 。
+       書式を変更する場合は、 ``datePattern`` プロパティにて指定する。
+   
+   * - :java:extdoc:`Map <java.util.Map>`  の実装クラス
+     - JSONのオブジェクトとして出力する。
+       キーが :java:extdoc:`String <java.lang.String>` ではない場合や値が ``null``
+       となる場合は、キーも含め出力されない。
+       値として ``null`` を出力する場合は、プロパティ ``ignoreNullValueMember`` に ``false`` をセットする。
+
+   * - :java:extdoc:`List <java.util.List>` の実装クラス、及び配列
+     - JSONの配列として出力する。
+  
+   * - ``null``
+     - JSONの ``null`` として出力する。
+       :java:extdoc:`Map <java.util.Map>` の値が ``null`` のとき、デフォルトでは出力対象外となる。
+
+   * - その他のオブジェクト
+     - ``toString()`` メソッドの戻り値をJSONの文字列として出力する。
+ 
+ 記述例
+  .. code-block:: java
+ 
+   Map<String, Object> structuredArgs = new HashTable<String, Object>();
+   structuredArgs.put("key1", "value1");
+   structuredArgs.put("key2", 123);
+   structuredArgs.put("key3", true);
+   structuredArgs.put("key4", null);
+   structuredArgs.put("key5", new Date());
+   LOGGER.logInfo("addition fields", structuredArgs);
+ 
+  (出力結果)
+ 
+  .. code-block:: none
+  
+   {"date":"2021-02-04 12:34:56.789","logLevel":"INFO","message":"addition fields","key1":"value1","key2":123,"key3":true,"key5":"2021-02-04 12:34:56.789"}
+ 
+ .. tip::
+  :java:extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` を使用する場合、
+  オプション情報に :java:extdoc:`Map <java.util.Map>` < :java:extdoc:`String <java.lang.String>`
+  , :java:extdoc:`Object <java.lang.Object>` >以外のオプション情報をセットしないこと。
+  :java:extdoc:`Map <java.util.Map>` オブジェクトは複数指定することが出来るが、
+  キーが重複した場合はいずれかの値は無視され、出力されない。
+
+.. _log-json_app_logs:
+
+各種ログで使用するフォーマッタをJSONログ用に差し替える
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ 各種ログは、メッセージ部分を個別の方法でフォーマットしている。
+ それぞれのフォーマットで使用しているフォーマッタをJSON用のフォーマッタに差し替えることで、各種ログが出力する内容もJSONログとして出力できるようになる。
+
+ 各フォーマッタの具体的な設定方法については、下記表のそれぞれのリンク先を参照のこと。
+
+ .. list-table:: 各種ログのJSON版フォーマッタ
+  :header-rows: 1
+  :class: white-space-normal
+  :widths: 30,50
+  
+  * - ログの種類
+    - 対応するフォーマッタ
+ 
+  * - :ref:`障害ログ <failure_log-json_setting>`
+    - :java:extdoc:`FailureJsonLogFormatter <nablarch.core.log.app.FailureJsonLogFormatter>`
+ 
+  * - :ref:`SQLログ <sql_log-json_setting>`
+    - :java:extdoc:`SqlJsonLogFormatter <nablarch.core.db.statement.SqlJsonLogFormatter>`
+ 
+  * - :ref:`パフォーマンスログ <performance_log-json_setting>`
+    - :java:extdoc:`PerformanceJsonLogFormatter <nablarch.core.log.app.PerformanceJsonLogFormatter>`
+  
+  * - :ref:`HTTPアクセスログ <http_access_log-json_setting>`
+    - :java:extdoc:`HttpAccessJsonLogFormatter <nablarch.fw.web.handler.HttpAccessJsonLogFormatter>`
+
+  * - :ref:`HTTPアクセスログ（RESTfulウェブサービス用） <jaxrs_access_log-json_setting>`
+    - :java:extdoc:`JaxRsAccessJsonLogFormatter <nablarch.fw.jaxrs.JaxRsAccessJsonLogFormatter>`
+
+  * - :ref:`メッセージングログ <messaging_log-json_setting>`
+    - :java:extdoc:`MessagingJsonLogFormatter <nablarch.fw.messaging.logging.MessagingJsonLogFormatter>`
+
+.. _log-json_for_batch:
+
+NablarchバッチのログをJSON形式にする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Nablarchバッチで出力するログをJSON形式にするには、上述のフォーマッタの設定に加えて下記のとおり修正する必要がある。
+
+* :ref:`log-json_set_applicationsettingsjsonlogformatter`
+* :ref:`log-json_set_launcherjsonlogformatter`
+* :ref:`log-json_set_jsoncommitlogger`
+
+以下で、それぞれの設定方法について説明する。
+
+.. _log-json_set_applicationsettingsjsonlogformatter:
+
+ApplicationSettingLogFormatterをJSON用に切り替える
+******************************************************
+
+:java:extdoc:`ApplicationSettingLogFormatter <nablarch.core.log.app.ApplicationSettingLogFormatter>` は、システム設定値をログに出力するときに用いられる。
+これをJSON形式で出力するには、フォーマッタを :java:extdoc:`ApplicationSettingJsonLogFormatter <nablarch.core.log.app.ApplicationSettingJsonLogFormatter>` に切り替える。
+設定は、 :ref:`log-app_log_setting` で説明したプロパティファイルに行う。
+
+記述ルール
+ :java:extdoc:`ApplicationSettingJsonLogFormatter <nablarch.core.log.app.ApplicationSettingJsonLogFormatter>` を用いる際に
+ 指定するプロパティは以下の通り。
+ 
+ applicationSettingLogFormatter.className ``必須``
+  JSON形式でログを出力する場合、
+  :java:extdoc:`ApplicationSettingJsonLogFormatter <nablarch.core.log.app.ApplicationSettingJsonLogFormatter>` を指定する。
+
+ applicationSettingLogFormatter.appSettingTargets
+  アプリケーション設定ログで出力する項目（業務日付なし）。カンマ区切りで指定する。
+
+  指定可能な出力項目およびデフォルトの出力項目
+   :システム設定値: systemSettings ``デフォルト``
+   :業務日付: businessDate
+ 
+ applicationSettingLogFormatter.appSettingWithDateTargets
+  アプリケーション設定ログで出力する項目（業務日付あり）。カンマ区切りで指定する。
+
+  指定可能な出力項目
+   :システム設定: systemSettings
+   :業務日付: businessDate
+
+  デフォルトは全ての出力項目が対象となる。
+
+ applicationSettingLogFormatter.systemSettingItems
+  出力するシステム設定値の名前の一覧。カンマ区切りで指定する。
+  デフォルトは空なので、何も出力しない。
+
+ applicationSettingLogFormatter.structuredMessagePrefix
+  フォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。
+  メッセージの先頭にこのマーカーがある場合、 :java:extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` はメッセージを JSON データとして処理する。
+  デフォルトは ``"$JSON$"`` となる。
+
+記述例
+ .. code-block:: properties
+
+  applicationSettingLogFormatter.className=nablarch.core.log.app.ApplicationSettingJsonLogFormatter
+  applicationSettingLogFormatter.structuredMessagePrefix=$JSON$
+  applicationSettingLogFormatter.appSettingTargets=systemSettings
+  applicationSettingLogFormatter.appSettingWithDateTargets=systemSettings,businessDate
+  applicationSettingLogFormatter.systemSettingItems=dbUser,dbUrl,threadCount
+
+.. _log-json_set_launcherjsonlogformatter:
+
+LauncherLogFormatterをJSON用に切り替える
+******************************************************
+
+:java:extdoc:`LauncherLogFormatter <nablarch.fw.launcher.logging.LauncherLogFormatter>` は、バッチの開始・終了ログを出力するときに用いられる。
+これをJSON形式で出力するには、フォーマッタを :java:extdoc:`LauncherJsonLogFormatter <nablarch.fw.launcher.logging.LauncherJsonLogFormatter>` に切り替える。
+設定は、 :ref:`log-app_log_setting` で説明したプロパティファイルに行う。
+
+記述ルール
+ :java:extdoc:`LauncherJsonLogFormatter <nablarch.fw.launcher.logging.LauncherJsonLogFormatter>` を用いる際に
+ 指定するプロパティは以下の通り。
+ 
+ launcherLogFormatter.className ``必須``
+  JSON形式でログを出力する場合、
+  :java:extdoc:`LauncherJsonLogFormatter <nablarch.fw.launcher.logging.LauncherJsonLogFormatter>` を指定する。
+
+ launcherLogFormatter.startTargets
+  バッチの開始ログに出力する項目。カンマ区切りで指定する。
+
+  指定可能な出力項目
+   :開始または終了のラベル: label
+   :コマンドラインオプション: commandLineOptions
+   :コマンドライン引数: commandLineArguments
+
+  デフォルトは全ての出力項目が対象となる。
+ 
+ launcherLogFormatter.endTargets
+  バッチの終了ログに出力する項目。カンマ区切りで指定する。
+
+  指定可能な出力項目
+   :開始または終了のラベル: label
+   :終了コード: exitCode
+   :処理時間: executeTime
+
+  デフォルトは全ての出力項目が対象となる。
+ 
+ launcherLogFormatter.startLogMsgLabel
+  開始ログのlabelで出力する値。デフォルトは ``"BATCH BEGIN"``。
+ 
+ launcherLogFormatter.endLogMsgLabel
+  終了ログのlabelで出力する値。デフォルトは ``"BATCH END"``。
+
+ launcherLogFormatter.structuredMessagePrefix
+  フォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。
+  メッセージの先頭にこのマーカーがある場合、 :java:extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` はメッセージを JSON データとして処理する。
+  デフォルトは ``"$JSON$"`` となる。
+
+記述例
+ .. code-block:: properties
+
+  launcherLogFormatter.className=nablarch.fw.launcher.logging.LauncherJsonLogFormatter
+  launcherLogFormatter.structuredMessagePrefix=$JSON$
+  launcherLogFormatter.startTargets=label,commandLineOptions,commandLineArguments
+  launcherLogFormatter.endTargets=label,exitCode,executionTime
+  launcherLogFormatter.startLogMsgLabel=BATCH BEGIN
+  launcherLogFormatter.endLogMsgLabel=BATCH END
+
+
+.. _log-json_set_jsoncommitlogger:
+
+CommitLoggerをJSON用に切り替える
+******************************************************
+
+:java:extdoc:`CommitLogger <nablarch.core.log.app.CommitLogger>` は、コミット件数をログに出力するために用いられる。
+デフォルトでは、 :java:extdoc:`BasicCommitLogger <nablarch.core.log.app.BasicCommitLogger>` というクラスが使用される。
+
+これをJSON形式で出力するには、 :java:extdoc:`JsonCommitLogger <nablarch.core.log.app.JsonCommitLogger>` をコンポーネントとして定義する。
+以下に、コンポーネント定義の例を示す。
+
+コンポーネント定義の例
+ .. code-block:: xml
+ 
+   <component name="commitLogger" class="nablarch.core.log.app.JsonCommitLogger">
+     <property name="interval" value="${nablarch.commitLogger.interval}" />
+   </component>
+
+コンポーネント名は ``commitLogger`` で定義する必要がある。
+
+.. _log-synchronous_file_log_writer_attention:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-log--s10",
+  "title": "JSON形式の構造化ログとして出力する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/log.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/JsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/LoggerManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/basic/BasicLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/FailureJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/statement/SqlJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/PerformanceJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/web/handler/HttpAccessJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/jaxrs/JaxRsAccessJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/logging/MessagingJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/ApplicationSettingLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/ApplicationSettingJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/logging/LauncherLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/logging/LauncherJsonLogFormatter.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/CommitLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/BasicCommitLogger.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/log/app/JsonCommitLogger.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "JSON形式の構造化ログとして出力する",
+      "hints": [
+        "JsonLogFormatter",
+        "BasicLogFormatter",
+        "LoggerManager",
+        "FailureJsonLogFormatter",
+        "SqlJsonLogFormatter",
+        "PerformanceJsonLogFormatter",
+        "HttpAccessJsonLogFormatter",
+        "JaxRsAccessJsonLogFormatter",
+        "MessagingJsonLogFormatter",
+        "ApplicationSettingJsonLogFormatter",
+        "LauncherJsonLogFormatter",
+        "JsonCommitLogger",
+        "BasicCommitLogger",
+        "CommitLogger",
+        "targets",
+        "datePattern",
+        "structuredMessagePrefix",
+        "ignoreNullValueMember",
+        "JSON形式ログ出力",
+        "構造化ログ",
+        "ログフォーマッタ差し替え",
+        "バッチログJSON設定",
+        "payload独自項目追加"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## JSON形式の構造化ログとして出力する\n\nLogWriterおよび各種ログのフォーマッタをJSON用クラスに差し替えることでログ出力をJSON形式にできる。バッチの場合はさらに追加設定が必要。\n\n### LogWriterのフォーマッタをJsonLogFormatterに変更する\n\n**クラス**: `nablarch.core.log.basic.JsonLogFormatter`\n\nproperties設定例:\n```properties\nwriter.appLog.formatter.className=nablarch.core.log.basic.JsonLogFormatter\nwriter.appLog.formatter.targets=date,logLevel,message,information,stackTrace\nwriter.appLog.formatter.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\n```\n\n`targets`プロパティにカンマ区切りで出力項目を指定する。デフォルトは全項目出力。\n\n| 出力項目 | 説明 |\n|---|---|\n| date | ログ出力要求時点の日時 |\n| logLevel | ログレベル |\n| loggerName | ロガー設定の名称 |\n| runtimeLoggerName | :java:extdoc:`LoggerManager <nablarch.core.log.LoggerManager>` からロガー取得に指定した名称 |\n| bootProcess | 起動プロセスを識別する名前 |\n| processingSystem | 処理方式を識別する名前 |\n| requestId | ログ出力要求時点のリクエストID |\n| executionId | ログ出力要求時点の実行時ID |\n| userId | ログ出力要求時点のログインユーザのユーザID |\n| message | ログのメッセージ |\n| stackTrace | 例外オブジェクトのスタックトレース |\n| payload | オプション情報に指定されたオブジェクト |\n\n> **補足**: `datePattern`および`label`（ログレベルの文言指定）は、:java:extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>`と同様に機能する。\n\n使用例:\n```java\nprivate static final Logger LOGGER = LoggerManager.get(UserManager.class);\nLOGGER.logInfo(\"hello\");\n// 出力: {\"date\":\"2021-02-04 12:34:56.789\",\"logLevel\":\"INFO\",\"message\":\"hello\"}\n```\n\n#### payloadによる独自項目追加\n\n`targets`に`payload`を含む場合、オプション情報の`Map<String, Object>`をJSONオブジェクトとして出力する。Javaオブジェクトの変換ルール:\n\n| Javaクラス | JSON出力 |\n|---|---|\n| String | JSON文字列 |\n| Number（Integer, Long, Short, Byte, Float, Double, BigDecimal, BigInteger, AtomicInteger, AtomicLong）| `toString()`の戻り値をJSON数値として出力。NaN・無限大はJSON文字列 |\n| Boolean | `true` / `false` |\n| Date, Calendar, LocalDateTime（Java8以降）| JSON文字列。デフォルト書式: `yyyy-MM-dd HH:mm:ss.SSS`。変更は`datePattern`プロパティで指定 |\n| Mapの実装クラス | JSONオブジェクト。キーがStringでない場合や値がnullの場合はそのキーも含め出力されない。nullを出力する場合は`ignoreNullValueMember`に`false`をセット |\n| Listの実装クラス、配列 | JSON配列 |\n| null | JSON null。Mapの値がnullの場合はデフォルトで出力対象外 |\n| その他のオブジェクト | `toString()`の戻り値をJSON文字列として出力 |\n\n使用例:\n```java\nMap<String, Object> structuredArgs = new HashTable<String, Object>();\nstructuredArgs.put(\"key1\", \"value1\");\nstructuredArgs.put(\"key2\", 123);\nstructuredArgs.put(\"key3\", true);\nstructuredArgs.put(\"key4\", null);\nstructuredArgs.put(\"key5\", new Date());\nLOGGER.logInfo(\"addition fields\", structuredArgs);\n// 出力: {\"date\":\"2021-02-04 12:34:56.789\",\"logLevel\":\"INFO\",\"message\":\"addition fields\",\"key1\":\"value1\",\"key2\":123,\"key3\":true,\"key5\":\"2021-02-04 12:34:56.789\"}\n```\n\n> **補足**: JsonLogFormatterを使用する場合、オプション情報に`Map<String, Object>`以外をセットしないこと。Mapオブジェクトは複数指定できるが、キーが重複した場合はいずれかの値が無視され出力されない。\n\n### 各種ログのJSON版フォーマッタ\n\n各種ログのフォーマッタをJSON用に差し替えることで、各種ログもJSON形式で出力できる。具体的な設定方法は各リンク先を参照。\n\n| ログの種類 | フォーマッタ |\n|---|---|\n| :ref:`障害ログ <failure_log-json_setting>` | :java:extdoc:`FailureJsonLogFormatter <nablarch.core.log.app.FailureJsonLogFormatter>` |\n| :ref:`SQLログ <sql_log-json_setting>` | :java:extdoc:`SqlJsonLogFormatter <nablarch.core.db.statement.SqlJsonLogFormatter>` |\n| :ref:`パフォーマンスログ <performance_log-json_setting>` | :java:extdoc:`PerformanceJsonLogFormatter <nablarch.core.log.app.PerformanceJsonLogFormatter>` |\n| :ref:`HTTPアクセスログ <http_access_log-json_setting>` | :java:extdoc:`HttpAccessJsonLogFormatter <nablarch.fw.web.handler.HttpAccessJsonLogFormatter>` |\n| :ref:`HTTPアクセスログ（RESTfulウェブサービス用） <jaxrs_access_log-json_setting>` | :java:extdoc:`JaxRsAccessJsonLogFormatter <nablarch.fw.jaxrs.JaxRsAccessJsonLogFormatter>` |\n| :ref:`メッセージングログ <messaging_log-json_setting>` | :java:extdoc:`MessagingJsonLogFormatter <nablarch.fw.messaging.logging.MessagingJsonLogFormatter>` |\n\n### NablarchバッチのログをJSON形式にする\n\nバッチのログをJSON形式にするには、上記フォーマッタ設定に加えて以下の3つの設定が必要。\n\n#### ApplicationSettingJsonLogFormatter\n\n:java:extdoc:`ApplicationSettingLogFormatter <nablarch.core.log.app.ApplicationSettingLogFormatter>` をJSON形式で出力するには、:java:extdoc:`ApplicationSettingJsonLogFormatter <nablarch.core.log.app.ApplicationSettingJsonLogFormatter>` に切り替える。\n\n| プロパティ名 | 必須 | デフォルト | 説明 |\n|---|---|---|---|\n| applicationSettingLogFormatter.className | ○ | | `nablarch.core.log.app.ApplicationSettingJsonLogFormatter`を指定 |\n| applicationSettingLogFormatter.appSettingTargets | | `systemSettings` | 業務日付なしの出力項目。カンマ区切り。指定可能: `systemSettings`, `businessDate` |\n| applicationSettingLogFormatter.appSettingWithDateTargets | | 全項目 | 業務日付ありの出力項目。カンマ区切り。指定可能: `systemSettings`, `businessDate` |\n| applicationSettingLogFormatter.systemSettingItems | | 空（何も出力しない） | 出力するシステム設定値の名前の一覧。カンマ区切り |\n| applicationSettingLogFormatter.structuredMessagePrefix | | `$JSON$` | JSONメッセージを識別するマーカー文字列。JsonLogFormatterはこのマーカーがある場合メッセージをJSONデータとして処理 |\n\n設定例:\n```properties\napplicationSettingLogFormatter.className=nablarch.core.log.app.ApplicationSettingJsonLogFormatter\napplicationSettingLogFormatter.structuredMessagePrefix=$JSON$\napplicationSettingLogFormatter.appSettingTargets=systemSettings\napplicationSettingLogFormatter.appSettingWithDateTargets=systemSettings,businessDate\napplicationSettingLogFormatter.systemSettingItems=dbUser,dbUrl,threadCount\n```\n\n#### LauncherJsonLogFormatter\n\n:java:extdoc:`LauncherLogFormatter <nablarch.fw.launcher.logging.LauncherLogFormatter>` をJSON形式で出力するには、:java:extdoc:`LauncherJsonLogFormatter <nablarch.fw.launcher.logging.LauncherJsonLogFormatter>` に切り替える。\n\n| プロパティ名 | 必須 | デフォルト | 説明 |\n|---|---|---|---|\n| launcherLogFormatter.className | ○ | | `nablarch.fw.launcher.logging.LauncherJsonLogFormatter`を指定 |\n| launcherLogFormatter.startTargets | | 全項目 | バッチ開始ログの出力項目。カンマ区切り。指定可能: `label`, `commandLineOptions`, `commandLineArguments` |\n| launcherLogFormatter.endTargets | | 全項目 | バッチ終了ログの出力項目。カンマ区切り。指定可能: `label`, `exitCode`, `executeTime` |\n| launcherLogFormatter.startLogMsgLabel | | `BATCH BEGIN` | 開始ログのlabelの値 |\n| launcherLogFormatter.endLogMsgLabel | | `BATCH END` | 終了ログのlabelの値 |\n| launcherLogFormatter.structuredMessagePrefix | | `$JSON$` | JSONメッセージを識別するマーカー文字列 |\n\n設定例:\n```properties\nlauncherLogFormatter.className=nablarch.fw.launcher.logging.LauncherJsonLogFormatter\nlauncherLogFormatter.structuredMessagePrefix=$JSON$\nlauncherLogFormatter.startTargets=label,commandLineOptions,commandLineArguments\nlauncherLogFormatter.endTargets=label,exitCode,executionTime\nlauncherLogFormatter.startLogMsgLabel=BATCH BEGIN\nlauncherLogFormatter.endLogMsgLabel=BATCH END\n```\n\n#### JsonCommitLogger\n\n:java:extdoc:`CommitLogger <nablarch.core.log.app.CommitLogger>` をJSON形式で出力するには、:java:extdoc:`JsonCommitLogger <nablarch.core.log.app.JsonCommitLogger>` をコンポーネントとして定義する。デフォルトは:java:extdoc:`BasicCommitLogger <nablarch.core.log.app.BasicCommitLogger>`が使用される。\n\nコンポーネント名は`commitLogger`で定義する必要がある。\n\n```xml\n<component name=\"commitLogger\" class=\"nablarch.core.log.app.JsonCommitLogger\">\n  <property name=\"interval\" value=\"${nablarch.commitLogger.interval}\" />\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

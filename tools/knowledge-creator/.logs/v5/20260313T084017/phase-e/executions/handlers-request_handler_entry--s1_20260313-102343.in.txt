@@ -1,0 +1,264 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-request_handler_entry--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The knowledge file appends three XML closing tags (`</list>`, `</property>`, `</component>`) to complete the code example, but these tags are not present in the source file's code block. The source code block ends at `<component-ref name=\"sessionStoreHandler\" />` without any closing tags.",
+      "source_evidence": "Source code block ends with: `<component-ref name=\"multipartHandler\"/>\\n        <component-ref name=\"sessionStoreHandler\" />` — no closing tags follow."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _request_handler_entry:
+
+リクエストハンドラエントリ
+========================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+
+本ハンドラは、特定のリクエストパスのみ委譲先のハンドラを呼び出す特殊なハンドラである。
+本ハンドラを使用することで、「ウェブアプリケーションで特定のURLのみハンドラの処理を行う」といった機能を、
+ハンドラを修正することなく実現できる。
+
+本ハンドラの主な用途は、 :ref:`resource_mapping` を使用した、「静的コンテンツのダウンロードを一括処理する」機能の実現である。
+その他にも、 :ref:`database_connection_management_handler` や :ref:`transaction_management_handler` と同時に使用することで
+「特定のURLのみ使用するデータベース接続を変える」といった用途にも使用できる。
+
+本ハンドラでは、以下の処理を行う。
+
+* リクエストパスがマッチするか判定し、対象であれば委譲先のハンドラを呼び出す。
+
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/RequestHandlerEntry/flow.png
+
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.RequestHandlerEntry`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core</artifactId>
+  </dependency>
+
+制約
+------------------------------
+なし。
+
+.. _request_handler_entry_usage:
+
+本ハンドラの使用例
+------------------------------
+
+本ハンドラを使用する際は、処理対象とするリクエストパスを指定する ``requestPattern`` プロパティと、
+委譲先のハンドラを指定する ``handler`` プロパティを設定する。
+
+:ref:`resource_mapping` を使用して、JPEGファイルの静的コンテンツをダウンロードする設定例を以下に示す。
+
+.. code-block:: xml
+
+  <!-- 画像ファイルの静的リソースダウンロードを行うハンドラ -->
+  <component name="imgMapping"
+             class="nablarch.fw.web.handler.ResourceMapping">
+    <property name="baseUri" value="/"/>
+    <property name="basePath" value="servlet:///"/>
+  </component>
+
+  <!-- ハンドラキュー構成 -->
+  <component name="webFrontController"
+             class="nablarch.fw.web.servlet.WebFrontController">
+
+    <property name="handlerQueue">
+      <list>
+
+        <component class="nablarch.fw.handler.GlobalErrorHandler"/>
+        <component class="nablarch.fw.web.handler.HttpCharacterEncodingHandler"/>
+        <component class="nablarch.common.io.FileRecordWriterDisposeHandler" />
+        <component class="nablarch.fw.web.handler.HttpResponseHandler"/>
+
+        <!-- 拡張子が ".jpg" である静的JPGファイルのダウンロードを行う設定 -->
+        <component class="nablarch.fw.RequestHandlerEntry">
+          <property name="requestPattern" value="//*.jpg"/>
+          <property name="handler" ref="imgMapping"/>
+        </component>
+
+        <!--
+          "*.jpg" で終わるJPEGファイルのダウンロード以外のリクエストでは、
+          以下のハンドラの呼び出しが行われる
+          -->
+        <component-ref name="multipartHandler"/>
+        <component-ref name="sessionStoreHandler" />
+
+
+
+リクエストパターン指定のバリエーション
+--------------------------------------------------
+
+:ref:`request_handler_entry_usage` の設定例からわかるとおり、本ハンドラに指定する ``requestPattern`` プロパティ
+には、 ``//*.jpg`` のようなGlob式に似た書式での設定が行える。
+
+ワイルドカードの設定例を以下に示す。
+
+
+       +----------------+------------------+-------------------------------------------+
+       | requestPattern | リクエストパス   | 結果                                      |
+       +================+==================+===========================================+
+       | /              |  /               | 呼ばれる                                  |
+       |                +------------------+-------------------------------------------+
+       |                |  /index.jsp      | 呼ばれない                                |
+       +----------------+------------------+-------------------------------------------+
+       | /*             | /                | 呼ばれる                                  |
+       |                +------------------+-------------------------------------------+
+       |                | /app             | 呼ばれる                                  |
+       |                +------------------+-------------------------------------------+
+       |                | /app/            | 呼ばれない (* は'/'にはマッチしない)      |
+       |                +------------------+-------------------------------------------+
+       |                | /index.jsp       | 呼ばれない (* は'.'にはマッチしない)      |
+       +----------------+------------------+-------------------------------------------+
+       | /app/\*.jsp    | /app/index.jsp   | 呼ばれる                                  |
+       |                +------------------+-------------------------------------------+
+       |                | /app/admin       | 呼ばれない                                |
+       +----------------+------------------+-------------------------------------------+
+       | /app/\*/test   | /app/admin/test  | 呼ばれる                                  |
+       |                +------------------+-------------------------------------------+
+       |                | /app/test/       | 呼ばれない                                |
+       +----------------+------------------+-------------------------------------------+
+
+
+また、最後尾の’/’が’//’と重ねられていた場合、それ以前の文字列について前方一致すればマッチ成功と判定する記法も使用できる。
+
+以下に設定例を示す。
+
+
+       +----------------+-------------------------+-------------------------------------------+
+       | requestPattern | リクエストパス          | 結果                                      |
+       +================+=========================+===========================================+
+       | /app//         | /                       | 呼ばれない                                |
+       |                +-------------------------+-------------------------------------------+
+       |                | /app/                   | 呼ばれる                                  |
+       |                +-------------------------+-------------------------------------------+
+       |                | /app/admin/             | 呼ばれる                                  |
+       |                +-------------------------+-------------------------------------------+
+       |                | /app/admin/index.jsp    | 呼ばれる                                  |
+       +----------------+-------------------------+-------------------------------------------+
+       | //\*.jsp       | /app/index.jsp          | 呼ばれる                                  |
+       |                +-------------------------+-------------------------------------------+
+       |                | /app/admin/index.jsp    | 呼ばれる                                  |
+       |                +-------------------------+-------------------------------------------+
+       |                | /app/index.html         | 呼ばれない('\*.jsp'がマッチしない)        |
+       +----------------+-------------------------+-------------------------------------------+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-request_handler_entry--s1",
+  "title": "リクエストハンドラエントリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/common/request_handler_entry.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/RequestHandlerEntry.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "RequestHandlerEntry",
+        "nablarch.fw.RequestHandlerEntry",
+        "リクエストハンドラエントリ",
+        "特定URLのみハンドラ実行",
+        "静的コンテンツダウンロード",
+        "DB接続切り替え"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core",
+        "モジュール依存関係",
+        "com.nablarch.framework"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "制約なし",
+        "制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "本ハンドラの使用例",
+      "hints": [
+        "requestPattern",
+        "handler",
+        "ResourceMapping",
+        "nablarch.fw.web.handler.ResourceMapping",
+        "静的コンテンツ設定例",
+        "JPEGファイルダウンロード"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "リクエストパターン指定のバリエーション",
+      "hints": [
+        "requestPattern",
+        "ワイルドカード",
+        "Glob式",
+        "前方一致",
+        "リクエストパターン指定",
+        "//"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "特定のリクエストパスのみ委譲先ハンドラを呼び出す特殊なハンドラ。ハンドラを修正することなく、特定URLのみハンドラ処理を行う機能を実現できる。\n\n主な用途:\n- :ref:`resource_mapping` を使用した静的コンテンツの一括ダウンロード\n- :ref:`database_connection_management_handler` や :ref:`transaction_management_handler` と組み合わせ、特定URLのみ使用するDB接続を変える\n\n処理内容: リクエストパスがマッチするか判定し、対象であれば委譲先ハンドラを呼び出す。\n\n**クラス名**: `nablarch.fw.RequestHandlerEntry`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n```",
+    "s3": "なし",
+    "s4": "`requestPattern` プロパティ（処理対象リクエストパス）と `handler` プロパティ（委譲先ハンドラ）を設定する。\n\n:ref:`resource_mapping` を使用してJPEGファイルの静的コンテンツをダウンロードする設定例:\n\n```xml\n<component name=\"imgMapping\"\n           class=\"nablarch.fw.web.handler.ResourceMapping\">\n  <property name=\"baseUri\" value=\"/\"/>\n  <property name=\"basePath\" value=\"servlet:///\"/>\n</component>\n\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component class=\"nablarch.fw.handler.GlobalErrorHandler\"/>\n      <component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\"/>\n      <component class=\"nablarch.common.io.FileRecordWriterDisposeHandler\" />\n      <component class=\"nablarch.fw.web.handler.HttpResponseHandler\"/>\n\n      <!-- 拡張子が \".jpg\" である静的JPGファイルのダウンロードを行う設定 -->\n      <component class=\"nablarch.fw.RequestHandlerEntry\">\n        <property name=\"requestPattern\" value=\"//*.jpg\"/>\n        <property name=\"handler\" ref=\"imgMapping\"/>\n      </component>\n\n      <!-- \"*.jpg\" で終わるJPEGファイルのダウンロード以外のリクエストでは以下のハンドラが呼ばれる -->\n      <component-ref name=\"multipartHandler\"/>\n      <component-ref name=\"sessionStoreHandler\" />\n    </list>\n  </property>\n</component>\n```",
+    "s5": "`requestPattern` プロパティにはGlob式に似た書式で指定できる。\n\n**ワイルドカード `*` の動作** (`*` は `/` と `.` にはマッチしない):\n\n| requestPattern | リクエストパス | 結果 |\n|---|---|---|\n| `/` | `/` | 呼ばれる |\n| `/` | `/index.jsp` | 呼ばれない |\n| `/*` | `/` | 呼ばれる |\n| `/*` | `/app` | 呼ばれる |\n| `/*` | `/app/` | 呼ばれない |\n| `/*` | `/index.jsp` | 呼ばれない |\n| `/app/*.jsp` | `/app/index.jsp` | 呼ばれる |\n| `/app/*.jsp` | `/app/admin` | 呼ばれない |\n| `/app/*/test` | `/app/admin/test` | 呼ばれる |\n| `/app/*/test` | `/app/test/` | 呼ばれない |\n\n**前方一致 `//` の動作** (末尾の `/` を `//` と重ねると、それ以前の文字列で前方一致):\n\n| requestPattern | リクエストパス | 結果 |\n|---|---|---|\n| `/app//` | `/` | 呼ばれない |\n| `/app//` | `/app/` | 呼ばれる |\n| `/app//` | `/app/admin/` | 呼ばれる |\n| `/app//` | `/app/admin/index.jsp` | 呼ばれる |\n| `//*.jsp` | `/app/index.jsp` | 呼ばれる |\n| `//*.jsp` | `/app/admin/index.jsp` | 呼ばれる |\n| `//*.jsp` | `/app/index.html` | 呼ばれない |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

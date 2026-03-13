@@ -1,0 +1,341 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/development_tools/ui_dev/doc/reference_jsp_widgets/column_checkbox.rst`
+- Format: `rst`
+
+```
+=============================================================
+テーブル複数行選択用チェックボックスカラムウィジェット
+=============================================================
+:doc:`column_checkbox` は、 **UI標準 UI部品 テーブル** において、
+「処理対象レコード選択用ボタン」 として定義されているチェックボックスを出力するウィジェットである。
+:doc:`table_search_result` や、 :doc:`table_plain` 、 :doc:`table_treelist`
+と組み合わせて使用し、これらのウィジェットが表示する一覧テーブルから後続処理の対象行を複数行選択する
+ためのチェックボックスから成るカラムを出力する。
+
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <table:search_result
+      title         = "検索結果"
+      sampleResults = "15">
+
+      <column:checkbox
+        title = "選択">
+      </column:checkbox>
+
+      <column:link
+        title  = "ログインID"
+        sample = "user001|user002|user003">
+      </column:link>
+
+    </table:search_result>
+
+
+**実装成果物(サーバ動作)**
+
+  .. code-block:: jsp
+
+    <table:search_result
+      title               = "検索結果"
+      searchUri           = "/action/ss11AC/W11AC01Action/RW11AC0102"
+      listSearchInfoName  = "11AC_W11AC01"
+      resultSetName       = "searchResult"
+      sampleResults       = "15">
+
+      <column:checkbox
+        title    = "選択"
+        key      = "userId"
+        name     = "W11AC05.systemAccountEntityArray[${count-1}].userId"
+        offValue = "0000000000">
+      </column:checkbox>
+
+      <column:link
+        title  = "ログインID"
+        key    = "loginId"
+        uri    = "/action/ss11AC/W11AC01Action/RW11AC0103"
+        sample = "user001|user002|user003">
+        <n:param paramName="11AC_W11AC01.systemAccount.userId" name="row.userId"></n:param>
+      </column:link>
+
+    </table:search_result>
+
+
+仕様
+=============================================
+
+入力画面ではテーブル行を選択するためのチェックボックスが出力され、確認画面ではチェックされた行には「●」マークが表示される。
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+==================== ============================== ============== ========== ========= ================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ================================
+key                  チェックオンの場合に、\        文字列         ◎          ×
+                     サーバに送信する値を\
+                     行データから取得するキー
+
+title                カラムヘッダに表示する         文字列         ◎          ◎
+                     文字列
+
+cssClass             各カラムに指定するCSSクラス    文字列         ○          ○
+
+checkboxCssClass     チェックボックスに指定する     文字列         ○          ○
+                     CSSクラス
+
+name                 チェックボックスのname属性     文字列         ◎          ○
+
+value                チェックボックス選択時に\      文字列         ○          ×           指定されない場合、行データ
+                     送信する値                                                           から、key属性に指定した名前で
+                                                                                          取得した値を使用する。
+
+offValue             チェックボックス非選択時に     文字列         ○          ×
+                     送信する値
+
+disabled             サーバに対する入力値の送信\    真偽値         ○          ○         デフォルト値は'false'
+                     を抑制するかどうか
+
+readonly             編集可能かどうか               真偽値         ○          ○         デフォルト値は'false'
+
+width                カラムの横幅の指定             文字列         ○          ○         
+
+toggle               全選択/解除操作を可能\         真偽値         ○          ○         デフォルト値は'false'\
+                     とするかどうか                                                     (一括選択/解除は不可)
+
+                                                                                        .. tip::
+
+                                                                                          trueを設定した場合、
+                                                                                          タイトル部には「全選択」、
+                                                                                          「全解除」のリンクが出力され、
+                                                                                          全選択/解除操作が可能となる。
+
+colspan              横方向に結合するカラム数       数値           ○          ○         使用方法は、\ :doc:`table_row`\を参照
+                                                                                          
+
+rowspan              縦方向に結合するカラム数       数値           ○          ○         使用方法は、\ :doc:`table_row`\を参照
+                                                                                          
+
+dataFrom             表示するデータの取得元         文字列         ×          ×          画面項目定義に記載する、
+                                                                                         「表示情報取得元」.「表示項目名」
+                                                                                         の形式で設定する。
+
+comment              チェックボックスについての備考 文字列         ×          ×          設計書の表示時に、
+                                                                                         画面項目定義の項目定義一覧で、
+                                                                                         「備考」に表示される。
+
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×          設計書の表示時に、
+                                                                                         画面項目定義の項目定義一覧で、
+                                                                                         「備考」に表示される。
+==================== ============================== ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/column/checkbox.tag       :doc:`column_checkbox`
+
+/WEB-INF/tags/listSearchResult/\*.tag          Nablarch検索結果テーブルタグファイル
+
+/js/jsp/taglib/nablarch.js                     `<n:checkbox>` のエミュレーション機能を実装する
+                                               タグライブラリスタブJS
+
+/css/style/nablarch.less                       Nablarch関連スタイル定義 |br|
+                                               テーブルの配色などを定義している。
+
+/css/style/base.less                           基本HTMLの要素のスタイル定義。|br|
+                                               チェックボックスに関する定義もここに含まれる。
+
+============================================== ==================================================
+
+.. |br| raw:: html
+
+  <br />
+```
+
+## Knowledge File
+
+- ID: `testing-framework-column_checkbox`
+
+```json
+{
+  "id": "testing-framework-column_checkbox",
+  "title": "テーブル複数行選択用チェックボックスカラムウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/ui_dev/doc/reference_jsp_widgets/column_checkbox.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "column:checkbox",
+        "table:search_result",
+        "table:plain",
+        "table:treelist",
+        "チェックボックスカラム",
+        "テーブル行選択",
+        "JSPコードサンプル",
+        "ローカル動作",
+        "サーバ動作",
+        "処理対象レコード選択用ボタン",
+        "UI標準 UI部品 テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様・属性値一覧",
+      "hints": [
+        "key",
+        "title",
+        "cssClass",
+        "checkboxCssClass",
+        "name",
+        "value",
+        "offValue",
+        "disabled",
+        "readonly",
+        "width",
+        "toggle",
+        "colspan",
+        "rowspan",
+        "dataFrom",
+        "comment",
+        "initialValueDesc",
+        "チェックボックス属性",
+        "全選択/解除",
+        "確認画面",
+        "属性値一覧"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "checkbox.tag",
+        "nablarch.js",
+        "nablarch.less",
+        "base.less",
+        "内部構造",
+        "タグファイル",
+        "タグライブラリスタブ",
+        "改修",
+        "listSearchResult"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`:doc:`column_checkbox`` は、**UI標準 UI部品 テーブル** において「処理対象レコード選択用ボタン」として定義されているチェックボックスを出力するウィジェット。:doc:`table_search_result`、:doc:`table_plain`、:doc:`table_treelist` と組み合わせて使用し、一覧テーブルから後続処理の対象行を複数行選択するためのチェックボックスカラムを出力する。\n\n**設計成果物（ローカル動作）**\n\n```jsp\n<table:search_result\n  title         = \"検索結果\"\n  sampleResults = \"15\">\n\n  <column:checkbox\n    title = \"選択\">\n  </column:checkbox>\n\n  <column:link\n    title  = \"ログインID\"\n    sample = \"user001|user002|user003\">\n  </column:link>\n\n</table:search_result>\n```\n\n**実装成果物（サーバ動作）**\n\n```jsp\n<table:search_result\n  title               = \"検索結果\"\n  searchUri           = \"/action/ss11AC/W11AC01Action/RW11AC0102\"\n  listSearchInfoName  = \"11AC_W11AC01\"\n  resultSetName       = \"searchResult\"\n  sampleResults       = \"15\">\n\n  <column:checkbox\n    title    = \"選択\"\n    key      = \"userId\"\n    name     = \"W11AC05.systemAccountEntityArray[${count-1}].userId\"\n    offValue = \"0000000000\">\n  </column:checkbox>\n\n  <column:link\n    title  = \"ログインID\"\n    key    = \"loginId\"\n    uri    = \"/action/ss11AC/W11AC01Action/RW11AC0103\"\n    sample = \"user001|user002|user003\">\n    <n:param paramName=\"11AC_W11AC01.systemAccount.userId\" name=\"row.userId\"></n:param>\n  </column:link>\n\n</table:search_result>\n```",
+    "s2": "入力画面ではテーブル行を選択するためのチェックボックスが出力され、確認画面ではチェックされた行に「●」マークが表示される。\n\n**属性値一覧** （◎=必須、○=任意、×=無効）\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| key | チェックオン時にサーバへ送信する値を行データから取得するキー | 文字列 | ◎ | × | |\n| title | カラムヘッダに表示する文字列 | 文字列 | ◎ | ◎ | |\n| cssClass | 各カラムに指定するCSSクラス | 文字列 | ○ | ○ | |\n| checkboxCssClass | チェックボックスに指定するCSSクラス | 文字列 | ○ | ○ | |\n| name | チェックボックスのname属性 | 文字列 | ◎ | ○ | |\n| value | チェックボックス選択時に送信する値 | 文字列 | ○ | × | 指定なしの場合、key属性で取得した行データの値を使用 |\n| offValue | チェックボックス非選択時に送信する値 | 文字列 | ○ | × | |\n| disabled | サーバへの入力値送信を抑制するか | 真偽値 | ○ | ○ | デフォルト: false |\n| readonly | 編集可能かどうか | 真偽値 | ○ | ○ | デフォルト: false |\n| width | カラムの横幅 | 文字列 | ○ | ○ | |\n| toggle | 全選択/解除操作を可能とするか | 真偽値 | ○ | ○ | デフォルト: false。> **補足**: trueを設定した場合、タイトル部に「全選択」「全解除」のリンクが出力され、全選択/解除操作が可能となる |\n| colspan | 横方向に結合するカラム数 | 数値 | ○ | ○ | 使用方法は:doc:`table_row`を参照 |\n| rowspan | 縦方向に結合するカラム数 | 数値 | ○ | ○ | 使用方法は:doc:`table_row`を参照 |\n| dataFrom | 表示するデータの取得元 | 文字列 | × | × | 「表示情報取得元.表示項目名」の形式で設定 |\n| comment | チェックボックスについての備考 | 文字列 | × | × | 設計書表示時に画面項目定義の「備考」に表示 |\n| initialValueDesc | 初期表示内容に関する説明 | 文字列 | × | × | 設計書表示時に画面項目定義の「備考」に表示 |",
+    "s3": "**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/column/checkbox.tag | :doc:`column_checkbox` |\n| /WEB-INF/tags/listSearchResult/*.tag | Nablarch検索結果テーブルタグファイル |\n| /js/jsp/taglib/nablarch.js | `<n:checkbox>` のエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/nablarch.less | Nablarch関連スタイル定義（テーブルの配色などを定義） |\n| /css/style/base.less | 基本HTMLの要素のスタイル定義（チェックボックスに関する定義を含む） |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

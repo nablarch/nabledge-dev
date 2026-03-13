@@ -1,0 +1,227 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "adapters-micrometer_adaptor--s5",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The source includes a concrete log output example showing how tags appear in actual metrics output (e.g., `process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s`), along with the confirmation sentence \"全てのメトリクスに、foo=FOO, bar=BAR のタグが設定されていることが確認できる。\" This output example demonstrates the expected format of tagged metrics and is omitted from the knowledge file.",
+      "source_evidence": ".. code-block:: text\n\n  2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s\n  ...\n\n全てのメトリクスに、``foo=FOO``, ``bar=BAR`` のタグが設定されていることが確認できる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`LoggingMeterRegistryFactory` is a PascalCase class name used in the XML configuration example within s2 but is absent from the s2 hints array.",
+      "source_evidence": "<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+DefaultMeterBinderListProviderで収集されるメトリクス
+-----------------------------------------------------
+
+:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` が生成する `MeterBinder(外部サイト、英語)`_ のリストには、以下のクラスが含まれている。
+
+
+* `JvmMemoryMetrics(外部サイト、英語)`_
+* `JvmGcMetrics(外部サイト、英語)`_
+* `JvmThreadMetrics(外部サイト、英語)`_
+* `ClassLoaderMetrics(外部サイト、英語)`_
+* `ProcessorMetrics(外部サイト、英語)`_
+* `FileDescriptorMetrics(外部サイト、英語)`_
+* `UptimeMetrics(外部サイト、英語)`_
+* :java:extdoc:`NablarchGcCountMetrics <nablarch.integration.micrometer.instrument.binder.jvm.NablarchGcCountMetrics>`
+
+
+
+これにより、下記メトリクスが収集されるようになる。
+
+.. list-table::
+
+  * - メトリクス名
+    - 説明
+  * - ``jvm.buffer.count``
+    - バッファプール内のバッファの数
+  * - ``jvm.buffer.memory.used``
+    - バッファプールの使用量
+  * - ``jvm.buffer.total.capacity``
+    - バッファプールの合計容量
+  * - ``jvm.memory.used``
+    - メモリプールのメモリ使用量
+  * - ``jvm.memory.committed``
+    - メモリプールのコミットされたメモリ量
+  * - ``jvm.memory.max``
+    - メモリプールの最大メモリ量
+  * - ``jvm.gc.max.data.size``
+    - OLD領域の最大メモリ量
+  * - ``jvm.gc.live.data.size``
+    - Full GC 後の OLD 領域のメモリ使用量
+  * - ``jvm.gc.memory.promoted``
+    - GC 前後で増加した、 OLD 領域のメモリ使用量の増分
+  * - ``jvm.gc.memory.allocated``
+    - 前回の GC 後から今回の GC までの、 Young 領域のメモリ使用量の増分
+  * - ``jvm.gc.concurrent.phase.time``
+    - コンカレントフェーズの処理時間
+  * - ``jvm.gc.pause``
+    - GC の一時停止に費やされた時間
+  * - ``jvm.threads.peak``
+    - スレッド数のピーク数
+  * - ``jvm.threads.daemon``
+    - 現在のデーモンスレッドの数
+  * - ``jvm.threads.live``
+    - 現在の非デーモンスレッドの数
+  * - ``jvm.threads.states``
+    - 現在のスレッドの状態ごとの数
+  * - ``jvm.classes.loaded``
+    - 現在ロードされているクラスの数
+  * - ``jvm.classes.unloaded``
+    - JVM が起動してから今までにアンロードされたクラスの数
+  * - ``system.cpu.count``
+    - JVM で使用できるプロセッサーの数
+  * - ``system.load.average.1m``
+    - 最後の1分のシステム負荷平均 （参考： `OperatingSystemMXBean(外部サイト) <https://docs.oracle.com/javase/jp/11/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage()>`_ ）
+  * - ``system.cpu.usage``
+    - システム全体の直近の CPU 使用率
+  * - ``process.cpu.usage``
+    - JVM の直近のCPU使用率
+  * - ``process.files.open``
+    - 開いているファイルディスクリプタの数
+  * - ``process.files.max``
+    - ファイルディスクリプタの最大数
+  * - ``process.uptime``
+    - JVM の稼働時間
+  * - ``process.start.time``
+    - JVM の起動時刻（UNIX 時間）
+  * - ``jvm.gc.count``
+    - GC の回数
+  * - ``jvm.threads.started``
+    - JVMで起動したスレッド数
+  * - ``process.cpu.time``
+    - Java仮想マシン・プロセスによって使用されるCPU時間
+
+実際に収集されるメトリクスのイメージは :ref:`micrometer_metrics_output_example` を参照。
+
+共通のタグを設定する
+--------------------------------------------------
+
+レジストリファクトリの :java:extdoc:`tags <nablarch.integration.micrometer.MeterRegistryFactory.setTags(java.util.Map)>` プロパティで、すべてのメトリクスに共通するタグを設定できる。
+
+この機能は、アプリケーションが稼働しているホスト、インスタンス、リージョンなどを識別できる情報を設定するといった用途として使用できる。
+
+以下に設定方法を記載する。
+
+.. code-block:: xml
+
+  <component name="meterRegistry" class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
+    <property name="meterBinderListProvider" ref="meterBinderListProvider" />
+    <property name="applicationDisposer" ref="disposer" />
+
+    <!-- tags プロパティで共通のタグを設定 -->
+    <property name="tags">
+      <map>
+        <entry key="foo" value="FOO" />
+        <entry key="bar" value="BAR" />
+      </map>
+    </property>
+  </component>
+
+``tags`` プロパティの型は ``Map<String, String>`` となっており、 ``<map>`` タグを使って設定できる。
+このとき、マップのキーがタグの名前、マップの値がタグの値に対応付けられる。
+
+上記設定の場合、収集されるメトリクスは次のようになる。
+
+.. code-block:: text
+
+  （省略）
+  2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.start.time{bar=BAR,foo=FOO} value=444224h 29m 38.875000064s
+  2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: process.uptime{bar=BAR,foo=FOO} value=27.849s
+  2020-09-04 17:30:06.656 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.count{bar=BAR,foo=FOO} value=8
+  2020-09-04 17:30:06.657 [INFO ]      i.m.c.i.l.LoggingMeterRegistry: system.cpu.usage{bar=BAR,foo=FOO} value=0.475654
+
+全てのメトリクスに、 ``foo=FOO``, ``bar=BAR`` のタグが設定されていることが確認できる。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "adapters-micrometer_adaptor--s5",
+  "title": "Micrometerアダプタ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/adaptors/micrometer_adaptor.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/DefaultMeterBinderListProvider.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/instrument/binder/jvm/NablarchGcCountMetrics.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/integration/micrometer/MeterRegistryFactory.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "DefaultMeterBinderListProviderで収集されるメトリクス",
+      "hints": [
+        "DefaultMeterBinderListProvider",
+        "MeterBinder",
+        "NablarchGcCountMetrics",
+        "JvmMemoryMetrics",
+        "JvmGcMetrics",
+        "JvmThreadMetrics",
+        "ClassLoaderMetrics",
+        "ProcessorMetrics",
+        "FileDescriptorMetrics",
+        "UptimeMetrics",
+        "JVMメトリクス収集",
+        "メトリクス一覧",
+        "jvm.gc.count",
+        "jvm.memory.used",
+        "process.cpu.usage"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "共通のタグを設定する",
+      "hints": [
+        "MeterRegistryFactory",
+        "tags",
+        "共通タグ設定",
+        "メトリクスタグ",
+        "Map<String, String>"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.integration.micrometer.DefaultMeterBinderListProvider`\n\n:java:extdoc:`DefaultMeterBinderListProvider <nablarch.integration.micrometer.DefaultMeterBinderListProvider>` が生成する `MeterBinder` のリストに含まれるクラス:\n\n- JvmMemoryMetrics\n- JvmGcMetrics\n- JvmThreadMetrics\n- ClassLoaderMetrics\n- ProcessorMetrics\n- FileDescriptorMetrics\n- UptimeMetrics\n- :java:extdoc:`NablarchGcCountMetrics <nablarch.integration.micrometer.instrument.binder.jvm.NablarchGcCountMetrics>`\n\n収集されるメトリクス一覧:\n\n| メトリクス名 | 説明 |\n|---|---|\n| `jvm.buffer.count` | バッファプール内のバッファの数 |\n| `jvm.buffer.memory.used` | バッファプールの使用量 |\n| `jvm.buffer.total.capacity` | バッファプールの合計容量 |\n| `jvm.memory.used` | メモリプールのメモリ使用量 |\n| `jvm.memory.committed` | メモリプールのコミットされたメモリ量 |\n| `jvm.memory.max` | メモリプールの最大メモリ量 |\n| `jvm.gc.max.data.size` | OLD領域の最大メモリ量 |\n| `jvm.gc.live.data.size` | Full GC 後の OLD 領域のメモリ使用量 |\n| `jvm.gc.memory.promoted` | GC 前後で増加した、OLD 領域のメモリ使用量の増分 |\n| `jvm.gc.memory.allocated` | 前回の GC 後から今回の GC までの、Young 領域のメモリ使用量の増分 |\n| `jvm.gc.concurrent.phase.time` | コンカレントフェーズの処理時間 |\n| `jvm.gc.pause` | GC の一時停止に費やされた時間 |\n| `jvm.threads.peak` | スレッド数のピーク数 |\n| `jvm.threads.daemon` | 現在のデーモンスレッドの数 |\n| `jvm.threads.live` | 現在の非デーモンスレッドの数 |\n| `jvm.threads.states` | 現在のスレッドの状態ごとの数 |\n| `jvm.classes.loaded` | 現在ロードされているクラスの数 |\n| `jvm.classes.unloaded` | JVM が起動してから今までにアンロードされたクラスの数 |\n| `system.cpu.count` | JVM で使用できるプロセッサーの数 |\n| `system.load.average.1m` | 最後の1分のシステム負荷平均（[OperatingSystemMXBean](https://docs.oracle.com/javase/jp/11/docs/api/java.management/java/lang/management/OperatingSystemMXBean.html#getSystemLoadAverage())） |\n| `system.cpu.usage` | システム全体の直近の CPU 使用率 |\n| `process.cpu.usage` | JVM の直近のCPU使用率 |\n| `process.files.open` | 開いているファイルディスクリプタの数 |\n| `process.files.max` | ファイルディスクリプタの最大数 |\n| `process.uptime` | JVM の稼働時間 |\n| `process.start.time` | JVM の起動時刻（UNIX 時間） |\n| `jvm.gc.count` | GC の回数 |\n| `jvm.threads.started` | JVMで起動したスレッド数 |\n| `process.cpu.time` | Java仮想マシン・プロセスによって使用されるCPU時間 |",
+    "s2": "**クラス**: `nablarch.integration.micrometer.MeterRegistryFactory`\n\n:java:extdoc:`tags <nablarch.integration.micrometer.MeterRegistryFactory.setTags(java.util.Map)>` プロパティ（型: `Map<String, String>`）で、すべてのメトリクスに共通するタグを設定できる。ホスト、インスタンス、リージョンなどの識別情報の設定に使用する。\n\n```xml\n<component name=\"meterRegistry\" class=\"nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory\">\n  <property name=\"meterBinderListProvider\" ref=\"meterBinderListProvider\" />\n  <property name=\"applicationDisposer\" ref=\"disposer\" />\n  <!-- tags プロパティで共通のタグを設定 -->\n  <property name=\"tags\">\n    <map>\n      <entry key=\"foo\" value=\"FOO\" />\n      <entry key=\"bar\" value=\"BAR\" />\n    </map>\n  </property>\n</component>\n```\n\n`<map>` タグで設定。マップのキーがタグ名、マップの値がタグ値に対応する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,639 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/libraries/validation/bean_validation.rst`
+- Format: `rst`
+
+```
+.. _bean_validation:
+
+Bean Validation
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+この章では、Java EE7のBean Validation(JSR349)に準拠したバリデーション機能を解説する。
+
+.. important::
+
+  この機能は、Bean Validationのエンジンを実装しているわけではない。
+
+  Java EE環境(WebLogicやWildFlyなど)では、そのサーバ内にバンドルされているBean Validationの実装が使用される。
+  Java EE環境外で使用するには、別途Bean Validationの実装を参照ライブラリに追加する必要がある。
+  (参照実装である `Hibernate Validator(外部サイト、英語) <https://hibernate.org/validator/>`_ を使用することを推奨する。)
+
+機能概要
+---------------------
+
+ドメインバリデーションができる
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ドメインごとにバリデーションルールを定義できる機能を提供する。
+
+ドメインバリデーションを使うと、Beanのプロパティにはドメイン名の指定だけを行えばよく、バリデーションルールの変更が容易になる。
+
+詳細は、 `ドメインバリデーションを使う`_ を参照。
+
+.. _bean_validation-validator:
+
+よく使われるバリデータが提供されている
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nablarchでは、よく使われるバリデータが提供されているため、基本的なバリデーションは何かを作りこむことなく使用できる。
+
+Nablarchで提供しているバリデータは以下のパッケージ内のアノテーション(注釈型)を参照。
+
+* :java:extdoc:`nablarch.core.validation.ee`
+* :java:extdoc:`nablarch.common.code.validator.ee`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-validation-ee</artifactId>
+  </dependency>
+  
+  <!--
+   メッセージ管理を使用してメッセージを構築する場合のみ
+   デフォルトでは、メッセージ管理が使用される
+   -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-core-message</artifactId>
+  </dependency>
+
+  <!-- コード値のバリデータを使用する場合のみ -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-code</artifactId>
+  </dependency>
+  
+  <!-- ウェブアプリケーションで使用する場合 -->
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-web</artifactId>
+  </dependency>
+  
+
+使用方法
+--------------------------------------------------
+
+.. _bean_validation-configuration:
+
+Bean Validationを使うための設定
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Bean Validationを使うために必要となる設定を以下に示す。
+
+MessageInterpolatorの設定
+  Bean Validationでバリデーションエラーが発生した際のメッセージを構築するクラス( :java:extdoc:`MessageInterpolator <javax.validation.MessageInterpolator>` を実装したクラス)を設定する。
+
+  設定を省略した場合(デフォルト)は、 :ref:`message` を使用する :java:extdoc:`NablarchMessageInterpolator <nablarch.core.validation.ee.NablarchMessageInterpolator>` が使用される。
+
+  例えば、Hibernate Validatorのプロパティファイルからメッセージを構築する実装を使用する場合には、以下のように設定する。
+
+  .. important::
+
+    componentの名前は、必ず **messageInterpolator** とすること。
+
+  .. code-block:: xml
+
+    <!-- コンポーネント名にmessageInterpolatorを指定し、MessageInterpolatorの実装クラスを設定する -->
+    <compnent name="messageInterpolator"
+        class="org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator"/>
+
+ドメインバリデーション用の設定
+  :ref:`bean_validation-domain_validation` を参照
+
+ウェブアプリケーションでBean Validationを使うための設定
+  :ref:`bean_validation-web_application` を参照
+
+RESTfulウェブサービスでBean Validationを使うための設定
+  :ref:`bean_validation-restful_web_service` を参照
+
+バリデーションエラー時のエラーメッセージを定義する
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:ref:`bean_validation-configuration` で説明したように、デフォルトでは :ref:`message` を使用してバリデーションエラー時のメッセージを構築する。
+このため、メッセージの定義場所などの詳細は、 :ref:`message` を参照すること。
+
+デフォルトの :java:extdoc:`NablarchMessageInterpolator <nablarch.core.validation.ee.NablarchMessageInterpolator>` を使用した場合のメッセージ定義ルールは以下のとおり。
+
+* アノテーションの ``message`` 属性に指定された値が ``{`` 、``}`` で囲まれていた場合のみ :ref:`message` を使用してメッセージを構築する。
+* メッセージテキスト内には、バリデーションのアノテーションの属性情報を埋め込むためのプレースホルダを使用できる。
+  プレースホルダは、アノテーションの属性名を ``{`` 、 ``}`` で囲んで定義する。
+* メッセージを動的に組み立てる式(例えばEL式)は使用できない。
+
+以下に例を示す。
+
+Java実装例
+  .. code-block:: java
+
+      public class SampleForm {
+
+        @Length(max = 10)
+        @SystemChar(charsetDef = "全角文字")
+        @Required
+        private String userName;
+
+        @Length(min = 8, max = 8)
+        @SystemChar(charsetDef = "半角数字")
+        private String birthday;
+
+        // getter、setterは省略
+      }
+
+メッセージ定義例
+  アノテーションで指定されているメッセージIDをキーにメッセージを定義する。
+  アノテーションのmessage属性を指定していない場合は、デフォルト値がメッセージIDとなる。
+
+  .. code-block:: properties
+
+    # Lengthアノテーションに対応したメッセージ
+    # Lengthアノテーションのminやmax属性に指定した値をメッセージに埋め込むことが出来る
+    nablarch.core.validation.ee.Length.min.message={min}文字以上で入力してください。
+    nablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。
+    nablarch.core.validation.ee.Length.min.max.message={min}文字以上{max}文字以内で入力してください。
+
+    # SystemCharに対応したメッセージ
+    nablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してください。
+
+.. tip:: 
+  :ref:`bean_validation-configuration` で、デフォルト動作を変更している場合には、
+  :java:extdoc:`MessageInterpolator <javax.validation.MessageInterpolator>` の実装に従いメッセージを定義すること。
+
+
+バリデーションルールの設定方法
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+バリデーションルールは、アノテーションをFieldかProperty(getter)に設定することで指定できる。
+なお、setterにはアノテーションを指定できないので注意すること。(指定しても意味が無い(無視する))
+
+.. _bean_validation-form_property:
+
+.. tip::
+
+  Beanクラスのプロパティの型は全てStringとして定義すること。
+
+  Bean Validationでは、入力値をBeanに変換した後でバリデーションが実施される。
+  このため、外部からどのような値が入力値として送られてきても、必ずBeanに変換する必要がある。
+
+  もし、String以外のプロパティが存在していて、不正な値が送信された場合（例えば、数値型に対して英字が送信された場合)に、
+  バリデーション実施前に行うBeanへの変換処理が失敗し、予期せぬ例外が送出され障害となってしまう。
+
+  本来であれば、どのような値が入力されたとしても障害とするのではなく、バリデーションの結果を外部（例えば画面）に対して通知すべきである。
+
+  外部からの値をString以外の型に変換したい場合には、バリデーション実施後に変換すること。
+
+  クライアントサイドでJavaScriptを用いてバリデーションを行っている場合でも、
+  サーバサイドにはバリデーション済みの値が送信される保証はないため、プロパティは必ず `String` とすること。
+  なぜなら、クライアントサイドではユーザによりJavaScriptの無効化やブラウザの開発者ツールを用いた改竄が容易に行えるためである。
+  このような操作が行われた場合、クライアントサイドバリデーションをすり抜け、サーバサイドに不正な値が送られる可能性がある。
+
+実装例
+  :ref:`Nablarchで提供しているバリデータ <bean_validation-validator>` を参照し、アノテーションを設定する。
+
+  .. tip::
+
+    個別にアノテーションを設定した場合、実装時のミスが増えたりメンテナンスコストが大きくなるため、
+    後述する :ref:`ドメインバリデーション <bean_validation-domain_validation>` を使うことを推奨する。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+      @Length(max = 10)
+      @SystemChar(charsetDef = "全角文字")
+      @Required
+      private String userName;
+
+      @Length(min = 8, max = 8)
+      @SystemChar(charsetDef = "半角数字")
+      private String birthday;
+
+      // getter、setterは省略
+    }
+
+.. _bean_validation-domain_validation:
+
+ドメインバリデーションを使う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ドメインバリデーションを使うための設定や実装例を示す。
+
+ドメインごとのバリデーションルールを定義したBeanの作成
+  ドメインバリデーションを使用するには、まずドメインごとのバリデーションルールを持つBean(ドメインBean)を作成する。
+
+  このBeanクラスには、ドメインごとのフィールドを定義し、フィールドに対してアノテーションを設定する。
+  フィールド名がドメイン名となる。以下の例では ``name`` と ``date`` の２つのドメインが定義されている。
+
+  .. tip::
+
+   必須項目を表す :java:extdoc:`@Required <nablarch.core.validation.ee.Required>` アノテーションは、ドメインBeanに設定するのではなく個別のBean側に設定すること。
+   必須かどうかはドメイン側で強制できるものではなく、機能の設計によるため。
+
+  .. code-block:: java
+
+    package sample;
+
+    import nablarch.core.validation.ee.Length;
+    import nablarch.core.validation.ee.SystemChar;
+
+    public class SampleDomainBean {
+
+        @Length(max = 10)
+        @SystemChar(charsetDef = "全角文字")
+        String name;
+
+        @Length(min = 8, max = 8)
+        @SystemChar(charsetDef = "半角数字")
+        String date;
+
+    }
+
+ドメインBeanを有効化
+  ドメインBeanを有効化するには、 :java:extdoc:`DomainManager <nablarch.core.validation.ee.DomainManager>` 実装クラスを作成する。
+  :java:extdoc:`getDomainBean <nablarch.core.validation.ee.DomainManager.getDomainBean()>` では、ドメインBeanのクラスオブジェクトを返す。
+
+  .. code-block:: java
+
+    package sample;
+
+    public class SampleDomainManager implements DomainManager<SampleDomainBean> {
+      @Override
+      public Class<SampleDomainBean> getDomainBean() {
+          // ドメインBeanのClassオブジェクトを返す
+          return SampleDomainBean.class;
+      }
+    }
+
+
+  :java:extdoc:`DomainManager <nablarch.core.validation.ee.DomainManager>` 実装クラスの `SampleDomainBean` をコンポーネント設定ファイルに定義することで、
+  `SampleDomainBean` を使用したドメインバリデーションが有効となる。
+
+  .. code-block:: xml
+
+    <!-- DomainManager実装クラスは、domainManagerという名前で設定すること -->
+    <component name="domainManager" class="sample.SampleDomainManager"/>
+
+各Beanでドメインバリデーションを使う
+  Beanのバリデーション対象プロパティに :java:extdoc:`@Domain <nablarch.core.validation.ee.Domain>` アノテーションを設定することで、ドメインバリデーションが行われる。
+
+  この例では、 `userName` に対して `SampleDomainBean` の `name` フィールドに設定したバリデーションが行われる。
+  同じように `birthday` に対しては、 `date` フィールドに設定したバリデーションが行われる。
+
+  ※userNameは必須項目となる。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+      @Domain("name")
+      @Required
+      private String userName;
+
+      @Domain("date")
+      private String birthday;
+
+      // getter、setterは省略
+    }
+
+.. _bean_validation-system_char_validator:
+
+文字種バリデーションを行う
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+システム許容文字のバリデーション機能を使用することで、文字種によるバリデーションを行うことが出来る。
+
+文字種によるバリデーションを行うには、文字種毎に許容する文字のセットを定義する。
+例えば、半角数字という文字種には、半角の ``0`` から ``9`` を許容するといった定義が必要となる。
+
+以下に文字種毎の許容文字セットの定義方法を示す。
+
+コンポーネント定義に許容文字のセットを定義する
+  許容文字のセットは、以下のクラスの何れかを使って登録する。
+  登録する際には、コンポーネント名には文字種を表す任意の名前を設定すること。
+
+  * :java:extdoc:`RangedCharsetDef <nablarch.core.validation.validator.unicode.RangedCharsetDef>` (範囲で許容文字セットを登録する場合に使用する)
+  * :java:extdoc:`LiteralCharsetDef <nablarch.core.validation.validator.unicode.LiteralCharsetDef>` (リテラルで許容文字を全て登録する場合に使用する)
+  * :java:extdoc:`CompositeCharsetDef <nablarch.core.validation.validator.unicode.CompositeCharsetDef>` (複数のRangedCharsetDefやLiteralCharsetDefからなる許容文字を登録する場合に使用する)
+
+  設定例は以下のとおり。
+
+  .. code-block:: xml
+
+    <!-- 半角数字 -->
+    <component name="半角数字" class="nablarch.core.validation.validator.unicode.LiteralCharsetDef">
+      <property name="allowedCharacters" value="01234567890" />
+      <property name="messageId" value="numberString.message" />
+    </component>
+
+    <!-- ASCII(制御コードを除く) -->
+    <component name="ascii" class="nablarch.core.validation.validator.unicode.RangedCharsetDef">
+      <property name="startCodePoint" value="U+0020" />
+      <property name="endCodePoint" value="U+007F" />
+      <property name="messageId" value="ascii.message" />
+    </component>
+
+    <!-- 英数字 -->
+    <component name="英数字" class="nablarch.core.validation.validator.unicode.CompositeCharsetDef">
+      <property name="charsetDefList">
+        <list>
+          <!-- 半角数字の定義 -->
+          <component-ref name="半角数字" />
+
+          <!-- 半角英字の定義 -->
+          <component class="nablarch.core.validation.validator.unicode.LiteralCharsetDef">
+            <property name="allowedCharacters"
+                value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" />
+          </component>
+        </list>
+      </property>
+      <property name="messageId" value="asciiAndNumberString.message" />
+    </component>
+
+アノテーションで文字種を指定する
+  文字種バリデーションを行うプロパティには、 :java:extdoc:`@SystemChar <nablarch.core.validation.ee.SystemChar>` アノテーションを設定する。
+  このアノテーションの :java:extdoc:`charsetDef <nablarch.core.validation.ee.SystemChar.charsetDef()>` 属性には、許容する文字種を表す名前を設定する。
+  この名前は、上記のコンポーネント設定ファイルに文字種セットを登録した際のコンポーネント名となる。
+
+  この例では、 ``半角数字`` を指定しているので、上記のコンポーネント定義に従い「0123456789」が許容される。
+
+  .. code-block:: java
+
+    public class SampleForm {
+
+        @SystemChar(charsetDef = "半角数字")
+        public void setAccountNumber(String accountNumber) {
+            this.accountNumber = accountNumber;
+        }
+    }
+
+.. tip::
+
+  許容する文字セットの文字数が大きくなった場合、後方に定義されている文字のチェックには時間を要する。(単純に前方から順に文字セットに含まれるかをチェックするため)
+  この問題を解決するために、一度チェックした文字の結果をキャッシュする仕組みを提供している。
+
+  ※原則キャッシュ機能は使わずに開発を進め、どうしても文字種バリデーションがボトルネックとなる場合に、キャッシュ機能を使うか否か検討すると良い。
+
+  使い方は単純で、以下のコンポーネント定義のように、オリジナルの文字種セットの定義を、
+  キャッシュ用の :java:extdoc:`CachingCharsetDef <nablarch.core.validation.validator.unicode.CachingCharsetDef>` に設定するだけである。
+
+  .. code-block:: xml
+
+    <component name="半角数字" class="nablarch.core.validation.validator.unicode.CachingCharsetDef">
+      <property name="charsetDef">
+        <component class="nablarch.core.validation.validator.unicode.LiteralCharsetDef">
+          <property name="allowedCharacters" value="01234567890" />
+        </component>
+      </property>
+      <property name="messageId" value="numberString.message" />
+    </component>
+
+サロゲートペアを許容する
+  このバリデーションでは、デフォルトではサロゲートペアを許容しない。
+  （例え `LiteralCharsetDef` で明示的にサロゲートペアの文字を定義していても許容しない）
+
+  サロゲートペアを許容する場合は次のようにコンポーネント設定ファイルに :java:extdoc:`SystemCharConfig <nablarch.core.validation.ee.SystemCharConfig>` を設定する必要がある。
+
+  ポイント
+   * コンポーネント名は ``ee.SystemCharConfig`` とすること
+
+  .. code-block:: xml
+
+    <component name="ee.SystemCharConfig" class="nablarch.core.validation.ee.SystemCharConfig">
+      <!-- サロゲートペアを許容する -->
+      <property name="allowSurrogatePair" value="true"/>
+    </component>
+
+.. _bean_validation-correlation_validation:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-bean_validation--s1`
+
+```json
+{
+  "id": "libraries-bean_validation--s1",
+  "title": "Bean Validation",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/validation/bean_validation.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/javax/validation/MessageInterpolator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/NablarchMessageInterpolator.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Required.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/DomainManager.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Domain.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/RangedCharsetDef.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/LiteralCharsetDef.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/CompositeCharsetDef.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/SystemChar.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/validator/unicode/CachingCharsetDef.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/SystemCharConfig.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "Bean Validation",
+        "ドメインバリデーション",
+        "Hibernate Validator",
+        "nablarch.core.validation.ee",
+        "nablarch.common.code.validator.ee",
+        "バリデータ一覧"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core-validation-ee",
+        "nablarch-core-message",
+        "nablarch-common-code",
+        "nablarch-fw-web",
+        "Maven依存関係",
+        "モジュール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Bean Validationを使うための設定",
+      "hints": [
+        "MessageInterpolator",
+        "NablarchMessageInterpolator",
+        "messageInterpolator",
+        "Bean Validation設定",
+        "javax.validation.MessageInterpolator",
+        "nablarch.core.validation.ee.NablarchMessageInterpolator",
+        "コンポーネント設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "バリデーションエラー時のエラーメッセージを定義する",
+      "hints": [
+        "バリデーションエラーメッセージ",
+        "NablarchMessageInterpolator",
+        "プレースホルダ",
+        "メッセージ定義",
+        "nablarch.core.validation.ee.Length",
+        "nablarch.core.validation.ee.SystemChar",
+        "message属性"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "バリデーションルールの設定方法",
+      "hints": [
+        "バリデーションルール",
+        "Stringプロパティ",
+        "@Required",
+        "@Length",
+        "@SystemChar",
+        "setter",
+        "アノテーション設定",
+        "プロパティ型"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ドメインバリデーションを使う",
+      "hints": [
+        "ドメインバリデーション",
+        "DomainManager",
+        "DomainBean",
+        "@Domain",
+        "@Required",
+        "nablarch.core.validation.ee.DomainManager",
+        "nablarch.core.validation.ee.Domain",
+        "domainManager",
+        "getDomainBean"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "文字種バリデーションを行う",
+      "hints": [
+        "文字種バリデーション",
+        "RangedCharsetDef",
+        "LiteralCharsetDef",
+        "CompositeCharsetDef",
+        "@SystemChar",
+        "CachingCharsetDef",
+        "SystemCharConfig",
+        "サロゲートペア",
+        "nablarch.core.validation.validator.unicode.RangedCharsetDef",
+        "nablarch.core.validation.validator.unicode.LiteralCharsetDef",
+        "nablarch.core.validation.validator.unicode.CompositeCharsetDef",
+        "nablarch.core.validation.ee.SystemCharConfig",
+        "charsetDef"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: この機能はBean Validationのエンジンを実装しているわけではない。Java EE環境（WebLogicやWildFlyなど）ではサーババンドルのBean Validation実装が使用される。Java EE環境外では別途Bean Validation実装の追加が必要（[Hibernate Validator](https://hibernate.org/validator/)を推奨）。\n\n**ドメインバリデーション**: ドメインごとにバリデーションルールを定義できる。Beanのプロパティにはドメイン名の指定だけを行えばよく、バリデーションルールの変更が容易になる。詳細は :ref:`bean_validation-domain_validation` を参照。\n\n**Nablarch提供バリデータ**: 以下のパッケージのアノテーションを参照\n- `nablarch.core.validation.ee`\n- `nablarch.common.code.validator.ee`",
+    "s2": "**モジュール**:\n```xml\n<!-- 必須 -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-validation-ee</artifactId>\n</dependency>\n\n<!-- メッセージ管理使用時のみ（デフォルトで使用） -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-message</artifactId>\n</dependency>\n\n<!-- コード値バリデータ使用時のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-code</artifactId>\n</dependency>\n\n<!-- ウェブアプリケーション使用時 -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+    "s3": "**MessageInterpolatorの設定**\n\n> **重要**: コンポーネント名は必ず **messageInterpolator** とすること。\n\nデフォルト（省略時）は :java:extdoc:`NablarchMessageInterpolator <nablarch.core.validation.ee.NablarchMessageInterpolator>` が使用され、:ref:`message` でメッセージを構築する。\n\nHibernate Validatorのプロパティファイルからメッセージを構築する実装例:\n```xml\n<component name=\"messageInterpolator\"\n    class=\"org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator\"/>\n```\n\n- ドメインバリデーション設定: :ref:`bean_validation-domain_validation` を参照\n- ウェブアプリケーション設定: :ref:`bean_validation-web_application` を参照\n- RESTfulウェブサービス設定: :ref:`bean_validation-restful_web_service` を参照",
+    "s4": "デフォルトでは :java:extdoc:`NablarchMessageInterpolator <nablarch.core.validation.ee.NablarchMessageInterpolator>` を使用し、:ref:`message` でメッセージを構築する。\n\n**メッセージ定義ルール**（NablarchMessageInterpolatorを使用した場合）:\n- アノテーションの `message` 属性が `{` `}` で囲まれている場合のみ :ref:`message` を使用してメッセージを構築する\n- メッセージテキスト内にアノテーション属性名を `{属性名}` 形式でプレースホルダとして使用できる\n- EL式などの動的式は使用不可\n\nJava実装例:\n```java\npublic class SampleForm {\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  @Required\n  private String userName;\n\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  private String birthday;\n}\n```\n\nメッセージ定義例（アノテーションで指定されているメッセージIDをキーにメッセージを定義する。アノテーションの `message` 属性を指定していない場合は、デフォルト値がメッセージIDとなる）:\n```properties\nnablarch.core.validation.ee.Length.min.message={min}文字以上で入力してください。\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.Length.min.max.message={min}文字以上{max}文字以内で入力してください。\nnablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してください。\n```\n\n> **補足**: デフォルト動作を変更している場合は、:java:extdoc:`MessageInterpolator <javax.validation.MessageInterpolator>` の実装に従いメッセージを定義すること。",
+    "s5": "アノテーションをFieldかProperty(getter)に設定する。setterにはアノテーションを設定できない（指定しても無視される）。\n\n> **補足**: Beanクラスのプロパティの型は全て `String` として定義すること。Bean Validationでは入力値をBeanに変換した後でバリデーションが実施されるため、`String` 以外の型が存在すると不正な値の入力時にBeanへの変換処理が失敗し予期せぬ例外が発生する。クライアントサイドJavaScriptバリデーションを使用している場合でも、JavaScriptの無効化やブラウザ開発者ツールで改竄が可能なため、サーバサイドではプロパティを必ず `String` とすること。外部からの値をString以外の型に変換したい場合は、バリデーション実施後に変換すること。\n\n```java\npublic class SampleForm {\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  @Required\n  private String userName;\n\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  private String birthday;\n}\n```\n\n> **補足**: 個別にアノテーションを設定するより :ref:`bean_validation-domain_validation` を使うことを推奨する。",
+    "s6": "**1. ドメインBeanの作成**\n\nドメインごとのバリデーションルールを持つBean（ドメインBean）を作成する。フィールド名がドメイン名となる。\n\n> **補足**: :java:extdoc:`@Required <nablarch.core.validation.ee.Required>` アノテーションはドメインBeanに設定せず、個別のBean側に設定すること。必須かどうかはドメイン側で強制できるものではなく、機能の設計によるため。\n\n```java\npackage sample;\n\nimport nablarch.core.validation.ee.Length;\nimport nablarch.core.validation.ee.SystemChar;\n\npublic class SampleDomainBean {\n    @Length(max = 10)\n    @SystemChar(charsetDef = \"全角文字\")\n    String name;\n\n    @Length(min = 8, max = 8)\n    @SystemChar(charsetDef = \"半角数字\")\n    String date;\n}\n```\n\n**2. DomainManagerの実装と設定**\n\n:java:extdoc:`DomainManager <nablarch.core.validation.ee.DomainManager>` 実装クラスを作成し、:java:extdoc:`getDomainBean <nablarch.core.validation.ee.DomainManager.getDomainBean()>` でドメインBeanのクラスオブジェクトを返す。コンポーネント名 `domainManager` で設定する。\n\n```java\npublic class SampleDomainManager implements DomainManager<SampleDomainBean> {\n  @Override\n  public Class<SampleDomainBean> getDomainBean() {\n      return SampleDomainBean.class;\n  }\n}\n```\n\n```xml\n<!-- DomainManager実装クラスは、domainManagerという名前で設定すること -->\n<component name=\"domainManager\" class=\"sample.SampleDomainManager\"/>\n```\n\n**3. @Domainアノテーションで使用**\n\n:java:extdoc:`@Domain <nablarch.core.validation.ee.Domain>` アノテーションをBeanのバリデーション対象プロパティに設定する。\n\n```java\npublic class SampleForm {\n  @Domain(\"name\")\n  @Required\n  private String userName;\n\n  @Domain(\"date\")\n  private String birthday;\n}\n```",
+    "s7": "**許容文字セットの定義クラス**（コンポーネント名には文字種を表す任意の名前を設定すること）:\n- :java:extdoc:`RangedCharsetDef <nablarch.core.validation.validator.unicode.RangedCharsetDef>`: 範囲で許容文字セットを登録\n- :java:extdoc:`LiteralCharsetDef <nablarch.core.validation.validator.unicode.LiteralCharsetDef>`: リテラルで許容文字を全て登録\n- :java:extdoc:`CompositeCharsetDef <nablarch.core.validation.validator.unicode.CompositeCharsetDef>`: 複数のRangedCharsetDef/LiteralCharsetDefから構成\n\n設定例:\n```xml\n<!-- 半角数字 -->\n<component name=\"半角数字\" class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n  <property name=\"allowedCharacters\" value=\"01234567890\" />\n  <property name=\"messageId\" value=\"numberString.message\" />\n</component>\n\n<!-- ASCII(制御コードを除く) -->\n<component name=\"ascii\" class=\"nablarch.core.validation.validator.unicode.RangedCharsetDef\">\n  <property name=\"startCodePoint\" value=\"U+0020\" />\n  <property name=\"endCodePoint\" value=\"U+007F\" />\n  <property name=\"messageId\" value=\"ascii.message\" />\n</component>\n\n<!-- 英数字（複合） -->\n<component name=\"英数字\" class=\"nablarch.core.validation.validator.unicode.CompositeCharsetDef\">\n  <property name=\"charsetDefList\">\n    <list>\n      <component-ref name=\"半角数字\" />\n      <component class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n        <property name=\"allowedCharacters\"\n            value=\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\" />\n      </component>\n    </list>\n  </property>\n  <property name=\"messageId\" value=\"asciiAndNumberString.message\" />\n</component>\n```\n\n**アノテーション指定**: :java:extdoc:`@SystemChar <nablarch.core.validation.ee.SystemChar>` の :java:extdoc:`charsetDef <nablarch.core.validation.ee.SystemChar.charsetDef()>` 属性にコンポーネント名（文字種名）を設定する。\n\n```java\npublic class SampleForm {\n    @SystemChar(charsetDef = \"半角数字\")\n    public void setAccountNumber(String accountNumber) {\n        this.accountNumber = accountNumber;\n    }\n}\n```\n\n> **補足**: 許容文字セットが大きい場合、前方から順にチェックするため後方の文字チェックに時間を要する。:java:extdoc:`CachingCharsetDef <nablarch.core.validation.validator.unicode.CachingCharsetDef>` でキャッシュ可能だが、文字種バリデーションがボトルネックとなる場合のみ使用を検討すること。\n\n```xml\n<component name=\"半角数字\" class=\"nablarch.core.validation.validator.unicode.CachingCharsetDef\">\n  <property name=\"charsetDef\">\n    <component class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n      <property name=\"allowedCharacters\" value=\"01234567890\" />\n    </component>\n  </property>\n  <property name=\"messageId\" value=\"numberString.message\" />\n</component>\n```\n\n**サロゲートペア**: デフォルトでは許容しない（LiteralCharsetDefで明示的に定義していても不可）。許容する場合は :java:extdoc:`SystemCharConfig <nablarch.core.validation.ee.SystemCharConfig>` をコンポーネント名 `ee.SystemCharConfig` で設定する。\n\n```xml\n<component name=\"ee.SystemCharConfig\" class=\"nablarch.core.validation.ee.SystemCharConfig\">\n  <property name=\"allowSurrogatePair\" value=\"true\"/>\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

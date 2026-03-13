@@ -1,0 +1,199 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/setting_guide/CustomizingConfigurations/CustomizeMessageIDAndMessage.rst`
+- Format: `rst`
+
+```
+
+============================================
+メッセージID及びメッセージ内容の変更手順
+============================================
+
+概要
+================================================================
+
+アーキタイプから生成したプロジェクトには、ユーザに通知するメッセージID及びメッセージについて、プロジェクト内にデフォルト設定が記述されている。
+
+これらについては、内容を確認した上で変更する必要がある。
+
+Nablarchにおけるメッセージ管理機能自体については、:doc:`../../libraries/message` を参照
+
+
+エラー内容とメッセージIDの紐付けの変更方法
+==========================================
+
+エラー内容とメッセージIDの紐付けは、src/main/resources/common.propertiesにて行っている。
+
+common.properties中にコメントで「XXXのメッセージID」と記載されている項目が、エラー内容とメッセージIDの紐付けを行っている項目である。
+
+例えば、以下のような記述の場合、M000000017がメッセージIDである。
+
+.. code-block:: text
+
+  # 全角文字以外の文字が入力された場合のメッセージID
+  # (TODO PJのID体系に併せて設定値を変更)
+  nablarch.zenkakuCharset.messageId=M000000017
+
+
+項目の値を変更することで、エラー内容とメッセージIDの紐付けを変更することが出来る。
+
+
+メッセージIDとメッセージの紐付けの変更方法
+==============================================
+
+メッセージIDとメッセージの紐付けは、初期設定ではsrc/main/resources/messages.propertiesで行っている。
+
+このファイルを編集することで、紐付けを変更することが出来る。
+
+
+```
+
+## Knowledge File
+
+- ID: `setting-guide-CustomizeMessageIDAndMessage`
+
+```json
+{
+  "id": "setting-guide-CustomizeMessageIDAndMessage",
+  "title": "メッセージID及びメッセージ内容の変更手順",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/setting_guide/CustomizingConfigurations/CustomizeMessageIDAndMessage.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "メッセージID設定",
+        "メッセージ変更",
+        "デフォルト設定確認",
+        "アーキタイプ生成プロジェクト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "エラー内容とメッセージIDの紐付けの変更方法",
+      "hints": [
+        "エラーメッセージID紐付け",
+        "common.properties",
+        "messageId設定",
+        "nablarch.zenkakuCharset.messageId",
+        "メッセージID変更"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メッセージIDとメッセージの紐付けの変更方法",
+      "hints": [
+        "メッセージIDメッセージ紐付け",
+        "messages.properties",
+        "メッセージ内容変更"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "アーキタイプから生成したプロジェクトには、ユーザに通知するメッセージID及びメッセージについて、プロジェクト内にデフォルト設定が記述されている。内容を確認した上で変更する必要がある。\n\nNablarchのメッセージ管理機能については :doc:`../../libraries/message` を参照。",
+    "s2": "エラー内容とメッセージIDの紐付けは `src/main/resources/common.properties` で設定する。コメントに「XXXのメッセージID」と記載されている項目が紐付け設定箇所。\n\n```text\n# 全角文字以外の文字が入力された場合のメッセージID\n# (TODO PJのID体系に併せて設定値を変更)\nnablarch.zenkakuCharset.messageId=M000000017\n```\n\n項目の値を変更することで、エラー内容とメッセージIDの紐付けを変更できる。",
+    "s3": "メッセージIDとメッセージの紐付けは、初期設定では `src/main/resources/messages.properties` で設定する。このファイルを編集することで紐付けを変更できる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

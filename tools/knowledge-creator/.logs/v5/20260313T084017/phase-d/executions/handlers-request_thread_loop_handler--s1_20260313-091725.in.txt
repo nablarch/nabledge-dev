@@ -1,0 +1,342 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v5/nablarch-document/ja/application_framework/application_framework/handlers/standalone/request_thread_loop_handler.rst`
+- Format: `rst`
+
+```
+.. _request_thread_loop_handler:
+
+リクエストスレッド内ループ制御ハンドラ
+==================================================
+.. contents:: 目次
+  :depth: 3
+  :local:
+
+プロセスの停止要求があるまで、後続のハンドラを繰り返し実行するハンドラ。
+このハンドラは、メッセージキューやデータベース上のテーブルなどを監視し、未処理のデータを随時処理するプロセスで使用する。
+
+.. tip::
+
+  メッセージキューやデータベース上のテーブルを監視して処理するプロセスでは、個々のリクエスト(データ)は独立して扱われる。
+  1つのリクエスト処理がエラーとなっても他のリクエスト処理はそのまま継続しなければならない。
+  このため、このハンドラで捕捉した例外は、プロセス正常停止要求や致命的な一部の例外を除き処理を継続する。
+
+  詳細は、 :ref:`request_thread_loop_handler-error_handling` を参照。
+
+本ハンドラでは、以下の処理を行う。
+
+* 後続ハンドラを繰り返し実行
+* プロセス停止要求を示す例外発生時の後続ハンドラ実行の停止 |br|
+  詳細は、 :ref:`request_thread_loop_handler-stop` を参照
+* 後続ハンドラで発生した例外(エラー)に応じた処理(ログ出力等) |br|
+  詳細は、 :ref:`request_thread_loop_handler-error_handling` を参照
+
+処理の流れは以下のとおり。
+
+.. image:: ../images/RequestThreadLoopHandler/flow.png
+  :scale: 75
+  
+ハンドラクラス名
+--------------------------------------------------
+* :java:extdoc:`nablarch.fw.handler.RequestThreadLoopHandler`
+
+モジュール一覧
+--------------------------------------------------
+.. code-block:: xml
+
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-fw-standalone</artifactId>
+  </dependency>
+
+制約
+------------------------------
+:ref:`retry_handler` より後ろに配置すること
+  このハンドラでは、処理が継続可能な例外の場合に :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+  このため、リトライ可能例外を処理する :ref:`retry_handler` よりも後ろにこのハンドラを設定する必要がある。
+
+.. _request_thread_loop_handler-interval:
+
+サービス閉塞中の待機時間を設定する
+--------------------------------------------------
+後続のハンドラからサービス閉塞中を示す例外(:java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>`)が発生した場合の待機時間を設定することが出来る。
+この時間を設定することで、サービスが開局されたかどうかのチェックタイミングを調整することが出来る。
+
+待機時間を長くし過ぎると、サービスが開局中に変更されても、即処理が開始されない問題があるので、要件にあわせて値を設定すること。
+なお、設定を省略した場合は、1秒待機後に後続ハンドラを再実行する。
+
+以下に設定例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.fw.handler.RequestThreadLoopHandler">
+    <!-- 待機時間に5秒を設定 -->
+    <property name="serviceUnavailabilityRetryInterval" value="5000" />
+  </component>
+
+.. tip::
+  後続ハンドラに :ref:`ServiceAvailabilityCheckHandler` を設定しない場合には、本設定値は設定する必要が無い。
+  (設定したとしても、この値が使われることはない。)
+
+.. _request_thread_loop_handler-stop:
+
+本ハンドラの停止方法
+--------------------------------------------------
+このハンドラは、プロセスの停止要求を示す例外が発生するまで、繰り返し後続のハンドラに対して処理を委譲する。
+このため、メンテナンスなどでプロセスを停止する必要がある場合には、本ハンドラより後続に :ref:`process_stop_handler` を設定し、
+外部からプロセスを停止できるようにする必要がある。
+
+プロセス停止要求を示す例外が発生した場合の処理内容は、 :ref:`request_thread_loop_handler-error_handling` を参照。
+
+.. _request_thread_loop_handler-error_handling:
+
+後続ハンドラで発生した例外(エラー)に応じた処理内容
+------------------------------------------------------------
+このハンドラで行う後続ハンドラで発生した例外(エラー)に応じた処理内容について解説する。
+
+サービス閉塞中例外(:java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>`)
+  一定時間待機後に、再度後続ハンドラに処理を委譲する。
+  待機時間の設定方法は、 :ref:`request_thread_loop_handler-interval` を参照。
+
+プロセス停止要求を示す例外(:java:extdoc:`ProcessStop <nablarch.fw.handler.ProcessStopHandler.ProcessStop>`)
+  プロセス停止要求を示す例外であるため、本ハンドラの処理を終了する。
+
+プロセスの異常終了を示す例外(:java:extdoc:`ProcessAbnormalEnd <nablarch.fw.launcher.ProcessAbnormalEnd>`)
+  プロセスの異常終了を示す例外のため、捕捉した例外を再送出する。
+
+処理を継続することができなかったことを示すサービスエラー(:java:extdoc:`ServiceError <nablarch.fw.results.ServiceError>`)
+  補足した例外クラスにログ出力処理を委譲し、 :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+
+ハンドラの処理が異常終了したことを示す例外(:java:extdoc:`Result.Error <nablarch.fw.Result.Error>`)
+  ``FATAL`` レベルのログを出力し、 :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+
+実行時例外(:java:extdoc:`RuntimeException <java.lang.RuntimeException>`)
+  ``FATAL`` レベルのログを出力し、 :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+ 
+スレッドの停止を示す例外(:java:extdoc:`ThreadDeath <java.lang.ThreadDeath>`)
+  ``INFO`` レベルのログを出力し、補足した例外(ThreadDeath)を再送出する。
+
+スタックオーバーフローエラー(:java:extdoc:`StackOverflowError <java.lang.StackOverflowError>`)
+  ``FATAL`` レベルのログを出力し、 :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+
+ヒープ不足のエラー(:java:extdoc:`OutOfMemoryError <java.lang.OutOfMemoryError>`)
+  標準エラー出力にヒープ不足が発生したことを示すメッセージを出力し、 ``FATAL`` レベルのログ出力を行う。
+  (ログ出力時に再度ヒープ不足が発生する可能性があるため、標準エラー出力にメッセージ出力後にログを出力する。)
+
+  ヒープ不足の原因不足となったオブジェクトへの参照が切れ、処理継続可能な場合があるため :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+  
+JVMの異常を示すエラー(:java:extdoc:`VirtualMachineError <java.lang.VirtualMachineError>`)
+  発生した例外を再送出する
+
+上記以外のエラー
+  ``FATAL`` レベルのログを出力し、 :java:extdoc:`リトライ可能例外(Retryable) <nablarch.fw.handler.retry.Retryable>` を送出する。
+
+.. |br| raw:: html
+
+  <br/>
+```
+
+## Knowledge File
+
+- ID: `handlers-request_thread_loop_handler--s1`
+
+```json
+{
+  "id": "handlers-request_thread_loop_handler--s1",
+  "title": "リクエストスレッド内ループ制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/standalone/request_thread_loop_handler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/RequestThreadLoopHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/retry/Retryable.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/results/ServiceUnavailable.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/ProcessStopHandler/ProcessStop.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/launcher/ProcessAbnormalEnd.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/results/ServiceError.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/Result/Error.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/RuntimeException.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/ThreadDeath.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/StackOverflowError.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/OutOfMemoryError.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/java/lang/VirtualMachineError.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラクラス名",
+      "hints": [
+        "RequestThreadLoopHandler",
+        "nablarch.fw.handler.RequestThreadLoopHandler",
+        "ループ制御ハンドラ",
+        "繰り返し実行",
+        "メッセージキュー監視",
+        "スタンドアロンバッチ処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-fw-standalone",
+        "モジュール依存関係",
+        "Maven"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "制約",
+      "hints": [
+        "retry_handler",
+        "Retryable",
+        "nablarch.fw.handler.retry.Retryable",
+        "ハンドラ配置順序",
+        "制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "サービス閉塞中の待機時間を設定する",
+      "hints": [
+        "serviceUnavailabilityRetryInterval",
+        "ServiceUnavailable",
+        "nablarch.fw.results.ServiceUnavailable",
+        "待機時間設定",
+        "サービス閉塞"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "本ハンドラの停止方法",
+      "hints": [
+        "process_stop_handler",
+        "ProcessStopHandler",
+        "プロセス停止",
+        "ハンドラ停止方法"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "後続ハンドラで発生した例外(エラー)に応じた処理内容",
+      "hints": [
+        "ServiceUnavailable",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "ServiceError",
+        "Retryable",
+        "OutOfMemoryError",
+        "VirtualMachineError",
+        "例外ハンドリング",
+        "エラー処理",
+        "StackOverflowError",
+        "ThreadDeath"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "プロセスの停止要求があるまで後続ハンドラを繰り返し実行するハンドラ。メッセージキューやDBテーブルを監視し、未処理データを随時処理するプロセスで使用する。\n\n> **補足**: 個々のリクエスト(データ)は独立して扱われる。1つのリクエスト処理がエラーとなっても他のリクエスト処理はそのまま継続する。捕捉した例外はプロセス正常停止要求や致命的な一部の例外を除き処理を継続する。詳細は :ref:`request_thread_loop_handler-error_handling` 参照。\n\n処理概要:\n1. 後続ハンドラを繰り返し実行\n2. プロセス停止要求を示す例外発生時に後続ハンドラ実行を停止（詳細は :ref:`request_thread_loop_handler-stop` 参照）\n3. 後続ハンドラで発生した例外(エラー)に応じた処理（詳細は :ref:`request_thread_loop_handler-error_handling` 参照）\n\n**クラス名**: `nablarch.fw.handler.RequestThreadLoopHandler`",
+    "s2": "**モジュール**:\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-standalone</artifactId>\n</dependency>\n```",
+    "s3": ":ref:`retry_handler` より後ろに配置すること。このハンドラは処理継続可能な例外の場合に :java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出するため、:ref:`retry_handler` よりも後ろに設定する必要がある。",
+    "s4": "後続ハンドラから :java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>` が発生した場合の待機時間を設定できる。待機時間を長くし過ぎると、サービスが開局中に変更されても即処理が開始されない問題があるので要件に合わせて設定すること。省略した場合は1秒待機後に後続ハンドラを再実行する。\n\n```xml\n<component class=\"nablarch.fw.handler.RequestThreadLoopHandler\">\n  <!-- 待機時間に5秒を設定 -->\n  <property name=\"serviceUnavailabilityRetryInterval\" value=\"5000\" />\n</component>\n```\n\n> **補足**: 後続ハンドラに :ref:`ServiceAvailabilityCheckHandler` を設定しない場合には、本設定値は設定する必要がない（設定しても使われない）。",
+    "s5": "プロセス停止要求を示す例外が発生するまで繰り返し後続ハンドラに処理を委譲する。メンテナンス等でプロセスを停止する場合は、本ハンドラより後続に :ref:`process_stop_handler` を設定し外部からプロセスを停止できるようにすること。",
+    "s6": "| 例外・エラー | 処理内容 |\n|---|---|\n| :java:extdoc:`ServiceUnavailable <nablarch.fw.results.ServiceUnavailable>` | 一定時間待機後に後続ハンドラに再委譲（待機時間設定は :ref:`request_thread_loop_handler-interval` 参照） |\n| :java:extdoc:`ProcessStop <nablarch.fw.handler.ProcessStopHandler.ProcessStop>` | 本ハンドラの処理を終了 |\n| :java:extdoc:`ProcessAbnormalEnd <nablarch.fw.launcher.ProcessAbnormalEnd>` | 捕捉した例外を再送出 |\n| :java:extdoc:`ServiceError <nablarch.fw.results.ServiceError>` | 例外クラスにログ出力を委譲し、:java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出 |\n| :java:extdoc:`Result.Error <nablarch.fw.Result.Error>` | FATALレベルのログ出力後、:java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出 |\n| :java:extdoc:`RuntimeException <java.lang.RuntimeException>` | FATALレベルのログ出力後、:java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出 |\n| :java:extdoc:`ThreadDeath <java.lang.ThreadDeath>` | INFOレベルのログ出力後、ThreadDeathを再送出 |\n| :java:extdoc:`StackOverflowError <java.lang.StackOverflowError>` | FATALレベルのログ出力後、:java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出 |\n| :java:extdoc:`OutOfMemoryError <java.lang.OutOfMemoryError>` | 標準エラー出力にメッセージ出力後FATALレベルログ出力。ヒープ不足原因オブジェクトへの参照が切れ処理継続可能な場合があるため :java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出 |\n| :java:extdoc:`VirtualMachineError <java.lang.VirtualMachineError>` | 発生した例外を再送出 |\n| 上記以外のエラー | FATALレベルのログ出力後、:java:extdoc:`Retryable <nablarch.fw.handler.retry.Retryable>` を送出 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

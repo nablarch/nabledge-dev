@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-repository--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — addDisposable ordering rationale",
+      "description": "The source explains that Disposables added via addDisposable are expected to be added in instance creation order, and therefore disposal should be done in reverse of creation order (e.g., JDBC Connection → Statement → ResultSet). This is why BasicApplicationDisposer processes disposableList in reverse order. The knowledge file only states that addDisposable can add Disposables after component creation and that BasicApplicationDisposer processes in reverse order, but omits the key rationale about addDisposable insertion ordering and the practical implication for controlling disposal order when using addDisposable.",
+      "source_evidence": "| この addDisposable で追加される Disposable は、そのインスタンスが生成された順番で追加されることが予想される。\n| その場合、廃棄処理はインスタンス生成とは逆の順序で行うことが望ましい（例：JDBCの Connection, Statement, ResultSet）。\nこのため、BasicApplicationDisposer では disposableList に設定されている順序とは逆の順序で廃棄処理を呼ぶようになっている。"
+    }
+  ]
+}

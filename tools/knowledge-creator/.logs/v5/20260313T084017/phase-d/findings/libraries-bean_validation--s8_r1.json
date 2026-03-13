@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-bean_validation--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8",
+      "description": "The source explains the motivation for copyBeanToRequestScopeOnError: JSTL (EL式) cannot implicitly reference request parameters unlike Nablarch custom tags, so developers must use workarounds. The source also describes two workaround approaches available without this feature (using <n:set> tag to store param in a variable, or using implicit `param` object), provides a JSP code example for the <n:set> approach, and shows how JSP code simplifies after enabling the feature. The knowledge file omits all this context, only presenting the configuration solution.",
+      "source_evidence": "「JSTLタグ(EL式)を使用する場合、Nablarchカスタムタグとは異なりリクエストパラメータを暗黙的に参照することはできないので、次のような処理を追加する必要がある。* 一度Nablarchタグ <n:set> を使用してリクエストパラメータの値を変数に格納する / * 暗黙オブジェクト param を使用してリクエストパラメータにアクセスする」 and the JSP before/after code examples"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s10",
+      "description": "The source explains why HttpRequest#getParamMap is prohibited in Action classes: if unvalidated pre-validation input values are freely accessible to application programmers, business logic could be executed without validation, potentially causing incidents. The knowledge file states the prohibition but omits this security rationale, which is decision-necessary information for architects designing custom validation utilities.",
+      "source_evidence": "「しかし、バリデーション前の入力値をアプリケーションプログラマが自由に扱えてしまうとバリデーションされないまま業務ロジックを実行し、場合によっては障害につながる危険がある。」"
+    }
+  ]
+}

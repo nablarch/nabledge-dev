@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_ConfigMasterDataSetupTool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 提供方法 section, end",
+      "description": "The second occurrence of the mvn commands is omitted. The source explicitly ends the 提供方法 section with '本ツールを実行する前に以下のコマンドを実行する' followed by `mvn compile` and `mvn dependency:copy-dependencies -DoutputDirectory=lib`. This is a distinct step in the installation workflow — run commands first (initial setup), download and configure the zip, then run the commands again before actually executing the tool. The knowledge file only captures the first occurrence (before the zip download).",
+      "source_evidence": "本ツールを実行する前に以下のコマンドを実行する。\n\n  mvn compile\n  mvn dependency:copy-dependencies -DoutputDirectory=lib"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — ビルドファイル登録 section",
+      "description": "Two of three step-specific images in the source are not referenced in s3. The source includes register_build_file.png (step 1: click + icon), select_build_file.png (step 2: select master_data-build.xml), and build_file_in_view.png (step 3: confirm build file appears in view). The knowledge file references only register_build_file.png, omitting the images for steps 2 and 3.",
+      "source_evidence": ".. image:: ./_image/select_build_file.png\n   :scale: 100\n\n.. image:: ./_image/build_file_in_view.png\n   :scale: 100"
+    }
+  ]
+}
