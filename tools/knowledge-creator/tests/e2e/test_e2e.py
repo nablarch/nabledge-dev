@@ -443,12 +443,93 @@ def gen_state_v5(expected_v5):
         shutil.rmtree(ctx.log_dir)
 
 
-@pytest.fixture(scope="session", params=["6", "5"])
-def version_fixture(request, expected, expected_v5, gen_state, gen_state_v5):
-    """Parametrized fixture providing version, expected values, and gen_state for v6 and v5."""
+@pytest.fixture(scope="session")
+def expected_v1_4():
+    """Generate all expected values for v1.4."""
+    return _build_expected(REPO, "1.4")
+
+
+@pytest.fixture(scope="session")
+def gen_state_v1_4(expected_v1_4):
+    ctx = _make_ctx(version="1.4", run_id=f"gen-state-v1-4-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v1_4["expected_knowledge_cache"],
+        expected_v1_4["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session")
+def expected_v1_3():
+    """Generate all expected values for v1.3."""
+    return _build_expected(REPO, "1.3")
+
+
+@pytest.fixture(scope="session")
+def gen_state_v1_3(expected_v1_3):
+    ctx = _make_ctx(version="1.3", run_id=f"gen-state-v1-3-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v1_3["expected_knowledge_cache"],
+        expected_v1_3["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session")
+def expected_v1_2():
+    """Generate all expected values for v1.2."""
+    return _build_expected(REPO, "1.2")
+
+
+@pytest.fixture(scope="session")
+def gen_state_v1_2(expected_v1_2):
+    ctx = _make_ctx(version="1.2", run_id=f"gen-state-v1-2-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v1_2["expected_knowledge_cache"],
+        expected_v1_2["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session", params=["6", "5", "1.4", "1.3", "1.2"])
+def version_fixture(request, expected, expected_v5, gen_state, gen_state_v5,
+                    expected_v1_4, gen_state_v1_4, expected_v1_3, gen_state_v1_3,
+                    expected_v1_2, gen_state_v1_2):
+    """Parametrized fixture providing version, expected values, and gen_state for v6, v5, and v1.x."""
     if request.param == "6":
         return {"version": "6", "expected": expected, "gen_state": gen_state}
-    return {"version": "5", "expected": expected_v5, "gen_state": gen_state_v5}
+    elif request.param == "5":
+        return {"version": "5", "expected": expected_v5, "gen_state": gen_state_v5}
+    elif request.param == "1.4":
+        return {"version": "1.4", "expected": expected_v1_4, "gen_state": gen_state_v1_4}
+    elif request.param == "1.3":
+        return {"version": "1.3", "expected": expected_v1_3, "gen_state": gen_state_v1_3}
+    elif request.param == "1.2":
+        return {"version": "1.2", "expected": expected_v1_2, "gen_state": gen_state_v1_2}
 
 
 # ============================================================
