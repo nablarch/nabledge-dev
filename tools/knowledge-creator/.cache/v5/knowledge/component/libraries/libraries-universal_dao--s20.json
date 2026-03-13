@@ -1,0 +1,34 @@
+{
+  "id": "libraries-universal_dao--s20",
+  "title": "Beanに使用できるデータタイプ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/database/universal_dao.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Beanに使用できるデータタイプ",
+      "hints": [
+        "java.lang.String",
+        "java.lang.Short",
+        "java.lang.Integer",
+        "java.lang.Long",
+        "java.math.BigDecimal",
+        "java.lang.Boolean",
+        "java.util.Date",
+        "java.sql.Date",
+        "java.sql.Timestamp",
+        "byte[]",
+        "@Temporal",
+        "Beanデータタイプ",
+        "検索結果マッピング",
+        "nullマッピング",
+        "バイナリデータ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **重要**: ここに記載のないデータタイプは検索結果をマッピングできない（実行時例外となる）。\n\n検索結果をBeanにマッピングできるデータタイプ:\n\n| データタイプ | 備考 |\n|---|---|\n| `java.lang.String` | |\n| `java.lang.Short` | プリミティブ型も可。プリミティブ型の場合、`null`は`0`として扱う |\n| `java.lang.Integer` | プリミティブ型も可。プリミティブ型の場合、`null`は`0`として扱う |\n| `java.lang.Long` | プリミティブ型も可。プリミティブ型の場合、`null`は`0`として扱う |\n| `java.math.BigDecimal` | |\n| `java.lang.Boolean` | プリミティブ型も可。プリミティブ型の場合、`null`は`false`として扱う。ラッパー型（Boolean）はリードメソッドがgetから始まる必要がある。プリミティブ型はisで始まるリードメソッドも可 |\n| `java.util.Date` | :ref:`@Temporal <universal_dao_jpa_temporal>` でDB上のデータ型を指定する必要がある |\n| `java.sql.Date` | |\n| `java.sql.Timestamp` | |\n| `byte[]` | 非常に大きいサイズのデータは本機能でヒープ上に展開しないこと。大きいバイナリデータはStream経由で参照すること（:ref:`database-binary_column` 参照） |"
+  }
+}

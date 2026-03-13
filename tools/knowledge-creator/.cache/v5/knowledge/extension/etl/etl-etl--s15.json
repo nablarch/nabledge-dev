@@ -1,0 +1,46 @@
+{
+  "id": "etl-etl--s15",
+  "title": "ETLが使用するメッセージを定義する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/extension_components/etl/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/etl/config/JsonConfigLoader.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ETLが使用するメッセージを定義する",
+      "hints": [
+        "nablarch.etl.input-file-not-found",
+        "nablarch.etl.invalid-output-file-path",
+        "nablarch.etl.validation-error",
+        "ETLメッセージ定義",
+        "入力ファイルエラーメッセージ",
+        "バリデーションエラーメッセージ",
+        "ファイル出力エラーメッセージ",
+        "メッセージID",
+        "プレースホルダ",
+        "ファイルの内容が不正",
+        "数値項目に非数値",
+        "桁数超過"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "拡張例",
+      "hints": [
+        "JsonConfigLoader",
+        "nablarch.etl.config.JsonConfigLoader",
+        "configBasePath",
+        "etlConfigLoader",
+        "JOB設定ファイルパス変更",
+        "ETL設定ディレクトリ変更",
+        "コンポーネント設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":ref:`message` から以下のメッセージを取得するため、事前に :ref:`message` の設定に従いメッセージを定義すること。\n\n| メッセージID | 説明 |\n|---|---|\n| nablarch.etl.input-file-not-found | :ref:`etl-extract-sql_loader` および :ref:`etl-extract-chunk` で入力ファイルが存在しない場合の例外メッセージ。プレースホルダ(添字:0)には存在しない入力ファイルのパスが設定される。 |\n| nablarch.etl.invalid-output-file-path | :ref:`etl-load-file` で出力先ファイルが開けない場合の例外メッセージ。プレースホルダ(添字:0)には開けないファイルのパスが設定される。 |\n| nablarch.etl.validation-error | :ref:`etl-transform-validation` でバリデーションエラーが発生したことをログに出力する際のメッセージ。ファイルの内容が不正とは、数値項目に非数値が設定されていた場合や、許容する桁数よりも大きい桁数の値が設定されていた場合のことを指す。 |\n\n定義例:\n\n```properties\nnablarch.etl.input-file-not-found=入力ファイルが存在しません。外部からファイルを受信できているか、ディレクトリやファイルの権限は正しいかを確認してください。入力ファイル=[{0}]\nnablarch.etl.invalid-output-file-path=出力ファイルパスが正しくありません。ディレクトリが存在しているか、権限が正しいかを確認してください。出力ファイルパス=[{0}]\nnablarch.etl.validation-error=入力ファイルのバリデーションでエラーが発生しました。入力ファイルが正しいかなどを相手先システムに確認してください。\n```",
+    "s2": "### ETL用JOB設定ファイルを配置するディレクトリのパスを変更する\n\nETL用JOB設定ファイルを配置するディレクトリのパスを変更する場合は、コンポーネント設定ファイルに設定する。\n\n- コンポーネント名は `etlConfigLoader` とすること\n- :java:extdoc:`JsonConfigLoader <nablarch.etl.config.JsonConfigLoader>` の `configBasePath` プロパティにパスを設定すること\n\n```xml\n<component name=\"etlConfigLoader\" class=\"nablarch.etl.config.JsonConfigLoader\">\n  <property name=\"configBasePath\" value=\"classpath:META-INF/sample\" />\n</component>\n```"
+  }
+}

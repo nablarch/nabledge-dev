@@ -1,0 +1,109 @@
+{
+  "id": "libraries-format_definition--s1",
+  "title": "フォーマット定義ファイルの記述ルール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/data_io/data_format/format_definition.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーマット定義ファイルの共通の記法",
+      "hints": [
+        "フォーマット定義ファイル",
+        "文字コード",
+        "UTF-8",
+        "リテラル表記",
+        "コメント",
+        "文字列リテラル",
+        "10進整数",
+        "真偽値",
+        "コメント記号"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマット定義ファイルの構造",
+      "hints": [
+        "フォーマット定義ファイル構造",
+        "ディレクティブ宣言部",
+        "レコードフォーマット定義部",
+        "フィールド定義",
+        "データ型",
+        "データ変換ルール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "共通で使用可能なディレクティブ一覧",
+      "hints": [
+        "file-type",
+        "text-encoding",
+        "record-separator",
+        "ディレクティブ宣言部",
+        "共通ディレクティブ",
+        "ディレクティブ定義"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Fixed（固定長）形式で指定可能なディレクティブ一覧",
+      "hints": [
+        "record-length",
+        "positive-zone-sign-nibble",
+        "negative-zone-sign-nibble",
+        "positive-pack-sign-nibble",
+        "negative-pack-sign-nibble",
+        "required-decimal-point",
+        "fixed-sign-position",
+        "required-plus-sign",
+        "Fixed固定長",
+        "ゾーン数値",
+        "パック数値",
+        "符号付き数値"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Variable（可変長）形式で指定可能なディレクティブ一覧",
+      "hints": [
+        "field-separator",
+        "quoting-delimiter",
+        "ignore-blank-lines",
+        "requires-title",
+        "title-record-type-name",
+        "max-record-length",
+        "Variable可変長",
+        "CSV",
+        "TSV"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "JSON形式で指定可能なディレクティブ一覧",
+      "hints": [
+        "JSON",
+        "JSON形式",
+        "ディレクティブ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "XML形式で指定可能なディレクティブ一覧",
+      "hints": [
+        "XML",
+        "XML形式",
+        "ディレクティブ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 文字コード\n\nフォーマット定義ファイルの文字コードは `UTF-8`。\n\n## リテラル表記\n\n| リテラル型 | 説明 |\n|---|---|\n| 文字列 | `\"` で値を囲む。Unicodeエスケープ・8進数エスケープは非対応。例: `\"Nablarch\"`, `\"\\\\r\\\\n\"` |\n| 10進整数 | Javaの数値リテラルと同じ形式。小数は非対応。例: `123`, `-123` |\n| 真偽値 | `true` または `false`（大文字可）|\n\n## コメント\n\n行中の `#` 以降はコメントとして扱われる。\n\n```bash\nfile-type:     \"Fixed\"  # 固定長\ntext-encoding: \"ms932\"  # 文字コードはms932\nrecord-length:  120     # 各業の長さは120バイト\n```",
+    "s2": "フォーマット定義ファイルは以下の2つの要素で構成される。\n\n- **ディレクティブ宣言部**: 使用するデータ形式（固定長、JSONなど）やエンコーディングなどの共通設定を定義する。詳細は :ref:`data_format-definition_directive` を参照。\n- **レコードフォーマット定義部**: レコード内のフィールド定義、フィールドごとのデータ型・データ変換ルールを定義する。詳細は :ref:`data_format-definition_record` を参照。",
+    "s3": "全てのデータ形式で使用するディレクティブは以下のとおり。\n\n| ディレクティブ | 必須/任意 | 説明 |\n|---|---|---|\n| file-type | 必須 | データ形式を指定。`Fixed`（固定長）、`Variable`（CSV/TSVなど可変長）、`JSON`、`XML` |\n| text-encoding | 必須 | 文字列フィールドの読み書き時のエンコーディング。使用JVMで利用可能な文字エンコーディングのみ指定可能。`file-type` がJSONの場合はUTF-8/UTF-16(BE or LE)/UTF-32(BE or LE)のみ指定可能。`file-type` がXMLの場合はXML宣言部のエンコーディングが本設定値より優先される。 |\n| record-separator | 任意 | レコード終端文字（改行文字）を指定。`file-type` がVariable（可変長）の場合は必須。JSON/XMLでは使用しない。 |",
+    "s4": "Fixed（固定長）形式のデータで使用するディレクティブは以下のとおり。\n\n| ディレクティブ | 必須/任意 | 説明 |\n|---|---|---|\n| record-length | 必須 | 1レコードのバイト長 |\n| positive-zone-sign-nibble | 任意 | 符号付きゾーン数値のゾーン部の正符号（16進数文字列）。デフォルト: ASCII互換=`0x3`、EBCDIC互換=`0xC` |\n| negative-zone-sign-nibble | 任意 | 符号付きゾーン数値のゾーン部の負符号（16進数文字列）。デフォルト: ASCII互換=`0x7`、EBCDIC互換=`0xD` |\n| positive-pack-sign-nibble | 任意 | 符号付きパック数値の符号ビットの正符号（16進数文字列）。デフォルト: ASCII互換=`0x3`、EBCDIC互換=`0xC` |\n| negative-pack-sign-nibble | 任意 | 符号付きパック数値の符号ビットの負符号（16進数文字列）。デフォルト: ASCII互換=`0x7`、EBCDIC互換=`0xD` |\n| required-decimal-point | 任意 | 符号無し・符号付き数値の小数点付与要否。`true`=小数点付与（デフォルト）、`false`=固定小数点（小数点なし） |\n| fixed-sign-position | 任意 | 符号付き数値の符号位置を固定するかの要否。`true`=項目の先頭に固定（デフォルト）、`false`=パディング前の数値の先頭に付加。例: 固定=`-000123456`、非固定=`000-123456` |\n| required-plus-sign | 任意 | 正の符号の要否。`true`=読み込み時に正符号（`+`）必須、書き込み時に正符号付加。デフォルト=`false`（付加しない） |\n\n```bash\nfile-type:                      \"Fixed\"\ntext-encoding:                  \"ms932\"\nrecord-length:                  120\npositive-zone-sign-nibble:      \"C\"\nnegative-zone-sign-nibble:      \"D\"\npositive-pack-sign-nibble:      \"C\"\nnegative-pack-sign-nibbleL      \"D\"\nrequired-decimal-point:         true\nfixed-sign-position:            true\nrequired-plus-sign:             false\n```",
+    "s5": "Variable（可変長）形式のデータで使用するディレクティブは以下のとおり。\n\n| ディレクティブ | 必須/任意 | 説明 |\n|---|---|---|\n| field-separator | 必須 | フィールドの区切り文字。CSVは `,`、TSVは `\\t` |\n| quoting-delimiter | 任意 | フィールド値をクォートする文字（例: `\"` や `'`）。出力時は設定すると全フィールドがクォートされる。入力時はフィールド前後のクォート文字が除去される。デフォルト=クォートなし。改行やフィールド内クォート文字の扱いはRFC4180を参照。 |\n| ignore-blank-lines | 任意 | データ読み込み時に空行（改行のみ）を無視するか。`true`=空行を無視（デフォルト） |\n| requires-title | 任意 | 最初のレコードをタイトルとして読み書きするか。`true`=タイトルとして扱う。デフォルト=`false`。タイトルレコードのレイアウト定義は :ref:`data_format-title_type_name` を参照。 |\n| title-record-type-name | 任意 | タイトルのレコードタイプ名。デフォルト=`Title`。指定したレコードタイプ名に紐づくレコードフォーマット定義に従いタイトルレコードが編集される。 |\n| max-record-length | 任意 | 読み込みを許容する1レコードの最大文字数。区切り文字が存在しないデータ（壊れたデータ）を読み込んだ際のヒープ不足によるプロセス異常終了を防ぐ。デフォルト=1,000,000文字 |\n\n```bash\nfile-type:                  \"Variable\"\ntext-encoding:              \"utf-8\"\nrecord-separator:           \"\\\\r\\\\n\"\nfield-separator:            \",\"\nquoting-delimiter:          \"\\\"\"\nignore-blank-lines:         true\nrequires-title:             false\nmax-record-length:          1000\n```",
+    "s6": "JSON固有のディレクティブは存在しない。`file-type` と `text-encoding` のみ指定する。\n\n```bash\nfile-type:      \"JSON\"\ntext-encoding:  \"utf-8\"\n```",
+    "s7": "XML固有のディレクティブは存在しない。`file-type` と `text-encoding` のみ指定する。なお、`text-encoding` よりもXML宣言部に指定されたエンコーディングが優先される。\n\n```bash\nfile-type:      \"XML\"\ntext-encoding:  \"utf-8\"\n```"
+  }
+}

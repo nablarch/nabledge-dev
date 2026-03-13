@@ -1,0 +1,75 @@
+{
+  "id": "biz-samples-03--s31",
+  "title": "ListSearchResult ページングと検索結果の属性",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/biz_samples/03/index.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/EntityList.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ページ番号(ページ番号をラベルとして使用するためラベル指定がない)",
+      "hints": [
+        "usePageNumberSubmit",
+        "pageNumberSubmitCss",
+        "pageNumberSubmitName",
+        "ページ番号ページング",
+        "ページ番号サブミット",
+        "name属性サフィックス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "次へ",
+      "hints": [
+        "useNextSubmit",
+        "nextSubmitCss",
+        "nextSubmitLabel",
+        "nextSubmitName",
+        "次ページ遷移サブミット",
+        "ページング次へボタン"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "最後",
+      "hints": [
+        "useLastSubmit",
+        "lastSubmitCss",
+        "lastSubmitLabel",
+        "lastSubmitName",
+        "最終ページ遷移サブミット",
+        "ページング最後ボタン"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "検索結果",
+      "hints": [
+        "showResult",
+        "resultSetName",
+        "resultSetCss",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "EntityList",
+        "検索結果テーブル",
+        "JSPフラグメント",
+        "ページネーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ページ番号（ページ番号をラベルとして使用するためラベル指定がない）\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| usePageNumberSubmit | | | false | ページ番号のページに遷移するサブミットを使用するか否か |\n| pageNumberSubmitCss | | | \"nablarch_pageNumberSubmit\" | ページ番号のページに遷移するサブミットをラップするdivタグのclass属性 |\n| pageNumberSubmitName | | | \"pageNumberSubmit\" | ページ番号のページに遷移するサブミットに使用するタグのname属性。ページ番号とページングの表示位置を表すサフィックス（上側は\"_top\"、下側は\"_bottom\"）を付けて出力する。例: デフォルトかつ上側でページ番号3の場合は\"pageNumberSubmit3_top\" |",
+    "s2": "## 次へ\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| useNextSubmit | | | true | 次のページに遷移するサブミットを使用するか否か |\n| nextSubmitCss | | | \"nablarch_nextSubmit\" | 次のページに遷移するサブミットをラップするdivタグのclass属性 |\n| nextSubmitLabel | | | \"次へ\" | 次のページに遷移するサブミットに使用するラベル |\n| nextSubmitName | | | \"nextSubmit\" | 次のページに遷移するサブミットに使用するタグのname属性。ページングの表示位置を表すサフィックス（上側は\"_top\"、下側は\"_bottom\"）を付けて出力する。例: デフォルトかつ上側の場合は\"nextSubmit_top\" |",
+    "s3": "## 最後\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| useLastSubmit | | | false | 最後のページに遷移するサブミットを使用するか否か |\n| lastSubmitCss | | | \"nablarch_lastSubmit\" | 最後のページに遷移するサブミットをラップするdivタグのclass属性 |\n| lastSubmitLabel | | | \"最後\" | 最後のページに遷移するサブミットに使用するラベル |\n| lastSubmitName | | | \"lastSubmit\" | 最後のページに遷移するサブミットに使用するタグのname属性。ページングの表示位置を表すサフィックス（上側は\"_top\"、下側は\"_bottom\"）を付けて出力する。例: デフォルトかつ上側の場合は\"lastSubmit_top\" |\n\n![ListSearchResultページングテーブル全表示](assets/biz-samples-03--s31/ListSearchResult_PagingTableFull.jpg)",
+    "s4": "## 検索結果\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| showResult | | | true | 検索結果を表示するか否か |\n| resultSetName | | ○ | | :java:extdoc:`EntityList<nablarch.common.dao.EntityList>` をリクエストスコープから取得する際に使用する名前。ページネーションのためのページ数や検索条件に一致した件数も含まれる |\n| resultSetCss | | | \"nablarch_resultSet\" | 検索結果テーブルのclass属性 |\n| headerRowFragment | | | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | | | | ボディ行のJSPフラグメント |\n| varRowName | | | \"row\" | ボディ行のフラグメントで行データ（c:forEachタグのvar属性）を参照する際の変数名 |\n| varStatusName | | | \"status\" | ボディ行のフラグメントでステータス（c:forEachタグのstatus属性）を参照する際の変数名 |\n| varCountName | | | \"count\" | ステータスのcountプロパティを参照する際の変数名 |\n| varRowCountName | | | \"rowCount\" | 検索結果のカウント（取得開始位置＋ステータスカウント）を参照する際の変数名 |\n| varOddEvenName | | | \"oddEvenCss\" | ボディ行のclass属性を参照する際の変数名（1行おきにclass属性を変更する場合に使用） |\n| oddValue | | | \"nablarch_odd\" | ボディ行の奇数行に使用するclass属性 |\n| evenValue | | | \"nablarch_even\" | ボディ行の偶数行に使用するclass属性 |\n\n> **補足**: `varStatusName`で指定した変数をn:writeタグでアクセスすると、EL式とアクセス方法が異なるためエラーが発生し値を取得できない。n:setタグを使用してステータスにアクセスすることでこのエラーを回避できる。\n\n```jsp\n<n:set var=\"rowCount\" value=\"${status.count}\" />\n<n:write name=\"rowCount\" />\n```"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "testing-framework-03_Tips--s31",
+  "title": "テストデータ読み込みディレクトリを変更したい",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/development_tools/testing_framework/guide/development_guide/06_TestFWGuide/03_Tips.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストデータ読み込みディレクトリを変更したい",
+      "hints": [
+        "nablarch.test.resource-root",
+        "テストデータディレクトリ変更",
+        "複数ディレクトリ指定",
+        "テストリソースパス設定",
+        "VMオプション設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "メッセージング処理でテストデータに対し定型的な変換処理を追加したい",
+      "hints": [
+        "TestDataConverter",
+        "nablarch.test.core.file.TestDataConverter",
+        "TestDataConverter_<データ種別>",
+        "テストデータ変換処理",
+        "URLエンコーディング変換",
+        "メッセージング処理テスト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "デフォルトではテストデータは`test/java`配下から読み込まれる。変更する場合、コンポーネント設定ファイルに`nablarch.test.resource-root`を設定する。\n\n| キー | 値 |\n|---|---|\n| `nablarch.test.resource-root` | テスト実行時のカレントディレクトリからの相対パス。セミコロン(`;`)区切りで複数指定可 |\n\n```bash\nnablarch.test.resource-root=path/to/test-data-dir\n```\n\n複数ディレクトリ指定例:\n```text\nnablarch.test.resource-root=test/online;test/batch\n```\n\n> **注意**: 複数ディレクトリを指定した場合、同名のテストデータが存在する場合は最初に発見されたテストデータが読み込まれる。\n\n一時的な変更はVMオプションで代替可能: `-Dnablarch.test.resource-root=path/to/test-data-dir`",
+    "s2": "テストデータのExcelデータはデフォルトでは指定エンコーディングでバイト列に変換されるのみ。URLエンコーディング等の定型変換を追加するには、以下のインタフェースを実装してシステムリポジトリに登録する。\n\n**インタフェース**: `nablarch.test.core.file.TestDataConverter`\n\nシステムリポジトリ登録:\n\n| キー | 値 |\n|---|---|\n| `TestDataConverter_<データ種別>` | 実装クラスのクラス名。データ種別はテストデータのfile-typeに指定した値 |\n\n```xml\n<component name=\"TestDataConverter_FormUrlEncoded\"\n           class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>\n```\n\nExcelファイル記述例:\n![Excelファイル記述例](assets/testing-framework-03_Tips--s31/data_convert_example.png)\n\n上記コンバータでURLエンコーディングを行うよう実装した場合、テストフレームワーク内部では以下のデータを記述した場合と同様に扱われる:\n![内部処理データ例](assets/testing-framework-03_Tips--s31/data_convert_internal.png)"
+  }
+}
