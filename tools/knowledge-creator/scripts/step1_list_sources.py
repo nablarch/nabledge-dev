@@ -9,11 +9,13 @@ from common import write_json
 from logger import get_logger
 
 
-def _rst_doc_root(version: str) -> str:
-    """RST base directory name under .lw/nab-official/v{version}/."""
-    if '.' in version:  # e.g. 1.4, 1.3, 1.2
-        return f"{version}_maintain"
-    return "nablarch-document/ja"
+def _rst_doc_roots(version: str) -> list:
+    """RST base directory names under .lw/nab-official/v{version}/."""
+    if version == "1.4":
+        return ["document", "workflow", "biz_sample", "ui_dev"]
+    if '.' in version:  # e.g. 1.3, 1.2
+        return [f"{version}_maintain"]
+    return ["nablarch-document/ja"]
 
 
 class Step1ListSources:
@@ -26,14 +28,15 @@ class Step1ListSources:
         sources = []
 
         # 1. Official documentation (RST)
-        rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/{_rst_doc_root(self.ctx.version)}/"
-        if os.path.exists(rst_base):
-            for root, dirs, files in os.walk(rst_base):
-                dirs[:] = [d for d in dirs if not d.startswith("_")]
-                for f in files:
-                    if f.endswith(".rst"):
-                        rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
-                        sources.append({"path": rel_path, "format": "rst", "filename": f})
+        for doc_root in _rst_doc_roots(self.ctx.version):
+            rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/{doc_root}/"
+            if os.path.exists(rst_base):
+                for root, dirs, files in os.walk(rst_base):
+                    dirs[:] = [d for d in dirs if not d.startswith("_")]
+                    for f in files:
+                        if f.endswith(".rst"):
+                            rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
+                            sources.append({"path": rel_path, "format": "rst", "filename": f})
 
         # 2. Pattern documents (MD)
         pattern_dir = (
