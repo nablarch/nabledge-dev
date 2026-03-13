@@ -26,7 +26,19 @@ This is the release work done in this repository before syncing to nablarch/nabl
 
 ### Version Format
 
-Skill name includes major version (nabledge-6 = 6.x.x). Version format: **MINOR.PATCH** (e.g., 0.1, 0.2, 0.1.1)
+There are two independent version schemes:
+
+**Plugin version** (individual): Each plugin (`nabledge-6`, `nabledge-5`) has its own version.
+- Format: **MINOR.PATCH** (e.g., 0.1, 0.2, 0.1.1)
+- Stored in `plugin.json` and plugin `CHANGELOG.md`
+- Tag links in plugin CHANGELOG follow Keep a Changelog format: each version heading `## [X.Y]` links to the marketplace release tag where that plugin version was first included (e.g., nabledge-5 v0.1 released in marketplace 0.6 → `releases/tag/0.6`)
+
+**Marketplace version** (overall): Covers all plugins together.
+- Set to the highest plugin version across all changed plugins
+- Stored in `marketplace.json` and marketplace `CHANGELOG.md`
+- Tags in nablarch/nabledge use the marketplace version
+
+Example: nabledge-6 v0.6 + nabledge-5 v0.1 released together → marketplace v0.6
 
 - **MINOR**: Feature additions (new knowledge, workflows, functionality)
 - **PATCH**: Fixes and improvements only
