@@ -449,7 +449,7 @@ Open the report file and replace `<!-- AGENT: ... -->` placeholders with actual 
 BASELINE_DIR=".claude/skills/nabledge-test/baseline"
 # Use RUN_TIMESTAMP (captured in Step 4) for the baseline directory name
 # This ensures the baseline timestamp matches the workspace timestamp
-TARGET_DIR="${BASELINE_DIR}/${RUN_TIMESTAMP}"
+TARGET_DIR="${BASELINE_DIR}/v${VERSION}/${RUN_TIMESTAMP}"
 mkdir -p "${TARGET_DIR}"
 ```
 
@@ -525,7 +525,8 @@ done
 #### 9d: Update latest symlink
 
 ```bash
-cd "${BASELINE_DIR}"
+mkdir -p "${BASELINE_DIR}/v${VERSION}"
+cd "${BASELINE_DIR}/v${VERSION}"
 rm -f latest
 ln -s "${RUN_TIMESTAMP}" latest
 ```
@@ -535,14 +536,14 @@ ln -s "${RUN_TIMESTAMP}" latest
 **Determine previous baseline**:
 
 ```bash
-# Count baseline directories (excluding 'latest' symlink)
-BASELINE_COUNT=$(ls -d ${BASELINE_DIR}/2* 2>/dev/null | wc -l)
+# Count baseline directories for this version (excluding 'latest' symlink)
+BASELINE_COUNT=$(ls -d ${BASELINE_DIR}/v${VERSION}/2* 2>/dev/null | wc -l)
 
 if [ "${BASELINE_COUNT}" -le 1 ]; then
   PREV=""
 else
-  # Get second-to-last (= previous) baseline directory
-  PREV=$(ls -d ${BASELINE_DIR}/2* | sort | tail -2 | head -1)
+  # Get second-to-last (= previous) baseline directory for this version
+  PREV=$(ls -d ${BASELINE_DIR}/v${VERSION}/2* | sort | tail -2 | head -1)
 fi
 ```
 
@@ -582,9 +583,9 @@ Workspace: .tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/
 **For baseline mode** (append to above):
 
 ```
-Baseline saved: .claude/skills/nabledge-test/baseline/<TIMESTAMP>/
-Latest symlink: .claude/skills/nabledge-test/baseline/latest → <TIMESTAMP>/
-Comparison report: .claude/skills/nabledge-test/baseline/<TIMESTAMP>/comparison-report.md
+Baseline saved: .claude/skills/nabledge-test/baseline/v<VERSION>/<TIMESTAMP>/
+Latest symlink: .claude/skills/nabledge-test/baseline/v<VERSION>/latest → <TIMESTAMP>/
+Comparison report: .claude/skills/nabledge-test/baseline/v<VERSION>/<TIMESTAMP>/comparison-report.md
 ```
 
 ## Dependencies
