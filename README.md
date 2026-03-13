@@ -35,23 +35,19 @@ cp .env.example .env
 
 Nablarch 1.x のドキュメントは GitHub で公開されていないため、ローカルにあるドキュメントディレクトリへのシンボリックリンクを手動で設定する必要があります。
 
-Claude Code に以下を伝えると、シンボリックリンクを自動作成します：
+リポジトリルートで以下を実行します（`/path/to/` は実際のローカルパスに置き換えてください）：
 
-> 「Nablarch 1.4 のドキュメントは `/path/to/your/1.4_maintain` にあります。シンボリックリンクを作成してください。」
-
-作成されるシンボリックリンクの配置場所：
-
-| バージョン | シンボリックリンクのパス |
-|------------|--------------------------|
-| v1.4 | `.lw/nab-official/v1.4/1.4_maintain` → `/path/to/1.4_maintain` |
-| v1.3 | `.lw/nab-official/v1.3/1.3_maintain` → `/path/to/1.3_maintain` |
-| v1.2 | `.lw/nab-official/v1.2/1.2_maintain` → `/path/to/1.2_maintain` |
+```bash
+mkdir -p .lw/nab-official/v1.4 .lw/nab-official/v1.3 .lw/nab-official/v1.2
+ln -s /path/to/1.4_maintain .lw/nab-official/v1.4/1.4_maintain
+ln -s /path/to/1.3_maintain .lw/nab-official/v1.3/1.3_maintain
+ln -s /path/to/1.2_maintain .lw/nab-official/v1.2/1.2_maintain
+```
 
 設定後、knowledge-creator で知識ファイルを生成できます：
 
 ```bash
-cd tools/knowledge-creator
-./kc.sh gen 1.4
+./tools/knowledge-creator/kc.sh gen 1.4
 ```
 
 ## 使い方
