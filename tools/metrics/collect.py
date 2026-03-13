@@ -139,14 +139,34 @@ def mermaid_xychart_line(title: str, x_labels: list[str], y_label: str, values: 
 # Data collection
 # ---------------------------------------------------------------------------
 
-def get_last_n_weeks(n: int) -> list[datetime]:
-    """Return list of Monday datetimes for the last n complete ISO weeks."""
+def get_weeks_since_first_commit(repo_root: str) -> list[datetime]:
+    """Return all complete ISO weeks from the first commit on main to last week."""
+    # Use git log to find the oldest commit on origin/main (same as backfill_sloc.py)
+    for ref in ["origin/main", "main"]:
+        result = subprocess.run(
+            ["git", "log", ref, "--format=%aI"],
+            capture_output=True, text=True, cwd=repo_root,
+        )
+        lines = [l.strip() for l in result.stdout.splitlines() if l.strip()]
+        if lines:
+            oldest_str = lines[-1].replace("Z", "+00:00")
+            try:
+                first_date = datetime.fromisoformat(oldest_str)
+            except ValueError:
+                continue
+            now = datetime.now(tz=timezone.utc)
+            current_monday = iso_week_monday(now)
+            start_monday = iso_week_monday(first_date)
+            weeks = []
+            monday = start_monday
+            while monday < current_monday:
+                weeks.append(monday)
+                monday += timedelta(weeks=1)
+            return weeks
+    # Fallback: last 8 weeks
     now = datetime.now(tz=timezone.utc)
     current_monday = iso_week_monday(now)
-    weeks = []
-    for i in range(n, 0, -1):
-        weeks.append(current_monday - timedelta(weeks=i))
-    return weeks
+    return [current_monday - timedelta(weeks=i) for i in range(8, 0, -1)]
 
 
 def collect_merged_prs(repo: str, since: datetime, token: str | None) -> list[dict]:
@@ -594,7 +614,7 @@ LEVEL_SCORE = {"Elite": 4, "High": 3, "Medium": 2, "Low": 1, "N/A": 0}
 
 
 def render_scorecard(weekly: list[dict]) -> str:
-    """Render DORA scorecard: score bar chart + detail table."""
+    """Render DORA scorecard: metric/level table + benchmark reference."""
     def latest_nonzero(vals: list[float]) -> float:
         for v in reversed(vals):
             if v > 0:
@@ -615,32 +635,30 @@ def render_scorecard(weekly: list[dict]) -> str:
     cfr_lvl = dora_level("change_failure_rate", cfr, has_data=dep > 0)
     mttr_lvl = dora_level("mttr_hours", mttr)
 
-    scores = [LEVEL_SCORE[dep_lvl], LEVEL_SCORE[lt_lvl], LEVEL_SCORE[cfr_lvl], LEVEL_SCORE[mttr_lvl]]
-    score_labels = ["Deploy Freq", "Lead Time", "CFR", "MTTR"]
+    rows = [
+        ("Deployment Frequency", f"{dep:.0f} PRs/week" if dep > 0 else "—", dep_lvl),
+        ("Lead Time for Changes", f"{lt:.1f}h" if lt > 0 else "—", lt_lvl),
+        ("Change Failure Rate", f"{cfr:.0f}%" if dep > 0 else "—", cfr_lvl),
+        ("MTTR", f"{mttr:.1f}h" if mttr > 0 else "—", mttr_lvl),
+    ]
 
     lines = []
-    # Score bar chart (4=Elite, 3=High, 2=Medium, 1=Low)
-    x_str = "[" + ", ".join(f'"{l}"' for l in score_labels) + "]"
-    lines.append("```mermaid")
-    lines.append("xychart-beta")
-    lines.append('  title "DORA Score (4=Elite  3=High  2=Medium  1=Low)"')
-    lines.append(f"  x-axis {x_str}")
-    lines.append('  y-axis "Score" 0 --> 4')
-    lines.append(f"  bar {scores}")
-    lines.append("```")
+    # Score table
+    lines += ["| Metric | Latest | Level |",
+              "|--------|-------:|:-----:|"]
+    for name, val, level in rows:
+        lines.append(f"| {name} | {val} | {LEVEL_BADGE[level]} |")
     lines.append("")
 
-    # Detail table
-    rows = [
-        ("Deployment Frequency", f"{dep:.0f} PRs/week" if dep > 0 else "—", dep_lvl, "≥7/week", "≥1/week", "≥1/month", "<1/month"),
-        ("Lead Time for Changes", f"{lt:.1f}h" if lt > 0 else "—", lt_lvl, "<1h", "<1 week", "<1 month", "≥1 month"),
-        ("Change Failure Rate", f"{cfr:.0f}%" if dep > 0 else "—", cfr_lvl, "≤5%", "≤10%", "≤15%", ">15%"),
-        ("MTTR", f"{mttr:.1f}h" if mttr > 0 else "—", mttr_lvl, "<1h", "<1 day", "<1 week", "≥1 week"),
-    ]
-    lines += ["| Metric | Latest | Level | Elite | High | Medium | Low |",
-              "|--------|-------:|:-----:|:-----:|:----:|:------:|:---:|"]
-    for name, val, level, e, h, m, lo in rows:
-        lines.append(f"| {name} | {val} | {LEVEL_BADGE[level]} | {e} | {h} | {m} | {lo} |")
+    # Benchmark reference (small text via HTML)
+    lines.append("<details><summary>Benchmark criteria</summary>")
+    lines.append("")
+    lines.append("- **Deployment Frequency** — Elite: ≥7/week · High: ≥1/week · Medium: ≥1/month · Low: <1/month")
+    lines.append("- **Lead Time for Changes** — Elite: <1h · High: <1 week · Medium: <1 month · Low: ≥1 month")
+    lines.append("- **Change Failure Rate** — Elite: ≤5% · High: ≤10% · Medium: ≤15% · Low: >15%")
+    lines.append("- **MTTR** — Elite: <1h · High: <1 day · Medium: <1 week · Low: ≥1 week")
+    lines.append("")
+    lines.append("</details>")
     return "\n".join(lines)
 
 
@@ -777,11 +795,15 @@ def main() -> None:
     # NABLEDGE_SYNC_TOKEN: prefer CLI arg, then env var
     nabledge_token = args.token or os.environ.get("NABLEDGE_SYNC_TOKEN")
 
-    # Last 8 complete ISO weeks
-    weeks = get_last_n_weeks(8)
+    # Determine repo root early (needed for git log and SLOC)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(os.path.dirname(script_dir))
+
+    # All complete ISO weeks since first commit on main
+    weeks = get_weeks_since_first_commit(repo_root)
     since = weeks[0]
 
-    print(f"[info] Collecting metrics for {dev_repo}, weeks {week_label(weeks[0])} to {week_label(weeks[-1])}", file=sys.stderr)
+    print(f"[info] Collecting metrics for {dev_repo}, weeks {week_label(weeks[0])} to {week_label(weeks[-1])} ({len(weeks)} weeks)", file=sys.stderr)
 
     # --- nabledge-dev data ---
     merged_prs = collect_merged_prs(dev_repo, since, token=None)
@@ -810,9 +832,6 @@ def main() -> None:
 
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
-    # Determine paths relative to repo root
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    repo_root = os.path.dirname(os.path.dirname(script_dir))
     snapshot_path = os.path.join(script_dir, "sloc-snapshot.json")
     output_path = os.path.join(repo_root, "docs", "metrics.md")
 
