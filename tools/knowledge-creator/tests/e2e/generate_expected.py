@@ -24,6 +24,13 @@ SPLIT_SECTION_THRESHOLD = 2
 LINE_GROUP_THRESHOLD = 400
 
 
+def _rst_doc_root(version: str) -> str:
+    """RST path segment that separates the repo prefix from the doc-relative path."""
+    if '.' in version:  # e.g. 1.4, 1.3, 1.2
+        return f"{version}_maintain/"
+    return "nablarch-document/ja/"
+
+
 def load_mappings(repo: str, version: str) -> dict:
     """Load RST/MD/XLSX mappings from version-specific JSON file.
 
@@ -62,7 +69,7 @@ def list_sources(repo: str, version: str) -> list:
     sources = []
 
     # RST
-    rst_base = os.path.join(repo, f".lw/nab-official/v{version}/nablarch-document/ja/")
+    rst_base = os.path.join(repo, f".lw/nab-official/v{version}/{_rst_doc_root(version).rstrip('/')}/")
     if os.path.exists(rst_base):
         for root, dirs, files in os.walk(rst_base):
             dirs[:] = [d for d in dirs if not d.startswith("_")]
@@ -103,8 +110,8 @@ def list_sources(repo: str, version: str) -> list:
 # Step 2: Classify
 # ============================================================
 
-def classify_rst(path: str, rst_mapping: list):
-    marker = "nablarch-document/ja/"
+def classify_rst(path: str, rst_mapping: list, version: str = "6"):
+    marker = _rst_doc_root(version)
     idx = path.find(marker)
     if idx < 0:
         return None, None, None
@@ -131,7 +138,7 @@ def title_to_section_id(title: str) -> str:
 
 def generate_id(filename: str, format: str, category: str = None,
                 source_path: str = None, matched_pattern: str = None,
-                xlsx_mapping: dict = None) -> str:
+                xlsx_mapping: dict = None, version: str = "6") -> str:
     if format == "xlsx" and xlsx_mapping and filename in xlsx_mapping:
         return category
 
@@ -145,7 +152,7 @@ def generate_id(filename: str, format: str, category: str = None,
         base_name = filename
 
     if base_name == "index" and source_path and matched_pattern is not None:
-        marker = "nablarch-document/ja/"
+        marker = _rst_doc_root(version)
         marker_idx = source_path.find(marker)
         if marker_idx >= 0:
             rst_rel = source_path[marker_idx + len(marker):]
@@ -359,7 +366,7 @@ def classify_all(sources: list, repo: str, version: str = "6") -> list:
 
         type_ = category = matched_pattern = None
         if fmt == "rst":
-            type_, category, matched_pattern = classify_rst(path, rst_mapping)
+            type_, category, matched_pattern = classify_rst(path, rst_mapping, version)
         elif fmt == "md":
             if filename in md_mapping:
                 type_, category = md_mapping[filename]
@@ -377,7 +384,7 @@ def classify_all(sources: list, repo: str, version: str = "6") -> list:
 
         file_id = generate_id(filename, fmt, category,
                               source_path=path, matched_pattern=matched_pattern,
-                              xlsx_mapping=xlsx_mapping)
+                              xlsx_mapping=xlsx_mapping, version=version)
         classified.append({
             "source_path": path,
             "format": fmt,
