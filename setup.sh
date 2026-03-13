@@ -98,7 +98,7 @@ sudo apt-get update
 
 # Check if tools are already installed
 TOOLS_MISSING=0
-for tool in libreoffice pdftoppm pandoc jq python3 gh; do
+for tool in libreoffice pdftoppm pandoc jq python3 svn gh; do
     if ! command -v "$tool" &> /dev/null; then
         TOOLS_MISSING=1
         break
@@ -108,8 +108,8 @@ done
 if [ $TOOLS_MISSING -eq 0 ]; then
     print_status ok "System tools already installed"
 else
-    print_status info "Installing LibreOffice, Poppler, Pandoc, jq, Python3..."
-    if sudo apt-get install -y libreoffice poppler-utils pandoc jq python3 python3-venv; then
+    print_status info "Installing LibreOffice, Poppler, Pandoc, jq, Python3, Subversion..."
+    if sudo apt-get install -y libreoffice poppler-utils pandoc jq python3 python3-venv subversion; then
         print_status ok "System tools installed"
     else
         print_status error "Failed to install system tools"
