@@ -61,36 +61,42 @@ flowchart LR
 
 ### 開発バージョンのテスト
 
-`nablarch/nabledge:develop` の最新開発バージョンをテストするには：
+`nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を使います。
 
-**Claude Code の場合：**
+このスクリプトは全バージョン × ツールの組み合わせのテスト環境を一括セットアップします。
 
-1. セットアップスクリプトをダウンロードして実行：
+**セットアップ手順：**
+
+1. テスト用ワークスペースディレクトリを作成してスクリプトを実行：
    ```bash
-   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-cc.sh > /tmp/setup-cc.sh
-   NABLEDGE_BRANCH=develop bash /tmp/setup-cc.sh -v 6
+   mkdir -p /tmp/nabledge-test && cd /tmp/nabledge-test
+   bash /path/to/tools/tests/test-setup.sh
    ```
 
-2. インストールを確認：
+   スクリプトは以下のディレクトリを作成します：
+   | ディレクトリ | 内容 |
+   |---|---|
+   | `v6/test-cc/` | nabledge-6 × Claude Code |
+   | `v6/test-ghc/` | nabledge-6 × GitHub Copilot |
+   | `v5/test-cc/` | nabledge-5 × Claude Code |
+   | `v5/test-ghc/` | nabledge-5 × GitHub Copilot |
+   | `all/test-cc/` | 全バージョン × Claude Code |
+   | `all/test-ghc/` | 全バージョン × GitHub Copilot |
+
+2. セットアップを確認：
    ```bash
-   claude
-   # Claude Code セッション内で：
-   /nabledge-6
+   ls v6/test-cc/nablarch-example-batch/.claude/skills/
+   ls v6/test-ghc/nablarch-example-batch/.claude/skills/
    ```
 
-**GitHub Copilot の場合：**
+3. 各ディレクトリの `nablarch-example-batch/` で動作確認：
+   - Claude Code の場合：`claude` を起動して `/nabledge-6`
+   - GitHub Copilot の場合：VS Code でフォルダを開き、GitHub Copilot Chat で `/n6`
 
-1. セットアップスクリプトをダウンロードして実行：
-   ```bash
-   curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/develop/setup-ghc.sh > /tmp/setup-ghc.sh
-   NABLEDGE_BRANCH=develop bash /tmp/setup-ghc.sh -v 6
-   ```
-
-2. インストールを確認：
-   ```bash
-   # VS Code でリポジトリを開き、GitHub Copilot Chat で：
-   @workspace /nabledge-6
-   ```
+デフォルトで `NABLEDGE_BRANCH=develop` が使用されます。別のブランチを指定する場合：
+```bash
+NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh
+```
 
 ### リリース手順
 
