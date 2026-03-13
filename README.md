@@ -93,11 +93,6 @@ flowchart LR
    - Claude Code の場合：`claude` を起動して `/nabledge-6`
    - GitHub Copilot の場合：VS Code でフォルダを開き、GitHub Copilot Chat で `/n6`
 
-デフォルトで `NABLEDGE_BRANCH=develop` が使用されます。別のブランチを指定する場合：
-```bash
-NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh
-```
-
 ### リリース手順
 
 バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリでリリース作業を行います。
