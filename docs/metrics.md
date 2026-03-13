@@ -66,6 +66,34 @@ xychart-beta
 | 02/23 | 3 | 5 | 9 | 9 | 1 |
 | 03/02 | 25 | 21 | 27 | 20 | 1 |
 
+## Code Size (SLOC)
+
+> Scripts: statement lines (blank and comment lines excluded)  
+> Prompts: non-blank lines
+
+### Summary
+
+| Category | Lines | Change |
+|----------|------:|-------:|
+| Nabledge scripts | 1,452 | — |
+| Nabledge prompts | 1,966 | — |
+| KC scripts (prod) | 4,705 | — |
+| KC scripts (test) | 5,064 | — |
+| KC prompts | 509 | — |
+| **Total** | **13,696** | **—** |
+
+### Nabledge Scripts by Extension
+
+| Extension | Lines | Change |
+|-----------|------:|-------:|
+| `.sh` | 1,452 | — |
+
+### KC Scripts by Extension
+
+| Extension | Prod | Prod Change | Test | Test Change |
+|-----------|-----:|:-----------:|-----:|:-----------:|
+| `.py` | 4,705 | — | 5,064 | — |
+
 ## Nabledge Adoption (nablarch/nabledge)
 
 _Skipped: NABLEDGE_SYNC_TOKEN not available._

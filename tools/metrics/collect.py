@@ -10,6 +10,7 @@ GH_TOKEN env var is used automatically by gh CLI in GitHub Actions.
 """
 
 import argparse
+import glob as glob_module
 import json
 import math
 import os
@@ -327,6 +328,212 @@ def collect_prs_opened(repo: str, weeks: list[datetime], token: str | None) -> d
 
 
 # ---------------------------------------------------------------------------
+# SLOC collection
+# ---------------------------------------------------------------------------
+
+def count_sloc(filepath: str, is_prompt: bool = False) -> int:
+    """Count significant lines in a file.
+
+    Scripts (.py, .sh): exclude blank lines and comment lines (starting with #).
+    Prompts (.md): exclude blank lines only.
+    """
+    try:
+        with open(filepath, encoding="utf-8", errors="replace") as f:
+            lines = f.readlines()
+    except OSError:
+        return 0
+    count = 0
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if not is_prompt and stripped.startswith("#"):
+            continue
+        count += 1
+    return count
+
+
+def _glob_files(repo_root: str, patterns: list[str]) -> list[str]:
+    files = []
+    for pattern in patterns:
+        files.extend(glob_module.glob(os.path.join(repo_root, pattern), recursive=True))
+    return sorted({f for f in files if os.path.isfile(f)})
+
+
+def _sloc_by_ext(files: list[str], is_prompt: bool = False) -> dict[str, int]:
+    by_ext: dict[str, int] = {}
+    for f in files:
+        ext = os.path.splitext(f)[1] or "(no ext)"
+        by_ext[ext] = by_ext.get(ext, 0) + count_sloc(f, is_prompt=is_prompt)
+    return by_ext
+
+
+def collect_sloc(repo_root: str) -> dict:
+    """Collect SLOC for all tracked categories."""
+
+    # --- Nabledge scripts ---
+    nabledge_script_files = _glob_files(repo_root, [
+        ".claude/skills/nabledge-6/scripts/**/*.sh",
+        ".claude/skills/nabledge-5/scripts/**/*.sh",
+        "tools/setup/setup-*.sh",
+    ])
+    nabledge_scripts = _sloc_by_ext(nabledge_script_files, is_prompt=False)
+
+    # --- Nabledge prompts ---
+    nabledge_prompt_files = _glob_files(repo_root, [
+        ".claude/skills/nabledge-6/SKILL.md",
+        ".claude/skills/nabledge-6/workflows/**/*.md",
+        ".claude/skills/nabledge-5/SKILL.md",
+        ".claude/skills/nabledge-5/workflows/**/*.md",
+        ".claude/commands/n6.md",
+        ".claude/commands/n5.md",
+    ])
+    nabledge_prompts = sum(count_sloc(f, is_prompt=True) for f in nabledge_prompt_files)
+
+    # --- KC scripts (production) ---
+    kc_prod_files = [
+        f for f in _glob_files(repo_root, ["tools/knowledge-creator/scripts/**/*.py",
+                                             "tools/knowledge-creator/scripts/**/*.sh"])
+        if "__pycache__" not in f
+    ]
+    kc_scripts_prod = _sloc_by_ext(kc_prod_files, is_prompt=False)
+
+    # --- KC scripts (test) ---
+    kc_test_files = [
+        f for f in _glob_files(repo_root, ["tools/knowledge-creator/tests/**/*.py"])
+        if "__pycache__" not in f
+    ]
+    kc_scripts_test = _sloc_by_ext(kc_test_files, is_prompt=False)
+
+    # --- KC prompts (.md files, excluding reports/ and README.md) ---
+    kc_md_files = [
+        f for f in _glob_files(repo_root, ["tools/knowledge-creator/**/*.md"])
+        if "/reports/" not in f and os.path.basename(f).upper() != "README.MD"
+    ]
+    kc_prompts = sum(count_sloc(f, is_prompt=True) for f in kc_md_files)
+
+    return {
+        "nabledge": {
+            "scripts": nabledge_scripts,
+            "prompts": nabledge_prompts,
+        },
+        "kc": {
+            "scripts_prod": kc_scripts_prod,
+            "scripts_test": kc_scripts_test,
+            "prompts": kc_prompts,
+        },
+    }
+
+
+def load_sloc_snapshot(snapshot_path: str) -> dict:
+    try:
+        with open(snapshot_path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def save_sloc_snapshot(snapshot_path: str, data: dict) -> None:
+    with open(snapshot_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+def _delta_str(current: int, previous: int) -> str:
+    diff = current - previous
+    if diff > 0:
+        return f"+{diff:,}"
+    if diff < 0:
+        return f"{diff:,}"
+    return "—"
+
+
+def render_sloc_section(current: dict, previous: dict) -> list[str]:
+    """Render SLOC summary and detail tables."""
+    lines = []
+    lines.append("## Code Size (SLOC)")
+    lines.append("")
+    lines.append("> Scripts: statement lines (blank and comment lines excluded)  ")
+    lines.append("> Prompts: non-blank lines")
+    lines.append("")
+
+    def total(d: dict) -> int:
+        return sum(d.values()) if isinstance(d, dict) else (d or 0)
+
+    prev_nabledge = previous.get("nabledge", {})
+    prev_kc = previous.get("kc", {})
+
+    cur_ns = total(current["nabledge"]["scripts"])
+    cur_np = current["nabledge"]["prompts"]
+    cur_kp = total(current["kc"]["scripts_prod"])
+    cur_kt = total(current["kc"]["scripts_test"])
+    cur_kpr = current["kc"]["prompts"]
+
+    prv_ns = total(prev_nabledge.get("scripts", {}))
+    prv_np = prev_nabledge.get("prompts", 0)
+    prv_kp = total(prev_kc.get("scripts_prod", {}))
+    prv_kt = total(prev_kc.get("scripts_test", {}))
+    prv_kpr = prev_kc.get("prompts", 0)
+
+    grand_cur = cur_ns + cur_np + cur_kp + cur_kt + cur_kpr
+    grand_prv = prv_ns + prv_np + prv_kp + prv_kt + prv_kpr
+
+    # Summary table
+    lines.append("### Summary")
+    lines.append("")
+    lines.append("| Category | Lines | Change |")
+    lines.append("|----------|------:|-------:|")
+    rows = [
+        ("Nabledge scripts", cur_ns, prv_ns),
+        ("Nabledge prompts", cur_np, prv_np),
+        ("KC scripts (prod)", cur_kp, prv_kp),
+        ("KC scripts (test)", cur_kt, prv_kt),
+        ("KC prompts", cur_kpr, prv_kpr),
+    ]
+    for name, cur, prv in rows:
+        d = _delta_str(cur, prv) if prv else "—"
+        lines.append(f"| {name} | {cur:,} | {d} |")
+    d_grand = _delta_str(grand_cur, grand_prv) if grand_prv else "—"
+    lines.append(f"| **Total** | **{grand_cur:,}** | **{d_grand}** |")
+    lines.append("")
+
+    # Nabledge scripts by extension
+    lines.append("### Nabledge Scripts by Extension")
+    lines.append("")
+    lines.append("| Extension | Lines | Change |")
+    lines.append("|-----------|------:|-------:|")
+    all_exts = sorted(set(list(current["nabledge"]["scripts"].keys()) + list(prev_nabledge.get("scripts", {}).keys())))
+    for ext in all_exts:
+        cur = current["nabledge"]["scripts"].get(ext, 0)
+        prv = prev_nabledge.get("scripts", {}).get(ext, 0)
+        d = _delta_str(cur, prv) if prv else "—"
+        lines.append(f"| `{ext}` | {cur:,} | {d} |")
+    lines.append("")
+
+    # KC scripts by extension (prod + test)
+    lines.append("### KC Scripts by Extension")
+    lines.append("")
+    lines.append("| Extension | Prod | Prod Change | Test | Test Change |")
+    lines.append("|-----------|-----:|:-----------:|-----:|:-----------:|")
+    all_kc_exts = sorted(set(
+        list(current["kc"]["scripts_prod"].keys()) +
+        list(current["kc"]["scripts_test"].keys()) +
+        list(prev_kc.get("scripts_prod", {}).keys()) +
+        list(prev_kc.get("scripts_test", {}).keys())
+    ))
+    for ext in all_kc_exts:
+        cp = current["kc"]["scripts_prod"].get(ext, 0)
+        ct = current["kc"]["scripts_test"].get(ext, 0)
+        pp = prev_kc.get("scripts_prod", {}).get(ext, 0)
+        pt = prev_kc.get("scripts_test", {}).get(ext, 0)
+        dp = _delta_str(cp, pp) if pp else "—"
+        dt = _delta_str(ct, pt) if pt else "—"
+        lines.append(f"| `{ext}` | {cp:,} | {dp} | {ct:,} | {dt} |")
+    lines.append("")
+
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # Markdown rendering
 # ---------------------------------------------------------------------------
 
@@ -434,6 +641,8 @@ def render_metrics_md(
     traffic_views: dict | None,
     traffic_clones: dict | None,
     today: str,
+    sloc_current: dict | None = None,
+    sloc_previous: dict | None = None,
 ) -> str:
     labels = [w["label"] for w in weekly]
 
@@ -499,6 +708,10 @@ def render_metrics_md(
             f"| {w['contributors']} |"
         )
     lines.append("")
+
+    # --- SLOC ---
+    if sloc_current:
+        lines.extend(render_sloc_section(sloc_current, sloc_previous or {}))
 
     # --- Nabledge Adoption ---
     if nabledge_stats or traffic_views or traffic_clones:
@@ -593,13 +806,25 @@ def main() -> None:
 
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
-    print("[info] Rendering docs/metrics.md...", file=sys.stderr)
-    content = render_metrics_md(dev_repo, weekly, nabledge_stats, traffic_views, traffic_clones, today)
-
-    # Determine output path relative to repo root
+    # Determine paths relative to repo root
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(os.path.dirname(script_dir))
+    snapshot_path = os.path.join(script_dir, "sloc-snapshot.json")
     output_path = os.path.join(repo_root, "docs", "metrics.md")
+
+    # --- SLOC ---
+    print("[info] Counting SLOC...", file=sys.stderr)
+    sloc_current = collect_sloc(repo_root)
+    sloc_previous = load_sloc_snapshot(snapshot_path)
+    save_sloc_snapshot(snapshot_path, sloc_current)
+
+    print("[info] Rendering docs/metrics.md...", file=sys.stderr)
+    content = render_metrics_md(
+        dev_repo, weekly, nabledge_stats, traffic_views, traffic_clones, today,
+        sloc_current=sloc_current, sloc_previous=sloc_previous,
+    )
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
