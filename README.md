@@ -31,6 +31,25 @@ cp .env.example .env
 # .env を編集して認証情報を設定する
 ```
 
+### 3. Nablarch 1.x ドキュメントのセットアップ（v1.4/1.3/1.2 の知識ファイルを生成する場合）
+
+Nablarch 1.x のドキュメントは GitHub で公開されていないため、ローカルにあるドキュメントディレクトリへのシンボリックリンクを手動で設定する必要があります。
+
+リポジトリルートで以下を実行します（`/path/to/` は実際のローカルパスに置き換えてください）：
+
+```bash
+mkdir -p .lw/nab-official/v1.4 .lw/nab-official/v1.3 .lw/nab-official/v1.2
+ln -s /path/to/1.4_maintain .lw/nab-official/v1.4/1.4_maintain
+ln -s /path/to/1.3_maintain .lw/nab-official/v1.3/1.3_maintain
+ln -s /path/to/1.2_maintain .lw/nab-official/v1.2/1.2_maintain
+```
+
+設定後、knowledge-creator で知識ファイルを生成できます：
+
+```bash
+./tools/knowledge-creator/kc.sh gen 1.4
+```
+
 ## 使い方
 
 ```bash
