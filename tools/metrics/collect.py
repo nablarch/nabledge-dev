@@ -1,0 +1,509 @@
+#!/usr/bin/env python3
+"""
+Collect development productivity metrics from GitHub and write docs/metrics.md.
+
+Usage:
+    python tools/metrics/collect.py [--token NABLEDGE_SYNC_TOKEN]
+
+The script uses `gh api` (GitHub CLI) for API calls.
+GH_TOKEN env var is used automatically by gh CLI in GitHub Actions.
+"""
+
+import argparse
+import json
+import math
+import os
+import subprocess
+import sys
+from datetime import datetime, timedelta, timezone
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def gh_api(path: str, token: str | None = None) -> dict | list | None:
+    """Call gh api and return parsed JSON, or None on error."""
+    env = os.environ.copy()
+    if token:
+        env["GH_TOKEN"] = token
+    try:
+        result = subprocess.run(
+            ["gh", "api", path],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=True,
+        )
+        return json.loads(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"[warn] gh api {path} failed: {e.stderr.strip()}", file=sys.stderr)
+        return None
+
+
+def gh_api_paginated(path: str, token: str | None = None) -> list:
+    """Call gh api with --paginate and return a flat list of items."""
+    env = os.environ.copy()
+    if token:
+        env["GH_TOKEN"] = token
+    try:
+        result = subprocess.run(
+            ["gh", "api", "--paginate", path],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=True,
+        )
+        # gh --paginate outputs multiple JSON arrays; join them
+        items = []
+        for chunk in result.stdout.strip().split("\n"):
+            chunk = chunk.strip()
+            if not chunk:
+                continue
+            parsed = json.loads(chunk)
+            if isinstance(parsed, list):
+                items.extend(parsed)
+            else:
+                items.append(parsed)
+        return items
+    except subprocess.CalledProcessError as e:
+        print(f"[warn] gh api --paginate {path} failed: {e.stderr.strip()}", file=sys.stderr)
+        return []
+
+
+def iso_week_monday(dt: datetime) -> datetime:
+    """Return the Monday of the ISO week containing dt (UTC, midnight)."""
+    day = dt.date()
+    monday = day - timedelta(days=day.weekday())
+    return datetime(monday.year, monday.month, monday.day, tzinfo=timezone.utc)
+
+
+def week_label(monday: datetime) -> str:
+    """Format a Monday datetime as MM/DD."""
+    return monday.strftime("%m/%d")
+
+
+def parse_gh_datetime(s: str) -> datetime | None:
+    """Parse GitHub API datetime string (ISO 8601) to UTC datetime."""
+    if not s:
+        return None
+    try:
+        # Python 3.11+ handles Z; for older versions replace manually
+        s = s.replace("Z", "+00:00")
+        return datetime.fromisoformat(s)
+    except ValueError:
+        return None
+
+
+def y_axis_max(values: list[float], default_max: int = 5) -> int:
+    """Compute Mermaid y-axis max: ceil(max * 1.2), minimum default_max."""
+    if not values or max(values) == 0:
+        return default_max
+    return math.ceil(max(values) * 1.2)
+
+
+def mermaid_xychart_bar(title: str, x_labels: list[str], y_label: str, values: list[float]) -> str:
+    """Render a Mermaid xychart-beta bar chart."""
+    ymax = y_axis_max(values)
+    x_str = "[" + ", ".join(f'"{lbl}"' for lbl in x_labels) + "]"
+    vals_str = "[" + ", ".join(str(int(v)) if v == int(v) else str(round(v, 1)) for v in values) + "]"
+    return (
+        "```mermaid\n"
+        "xychart-beta\n"
+        f'  title "{title}"\n'
+        f"  x-axis {x_str}\n"
+        f'  y-axis "{y_label}" 0 --> {ymax}\n'
+        f"  bar {vals_str}\n"
+        "```"
+    )
+
+
+def mermaid_xychart_line(title: str, x_labels: list[str], y_label: str, values: list[float]) -> str:
+    """Render a Mermaid xychart-beta line chart."""
+    ymax = y_axis_max(values)
+    x_str = "[" + ", ".join(f'"{lbl}"' for lbl in x_labels) + "]"
+    vals_str = "[" + ", ".join(str(int(v)) if v == int(v) else str(round(v, 1)) for v in values) + "]"
+    return (
+        "```mermaid\n"
+        "xychart-beta\n"
+        f'  title "{title}"\n'
+        f"  x-axis {x_str}\n"
+        f'  y-axis "{y_label}" 0 --> {ymax}\n'
+        f"  line {vals_str}\n"
+        "```"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Data collection
+# ---------------------------------------------------------------------------
+
+def get_last_n_weeks(n: int) -> list[datetime]:
+    """Return list of Monday datetimes for the last n complete ISO weeks."""
+    now = datetime.now(tz=timezone.utc)
+    current_monday = iso_week_monday(now)
+    weeks = []
+    for i in range(n, 0, -1):
+        weeks.append(current_monday - timedelta(weeks=i))
+    return weeks
+
+
+def collect_merged_prs(repo: str, since: datetime, token: str | None) -> list[dict]:
+    """Fetch all closed PRs merged to main since `since`."""
+    print(f"[info] Fetching merged PRs for {repo} since {since.date()}...", file=sys.stderr)
+    since_str = since.strftime("%Y-%m-%dT%H:%M:%SZ")
+    path = f"repos/{repo}/pulls?state=closed&base=main&per_page=100&sort=updated&direction=desc"
+    items = gh_api_paginated(path, token)
+    merged = []
+    for pr in items:
+        merged_at = parse_gh_datetime(pr.get("merged_at"))
+        if merged_at and merged_at >= since:
+            merged.append(pr)
+    return merged
+
+
+def get_first_commit_date(repo: str, pr_number: int, token: str | None) -> datetime | None:
+    """Get the date of the first commit in a PR."""
+    path = f"repos/{repo}/pulls/{pr_number}/commits?per_page=100"
+    commits = gh_api_paginated(path, token)
+    if not commits:
+        return None
+    dates = []
+    for c in commits:
+        date_str = c.get("commit", {}).get("author", {}).get("date")
+        dt = parse_gh_datetime(date_str)
+        if dt:
+            dates.append(dt)
+    return min(dates) if dates else None
+
+
+def collect_issues(repo: str, since: datetime, token: str | None) -> list[dict]:
+    """Fetch all issues (not PRs) updated since `since`."""
+    print(f"[info] Fetching issues for {repo} since {since.date()}...", file=sys.stderr)
+    since_str = since.strftime("%Y-%m-%dT%H:%M:%SZ")
+    path = f"repos/{repo}/issues?state=all&per_page=100&sort=updated&direction=desc&since={since_str}"
+    items = gh_api_paginated(path, token)
+    # Filter out PRs (GitHub issues API returns both)
+    return [i for i in items if "pull_request" not in i]
+
+
+def collect_repo_stats(repo: str, token: str | None) -> dict:
+    """Fetch stars, forks, watchers from repo info."""
+    print(f"[info] Fetching repo stats for {repo}...", file=sys.stderr)
+    data = gh_api(f"repos/{repo}", token)
+    if not data:
+        return {}
+    return {
+        "stars": data.get("stargazers_count", 0),
+        "forks": data.get("forks_count", 0),
+        "watchers": data.get("subscribers_count", 0),
+    }
+
+
+def collect_traffic_views(repo: str, token: str | None) -> dict:
+    """Fetch page views traffic data."""
+    print(f"[info] Fetching traffic views for {repo}...", file=sys.stderr)
+    data = gh_api(f"repos/{repo}/traffic/views", token)
+    return data or {}
+
+
+def collect_traffic_clones(repo: str, token: str | None) -> dict:
+    """Fetch git clones traffic data."""
+    print(f"[info] Fetching traffic clones for {repo}...", file=sys.stderr)
+    data = gh_api(f"repos/{repo}/traffic/clones", token)
+    return data or {}
+
+
+# ---------------------------------------------------------------------------
+# Metric calculation
+# ---------------------------------------------------------------------------
+
+def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues: list[dict], repo: str, token: str | None) -> list[dict]:
+    """
+    For each week, compute:
+      - deployment_frequency: merged PRs count
+      - lead_time_hours: avg hours from first commit to merge
+      - change_failure_rate: % of PRs with bug/fix label
+      - mttr_hours: avg hours from bug issue open to close
+      - issues_opened, issues_closed, prs_opened, prs_merged, contributors
+    """
+    results = []
+
+    for monday in weeks:
+        week_end = monday + timedelta(weeks=1)
+        label = week_label(monday)
+
+        # PRs merged this week
+        week_prs = [
+            pr for pr in merged_prs
+            if (dt := parse_gh_datetime(pr.get("merged_at"))) and monday <= dt < week_end
+        ]
+
+        # Deployment frequency
+        dep_freq = len(week_prs)
+
+        # Lead time: avg hours from first commit to merge
+        lead_times = []
+        for pr in week_prs:
+            merged_at = parse_gh_datetime(pr.get("merged_at"))
+            pr_number = pr.get("number")
+            first_commit = get_first_commit_date(repo, pr_number, token) if pr_number else None
+            if first_commit and merged_at:
+                hours = (merged_at - first_commit).total_seconds() / 3600
+                lead_times.append(hours)
+        avg_lead_time = sum(lead_times) / len(lead_times) if lead_times else 0.0
+
+        # Change failure rate: PRs with bug or fix label
+        def has_failure_label(pr: dict) -> bool:
+            labels = [lbl.get("name", "").lower() for lbl in pr.get("labels", [])]
+            return any(l in ("bug", "fix") for l in labels)
+
+        failure_prs = [pr for pr in week_prs if has_failure_label(pr)]
+        cfr = (len(failure_prs) / dep_freq * 100) if dep_freq > 0 else 0.0
+
+        # MTTR: bug-labeled issues opened and closed this week
+        bug_issues_closed = []
+        for issue in issues:
+            labels = [lbl.get("name", "").lower() for lbl in issue.get("labels", [])]
+            if "bug" not in labels:
+                continue
+            closed_at = parse_gh_datetime(issue.get("closed_at"))
+            created_at = parse_gh_datetime(issue.get("created_at"))
+            if closed_at and monday <= closed_at < week_end and created_at:
+                hours = (closed_at - created_at).total_seconds() / 3600
+                bug_issues_closed.append(hours)
+        avg_mttr = sum(bug_issues_closed) / len(bug_issues_closed) if bug_issues_closed else 0.0
+
+        # Activity: issues opened/closed
+        issues_opened = sum(
+            1 for i in issues
+            if (dt := parse_gh_datetime(i.get("created_at"))) and monday <= dt < week_end
+        )
+        issues_closed = sum(
+            1 for i in issues
+            if (dt := parse_gh_datetime(i.get("closed_at"))) and monday <= dt < week_end
+        )
+
+        # PRs opened this week (use created_at from merged_prs list as approximation;
+        # fetch separately for accuracy)
+        prs_opened = 0  # computed below via separate fetch if needed
+
+        # Contributors: unique PR authors
+        contributors = len({pr.get("user", {}).get("login") for pr in week_prs if pr.get("user")})
+
+        results.append({
+            "label": label,
+            "monday": monday,
+            "deployment_frequency": dep_freq,
+            "lead_time_hours": round(avg_lead_time, 1),
+            "change_failure_rate": round(cfr, 1),
+            "mttr_hours": round(avg_mttr, 1),
+            "issues_opened": issues_opened,
+            "issues_closed": issues_closed,
+            "prs_opened": prs_opened,
+            "prs_merged": dep_freq,
+            "contributors": contributors,
+        })
+
+    return results
+
+
+def collect_prs_opened(repo: str, weeks: list[datetime], token: str | None) -> dict[str, int]:
+    """Fetch all PRs created in the period and bucket by week."""
+    since = weeks[0]
+    print(f"[info] Fetching opened PRs for {repo} since {since.date()}...", file=sys.stderr)
+    path = f"repos/{repo}/pulls?state=all&per_page=100&sort=created&direction=desc"
+    items = gh_api_paginated(path, token)
+    bucket: dict[str, int] = {}
+    week_end = weeks[-1] + timedelta(weeks=1)
+    for pr in items:
+        created_at = parse_gh_datetime(pr.get("created_at"))
+        if not created_at or created_at < since or created_at >= week_end:
+            continue
+        monday = iso_week_monday(created_at)
+        label = week_label(monday)
+        bucket[label] = bucket.get(label, 0) + 1
+    return bucket
+
+
+# ---------------------------------------------------------------------------
+# Markdown rendering
+# ---------------------------------------------------------------------------
+
+def render_metrics_md(
+    dev_repo: str,
+    weekly: list[dict],
+    nabledge_stats: dict | None,
+    traffic_views: dict | None,
+    traffic_clones: dict | None,
+    today: str,
+) -> str:
+    labels = [w["label"] for w in weekly]
+
+    dep_freq_vals = [w["deployment_frequency"] for w in weekly]
+    lead_time_vals = [w["lead_time_hours"] for w in weekly]
+    cfr_vals = [w["change_failure_rate"] for w in weekly]
+    mttr_vals = [w["mttr_hours"] for w in weekly]
+
+    lines = []
+
+    # Header
+    lines.append("# Nabledge Dev Metrics")
+    lines.append("")
+    lines.append(f"> Last updated: {today} (auto-generated weekly — [view source](tools/metrics/collect.py))")
+    lines.append("")
+
+    # --- Development Productivity ---
+    lines.append("## Development Productivity")
+    lines.append("")
+
+    # Deployment Frequency
+    lines.append("### Deployment Frequency (PRs merged to main / week)")
+    lines.append("")
+    lines.append(mermaid_xychart_bar("Deployment Frequency", labels, "PRs / week", dep_freq_vals))
+    lines.append("")
+
+    # Lead Time
+    lines.append("### Lead Time for Changes (avg hours: first commit → merge)")
+    lines.append("")
+    lines.append(mermaid_xychart_line("Lead Time for Changes", labels, "Hours", lead_time_vals))
+    lines.append("")
+
+    # Change Failure Rate
+    lines.append("### Change Failure Rate (%)")
+    lines.append("")
+    lines.append(mermaid_xychart_bar("Change Failure Rate", labels, "% of PRs", cfr_vals))
+    lines.append("")
+
+    # MTTR
+    lines.append("### Mean Time to Recovery (avg hours)")
+    lines.append("")
+    lines.append(mermaid_xychart_line("Mean Time to Recovery", labels, "Hours", mttr_vals))
+    lines.append("")
+
+    # --- Activity Table ---
+    lines.append("## Activity")
+    lines.append("")
+    lines.append("| Week | Issues Opened | Issues Closed | PRs Opened | PRs Merged | Contributors |")
+    lines.append("|------|:---:|:---:|:---:|:---:|:---:|")
+    for w in weekly:
+        lines.append(
+            f"| {w['label']} "
+            f"| {w['issues_opened']} "
+            f"| {w['issues_closed']} "
+            f"| {w['prs_opened']} "
+            f"| {w['prs_merged']} "
+            f"| {w['contributors']} |"
+        )
+    lines.append("")
+
+    # --- Nabledge Adoption ---
+    if nabledge_stats or traffic_views or traffic_clones:
+        lines.append("## Nabledge Adoption (nablarch/nabledge)")
+        lines.append("")
+
+        # Page views chart
+        if traffic_views and traffic_views.get("views"):
+            views_data = traffic_views["views"]
+            # Sort by timestamp
+            views_data = sorted(views_data, key=lambda x: x.get("timestamp", ""))
+            view_labels = [d["timestamp"][:10][5:] for d in views_data]  # MM-DD
+            view_labels = [lbl.replace("-", "/") for lbl in view_labels]
+            view_counts = [d.get("count", 0) for d in views_data]
+
+            lines.append("### Page Views (last 14 days)")
+            lines.append("")
+            lines.append(mermaid_xychart_bar("Page Views", view_labels, "Views", view_counts))
+            lines.append("")
+
+        # Summary table
+        total_views = traffic_views.get("count", 0) if traffic_views else 0
+        unique_visitors = traffic_views.get("uniques", 0) if traffic_views else 0
+        total_clones = traffic_clones.get("count", 0) if traffic_clones else 0
+        stars = nabledge_stats.get("stars", 0) if nabledge_stats else 0
+        forks = nabledge_stats.get("forks", 0) if nabledge_stats else 0
+        watchers = nabledge_stats.get("watchers", 0) if nabledge_stats else 0
+
+        lines.append("| Metric | Value |")
+        lines.append("|--------|------:|")
+        lines.append(f"| Page views (14 days) | {total_views} |")
+        lines.append(f"| Unique visitors (14 days) | {unique_visitors} |")
+        lines.append(f"| Git clones (14 days) | {total_clones} |")
+        lines.append(f"| Stars | {stars} |")
+        lines.append(f"| Forks | {forks} |")
+        lines.append(f"| Watchers | {watchers} |")
+        lines.append("")
+    else:
+        lines.append("## Nabledge Adoption (nablarch/nabledge)")
+        lines.append("")
+        lines.append("_Skipped: NABLEDGE_SYNC_TOKEN not available._")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Collect nabledge-dev metrics and write docs/metrics.md")
+    parser.add_argument("--token", metavar="TOKEN", help="NABLEDGE_SYNC_TOKEN for nablarch/nabledge access")
+    args = parser.parse_args()
+
+    dev_repo = "nablarch/nabledge-dev"
+    nabledge_repo = "nablarch/nabledge"
+
+    # NABLEDGE_SYNC_TOKEN: prefer CLI arg, then env var
+    nabledge_token = args.token or os.environ.get("NABLEDGE_SYNC_TOKEN")
+
+    # Last 8 complete ISO weeks
+    weeks = get_last_n_weeks(8)
+    since = weeks[0]
+
+    print(f"[info] Collecting metrics for {dev_repo}, weeks {week_label(weeks[0])} to {week_label(weeks[-1])}", file=sys.stderr)
+
+    # --- nabledge-dev data ---
+    merged_prs = collect_merged_prs(dev_repo, since, token=None)
+    issues = collect_issues(dev_repo, since, token=None)
+    prs_opened_by_week = collect_prs_opened(dev_repo, weeks, token=None)
+
+    print(f"[info] Computing weekly metrics ({len(merged_prs)} merged PRs, {len(issues)} issues)...", file=sys.stderr)
+    weekly = compute_weekly_metrics(weeks, merged_prs, issues, dev_repo, token=None)
+
+    # Patch prs_opened from separate fetch
+    for w in weekly:
+        w["prs_opened"] = prs_opened_by_week.get(w["label"], 0)
+
+    # --- nablarch/nabledge data (optional) ---
+    nabledge_stats = None
+    traffic_views = None
+    traffic_clones = None
+
+    if nabledge_token:
+        print(f"[info] NABLEDGE_SYNC_TOKEN available — collecting adoption metrics...", file=sys.stderr)
+        nabledge_stats = collect_repo_stats(nabledge_repo, nabledge_token)
+        traffic_views = collect_traffic_views(nabledge_repo, nabledge_token)
+        traffic_clones = collect_traffic_clones(nabledge_repo, nabledge_token)
+    else:
+        print("[info] NABLEDGE_SYNC_TOKEN not set — skipping adoption metrics.", file=sys.stderr)
+
+    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+
+    print("[info] Rendering docs/metrics.md...", file=sys.stderr)
+    content = render_metrics_md(dev_repo, weekly, nabledge_stats, traffic_views, traffic_clones, today)
+
+    # Determine output path relative to repo root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(os.path.dirname(script_dir))
+    output_path = os.path.join(repo_root, "docs", "metrics.md")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    print(f"[info] Written to {output_path}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

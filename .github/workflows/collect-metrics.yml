@@ -1,0 +1,29 @@
+name: Collect Metrics
+
+on:
+  schedule:
+    - cron: '0 15 * * 6'  # Sunday 00:00 JST (Saturday 15:00 UTC)
+  workflow_dispatch:  # allow manual trigger
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect metrics
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NABLEDGE_SYNC_TOKEN: ${{ secrets.NABLEDGE_SYNC_TOKEN }}
+        run: |
+          set -e
+          python tools/metrics/collect.py
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/metrics.md
+          git diff --staged --quiet || git commit -m "chore: update metrics report"
+          git push
