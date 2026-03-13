@@ -162,7 +162,9 @@ def get_weeks_since_first_commit(repo_root: str) -> list[datetime]:
             while monday < current_monday:
                 weeks.append(monday)
                 monday += timedelta(weeks=1)
-            return weeks
+            if weeks:
+                return weeks
+            # weeks is empty when first commit is in the current week — fall through to fallback
     # Fallback: last 8 weeks
     now = datetime.now(tz=timezone.utc)
     current_monday = iso_week_monday(now)
