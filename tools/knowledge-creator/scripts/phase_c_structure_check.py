@@ -37,7 +37,7 @@ class PhaseCStructureCheck:
         try:
             knowledge = load_json(json_path)
         except json.JSONDecodeError as e:
-            return [f"S1: JSON parse error: {e}"]
+            return [f"S1: JSON parse error: {e}"], []
 
         # S2: Required fields
         for field in ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"]:
@@ -45,7 +45,7 @@ class PhaseCStructureCheck:
                 errors.append(f"S2: Missing required field: {field}")
 
         if "index" not in knowledge or "sections" not in knowledge:
-            return errors
+            return errors, []
 
         # S16: no_knowledge_content validation
         if knowledge.get("no_knowledge_content") is True:
@@ -53,12 +53,12 @@ class PhaseCStructureCheck:
                 errors.append("S16: no_knowledge_content=true but index is not empty")
             if knowledge.get("sections"):
                 errors.append("S16: no_knowledge_content=true but sections is not empty")
-            return errors
+            return errors, []
 
         # S17: Empty knowledge guard
         if not knowledge.get("index") and not knowledge.get("sections"):
             errors.append("S17: no_knowledge_content=false but index and sections are both empty")
-            return errors
+            return errors, []
 
         index_ids = [entry["id"] for entry in knowledge.get("index", [])]
         index_id_set = set(index_ids)
@@ -102,7 +102,32 @@ class PhaseCStructureCheck:
                 if not os.path.exists(asset_abs):
                     errors.append(f"S15: Section '{sid}' refs 'assets/{m.group(1)}' not found")
 
-        return errors
+        # --- Additional quality checks (warnings, not errors) ---
+        warnings = []
+
+        # A1: Hints minimum count
+        for entry in knowledge.get("index", []):
+            if len(entry.get("hints", [])) < 3:
+                warnings.append(f"A1: Section '{entry['id']}' has only {len(entry.get('hints', []))} hints (minimum: 3)")
+
+        # A2: Hints Japanese presence
+        for entry in knowledge.get("index", []):
+            hints = entry.get("hints", [])
+            has_japanese = any(
+                any('\u3000' <= c <= '\u9fff' or '\uf900' <= c <= '\ufaff' for c in h)
+                for h in hints
+            )
+            if not has_japanese:
+                warnings.append(f"A2: Section '{entry['id']}' hints contain no Japanese")
+
+        # A3: File size anomaly
+        file_size = os.path.getsize(json_path)
+        if file_size < 300:
+            warnings.append(f"A3: File size {file_size}B is too small (< 300B)")
+        elif file_size > 50 * 1024:
+            warnings.append(f"A3: File size {file_size}B is too large (> 50KB)")
+
+        return errors, warnings
 
     def run(self, target_ids=None) -> dict:
         classified = load_json(self.ctx.classified_list_path)
@@ -114,7 +139,8 @@ class PhaseCStructureCheck:
 
         results = {
             "total": 0, "pass": 0, "error": 0,
-            "error_count": 0, "errors": {}, "pass_ids": []
+            "error_count": 0, "errors": {}, "pass_ids": [],
+            "warning_count": 0, "warnings": {},
         }
 
         for fi in files:
@@ -125,7 +151,7 @@ class PhaseCStructureCheck:
                 continue
 
             results["total"] += 1
-            errs = self.validate_structure(json_path, source_path, fi["format"], fi)
+            errs, warns = self.validate_structure(json_path, source_path, fi["format"], fi)
 
             if errs:
                 results["error"] += 1
@@ -135,6 +161,10 @@ class PhaseCStructureCheck:
             else:
                 results["pass"] += 1
                 results["pass_ids"].append(fi["id"])
+
+            if warns:
+                results["warnings"][fi["id"]] = warns
+                results["warning_count"] += len(warns)
 
         write_json(self.ctx.structure_check_path, results)
 
