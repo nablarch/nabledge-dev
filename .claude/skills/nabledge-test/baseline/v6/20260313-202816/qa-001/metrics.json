@@ -1,0 +1,16 @@
+{
+  "total_duration_seconds": 67,
+  "steps": [
+    {"step": 0, "name": "Read SKILL.md and workflow files", "duration_seconds": 6, "in_tokens_estimate": 500, "out_tokens_estimate": 3000},
+    {"step": 1, "name": "Keyword extraction (in-memory)", "duration_seconds": 1, "in_tokens_estimate": 200, "out_tokens_estimate": 100},
+    {"step": 2, "name": "Full-text search (scripts/full-text-search.sh)", "duration_seconds": 1, "in_tokens_estimate": 100, "out_tokens_estimate": 200},
+    {"step": 3, "name": "Branch decision: has hits → skip to Step 6", "duration_seconds": 0, "in_tokens_estimate": 50, "out_tokens_estimate": 20},
+    {"step": 6, "name": "Section judgement - hints pre-filter (jq loop)", "duration_seconds": 19, "in_tokens_estimate": 300, "out_tokens_estimate": 3000},
+    {"step": 7, "name": "Bulk read candidate sections (read-sections.sh x2)", "duration_seconds": 9, "in_tokens_estimate": 200, "out_tokens_estimate": 15000},
+    {"step": 8, "name": "Section relevance judgment and pointer JSON assembly (in-memory)", "duration_seconds": 14, "in_tokens_estimate": 15000, "out_tokens_estimate": 200},
+    {"step": 9, "name": "Answer generation (in-memory LLM)", "duration_seconds": 18, "in_tokens_estimate": 15000, "out_tokens_estimate": 700}
+  ],
+  "tool_calls": {"Read": 6, "Bash": 10, "Grep": 0, "Write": 0},
+  "total_tool_calls": 16,
+  "response_chars": 2134
+}
