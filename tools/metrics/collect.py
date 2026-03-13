@@ -438,6 +438,20 @@ def save_sloc_snapshot(snapshot_path: str, data: dict) -> None:
         json.dump(data, f, indent=2)
 
 
+def sloc_flat(s: dict, date: str) -> dict:
+    """Flatten SLOC data to a single dict for history storage."""
+    def t(d: dict | int) -> int:
+        return sum(d.values()) if isinstance(d, dict) else (d or 0)
+    ns = t(s["nabledge"]["scripts"])
+    np_ = s["nabledge"]["prompts"]
+    kp = t(s["kc"]["scripts_prod"])
+    kt = t(s["kc"]["scripts_test"])
+    kpr = s["kc"]["prompts"]
+    return {"date": date, "nabledge_scripts": ns, "nabledge_prompts": np_,
+            "kc_prod": kp, "kc_test": kt, "kc_prompts": kpr,
+            "total": ns + np_ + kp + kt + kpr}
+
+
 def _delta_str(current: int, previous: int) -> str:
     diff = current - previous
     if diff > 0:
@@ -447,8 +461,8 @@ def _delta_str(current: int, previous: int) -> str:
     return "—"
 
 
-def render_sloc_section(current: dict, previous: dict) -> list[str]:
-    """Render SLOC summary and detail tables."""
+def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> list[str]:
+    """Render SLOC charts and tables."""
     lines = []
     lines.append("## Code Size (SLOC)")
     lines.append("")
@@ -456,7 +470,7 @@ def render_sloc_section(current: dict, previous: dict) -> list[str]:
     lines.append("> Prompts: non-blank lines")
     lines.append("")
 
-    def total(d: dict) -> int:
+    def total(d: dict | int) -> int:
         return sum(d.values()) if isinstance(d, dict) else (d or 0)
 
     prev_nabledge = previous.get("nabledge", {})
@@ -467,17 +481,56 @@ def render_sloc_section(current: dict, previous: dict) -> list[str]:
     cur_kp = total(current["kc"]["scripts_prod"])
     cur_kt = total(current["kc"]["scripts_test"])
     cur_kpr = current["kc"]["prompts"]
+    grand_cur = cur_ns + cur_np + cur_kp + cur_kt + cur_kpr
 
     prv_ns = total(prev_nabledge.get("scripts", {}))
     prv_np = prev_nabledge.get("prompts", 0)
     prv_kp = total(prev_kc.get("scripts_prod", {}))
     prv_kt = total(prev_kc.get("scripts_test", {}))
     prv_kpr = prev_kc.get("prompts", 0)
-
-    grand_cur = cur_ns + cur_np + cur_kp + cur_kt + cur_kpr
     grand_prv = prv_ns + prv_np + prv_kp + prv_kt + prv_kpr
 
-    # Summary table
+    # --- Total SLOC trend (line chart from history) ---
+    if len(history) >= 2:
+        lines.append("### Total SLOC Trend")
+        lines.append("")
+        hist_labels = [h["date"][5:] for h in history]  # MM-DD
+        hist_totals = [h["total"] for h in history]
+        lines.append(mermaid_xychart_line("Total SLOC", hist_labels, "Lines", hist_totals))
+        lines.append("")
+
+    # --- Current breakdown (bar chart by category) ---
+    lines.append("### Current Breakdown by Category")
+    lines.append("")
+    cat_labels = ["Nabledge scripts", "Nabledge prompts", "KC prod", "KC test", "KC prompts"]
+    cat_vals = [cur_ns, cur_np, cur_kp, cur_kt, cur_kpr]
+    lines.append(mermaid_xychart_bar("SLOC by Category", cat_labels, "Lines", cat_vals))
+    lines.append("")
+
+    # --- KC prod vs test trend (line chart from history) ---
+    if len(history) >= 2:
+        lines.append("### KC Scripts: Production vs Test Trend")
+        lines.append("")
+        hist_labels = [h["date"][5:] for h in history]
+        kc_prod_hist = [h["kc_prod"] for h in history]
+        kc_test_hist = [h["kc_test"] for h in history]
+        ymax = y_axis_max(kc_prod_hist + kc_test_hist)
+        x_str = "[" + ", ".join(f'"{l}"' for l in hist_labels) + "]"
+        p_str = "[" + ", ".join(str(v) for v in kc_prod_hist) + "]"
+        t_str = "[" + ", ".join(str(v) for v in kc_test_hist) + "]"
+        lines.append("```mermaid")
+        lines.append("xychart-beta")
+        lines.append('  title "KC Scripts SLOC"')
+        lines.append(f"  x-axis {x_str}")
+        lines.append(f'  y-axis "Lines" 0 --> {ymax}')
+        lines.append(f"  line {p_str}")
+        lines.append(f"  line {t_str}")
+        lines.append("```")
+        lines.append("")
+        lines.append("_Top line: production · Bottom line: test_")
+        lines.append("")
+
+    # --- Summary table ---
     lines.append("### Summary")
     lines.append("")
     lines.append("| Category | Lines | Change |")
@@ -496,7 +549,7 @@ def render_sloc_section(current: dict, previous: dict) -> list[str]:
     lines.append(f"| **Total** | **{grand_cur:,}** | **{d_grand}** |")
     lines.append("")
 
-    # Nabledge scripts by extension
+    # --- Nabledge scripts by extension ---
     lines.append("### Nabledge Scripts by Extension")
     lines.append("")
     lines.append("| Extension | Lines | Change |")
@@ -509,7 +562,7 @@ def render_sloc_section(current: dict, previous: dict) -> list[str]:
         lines.append(f"| `{ext}` | {cur:,} | {d} |")
     lines.append("")
 
-    # KC scripts by extension (prod + test)
+    # --- KC scripts by extension (prod + test) ---
     lines.append("### KC Scripts by Extension")
     lines.append("")
     lines.append("| Extension | Prod | Prod Change | Test | Test Change |")
@@ -643,6 +696,7 @@ def render_metrics_md(
     today: str,
     sloc_current: dict | None = None,
     sloc_previous: dict | None = None,
+    sloc_history: list[dict] | None = None,
 ) -> str:
     labels = [w["label"] for w in weekly]
 
@@ -693,9 +747,52 @@ def render_metrics_md(
     lines.append(mermaid_xychart_line("Mean Time to Recovery", labels, "Hours", mttr_vals))
     lines.append("")
 
-    # --- Activity Table ---
+    # --- Activity ---
     lines.append("## Activity")
     lines.append("")
+
+    # Issues chart: bar=opened, line=closed
+    issues_opened_vals = [w["issues_opened"] for w in weekly]
+    issues_closed_vals = [w["issues_closed"] for w in weekly]
+    issues_ymax = y_axis_max(issues_opened_vals + issues_closed_vals)
+    issues_x = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
+    lines.append("### Issues")
+    lines.append("")
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "Issues (bar: opened / line: closed)"')
+    lines.append(f"  x-axis {issues_x}")
+    lines.append(f'  y-axis "Count" 0 --> {issues_ymax}')
+    lines.append(f"  bar {[w['issues_opened'] for w in weekly]}")
+    lines.append(f"  line {[w['issues_closed'] for w in weekly]}")
+    lines.append("```")
+    lines.append("")
+
+    # PRs chart: bar=opened, line=merged
+    prs_opened_vals = [w["prs_opened"] for w in weekly]
+    prs_merged_vals = [w["prs_merged"] for w in weekly]
+    prs_ymax = y_axis_max(prs_opened_vals + prs_merged_vals)
+    prs_x = issues_x
+    lines.append("### Pull Requests")
+    lines.append("")
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "Pull Requests (bar: opened / line: merged)"')
+    lines.append(f"  x-axis {prs_x}")
+    lines.append(f'  y-axis "Count" 0 --> {prs_ymax}')
+    lines.append(f"  bar {prs_opened_vals}")
+    lines.append(f"  line {prs_merged_vals}")
+    lines.append("```")
+    lines.append("")
+
+    # Contributors chart
+    contributors_vals = [w["contributors"] for w in weekly]
+    lines.append("### Active Contributors")
+    lines.append("")
+    lines.append(mermaid_xychart_bar("Active Contributors", labels, "Contributors", contributors_vals))
+    lines.append("")
+
+    # Activity table
     lines.append("| Week | Issues Opened | Issues Closed | PRs Opened | PRs Merged | Contributors |")
     lines.append("|------|:---:|:---:|:---:|:---:|:---:|")
     for w in weekly:
@@ -711,7 +808,7 @@ def render_metrics_md(
 
     # --- SLOC ---
     if sloc_current:
-        lines.extend(render_sloc_section(sloc_current, sloc_previous or {}))
+        lines.extend(render_sloc_section(sloc_current, sloc_previous or {}, sloc_history or []))
 
     # --- Nabledge Adoption ---
     if nabledge_stats or traffic_views or traffic_clones:
@@ -815,13 +912,16 @@ def main() -> None:
     # --- SLOC ---
     print("[info] Counting SLOC...", file=sys.stderr)
     sloc_current = collect_sloc(repo_root)
-    sloc_previous = load_sloc_snapshot(snapshot_path)
-    save_sloc_snapshot(snapshot_path, sloc_current)
+    snapshot = load_sloc_snapshot(snapshot_path)
+    sloc_previous = {k: v for k, v in snapshot.items() if k != "history"}
+    sloc_history = snapshot.get("history", [])
+    sloc_history = (sloc_history + [sloc_flat(sloc_current, today)])[-8:]
+    save_sloc_snapshot(snapshot_path, {**sloc_current, "history": sloc_history})
 
     print("[info] Rendering docs/metrics.md...", file=sys.stderr)
     content = render_metrics_md(
         dev_repo, weekly, nabledge_stats, traffic_views, traffic_clones, today,
-        sloc_current=sloc_current, sloc_previous=sloc_previous,
+        sloc_current=sloc_current, sloc_previous=sloc_previous, sloc_history=sloc_history,
     )
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

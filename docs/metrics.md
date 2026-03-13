@@ -55,6 +55,38 @@ xychart-beta
 
 ## Activity
 
+### Issues
+
+```mermaid
+xychart-beta
+  title "Issues (bar: opened / line: closed)"
+  x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
+  y-axis "Count" 0 --> 32
+  bar [0, 0, 0, 0, 6, 26, 3, 25]
+  line [0, 0, 0, 0, 3, 24, 5, 21]
+```
+
+### Pull Requests
+
+```mermaid
+xychart-beta
+  title "Pull Requests (bar: opened / line: merged)"
+  x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
+  y-axis "Count" 0 --> 45
+  bar [0, 0, 0, 0, 13, 37, 9, 27]
+  line [0, 0, 0, 0, 2, 25, 9, 20]
+```
+
+### Active Contributors
+
+```mermaid
+xychart-beta
+  title "Active Contributors"
+  x-axis ["01/12", "01/19", "01/26", "02/02", "02/09", "02/16", "02/23", "03/02"]
+  y-axis "Contributors" 0 --> 2
+  bar [0, 0, 0, 0, 1, 1, 1, 1]
+```
+
 | Week | Issues Opened | Issues Closed | PRs Opened | PRs Merged | Contributors |
 |------|:---:|:---:|:---:|:---:|:---:|
 | 01/12 | 0 | 0 | 0 | 0 | 0 |
@@ -70,6 +102,16 @@ xychart-beta
 
 > Scripts: statement lines (blank and comment lines excluded)  
 > Prompts: non-blank lines
+
+### Current Breakdown by Category
+
+```mermaid
+xychart-beta
+  title "SLOC by Category"
+  x-axis ["Nabledge scripts", "Nabledge prompts", "KC prod", "KC test", "KC prompts"]
+  y-axis "Lines" 0 --> 6077
+  bar [1452, 1966, 4705, 5064, 509]
+```
 
 ### Summary
 
