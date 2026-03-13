@@ -363,6 +363,40 @@ clone_repos_from_meta() {
 clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
 clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
 
+# Check Nablarch 1.x symlinks (v1.4/v1.3/v1.2)
+print_header "10. Checking Nablarch 1.x Documentation (v1.4/1.3/1.2)"
+
+V1X_VERSIONS=("1.4:1.4_maintain" "1.3:1.3_maintain" "1.2:1.2_maintain")
+V1X_MISSING=()
+
+for entry in "${V1X_VERSIONS[@]}"; do
+    ver="${entry%%:*}"
+    dir_name="${entry##*:}"
+    link_path=".lw/nab-official/v${ver}/${dir_name}"
+    if [ -e "$link_path" ]; then
+        print_status ok "v${ver}: ${link_path} exists"
+    else
+        V1X_MISSING+=("$ver")
+        print_status warning "v${ver}: ${link_path} not found (skip)"
+    fi
+done
+
+if [ ${#V1X_MISSING[@]} -gt 0 ]; then
+    echo ""
+    echo "  Nablarch 1.x documents are not hosted on GitHub."
+    echo "  To generate knowledge files for v1.4/1.3/1.2, create symlinks manually."
+    echo ""
+    echo "  How to set up (tell Claude Code the local path and it will run the command):"
+    echo ""
+    echo "    ln -s /path/to/1.4_maintain .lw/nab-official/v1.4/1.4_maintain"
+    echo "    ln -s /path/to/1.3_maintain .lw/nab-official/v1.3/1.3_maintain"
+    echo "    ln -s /path/to/1.2_maintain .lw/nab-official/v1.2/1.2_maintain"
+    echo ""
+    echo "  Then generate knowledge files:"
+    echo "    cd tools/knowledge-creator && ./kc.sh gen 1.4"
+    echo ""
+fi
+
 # Final summary
 print_header "Setup Completed Successfully!"
 
