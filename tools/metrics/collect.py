@@ -719,15 +719,39 @@ def render_metrics_md(
     lines.append("")
 
     x_str = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
+    issues_opened = [w["issues_opened"] for w in weekly]
+    issues_closed = [w["issues_closed"] for w in weekly]
+    prs_opened = [w["prs_opened"] for w in weekly]
+    prs_merged = [w["prs_merged"] for w in weekly]
 
-    lines.append(mermaid_xychart_bar("Issues Opened (count per week)", labels, "Count", [w["issues_opened"] for w in weekly]))
+    # Issues: bar=Opened, line=Closed
+    ymax_issues = y_axis_max(issues_opened + issues_closed)
+    opened_str = "[" + ", ".join(str(v) for v in issues_opened) + "]"
+    closed_str = "[" + ", ".join(str(v) for v in issues_closed) + "]"
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "Issues (bar=Opened  line=Closed)"')
+    lines.append(f"  x-axis {x_str}")
+    lines.append(f'  y-axis "Count" 0 --> {ymax_issues}')
+    lines.append(f"  bar {opened_str}")
+    lines.append(f"  line {closed_str}")
+    lines.append("```")
     lines.append("")
-    lines.append(mermaid_xychart_bar("Issues Closed (count per week)", labels, "Count", [w["issues_closed"] for w in weekly]))
+
+    # PRs: bar=Opened, line=Merged
+    ymax_prs = y_axis_max(prs_opened + prs_merged)
+    pro_str = "[" + ", ".join(str(v) for v in prs_opened) + "]"
+    prm_str = "[" + ", ".join(str(v) for v in prs_merged) + "]"
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "Pull Requests (bar=Opened  line=Merged)"')
+    lines.append(f"  x-axis {x_str}")
+    lines.append(f'  y-axis "Count" 0 --> {ymax_prs}')
+    lines.append(f"  bar {pro_str}")
+    lines.append(f"  line {prm_str}")
+    lines.append("```")
     lines.append("")
-    lines.append(mermaid_xychart_bar("PRs Opened (count per week)", labels, "Count", [w["prs_opened"] for w in weekly]))
-    lines.append("")
-    lines.append(mermaid_xychart_bar("PRs Merged (count per week)", labels, "Count", [w["prs_merged"] for w in weekly]))
-    lines.append("")
+
     lines.append(mermaid_xychart_bar("Active Contributors (unique PR authors per week)", labels, "Contributors", [w["contributors"] for w in weekly]))
     lines.append("")
 
@@ -841,7 +865,10 @@ def main() -> None:
     snapshot = load_sloc_snapshot(snapshot_path)
     sloc_previous = {k: v for k, v in snapshot.items() if k != "history"}
     sloc_history = snapshot.get("history", [])
-    sloc_history = (sloc_history + [sloc_flat(sloc_current, today)])[-8:]
+    # Upsert today's entry (remove any existing same-date entries, then append)
+    today_entry = sloc_flat(sloc_current, today)
+    sloc_history = [h for h in sloc_history if h["date"] != today]
+    sloc_history = (sloc_history + [today_entry])[-8:]
     save_sloc_snapshot(snapshot_path, {**sloc_current, "history": sloc_history})
 
     print("[info] Rendering docs/metrics.md...", file=sys.stderr)

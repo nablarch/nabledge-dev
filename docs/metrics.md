@@ -65,34 +65,20 @@ xychart-beta
 
 ```mermaid
 xychart-beta
-  title "Issues Opened (count per week)"
+  title "Issues (bar=Opened  line=Closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Count" 0 --> 32
   bar [0, 6, 26, 3, 25]
+  line [0, 3, 24, 5, 21]
 ```
 
 ```mermaid
 xychart-beta
-  title "Issues Closed (count per week)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
-  y-axis "Count" 0 --> 29
-  bar [0, 3, 24, 5, 21]
-```
-
-```mermaid
-xychart-beta
-  title "PRs Opened (count per week)"
+  title "Pull Requests (bar=Opened  line=Merged)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
   y-axis "Count" 0 --> 45
   bar [0, 13, 37, 9, 27]
-```
-
-```mermaid
-xychart-beta
-  title "PRs Merged (count per week)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
-  y-axis "Count" 0 --> 30
-  bar [0, 2, 25, 9, 20]
+  line [0, 2, 25, 9, 20]
 ```
 
 ```mermaid
@@ -110,9 +96,9 @@ xychart-beta
 ```mermaid
 xychart-beta
   title "Total SLOC Trend (all categories)"
-  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-13"]
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
   y-axis "Lines" 0 --> 13936
-  line [0, 789, 1503, 1293, 10339, 11613, 11613]
+  line [0, 789, 1503, 1293, 10339, 11613]
 ```
 
 ### Nabledge v6
@@ -135,10 +121,10 @@ pie title "Knowledge Creator SLOC (Production / Test / Prompts)"
 ```mermaid
 xychart-beta
   title "KC Scripts Trend (upper=Production  lower=Test)"
-  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-13"]
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
   y-axis "Lines" 0 --> 6077
-  line [0, 0, 0, 0, 3183, 4109, 4109]
-  line [0, 0, 0, 0, 4802, 5064, 5064]
+  line [0, 0, 0, 0, 3183, 4109]
+  line [0, 0, 0, 0, 4802, 5064]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
