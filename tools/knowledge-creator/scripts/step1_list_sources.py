@@ -9,6 +9,13 @@ from common import write_json
 from logger import get_logger
 
 
+def _rst_doc_root(version: str) -> str:
+    """RST base directory name under .lw/nab-official/v{version}/."""
+    if '.' in version:  # e.g. 1.4, 1.3, 1.2
+        return f"{version}_maintain"
+    return "nablarch-document/ja"
+
+
 class Step1ListSources:
     def __init__(self, ctx, dry_run=False):
         self.ctx = ctx
@@ -19,7 +26,7 @@ class Step1ListSources:
         sources = []
 
         # 1. Official documentation (RST)
-        rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/nablarch-document/ja/"
+        rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/{_rst_doc_root(self.ctx.version)}/"
         if os.path.exists(rst_base):
             for root, dirs, files in os.walk(rst_base):
                 dirs[:] = [d for d in dirs if not d.startswith("_")]

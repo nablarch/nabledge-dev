@@ -12,6 +12,13 @@ from common import load_json, write_json, read_file
 from logger import get_logger
 
 
+def _rst_doc_root(version: str) -> str:
+    """RST path segment that separates the repo prefix from the doc-relative path."""
+    if '.' in version:  # e.g. 1.4, 1.3, 1.2
+        return f"{version}_maintain/"
+    return "nablarch-document/ja/"
+
+
 def _load_mappings(repo: str, version: str) -> dict:
     """Load RST/MD/XLSX mappings from version-specific JSON file.
 
@@ -126,7 +133,7 @@ class Step2Classify:
         #   handlers/index.rst matched by "handlers/" -> remainder "index.rst" -> pattern basename "handlers"
         #   top-level index.rst matched by "" -> "top"
         if base_name == "index" and source_path is not None and matched_pattern is not None:
-            marker = "nablarch-document/ja/"
+            marker = _rst_doc_root(self.ctx.version)
             marker_idx = source_path.find(marker)
             if marker_idx >= 0:
                 rst_rel = source_path[marker_idx + len(marker):]
@@ -156,8 +163,8 @@ class Step2Classify:
 
     def classify_rst(self, path: str) -> tuple:
         """Classify RST file based on path pattern"""
-        # Extract path after nablarch-document/ja/
-        marker = "nablarch-document/ja/"
+        # Extract path after nablarch-document/ja/ (or version_maintain/ for v1.x)
+        marker = _rst_doc_root(self.ctx.version)
         idx = path.find(marker)
         if idx < 0:
             return None, None, None
