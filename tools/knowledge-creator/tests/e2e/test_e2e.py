@@ -65,7 +65,8 @@ def _run_with_mock(facade_fn, ctx, mock_fn, **kwargs):
     from unittest.mock import patch
     with patch("phase_b_generate._default_run_claude", mock_fn), \
          patch("phase_d_content_check._default_run_claude", mock_fn), \
-         patch("phase_e_fix._default_run_claude", mock_fn):
+         patch("phase_e_fix._default_run_claude", mock_fn), \
+         patch("phase_v_evaluate._default_run_claude", mock_fn):
         facade_fn(ctx, **kwargs)
 
 
@@ -75,7 +76,8 @@ def _run_phase_a_only(ctx, mock_fn):
     from unittest.mock import patch
     with patch("phase_b_generate._default_run_claude", mock_fn), \
          patch("phase_d_content_check._default_run_claude", mock_fn), \
-         patch("phase_e_fix._default_run_claude", mock_fn):
+         patch("phase_e_fix._default_run_claude", mock_fn), \
+         patch("phase_v_evaluate._default_run_claude", mock_fn):
         _run_pipeline(ctx, args)
 
 

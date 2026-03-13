@@ -180,7 +180,7 @@ def main():
         logger.info(f"   Mode: {mode_emoji}{mode}")
         if args.test:
             logger.info(f"   Test File: 📄{args.test}")
-        logger.info(f"   Phases: {args.phase or 'ABCDEM (all)'}")
+        logger.info(f"   Phases: {args.phase or 'ABCDEMV (all)'}")
         logger.info(f"   Max Rounds: {args.max_rounds}")
         logger.info(f"   Concurrency: {args.concurrency}")
         logger.info(f"   Dry-run: {'✅Yes' if args.dry_run else '❌No'}")
@@ -225,7 +225,7 @@ def main():
 
 
 def kc_gen(ctx):
-    """kc gen: 全件生成（Phase ABCDEM）。"""
+    """kc gen: 全件生成（Phase ABCDEMV）。"""
     _run_pipeline(ctx, _make_args(ctx))
 
 
@@ -266,7 +266,7 @@ def _run_pipeline(ctx, args):
     """Run the full pipeline for a single version context."""
     logger = get_logger()
 
-    phases = args.phase or "ABCDEM"
+    phases = args.phase or "ABCDEMV"
 
     # Initialize report data
     started_at = datetime.now(timezone.utc).isoformat()
@@ -433,6 +433,15 @@ def _run_pipeline(ctx, args):
         else:
             break
 
+    # Final Verification
+    loop_ended_with_fix = (
+        len(report.get("phase_e_rounds", [])) > 0
+        and len(report.get("phase_e_rounds", [])) == len(report.get("phase_d_rounds", []))
+    )
+    if loop_ended_with_fix and "D" in phases:
+        final_result = _run_final_verification(ctx, ctx.max_rounds, phases)
+        report["final_verification"] = final_result
+
     # Phase M (replaces G+F in default flow)
     if "M" in phases:
         logger.info("\n📦Phase M: Merge + Resolve + Finalize")
@@ -454,6 +463,13 @@ def _run_pipeline(ctx, args):
         from phase_f_finalize import PhaseFFinalize
         PhaseFFinalize(ctx, dry_run=args.dry_run).run()
 
+    # Phase V: Quality Evaluation
+    if "V" in phases and report.get("final_verification"):
+        from phase_v_evaluate import PhaseVEvaluate
+        final_round = report["final_verification"]["round"]
+        v_result = PhaseVEvaluate(ctx, dry_run=args.dry_run).run(final_round=final_round)
+        report["quality_evaluation"] = v_result
+
     finished_at = datetime.now(timezone.utc).isoformat()
     report["meta"]["finished_at"] = finished_at
     report["meta"]["duration_sec"] = int(
@@ -463,6 +479,44 @@ def _run_pipeline(ctx, args):
     _write_report(ctx, report)
     _publish_reports(ctx, report)
     logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
+
+
+def _run_final_verification(ctx, max_rounds, phases):
+    """最終検証: CDE ループ後に C→D を 1 回実行。E（修正）は呼ばない。"""
+    logger = get_logger()
+    final_round = max_rounds + 1
+    logger.info(f"\n📋Final Verification (Round {final_round})")
+
+    result = {"round": final_round}
+
+    c_result = None
+    if "C" in phases:
+        logger.info("\n✅Phase C: Structure Check (Final)")
+        from phase_c_structure_check import PhaseCStructureCheck
+        c_result = PhaseCStructureCheck(ctx).run()
+        result["phase_c"] = {
+            "total": c_result.get("total", 0),
+            "pass": c_result.get("pass", 0),
+            "fail": c_result.get("error_count", 0),
+        }
+
+    if "D" in phases:
+        logger.info("\n🔍Phase D: Content Check (Final)")
+        from phase_d_content_check import PhaseDContentCheck
+        pass_ids = c_result.get("pass_ids") if c_result else None
+        d_result = PhaseDContentCheck(ctx, dry_run=False).run(
+            target_ids=pass_ids, round_num=final_round
+        )
+        findings_summary = _aggregate_findings(ctx, round_num=final_round)
+        result["phase_d"] = {
+            "total": d_result.get("clean", 0) + len(d_result.get("issue_file_ids", [])),
+            "clean": d_result.get("clean", 0),
+            "has_issues": len(d_result.get("issue_file_ids", [])),
+            "findings": findings_summary,
+            "metrics": d_result.get("metrics"),
+        }
+
+    return result
 
 
 def _aggregate_findings(ctx, round_num=None) -> dict:
@@ -888,6 +942,76 @@ def _render_summary_md(ctx, report, file_details) -> str:
         lines.append(f'| トークン数 キャッシュ読込 | {_fmt_tok(t.get("cache_read"))} |')
         lines.append(f'| トークン数 出力 | {_fmt_tok(t.get("output"))} |')
         lines.append(f'')
+
+    # Final Verification
+    fv = report.get("final_verification")
+    if fv:
+        lines.append(f'## 最終検証 (Round {fv.get("round", "?")})')
+        lines.append(f'')
+        fv_c = fv.get("phase_c") or {}
+        if fv_c:
+            lines.append(f'**Phase C**: {fv_c.get("pass", 0)}/{fv_c.get("total", 0)} pass, '
+                         f'{fv_c.get("fail", 0)} fail')
+            lines.append(f'')
+        fv_d = fv.get("phase_d") or {}
+        if fv_d:
+            lines.append(f'**Phase D**: {fv_d.get("clean", 0)}/{fv_d.get("total", 0)} clean, '
+                         f'{fv_d.get("has_issues", 0)} has_issues')
+            fv_f = fv_d.get("findings") or {}
+            if fv_f.get("total", 0) > 0:
+                lines.append(f'')
+                lines.append(f'| 指標 | 値 |')
+                lines.append(f'|--------|-------|')
+                lines.append(f'| 指摘事項 合計 | {fv_f.get("total", 0)} |')
+                lines.append(f'| 指摘事項 重大 | {fv_f.get("critical", 0)} |')
+                lines.append(f'| 指摘事項 軽微 | {fv_f.get("minor", 0)} |')
+                by_cat = fv_f.get("by_category") or {}
+                if by_cat:
+                    lines.append(f'| カテゴリ別 | {", ".join(f"{k}:{v}" for k,v in by_cat.items())} |')
+            lines.append(f'')
+
+    # Quality Evaluation
+    qe = report.get("quality_evaluation")
+    if qe:
+        lines.append(f'## 品質評価')
+        lines.append(f'')
+        fd = qe.get("fact_data", {})
+        summary = fd.get("summary", {})
+        rounds_data = summary.get("rounds", {})
+        if rounds_data:
+            lines.append(f'### findings 推移')
+            lines.append(f'')
+            round_nums = sorted(rounds_data.keys())
+            headers = ['指標'] + [f'R{rn}' if rn <= ctx.max_rounds else '最終検証' for rn in round_nums]
+            lines.append('| ' + ' | '.join(str(h) for h in headers) + ' |')
+            lines.append('| ' + ' | '.join(['---'] * len(headers)) + ' |')
+            for metric in ['total', 'critical', 'minor']:
+                row = [metric]
+                for rn in round_nums:
+                    row.append(str(rounds_data[rn].get(metric, 0)))
+                lines.append('| ' + ' | '.join(row) + ' |')
+            all_cats = set()
+            for rn_data in rounds_data.values():
+                all_cats.update(rn_data.get("by_category", {}).keys())
+            for cat in sorted(all_cats):
+                row = [cat]
+                for rn in round_nums:
+                    row.append(str(rounds_data[rn].get("by_category", {}).get(cat, 0)))
+                lines.append('| ' + ' | '.join(row) + ' |')
+            lines.append(f'')
+        proposals = qe.get("proposals", {}).get("proposals", []) if qe.get("proposals") else []
+        if proposals:
+            lines.append(f'### 改善提案')
+            lines.append(f'')
+            for i, p in enumerate(proposals, 1):
+                lines.append(f'#### 提案 {i}: {p.get("title", "")}')
+                lines.append(f'')
+                lines.append(f'**目的**: {p.get("purpose", "")}')
+                lines.append(f'')
+                lines.append(f'**ユーザーインパクト**: {p.get("user_impact", "")}')
+                lines.append(f'')
+                lines.append(f'**対象ファイル**: {", ".join(p.get("target_files", []))}')
+                lines.append(f'')
 
     lines.append(f'---')
     lines.append(f'')

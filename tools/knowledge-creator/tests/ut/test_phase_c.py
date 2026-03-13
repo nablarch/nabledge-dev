@@ -41,7 +41,9 @@ class TestStructureValidation:
         k = load_fixture("sample_knowledge.json")
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        assert PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst") == []
+        errors, warnings = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        assert errors == []
+        assert any("A2" in w for w in warnings)
 
     def test_s3_index_without_section(self, ctx):
         from phase_c_structure_check import PhaseCStructureCheck
@@ -49,7 +51,7 @@ class TestStructureValidation:
         del k["sections"]["s1"]
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S3" in e for e in errors)
 
     def test_s4_section_without_index(self, ctx):
@@ -58,7 +60,7 @@ class TestStructureValidation:
         k["sections"]["orphan"] = "content"
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S4" in e for e in errors)
 
     def test_s5_non_sequential(self, ctx):
@@ -69,7 +71,7 @@ class TestStructureValidation:
         k["sections"]["not-sequential"] = "content"
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S5" in e for e in errors)
 
     def test_s6_not_checked_by_phase_c(self, ctx):
@@ -79,7 +81,7 @@ class TestStructureValidation:
         k["index"][0]["hints"] = []
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert not any("S6" in e for e in errors)
 
     def test_s7_not_checked_by_phase_c(self, ctx):
@@ -89,7 +91,7 @@ class TestStructureValidation:
         k["sections"]["s1"] = ""
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert not any("S7" in e for e in errors)
 
     def test_s9_not_checked_by_phase_c(self, ctx):
@@ -100,7 +102,7 @@ class TestStructureValidation:
         k["index"] = [e for e in k["index"] if e["id"] != "s2"]
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert not any("S9" in e for e in errors)
 
     def test_s13_not_checked_by_phase_c(self, ctx):
@@ -110,7 +112,7 @@ class TestStructureValidation:
         k["sections"]["s1"] = "短い"
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert not any("S13" in e for e in errors)
 
     def test_s8_id_mismatch(self, ctx):
@@ -119,7 +121,7 @@ class TestStructureValidation:
         k["id"] = "wrong-id"
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S8" in e for e in errors)
 
     def test_s17_empty_knowledge_rejected(self, ctx):
@@ -135,7 +137,7 @@ class TestStructureValidation:
         }
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert any("S17" in e for e in errors)
 
     def test_s17_no_knowledge_content_true_not_affected(self, ctx):
@@ -151,5 +153,5 @@ class TestStructureValidation:
         }
         jp = write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         assert not any("S17" in e for e in errors)

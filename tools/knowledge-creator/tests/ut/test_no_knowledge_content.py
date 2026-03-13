@@ -21,7 +21,7 @@ class TestPhaseCNoContent:
             "no_knowledge_content": True,
             "official_doc_urls": [], "index": [], "sections": {}
         })
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
         assert errors == []
 
     def test_no_content_true_with_non_empty_index_fails_s16(self, ctx):
@@ -33,7 +33,7 @@ class TestPhaseCNoContent:
             "index": [{"id": "x", "title": "X", "hints": ["h"]}],
             "sections": {}
         })
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
         assert any("S16" in e for e in errors)
 
     def test_no_content_true_with_non_empty_sections_fails_s16(self, ctx):
@@ -44,7 +44,7 @@ class TestPhaseCNoContent:
             "official_doc_urls": [],
             "index": [], "sections": {"x": "content"}
         })
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
         assert any("S16" in e for e in errors)
 
     def test_no_content_missing_fails_s2(self, ctx):
@@ -53,7 +53,7 @@ class TestPhaseCNoContent:
             "id": "handlers-sample-handler", "title": "一覧",
             "official_doc_urls": [], "index": [], "sections": {}
         })
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, "", "rst")
         assert any("S2" in e and "no_knowledge_content" in e for e in errors)
 
     def test_existing_valid_knowledge_still_passes(self, ctx):
@@ -63,6 +63,6 @@ class TestPhaseCNoContent:
         # After fixture update, k has no_knowledge_content: false
         jp = _write_knowledge(ctx, k)
         sp = os.path.join(ctx.repo, "tests/fixtures/sample_source.rst")
-        errors = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
+        errors, _ = PhaseCStructureCheck(ctx).validate_structure(jp, sp, "rst")
         # Only verify no S2/S16 errors (S15 asset errors are expected in temp dir)
         assert not any("S2" in e or "S16" in e for e in errors)
