@@ -109,8 +109,8 @@ xychart-beta
 xychart-beta
   title "Total SLOC"
   x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
-  y-axis "Lines" 0 --> 16436
-  line [0, 789, 1503, 1293, 10339, 13696]
+  y-axis "Lines" 0 --> 15720
+  line [0, 789, 1503, 1293, 10339, 13100]
 ```
 
 ### Current Breakdown by Category
@@ -120,7 +120,7 @@ xychart-beta
   title "SLOC by Category"
   x-axis ["Nabledge scripts", "Nabledge prompts", "KC prod", "KC test", "KC prompts"]
   y-axis "Lines" 0 --> 6077
-  bar [1452, 1966, 4705, 5064, 509]
+  bar [1452, 1966, 4109, 5064, 509]
 ```
 
 ### KC Scripts: Production vs Test Trend
@@ -130,7 +130,7 @@ xychart-beta
   title "KC Scripts SLOC"
   x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
   y-axis "Lines" 0 --> 6077
-  line [0, 0, 0, 0, 3183, 4705]
+  line [0, 0, 0, 0, 3183, 4109]
   line [0, 0, 0, 0, 4802, 5064]
 ```
 
@@ -142,10 +142,10 @@ _Top line: production · Bottom line: test_
 |----------|------:|-------:|
 | Nabledge scripts | 1,452 | — |
 | Nabledge prompts | 1,966 | — |
-| KC scripts (prod) | 4,705 | — |
+| KC scripts (prod) | 4,109 | -596 |
 | KC scripts (test) | 5,064 | — |
 | KC prompts | 509 | — |
-| **Total** | **13,696** | **—** |
+| **Total** | **13,100** | **-596** |
 
 ### Nabledge Scripts by Extension
 
@@ -157,7 +157,7 @@ _Top line: production · Bottom line: test_
 
 | Extension | Prod | Prod Change | Test | Test Change |
 |-----------|-----:|:-----------:|-----:|:-----------:|
-| `.py` | 4,705 | — | 5,064 | — |
+| `.py` | 4,109 | -596 | 5,064 | — |
 
 ## Nabledge Adoption (nablarch/nabledge)
 

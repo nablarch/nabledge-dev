@@ -116,6 +116,11 @@ def collect_sloc_at(repo_root: str, commit: str) -> dict:
                 continue
             if "__pycache__" in f:
                 continue
+            basename = f.split("/")[-1]
+            if basename == "__init__.py":
+                continue
+            if category == "kc_prod" and basename.startswith("migrate_"):
+                continue
             if category == "kc_prompts":
                 if any(ex in f for ex in KC_PROMPT_EXCLUDE):
                     continue

@@ -395,6 +395,8 @@ def collect_sloc(repo_root: str) -> dict:
         f for f in _glob_files(repo_root, ["tools/knowledge-creator/scripts/**/*.py",
                                              "tools/knowledge-creator/scripts/**/*.sh"])
         if "__pycache__" not in f
+        and os.path.basename(f) != "__init__.py"
+        and not os.path.basename(f).startswith("migrate_")
     ]
     kc_scripts_prod = _sloc_by_ext(kc_prod_files, is_prompt=False)
 
@@ -402,6 +404,7 @@ def collect_sloc(repo_root: str) -> dict:
     kc_test_files = [
         f for f in _glob_files(repo_root, ["tools/knowledge-creator/tests/**/*.py"])
         if "__pycache__" not in f
+        and os.path.basename(f) != "__init__.py"
     ]
     kc_scripts_test = _sloc_by_ext(kc_test_files, is_prompt=False)
 
