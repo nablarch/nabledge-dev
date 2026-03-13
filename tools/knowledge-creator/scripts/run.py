@@ -433,6 +433,15 @@ def _run_pipeline(ctx, args):
         else:
             break
 
+    # Final Verification
+    loop_ended_with_fix = (
+        len(report.get("phase_e_rounds", [])) > 0
+        and len(report.get("phase_e_rounds", [])) == len(report.get("phase_d_rounds", []))
+    )
+    if loop_ended_with_fix and "D" in phases:
+        final_result = _run_final_verification(ctx, ctx.max_rounds, phases)
+        report["final_verification"] = final_result
+
     # Phase M (replaces G+F in default flow)
     if "M" in phases:
         logger.info("\n📦Phase M: Merge + Resolve + Finalize")
@@ -463,6 +472,44 @@ def _run_pipeline(ctx, args):
     _write_report(ctx, report)
     _publish_reports(ctx, report)
     logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
+
+
+def _run_final_verification(ctx, max_rounds, phases):
+    """最終検証: CDE ループ後に C→D を 1 回実行。E（修正）は呼ばない。"""
+    logger = get_logger()
+    final_round = max_rounds + 1
+    logger.info(f"\n📋Final Verification (Round {final_round})")
+
+    result = {"round": final_round}
+
+    c_result = None
+    if "C" in phases:
+        logger.info("\n✅Phase C: Structure Check (Final)")
+        from phase_c_structure_check import PhaseCStructureCheck
+        c_result = PhaseCStructureCheck(ctx).run()
+        result["phase_c"] = {
+            "total": c_result.get("total", 0),
+            "pass": c_result.get("pass", 0),
+            "fail": c_result.get("error_count", 0),
+        }
+
+    if "D" in phases:
+        logger.info("\n🔍Phase D: Content Check (Final)")
+        from phase_d_content_check import PhaseDContentCheck
+        pass_ids = c_result.get("pass_ids") if c_result else None
+        d_result = PhaseDContentCheck(ctx, dry_run=False).run(
+            target_ids=pass_ids, round_num=final_round
+        )
+        findings_summary = _aggregate_findings(ctx, round_num=final_round)
+        result["phase_d"] = {
+            "total": d_result.get("clean", 0) + len(d_result.get("issue_file_ids", [])),
+            "clean": d_result.get("clean", 0),
+            "has_issues": len(d_result.get("issue_file_ids", [])),
+            "findings": findings_summary,
+            "metrics": d_result.get("metrics"),
+        }
+
+    return result
 
 
 def _aggregate_findings(ctx, round_num=None) -> dict:
