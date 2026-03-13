@@ -6,6 +6,7 @@ Remove generated knowledge files and logs for specified version(s).
 """
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -30,6 +31,32 @@ def remove_if_exists(path, label):
         return False
 
 
+def _load_catalog_sources(catalog_path, logger):
+    """Load sources from catalog.json if it exists and has non-empty sources."""
+    if not os.path.exists(catalog_path):
+        return None
+    try:
+        with open(catalog_path, 'r', encoding='utf-8') as f:
+            catalog = json.load(f)
+        sources = catalog.get("sources", [])
+        if sources:
+            logger.info(f"  Preserving {len(sources)} source(s) from catalog.json")
+        return sources or None
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _restore_catalog_sources(cache_dir, catalog_path, version, sources, logger):
+    """Write a minimal catalog.json containing only the preserved sources."""
+    try:
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(catalog_path, 'w', encoding='utf-8') as f:
+            json.dump({"version": version, "sources": sources}, f, ensure_ascii=False, indent=2)
+        logger.info(f"  Restored sources to catalog.json")
+    except OSError as e:
+        logger.warning(f"  Failed to restore sources to catalog.json: {e}")
+
+
 def clean_version(repo_root, version):
     logger = get_logger()
     """Clean generated files for a specific version."""
@@ -49,8 +76,12 @@ def clean_version(repo_root, version):
         removed_count += 1
 
     cache_dir = f"{repo_root}/tools/knowledge-creator/.cache/v{version}"
+    catalog_path = os.path.join(cache_dir, "catalog.json")
+    preserved_sources = _load_catalog_sources(catalog_path, logger)
     if remove_if_exists(cache_dir, f".cache/v{version}/"):
         removed_count += 1
+    if preserved_sources:
+        _restore_catalog_sources(cache_dir, catalog_path, version, preserved_sources, logger)
 
     logger.info("\n=== Removing Intermediate Artifacts ===")
     logs_dir = f"{repo_root}/tools/knowledge-creator/.logs/v{version}"

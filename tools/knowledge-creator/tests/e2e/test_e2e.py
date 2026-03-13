@@ -498,6 +498,69 @@ class TestGen:
 
 
 # ============================================================
+# TestGenPreserveSources: pre-existing sources are preserved
+# ============================================================
+
+class TestGenPreserveSources:
+    """kc gen with pre-existing sources in catalog.json: sources must be preserved."""
+
+    def test_gen_preserves_sources(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+
+        ctx = _make_ctx(version=version, max_rounds=1)
+        counter = {"B": [], "D": [], "E": [], "F": []}
+        mock = _make_cc_mock(
+            expected["expected_knowledge_cache"],
+            expected["expected_fixed_cache"],
+            counter,
+        )
+
+        pre_sources = [
+            {"repo": "https://github.com/nablarch/nablarch-document",
+             "branch": "main", "commit": "abc123"},
+            {"repo": "https://github.com/Fintan-contents/nablarch-system-development-guide",
+             "branch": "main", "commit": "def456"},
+        ]
+        os.makedirs(os.path.dirname(ctx.classified_list_path), exist_ok=True)
+        with open(ctx.classified_list_path, 'w', encoding='utf-8') as f:
+            json.dump({"version": version, "sources": pre_sources, "files": []}, f)
+
+        try:
+            _run_with_mock(kc_gen, ctx, mock)
+
+            catalog = _load_json(ctx.classified_list_path)
+
+            # Verify catalog was populated with files by Phase A
+            assert len(catalog.get("files", [])) > 0, (
+                "catalog.json files should be populated by Phase A after kc_gen"
+            )
+
+            actual_sources = catalog.get("sources", [])
+            assert len(actual_sources) == len(pre_sources), (
+                f"sources count should be {len(pre_sources)}, got {len(actual_sources)}"
+            )
+            for i, (actual, pre) in enumerate(zip(actual_sources, pre_sources)):
+                assert actual["repo"] == pre["repo"], (
+                    f"sources[{i}].repo should be preserved: "
+                    f"expected {pre['repo']!r}, got {actual['repo']!r}"
+                )
+                assert actual["branch"] == pre["branch"], (
+                    f"sources[{i}].branch should be preserved: "
+                    f"expected {pre['branch']!r}, got {actual['branch']!r}"
+                )
+                # commit may be updated by update_knowledge_meta (to HEAD of local repo,
+                # or "" if repo not found); assert it is not silently cleared to None
+                assert actual.get("commit") is not None, (
+                    f"sources[{i}].commit should not be None after kc_gen"
+                )
+
+        finally:
+            if os.path.exists(ctx.log_dir):
+                shutil.rmtree(ctx.log_dir)
+
+
+# ============================================================
 # TestGenResume: pre-place 1 file, Phase B skips it
 # ============================================================
 
