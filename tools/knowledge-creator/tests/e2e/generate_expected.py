@@ -118,7 +118,11 @@ def classify_rst(path: str, rst_mapping: list, version: str = "6"):
     for marker in _rst_doc_roots(version):
         idx = path.find(marker)
         if idx >= 0:
-            rel_path = path[idx + len(marker):]
+            # v1.4 has multiple repos; keep marker in rel_path to distinguish them.
+            if version == "1.4":
+                rel_path = marker + path[idx + len(marker):]
+            else:
+                rel_path = path[idx + len(marker):]
             break
     if rel_path is None:
         return None, None, None
@@ -162,7 +166,10 @@ def generate_id(filename: str, format: str, category: str = None,
         for marker in _rst_doc_roots(version):
             marker_idx = source_path.find(marker)
             if marker_idx >= 0:
-                rst_rel = source_path[marker_idx + len(marker):]
+                if version == "1.4":
+                    rst_rel = marker + source_path[marker_idx + len(marker):]
+                else:
+                    rst_rel = source_path[marker_idx + len(marker):]
                 break
         if rst_rel is not None:
             pattern_clean = matched_pattern.rstrip("/")

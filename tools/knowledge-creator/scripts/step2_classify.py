@@ -139,7 +139,10 @@ class Step2Classify:
             for marker in _rst_doc_roots(self.ctx.version):
                 marker_idx = source_path.find(marker)
                 if marker_idx >= 0:
-                    rst_rel = source_path[marker_idx + len(marker):]
+                    if self.ctx.version == "1.4":
+                        rst_rel = marker + source_path[marker_idx + len(marker):]
+                    else:
+                        rst_rel = source_path[marker_idx + len(marker):]
                     break
             if rst_rel is not None:
                 pattern_clean = matched_pattern.rstrip("/")
@@ -173,7 +176,12 @@ class Step2Classify:
         for marker in _rst_doc_roots(self.ctx.version):
             idx = path.find(marker)
             if idx >= 0:
-                rel_path = path[idx + len(marker):]
+                # v1.4 has multiple repos (document/, workflow/, biz_sample/, ui_dev/).
+                # Keep the marker in rel_path so patterns can distinguish repos.
+                if self.ctx.version == "1.4":
+                    rel_path = marker + path[idx + len(marker):]
+                else:
+                    rel_path = path[idx + len(marker):]
                 break
         if rel_path is None:
             return None, None, None
