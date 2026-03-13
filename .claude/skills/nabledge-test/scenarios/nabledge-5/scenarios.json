@@ -4,10 +4,10 @@
     "created": "2026-03-13",
     "updated": "2026-03-13",
     "description": "Test scenarios for nabledge-5: Detects expected keywords/components in responses. No performance targets.",
-    "total_scenarios": 10,
+    "total_scenarios": 7,
     "by_type": {
       "qa": 5,
-      "code-analysis": 5
+      "code-analysis": 2
     },
     "evaluation_method": "Keyword/component detection via string search. Performance metrics measured but not used for pass/fail."
   },
@@ -16,132 +16,119 @@
       "id": "qa-001",
       "type": "qa",
       "benchmark": true,
-      "question": "バッチの起動方法を教えてください",
+      "question": "コード値のプルダウン入力を実装するには？",
       "expectations": [
-        "-requestPath",
-        "コマンドライン引数",
-        "アクションのクラス名",
-        "リクエストID",
-        "都度起動",
-        "javaコマンド",
-        "Main",
-        "ハンドラキュー"
+        "n:select",
+        "n:optionItems",
+        "コードリスト",
+        "listId",
+        "codeId"
       ]
     },
     {
       "id": "qa-002",
       "type": "qa",
-      "question": "UniversalDaoでページングを実装したい",
+      "question": "UniversalDaoでページング検索を実装するには？",
       "expectations": [
-        "per",
+        "findAllBySqlFile",
         "page",
-        "EntityList",
-        "ページング",
+        "per",
         "Pagination",
-        "getPagination",
-        "findAllBySqlFile"
+        "getPagination"
       ]
     },
     {
       "id": "qa-003",
       "type": "qa",
-      "benchmark": true,
-      "question": "データリードハンドラでファイルを読み込むには？",
+      "question": "バッチのリクエスト単体テストで起動パラメータを指定するには？",
       "expectations": [
-        "DataReadHandler",
-        "DataReader",
-        "ExecutionContext",
-        "createReader",
-        "FileDataReader",
-        "NoMoreRecord",
-        "ValidatableFileDataReader"
+        "-requestPath",
+        "requestPath",
+        "BatchRequestTestSupport",
+        "リクエスト単体テスト"
       ]
     },
     {
       "id": "qa-004",
       "type": "qa",
-      "question": "バッチのエラーハンドリングはどうすればいいですか？",
+      "question": "二重サブミット防止の実装方法は？",
       "expectations": [
-        "TransactionAbnormalEnd",
-        "ProcessAbnormalEnd",
-        "リラン",
-        "ResumeDataReader",
-        "異常終了",
-        "プロセス終了コード",
-        "ステータス"
+        "OnDoubleSubmission",
+        "token",
+        "n:token",
+        "doubleSubmission"
       ]
     },
     {
       "id": "qa-005",
       "type": "qa",
-      "question": "バッチアクションの実装方法は？",
+      "question": "相関バリデーションの実装方法は？",
       "expectations": [
-        "BatchAction",
-        "createReader",
-        "handle",
-        "FileBatchAction",
-        "NoInputDataBatchAction",
-        "DataReader",
-        "ExecutionContext"
+        "ValidateFor",
+        "ValidationContext",
+        "Validation",
+        "相関バリデーション"
       ]
     },
     {
       "id": "ca-001",
       "type": "code-analysis",
-      "question": "code-analysis ExportProjectsInPeriodAction",
-      "target_file": ".lw/nab-official/v5/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-batch/src/main/java/com/nablarch/example/proman/batch/project/ExportProjectsInPeriodAction.java",
+      "question": "code-analysis ProjectAction",
+      "target_file": ".lw/nab-official/v5/nablarch-example-web/src/main/java/com/nablarch/example/app/web/action/ProjectAction.java",
       "expectations": {
         "overview": [
-          "ExportProjectsInPeriodAction",
-          "BatchAction",
-          "DatabaseRecordReader",
-          "ObjectMapper",
-          "CSV"
+          "ProjectAction",
+          "UniversalDao",
+          "SessionUtil",
+          "OnDoubleSubmission",
+          "InjectForm"
         ],
         "class_diagram": {
           "classes": [
-            "ExportProjectsInPeriodAction",
-            "BatchAction",
-            "DatabaseRecordReader",
-            "ObjectMapper",
-            "FilePathSetting",
-            "BusinessDateUtil",
-            "ProjectDto"
+            "ProjectAction",
+            "ProjectForm",
+            "Project",
+            "ProjectDto",
+            "SessionUtil",
+            "UniversalDao"
           ],
           "relationships": [
-            "ExportProjectsInPeriodAction --|> BatchAction"
+            "ProjectAction ..> UniversalDao",
+            "ProjectAction ..> SessionUtil"
           ]
         },
         "component_summary": [
-          "ExportProjectsInPeriodAction",
+          "ProjectAction",
+          "ProjectForm",
+          "Project",
           "ProjectDto"
         ],
         "processing_flow": [
-          "initialize",
-          "createReader",
-          "handle",
-          "terminate"
+          "confirmOfCreate",
+          "create",
+          "list",
+          "update",
+          "delete",
+          "findAllBySqlFile"
         ],
         "sequence_diagram": {
           "objects": [
-            "ExportProjectsInPeriodAction",
-            "FilePathSetting",
-            "DatabaseRecordReader",
-            "BusinessDateUtil"
+            "ProjectAction",
+            "UniversalDao",
+            "SessionUtil"
           ],
           "messages": [
-            "initialize",
-            "createReader",
-            "handle",
-            "terminate"
+            "confirmOfCreate",
+            "create",
+            "findAllBySqlFile"
           ]
         },
         "nablarch_usage": [
-          "BatchAction",
-          "DatabaseRecordReader",
-          "ObjectMapper",
-          "FilePathSetting",
-          "BusinessDateUtil"
+          "UniversalDao",
+          "InjectForm",
+          "OnDoubleSubmission",
+          "SessionUtil",
+          "BeanUtil"
         ],
         "output": [
           "Component Summary",
@@ -153,254 +140,58 @@
     {
       "id": "ca-002",
       "type": "code-analysis",
-      "question": "code-analysis LoginAction",
-      "target_file": ".lw/nab-official/v5/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/login/LoginAction.java",
+      "benchmark": true,
+      "question": "code-analysis ImportZipCodeFileAction",
+      "target_file": ".lw/nab-official/v5/nablarch-example-batch/src/main/java/com/nablarch/example/app/batch/action/ImportZipCodeFileAction.java",
       "expectations": {
         "overview": [
-          "LoginAction",
-          "AuthenticationUtil",
-          "SessionUtil",
-          "InjectForm",
+          "ImportZipCodeFileAction",
+          "BatchAction",
+          "ZipCodeFileReader",
+          "ValidateData",
           "UniversalDao"
         ],
         "class_diagram": {
           "classes": [
-            "LoginAction",
-            "LoginForm",
-            "AuthenticationUtil",
-            "UniversalDao",
-            "SessionUtil",
-            "CsrfTokenUtil",
-            "LoginUserPrincipal"
+            "ImportZipCodeFileAction",
+            "BatchAction",
+            "ZipCodeForm",
+            "ZipCodeData",
+            "ZipCodeFileReader"
           ],
           "relationships": [
-            "LoginAction ..> AuthenticationUtil",
-            "LoginAction ..> UniversalDao",
-            "LoginAction ..> SessionUtil"
+            "ImportZipCodeFileAction --|> BatchAction"
           ]
         },
         "component_summary": [
-          "LoginAction",
-          "LoginForm",
-          "AuthenticationUtil",
-          "LoginUserPrincipal"
+          "ImportZipCodeFileAction",
+          "ZipCodeForm",
+          "ZipCodeData",
+          "ZipCodeFileReader"
         ],
         "processing_flow": [
-          "authenticate",
-          "SessionUtil",
-          "CsrfTokenUtil",
-          "LoginUserPrincipal",
-          "invalidate"
+          "handle",
+          "createReader",
+          "ValidateData",
+          "BeanUtil"
         ],
         "sequence_diagram": {
           "objects": [
-            "LoginAction",
-            "AuthenticationUtil",
-            "SessionUtil",
-            "CsrfTokenUtil"
+            "ImportZipCodeFileAction",
+            "ZipCodeFileReader",
+            "UniversalDao"
           ],
           "messages": [
-            "authenticate",
-            "changeId",
-            "regenerateCsrfToken"
+            "createReader",
+            "handle",
+            "insert"
           ]
         },
         "nablarch_usage": [
+          "BatchAction",
           "UniversalDao",
-          "InjectForm",
-          "OnError",
-          "SessionUtil"
-        ],
-        "output": [
-          "Component Summary",
-          "Nablarch Framework Usage",
-          ".nabledge/"
-        ]
-      }
-    },
-    {
-      "id": "ca-003",
-      "type": "code-analysis",
-      "question": "code-analysis ProjectSearchAction",
-      "target_file": ".lw/nab-official/v5/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectSearchAction.java",
-      "expectations": {
-        "overview": [
-          "ProjectSearchAction",
-          "InjectForm",
-          "OnError",
-          "ProjectService",
-          "SessionUtil"
-        ],
-        "class_diagram": {
-          "classes": [
-            "ProjectSearchAction",
-            "ProjectSearchForm",
-            "ProjectService",
-            "SessionUtil",
-            "BeanUtil"
-          ],
-          "relationships": [
-            "ProjectSearchAction ..> ProjectService",
-            "ProjectSearchAction ..> SessionUtil"
-          ]
-        },
-        "component_summary": [
-          "ProjectSearchAction",
-          "ProjectSearchForm",
-          "ProjectService",
-          "ProjectSearchConditionDto"
-        ],
-        "processing_flow": [
-          "search",
-          "list",
-          "detail",
           "BeanUtil",
-          "SessionUtil"
-        ],
-        "sequence_diagram": {
-          "objects": [
-            "ProjectSearchAction",
-            "ProjectService"
-          ],
-          "messages": [
-            "list",
-            "BeanUtil"
-          ]
-        },
-        "nablarch_usage": [
-          "InjectForm",
-          "OnError",
-          "SessionUtil"
-        ],
-        "output": [
-          "Component Summary",
-          "Nablarch Framework Usage",
-          ".nabledge/"
-        ]
-      }
-    },
-    {
-      "id": "ca-004",
-      "type": "code-analysis",
-      "benchmark": true,
-      "question": "code-analysis ProjectCreateAction",
-      "target_file": ".lw/nab-official/v5/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectCreateAction.java",
-      "expectations": {
-        "overview": [
-          "ProjectCreateAction",
-          "InjectForm",
-          "OnDoubleSubmission",
-          "ProjectService",
-          "SessionUtil"
-        ],
-        "class_diagram": {
-          "classes": [
-            "ProjectCreateAction",
-            "ProjectCreateForm",
-            "ProjectService",
-            "SessionUtil",
-            "BeanUtil"
-          ],
-          "relationships": [
-            "ProjectCreateAction ..> ProjectService",
-            "ProjectCreateAction ..> SessionUtil"
-          ]
-        },
-        "component_summary": [
-          "ProjectCreateAction",
-          "ProjectCreateForm",
-          "ProjectService"
-        ],
-        "processing_flow": [
-          "confirmRegistration",
-          "register",
-          "BeanUtil",
-          "SessionUtil",
-          "OnDoubleSubmission"
-        ],
-        "sequence_diagram": {
-          "objects": [
-            "ProjectCreateAction",
-            "ProjectService",
-            "SessionUtil"
-          ],
-          "messages": [
-            "confirmRegistration",
-            "register",
-            "insertProject",
-            "BeanUtil"
-          ]
-        },
-        "nablarch_usage": [
-          "InjectForm",
-          "OnDoubleSubmission",
-          "SessionUtil"
-        ],
-        "output": [
-          "Component Summary",
-          "Nablarch Framework Usage",
-          ".nabledge/"
-        ]
-      }
-    },
-    {
-      "id": "ca-005",
-      "type": "code-analysis",
-      "benchmark": true,
-      "question": "code-analysis ProjectUpdateAction",
-      "target_file": ".lw/nab-official/v5/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/project/ProjectUpdateAction.java",
-      "expectations": {
-        "overview": [
-          "ProjectUpdateAction",
-          "confirmUpdate",
-          "update",
-          "SessionUtil",
-          "OnDoubleSubmission"
-        ],
-        "class_diagram": {
-          "classes": [
-            "ProjectUpdateAction",
-            "ProjectUpdateForm",
-            "ProjectService",
-            "SessionUtil",
-            "BeanUtil"
-          ],
-          "relationships": [
-            "ProjectUpdateAction ..> ProjectService",
-            "ProjectUpdateAction ..> SessionUtil"
-          ]
-        },
-        "component_summary": [
-          "ProjectUpdateAction",
-          "ProjectUpdateForm",
-          "ProjectService",
-          "ProjectUpdateInitialForm"
-        ],
-        "processing_flow": [
-          "index",
-          "confirmUpdate",
-          "update",
-          "BeanUtil",
-          "SessionUtil"
-        ],
-        "sequence_diagram": {
-          "objects": [
-            "ProjectUpdateAction",
-            "ProjectService",
-            "SessionUtil"
-          ],
-          "messages": [
-            "confirmUpdate",
-            "update",
-            "updateProject",
-            "BeanUtil"
-          ]
-        },
-        "nablarch_usage": [
-          "SessionUtil",
-          "OnDoubleSubmission",
-          "BeanUtil",
-          "InjectForm"
+          "DataReader"
         ],
         "output": [
           "Component Summary",
