@@ -70,19 +70,6 @@ NABLEDGE_BRANCH=0.2 bash setup.sh -v 6
 
 ## トラブルシューティング
 
-インストール時によくある問題と解決策です。
+インストール時に問題が発生した場合は、以下を参照してください。
 
-### プロキシ環境でインストールが失敗する
-
-社内プロキシ環境では、`curl` が接続に失敗することがあります。インストールコマンドを実行する前に、プロキシを設定してください：
-
-```bash
-export http_proxy="http://your-proxy-server:port"
-export https_proxy="http://your-proxy-server:port"
-```
-
-設定後、インストールコマンドを再実行してください。
-
-### 管理者権限のない環境でインストールが失敗する
-
-ファイルの書き込みに管理者権限が必要な環境では、インストールが失敗する場合があります。ターミナルを管理者権限で起動して再実行してください。
+- プロキシ環境・権限不足でインストールが失敗する場合：[nablarch/nabledge#10](https://github.com/nablarch/nabledge/issues/10)
