@@ -51,8 +51,8 @@ jobs:
                 --base main \
                 --head "${BRANCH}")
               echo "PR created: ${FALLBACK_PR_URL}"
-              gh pr merge "${FALLBACK_PR_URL}" --squash --auto --delete-branch
-              echo "Auto-squash-merge enabled for ${FALLBACK_PR_URL}"
+              gh pr merge "${FALLBACK_PR_URL}" --squash --delete-branch
+              echo "Merged: ${FALLBACK_PR_URL}"
             fi
             exit 0
           fi
@@ -62,5 +62,5 @@ jobs:
             --base main \
             --head "${BRANCH}")
           echo "PR created: ${PR_URL}"
-          gh pr merge "${PR_URL}" --squash --auto --delete-branch
-          echo "Auto-squash-merge enabled for ${PR_URL}"
+          gh pr merge "${PR_URL}" --squash --delete-branch
+          echo "Merged: ${PR_URL}"
