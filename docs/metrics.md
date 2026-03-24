@@ -129,11 +129,24 @@ xychart-beta
 
 ## Nabledge Adoption (nablarch/nabledge)
 
+```mermaid
+xychart-beta
+  title "Page Views (daily)"
+  x-axis ["03/10", "03/11", "03/12", "03/13", "03/14", "03/15", "03/16", "03/17", "03/18", "03/19", "03/20", "03/21", "03/22", "03/23"]
+  y-axis "Views" 0 --> 171
+  bar [142, 65, 27, 96, 1, 2, 24, 44, 20, 70, 27, 69, 24, 68]
+```
+
+```mermaid
+xychart-beta
+  title "Git Clones (daily)"
+  x-axis ["03/10", "03/11", "03/12", "03/13", "03/14", "03/15", "03/16", "03/17", "03/18", "03/19", "03/20", "03/21", "03/22", "03/23"]
+  y-axis "Clones" 0 --> 627
+  bar [92, 25, 109, 483, 371, 368, 403, 371, 383, 376, 401, 373, 515, 522]
+```
+
 | Metric | Value |
 |--------|------:|
-| Page views (14 days) | 0 |
-| Unique visitors (14 days) | 0 |
-| Git clones (14 days) | 0 |
-| Stars | 0 |
-| Forks | 0 |
-| Watchers | 0 |
+| Page views (14 days) | 679 |
+| Unique visitors (14 days, peak) | 10 |
+| Git clones (14 days) | 4792 |
