@@ -210,19 +210,6 @@ def collect_issues(repo: str, since: datetime, token: str | None) -> list[dict]:
     return [i for i in items if "pull_request" not in i]
 
 
-def collect_repo_stats(repo: str, token: str | None) -> dict:
-    """Fetch stars, forks, watchers from repo info."""
-    print(f"[info] Fetching repo stats for {repo}...", file=sys.stderr)
-    data = gh_api(f"repos/{repo}", token)
-    if not data:
-        return {}
-    return {
-        "stars": data.get("stargazers_count", 0),
-        "forks": data.get("forks_count", 0),
-        "watchers": data.get("subscribers_count", 0),
-    }
-
-
 def collect_traffic_views(repo: str, token: str | None) -> dict:
     """Fetch page views traffic data."""
     print(f"[info] Fetching traffic views for {repo}...", file=sys.stderr)
@@ -667,7 +654,6 @@ def render_scorecard(weekly: list[dict]) -> str:
 def render_metrics_md(
     dev_repo: str,
     weekly: list[dict],
-    nabledge_stats: dict | None,
     traffic_views: dict | None,
     traffic_clones: dict | None,
     today: str,
@@ -762,7 +748,7 @@ def render_metrics_md(
         lines.extend(render_sloc_section(sloc_current, sloc_previous or {}, sloc_history or []))
 
     # --- Nabledge Adoption ---
-    if nabledge_stats or traffic_views or traffic_clones:
+    if traffic_views or traffic_clones:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
 
@@ -784,18 +770,12 @@ def render_metrics_md(
         total_views = traffic_views.get("count", 0) if traffic_views else 0
         unique_visitors = traffic_views.get("uniques", 0) if traffic_views else 0
         total_clones = traffic_clones.get("count", 0) if traffic_clones else 0
-        stars = nabledge_stats.get("stars", 0) if nabledge_stats else 0
-        forks = nabledge_stats.get("forks", 0) if nabledge_stats else 0
-        watchers = nabledge_stats.get("watchers", 0) if nabledge_stats else 0
 
         lines.append("| Metric | Value |")
         lines.append("|--------|------:|")
         lines.append(f"| Page views (14 days) | {total_views} |")
         lines.append(f"| Unique visitors (14 days) | {unique_visitors} |")
         lines.append(f"| Git clones (14 days) | {total_clones} |")
-        lines.append(f"| Stars | {stars} |")
-        lines.append(f"| Forks | {forks} |")
-        lines.append(f"| Watchers | {watchers} |")
         lines.append("")
     else:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
@@ -844,13 +824,11 @@ def main() -> None:
         w["prs_opened"] = prs_opened_by_week.get(w["label"], 0)
 
     # --- nablarch/nabledge data (optional) ---
-    nabledge_stats = None
     traffic_views = None
     traffic_clones = None
 
     if nabledge_token:
         print(f"[info] NABLEDGE_SYNC_TOKEN available — collecting adoption metrics...", file=sys.stderr)
-        nabledge_stats = collect_repo_stats(nabledge_repo, nabledge_token)
         traffic_views = collect_traffic_views(nabledge_repo, nabledge_token)
         traffic_clones = collect_traffic_clones(nabledge_repo, nabledge_token)
     else:
@@ -875,7 +853,7 @@ def main() -> None:
 
     print("[info] Rendering docs/metrics.md...", file=sys.stderr)
     content = render_metrics_md(
-        dev_repo, weekly, nabledge_stats, traffic_views, traffic_clones, today,
+        dev_repo, weekly, traffic_views, traffic_clones, today,
         sloc_current=sloc_current, sloc_previous=sloc_previous, sloc_history=sloc_history,
     )
 
