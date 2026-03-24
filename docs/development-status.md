@@ -26,7 +26,7 @@ gantt
     知識生成ツールの開発             :done, 2026-02-15, 2026-02-28
 
     section 知識拡充
-    Nablarch v6/v5の知識生成        :active, 2026-03-01, 2026-03-14
+    Nablarch v6/v5の知識生成        :done, 2026-03-01, 2026-03-14
     Nablarch v1.4/v1.3/v1.2の知識生成 :active, 2026-03-15, 2026-03-28
 
     section ワークフロー拡充
