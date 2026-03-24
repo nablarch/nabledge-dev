@@ -516,20 +516,19 @@ def gen_state_v1_2(expected_v1_2):
 
 
 @pytest.fixture(scope="session", params=["6", "5", "1.4", "1.3", "1.2"])
-def version_fixture(request, expected, expected_v5, gen_state, gen_state_v5,
-                    expected_v1_4, gen_state_v1_4, expected_v1_3, gen_state_v1_3,
-                    expected_v1_2, gen_state_v1_2):
+def version_fixture(request):
     """Parametrized fixture providing version, expected values, and gen_state for v6, v5, and v1.x."""
-    if request.param == "6":
-        return {"version": "6", "expected": expected, "gen_state": gen_state}
-    elif request.param == "5":
-        return {"version": "5", "expected": expected_v5, "gen_state": gen_state_v5}
-    elif request.param == "1.4":
-        return {"version": "1.4", "expected": expected_v1_4, "gen_state": gen_state_v1_4}
-    elif request.param == "1.3":
-        return {"version": "1.3", "expected": expected_v1_3, "gen_state": gen_state_v1_3}
-    elif request.param == "1.2":
-        return {"version": "1.2", "expected": expected_v1_2, "gen_state": gen_state_v1_2}
+    version = request.param
+    if version == "6":
+        return {"version": "6", "expected": request.getfixturevalue("expected"), "gen_state": request.getfixturevalue("gen_state")}
+    elif version == "5":
+        return {"version": "5", "expected": request.getfixturevalue("expected_v5"), "gen_state": request.getfixturevalue("gen_state_v5")}
+    elif version == "1.4":
+        return {"version": "1.4", "expected": request.getfixturevalue("expected_v1_4"), "gen_state": request.getfixturevalue("gen_state_v1_4")}
+    elif version == "1.3":
+        return {"version": "1.3", "expected": request.getfixturevalue("expected_v1_3"), "gen_state": request.getfixturevalue("gen_state_v1_3")}
+    elif version == "1.2":
+        return {"version": "1.2", "expected": request.getfixturevalue("expected_v1_2"), "gen_state": request.getfixturevalue("gen_state_v1_2")}
 
 
 # ============================================================

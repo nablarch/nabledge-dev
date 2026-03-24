@@ -27,9 +27,11 @@ LINE_GROUP_THRESHOLD = 400
 def _rst_doc_roots(version: str) -> list:
     """RST path segments that separate the repo prefix from the doc-relative path."""
     if version == "1.4":
-        return ["document/", "workflow/", "biz_sample/", "ui_dev/"]
-    if '.' in version:  # e.g. 1.3, 1.2
-        return [f"{version}_maintain/"]
+        return ["document/", "workflow/", "biz_sample/", "ui_dev/", "MessagingSimu/"]
+    if version == "1.3":
+        return ["document/", "biz_sample/"]
+    if version == "1.2":
+        return ["document/"]
     return ["nablarch-document/ja/"]
 
 
@@ -67,11 +69,31 @@ def load_mappings(repo: str, version: str) -> dict:
 # Step 1: List sources
 # ============================================================
 
+def _rst_scan_roots(version: str) -> list:
+    """Specific directories to scan for RST files. Keep in sync with step1_list_sources._rst_scan_roots."""
+    if version == "1.4":
+        return [
+            "document",
+            "workflow/doc",
+            "workflow/sample_application/doc",
+            "workflow/tool/doc",
+            "biz_sample/doc",
+            "ui_dev/doc",
+            "ui_dev/guide",
+            "MessagingSimu/doc",
+        ]
+    if version == "1.3":
+        return ["document", "biz_sample/doc"]
+    if version == "1.2":
+        return ["document"]
+    return [r.rstrip("/") for r in _rst_doc_roots(version)]
+
+
 def list_sources(repo: str, version: str) -> list:
     sources = []
 
     # RST
-    for doc_root in _rst_doc_roots(version):
+    for doc_root in _rst_scan_roots(version):
         rst_base = os.path.join(repo, f".lw/nab-official/v{version}/{doc_root.rstrip('/')}/")
         if os.path.exists(rst_base):
             for root, dirs, files in os.walk(rst_base):
@@ -119,7 +141,8 @@ def classify_rst(path: str, rst_mapping: list, version: str = "6"):
         idx = path.find(marker)
         if idx >= 0:
             # v1.4 has multiple repos; keep marker in rel_path to distinguish them.
-            if version == "1.4":
+            # v1.3 keeps non-document/ markers (e.g. biz_sample/) but strips document/.
+            if version == "1.4" or (version.startswith("1.") and marker != "document/"):
                 rel_path = marker + path[idx + len(marker):]
             else:
                 rel_path = path[idx + len(marker):]
@@ -166,7 +189,7 @@ def generate_id(filename: str, format: str, category: str = None,
         for marker in _rst_doc_roots(version):
             marker_idx = source_path.find(marker)
             if marker_idx >= 0:
-                if version == "1.4":
+                if version == "1.4" or (version.startswith("1.") and marker != "document/"):
                     rst_rel = marker + source_path[marker_idx + len(marker):]
                 else:
                     rst_rel = source_path[marker_idx + len(marker):]

@@ -15,9 +15,11 @@ from logger import get_logger
 def _rst_doc_roots(version: str) -> list:
     """RST path segments that separate the repo prefix from the doc-relative path."""
     if version == "1.4":
-        return ["document/", "workflow/", "biz_sample/", "ui_dev/"]
-    if '.' in version:  # e.g. 1.3, 1.2
-        return [f"{version}_maintain/"]
+        return ["document/", "workflow/", "biz_sample/", "ui_dev/", "MessagingSimu/"]
+    if version == "1.3":
+        return ["document/", "biz_sample/"]
+    if version == "1.2":
+        return ["document/"]
     return ["nablarch-document/ja/"]
 
 
@@ -139,7 +141,7 @@ class Step2Classify:
             for marker in _rst_doc_roots(self.ctx.version):
                 marker_idx = source_path.find(marker)
                 if marker_idx >= 0:
-                    if self.ctx.version == "1.4":
+                    if self.ctx.version == "1.4" or (self.ctx.version.startswith("1.") and marker != "document/"):
                         rst_rel = marker + source_path[marker_idx + len(marker):]
                     else:
                         rst_rel = source_path[marker_idx + len(marker):]
@@ -177,8 +179,9 @@ class Step2Classify:
             idx = path.find(marker)
             if idx >= 0:
                 # v1.4 has multiple repos (document/, workflow/, biz_sample/, ui_dev/).
+                # v1.3 has document/ (patterns strip it) and biz_sample/ (patterns keep it).
                 # Keep the marker in rel_path so patterns can distinguish repos.
-                if self.ctx.version == "1.4":
+                if self.ctx.version == "1.4" or (self.ctx.version.startswith("1.") and marker != "document/"):
                     rel_path = marker + path[idx + len(marker):]
                 else:
                     rel_path = path[idx + len(marker):]

@@ -13,9 +13,35 @@ def _rst_doc_roots(version: str) -> list:
     """RST base directory names under .lw/nab-official/v{version}/."""
     if version == "1.4":
         return ["document", "workflow", "biz_sample", "ui_dev"]
-    if '.' in version:  # e.g. 1.3, 1.2
-        return [f"{version}_maintain"]
+    if version == "1.3":
+        return ["document", "biz_sample"]
+    if version == "1.2":
+        return ["document"]
     return ["nablarch-document/ja"]
+
+
+def _rst_scan_roots(version: str) -> list:
+    """Specific directories to scan for RST files under .lw/nab-official/v{version}/.
+
+    For v1.x, source repos mix documentation with source code. Only the doc/ subdirs
+    are scanned to avoid walking large non-documentation trees.
+    """
+    if version == "1.4":
+        return [
+            "document",
+            "workflow/doc",
+            "workflow/sample_application/doc",
+            "workflow/tool/doc",
+            "biz_sample/doc",
+            "ui_dev/doc",
+            "ui_dev/guide",
+            "MessagingSimu/doc",
+        ]
+    if version == "1.3":
+        return ["document", "biz_sample/doc"]
+    if version == "1.2":
+        return ["document"]
+    return _rst_doc_roots(version)
 
 
 class Step1ListSources:
@@ -28,7 +54,7 @@ class Step1ListSources:
         sources = []
 
         # 1. Official documentation (RST)
-        for doc_root in _rst_doc_roots(self.ctx.version):
+        for doc_root in _rst_scan_roots(self.ctx.version):
             rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/{doc_root}/"
             if os.path.exists(rst_base):
                 for root, dirs, files in os.walk(rst_base):
