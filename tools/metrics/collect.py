@@ -3,7 +3,7 @@
 Collect development productivity metrics from GitHub and write docs/metrics.md.
 
 Usage:
-    python tools/metrics/collect.py [--token NABLEDGE_SYNC_TOKEN]
+    python tools/metrics/collect.py [--token NABLEDGE_TOKEN]
 
 The script uses `gh api` (GitHub CLI) for API calls.
 GH_TOKEN env var is used automatically by gh CLI in GitHub Actions.
@@ -815,7 +815,7 @@ def render_metrics_md(
     elif traffic_snapshot is None:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
-        lines.append("_Skipped: NABLEDGE_SYNC_TOKEN not available._")
+        lines.append("_Skipped: NABLEDGE_TOKEN not available._")
         lines.append("")
 
     return "\n".join(lines)
@@ -827,14 +827,14 @@ def render_metrics_md(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Collect nabledge-dev metrics and write docs/metrics.md")
-    parser.add_argument("--token", metavar="TOKEN", help="NABLEDGE_SYNC_TOKEN for nablarch/nabledge access")
+    parser.add_argument("--token", metavar="TOKEN", help="NABLEDGE_TOKEN for nablarch/nabledge access")
     args = parser.parse_args()
 
     dev_repo = "nablarch/nabledge-dev"
     nabledge_repo = "nablarch/nabledge"
 
-    # NABLEDGE_SYNC_TOKEN: prefer CLI arg, then env var
-    nabledge_token = args.token or os.environ.get("NABLEDGE_SYNC_TOKEN")
+    # NABLEDGE_TOKEN: prefer CLI arg, then env var
+    nabledge_token = args.token or os.environ.get("NABLEDGE_TOKEN")
 
     # Determine repo root early (needed for git log and SLOC)
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -865,7 +865,7 @@ def main() -> None:
     traffic_snapshot = None
 
     if nabledge_token:
-        print(f"[info] NABLEDGE_SYNC_TOKEN available — collecting traffic metrics...", file=sys.stderr)
+        print(f"[info] NABLEDGE_TOKEN available — collecting traffic metrics...", file=sys.stderr)
         traffic_views = collect_traffic_views(nabledge_repo, nabledge_token)
         traffic_clones = collect_traffic_clones(nabledge_repo, nabledge_token)
         existing = load_traffic_snapshot(traffic_snapshot_path)
@@ -873,7 +873,7 @@ def main() -> None:
         save_traffic_snapshot(traffic_snapshot_path, traffic_snapshot)
         print(f"[info] Traffic snapshot updated ({len(traffic_snapshot.get('views', {}))} days of view data).", file=sys.stderr)
     else:
-        print("[info] NABLEDGE_SYNC_TOKEN not set — loading existing traffic snapshot if available.", file=sys.stderr)
+        print("[info] NABLEDGE_TOKEN not set — loading existing traffic snapshot if available.", file=sys.stderr)
         existing = load_traffic_snapshot(traffic_snapshot_path)
         if existing.get("views") or existing.get("clones"):
             traffic_snapshot = existing
