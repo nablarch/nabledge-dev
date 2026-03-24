@@ -14,11 +14,11 @@
 
 > **注意**: 知識ファイルは生成AIで生成・検証し人はサンプリングチェックのみ実施、正式リリース前に全量チェックを予定しています。
 
-## Plan
+## Schedule
 
 ```mermaid
 gantt
-    title Nabledge Plan 2026
+    title Nabledge Schedule 2026
     dateFormat YYYY-MM-DD
 
     section 評価版＆ツール整備
@@ -41,7 +41,7 @@ gantt
 
 > **注意**: 7月以降は未定です。
 
-**凡例**: ✅ 完了 / 🔵 進行中 / ⬜ 予定 / 🔴 休暇・中断
+**凡例**: 🔲 完了 / 🔵 進行中 / 🟦 予定 / 🔴 休暇・中断
 
 ## Outlook
 
