@@ -31,17 +31,17 @@ gantt
 
     section ワークフロー拡充
     ワークフロー拡充＆Nablarch改善    :2026-03-29, 2026-04-25
-    GW                             :crit, 2026-04-26, 2026-05-09
+    GW                             :done, 2026-04-26, 2026-05-09
     ワークフロー拡充＆Nablarch改善    :2026-05-10, 2026-05-31
 
     section AI-Ready Nablarch/Nabledgeリリース
     品質向上＆リリース準備                        :2026-06-01, 2026-06-29
-    AI-Ready Nablarch/Nabledgeリリース          :milestone, 2026-06-30, 0d
+    AI-Ready Nablarch/Nabledgeリリース          :crit, milestone, 2026-06-30, 0d
 ```
 
 > **注意**: 7月以降は未定です。
 
-**凡例**: 🔲 完了 / 🔵 進行中 / 🟦 予定 / 🔴 休暇・中断
+**凡例**: 🔲 完了 / 🔵 進行中 / 🟦 予定 / 🔴 重要マイルストーン
 
 ## Outlook
 
