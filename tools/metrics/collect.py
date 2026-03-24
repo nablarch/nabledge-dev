@@ -446,6 +446,34 @@ def save_sloc_snapshot(snapshot_path: str, data: dict) -> None:
         json.dump(data, f, indent=2)
 
 
+def load_traffic_snapshot(path: str) -> dict:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {"views": {}, "clones": {}}
+
+
+def save_traffic_snapshot(path: str, data: dict) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, sort_keys=True)
+
+
+def merge_traffic_snapshot(snapshot: dict, traffic_views: dict, traffic_clones: dict) -> dict:
+    """Merge daily API data into the snapshot. Keyed by date string (YYYY-MM-DD)."""
+    views = dict(snapshot.get("views", {}))
+    clones = dict(snapshot.get("clones", {}))
+    for entry in traffic_views.get("views", []):
+        date = entry.get("timestamp", "")[:10]
+        if date:
+            views[date] = {"count": entry.get("count", 0), "uniques": entry.get("uniques", 0)}
+    for entry in traffic_clones.get("clones", []):
+        date = entry.get("timestamp", "")[:10]
+        if date:
+            clones[date] = {"count": entry.get("count", 0), "uniques": entry.get("uniques", 0)}
+    return {"views": views, "clones": clones}
+
+
 def sloc_flat(s: dict, date: str) -> dict:
     """Flatten SLOC data to a single dict for history storage."""
     def t(d: dict | int) -> int:
@@ -654,9 +682,8 @@ def render_scorecard(weekly: list[dict]) -> str:
 def render_metrics_md(
     dev_repo: str,
     weekly: list[dict],
-    traffic_views: dict | None,
-    traffic_clones: dict | None,
     today: str,
+    traffic_snapshot: dict | None = None,
     sloc_current: dict | None = None,
     sloc_previous: dict | None = None,
     sloc_history: list[dict] | None = None,
@@ -748,36 +775,44 @@ def render_metrics_md(
         lines.extend(render_sloc_section(sloc_current, sloc_previous or {}, sloc_history or []))
 
     # --- Nabledge Adoption ---
-    if traffic_views or traffic_clones:
+    snap_views = (traffic_snapshot or {}).get("views", {})
+    snap_clones = (traffic_snapshot or {}).get("clones", {})
+    if snap_views or snap_clones:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
 
-        # Page views chart
-        if traffic_views and traffic_views.get("views"):
-            views_data = traffic_views["views"]
-            # Sort by timestamp
-            views_data = sorted(views_data, key=lambda x: x.get("timestamp", ""))
-            view_labels = [d["timestamp"][:10][5:] for d in views_data]  # MM-DD
-            view_labels = [lbl.replace("-", "/") for lbl in view_labels]
-            view_counts = [d.get("count", 0) for d in views_data]
-
-            lines.append("### Page Views (last 14 days)")
-            lines.append("")
-            lines.append(mermaid_xychart_bar("Page Views", view_labels, "Views", view_counts))
+        # Page views trend (all accumulated history)
+        if snap_views:
+            sorted_dates = sorted(snap_views.keys())
+            view_labels = [d[5:].replace("-", "/") for d in sorted_dates]  # MM/DD
+            view_counts = [snap_views[d]["count"] for d in sorted_dates]
+            lines.append(mermaid_xychart_bar("Page Views (daily)", view_labels, "Views", view_counts))
             lines.append("")
 
-        # Summary table
-        total_views = traffic_views.get("count", 0) if traffic_views else 0
-        unique_visitors = traffic_views.get("uniques", 0) if traffic_views else 0
-        total_clones = traffic_clones.get("count", 0) if traffic_clones else 0
+        # Clones trend (all accumulated history)
+        if snap_clones:
+            sorted_dates = sorted(snap_clones.keys())
+            clone_labels = [d[5:].replace("-", "/") for d in sorted_dates]  # MM/DD
+            clone_counts = [snap_clones[d]["count"] for d in sorted_dates]
+            lines.append(mermaid_xychart_bar("Git Clones (daily)", clone_labels, "Clones", clone_counts))
+            lines.append("")
+
+        # Summary table (last 14 days)
+        from datetime import date as date_type
+        cutoff = (datetime.now(tz=timezone.utc) - timedelta(days=14)).date().isoformat()
+        recent_views = {d: v for d, v in snap_views.items() if d >= cutoff}
+        recent_clones = {d: v for d, v in snap_clones.items() if d >= cutoff}
+        total_views = sum(v["count"] for v in recent_views.values())
+        unique_visitors = max((v["uniques"] for v in recent_views.values()), default=0)
+        total_clones = sum(v["count"] for v in recent_clones.values())
 
         lines.append("| Metric | Value |")
         lines.append("|--------|------:|")
         lines.append(f"| Page views (14 days) | {total_views} |")
-        lines.append(f"| Unique visitors (14 days) | {unique_visitors} |")
+        lines.append(f"| Unique visitors (14 days, peak) | {unique_visitors} |")
         lines.append(f"| Git clones (14 days) | {total_clones} |")
         lines.append("")
-    else:
+    elif traffic_snapshot is None:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
         lines.append("_Skipped: NABLEDGE_SYNC_TOKEN not available._")
@@ -823,18 +858,25 @@ def main() -> None:
     for w in weekly:
         w["prs_opened"] = prs_opened_by_week.get(w["label"], 0)
 
-    # --- nablarch/nabledge data (optional) ---
-    traffic_views = None
-    traffic_clones = None
+    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+
+    # --- nablarch/nabledge traffic (optional, accumulated in snapshot) ---
+    traffic_snapshot_path = os.path.join(script_dir, "traffic-snapshot.json")
+    traffic_snapshot = None
 
     if nabledge_token:
-        print(f"[info] NABLEDGE_SYNC_TOKEN available — collecting adoption metrics...", file=sys.stderr)
+        print(f"[info] NABLEDGE_SYNC_TOKEN available — collecting traffic metrics...", file=sys.stderr)
         traffic_views = collect_traffic_views(nabledge_repo, nabledge_token)
         traffic_clones = collect_traffic_clones(nabledge_repo, nabledge_token)
+        existing = load_traffic_snapshot(traffic_snapshot_path)
+        traffic_snapshot = merge_traffic_snapshot(existing, traffic_views, traffic_clones)
+        save_traffic_snapshot(traffic_snapshot_path, traffic_snapshot)
+        print(f"[info] Traffic snapshot updated ({len(traffic_snapshot.get('views', {}))} days of view data).", file=sys.stderr)
     else:
-        print("[info] NABLEDGE_SYNC_TOKEN not set — skipping adoption metrics.", file=sys.stderr)
-
-    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+        print("[info] NABLEDGE_SYNC_TOKEN not set — loading existing traffic snapshot if available.", file=sys.stderr)
+        existing = load_traffic_snapshot(traffic_snapshot_path)
+        if existing.get("views") or existing.get("clones"):
+            traffic_snapshot = existing
 
     snapshot_path = os.path.join(script_dir, "sloc-snapshot.json")
     output_path = os.path.join(repo_root, "docs", "metrics.md")
@@ -853,7 +895,8 @@ def main() -> None:
 
     print("[info] Rendering docs/metrics.md...", file=sys.stderr)
     content = render_metrics_md(
-        dev_repo, weekly, traffic_views, traffic_clones, today,
+        dev_repo, weekly, today,
+        traffic_snapshot=traffic_snapshot,
         sloc_current=sloc_current, sloc_previous=sloc_previous, sloc_history=sloc_history,
     )
 
