@@ -436,9 +436,18 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$
 # Checkout Nablarch 1.x SVN repositories
 print_header "10. Checking Out Nablarch 1.x Documentation (v1.4/1.3/1.2)"
 
-checkout_svn_repos_from_meta "1.4" "$NAB_OFFICIAL_V14_DIR"
-checkout_svn_repos_from_meta "1.3" "$NAB_OFFICIAL_V13_DIR"
-checkout_svn_repos_from_meta "1.2" "$NAB_OFFICIAL_V12_DIR"
+if [ -n "${SVN_BASE_URL:-}" ]; then
+    print_status info "Running setup-svn.sh with SVN_BASE_URL..."
+    if SVN_BASE_URL="$SVN_BASE_URL" bash "$(dirname "$0")/setup-svn.sh"; then
+        print_status ok "Nablarch 1.x SVN checkout completed"
+    else
+        print_status warning "Nablarch 1.x SVN checkout had errors (see above)"
+    fi
+else
+    print_status info "SVN_BASE_URL not set — skipping Nablarch 1.x checkout"
+    print_status info "To checkout Nablarch 1.x docs, run:"
+    print_status info "  SVN_BASE_URL=https://your-svn-server/svn/repo ./setup-svn.sh"
+fi
 
 # Final summary
 print_header "Setup Completed Successfully!"

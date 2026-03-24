@@ -33,16 +33,15 @@ cp .env.example .env
 
 ### 3. Nablarch 1.x ドキュメントのセットアップ（v1.4/1.3/1.2 の知識ファイルを生成する場合）
 
-Nablarch 1.x のドキュメントは GitHub で公開されていないため、ローカルにあるドキュメントディレクトリへのシンボリックリンクを手動で設定する必要があります。
+Nablarch 1.x のドキュメントは社内 SVN リポジトリで管理されています。`setup-svn.sh` を使って各バージョンのモジュールをチェックアウトします。
 
-リポジトリルートで以下を実行します（`/path/to/` は実際のローカルパスに置き換えてください）：
+SVN リポジトリのベース URL を指定して実行します：
 
 ```bash
-mkdir -p .lw/nab-official/v1.4 .lw/nab-official/v1.3 .lw/nab-official/v1.2
-ln -s /path/to/1.4_maintain .lw/nab-official/v1.4/1.4_maintain
-ln -s /path/to/1.3_maintain .lw/nab-official/v1.3/1.3_maintain
-ln -s /path/to/1.2_maintain .lw/nab-official/v1.2/1.2_maintain
+SVN_BASE_URL=https://your-svn-server/svn/repo ./setup-svn.sh
 ```
+
+スクリプトは `.lw/nab-official/v1.4/`、`.lw/nab-official/v1.3/`、`.lw/nab-official/v1.2/` にモジュールをチェックアウトします。v1.3/v1.2 に存在しないモジュールはスキップされます。
 
 設定後、knowledge-creator で知識ファイルを生成できます：
 
