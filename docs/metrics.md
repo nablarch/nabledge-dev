@@ -8,8 +8,8 @@
 |--------|-------:|:-----:|
 | Deployment Frequency | 27 PRs/week | **Elite** |
 | Lead Time for Changes | 11.3h | High |
-| Change Failure Rate | 0% | **Elite** |
-| MTTR | — | N/A |
+| Change Failure Rate | 30% | Low |
+| MTTR | 42.0h | Medium |
 
 <details><summary>Benchmark criteria</summary>
 
@@ -42,8 +42,8 @@ xychart-beta
 xychart-beta
   title "Change Failure Rate (bug or fix labeled PRs / all merged PRs %)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "% of PRs" 0 --> 5
-  bar [0, 0, 0, 0, 0, 0, 0]
+  y-axis "% of PRs" 0 --> 36
+  bar [0, 0, 16, 11.1, 25, 29.6, 0]
 ```
 
 > **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100
@@ -52,8 +52,8 @@ xychart-beta
 xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Hours" 0 --> 5
-  line [0, 0, 0, 0, 0, 0, 0]
+  y-axis "Hours" 0 --> 51
+  line [0, 0, 2, 4.3, 6.8, 42, 0]
 ```
 
 > **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）
@@ -67,9 +67,9 @@ xychart-beta
 xychart-beta
   title "Issues (bar=Opened  line=Closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Count" 0 --> 5
-  bar [0, 0, 0, 0, 0, 0, 0]
-  line [0, 0, 0, 0, 0, 0, 0]
+  y-axis "Count" 0 --> 38
+  bar [0, 6, 26, 3, 25, 31, 0]
+  line [0, 3, 24, 5, 21, 29, 0]
 ```
 
 ```mermaid
@@ -129,11 +129,4 @@ xychart-beta
 
 ## Nabledge Adoption (nablarch/nabledge)
 
-| Metric | Value |
-|--------|------:|
-| Page views (14 days) | 0 |
-| Unique visitors (14 days) | 0 |
-| Git clones (14 days) | 0 |
-| Stars | 0 |
-| Forks | 0 |
-| Watchers | 0 |
+_Skipped: NABLEDGE_SYNC_TOKEN not available._
