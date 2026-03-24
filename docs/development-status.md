@@ -14,11 +14,11 @@
 
 > **注意**: 知識ファイルは生成AIで生成・検証し人はサンプリングチェックのみ実施、正式リリース前に全量チェックを予定しています。
 
-## Roadmap
+## Plan
 
 ```mermaid
 gantt
-    title Nabledge Roadmap 2026-2027
+    title Nabledge Plan 2026
     dateFormat YYYY-MM-DD
 
     section 評価版＆ツール整備
@@ -37,15 +37,9 @@ gantt
     section AI-Ready Nablarch/Nabledgeリリース
     品質向上＆リリース準備                        :2026-06-01, 2026-06-29
     AI-Ready Nablarch/Nabledgeリリース          :milestone, 2026-06-30, 0d
-
-    section 市場拡大に向けたSoR→Nablarch移行サービスNableapの開発
-    Nableap評価版の開発             :2026-07-01, 2026-09-30
-    Nableapの開発                  :2026-10-01, 2026-12-26
-    年末年始休暇                    :crit, 2026-12-27, 2027-01-09
-    Nableapリリース                :2027-01-10, 2027-03-31
 ```
 
-> **注意**: 2026年度のロードマップは未承認のため変更の可能性があります。
+> **注意**: 7月以降は未定です。
 
 ## Outlook
 
