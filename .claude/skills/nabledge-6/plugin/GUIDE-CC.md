@@ -70,7 +70,7 @@ NABLEDGE_BRANCH=0.2 bash setup.sh -v 6
 
 ## トラブルシューティング
 
-インストール時によくある問題と解決策です。詳細は [nablarch/nabledge#10](https://github.com/nablarch/nabledge/issues/10) を参照してください。
+インストール時によくある問題と解決策です。
 
 ### プロキシ環境でインストールが失敗する
 
