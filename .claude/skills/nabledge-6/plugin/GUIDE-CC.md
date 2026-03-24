@@ -72,4 +72,4 @@ NABLEDGE_BRANCH=0.2 bash setup.sh -v 6
 
 インストール時に問題が発生した場合は、以下を参照してください。
 
-- プロキシ環境・権限不足でインストールが失敗する場合：[nablarch/nabledge#10](https://github.com/nablarch/nabledge/issues/10)
+- プロキシ環境・権限不足でインストールが失敗する場合：nablarch/nabledge#10
