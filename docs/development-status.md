@@ -46,7 +46,7 @@ gantt
   - レビュー
 - Nablarch改善
   - テスティングフレームワークのAI対応（Excel→YAML対応）
-  - Java 25対応
+  - Java 25対応（無償利用期限が2026年9月）
 
 ## Outlook
 
