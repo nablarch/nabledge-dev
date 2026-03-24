@@ -7,7 +7,6 @@
 - 📊 [開発状況](docs/development-status.md) - 現在の進捗とロードマップ
 - 📐 [設計ドキュメント](docs/nabledge-design.md) - アーキテクチャと設計の詳細
 - 🎯 [アクティビティマッピング](docs/activity-mapping.md) - Nabledge とのワークフローおよび役割分担
-- 🚀 [グランドデザイン](docs/grand-design/grand-design.md) - Nablarch/Nabledge/Nableap 3製品戦略 ⚠️ **ドラフト - 未承認・変更の可能性あり**
 - 📈 [メトリクス](docs/metrics.md) - 週次開発生産性と Nabledge 導入状況（自動更新）
 
 ## 前提条件
