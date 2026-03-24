@@ -378,12 +378,12 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$
 print_header "10. Checking Nablarch 1.x Documentation (v1.4/1.3/1.2)"
 
 # v1.4: .lw/nab-official/v1.4/ is a symlink to the repo root (contains document/, biz_sample/, ui_dev/, workflow/)
-# v1.3: .lw/nab-official/v1.3/ is a symlink to a parent dir that contains 1.3_maintain/
-# v1.2: .lw/nab-official/v1.2/ is a symlink to a parent dir that contains 1.2_maintain/
+# v1.3: .lw/nab-official/v1.3/ is a symlink to the repo root (contains document/)
+# v1.2: .lw/nab-official/v1.2/ is a symlink to the repo root (contains document/)
 declare -A V1X_CHECK_PATHS
 V1X_CHECK_PATHS["1.4"]=".lw/nab-official/v1.4/document"
-V1X_CHECK_PATHS["1.3"]=".lw/nab-official/v1.3/1.3_maintain"
-V1X_CHECK_PATHS["1.2"]=".lw/nab-official/v1.2/1.2_maintain"
+V1X_CHECK_PATHS["1.3"]=".lw/nab-official/v1.3/document"
+V1X_CHECK_PATHS["1.2"]=".lw/nab-official/v1.2/document"
 V1X_MISSING=()
 
 for ver in "1.4" "1.3" "1.2"; do
@@ -407,11 +407,11 @@ if [ ${#V1X_MISSING[@]} -gt 0 ]; then
     echo "  v1.4 (repo root contains document/, biz_sample/, ui_dev/, workflow/):"
     echo "    ln -s /path/to/v1.4_repo_root .lw/nab-official/v1.4"
     echo ""
-    echo "  v1.3 (parent dir contains 1.3_maintain/):"
-    echo "    ln -s /path/to/v1.3_parent .lw/nab-official/v1.3"
+    echo "  v1.3 (repo root contains document/):"
+    echo "    ln -s /path/to/v1.3_repo_root .lw/nab-official/v1.3"
     echo ""
-    echo "  v1.2 (parent dir contains 1.2_maintain/):"
-    echo "    ln -s /path/to/v1.2_parent .lw/nab-official/v1.2"
+    echo "  v1.2 (repo root contains document/):"
+    echo "    ln -s /path/to/v1.2_repo_root .lw/nab-official/v1.2"
     echo ""
     echo "  Then generate knowledge files:"
     echo "    ./tools/knowledge-creator/kc.sh gen 1.4"
