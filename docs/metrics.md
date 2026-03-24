@@ -1,15 +1,15 @@
 # Nabledge Dev Metrics
 
-> Last updated: 2026-03-13 (auto-generated weekly — [view source](tools/metrics/collect.py))
+> Last updated: 2026-03-24 (auto-generated weekly — [view source](tools/metrics/collect.py))
 
 ## DORA Scorecard
 
 | Metric | Latest | Level |
 |--------|-------:|:-----:|
-| Deployment Frequency | 20 PRs/week | **Elite** |
-| Lead Time for Changes | 19.6h | High |
+| Deployment Frequency | 27 PRs/week | **Elite** |
+| Lead Time for Changes | 11.3h | High |
 | Change Failure Rate | 0% | **Elite** |
-| MTTR | 8.9h | High |
+| MTTR | — | N/A |
 
 <details><summary>Benchmark criteria</summary>
 
@@ -25,25 +25,25 @@
 ```mermaid
 xychart-beta
   title "Deployment Frequency (PRs merged to main per week)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
-  y-axis "PRs / week" 0 --> 30
-  bar [0, 2, 25, 9, 20]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
+  y-axis "PRs / week" 0 --> 33
+  bar [0, 2, 25, 9, 20, 27, 0]
 ```
 
 ```mermaid
 xychart-beta
   title "Lead Time for Changes (avg hours: first commit to merge)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Hours" 0 --> 24
-  line [0, 2.7, 8.9, 14.8, 19.6]
+  line [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
 ```
 
 ```mermaid
 xychart-beta
   title "Change Failure Rate (bug or fix labeled PRs / all merged PRs %)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "% of PRs" 0 --> 5
-  bar [0, 0, 0, 0, 0]
+  bar [0, 0, 0, 0, 0, 0, 0]
 ```
 
 > **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100
@@ -51,9 +51,9 @@ xychart-beta
 ```mermaid
 xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
-  y-axis "Hours" 0 --> 11
-  line [0, 0, 2.5, 4.3, 8.9]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
+  y-axis "Hours" 0 --> 5
+  line [0, 0, 0, 0, 0, 0, 0]
 ```
 
 > **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）
@@ -66,27 +66,27 @@ xychart-beta
 ```mermaid
 xychart-beta
   title "Issues (bar=Opened  line=Closed)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
-  y-axis "Count" 0 --> 32
-  bar [0, 6, 26, 3, 25]
-  line [0, 3, 24, 5, 21]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
+  y-axis "Count" 0 --> 5
+  bar [0, 0, 0, 0, 0, 0, 0]
+  line [0, 0, 0, 0, 0, 0, 0]
 ```
 
 ```mermaid
 xychart-beta
   title "Pull Requests (bar=Opened  line=Merged)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Count" 0 --> 45
-  bar [0, 13, 37, 9, 27]
-  line [0, 2, 25, 9, 20]
+  bar [0, 13, 37, 9, 27, 30, 0]
+  line [0, 2, 25, 9, 20, 27, 0]
 ```
 
 ```mermaid
 xychart-beta
   title "Active Contributors (unique PR authors per week)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Contributors" 0 --> 2
-  bar [0, 1, 1, 1, 1]
+  bar [0, 1, 1, 1, 1, 1, 0]
 ```
 
 ## Code Size (SLOC)
@@ -96,9 +96,9 @@ xychart-beta
 ```mermaid
 xychart-beta
   title "Total SLOC Trend (all categories)"
-  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-24"]
   y-axis "Lines" 0 --> 13936
-  line [0, 789, 1503, 1293, 10339, 11613]
+  line [0, 789, 1503, 1293, 10339, 11613, 11613]
 ```
 
 ### Nabledge v6
@@ -121,12 +121,19 @@ pie title "Knowledge Creator SLOC (Production / Test / Prompts)"
 ```mermaid
 xychart-beta
   title "KC Scripts Trend (upper=Production  lower=Test)"
-  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13"]
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-24"]
   y-axis "Lines" 0 --> 6077
-  line [0, 0, 0, 0, 3183, 4109]
-  line [0, 0, 0, 0, 4802, 5064]
+  line [0, 0, 0, 0, 3183, 4109, 4109]
+  line [0, 0, 0, 0, 4802, 5064, 5064]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
 
-_Skipped: NABLEDGE_SYNC_TOKEN not available._
+| Metric | Value |
+|--------|------:|
+| Page views (14 days) | 0 |
+| Unique visitors (14 days) | 0 |
+| Git clones (14 days) | 0 |
+| Stars | 0 |
+| Forks | 0 |
+| Watchers | 0 |
