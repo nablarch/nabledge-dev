@@ -78,3 +78,28 @@ NABLEDGE_BRANCH=0.2 bash setup.sh -v 6
 更新後、`.claude/` と `.github/` ディレクトリの変更をGitにコミット・プッシュしてください。
 
 **注**: 通常は最新版の使用を推奨します。特定バージョンの指定は、動作検証やトラブルシューティングが必要な場合のみ使用してください。
+
+## トラブルシューティング
+
+インストール時によくある問題と解決策です。詳細は [nablarch/nabledge#10](https://github.com/nablarch/nabledge/issues/10) を参照してください。
+
+### プロキシ環境でインストールが失敗する
+
+社内プロキシ環境では、`curl` が接続に失敗することがあります。インストールコマンドを実行する前に、プロキシを設定してください：
+
+```bash
+export http_proxy="http://your-proxy-server:port"
+export https_proxy="http://your-proxy-server:port"
+```
+
+設定後、インストールコマンドを再実行してください。
+
+### 管理者権限のない環境でインストールが失敗する
+
+セットアップスクリプトは `jq` コマンドを Git Bash にインストールします。管理者権限がない場合、インストールに失敗し `.vscode` ディレクトリが作成されません。
+
+```text
+Warning: Failed to open the file C:/Program Files/Git/usr/bin/jq.exe: Permission denied
+```
+
+Git Bash を管理者権限で起動して再実行してください。
