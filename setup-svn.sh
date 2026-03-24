@@ -40,21 +40,39 @@ print_header() {
 # ============================================================
 
 SVN_BASE_URL="${SVN_BASE_URL:-}"
+SVN_USERNAME="${SVN_USERNAME:-}"
+SVN_PASSWORD="${SVN_PASSWORD:-}"
 
 if [ -z "$SVN_BASE_URL" ]; then
-    echo "Usage: SVN_BASE_URL=https://your-svn-server/svn/repo ./setup-svn.sh"
+    echo "Usage: SVN_BASE_URL=https://your-svn-server/svn/repo SVN_USERNAME=user SVN_PASSWORD=pass ./setup-svn.sh"
     echo ""
     echo "  SVN_BASE_URL  SVN repository root URL (required)"
+    echo "  SVN_USERNAME  SVN username (optional)"
+    echo "  SVN_PASSWORD  SVN password (optional)"
     echo ""
     echo "Example:"
-    echo "  SVN_BASE_URL=https://svn.example.com/svn/repo ./setup-svn.sh"
+    echo "  SVN_BASE_URL=https://svn.example.com/svn/repo SVN_USERNAME=user SVN_PASSWORD=pass ./setup-svn.sh"
     exit 1
+fi
+
+# Build SVN auth options
+SVN_AUTH_OPTS=()
+if [ -n "$SVN_USERNAME" ]; then
+    SVN_AUTH_OPTS+=(--username "$SVN_USERNAME")
+fi
+if [ -n "$SVN_PASSWORD" ]; then
+    SVN_AUTH_OPTS+=(--password "$SVN_PASSWORD" --no-auth-cache)
 fi
 
 # Check svn command
 if ! command -v svn &> /dev/null; then
-    print_status error "svn command not found. Install subversion: sudo apt-get install subversion"
-    exit 1
+    print_status info "svn command not found. Installing subversion..."
+    sudo apt-get install -y subversion
+    if ! command -v svn &> /dev/null; then
+        print_status error "Failed to install subversion"
+        exit 1
+    fi
+    print_status ok "subversion installed"
 fi
 
 # Checkout or update a single SVN working copy
@@ -68,7 +86,7 @@ svn_checkout() {
 
     if [ -d "${target_dir}/.svn" ]; then
         print_status info "Updating ${name}..."
-        if svn update "$target_dir" 2>&1; then
+        if svn update "${SVN_AUTH_OPTS[@]}" "$target_dir" 2>&1; then
             print_status ok "${name} updated"
         else
             print_status warning "Failed to update ${name} (may not exist in this version)"
@@ -77,7 +95,7 @@ svn_checkout() {
     else
         print_status info "Checking out ${name}..."
         mkdir -p "$(dirname "$target_dir")"
-        if svn checkout "$svn_url" "$target_dir" 2>&1; then
+        if svn checkout "${SVN_AUTH_OPTS[@]}" "$svn_url" "$target_dir" 2>&1; then
             print_status ok "${name} checked out"
         else
             print_status warning "Failed to checkout ${name} (may not exist in this version)"

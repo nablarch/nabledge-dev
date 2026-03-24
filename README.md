@@ -35,10 +35,10 @@ cp .env.example .env
 
 Nablarch 1.x のドキュメントは社内 SVN リポジトリで管理されています。`setup-svn.sh` を使って各バージョンのモジュールをチェックアウトします。
 
-SVN リポジトリのベース URL を指定して実行します：
+SVN リポジトリの URL と認証情報を指定して実行します：
 
 ```bash
-SVN_BASE_URL=https://your-svn-server/svn/repo ./setup-svn.sh
+SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh
 ```
 
 スクリプトは `.lw/nab-official/v1.4/`、`.lw/nab-official/v1.3/`、`.lw/nab-official/v1.2/` にモジュールをチェックアウトします。v1.3/v1.2 に存在しないモジュールはスキップされます。
