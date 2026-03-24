@@ -17,7 +17,6 @@
 ## Schedule
 
 ```mermaid
-%%{init: {'theme': 'default', 'gantt': {'useMaxWidth': false}}}%%
 gantt
     title Nabledge Schedule 2026
     dateFormat YYYY-MM-DD
@@ -38,6 +37,9 @@ gantt
     section AI-Ready Nablarch/Nabledgeリリース
     品質向上＆リリース準備                        :2026-06-01, 2026-06-29
     AI-Ready Nablarch/Nabledgeリリース          :crit, milestone, 2026-06-30, 0d
+
+    section
+    　                                          :done, 2026-07-01, 2026-07-14
 ```
 
 > **注意**: 7月以降は未定です。
