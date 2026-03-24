@@ -459,6 +459,25 @@ def save_traffic_snapshot(path: str, data: dict) -> None:
         json.dump(data, f, indent=2, sort_keys=True)
 
 
+def aggregate_traffic_weekly(daily_data: dict) -> tuple[list[str], list[int], list[int]]:
+    """Aggregate daily traffic data by ISO week. Returns (labels, counts, uniques)."""
+    from collections import defaultdict
+    weekly_counts: dict[str, int] = defaultdict(int)
+    weekly_uniques: dict[str, int] = defaultdict(int)
+    monday_by_label: dict[str, datetime] = {}
+    for date_str, values in daily_data.items():
+        dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        monday = iso_week_monday(dt)
+        label = week_label(monday)
+        weekly_counts[label] += values.get("count", 0)
+        weekly_uniques[label] += values.get("uniques", 0)
+        monday_by_label[label] = monday
+    sorted_labels = [week_label(m) for m in sorted(monday_by_label.values())]
+    counts = [weekly_counts[l] for l in sorted_labels]
+    uniques = [weekly_uniques[l] for l in sorted_labels]
+    return sorted_labels, counts, uniques
+
+
 def merge_traffic_snapshot(snapshot: dict, traffic_views: dict, traffic_clones: dict) -> dict:
     """Merge daily API data into the snapshot. Keyed by date string (YYYY-MM-DD)."""
     views = dict(snapshot.get("views", {}))
@@ -781,37 +800,17 @@ def render_metrics_md(
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
 
-        # Page views trend (all accumulated history)
         if snap_views:
-            sorted_dates = sorted(snap_views.keys())
-            view_labels = [d[5:].replace("-", "/") for d in sorted_dates]  # MM/DD
-            view_counts = [snap_views[d]["count"] for d in sorted_dates]
-            lines.append(mermaid_xychart_bar("Page Views (daily)", view_labels, "Views", view_counts))
+            w_labels, w_counts, w_uniques = aggregate_traffic_weekly(snap_views)
+            lines.append(mermaid_xychart_bar("Page Views (weekly)", w_labels, "Views", w_counts))
+            lines.append("")
+            lines.append(mermaid_xychart_bar("Unique Visitors (weekly)", w_labels, "Visitors", w_uniques))
             lines.append("")
 
-        # Clones trend (all accumulated history)
         if snap_clones:
-            sorted_dates = sorted(snap_clones.keys())
-            clone_labels = [d[5:].replace("-", "/") for d in sorted_dates]  # MM/DD
-            clone_counts = [snap_clones[d]["count"] for d in sorted_dates]
-            lines.append(mermaid_xychart_bar("Git Clones (daily)", clone_labels, "Clones", clone_counts))
+            c_labels, c_counts, _ = aggregate_traffic_weekly(snap_clones)
+            lines.append(mermaid_xychart_bar("Git Clones (weekly)", c_labels, "Clones", c_counts))
             lines.append("")
-
-        # Summary table (last 14 days)
-        from datetime import date as date_type
-        cutoff = (datetime.now(tz=timezone.utc) - timedelta(days=14)).date().isoformat()
-        recent_views = {d: v for d, v in snap_views.items() if d >= cutoff}
-        recent_clones = {d: v for d, v in snap_clones.items() if d >= cutoff}
-        total_views = sum(v["count"] for v in recent_views.values())
-        unique_visitors = max((v["uniques"] for v in recent_views.values()), default=0)
-        total_clones = sum(v["count"] for v in recent_clones.values())
-
-        lines.append("| Metric | Value |")
-        lines.append("|--------|------:|")
-        lines.append(f"| Page views (14 days) | {total_views} |")
-        lines.append(f"| Unique visitors (14 days, peak) | {unique_visitors} |")
-        lines.append(f"| Git clones (14 days) | {total_clones} |")
-        lines.append("")
     elif traffic_snapshot is None:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
