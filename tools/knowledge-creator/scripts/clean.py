@@ -104,8 +104,8 @@ def main():
     parser.add_argument(
         "--version",
         required=True,
-        choices=["6", "5", "all"],
-        help="Version to clean (6, 5, or all)"
+        choices=["6", "5", "1.4", "1.3", "1.2", "all"],
+        help="Version to clean (6, 5, 1.4, 1.3, 1.2, or all)"
     )
     parser.add_argument("--yes", action="store_true",
                         help="Skip confirmation prompt")
@@ -121,7 +121,7 @@ def main():
     logger.info(f"Version: {args.version}\n")
 
     # Determine versions to clean
-    versions = ["6", "5"] if args.version == "all" else [args.version]
+    versions = ["6", "5", "1.4", "1.3", "1.2"] if args.version == "all" else [args.version]
 
     if not args.yes:
         answer = input(f"\nVersion {args.version} の全成果物を削除します。続行しますか？ [y/N]: ")
