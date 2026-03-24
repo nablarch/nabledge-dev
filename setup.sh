@@ -98,7 +98,7 @@ sudo apt-get update
 
 # Check if tools are already installed
 TOOLS_MISSING=0
-for tool in libreoffice pdftoppm pandoc jq python3 svn gh; do
+for tool in libreoffice pdftoppm pandoc jq python3 gh; do
     if ! command -v "$tool" &> /dev/null; then
         TOOLS_MISSING=1
         break
@@ -108,8 +108,8 @@ done
 if [ $TOOLS_MISSING -eq 0 ]; then
     print_status ok "System tools already installed"
 else
-    print_status info "Installing LibreOffice, Poppler, Pandoc, jq, Python3, Subversion..."
-    if sudo apt-get install -y libreoffice poppler-utils pandoc jq python3 python3-venv subversion; then
+    print_status info "Installing LibreOffice, Poppler, Pandoc, jq, Python3..."
+    if sudo apt-get install -y libreoffice poppler-utils pandoc jq python3 python3-venv; then
         print_status ok "System tools installed"
     else
         print_status error "Failed to install system tools"
@@ -363,62 +363,6 @@ clone_repos_from_meta() {
     done
 }
 
-# Checkout or update an SVN repository
-svn_checkout_or_update_repo() {
-    local repo_url="$1"
-    local target_dir="$2"
-    local repo_name
-    repo_name=$(basename "$repo_url")
-    local repo_path="$target_dir/$repo_name"
-
-    if [ -d "$repo_path/.svn" ]; then
-        print_status info "SVN working copy $repo_name already exists, updating..."
-        if svn update "$repo_path"; then
-            print_status ok "$repo_name updated"
-        else
-            print_status warning "Failed to update $repo_name"
-        fi
-    else
-        print_status info "Checking out SVN repository: $repo_url ..."
-        if svn checkout "$repo_url" "$repo_path"; then
-            print_status ok "$repo_name checked out"
-        else
-            print_status error "Failed to checkout $repo_url"
-            print_status warning "Ensure SVN access is available and the URL is correct"
-        fi
-    fi
-}
-
-# Checkout Nablarch 1.x repositories from catalog.json (svn)
-checkout_svn_repos_from_meta() {
-    local version="$1"
-    local target_dir="$2"
-    local meta_file="tools/knowledge-creator/.cache/v${version}/catalog.json"
-
-    if [ ! -f "$meta_file" ]; then
-        print_status warning "catalog.json not found: $meta_file (skip)"
-        return
-    fi
-
-    print_status info "Setting up Nablarch ${version} repositories from ${meta_file}..."
-
-    local count
-    count=$(jq '.sources | length' "$meta_file")
-
-    for i in $(seq 0 $((count - 1))); do
-        local repo_url repo_type
-        repo_url=$(jq -r ".sources[$i].repo" "$meta_file")
-        repo_type=$(jq -r ".sources[$i].type // \"git\"" "$meta_file")
-        if [ "$repo_type" = "svn" ]; then
-            svn_checkout_or_update_repo "$repo_url" "$target_dir"
-        else
-            local branch
-            branch=$(jq -r ".sources[$i].branch" "$meta_file")
-            clone_or_update_repo "${repo_url%.git}.git" "$target_dir" "$branch"
-        fi
-    done
-}
-
 clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
 clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
 
@@ -433,21 +377,6 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-batch.git" "$
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$NAB_OFFICIAL_V5_DIR" "v5-main"
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V5_DIR" "v5-main"
 
-# Checkout Nablarch 1.x SVN repositories
-print_header "10. Checking Out Nablarch 1.x Documentation (v1.4/1.3/1.2)"
-
-if [ -n "${SVN_BASE_URL:-}" ]; then
-    print_status info "Running setup-svn.sh with SVN_BASE_URL..."
-    if SVN_BASE_URL="$SVN_BASE_URL" bash "$(dirname "$0")/setup-svn.sh"; then
-        print_status ok "Nablarch 1.x SVN checkout completed"
-    else
-        print_status warning "Nablarch 1.x SVN checkout had errors (see above)"
-    fi
-else
-    print_status info "SVN_BASE_URL not set — skipping Nablarch 1.x checkout"
-    print_status info "To checkout Nablarch 1.x docs, run:"
-    print_status info "  SVN_BASE_URL=https://your-svn-server/svn/repo ./setup-svn.sh"
-fi
 
 # Final summary
 print_header "Setup Completed Successfully!"
