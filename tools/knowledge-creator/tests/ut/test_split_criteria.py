@@ -18,7 +18,7 @@ class TestSectionSplit:
 
     def test_single_section_not_split(self, ctx):
         """h2セクション1個 → 分割しない。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(1)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
@@ -31,7 +31,7 @@ class TestSectionSplit:
 
     def test_two_sections_split(self, ctx):
         """h2セクション2個 → 分割する。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(2)
 
         os.makedirs(f"{ctx.repo}/test", exist_ok=True)
@@ -44,7 +44,7 @@ class TestSectionSplit:
 
     def test_split_produces_one_entry_per_section(self, ctx):
         """5セクション(各20行の本文 + ヘッダー行) → 1グループ、全5セクションを含む。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(5)
         sections = classifier.analyze_rst_sections(content)
 
@@ -67,7 +67,7 @@ class TestSectionSplit:
 
     def test_split_id_format(self, ctx):
         """分割IDが {original}--s{N} 形式であること。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(3)
         sections = classifier.analyze_rst_sections(content)
 
@@ -88,7 +88,7 @@ class TestSectionSplit:
 
     def test_preamble_in_first_section(self, ctx):
         """最初のh2の前のプリアンブルが最初のセクションに含まれること。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(3)
         sections = classifier.analyze_rst_sections(content)
 
@@ -97,13 +97,13 @@ class TestSectionSplit:
 
     def test_non_rst_not_split(self, ctx):
         """format="md" → 分割しない。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         should_split, _, _ = classifier.should_split_file("test.md", "md")
         assert not should_split
 
     def test_section_range_covers_all_lines(self, ctx):
         """全エントリのsection_rangeが全行をカバーすること。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(3, lines_per_section=10)
         sections = classifier.analyze_rst_sections(content)
         lines = content.splitlines()
@@ -126,7 +126,7 @@ class TestSectionSplit:
 
     def test_duplicate_titles_get_unique_ids(self, ctx):
         """同じタイトルのh2セクションでも連番IDは重複しないこと。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # 同じタイトルのh2セクションを3つ作る(各150行)
         parts = ["Main Title\n==========\n\nPreamble.\n"]
@@ -160,7 +160,7 @@ class TestSectionSplit:
 
     def test_sequential_section_ids_across_parts(self, ctx):
         """セクションIDがパートをまたいで通し連番になること。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # 3パートに分割されるファイル（各パート2セクション × 200行）
         parts = ["Main Title\n==========\n\nPreamble.\n"]
@@ -188,7 +188,7 @@ class TestSectionSplit:
 
     def test_section_map_contains_rst_labels(self, ctx):
         """section_map が RST ラベル（.. _label:）を含むこと。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         content = (
             "Main Title\n==========\n\nPreamble.\n\n"
@@ -220,7 +220,7 @@ class TestSectionSplit:
 
     def test_section_map_for_non_split_files(self, ctx, tmp_path):
         """非分割RSTファイルにも section_map が生成されること。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         content = (
             "Main Title\n==========\n\nPreamble.\n\n"
@@ -243,7 +243,7 @@ class TestSectionSplit:
 
     def test_h3_fallback_for_large_h2(self, ctx):
         """400行超のh2セクションがh3で再分割され、グループ化されること。"""
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # h2が2つ。1つ目は小さい、2つ目は600行超でh3が3つ
         small_body = "\n".join([f"Line {j}" for j in range(1, 21)])
@@ -297,7 +297,7 @@ class TestSectionSplit:
         Note: このテストでは WARNING ログが出力されるが、
         テストの主目的は分割動作の確認なので、ログ確認は省略。
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # h2が2つ。2つ目は600行だがh3がない
         small_body = "\n".join([f"Line {j}" for j in range(1, 21)])
@@ -337,7 +337,7 @@ class TestSectionSplit:
         Grouping: Sec1-4 (328) + Sec5 (82) → 2 groups (next would exceed 400)
         Verifies: Correct grouping when threshold is approached
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
         content = self._make_rst(5, lines_per_section=80)
         sections = classifier.analyze_rst_sections(content)
 
@@ -362,7 +362,7 @@ class TestSectionSplit:
         Tests the boundary condition where total lines ≤ 400.
         Verifies: 1 group when total doesn't exceed threshold
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # Adjust body sizes to get exactly 400 total lines
         # Section 1 will include preamble (5 lines) + section header (2 lines) + body
@@ -401,7 +401,7 @@ class TestSectionSplit:
         Expected: Group 1 (200+150=350), Group 2 (100)
         Verifies: 2 groups with correct line counts
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         body1 = "\n".join([f"Line {j}" for j in range(1, 201)])
         body2 = "\n".join([f"Line {j}" for j in range(1, 151)])
@@ -442,7 +442,7 @@ class TestSectionSplit:
         Expected: 3 groups (one per h3, as each pair exceeds threshold)
         Verifies: All h3 titles appear in section_range.sections
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # h2の中に3つのh3(各200行の本文)
         h3_parts = []
@@ -486,7 +486,7 @@ class TestSectionSplit:
         Create h2 with 401 lines and h3 subsections
         Verifies: h2 is expanded to h3 (proves threshold triggers expansion)
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # 401行のh2(閾値400を1行だけ超える)、h3が2つ
         h3_parts = []
@@ -528,7 +528,7 @@ class TestSectionSplit:
         Grouping logic: Group1 (152+152=304), Group2 (152+82+122=356), Group3 (52)
         Verifies: 3 groups with correct line counts
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         bodies = [
             "\n".join([f"Line {j}" for j in range(1, 151)]),  # 150 body
@@ -570,7 +570,7 @@ class TestSectionSplit:
         Expected: small h2 kept separate, giant h2 expanded and grouped
         Verifies: Correct group boundaries (3 groups total)
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # 小さいh2
         small_body = "\n".join([f"Line {j}" for j in range(1, 51)])
@@ -621,7 +621,7 @@ class TestSectionSplit:
         Verifies: Each line 0 to len(content) appears in exactly one group
         Verifies: No gaps (missing lines), no overlaps (duplicate lines)
         """
-        classifier = Step2Classify(ctx, dry_run=True)
+        classifier = Step2Classify(ctx)
 
         # 3セクション(200, 150, 100行)で2グループに分かれるケース
         body1 = "\n".join([f"Line {j}" for j in range(1, 201)])

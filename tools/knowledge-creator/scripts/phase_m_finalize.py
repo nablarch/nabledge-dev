@@ -11,16 +11,14 @@ import shutil
 class PhaseMFinalize:
     """Phase M: Complete finalization after C/D/E validation."""
 
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, run_claude_fn=None):
         """Initialize Phase M.
 
         Args:
             ctx: Context object with paths
-            dry_run: If True, skip actual file operations
             run_claude_fn: Optional mock function for testing (used by Phase F)
         """
         self.ctx = ctx
-        self.dry_run = dry_run
         self.run_claude_fn = run_claude_fn
 
     def run(self):
@@ -42,23 +40,21 @@ class PhaseMFinalize:
         split_catalog = load_json(self.ctx.classified_list_path)
 
         # Step 2: Delete knowledge_dir and docs_dir (delete-insert)
-        if not self.dry_run:
-            if os.path.exists(self.ctx.knowledge_dir):
-                shutil.rmtree(self.ctx.knowledge_dir)
-            if os.path.exists(self.ctx.docs_dir):
-                shutil.rmtree(self.ctx.docs_dir)
+        if os.path.exists(self.ctx.knowledge_dir):
+            shutil.rmtree(self.ctx.knowledge_dir)
+        if os.path.exists(self.ctx.docs_dir):
+            shutil.rmtree(self.ctx.docs_dir)
 
         # Step 3: Merge knowledge_cache_dir -> knowledge_dir
         merged_catalog = MergeSplitFiles(self.ctx).run()
 
         # Step 4: Temporarily switch catalog to merged state (for Phase F)
-        if not self.dry_run and merged_catalog:
+        if merged_catalog:
             write_json(self.ctx.classified_list_path, merged_catalog)
 
         # Step 5: Generate browsable docs and index (always full)
         # Pass split_catalog so Phase F can build link maps from section_map data
-        PhaseFFinalize(self.ctx, dry_run=self.dry_run, catalog_for_links=split_catalog).run()
+        PhaseFFinalize(self.ctx, catalog_for_links=split_catalog).run()
 
         # Step 6: Restore split catalog
-        if not self.dry_run:
-            write_json(self.ctx.classified_list_path, split_catalog)
+        write_json(self.ctx.classified_list_path, split_catalog)

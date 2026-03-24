@@ -36,9 +36,9 @@ def ctx_with_unmatched(tmp_path):
 
 class TestUnmatchedError:
     def test_unmatched_raises_system_exit(self, ctx_with_unmatched):
-        sources = Step1ListSources(ctx_with_unmatched, dry_run=True).run()
+        sources = Step1ListSources(ctx_with_unmatched).run()
         with pytest.raises(SystemExit) as exc_info:
-            Step2Classify(ctx_with_unmatched, dry_run=True, sources_data=sources).run()
+            Step2Classify(ctx_with_unmatched, sources_data=sources).run()
         assert exc_info.value.code == 1
 
     def test_all_matched_succeeds(self, tmp_path):
@@ -49,8 +49,8 @@ class TestUnmatchedError:
         (rst_base / "concept.rst").write_text("Concept\n=====\n\nContent")
         ctx = Context(version="6", repo=str(repo), concurrency=1)
         os.makedirs(ctx.log_dir, exist_ok=True)
-        sources = Step1ListSources(ctx, dry_run=True).run()
-        result = Step2Classify(ctx, dry_run=True, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        result = Step2Classify(ctx, sources_data=sources).run()
         assert len(result["files"]) == 1
 
     def test_v5_extension_components_matched(self, tmp_path):
@@ -61,8 +61,8 @@ class TestUnmatchedError:
         (rst_base / "etl.rst").write_text("ETL\n===\n\nContent")
         ctx = Context(version="5", repo=str(repo), concurrency=1)
         os.makedirs(ctx.log_dir, exist_ok=True)
-        sources = Step1ListSources(ctx, dry_run=True).run()
-        result = Step2Classify(ctx, dry_run=True, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        result = Step2Classify(ctx, sources_data=sources).run()
         assert len(result["files"]) == 1
         assert result["files"][0]["type"] == "extension"
         assert result["files"][0]["category"] == "etl"

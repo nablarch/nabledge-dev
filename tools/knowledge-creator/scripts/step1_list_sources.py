@@ -9,24 +9,59 @@ from common import write_json
 from logger import get_logger
 
 
+def _rst_doc_roots(version: str) -> list:
+    """RST base directory names under .lw/nab-official/v{version}/."""
+    if version == "1.4":
+        return ["document", "workflow", "biz_sample", "ui_dev"]
+    if version == "1.3":
+        return ["document", "biz_sample"]
+    if version == "1.2":
+        return ["document"]
+    return ["nablarch-document/ja"]
+
+
+def _rst_scan_roots(version: str) -> list:
+    """Specific directories to scan for RST files under .lw/nab-official/v{version}/.
+
+    For v1.x, source repos mix documentation with source code. Only the doc/ subdirs
+    are scanned to avoid walking large non-documentation trees.
+    """
+    if version == "1.4":
+        return [
+            "document",
+            "workflow/doc",
+            "workflow/sample_application/doc",
+            "workflow/tool/doc",
+            "biz_sample/doc",
+            "ui_dev/doc",
+            "ui_dev/guide",
+            "MessagingSimu/doc",
+        ]
+    if version == "1.3":
+        return ["document", "biz_sample/doc"]
+    if version == "1.2":
+        return ["document"]
+    return _rst_doc_roots(version)
+
+
 class Step1ListSources:
-    def __init__(self, ctx, dry_run=False):
+    def __init__(self, ctx):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.logger = get_logger()
 
     def run(self):
         sources = []
 
         # 1. Official documentation (RST)
-        rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/nablarch-document/ja/"
-        if os.path.exists(rst_base):
-            for root, dirs, files in os.walk(rst_base):
-                dirs[:] = [d for d in dirs if not d.startswith("_")]
-                for f in files:
-                    if f.endswith(".rst"):
-                        rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
-                        sources.append({"path": rel_path, "format": "rst", "filename": f})
+        for doc_root in _rst_scan_roots(self.ctx.version):
+            rst_base = f"{self.ctx.repo}/.lw/nab-official/v{self.ctx.version}/{doc_root}/"
+            if os.path.exists(rst_base):
+                for root, dirs, files in os.walk(rst_base):
+                    dirs[:] = [d for d in dirs if not d.startswith("_")]
+                    for f in files:
+                        if f.endswith(".rst"):
+                            rel_path = os.path.relpath(os.path.join(root, f), self.ctx.repo)
+                            sources.append({"path": rel_path, "format": "rst", "filename": f})
 
         # 2. Pattern documents (MD)
         pattern_dir = (
@@ -76,9 +111,8 @@ class Step1ListSources:
         self.logger.info(f"      📄MD: {sum(1 for s in sources if s['format'] == 'md')}")
         self.logger.info(f"      📊Excel: {sum(1 for s in sources if s['format'] == 'xlsx')}")
 
-        if not self.dry_run:
-            write_json(self.ctx.source_list_path, output)
-            rel_path = os.path.relpath(self.ctx.source_list_path, self.ctx.repo)
-            self.logger.info(f"\n   💾Saved: {rel_path}")
+        write_json(self.ctx.source_list_path, output)
+        rel_path = os.path.relpath(self.ctx.source_list_path, self.ctx.repo)
+        self.logger.info(f"\n   💾Saved: {rel_path}")
 
         return output

@@ -24,6 +24,17 @@ SPLIT_SECTION_THRESHOLD = 2
 LINE_GROUP_THRESHOLD = 400
 
 
+def _rst_doc_roots(version: str) -> list:
+    """RST path segments that separate the repo prefix from the doc-relative path."""
+    if version == "1.4":
+        return ["document/", "workflow/", "biz_sample/", "ui_dev/", "MessagingSimu/"]
+    if version == "1.3":
+        return ["document/", "biz_sample/"]
+    if version == "1.2":
+        return ["document/"]
+    return ["nablarch-document/ja/"]
+
+
 def load_mappings(repo: str, version: str) -> dict:
     """Load RST/MD/XLSX mappings from version-specific JSON file.
 
@@ -58,18 +69,39 @@ def load_mappings(repo: str, version: str) -> dict:
 # Step 1: List sources
 # ============================================================
 
+def _rst_scan_roots(version: str) -> list:
+    """Specific directories to scan for RST files. Keep in sync with step1_list_sources._rst_scan_roots."""
+    if version == "1.4":
+        return [
+            "document",
+            "workflow/doc",
+            "workflow/sample_application/doc",
+            "workflow/tool/doc",
+            "biz_sample/doc",
+            "ui_dev/doc",
+            "ui_dev/guide",
+            "MessagingSimu/doc",
+        ]
+    if version == "1.3":
+        return ["document", "biz_sample/doc"]
+    if version == "1.2":
+        return ["document"]
+    return [r.rstrip("/") for r in _rst_doc_roots(version)]
+
+
 def list_sources(repo: str, version: str) -> list:
     sources = []
 
     # RST
-    rst_base = os.path.join(repo, f".lw/nab-official/v{version}/nablarch-document/ja/")
-    if os.path.exists(rst_base):
-        for root, dirs, files in os.walk(rst_base):
-            dirs[:] = [d for d in dirs if not d.startswith("_")]
-            for f in sorted(files):
-                if f.endswith(".rst"):
-                    rel = os.path.relpath(os.path.join(root, f), repo)
-                    sources.append({"path": rel, "format": "rst", "filename": f})
+    for doc_root in _rst_scan_roots(version):
+        rst_base = os.path.join(repo, f".lw/nab-official/v{version}/{doc_root.rstrip('/')}/")
+        if os.path.exists(rst_base):
+            for root, dirs, files in os.walk(rst_base):
+                dirs[:] = [d for d in dirs if not d.startswith("_")]
+                for f in sorted(files):
+                    if f.endswith(".rst"):
+                        rel = os.path.relpath(os.path.join(root, f), repo)
+                        sources.append({"path": rel, "format": "rst", "filename": f})
 
     # MD
     pattern_dir = os.path.join(
@@ -103,12 +135,20 @@ def list_sources(repo: str, version: str) -> list:
 # Step 2: Classify
 # ============================================================
 
-def classify_rst(path: str, rst_mapping: list):
-    marker = "nablarch-document/ja/"
-    idx = path.find(marker)
-    if idx < 0:
+def classify_rst(path: str, rst_mapping: list, version: str = "6"):
+    rel_path = None
+    for marker in _rst_doc_roots(version):
+        idx = path.find(marker)
+        if idx >= 0:
+            # v1.4 has multiple repos; keep marker in rel_path to distinguish them.
+            # v1.3 keeps non-document/ markers (e.g. biz_sample/) but strips document/.
+            if version == "1.4" or (version.startswith("1.") and marker != "document/"):
+                rel_path = marker + path[idx + len(marker):]
+            else:
+                rel_path = path[idx + len(marker):]
+            break
+    if rel_path is None:
         return None, None, None
-    rel_path = path[idx + len(marker):]
 
     if rel_path == "index.rst":
         return "about", "about-nablarch", ""
@@ -131,7 +171,7 @@ def title_to_section_id(title: str) -> str:
 
 def generate_id(filename: str, format: str, category: str = None,
                 source_path: str = None, matched_pattern: str = None,
-                xlsx_mapping: dict = None) -> str:
+                xlsx_mapping: dict = None, version: str = "6") -> str:
     if format == "xlsx" and xlsx_mapping and filename in xlsx_mapping:
         return category
 
@@ -145,10 +185,16 @@ def generate_id(filename: str, format: str, category: str = None,
         base_name = filename
 
     if base_name == "index" and source_path and matched_pattern is not None:
-        marker = "nablarch-document/ja/"
-        marker_idx = source_path.find(marker)
-        if marker_idx >= 0:
-            rst_rel = source_path[marker_idx + len(marker):]
+        rst_rel = None
+        for marker in _rst_doc_roots(version):
+            marker_idx = source_path.find(marker)
+            if marker_idx >= 0:
+                if version == "1.4" or (version.startswith("1.") and marker != "document/"):
+                    rst_rel = marker + source_path[marker_idx + len(marker):]
+                else:
+                    rst_rel = source_path[marker_idx + len(marker):]
+                break
+        if rst_rel is not None:
             pattern_clean = matched_pattern.rstrip("/")
             if not pattern_clean:
                 base_name = "top"
@@ -359,7 +405,7 @@ def classify_all(sources: list, repo: str, version: str = "6") -> list:
 
         type_ = category = matched_pattern = None
         if fmt == "rst":
-            type_, category, matched_pattern = classify_rst(path, rst_mapping)
+            type_, category, matched_pattern = classify_rst(path, rst_mapping, version)
         elif fmt == "md":
             if filename in md_mapping:
                 type_, category = md_mapping[filename]
@@ -377,7 +423,7 @@ def classify_all(sources: list, repo: str, version: str = "6") -> list:
 
         file_id = generate_id(filename, fmt, category,
                               source_path=path, matched_pattern=matched_pattern,
-                              xlsx_mapping=xlsx_mapping)
+                              xlsx_mapping=xlsx_mapping, version=version)
         classified.append({
             "source_path": path,
             "format": fmt,

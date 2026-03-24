@@ -295,9 +295,12 @@ print_header "9. Cloning Nablarch Official Repositories"
 
 NAB_OFFICIAL_V6_DIR=".lw/nab-official/v6"
 NAB_OFFICIAL_V5_DIR=".lw/nab-official/v5"
+NAB_OFFICIAL_V14_DIR=".lw/nab-official/v1.4"
+NAB_OFFICIAL_V13_DIR=".lw/nab-official/v1.3"
+NAB_OFFICIAL_V12_DIR=".lw/nab-official/v1.2"
 
 # Create directories
-for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" ".lw/research"; do
+for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" "$NAB_OFFICIAL_V14_DIR" "$NAB_OFFICIAL_V13_DIR" "$NAB_OFFICIAL_V12_DIR" ".lw/research"; do
     if [ ! -d "$dir" ]; then
         print_status info "Creating $dir directory..."
         mkdir -p "$dir"
@@ -336,7 +339,7 @@ clone_or_update_repo() {
     fi
 }
 
-# Clone Nablarch official repositories from catalog.json
+# Clone Nablarch official repositories from catalog.json (git)
 clone_repos_from_meta() {
     local version="$1"
     local target_dir="$2"
@@ -374,6 +377,7 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-batch.git" "$
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$NAB_OFFICIAL_V5_DIR" "v5-main"
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V5_DIR" "v5-main"
 
+
 # Final summary
 print_header "Setup Completed Successfully!"
 
@@ -386,4 +390,8 @@ echo ""
 echo "  3. Load environment and start Claude Code:"
 echo "     source .env"
 echo "     claude"
+echo ""
+echo "  (Optional) To generate knowledge files for Nablarch 1.x (v1.4/1.3/1.2):"
+echo "     SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh"
+echo "     # Then: ./tools/knowledge-creator/kc.sh gen 1.4"
 echo ""

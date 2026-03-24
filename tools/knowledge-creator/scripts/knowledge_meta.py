@@ -186,7 +186,7 @@ def detect_changed_files(ctx) -> list:
     return changed_ids
 
 
-def update_knowledge_meta(ctx, dry_run: bool = False):
+def update_knowledge_meta(ctx):
     """Update plugin/knowledge-creator.json after successful Phase M.
 
     Reads repo/branch from the existing knowledge-creator.json,
@@ -197,7 +197,6 @@ def update_knowledge_meta(ctx, dry_run: bool = False):
 
     Args:
         ctx: Context object (ctx.repo, ctx.version)
-        dry_run: If True, print what would be written but do not write.
     """
     if getattr(ctx, "test_file", None):
         print(f"   ⏭️ テストモードのため catalog.json の更新をスキップ")
@@ -227,12 +226,6 @@ def update_knowledge_meta(ctx, dry_run: bool = False):
 
     meta["generated_at"] = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y-%m-%dT%H:%M:%S+09:00")
     meta["sources"] = updated_sources
-
-    if dry_run:
-        import json
-        print(f"   [dry-run] catalog.json sources を更新予定:")
-        print(f"   {json.dumps({'generated_at': meta['generated_at'], 'sources': updated_sources}, ensure_ascii=False, indent=2)}")
-        return
 
     write_json(meta_path, meta)
     print(f"   💾 catalog.json 更新完了: {meta_path}")

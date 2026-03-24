@@ -35,9 +35,8 @@ KNOWLEDGE_SCHEMA = {
 
 
 class PhaseEFix:
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, run_claude_fn=None):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
         self.round_num = 1  # default; overridden by run()
@@ -94,10 +93,9 @@ class PhaseEFix:
                     return {"status": "error", "id": file_id,
                             "error": f"Output too small: {output_sec_chars}/{input_sec_chars} chars"}
 
-                if not self.dry_run:
-                    write_json(
-                        f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed
-                    )
+                write_json(
+                    f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed
+                )
                 return {"status": "fixed", "id": file_id}
         except Exception as e:
             return {"status": "error", "id": file_id, "error": str(e)}

@@ -14,9 +14,8 @@ from logger import get_logger
 
 
 class PhaseFFinalize:
-    def __init__(self, ctx, dry_run=False, catalog_for_links=None):
+    def __init__(self, ctx, catalog_for_links=None):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.logger = get_logger()
         # Catalog used for _build_link_maps (may differ from classified_list_path
         # when Phase M switches to merged catalog temporarily)
@@ -276,8 +275,7 @@ class PhaseFFinalize:
 
             if changed:
                 knowledge["sections"] = new_sections
-                if not self.dry_run:
-                    write_json(json_path, knowledge)
+                write_json(json_path, knowledge)
                 resolved += 1
 
         self.logger.info(f"  Skill JSON link resolution applied to {resolved} files")
@@ -322,9 +320,8 @@ class PhaseFFinalize:
             lines.append(f"  {', '.join(fields)}")
         lines.append("")
 
-        if not self.dry_run:
-            write_file(self.ctx.index_path, '\n'.join(lines))
-            self.logger.info(f"  Wrote: {self.ctx.index_path} ({len(entries)} entries)")
+        write_file(self.ctx.index_path, '\n'.join(lines))
+        self.logger.info(f"  Wrote: {self.ctx.index_path} ({len(entries)} entries)")
 
     def _convert_asset_paths(self, content, file_info):
         """Convert asset paths for browsable docs.
@@ -425,8 +422,7 @@ class PhaseFFinalize:
                 file_id = fi["id"]
                 md_dir = f"{self.ctx.docs_dir}/{type_}/{category}"
                 os.makedirs(md_dir, exist_ok=True)
-                if not self.dry_run:
-                    write_file(f"{md_dir}/{file_id}.md", md_content)
+                write_file(f"{md_dir}/{file_id}.md", md_content)
                 generated += 1
                 continue
             md_lines = [f"# {knowledge['title']}", ""]
@@ -466,8 +462,7 @@ class PhaseFFinalize:
                     md_lines.append("")
 
             md_path = f"{self.ctx.docs_dir}/{fi['type']}/{fi['category']}/{fi['id']}.md"
-            if not self.dry_run:
-                write_file(md_path, "\n".join(md_lines))
+            write_file(md_path, "\n".join(md_lines))
             generated += 1
 
         self.logger.info(f"  Generated {generated} docs")
@@ -504,8 +499,7 @@ class PhaseFFinalize:
                 lines.append("")
 
         readme_path = f"{docs_dir}/README.md"
-        if not self.dry_run:
-            write_file(readme_path, "\n".join(lines))
+        write_file(readme_path, "\n".join(lines))
         self.logger.info(f"  Generated docs README ({len(md_files)} pages)")
 
     def _generate_summary(self):
@@ -545,9 +539,8 @@ class PhaseFFinalize:
             },
         }
 
-        if not self.dry_run:
-            write_json(f"{log_dir}/summary.json", summary)
-            self.logger.info(f"  Summary: {log_dir}/summary.json")
+        write_json(f"{log_dir}/summary.json", summary)
+        self.logger.info(f"  Summary: {log_dir}/summary.json")
 
     def run(self):
         self._build_link_maps()

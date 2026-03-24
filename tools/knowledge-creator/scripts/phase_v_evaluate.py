@@ -57,9 +57,8 @@ INTEGRATE_SCHEMA = {
 
 
 class PhaseVEvaluate:
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, run_claude_fn=None):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
         self.evaluate_template = read_file(
@@ -183,7 +182,7 @@ class PhaseVEvaluate:
                 files_with_issues.append(data)
 
         file_evaluations = []
-        if not self.dry_run and files_with_issues:
+        if files_with_issues:
             file_map = {f["id"]: f for f in catalog.get("files", [])}
             for fdata in files_with_issues:
                 fid = fdata["file_id"]
@@ -202,7 +201,7 @@ class PhaseVEvaluate:
                     file_evaluations.append(eval_result)
 
         proposals = None
-        if not self.dry_run and file_evaluations:
+        if file_evaluations:
             self.logger.info("   V3: Generating improvement proposals...")
             proposals = self.integrate_proposals(file_evaluations, fact_data)
 

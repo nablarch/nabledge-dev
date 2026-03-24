@@ -27,14 +27,14 @@ def ctx_with_rst(tmp_path):
 
 class TestAllInclusive:
     def test_index_rst_included(self, ctx_with_rst):
-        result = Step1ListSources(ctx_with_rst, dry_run=True).run()
+        result = Step1ListSources(ctx_with_rst).run()
         filenames = [s["filename"] for s in result["sources"]]
         assert filenames.count("index.rst") == 4
 
     def test_underscore_dirs_excluded(self, ctx_with_rst):
-        result = Step1ListSources(ctx_with_rst, dry_run=True).run()
+        result = Step1ListSources(ctx_with_rst).run()
         assert not any("_static" in s["path"] for s in result["sources"])
 
     def test_total_count(self, ctx_with_rst):
-        result = Step1ListSources(ctx_with_rst, dry_run=True).run()
+        result = Step1ListSources(ctx_with_rst).run()
         assert len([s for s in result["sources"] if s["format"] == "rst"]) == 6

@@ -20,10 +20,10 @@ from run import Context, kc_gen, kc_regen_target, kc_fix, kc_fix_target, _run_pi
 
 
 # ============================================================
-# TestContext: redirects all permanent outputs to log_dir
+# IsolatedContext: redirects all permanent outputs to log_dir
 # ============================================================
 
-class TestContext(Context):
+class IsolatedContext(Context):
     """Context that redirects all permanent outputs to log_dir.
 
     Prevents E2E tests from modifying production files.
@@ -55,7 +55,7 @@ class TestContext(Context):
 def _make_ctx(version="6", run_id=None, max_rounds=2):
     if run_id is None:
         run_id = f"e2e-{uuid.uuid4().hex[:8]}"
-    ctx = TestContext(version=version, repo=REPO, concurrency=4, run_id=run_id)
+    ctx = IsolatedContext(version=version, repo=REPO, concurrency=4, run_id=run_id)
     ctx.max_rounds = max_rounds
     return ctx
 
@@ -258,6 +258,7 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
 
     Phase B ("phase-b" in log_dir): returns expected_knowledge_cache[file_id]
     Phase D ("findings" in schema): always returns has_issues
+    Phase V ("phase-v" in log_dir): returns minimal valid evaluate/integrate response
     Phase E (fallback): returns expected_fixed_cache[file_id]
     """
     def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
@@ -274,6 +275,31 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
                 stdout=json.dumps(knowledge),
                 stderr="",
             )
+
+        elif "phase-v" in log_dir_str:
+            # Phase V: evaluate or integrate - return minimal valid responses
+            # Must be checked before "findings" schema check since EVALUATE_SCHEMA
+            # contains "findings_assessment" which matches "findings" in schema_str.
+            if file_id == "integration":
+                return subprocess.CompletedProcess(
+                    args=["claude"],
+                    returncode=0,
+                    stdout=json.dumps({"proposals": []}),
+                    stderr="",
+                )
+            else:
+                return subprocess.CompletedProcess(
+                    args=["claude"],
+                    returncode=0,
+                    stdout=json.dumps({
+                        "file_id": file_id,
+                        "user_impact": "low",
+                        "needs_improvement": False,
+                        "reason": "mock",
+                        "findings_assessment": [],
+                    }),
+                    stderr="",
+                )
 
         elif "findings" in schema_str:
             # Phase D: always has_issues
@@ -443,12 +469,92 @@ def gen_state_v5(expected_v5):
         shutil.rmtree(ctx.log_dir)
 
 
-@pytest.fixture(scope="session", params=["6", "5"])
-def version_fixture(request, expected, expected_v5, gen_state, gen_state_v5):
-    """Parametrized fixture providing version, expected values, and gen_state for v6 and v5."""
-    if request.param == "6":
-        return {"version": "6", "expected": expected, "gen_state": gen_state}
-    return {"version": "5", "expected": expected_v5, "gen_state": gen_state_v5}
+@pytest.fixture(scope="session")
+def expected_v1_4():
+    """Generate all expected values for v1.4."""
+    return _build_expected(REPO, "1.4")
+
+
+@pytest.fixture(scope="session")
+def gen_state_v1_4(expected_v1_4):
+    ctx = _make_ctx(version="1.4", run_id=f"gen-state-v1-4-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v1_4["expected_knowledge_cache"],
+        expected_v1_4["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session")
+def expected_v1_3():
+    """Generate all expected values for v1.3."""
+    return _build_expected(REPO, "1.3")
+
+
+@pytest.fixture(scope="session")
+def gen_state_v1_3(expected_v1_3):
+    ctx = _make_ctx(version="1.3", run_id=f"gen-state-v1-3-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v1_3["expected_knowledge_cache"],
+        expected_v1_3["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session")
+def expected_v1_2():
+    """Generate all expected values for v1.2."""
+    return _build_expected(REPO, "1.2")
+
+
+@pytest.fixture(scope="session")
+def gen_state_v1_2(expected_v1_2):
+    ctx = _make_ctx(version="1.2", run_id=f"gen-state-v1-2-{uuid.uuid4().hex[:8]}", max_rounds=2)
+    counter = {"B": [], "D": [], "E": [], "F": []}
+    mock = _make_cc_mock(
+        expected_v1_2["expected_knowledge_cache"],
+        expected_v1_2["expected_fixed_cache"],
+        counter,
+    )
+
+    _run_with_mock(kc_gen, ctx, mock)
+
+    yield {"ctx": ctx, "counter": counter}
+
+    if os.path.exists(ctx.log_dir):
+        shutil.rmtree(ctx.log_dir)
+
+
+@pytest.fixture(scope="session", params=["6", "5", "1.4", "1.3", "1.2"])
+def version_fixture(request):
+    """Parametrized fixture providing version, expected values, and gen_state for v6, v5, and v1.x."""
+    version = request.param
+    if version == "6":
+        return {"version": "6", "expected": request.getfixturevalue("expected"), "gen_state": request.getfixturevalue("gen_state")}
+    elif version == "5":
+        return {"version": "5", "expected": request.getfixturevalue("expected_v5"), "gen_state": request.getfixturevalue("gen_state_v5")}
+    elif version == "1.4":
+        return {"version": "1.4", "expected": request.getfixturevalue("expected_v1_4"), "gen_state": request.getfixturevalue("gen_state_v1_4")}
+    elif version == "1.3":
+        return {"version": "1.3", "expected": request.getfixturevalue("expected_v1_3"), "gen_state": request.getfixturevalue("gen_state_v1_3")}
+    elif version == "1.2":
+        return {"version": "1.2", "expected": request.getfixturevalue("expected_v1_2"), "gen_state": request.getfixturevalue("gen_state_v1_2")}
 
 
 # ============================================================
@@ -478,17 +584,17 @@ class TestGen:
             _run_with_mock(kc_gen, ctx, mock)
 
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=U * ctx.max_rounds)
+                                expected_findings_count=U * (ctx.max_rounds + 1))
 
             # CC call counts
             assert len(counter["B"]) == U, (
                 f"counter['B'] expected {U}, got {len(counter['B'])}"
             )
-            assert len(counter["D"]) == U * 2, (
-                f"counter['D'] expected {U * 2}, got {len(counter['D'])}"
+            assert len(counter["D"]) == U * (ctx.max_rounds + 1), (
+                f"counter['D'] expected {U * (ctx.max_rounds + 1)}, got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == U * 2, (
-                f"counter['E'] expected {U * 2}, got {len(counter['E'])}"
+            assert len(counter["E"]) == U * ctx.max_rounds, (
+                f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
@@ -601,7 +707,7 @@ class TestGenResume:
             _run_with_mock(kc_gen, ctx, mock)
 
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=U * ctx.max_rounds)
+                                expected_findings_count=U * (ctx.max_rounds + 1))
 
             # CC call counts
             assert len(counter["B"]) == U - 1, (
@@ -610,11 +716,11 @@ class TestGenResume:
             assert preplace_entry["id"] not in counter["B"], (
                 f"Pre-placed file {preplace_entry['id']} should not be regenerated"
             )
-            assert len(counter["D"]) == U * 2, (
-                f"counter['D'] expected {U * 2}, got {len(counter['D'])}"
+            assert len(counter["D"]) == U * (ctx.max_rounds + 1), (
+                f"counter['D'] expected {U * (ctx.max_rounds + 1)}, got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == U * 2, (
-                f"counter['E'] expected {U * 2}, got {len(counter['E'])}"
+            assert len(counter["E"]) == U * ctx.max_rounds, (
+                f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
@@ -661,14 +767,14 @@ class TestRegenTarget:
             _run_with_mock(kc_regen_target, ctx, mock, targets=target_base_names)
 
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=target_count * ctx.max_rounds)
+                                expected_findings_count=target_count * ctx.max_rounds + U)
 
             # CC call counts
             assert len(counter["B"]) == target_count, (
                 f"counter['B'] expected {target_count}, got {len(counter['B'])}"
             )
-            assert len(counter["D"]) == target_count * ctx.max_rounds, (
-                f"counter['D'] expected {target_count * ctx.max_rounds}, "
+            assert len(counter["D"]) == target_count * ctx.max_rounds + U, (
+                f"counter['D'] expected {target_count * ctx.max_rounds + U}, "
                 f"got {len(counter['D'])}"
             )
             assert len(counter["E"]) == target_count * ctx.max_rounds, (
@@ -728,14 +834,14 @@ class TestFix:
             )
 
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=U * ctx.max_rounds)
+                                expected_findings_count=U * (ctx.max_rounds + 1))
 
             # CC call counts
             assert len(counter["B"]) == 0, (
                 f"counter['B'] expected 0 (no Phase B in fix), got {len(counter['B'])}"
             )
-            assert len(counter["D"]) == U * ctx.max_rounds, (
-                f"counter['D'] expected {U * ctx.max_rounds}, got {len(counter['D'])}"
+            assert len(counter["D"]) == U * (ctx.max_rounds + 1), (
+                f"counter['D'] expected {U * (ctx.max_rounds + 1)}, got {len(counter['D'])}"
             )
             assert len(counter["E"]) == U * ctx.max_rounds, (
                 f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
@@ -785,14 +891,14 @@ class TestFixTarget:
             _run_with_mock(kc_fix_target, ctx, mock, targets=target_base_names)
 
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=target_count * ctx.max_rounds)
+                                expected_findings_count=target_count * ctx.max_rounds + U)
 
             # CC call counts
             assert len(counter["B"]) == 0, (
                 f"counter['B'] expected 0 (no Phase B in fix), got {len(counter['B'])}"
             )
-            assert len(counter["D"]) == target_count * ctx.max_rounds, (
-                f"counter['D'] expected {target_count * ctx.max_rounds}, "
+            assert len(counter["D"]) == target_count * ctx.max_rounds + U, (
+                f"counter['D'] expected {target_count * ctx.max_rounds + U}, "
                 f"got {len(counter['D'])}"
             )
             assert len(counter["E"]) == target_count * ctx.max_rounds, (
