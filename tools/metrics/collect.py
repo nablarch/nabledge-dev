@@ -210,19 +210,6 @@ def collect_issues(repo: str, since: datetime, token: str | None) -> list[dict]:
     return [i for i in items if "pull_request" not in i]
 
 
-def collect_traffic_views(repo: str, token: str | None) -> dict:
-    """Fetch page views traffic data."""
-    print(f"[info] Fetching traffic views for {repo}...", file=sys.stderr)
-    data = gh_api(f"repos/{repo}/traffic/views", token)
-    return data or {}
-
-
-def collect_traffic_clones(repo: str, token: str | None) -> dict:
-    """Fetch git clones traffic data."""
-    print(f"[info] Fetching traffic clones for {repo}...", file=sys.stderr)
-    data = gh_api(f"repos/{repo}/traffic/clones", token)
-    return data or {}
-
 
 # ---------------------------------------------------------------------------
 # Metric calculation
@@ -654,8 +641,6 @@ def render_scorecard(weekly: list[dict]) -> str:
 def render_metrics_md(
     dev_repo: str,
     weekly: list[dict],
-    traffic_views: dict | None,
-    traffic_clones: dict | None,
     today: str,
     sloc_current: dict | None = None,
     sloc_previous: dict | None = None,
@@ -747,42 +732,6 @@ def render_metrics_md(
     if sloc_current:
         lines.extend(render_sloc_section(sloc_current, sloc_previous or {}, sloc_history or []))
 
-    # --- Nabledge Adoption ---
-    if traffic_views or traffic_clones:
-        lines.append("## Nabledge Adoption (nablarch/nabledge)")
-        lines.append("")
-
-        # Page views chart
-        if traffic_views and traffic_views.get("views"):
-            views_data = traffic_views["views"]
-            # Sort by timestamp
-            views_data = sorted(views_data, key=lambda x: x.get("timestamp", ""))
-            view_labels = [d["timestamp"][:10][5:] for d in views_data]  # MM-DD
-            view_labels = [lbl.replace("-", "/") for lbl in view_labels]
-            view_counts = [d.get("count", 0) for d in views_data]
-
-            lines.append("### Page Views (last 14 days)")
-            lines.append("")
-            lines.append(mermaid_xychart_bar("Page Views", view_labels, "Views", view_counts))
-            lines.append("")
-
-        # Summary table
-        total_views = traffic_views.get("count", 0) if traffic_views else 0
-        unique_visitors = traffic_views.get("uniques", 0) if traffic_views else 0
-        total_clones = traffic_clones.get("count", 0) if traffic_clones else 0
-
-        lines.append("| Metric | Value |")
-        lines.append("|--------|------:|")
-        lines.append(f"| Page views (14 days) | {total_views} |")
-        lines.append(f"| Unique visitors (14 days) | {unique_visitors} |")
-        lines.append(f"| Git clones (14 days) | {total_clones} |")
-        lines.append("")
-    else:
-        lines.append("## Nabledge Adoption (nablarch/nabledge)")
-        lines.append("")
-        lines.append("_Skipped: NABLEDGE_SYNC_TOKEN not available._")
-        lines.append("")
-
     return "\n".join(lines)
 
 
@@ -792,14 +741,9 @@ def render_metrics_md(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Collect nabledge-dev metrics and write docs/metrics.md")
-    parser.add_argument("--token", metavar="TOKEN", help="NABLEDGE_SYNC_TOKEN for nablarch/nabledge access")
     args = parser.parse_args()
 
     dev_repo = "nablarch/nabledge-dev"
-    nabledge_repo = "nablarch/nabledge"
-
-    # NABLEDGE_SYNC_TOKEN: prefer CLI arg, then env var
-    nabledge_token = args.token or os.environ.get("NABLEDGE_SYNC_TOKEN")
 
     # Determine repo root early (needed for git log and SLOC)
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -823,17 +767,6 @@ def main() -> None:
     for w in weekly:
         w["prs_opened"] = prs_opened_by_week.get(w["label"], 0)
 
-    # --- nablarch/nabledge data (optional) ---
-    traffic_views = None
-    traffic_clones = None
-
-    if nabledge_token:
-        print(f"[info] NABLEDGE_SYNC_TOKEN available — collecting adoption metrics...", file=sys.stderr)
-        traffic_views = collect_traffic_views(nabledge_repo, nabledge_token)
-        traffic_clones = collect_traffic_clones(nabledge_repo, nabledge_token)
-    else:
-        print("[info] NABLEDGE_SYNC_TOKEN not set — skipping adoption metrics.", file=sys.stderr)
-
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
     snapshot_path = os.path.join(script_dir, "sloc-snapshot.json")
@@ -853,7 +786,7 @@ def main() -> None:
 
     print("[info] Rendering docs/metrics.md...", file=sys.stderr)
     content = render_metrics_md(
-        dev_repo, weekly, traffic_views, traffic_clones, today,
+        dev_repo, weekly, today,
         sloc_current=sloc_current, sloc_previous=sloc_previous, sloc_history=sloc_history,
     )
 
