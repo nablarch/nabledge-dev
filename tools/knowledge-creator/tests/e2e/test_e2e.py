@@ -20,10 +20,10 @@ from run import Context, kc_gen, kc_regen_target, kc_fix, kc_fix_target, _run_pi
 
 
 # ============================================================
-# TestContext: redirects all permanent outputs to log_dir
+# IsolatedContext: redirects all permanent outputs to log_dir
 # ============================================================
 
-class TestContext(Context):
+class IsolatedContext(Context):
     """Context that redirects all permanent outputs to log_dir.
 
     Prevents E2E tests from modifying production files.
@@ -55,7 +55,7 @@ class TestContext(Context):
 def _make_ctx(version="6", run_id=None, max_rounds=2):
     if run_id is None:
         run_id = f"e2e-{uuid.uuid4().hex[:8]}"
-    ctx = TestContext(version=version, repo=REPO, concurrency=4, run_id=run_id)
+    ctx = IsolatedContext(version=version, repo=REPO, concurrency=4, run_id=run_id)
     ctx.max_rounds = max_rounds
     return ctx
 
