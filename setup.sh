@@ -377,18 +377,22 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$
 # Check Nablarch 1.x symlinks (v1.4/v1.3/v1.2)
 print_header "10. Checking Nablarch 1.x Documentation (v1.4/1.3/1.2)"
 
-V1X_VERSIONS=("1.4:1.4_maintain" "1.3:1.3_maintain" "1.2:1.2_maintain")
+# v1.4: .lw/nab-official/v1.4/ is a symlink to the repo root (contains document/, biz_sample/, ui_dev/, workflow/)
+# v1.3: .lw/nab-official/v1.3/ is a symlink to a parent dir that contains 1.3_maintain/
+# v1.2: .lw/nab-official/v1.2/ is a symlink to a parent dir that contains 1.2_maintain/
+declare -A V1X_CHECK_PATHS
+V1X_CHECK_PATHS["1.4"]=".lw/nab-official/v1.4/document"
+V1X_CHECK_PATHS["1.3"]=".lw/nab-official/v1.3/1.3_maintain"
+V1X_CHECK_PATHS["1.2"]=".lw/nab-official/v1.2/1.2_maintain"
 V1X_MISSING=()
 
-for entry in "${V1X_VERSIONS[@]}"; do
-    ver="${entry%%:*}"
-    dir_name="${entry##*:}"
-    link_path=".lw/nab-official/v${ver}/${dir_name}"
-    if [ -e "$link_path" ]; then
-        print_status ok "v${ver}: ${link_path} exists"
+for ver in "1.4" "1.3" "1.2"; do
+    check_path="${V1X_CHECK_PATHS[$ver]}"
+    if [ -e "$check_path" ]; then
+        print_status ok "v${ver}: ${check_path} exists"
     else
         V1X_MISSING+=("$ver")
-        print_status warning "v${ver}: ${link_path} not found (skip)"
+        print_status warning "v${ver}: ${check_path} not found (skip)"
     fi
 done
 
@@ -400,9 +404,14 @@ if [ ${#V1X_MISSING[@]} -gt 0 ]; then
     echo ""
     echo "  Run the following yourself from the repository root (replace /path/to/ with actual local paths):"
     echo ""
-    echo "    ln -s /path/to/1.4_maintain .lw/nab-official/v1.4/1.4_maintain"
-    echo "    ln -s /path/to/1.3_maintain .lw/nab-official/v1.3/1.3_maintain"
-    echo "    ln -s /path/to/1.2_maintain .lw/nab-official/v1.2/1.2_maintain"
+    echo "  v1.4 (repo root contains document/, biz_sample/, ui_dev/, workflow/):"
+    echo "    ln -s /path/to/v1.4_repo_root .lw/nab-official/v1.4"
+    echo ""
+    echo "  v1.3 (parent dir contains 1.3_maintain/):"
+    echo "    ln -s /path/to/v1.3_parent .lw/nab-official/v1.3"
+    echo ""
+    echo "  v1.2 (parent dir contains 1.2_maintain/):"
+    echo "    ln -s /path/to/v1.2_parent .lw/nab-official/v1.2"
     echo ""
     echo "  Then generate knowledge files:"
     echo "    ./tools/knowledge-creator/kc.sh gen 1.4"
