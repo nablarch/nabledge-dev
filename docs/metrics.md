@@ -8,7 +8,7 @@
 |--------|-------:|:-----:|
 | Deployment Frequency | 27 PRs/week | **Elite** |
 | Lead Time for Changes | 11.3h | High |
-| Change Failure Rate | 0% | **Elite** |
+| Change Failure Rate | 30% | Low |
 | MTTR | — | N/A |
 
 <details><summary>Benchmark criteria</summary>
@@ -42,8 +42,8 @@ xychart-beta
 xychart-beta
   title "Change Failure Rate (bug or fix labeled PRs / all merged PRs %)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "% of PRs" 0 --> 5
-  bar [0, 0, 0, 0, 0, 0, 0]
+  y-axis "% of PRs" 0 --> 36
+  bar [0, 0, 16, 11.1, 25, 29.6, 0]
 ```
 
 > **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100
