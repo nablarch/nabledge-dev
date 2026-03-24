@@ -38,9 +38,8 @@ FINDINGS_SCHEMA = {
 
 
 class PhaseDContentCheck:
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, run_claude_fn=None):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
         self.round_num = 1  # default; overridden by run()
@@ -130,8 +129,7 @@ class PhaseDContentCheck:
             )
             if result.returncode == 0:
                 findings = json.loads(result.stdout)
-                if not self.dry_run:
-                    write_json(findings_path, findings)
+                write_json(findings_path, findings)
                 return findings
         except Exception:
             pass
@@ -145,10 +143,6 @@ class PhaseDContentCheck:
         if target_ids is not None:
             target_set = set(target_ids)
             files = [f for f in files if f["id"] in target_set]
-
-        if self.dry_run:
-            self.logger.info(f"Would check {len(files)} files")
-            return {"issues_count": 0, "issue_file_ids": []}
 
         self.round_num = round_num
         os.makedirs(self.ctx.findings_dir, exist_ok=True)

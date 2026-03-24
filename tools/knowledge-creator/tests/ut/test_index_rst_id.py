@@ -6,7 +6,7 @@ from step2_classify import Step2Classify
 class TestIndexRstId:
     @pytest.fixture
     def c(self, ctx):
-        return Step2Classify(ctx, dry_run=True)
+        return Step2Classify(ctx)
 
     def test_at_pattern_root(self, c):
         assert c.generate_id(

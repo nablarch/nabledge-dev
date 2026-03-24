@@ -31,8 +31,8 @@ class TestStep2PreservesCatalogFields:
             "files": []
         })
 
-        sources = Step1ListSources(ctx, dry_run=False).run()
-        Step2Classify(ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        Step2Classify(ctx, sources_data=sources).run()
 
         catalog = load_json(ctx.classified_list_path)
         assert len(catalog["sources"]) == 2
@@ -53,8 +53,8 @@ class TestStep2PreservesCatalogFields:
             "files": []
         })
 
-        sources = Step1ListSources(ctx, dry_run=False).run()
-        Step2Classify(ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        Step2Classify(ctx, sources_data=sources).run()
 
         catalog = load_json(ctx.classified_list_path)
         assert catalog["generated_at"] == "2026-01-01T00:00:00Z"
@@ -72,8 +72,8 @@ class TestStep2PreservesCatalogFields:
             "files": [{"id": "old-file"}]
         })
 
-        sources = Step1ListSources(ctx, dry_run=False).run()
-        Step2Classify(ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        Step2Classify(ctx, sources_data=sources).run()
 
         catalog = load_json(ctx.classified_list_path)
         file_ids = [f["id"] for f in catalog["files"]]
@@ -89,8 +89,8 @@ class TestStep2PreservesCatalogFields:
         if os.path.exists(ctx.classified_list_path):
             os.remove(ctx.classified_list_path)
 
-        sources = Step1ListSources(ctx, dry_run=False).run()
-        Step2Classify(ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        Step2Classify(ctx, sources_data=sources).run()
 
         assert os.path.exists(ctx.classified_list_path)
         catalog = load_json(ctx.classified_list_path)

@@ -89,9 +89,8 @@ class Step2Classify:
     SPLIT_SECTION_THRESHOLD = 2  # h2セクションがこの数以上あれば分割
     LINE_GROUP_THRESHOLD = 400  # セクションをグループ化する行数の閾値（h3展開とグループ化の両方に使用）
 
-    def __init__(self, ctx, dry_run=False, sources_data=None):
+    def __init__(self, ctx, sources_data=None):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.sources_data = sources_data
         self.logger = get_logger()
         mappings = _load_mappings(ctx.repo, ctx.version)
@@ -494,7 +493,6 @@ class Step2Classify:
 
     def run(self):
         """Execute Step 2: Classify all source files"""
-        # Use cached data in dry-run mode, otherwise load from file
         if self.sources_data:
             sources = self.sources_data
         else:
@@ -765,9 +763,8 @@ class Step2Classify:
             self.logger.error(f"   If no existing type/category fits, add a new one.")
             raise SystemExit(1)
 
-        if not self.dry_run:
-            write_json(self.ctx.classified_list_path, output)
-            rel_path = os.path.relpath(self.ctx.classified_list_path, self.ctx.repo)
-            self.logger.info(f"\n   💾Saved: {rel_path}")
+        write_json(self.ctx.classified_list_path, output)
+        rel_path = os.path.relpath(self.ctx.classified_list_path, self.ctx.repo)
+        self.logger.info(f"\n   💾Saved: {rel_path}")
 
         return output

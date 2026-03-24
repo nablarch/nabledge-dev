@@ -51,8 +51,8 @@ class TestTop3Mode:
         real_ctx.test_file = "largest3.json"
 
         # Phase A
-        sources = Step1ListSources(real_ctx, dry_run=False).run()
-        Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(real_ctx).run()
+        Step2Classify(real_ctx, sources_data=sources).run()
 
         # Load classified result
         classified = load_json(real_ctx.classified_list_path)
@@ -79,8 +79,8 @@ class TestTop3Mode:
         """largest3.json: 分割ファイルの全パーツが含まれる"""
         real_ctx.test_file = "largest3.json"
 
-        sources = Step1ListSources(real_ctx, dry_run=False).run()
-        Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(real_ctx).run()
+        Step2Classify(real_ctx, sources_data=sources).run()
 
         classified = load_json(real_ctx.classified_list_path)
 
@@ -104,8 +104,8 @@ class TestComprehensiveMode:
         """batch.json: 37ソースファイル → 51エントリー（分割後）"""
         real_ctx.test_file = "batch.json"
 
-        sources = Step1ListSources(real_ctx, dry_run=False).run()
-        Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(real_ctx).run()
+        Step2Classify(real_ctx, sources_data=sources).run()
 
         classified = load_json(real_ctx.classified_list_path)
 
@@ -122,8 +122,8 @@ class TestComprehensiveMode:
             test_config = json.load(f)
         expected_ids = set(test_config["files"])
 
-        sources = Step1ListSources(real_ctx, dry_run=False).run()
-        Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(real_ctx).run()
+        Step2Classify(real_ctx, sources_data=sources).run()
 
         classified = load_json(real_ctx.classified_list_path)
 
@@ -140,8 +140,8 @@ class TestComprehensiveMode:
         """batch.json: 複数カテゴリをカバー"""
         real_ctx.test_file = "batch.json"
 
-        sources = Step1ListSources(real_ctx, dry_run=False).run()
-        Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(real_ctx).run()
+        Step2Classify(real_ctx, sources_data=sources).run()
 
         classified = load_json(real_ctx.classified_list_path)
 
@@ -184,8 +184,8 @@ class TestTestModeEdgeCases:
             with open(test_file_path, "w") as f:
                 json.dump(config, f)
 
-            sources = Step1ListSources(real_ctx, dry_run=False).run()
-            result = Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+            sources = Step1ListSources(real_ctx).run()
+            result = Step2Classify(real_ctx, sources_data=sources).run()
 
             classified = load_json(real_ctx.classified_list_path)
 
@@ -206,8 +206,8 @@ class TestTestModeEdgeCases:
         """テストモードでも分割構造が保持される"""
         real_ctx.test_file = "largest3.json"
 
-        sources = Step1ListSources(real_ctx, dry_run=False).run()
-        Step2Classify(real_ctx, dry_run=False, sources_data=sources).run()
+        sources = Step1ListSources(real_ctx).run()
+        Step2Classify(real_ctx, sources_data=sources).run()
 
         classified = load_json(real_ctx.classified_list_path)
 

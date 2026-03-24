@@ -145,7 +145,7 @@ class TestPhaseVRun:
                 stdout=json.dumps(output, ensure_ascii=False), stderr=""
             )
 
-        phase_v = PhaseVEvaluate(ctx, dry_run=False, run_claude_fn=mock_v)
+        phase_v = PhaseVEvaluate(ctx, run_claude_fn=mock_v)
         result = phase_v.run(final_round=3)
 
         assert result["fact_data"]["summary"]["final"]["total"] == 1
@@ -155,27 +155,3 @@ class TestPhaseVRun:
         assert call_count["integrate"] == 1
         assert result["proposals"]["proposals"][0]["title"] == "Fix handler warnings"
 
-    def test_run_dry_run_skips_cc(self, tmp_path):
-        """dry_run=True の場合、CC は呼ばれない。"""
-        from run import Context
-        from phase_v_evaluate import PhaseVEvaluate
-
-        ctx = Context(version='6', repo=str(tmp_path), concurrency=1, max_rounds=2)
-        os.makedirs(ctx.cache_dir, exist_ok=True)
-        with open(ctx.classified_list_path, 'w') as f:
-            json.dump({"generated_at": "2026-01-01T00:00:00Z", "sources": [], "files": []}, f)
-
-        prompts_dir = f"{ctx.repo}/tools/knowledge-creator/prompts"
-        os.makedirs(prompts_dir, exist_ok=True)
-        real_prompts = os.path.join(os.path.dirname(__file__), '../../prompts')
-        for fn in os.listdir(real_prompts):
-            shutil.copy(os.path.join(real_prompts, fn), os.path.join(prompts_dir, fn))
-
-        def should_not_be_called(**kw):
-            raise AssertionError("CC should not be called in dry_run mode")
-
-        phase_v = PhaseVEvaluate(ctx, dry_run=True, run_claude_fn=should_not_be_called)
-        result = phase_v.run(final_round=3)
-
-        assert result["file_evaluations"] == []
-        assert result["proposals"] is None

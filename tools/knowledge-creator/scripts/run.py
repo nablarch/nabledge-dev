@@ -119,7 +119,6 @@ def main():
     parser.add_argument("--phase", type=str, default=None,
                         help="Phases to run (e.g. 'B', 'CD', 'BCDEF'). Default: all")
     parser.add_argument("--concurrency", type=int, default=4)
-    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", type=str, default=None,
                         help="Test mode: specify test file (e.g., largest3.json)")
     parser.add_argument("--max-rounds", type=int, default=2,
@@ -183,7 +182,6 @@ def main():
         logger.info(f"   Phases: {args.phase or 'ABCDEMV (all)'}")
         logger.info(f"   Max Rounds: {args.max_rounds}")
         logger.info(f"   Concurrency: {args.concurrency}")
-        logger.info(f"   Dry-run: {'✅Yes' if args.dry_run else '❌No'}")
         logger.info(f"   Repository: {repo_root}")
         logger.info("")
 
@@ -251,7 +249,6 @@ def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False):
         version=ctx.version,
         phase=phase,
         concurrency=ctx.concurrency,
-        dry_run=False,
         test=ctx.test_file,
         max_rounds=ctx.max_rounds,
         clean_phase=clean_phase,
@@ -345,15 +342,15 @@ def _run_pipeline(ctx, args):
         logger.info("   └─ Scanning documentation sources...")
         from step1_list_sources import Step1ListSources
         from step2_classify import Step2Classify
-        sources = Step1ListSources(ctx, dry_run=args.dry_run).run()
-        Step2Classify(ctx, dry_run=args.dry_run, sources_data=sources).run()
+        sources = Step1ListSources(ctx).run()
+        Step2Classify(ctx, sources_data=sources).run()
 
     # Phase B
     if "B" in phases:
         logger.info("\n🤖Phase B: Generate")
         logger.info("   └─ Converting documentation to knowledge files...")
         from phase_b_generate import PhaseBGenerate
-        b_result = PhaseBGenerate(ctx, dry_run=args.dry_run).run(target_ids=effective_target)
+        b_result = PhaseBGenerate(ctx).run(target_ids=effective_target)
         if b_result:
             report["phase_b"] = b_result
 
@@ -392,7 +389,7 @@ def _run_pipeline(ctx, args):
                 effective_ids = effective_target
             else:
                 effective_ids = pass_ids
-            d_result = PhaseDContentCheck(ctx, dry_run=args.dry_run).run(
+            d_result = PhaseDContentCheck(ctx).run(
                 target_ids=effective_ids, round_num=round_num
             )
             findings_summary = _aggregate_findings(ctx, round_num=round_num)
@@ -418,7 +415,7 @@ def _run_pipeline(ctx, args):
                 logger.info("\n🔧Phase E: Fix")
                 logger.info("   └─ Applying fixes to knowledge files...")
                 from phase_e_fix import PhaseEFix
-                e_result = PhaseEFix(ctx, dry_run=args.dry_run).run(
+                e_result = PhaseEFix(ctx).run(
                     target_ids=d_result["issue_file_ids"], round_num=round_num
                 )
                 if e_result:
@@ -447,27 +444,27 @@ def _run_pipeline(ctx, args):
         logger.info("\n📦Phase M: Merge + Resolve + Finalize")
         logger.info("   └─ Merging, resolving links, generating docs...")
         from phase_m_finalize import PhaseMFinalize
-        PhaseMFinalize(ctx, dry_run=args.dry_run).run()
+        PhaseMFinalize(ctx).run()
 
         from knowledge_meta import update_knowledge_meta
         if ctx.test_file:
             logger.info("\n📝 catalog.json 更新（テストモード: スキップ）")
         else:
             logger.info("\n📝 catalog.json 更新")
-            update_knowledge_meta(ctx, dry_run=args.dry_run)
+            update_knowledge_meta(ctx)
 
     # Phase F (backward compat: only when explicitly specified without M)
     if "F" in phases and "M" not in phases:
         logger.info("\n📦Phase F: Finalize")
         logger.info("   └─ Generating browsable docs and index...")
         from phase_f_finalize import PhaseFFinalize
-        PhaseFFinalize(ctx, dry_run=args.dry_run).run()
+        PhaseFFinalize(ctx).run()
 
     # Phase V: Quality Evaluation
     if "V" in phases and report.get("final_verification"):
         from phase_v_evaluate import PhaseVEvaluate
         final_round = report["final_verification"]["round"]
-        v_result = PhaseVEvaluate(ctx, dry_run=args.dry_run).run(final_round=final_round)
+        v_result = PhaseVEvaluate(ctx).run(final_round=final_round)
         report["quality_evaluation"] = v_result
 
     finished_at = datetime.now(timezone.utc).isoformat()
@@ -504,7 +501,7 @@ def _run_final_verification(ctx, max_rounds, phases):
         logger.info("\n🔍Phase D: Content Check (Final)")
         from phase_d_content_check import PhaseDContentCheck
         pass_ids = c_result.get("pass_ids") if c_result else None
-        d_result = PhaseDContentCheck(ctx, dry_run=False).run(
+        d_result = PhaseDContentCheck(ctx).run(
             target_ids=pass_ids, round_num=final_round
         )
         findings_summary = _aggregate_findings(ctx, round_num=final_round)

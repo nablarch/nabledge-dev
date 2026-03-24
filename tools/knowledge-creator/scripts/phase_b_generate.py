@@ -15,9 +15,8 @@ from logger import get_logger
 
 
 class PhaseBGenerate:
-    def __init__(self, ctx, dry_run=False, run_claude_fn=None):
+    def __init__(self, ctx, run_claude_fn=None):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
         self.prompt_template = read_file(
@@ -51,9 +50,8 @@ class PhaseBGenerate:
                 ref = ref.strip()
                 src = os.path.join(source_dir, ref)
                 if os.path.exists(src):
-                    if not self.dry_run:
-                        os.makedirs(assets_dir_abs, exist_ok=True)
-                        shutil.copy2(src, os.path.join(assets_dir_abs, os.path.basename(ref)))
+                    os.makedirs(assets_dir_abs, exist_ok=True)
+                    shutil.copy2(src, os.path.join(assets_dir_abs, os.path.basename(ref)))
                     assets.append({
                         "original": ref,
                         "assets_path": f"{assets_dir_rel}{os.path.basename(ref)}"
@@ -63,9 +61,8 @@ class PhaseBGenerate:
                 ref = ref.strip()
                 src = os.path.join(source_dir, ref)
                 if os.path.exists(src):
-                    if not self.dry_run:
-                        os.makedirs(assets_dir_abs, exist_ok=True)
-                        shutil.copy2(src, os.path.join(assets_dir_abs, os.path.basename(ref)))
+                    os.makedirs(assets_dir_abs, exist_ok=True)
+                    shutil.copy2(src, os.path.join(assets_dir_abs, os.path.basename(ref)))
                     assets.append({
                         "original": ref,
                         "assets_path": f"{assets_dir_rel}{os.path.basename(ref)}"
@@ -168,30 +165,26 @@ class PhaseBGenerate:
         )
 
         if result.returncode != 0:
-            if not self.dry_run:
-                write_json(log_path, {"file_id": file_id, "status": "error", "error": result.stderr})
+            write_json(log_path, {"file_id": file_id, "status": "error", "error": result.stderr})
             return {"status": "error", "id": file_id, "error": result.stderr}
 
         try:
             knowledge_json = self._extract_json(result.stdout)
         except (json.JSONDecodeError, ValueError) as e:
-            if not self.dry_run:
-                write_json(log_path, {"file_id": file_id, "status": "error", "error": str(e)})
+            write_json(log_path, {"file_id": file_id, "status": "error", "error": str(e)})
             return {"status": "error", "id": file_id, "error": str(e)}
 
-        if not self.dry_run:
-            write_json(output_path, knowledge_json)
+        write_json(output_path, knowledge_json)
 
         finished_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         duration = (datetime.fromisoformat(finished_at.rstrip("Z"))
                     - datetime.fromisoformat(started_at.rstrip("Z"))).seconds
 
-        if not self.dry_run:
-            write_json(log_path, {
-                "file_id": file_id, "status": "ok",
-                "started_at": started_at, "finished_at": finished_at,
-                "duration_sec": duration
-            })
+        write_json(log_path, {
+            "file_id": file_id, "status": "ok",
+            "started_at": started_at, "finished_at": finished_at,
+            "duration_sec": duration
+        })
 
         return {"status": "ok", "id": file_id}
 
@@ -202,10 +195,6 @@ class PhaseBGenerate:
         if target_ids is not None:
             target_set = set(target_ids)
             files = [f for f in files if f["id"] in target_set]
-
-        if self.dry_run:
-            self.logger.info(f"Would generate {len(files)} knowledge files")
-            return
 
         with ThreadPoolExecutor(max_workers=self.ctx.concurrency) as executor:
             futures = [executor.submit(self.generate_one, fi) for fi in files]

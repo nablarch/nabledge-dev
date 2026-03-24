@@ -45,9 +45,8 @@ def _rst_scan_roots(version: str) -> list:
 
 
 class Step1ListSources:
-    def __init__(self, ctx, dry_run=False):
+    def __init__(self, ctx):
         self.ctx = ctx
-        self.dry_run = dry_run
         self.logger = get_logger()
 
     def run(self):
@@ -112,9 +111,8 @@ class Step1ListSources:
         self.logger.info(f"      📄MD: {sum(1 for s in sources if s['format'] == 'md')}")
         self.logger.info(f"      📊Excel: {sum(1 for s in sources if s['format'] == 'xlsx')}")
 
-        if not self.dry_run:
-            write_json(self.ctx.source_list_path, output)
-            rel_path = os.path.relpath(self.ctx.source_list_path, self.ctx.repo)
-            self.logger.info(f"\n   💾Saved: {rel_path}")
+        write_json(self.ctx.source_list_path, output)
+        rel_path = os.path.relpath(self.ctx.source_list_path, self.ctx.repo)
+        self.logger.info(f"\n   💾Saved: {rel_path}")
 
         return output

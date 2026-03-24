@@ -56,7 +56,7 @@ class TestPhaseDRoundOutput:
         """check_one returns cached result if _r{N}.json already exists."""
         from phase_d_content_check import PhaseDContentCheck
 
-        checker = PhaseDContentCheck(ctx, dry_run=True)
+        checker = PhaseDContentCheck(ctx)
         checker.round_num = 2
 
         os.makedirs(ctx.findings_dir, exist_ok=True)
@@ -156,7 +156,7 @@ class TestPhaseEPreservesHistory:
         """fix_one returns skip if _r{N}.json does not exist."""
         from phase_e_fix import PhaseEFix
 
-        fixer = PhaseEFix(ctx, dry_run=True)
+        fixer = PhaseEFix(ctx)
         fixer.round_num = 1
 
         file_info = {"id": "no-findings", "source_path": "x", "output_path": "x", "format": "rst"}

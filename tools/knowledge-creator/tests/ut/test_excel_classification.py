@@ -53,7 +53,7 @@ class TestExcelScanning:
         """releases/ディレクトリのExcelファイルがスキャンされる。"""
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
-        result = Step1ListSources(ctx, dry_run=True).run()
+        result = Step1ListSources(ctx).run()
 
         xlsx_files = [s for s in result["sources"] if s["format"] == "xlsx"]
         release_files = [
@@ -70,7 +70,7 @@ class TestExcelScanning:
         """セキュリティ対応表がスキャンされる。"""
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
-        result = Step1ListSources(ctx, dry_run=True).run()
+        result = Step1ListSources(ctx).run()
 
         xlsx_files = [s for s in result["sources"] if s["format"] == "xlsx"]
         security_files = [
@@ -88,8 +88,8 @@ class TestExcelClassification:
     def _make_classifier(self, temp_repo):
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
-        sources = Step1ListSources(ctx, dry_run=True).run()
-        return Step2Classify(ctx, dry_run=True, sources_data=sources)
+        sources = Step1ListSources(ctx).run()
+        return Step2Classify(ctx, sources_data=sources)
 
     def _classify_xlsx_by_pattern(self, classifier, filename):
         """Helper: match filename against xlsx_patterns."""
@@ -125,8 +125,8 @@ class TestExcelIDGeneration:
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
 
-        sources = Step1ListSources(ctx, dry_run=True).run()
-        classifier = Step2Classify(ctx, dry_run=True, sources_data=sources)
+        sources = Step1ListSources(ctx).run()
+        classifier = Step2Classify(ctx, sources_data=sources)
 
         filename = "Nablarch機能のセキュリティ対応表.xlsx"
         file_id = classifier.generate_id(filename, "xlsx", "security-check")
@@ -139,8 +139,8 @@ class TestExcelIDGeneration:
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
 
-        sources = Step1ListSources(ctx, dry_run=True).run()
-        classifier = Step2Classify(ctx, dry_run=True, sources_data=sources)
+        sources = Step1ListSources(ctx).run()
+        classifier = Step2Classify(ctx, sources_data=sources)
 
         filename = "nablarch6u1-releasenote.xlsx"
         file_id = classifier.generate_id(filename, "xlsx", "releases")
@@ -153,8 +153,8 @@ class TestExcelIDGeneration:
         from run import Context
         ctx = Context(version="6", repo=temp_repo, concurrency=1)
 
-        sources = Step1ListSources(ctx, dry_run=True).run()
-        classifier = Step2Classify(ctx, dry_run=True, sources_data=sources)
+        sources = Step1ListSources(ctx).run()
+        classifier = Step2Classify(ctx, sources_data=sources)
 
         # _xlsx_mappingに含まれるファイル
         for filename, (type_, category) in classifier._xlsx_mapping.items():

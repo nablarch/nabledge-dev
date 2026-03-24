@@ -73,7 +73,7 @@ class TestPhaseM:
         write_json(ctx.classified_list_path, classified)
 
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m = PhaseMFinalize(ctx, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify 1: Merged file exists
@@ -146,7 +146,7 @@ class TestPhaseM:
         write_json(ctx.classified_list_path, classified)
 
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m = PhaseMFinalize(ctx, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify: original file still exists (not deleted by merge)
@@ -196,7 +196,7 @@ class TestPhaseM:
         write_json(ctx.classified_list_path, classified)
 
         # Execute Phase M
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m = PhaseMFinalize(ctx, run_claude_fn=mock_claude)
         phase_m.run()
 
         # Verify: browsable MD has correct relative path
@@ -242,7 +242,7 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m = PhaseMFinalize(ctx, run_claude_fn=mock_claude)
         phase_m.run()
 
         md_path = f"{ctx.docs_dir}/component/test/multi.md"
@@ -287,7 +287,7 @@ class TestPhaseM:
         }
         write_json(ctx.classified_list_path, classified)
 
-        phase_m = PhaseMFinalize(ctx, dry_run=False, run_claude_fn=mock_claude)
+        phase_m = PhaseMFinalize(ctx, run_claude_fn=mock_claude)
         phase_m.run()
 
         md_path = f"{ctx.docs_dir}/component/test/empty-meta.md"

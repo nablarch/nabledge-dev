@@ -63,7 +63,7 @@ class TestBuildLinkMaps:
                 {"section_id": "s1", "heading": "Overview", "rst_labels": ["file_a_overview"]}
             ])
         ])
-        pf = PhaseFFinalize(ctx, dry_run=True, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
 
         assert "file_a_overview" in pf.label_map
@@ -84,7 +84,7 @@ class TestBuildLinkMaps:
                 {"section_id": "s1", "heading": "Section", "rst_labels": ["file_b_label"]}
             ])
         ])
-        pf = PhaseFFinalize(ctx, dry_run=True, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
 
         # Both underscore and hyphen variants should be registered
@@ -105,7 +105,7 @@ class TestBuildLinkMaps:
                  "rst_labels": ["file_c_label"]}
             ])
         ])
-        pf = PhaseFFinalize(ctx, dry_run=True, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
 
         assert "file_c_label" in pf.label_map
@@ -119,7 +119,7 @@ class TestBuildLinkMaps:
         catalog = _make_catalog([
             _file_entry("file-d", source_path="application_framework/config/database.rst")
         ])
-        pf = PhaseFFinalize(ctx, dry_run=True, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
 
         assert "application_framework/config/database" in pf.doc_map
@@ -135,7 +135,7 @@ class TestBuildLinkMaps:
         catalog = _make_catalog([
             _file_entry("file-e", type_="component", category="handlers")
         ])
-        pf = PhaseFFinalize(ctx, dry_run=True, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
 
         assert pf.file_type_category["file-e"] == ("component", "handlers")
@@ -153,7 +153,7 @@ class TestBuildLinkMaps:
                 {"section_id": "s1", "heading": "Part A", "rst_labels": ["multi_label"]}
             ], split_info={"is_split": True, "original_id": "multi", "part": 1, "total_parts": 1})
         ])
-        pf = PhaseFFinalize(ctx, dry_run=True, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
 
         assert "multi_label" in pf.label_map
@@ -166,7 +166,7 @@ class TestResolveRstLinks:
 
     def _make_pf(self, ctx):
         from phase_f_finalize import PhaseFFinalize
-        pf = PhaseFFinalize(ctx, dry_run=True)
+        pf = PhaseFFinalize(ctx)
         pf.label_map = {
             "internal_label": ("current-file", "s1"),
             "external_label": ("other-file", "s2"),
@@ -286,7 +286,7 @@ class TestAssetPathBugFix:
     def test_image_path_uses_three_levels(self, ctx):
         """Asset image path uses ../../../knowledge/."""
         from phase_f_finalize import PhaseFFinalize
-        pf = PhaseFFinalize(ctx, dry_run=True)
+        pf = PhaseFFinalize(ctx)
         fi = {"id": "my-handler", "type": "component", "category": "handlers"}
         content = "![diagram](assets/my-handler/diagram.png)"
         result = pf._convert_asset_paths(content, fi)
@@ -297,7 +297,7 @@ class TestAssetPathBugFix:
     def test_link_path_uses_three_levels(self, ctx):
         """Asset download link path uses ../../../knowledge/."""
         from phase_f_finalize import PhaseFFinalize
-        pf = PhaseFFinalize(ctx, dry_run=True)
+        pf = PhaseFFinalize(ctx)
         fi = {"id": "my-handler", "type": "component", "category": "handlers"}
         content = "[download](assets/my-handler/schema.xsd)"
         result = pf._convert_asset_paths(content, fi)
@@ -320,7 +320,7 @@ class TestGenerateSkillJson:
         catalog = _make_catalog([_file_entry("handler-a")])
         write_json(ctx.classified_list_path, catalog)
 
-        pf = PhaseFFinalize(ctx, dry_run=False, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
         pf._generate_skill_json()
 
@@ -347,7 +347,7 @@ class TestIndexToonFromCatalog:
         }])
         write_json(ctx.classified_list_path, catalog)
 
-        pf = PhaseFFinalize(ctx, dry_run=False, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
         pf._build_index_toon()
 
@@ -366,7 +366,7 @@ class TestIndexToonFromCatalog:
                                               category="nablarch-batch")])
         write_json(ctx.classified_list_path, catalog)
 
-        pf = PhaseFFinalize(ctx, dry_run=False, catalog_for_links=catalog)
+        pf = PhaseFFinalize(ctx, catalog_for_links=catalog)
         pf._build_link_maps()
         pf._build_index_toon()
 

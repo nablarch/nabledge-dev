@@ -13,7 +13,7 @@ from conftest import load_fixture
 @pytest.fixture
 def checker(ctx):
     from phase_d_content_check import PhaseDContentCheck
-    return PhaseDContentCheck(ctx, dry_run=True)
+    return PhaseDContentCheck(ctx)
 
 
 class TestComputeContentWarnings:
