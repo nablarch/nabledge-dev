@@ -17,6 +17,7 @@
 ## Schedule
 
 ```mermaid
+%%{init: {'theme': 'default', 'gantt': {'useMaxWidth': false}}}%%
 gantt
     title Nabledge Schedule 2026
     dateFormat YYYY-MM-DD
