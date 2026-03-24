@@ -125,25 +125,42 @@ svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integra
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.4_maintain" "${V14_DIR}/statistics_report"
 
 # ============================================================
-# v1.3 modules (subset of v1.4)
+# v1.3 modules (same structure as v1.4; skip if not exists)
 # ============================================================
 print_header "Checking out Nablarch v1.3 modules"
 
 V13_DIR=".lw/nab-official/v1.3"
 mkdir -p "$V13_DIR"
 
-svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.3_maintain" "${V13_DIR}/document"
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.3_maintain" "${V13_DIR}/document" || true
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/biz_sample/branches/1.3_maintain" "${V13_DIR}/biz_sample" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/nablarch_plugins_bundle/branches/1.3_maintain" "${V13_DIR}/ui_dev" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/workflow/branches/1.3_maintain" "${V13_DIR}/workflow" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/MessagingSimu/branches/1.3_maintain" "${V13_DIR}/MessagingSimu" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/db/branches/1.3_maintain" "${V13_DIR}/fw-integration-db" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/log4j/branches/1.3_maintain" "${V13_DIR}/fw-integration-log4j" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.3_maintain" "${V13_DIR}/fw-integration-mail" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.3_maintain" "${V13_DIR}/fw-integration-wmq" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.3_maintain" "${V13_DIR}/statistics_report" || true
 
 # ============================================================
-# v1.2 modules (subset of v1.3)
+# v1.2 modules (same structure as v1.4; skip if not exists)
 # ============================================================
 print_header "Checking out Nablarch v1.2 modules"
 
 V12_DIR=".lw/nab-official/v1.2"
 mkdir -p "$V12_DIR"
 
-svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.2_maintain" "${V12_DIR}/document"
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.2_maintain" "${V12_DIR}/document" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/biz_sample/branches/1.2_maintain" "${V12_DIR}/biz_sample" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/nablarch_plugins_bundle/branches/1.2_maintain" "${V12_DIR}/ui_dev" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/workflow/branches/1.2_maintain" "${V12_DIR}/workflow" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/MessagingSimu/branches/1.2_maintain" "${V12_DIR}/MessagingSimu" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/db/branches/1.2_maintain" "${V12_DIR}/fw-integration-db" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/log4j/branches/1.2_maintain" "${V12_DIR}/fw-integration-log4j" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.2_maintain" "${V12_DIR}/fw-integration-mail" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.2_maintain" "${V12_DIR}/fw-integration-wmq" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.2_maintain" "${V12_DIR}/statistics_report" || true
 
 print_header "SVN checkout completed"
 echo "Checked out into:"
