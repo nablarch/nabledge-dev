@@ -295,9 +295,12 @@ print_header "9. Cloning Nablarch Official Repositories"
 
 NAB_OFFICIAL_V6_DIR=".lw/nab-official/v6"
 NAB_OFFICIAL_V5_DIR=".lw/nab-official/v5"
+NAB_OFFICIAL_V14_DIR=".lw/nab-official/v1.4"
+NAB_OFFICIAL_V13_DIR=".lw/nab-official/v1.3"
+NAB_OFFICIAL_V12_DIR=".lw/nab-official/v1.2"
 
 # Create directories
-for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" ".lw/research"; do
+for dir in "$NAB_OFFICIAL_V6_DIR" "$NAB_OFFICIAL_V5_DIR" "$NAB_OFFICIAL_V14_DIR" "$NAB_OFFICIAL_V13_DIR" "$NAB_OFFICIAL_V12_DIR" ".lw/research"; do
     if [ ! -d "$dir" ]; then
         print_status info "Creating $dir directory..."
         mkdir -p "$dir"
@@ -336,7 +339,7 @@ clone_or_update_repo() {
     fi
 }
 
-# Clone Nablarch official repositories from catalog.json
+# Clone Nablarch official repositories from catalog.json (git)
 clone_repos_from_meta() {
     local version="$1"
     local target_dir="$2"
@@ -360,6 +363,62 @@ clone_repos_from_meta() {
     done
 }
 
+# Checkout or update an SVN repository
+svn_checkout_or_update_repo() {
+    local repo_url="$1"
+    local target_dir="$2"
+    local repo_name
+    repo_name=$(basename "$repo_url")
+    local repo_path="$target_dir/$repo_name"
+
+    if [ -d "$repo_path/.svn" ]; then
+        print_status info "SVN working copy $repo_name already exists, updating..."
+        if svn update "$repo_path"; then
+            print_status ok "$repo_name updated"
+        else
+            print_status warning "Failed to update $repo_name"
+        fi
+    else
+        print_status info "Checking out SVN repository: $repo_url ..."
+        if svn checkout "$repo_url" "$repo_path"; then
+            print_status ok "$repo_name checked out"
+        else
+            print_status error "Failed to checkout $repo_url"
+            print_status warning "Ensure SVN access is available and the URL is correct"
+        fi
+    fi
+}
+
+# Checkout Nablarch 1.x repositories from catalog.json (svn)
+checkout_svn_repos_from_meta() {
+    local version="$1"
+    local target_dir="$2"
+    local meta_file="tools/knowledge-creator/.cache/v${version}/catalog.json"
+
+    if [ ! -f "$meta_file" ]; then
+        print_status warning "catalog.json not found: $meta_file (skip)"
+        return
+    fi
+
+    print_status info "Setting up Nablarch ${version} repositories from ${meta_file}..."
+
+    local count
+    count=$(jq '.sources | length' "$meta_file")
+
+    for i in $(seq 0 $((count - 1))); do
+        local repo_url repo_type
+        repo_url=$(jq -r ".sources[$i].repo" "$meta_file")
+        repo_type=$(jq -r ".sources[$i].type // \"git\"" "$meta_file")
+        if [ "$repo_type" = "svn" ]; then
+            svn_checkout_or_update_repo "$repo_url" "$target_dir"
+        else
+            local branch
+            branch=$(jq -r ".sources[$i].branch" "$meta_file")
+            clone_or_update_repo "${repo_url%.git}.git" "$target_dir" "$branch"
+        fi
+    done
+}
+
 clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
 clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
 
@@ -374,49 +433,12 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-batch.git" "$
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$NAB_OFFICIAL_V5_DIR" "v5-main"
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V5_DIR" "v5-main"
 
-# Check Nablarch 1.x symlinks (v1.4/v1.3/v1.2)
-print_header "10. Checking Nablarch 1.x Documentation (v1.4/1.3/1.2)"
+# Checkout Nablarch 1.x SVN repositories
+print_header "10. Checking Out Nablarch 1.x Documentation (v1.4/1.3/1.2)"
 
-# v1.4: .lw/nab-official/v1.4/ is a symlink to the repo root (contains document/, biz_sample/, ui_dev/, workflow/)
-# v1.3: .lw/nab-official/v1.3/ is a symlink to the repo root (contains document/)
-# v1.2: .lw/nab-official/v1.2/ is a symlink to the repo root (contains document/)
-declare -A V1X_CHECK_PATHS
-V1X_CHECK_PATHS["1.4"]=".lw/nab-official/v1.4/document"
-V1X_CHECK_PATHS["1.3"]=".lw/nab-official/v1.3/document"
-V1X_CHECK_PATHS["1.2"]=".lw/nab-official/v1.2/document"
-V1X_MISSING=()
-
-for ver in "1.4" "1.3" "1.2"; do
-    check_path="${V1X_CHECK_PATHS[$ver]}"
-    if [ -e "$check_path" ]; then
-        print_status ok "v${ver}: ${check_path} exists"
-    else
-        V1X_MISSING+=("$ver")
-        print_status warning "v${ver}: ${check_path} not found (skip)"
-    fi
-done
-
-if [ ${#V1X_MISSING[@]} -gt 0 ]; then
-    echo ""
-    echo "  Nablarch 1.x documents are not hosted on GitHub."
-    echo "  To generate knowledge files for v1.4/1.3/1.2, create symlinks manually."
-    echo "  (Claude Code cannot run these commands due to security restrictions on paths outside the repository.)"
-    echo ""
-    echo "  Run the following yourself from the repository root (replace /path/to/ with actual local paths):"
-    echo ""
-    echo "  v1.4 (repo root contains document/, biz_sample/, ui_dev/, workflow/):"
-    echo "    ln -s /path/to/v1.4_repo_root .lw/nab-official/v1.4"
-    echo ""
-    echo "  v1.3 (repo root contains document/):"
-    echo "    ln -s /path/to/v1.3_repo_root .lw/nab-official/v1.3"
-    echo ""
-    echo "  v1.2 (repo root contains document/):"
-    echo "    ln -s /path/to/v1.2_repo_root .lw/nab-official/v1.2"
-    echo ""
-    echo "  Then generate knowledge files:"
-    echo "    ./tools/knowledge-creator/kc.sh gen 1.4"
-    echo ""
-fi
+checkout_svn_repos_from_meta "1.4" "$NAB_OFFICIAL_V14_DIR"
+checkout_svn_repos_from_meta "1.3" "$NAB_OFFICIAL_V13_DIR"
+checkout_svn_repos_from_meta "1.2" "$NAB_OFFICIAL_V12_DIR"
 
 # Final summary
 print_header "Setup Completed Successfully!"
