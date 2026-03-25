@@ -61,7 +61,7 @@ case "$COMMAND" in
         if [ "$RESUME" = true ]; then
             # UC2: Resume interrupted generation (no clean, new run_id)
             echo "🔄 中断再開モード"
-            $PYTHON "$TOOL_DIR/scripts/run.py" --command gen --version "$VERSION" $PASSTHROUGH_ARGS
+            $PYTHON "$TOOL_DIR/scripts/run.py" --command gen --version "$VERSION" --resume $PASSTHROUGH_ARGS
         else
             # UC1: Full generation (clean first)
             echo "🚀 全件生成モード"

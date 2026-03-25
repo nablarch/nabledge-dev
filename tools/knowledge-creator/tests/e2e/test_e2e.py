@@ -791,6 +791,72 @@ class TestRegenTarget:
 
 
 # ============================================================
+# TestRegenTargetPreservesCache: non-target cache must survive
+# ============================================================
+
+class TestRegenTargetPreservesCache:
+    """regen --target: cache files for non-target entries are preserved (partial Phase A)."""
+
+    def test_regen_target_preserves_cache(self, version_fixture):
+        version = version_fixture["version"]
+        expected = version_fixture["expected"]
+        gen_state = version_fixture["gen_state"]
+        params = expected["params"]
+        catalog_entries = expected["catalog_entries"]
+
+        # Use just 1 base_name as target to maximize non-target coverage
+        target_base_names = params["target_base_names"][:1]
+        target_split_ids = set(
+            e["id"] for e in catalog_entries
+            if e.get("base_name") in set(target_base_names)
+        )
+        non_target_entries = [
+            e for e in catalog_entries if e["id"] not in target_split_ids
+        ]
+
+        src_ctx = gen_state["ctx"]
+        ctx = _make_ctx(version=version, max_rounds=1)
+        counter = {"B": [], "D": [], "E": [], "F": []}
+        mock = _make_cc_mock(
+            expected["expected_knowledge_cache"],
+            expected["expected_fixed_cache"],
+            counter,
+        )
+
+        try:
+            _copy_state(src_ctx, ctx)
+
+            # Record non-target cache file paths before regen
+            non_target_cache_paths = set()
+            for e in non_target_entries:
+                p = f"{ctx.knowledge_cache_dir}/{e['output_path']}"
+                if os.path.exists(p):
+                    non_target_cache_paths.add(p)
+
+            assert len(non_target_cache_paths) == len(non_target_entries), (
+                "All non-target cache files should exist before regen"
+            )
+
+            _run_with_mock(kc_regen_target, ctx, mock, targets=target_base_names)
+
+            # All non-target cache files must still exist after regen --target
+            for p in non_target_cache_paths:
+                assert os.path.exists(p), (
+                    f"Non-target cache file was deleted by regen --target: {p}"
+                )
+
+            # Phase B should only process target files
+            assert set(counter["B"]) == target_split_ids, (
+                f"Phase B should only process target files: "
+                f"expected {target_split_ids}, got {set(counter['B'])}"
+            )
+
+        finally:
+            if os.path.exists(ctx.log_dir):
+                shutil.rmtree(ctx.log_dir)
+
+
+# ============================================================
 # TestFix: full quality improvement + stale file deletion
 # ============================================================
 

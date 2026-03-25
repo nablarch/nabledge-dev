@@ -488,8 +488,13 @@ class Step2Classify:
                 results.append((m.group(1), i))
         return results
 
-    def run(self):
-        """Execute Step 2: Classify all source files"""
+    def run(self, return_only=False):
+        """Execute Step 2: Classify all source files
+
+        Args:
+            return_only: If True, return only the classified entries list without writing to disk.
+                         Used by _partial_phase_a for targeted catalog updates.
+        """
         if self.sources_data:
             sources = self.sources_data
         else:
@@ -674,6 +679,10 @@ class Step2Classify:
                 self.logger.warning(f"   ⚠️WARNING: {len(missing)} test files not found:")
                 for mid in sorted(missing):
                     self.logger.warning(f"      - {mid}")
+
+        # return_only mode: skip disk write, return entries for caller to merge
+        if return_only:
+            return classified
 
         # Update only the files field in existing catalog
         if os.path.exists(self.ctx.classified_list_path):

@@ -131,6 +131,8 @@ def main():
                         help="Skip confirmation prompts")
     parser.add_argument("--regen", action="store_true",
                         help="Detect source changes and regenerate affected files")
+    parser.add_argument("--resume", action="store_true",
+                        help="Resume interrupted gen: skip Phase A, reuse existing catalog")
     parser.add_argument("--run-id", type=str, default=None,
                         help="Run ID (auto-generated from timestamp if omitted; pass existing ID to resume)")
     parser.add_argument("--command", type=str, default=None,
@@ -200,7 +202,7 @@ def main():
         if args.command:
             # kc.sh 経由: ファサード関数にディスパッチ
             if args.command == "gen":
-                kc_gen(ctx)
+                kc_gen(ctx, resume=args.resume)
             elif args.command == "regen":
                 if args.target:
                     kc_regen_target(ctx, args.target)
@@ -222,9 +224,12 @@ def main():
         logger.info(f"{'='*60}\n")
 
 
-def kc_gen(ctx):
-    """kc gen: 全件生成（Phase ABCDEMV）。"""
-    _run_pipeline(ctx, _make_args(ctx))
+def kc_gen(ctx, resume=False):
+    """kc gen: 全件生成（Phase ABCDEMV）。resume=True 時は Phase A をスキップ。"""
+    if resume and os.path.exists(ctx.classified_list_path):
+        _run_pipeline(ctx, _make_args(ctx, phase="BCDEMV", resume=True))
+    else:
+        _run_pipeline(ctx, _make_args(ctx))
 
 
 def kc_regen_target(ctx, targets):
@@ -242,7 +247,7 @@ def kc_fix_target(ctx, targets):
     _run_pipeline(ctx, _make_args(ctx, phase="ACDEM", clean_phase="D", target=targets))
 
 
-def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False):
+def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False, resume=False):
     """ファサード用のargs構築。"""
     import argparse
     return argparse.Namespace(
@@ -255,6 +260,7 @@ def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False):
         target=target,
         yes=True,
         regen=regen,
+        resume=resume,
         run_id=ctx.run_id,
     )
 
@@ -275,6 +281,67 @@ def _clean_stale_cache(ctx):
             removed += 1
     if removed:
         get_logger().info(f"   🗑️Deleted {removed} stale cache files")
+
+
+def _clean_stale_cache_for_entries(ctx, old_entries, new_entries):
+    """Delete cache files for old_entries whose IDs no longer exist in new_entries."""
+    new_ids = {e["id"] for e in new_entries}
+    removed = 0
+    for entry in old_entries:
+        if entry["id"] not in new_ids:
+            cache_path = f"{ctx.knowledge_cache_dir}/{entry['output_path']}"
+            if os.path.exists(cache_path):
+                os.remove(cache_path)
+                removed += 1
+    if removed:
+        get_logger().info(f"   🗑️Deleted {removed} stale cache files")
+
+
+def _partial_phase_a(ctx, source_paths):
+    """Re-classify only the specified source files and update the catalog in place.
+
+    Only entries whose source_path is in source_paths are reclassified.
+    All other catalog entries are left unchanged, and only stale cache files
+    for the affected entries are deleted (not a global stale sweep).
+    """
+    from common import load_json, write_json
+    from step2_classify import Step2Classify
+    logger = get_logger()
+
+    catalog = load_json(ctx.classified_list_path)
+    source_paths_set = set(source_paths)
+
+    # Save old entries for stale cleanup
+    old_entries = [f for f in catalog["files"] if f["source_path"] in source_paths_set]
+
+    # Build sources_data from old entries (deduplicate by source_path)
+    seen = set()
+    sources_list = []
+    for entry in old_entries:
+        sp = entry["source_path"]
+        if sp not in seen:
+            seen.add(sp)
+            sources_list.append({
+                "path": sp,
+                "format": entry["format"],
+                "filename": entry["filename"],
+            })
+
+    if not sources_list:
+        logger.warning("   ⚠️No source files found for partial Phase A")
+        return
+
+    # Re-classify only target sources (return_only=True skips disk write)
+    new_entries = Step2Classify(ctx, sources_data={"sources": sources_list}).run(return_only=True)
+
+    # Update catalog: remove old entries, insert new entries
+    remaining = [f for f in catalog["files"] if f["source_path"] not in source_paths_set]
+    catalog["files"] = remaining + new_entries
+    write_json(ctx.classified_list_path, catalog)
+
+    # Clean only stale cache for affected entries
+    _clean_stale_cache_for_entries(ctx, old_entries, new_entries)
+    logger.info(f"   📑Partial Phase A: {len(old_entries)} old entries → {len(new_entries)} new entries")
 
 
 def _run_pipeline(ctx, args):
@@ -337,9 +404,39 @@ def _run_pipeline(ctx, args):
         logger.info("   └─ Scanning documentation sources...")
         from step1_list_sources import Step1ListSources
         from step2_classify import Step2Classify
-        sources = Step1ListSources(ctx).run()
-        Step2Classify(ctx, sources_data=sources).run()
-        _clean_stale_cache(ctx)
+
+        if getattr(args, 'resume', False) and os.path.exists(ctx.classified_list_path):
+            # gen --resume: reuse existing catalog, skip re-classification
+            logger.info("   └─ Resume mode: reusing existing catalog (Phase A skipped)")
+
+        elif args.target and os.path.exists(ctx.classified_list_path):
+            # regen --target: partial re-classification for target source files only
+            from common import load_json
+            catalog = load_json(ctx.classified_list_path)
+            target_set = set(args.target)
+            source_paths = list({
+                f["source_path"] for f in catalog["files"]
+                if f.get("base_name") in target_set or f["id"] in target_set
+            })
+            if source_paths:
+                logger.info(f"   └─ Partial re-classification: {len(source_paths)} source file(s)")
+                _partial_phase_a(ctx, source_paths)
+            else:
+                logger.warning(f"   ⚠️Targets not found in catalog, running full Phase A")
+                sources = Step1ListSources(ctx).run()
+                Step2Classify(ctx, sources_data=sources).run()
+                _clean_stale_cache(ctx)
+
+        elif getattr(args, 'regen', False) and changed_source_paths and os.path.exists(ctx.classified_list_path):
+            # regen (diff): partial re-classification for changed source files only
+            logger.info(f"   └─ Partial re-classification: {len(changed_source_paths)} changed source file(s)")
+            _partial_phase_a(ctx, changed_source_paths)
+
+        else:
+            # gen: full re-classification of all sources
+            sources = Step1ListSources(ctx).run()
+            Step2Classify(ctx, sources_data=sources).run()
+            _clean_stale_cache(ctx)
 
     # Resolve --target base_name to split IDs using the new catalog
     if effective_target and os.path.exists(ctx.classified_list_path):
