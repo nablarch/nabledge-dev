@@ -721,7 +721,20 @@ def render_scorecard(weekly: list[dict]) -> str:
     lines.append("")
     lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
     lines.append("")
-    lines.append(mermaid_xychart_bar("Change Failure Rate (bug labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
+    n = len(labels)
+    cfr_ymax = y_axis_max(cfr_vals + [15])
+    x_str = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
+    cfr_str = "[" + ", ".join(str(round(v, 1)) if v != int(v) else str(int(v)) for v in cfr_vals) + "]"
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "Change Failure Rate (bug labeled PRs / all merged PRs %)"')
+    lines.append(f"  x-axis {x_str}")
+    lines.append(f'  y-axis "% of PRs" 0 --> {cfr_ymax}')
+    lines.append(f"  bar {cfr_str}")
+    lines.append(f"  line {[5] * n}")
+    lines.append(f"  line {[10] * n}")
+    lines.append(f"  line {[15] * n}")
+    lines.append("```")
     lines.append("")
     lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
 
