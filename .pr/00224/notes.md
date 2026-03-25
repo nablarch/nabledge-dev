@@ -263,17 +263,17 @@ content. A bypass would mask real issues. Better to track the 13 known v1.4 issu
 ### kc Regen Commands (for user to run)
 
 ```bash
-cd tools/knowledge-creator
+# Run from repository root (so CC settings in .claude/settings.json take effect)
 
 # Step 1: v5 regen (1 file affected by split bug)
-./kc.sh regen 5 --target blank-project-FirstStepContainer
+./tools/knowledge-creator/kc.sh regen 5 --target blank-project-FirstStepContainer
 
 # Step 2: v6 regen (1 file affected by split bug)
-./kc.sh regen 6 --target blank-project-FirstStepContainer
+./tools/knowledge-creator/kc.sh regen 6 --target blank-project-FirstStepContainer
 
 # Step 3: v1.4 regen (7 targets: 4 split bug + 2 split bug+timeout + 1 timeout-only)
 # Consider --max-rounds 2 for better quality given earlier high issue rates
-./kc.sh regen 1.4 --target libraries-01_FailureLog,about-nablarch-top-nablarch,web-application-02_flow,web-application-09_confirm_operation,libraries-file_upload_utility,about-nablarch-02_I18N,libraries-mail--s6
+./tools/knowledge-creator/kc.sh regen 1.4 --target libraries-01_FailureLog,about-nablarch-top-nablarch,web-application-02_flow,web-application-09_confirm_operation,libraries-file_upload_utility,about-nablarch-02_I18N,libraries-mail--s6
 ```
 
 After regen completes: review reports, then commit all generated files.
