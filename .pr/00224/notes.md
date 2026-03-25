@@ -200,3 +200,80 @@ remaining issues as GitHub Issues for incremental improvement.
    - Incomplete Round 3 content check (204 files)
 3. Continue with CHANGELOG, README, GUIDE-CC.md, GUIDE-GHC.md creation
 4. Update marketplace metadata
+
+---
+
+## 2026-03-26
+
+### Issue #230 Fix Impact Analysis
+
+With #230 merged (commit de2cbae9), the split logic bugs are fixed. Analysis of the impact:
+
+#### v5/v6 Affected Files (1 each)
+
+| Version | File ID | Lines | Status |
+|---------|---------|-------|--------|
+| v5 | `blank-project-FirstStepContainer--s1` | 13 | Has cache, wrong ID |
+| v6 | `blank-project-FirstStepContainer--s1` | 13 | Has cache, wrong ID |
+
+Both have `total_parts=1` with `--s1` suffix — the split bug manifestation. After #230 fix,
+these become single entries `blank-project-FirstStepContainer` (no suffix). `kc regen` will
+update catalog (Phase A), delete stale `--s1` cache, and regenerate under new ID.
+
+#### v1.4 Affected Files (7 total)
+
+**Split bug only** (4 files):
+
+| File ID | Lines in part 1 | Old catalog structure |
+|---------|-----------------|----------------------|
+| `libraries-01_FailureLog--s1` | 3 | --s1(3) + --s2(807) → after fix: single entry |
+| `about-nablarch-top-nablarch--s1` | 11 | --s1(11) + --s2(847) + --s3(48) → after fix: may have different grouping |
+| `web-application-02_flow--s1` | 13 | --s1(13), total_parts=1 → after fix: single entry |
+| `web-application-09_confirm_operation--s1` | 16 | --s1(16), total_parts=1 → after fix: single entry |
+
+**Split bug + timeout** (2 files — timed out in original run AND affected by split bug):
+
+| File ID | Lines | Note |
+|---------|-------|------|
+| `libraries-file_upload_utility--s1` | 392 | total_parts=1, timed out at 31min |
+| `about-nablarch-02_I18N--s1` | 168 | total_parts=1, timed out at 33min |
+
+**Timeout only** (1 file):
+
+| File ID | Lines | Note |
+|---------|-------|------|
+| `libraries-mail--s6` | 394 | Part 2/2 of mail.rst, timed out at 31min |
+
+### S11 Investigation and Decision
+
+S11 check validates that `official_doc_urls` entries start with `https://`.
+13 v1.4 files fail S11 after original generation:
+
+- 4 files: Real HTTP URLs from 2014-era source docs (Oracle, FindBugs, Checkstyle, FontAwesome, IETF)
+- 9 files: Empty string in `official_doc_urls` — likely AI inserting `""` for missing URLs
+
+**Decision**: Keep S11 check as-is. Two separate approaches:
+- Real HTTP URLs: Accept as known issues for v1.4 era docs. Track as GitHub Issue.
+- Empty URLs: Fix by removing empty strings during Phase E (content fix). The fix prompt should
+  be explicit about not including empty strings in `official_doc_urls`.
+
+**Not implementing v1.4 bypass**: S11 check is valuable for detecting non-https URLs in new
+content. A bypass would mask real issues. Better to track the 13 known v1.4 issues explicitly.
+
+### kc Regen Commands (for user to run)
+
+```bash
+cd tools/knowledge-creator
+
+# Step 1: v5 regen (1 file affected by split bug)
+./kc.sh regen 5 --target blank-project-FirstStepContainer
+
+# Step 2: v6 regen (1 file affected by split bug)
+./kc.sh regen 6 --target blank-project-FirstStepContainer
+
+# Step 3: v1.4 regen (7 targets: 4 split bug + 2 split bug+timeout + 1 timeout-only)
+# Consider --max-rounds 2 for better quality given earlier high issue rates
+./kc.sh regen 1.4 --target libraries-01_FailureLog,about-nablarch-top-nablarch,web-application-02_flow,web-application-09_confirm_operation,libraries-file_upload_utility,about-nablarch-02_I18N,libraries-mail--s6
+```
+
+After regen completes: review reports, then commit all generated files.
