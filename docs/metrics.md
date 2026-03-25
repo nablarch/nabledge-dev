@@ -4,13 +4,6 @@
 
 ## DORA Scorecard
 
-| Metric | Latest | Level |
-|--------|-------:|:-----:|
-| Deployment Frequency | 27 PRs/week | **Elite** |
-| Lead Time for Changes | 11.3h | High |
-| Change Failure Rate | 30% | Low |
-| MTTR | 42.0h | Medium |
-
 <details><summary>Benchmark criteria</summary>
 
 **Deployment Frequency**
@@ -39,37 +32,56 @@
 
 </details>
 
+> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium (threshold lines; beyond 🟠 = Low)
+
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF8C00'}}}}%%
 xychart-beta
   title "Deployment Frequency (PRs merged to main per week)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "PRs / week" 0 --> 33
   bar [0, 2, 25, 9, 20, 27, 0]
+  line [7, 7, 7, 7, 7, 7, 7]
+  line [1, 1, 1, 1, 1, 1, 1]
+  line [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF8C00'}}}}%%
 xychart-beta
   title "Lead Time for Changes (avg hours: first commit to merge)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Hours" 0 --> 24
-  line [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
+  y-axis "Hours" 0 --> 876
+  bar [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
+  line [1, 1, 1, 1, 1, 1, 1]
+  line [168, 168, 168, 168, 168, 168, 168]
+  line [730, 730, 730, 730, 730, 730, 730]
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF8C00'}}}}%%
 xychart-beta
   title "Change Failure Rate (bug labeled PRs / all merged PRs %)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "% of PRs" 0 --> 36
   bar [0, 0, 16, 11.1, 25, 29.6, 0]
+  line [5, 5, 5, 5, 5, 5, 5]
+  line [10, 10, 10, 10, 10, 10, 10]
+  line [15, 15, 15, 15, 15, 15, 15]
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF8C00'}}}}%%
 xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Hours" 0 --> 51
-  line [0, 0, 2, 4.3, 6.8, 42, 0]
+  y-axis "Hours" 0 --> 202
+  bar [0, 0, 2, 4.3, 6.8, 42, 0]
+  line [1, 1, 1, 1, 1, 1, 1]
+  line [24, 24, 24, 24, 24, 24, 24]
+  line [168, 168, 168, 168, 168, 168, 168]
 ```
+
 
 ## Activity
 
