@@ -45,7 +45,6 @@ Apply labels to all Issues and PRs when creating them:
 | `bug` | Issues, PRs | Defects, regressions, incorrect behavior |
 | `enhancement` | Issues, PRs | New features, improvements, additions |
 | `documentation` | Issues, PRs | Docs-only changes |
-| `chore` | PRs | Maintenance, tooling, CI, refactoring without behavior change |
 
 **Default label for most feature work**: `enhancement`
 
