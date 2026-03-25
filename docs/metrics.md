@@ -24,7 +24,7 @@ xychart-beta
   title "Lead Time for Changes (avg hours: first commit to merge)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Hours" 0 --> 876
-  line [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
+  bar [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
   line [1, 1, 1, 1, 1, 1, 1]
   line [168, 168, 168, 168, 168, 168, 168]
   line [730, 730, 730, 730, 730, 730, 730]
@@ -48,7 +48,7 @@ xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Hours" 0 --> 202
-  line [0, 0, 2, 4.3, 6.8, 42, 0]
+  bar [0, 0, 2, 4.3, 6.8, 42, 0]
   line [1, 1, 1, 1, 1, 1, 1]
   line [24, 24, 24, 24, 24, 24, 24]
   line [168, 168, 168, 168, 168, 168, 168]

@@ -722,7 +722,7 @@ def render_scorecard(weekly: list[dict]) -> str:
 
     # Lead Time: lower is better; Elite<1h, High<168h (1wk), Medium<730h (1mo)
     lines += _chart_with_thresholds(
-        "line", "Lead Time for Changes (avg hours: first commit to merge)", "Hours",
+        "bar", "Lead Time for Changes (avg hours: first commit to merge)", "Hours",
         lead_time_vals, [1, 168, 730], _palette4)
     lines.append("")
 
@@ -734,7 +734,7 @@ def render_scorecard(weekly: list[dict]) -> str:
 
     # MTTR: lower is better; Elite<1h, High<24h, Medium<168h (1wk)
     lines += _chart_with_thresholds(
-        "line", "Mean Time to Recovery (avg hours: bug issue opened to closed)", "Hours",
+        "bar", "Mean Time to Recovery (avg hours: bug issue opened to closed)", "Hours",
         mttr_vals, [1, 24, 168], _palette4)
     lines.append("")
 
