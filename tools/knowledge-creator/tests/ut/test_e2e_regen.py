@@ -92,7 +92,7 @@ def _setup_repo_and_meta(tmp_path, version="6", sources=None):
         meta_sources.append({
             "repo": src["repo"],
             "branch": src["branch"],
-            "commit": ""
+            "revision": ""
         })
 
     # Write knowledge-creator.json with empty commits (first-run state)
@@ -129,7 +129,7 @@ class TestRegenFirstRun:
         meta_path = get_meta_path(ctx)
         meta = load_json(meta_path)
         meta["generated_at"] = "2026-01-01"
-        meta["sources"][0]["commit"] = old_sha
+        meta["sources"][0]["revision"] = old_sha
         write_json(meta_path, meta)
 
         # Simulate source update (HEAD now differs from recorded commit)
@@ -206,7 +206,7 @@ class TestRegenWithChanges:
         for source in meta["sources"]:
             repo_name = source["repo"].rstrip("/").split("/")[-1]
             if repo_name in local_repos:
-                source["commit"] = _get_head_commit(local_repos[repo_name])
+                source["revision"] = _get_head_commit(local_repos[repo_name])
         meta["generated_at"] = "2026-01-01"
         write_json(meta_path, meta)
 
@@ -422,7 +422,7 @@ class TestRegenPullAndDetect:
         meta_path = get_meta_path(ctx)
         meta = load_json(meta_path)
         meta["generated_at"] = "2026-01-01"
-        meta["sources"][0]["commit"] = _get_head_commit(local_repo)
+        meta["sources"][0]["revision"] = _get_head_commit(local_repo)
         write_json(meta_path, meta)
 
         # Simulate upstream update: modify source file
