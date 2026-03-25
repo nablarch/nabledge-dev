@@ -4,9 +4,9 @@ Manages plugin/knowledge-creator.json which records:
 - generated_at: ISO datetime when generation completed
 - sources: list of source entries, each either:
     {repo, branch, commit} for Git sources, or
-    {repo, type, revision} for SVN sources (type="svn")
+    {repo, type, commit} for SVN sources (type="svn")
 
-Provides source change detection by comparing recorded commits/revisions
+Provides source change detection by comparing recorded commits
 with the current state of local clones/working copies.
 """
 
@@ -65,6 +65,24 @@ def _svn(args: list, cwd: str = None) -> subprocess.CompletedProcess:
     )
 
 
+def _svn_auth_args() -> list:
+    """Build SVN auth options from environment variables SVN_USERNAME and SVN_PASSWORD.
+
+    Mirrors the auth option handling in setup-svn.sh.
+    Returns empty list if neither variable is set.
+    """
+    args = []
+    username = os.environ.get("SVN_USERNAME", "")
+    password = os.environ.get("SVN_PASSWORD", "")
+    if username:
+        args += ["--username", username]
+    if password:
+        args += ["--password", password, "--no-auth-cache"]
+    if args:
+        args += ["--non-interactive"]
+    return args
+
+
 def _get_head_commit(repo_path: str) -> str:
     """Get current HEAD commit SHA of a local git repository."""
     if not os.path.isdir(repo_path):
@@ -94,46 +112,77 @@ def get_local_svn_path(repo_url: str, version: str, repo_root: str) -> str:
 
 
 def pull_official_repos(ctx) -> dict:
-    """Git pull all official repositories listed in knowledge-creator.json.
+    """Pull all official repositories listed in knowledge-creator.json.
+
+    Supports both Git (git pull) and SVN (svn update) sources.
 
     Returns:
-        dict mapping repo_url to {"before": old_sha, "after": new_sha, "updated": bool}
+        dict mapping repo_url to {"before": old_ref, "after": new_ref, "updated": bool}
     """
     meta = load_meta(ctx)
     results = {}
 
     for source in meta.get("sources", []):
         repo_url = source.get("repo", "")
-        branch = source.get("branch", "main")
-        local_path = get_local_repo_path(repo_url, ctx.version, ctx.repo)
+        source_type = source.get("type", "git")
 
-        if not os.path.isdir(local_path):
-            print(f"   ⚠️ ローカルクローンが見つかりません: {local_path}")
-            print(f"      setup.sh を実行してください")
-            results[repo_url] = {"before": "", "after": "", "updated": False}
-            continue
+        if source_type == "svn":
+            local_path = get_local_svn_path(repo_url, ctx.version, ctx.repo)
 
-        before = _get_head_commit(local_path)
+            if not os.path.isdir(local_path):
+                print(f"   ⚠️ ローカル作業コピーが見つかりません: {local_path}")
+                print(f"      setup.sh を実行してください")
+                results[repo_url] = {"before": "", "after": "", "updated": False}
+                continue
 
-        checkout = _git(["checkout", branch], cwd=local_path)
-        if checkout.returncode != 0:
-            print(f"   ⚠️ checkout失敗: {repo_url} branch={branch}")
-            results[repo_url] = {"before": before, "after": before, "updated": False}
-            continue
+            before = _get_svn_revision(local_path)
 
-        pull = _git(["pull"], cwd=local_path)
-        if pull.returncode != 0:
-            print(f"   ⚠️ pull失敗: {repo_url}")
-            results[repo_url] = {"before": before, "after": before, "updated": False}
-            continue
+            update = _svn(["update"] + _svn_auth_args(), cwd=local_path)
+            if update.returncode != 0:
+                print(f"   ⚠️ svn update失敗: {repo_url}")
+                results[repo_url] = {"before": before, "after": before, "updated": False}
+                continue
 
-        after = _get_head_commit(local_path)
-        updated = before != after
-        if updated:
-            print(f"   📥 更新あり: {repo_url.split('/')[-1]} {before[:7]} → {after[:7]}")
+            after = _get_svn_revision(local_path)
+            updated = before != after
+            name = repo_url.rstrip("/").split("/")[-1]
+            if updated:
+                print(f"   📥 更新あり: {name} r{before} → r{after}")
+            else:
+                print(f"   ✅ 最新: {name} @ r{after}")
+            results[repo_url] = {"before": before, "after": after, "updated": updated}
+
         else:
-            print(f"   ✅ 最新: {repo_url.split('/')[-1]} @ {after[:7]}")
-        results[repo_url] = {"before": before, "after": after, "updated": updated}
+            branch = source.get("branch", "main")
+            local_path = get_local_repo_path(repo_url, ctx.version, ctx.repo)
+
+            if not os.path.isdir(local_path):
+                print(f"   ⚠️ ローカルクローンが見つかりません: {local_path}")
+                print(f"      setup.sh を実行してください")
+                results[repo_url] = {"before": "", "after": "", "updated": False}
+                continue
+
+            before = _get_head_commit(local_path)
+
+            checkout = _git(["checkout", branch], cwd=local_path)
+            if checkout.returncode != 0:
+                print(f"   ⚠️ checkout失敗: {repo_url} branch={branch}")
+                results[repo_url] = {"before": before, "after": before, "updated": False}
+                continue
+
+            pull = _git(["pull"], cwd=local_path)
+            if pull.returncode != 0:
+                print(f"   ⚠️ pull失敗: {repo_url}")
+                results[repo_url] = {"before": before, "after": before, "updated": False}
+                continue
+
+            after = _get_head_commit(local_path)
+            updated = before != after
+            if updated:
+                print(f"   📥 更新あり: {repo_url.split('/')[-1]} {before[:7]} → {after[:7]}")
+            else:
+                print(f"   ✅ 最新: {repo_url.split('/')[-1]} @ {after[:7]}")
+            results[repo_url] = {"before": before, "after": after, "updated": updated}
 
     return results
 
@@ -161,7 +210,7 @@ def detect_changed_files(ctx) -> list:
 
         if source_type == "svn":
             repo_url = source.get("repo", "")
-            old_rev = source.get("revision", "")
+            old_rev = source.get("commit", "")
 
             if not repo_url:
                 print("   ⚠️ SVNソースの repo が未設定です")
@@ -181,7 +230,7 @@ def detect_changed_files(ctx) -> list:
 
             # Get changed files between old revision and current revision
             result = _svn(
-                ["diff", "--summarize", f"-r{old_rev}:{current_rev}", local_path]
+                ["diff", "--summarize", f"-r{old_rev}:{current_rev}"] + _svn_auth_args() + [local_path]
             )
             if result.returncode == 0:
                 local_norm = os.path.normpath(local_path)
@@ -295,7 +344,7 @@ def update_knowledge_meta(ctx):
             updated_sources.append({
                 "repo": repo_url,
                 "type": "svn",
-                "revision": revision,
+                "commit": revision,
             })
         else:
             branch = source.get("branch", "main")
@@ -316,7 +365,7 @@ def update_knowledge_meta(ctx):
     print(f"   💾 catalog.json 更新完了: {meta_path}")
     for s in updated_sources:
         if s.get("type") == "svn":
-            rev = s.get("revision") or "(取得失敗)"
+            rev = s.get("commit") or "(取得失敗)"
             print(f"     {s['repo']} @ r{rev}")
         else:
             commit_short = s['commit'][:7] if s['commit'] else '(取得失敗)'

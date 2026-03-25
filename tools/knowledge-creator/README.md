@@ -114,6 +114,42 @@ source .env
 | 品質改善（全件） | `./kc.sh fix 6` |
 | 品質改善（特定） | `./kc.sh fix 6 --target FILE_ID` |
 
+### 過去バージョン（v1.x）の実行
+
+v1.xのソースはSVNリポジトリで管理されている。追加のセットアップが必要。
+
+**1. SVNリポジトリのチェックアウト**
+
+```bash
+cd /path/to/nabledge-dev
+SVN_BASE_URL=https://your-svn-server/svn/repo \
+  SVN_USERNAME=your-username \
+  SVN_PASSWORD=your-password \
+  ./setup-svn.sh
+```
+
+**2. .env にSVN認証情報を追加**
+
+```bash
+# .env に追記
+export SVN_USERNAME="your-username"
+export SVN_PASSWORD="your-password"
+source .env
+```
+
+`svn update` と `svn diff`（ソース変更追随時に使用）に認証情報が必要なため、環境変数として設定する。
+
+**3. kc実行**
+
+v1.xはバージョン番号に `.` を含む（例: `1.3`）。
+
+```bash
+cd tools/knowledge-creator
+./kc.sh gen 1.3
+./kc.sh regen 1.3
+./kc.sh fix 1.3
+```
+
 `--target` にはナレッジファイルのベース名（拡張子なし）を指定する。
 
 ```bash

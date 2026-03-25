@@ -13,6 +13,7 @@ from knowledge_meta import (
     _get_svn_revision,
     detect_changed_files,
     update_knowledge_meta,
+    pull_official_repos,
 )
 
 
@@ -419,7 +420,7 @@ class TestDetectChangedFilesSvn:
             "sources": [{
                 "repo": svn_source_url,
                 "type": "svn",
-                "revision": initial_rev,
+                "commit": initial_rev,
             }],
             "version": ctx.version,
             "files": [{
@@ -468,7 +469,7 @@ class TestDetectChangedFilesSvn:
         assert "handlers-other" not in result
 
     def test_empty_revision_returns_none(self, ctx):
-        """Empty revision (first generation) → None (= all files)."""
+        """Empty commit (first generation) → None (= all files)."""
         meta_path = get_meta_path(ctx)
         os.makedirs(os.path.dirname(meta_path), exist_ok=True)
         write_json(meta_path, {
@@ -476,7 +477,7 @@ class TestDetectChangedFilesSvn:
             "sources": [{
                 "repo": "file:///dummy/1.3_maintain",
                 "type": "svn",
-                "revision": ""
+                "commit": ""
             }]
         })
         result = detect_changed_files(ctx)
@@ -489,8 +490,8 @@ class TestDetectChangedFilesSvn:
 
 class TestUpdateKnowledgeMetaSvn:
 
-    def test_writes_revision_and_date(self, ctx, tmp_path):
-        """After update, SVN revision and date are written for SVN sources."""
+    def test_writes_commit_and_date(self, ctx, tmp_path):
+        """After update, SVN commit (revision) and date are written for SVN sources."""
         wc_name = "nablarch-1x-docs"
         wc_path = str(
             tmp_path / "repo" / ".lw" / "nab-official" / f"v{ctx.version}" / wc_name
@@ -502,17 +503,6 @@ class TestUpdateKnowledgeMetaSvn:
 
         svn_source_url = f"file:///dummy/{wc_name}"
 
-        meta_path = get_meta_path(ctx)
-        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
-        write_json(meta_path, {
-            "generated_at": "",
-            "sources": [{
-                "repo": svn_source_url,
-                "type": "svn",
-                "revision": ""
-            }]
-        })
-
         # Override ctx.repo to point to our tmp repo root so path derivation works
         from run import Context
         test_ctx = Context(
@@ -521,14 +511,13 @@ class TestUpdateKnowledgeMetaSvn:
             concurrency=1,
             run_id="test-svn"
         )
-        # Copy meta to the test_ctx path
         os.makedirs(os.path.dirname(get_meta_path(test_ctx)), exist_ok=True)
         write_json(get_meta_path(test_ctx), {
             "generated_at": "",
             "sources": [{
                 "repo": svn_source_url,
                 "type": "svn",
-                "revision": ""
+                "commit": ""
             }]
         })
 
@@ -537,9 +526,8 @@ class TestUpdateKnowledgeMetaSvn:
         updated = load_json(get_meta_path(test_ctx))
         assert updated["generated_at"] != ""
         assert updated["sources"][0]["type"] == "svn"
-        assert updated["sources"][0]["revision"] == expected_rev
-        assert updated["sources"][0]["revision"] != ""
-        assert "commit" not in updated["sources"][0]
+        assert updated["sources"][0]["commit"] == expected_rev
+        assert updated["sources"][0]["commit"] != ""
 
     def test_git_source_unchanged(self, ctx, tmp_path):
         """Git sources are still handled correctly alongside SVN."""
@@ -585,7 +573,7 @@ class TestUpdateKnowledgeMetaSvn:
                 {
                     "repo": svn_source_url,
                     "type": "svn",
-                    "revision": ""
+                    "commit": ""
                 }
             ]
         })
@@ -594,9 +582,88 @@ class TestUpdateKnowledgeMetaSvn:
 
         updated = load_json(get_meta_path(test_ctx))
         assert updated["sources"][0].get("commit") == expected_sha
-        assert "revision" not in updated["sources"][0]
-        assert updated["sources"][1].get("revision") == expected_rev
-        assert "commit" not in updated["sources"][1]
+        assert updated["sources"][0].get("type") != "svn"
+        assert updated["sources"][1].get("commit") == expected_rev
+        assert updated["sources"][1].get("type") == "svn"
+
+
+class TestPullOfficialReposSvn:
+
+    def test_svn_update_detects_new_revision(self, ctx, tmp_path):
+        """svn update pulls latest revision and reports updated=True when changed."""
+        from run import Context
+
+        wc_name = "nablarch-1x-docs"
+        repo_url = _create_svn_repo(str(tmp_path / "svn_repo"))
+
+        # Upstream working copy: used to commit new changes
+        upstream_wc = str(tmp_path / "upstream_wc")
+        _checkout_svn(repo_url, upstream_wc)
+        _svn_add_file_and_commit(upstream_wc, "README.txt", "init", "initial")
+
+        # Local working copy: the one pull_official_repos will update
+        wc_path = str(
+            tmp_path / "repo" / ".lw" / "nab-official" / f"v{ctx.version}" / wc_name
+        )
+        _checkout_svn(repo_url, wc_path)
+        before_rev = _get_svn_revision(wc_path)
+
+        # Commit a new change via upstream (local WC is now behind)
+        _svn_add_file_and_commit(upstream_wc, "README.txt", "updated", "second commit")
+
+        svn_source_url = f"file:///dummy/{wc_name}"
+        test_ctx = Context(
+            version=ctx.version,
+            repo=str(tmp_path / "repo"),
+            concurrency=1,
+            run_id="test-pull-svn"
+        )
+        os.makedirs(os.path.dirname(get_meta_path(test_ctx)), exist_ok=True)
+        write_json(get_meta_path(test_ctx), {
+            "generated_at": "",
+            "sources": [{"repo": svn_source_url, "type": "svn", "commit": before_rev}]
+        })
+
+        results = pull_official_repos(test_ctx)
+
+        assert svn_source_url in results
+        result = results[svn_source_url]
+        assert result["before"] == before_rev
+        assert int(result["after"]) > int(result["before"])
+        assert result["updated"] is True
+
+    def test_svn_no_update_when_current(self, ctx, tmp_path):
+        """svn update reports updated=False when already at latest."""
+        from run import Context
+
+        wc_name = "nablarch-1x-docs"
+        repo_url = _create_svn_repo(str(tmp_path / "svn_repo"))
+        wc_path = str(
+            tmp_path / "repo" / ".lw" / "nab-official" / f"v{ctx.version}" / wc_name
+        )
+        _checkout_svn(repo_url, wc_path)
+        _svn_add_file_and_commit(wc_path, "README.txt", "init", "initial")
+        current_rev = _get_svn_revision(wc_path)
+
+        svn_source_url = f"file:///dummy/{wc_name}"
+        test_ctx = Context(
+            version=ctx.version,
+            repo=str(tmp_path / "repo"),
+            concurrency=1,
+            run_id="test-pull-svn-noop"
+        )
+        os.makedirs(os.path.dirname(get_meta_path(test_ctx)), exist_ok=True)
+        write_json(get_meta_path(test_ctx), {
+            "generated_at": "",
+            "sources": [{"repo": svn_source_url, "type": "svn", "commit": current_rev}]
+        })
+
+        results = pull_official_repos(test_ctx)
+
+        result = results[svn_source_url]
+        assert result["before"] == current_rev
+        assert result["after"] == current_rev
+        assert result["updated"] is False
 
 
 class TestEffectiveTargetIsolation:
