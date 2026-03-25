@@ -680,7 +680,7 @@ def render_scorecard(weekly: list[dict]) -> str:
     cfr_str = f"{cfr:.0f}%" if dep > 0 else "—"
     mttr_str = f"{mttr:.1f}h" if mttr > 0 else "—"
     lines.append(
-        "> 🔵 実績値  ·  🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)"
+        "> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)"
     )
     lines.append("")
 
