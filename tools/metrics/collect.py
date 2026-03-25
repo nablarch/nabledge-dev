@@ -519,7 +519,7 @@ def _delta_str(current: int, previous: int) -> str:
 def _pie_chart(title: str, slices: list[tuple[str, int]]) -> str:
     """Render a Mermaid pie chart. slices = [(label, value), ...]"""
     inner = "\n".join(f'  "{label}" : {value}' for label, value in slices if value > 0)
-    return f"```mermaid\npie title \"{title}\"\n{inner}\n```"
+    return f"```mermaid\npie title {title}\n{inner}\n```"
 
 
 def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> list[str]:
@@ -545,19 +545,13 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
         lines.append(mermaid_xychart_line("Total SLOC Trend (all categories)", hist_labels, "Lines", [h["total"] for h in history]))
         lines.append("")
 
-    # --- Nabledge v6 ---
-    lines.append("### Nabledge v6")
-    lines.append("")
-    lines.append(_pie_chart("Nabledge v6 SLOC (Scripts vs Prompts)", [
+    lines.append(_pie_chart("Nabledge v6 SLOC", [
         ("Scripts (.sh)", cur_ns),
         ("Prompts (.md)", cur_np),
     ]))
     lines.append("")
 
-    # --- Knowledge Creator ---
-    lines.append("### Knowledge Creator")
-    lines.append("")
-    lines.append(_pie_chart("Knowledge Creator SLOC (Production / Test / Prompts)", [
+    lines.append(_pie_chart("Knowledge Creator SLOC", [
         ("Production (.py)", cur_kp),
         ("Test (.py)", cur_kt),
         ("Prompts (.md)", cur_kpr),

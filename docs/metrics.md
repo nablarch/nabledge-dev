@@ -114,18 +114,14 @@ xychart-beta
   line [0, 789, 1503, 1293, 10339, 11613, 11704]
 ```
 
-### Nabledge v6
-
 ```mermaid
-pie title "Nabledge v6 SLOC (Scripts vs Prompts)"
+pie title Nabledge v6 SLOC
   "Scripts (.sh)" : 948
   "Prompts (.md)" : 983
 ```
 
-### Knowledge Creator
-
 ```mermaid
-pie title "Knowledge Creator SLOC (Production / Test / Prompts)"
+pie title Knowledge Creator SLOC
   "Production (.py)" : 4119
   "Test (.py)" : 5145
   "Prompts (.md)" : 509
