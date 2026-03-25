@@ -159,7 +159,7 @@ class TestDetectChangedFiles:
         assert result == []
 
     def test_changed_file_detected(self, ctx, tmp_path):
-        """Modified file → detected with correct file_id."""
+        """Modified file → detected with correct source path."""
         local_repo, _ = self._setup_meta_and_repo(ctx, tmp_path)
 
         # Modify source file and commit
@@ -171,8 +171,11 @@ class TestDetectChangedFiles:
         )
 
         result = detect_changed_files(ctx)
-        assert "handlers-sample" in result
-        assert "handlers-other" not in result
+        repo_name = "nablarch-document"
+        expected_path = f".lw/nab-official/v6/{repo_name}/ja/application_framework/handlers/sample.rst"
+        assert expected_path in result
+        other_path = f".lw/nab-official/v6/{repo_name}/ja/application_framework/handlers/other.rst"
+        assert other_path not in result
 
     def test_empty_commit_returns_none(self, ctx):
         """Empty commit (first generation) → None (= all files)."""
@@ -227,7 +230,10 @@ class TestDetectChangedFiles:
         )
 
         result = detect_changed_files(ctx)
-        assert set(result) == {"handlers-sample", "handlers-other"}
+        repo_name = "nablarch-document"
+        sample_path = f".lw/nab-official/v6/{repo_name}/ja/application_framework/handlers/sample.rst"
+        other_path = f".lw/nab-official/v6/{repo_name}/ja/application_framework/handlers/other.rst"
+        assert set(result) == {sample_path, other_path}
 
 
 class TestUpdateKnowledgeMeta:
@@ -724,7 +730,7 @@ class TestEffectiveTargetIsolation:
         # v6 should detect changes
         ctx6 = Context(version="6", repo=str(repo), concurrency=1)
         result6 = detect_changed_files(ctx6)
-        assert result6 == ["handlers-a"]
+        assert result6 == [".lw/nab-official/v6/nablarch-document/ja/handlers/a.rst"]
 
         # v5 should detect NO changes
         ctx5 = Context(version="5", repo=str(repo), concurrency=1)

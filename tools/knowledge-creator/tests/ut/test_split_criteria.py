@@ -16,8 +16,8 @@ class TestSectionSplit:
             parts.append(f"Section {i}\n----------\n{body}\n")
         return "\n".join(parts)
 
-    def test_single_section_not_split(self, ctx):
-        """h2セクション1個 → 分割しない。"""
+    def test_single_section_no_split_suffix(self, ctx):
+        """h2セクション1個 → split_file_entry が1エントリを返し --s1 サフィックスなし。"""
         classifier = Step2Classify(ctx)
         content = self._make_rst(1)
 
@@ -26,8 +26,18 @@ class TestSectionSplit:
             f.write(content)
 
         should_split, sections, _ = classifier.should_split_file("test/test.rst", "rst")
-        assert not should_split
+        assert should_split  # always True for RST
         assert len(sections) == 1
+
+        # split_file_entry returns 1 group; run() checks len > 1 before treating as split
+        base_entry = {
+            'id': 'test-file', 'type': 'component', 'category': 'test',
+            'source_path': 'test/test.rst', 'format': 'rst', 'filename': 'test.rst',
+            'output_path': 'component/test/test-file.json',
+            'assets_dir': 'component/test/assets/test-file/'
+        }
+        entries = classifier.split_file_entry(base_entry, sections, content)
+        assert len(entries) == 1  # 1 group → run() will use base_entry (no --s1 suffix)
 
     def test_two_sections_split(self, ctx):
         """h2セクション2個 → 分割する。"""
@@ -219,7 +229,7 @@ class TestSectionSplit:
         assert 'second-section' in all_labels
 
     def test_section_map_for_non_split_files(self, ctx, tmp_path):
-        """非分割RSTファイルにも section_map が生成されること。"""
+        """RSTファイルに section_map が生成されること（1グループ → 非分割扱い）。"""
         classifier = Step2Classify(ctx)
 
         content = (
@@ -234,9 +244,9 @@ class TestSectionSplit:
             f.write(content)
 
         should_split, sections, _ = classifier.should_split_file("test/single.rst", "rst")
-        assert not should_split, "File with 1 section should not split"
+        assert should_split  # always True for RST
 
-        # run() を通して section_map が付与されることを確認するため
+        # 1グループ → run() は非分割扱いで section_map を付与する
         # _extract_rst_labels_with_positions を直接テスト
         labels = classifier._extract_rst_labels_with_positions(content)
         assert any(label == 'only-section' for label, _ in labels)
@@ -660,3 +670,106 @@ class TestSectionSplit:
 
         # 順序が正しいこと(昇順)
         assert covered_lines == sorted(covered_lines), "Line ranges are not in order"
+
+
+class TestEqualsH3Detection:
+    """Tests for ===== as h3 marker recognition (Bug 2 fix).
+
+    Before the fix, ===== was excluded from h3 detection, so large single-h2
+    files with ===== subsections could not be split.
+    """
+
+    def _base_entry(self):
+        return {
+            'id': 'test', 'type': 'component', 'category': 'test',
+            'source_path': 'test/test.rst', 'format': 'rst', 'filename': 'test.rst',
+            'output_path': 'component/test/test.json',
+            'assets_dir': 'component/test/assets/test/'
+        }
+
+    def test_equals_h3_marker_triggers_split(self, ctx):
+        """===== をh3マーカーとして使ったファイルが分割されること (Bug 2修正確認)。
+
+        Before fix: ===== excluded from h3 detection -> no split possible.
+        After fix: ===== recognized as h3 -> split on subsection boundaries.
+        """
+        classifier = Step2Classify(ctx)
+
+        h3_body = "\n".join([f"Line {j}" for j in range(1, 201)])
+        content = (
+            "Main Title\n==========\n\nPreamble.\n\n"
+            "Large Section\n----------\n"
+            f"Subsection A\n=============\n{h3_body}\n"
+            f"Subsection B\n=============\n{h3_body}\n"
+        )
+
+        sections = classifier.analyze_rst_sections(content)
+        assert len(sections) == 1
+        assert sections[0]['line_count'] > 400
+
+        entries = classifier.split_file_entry(self._base_entry(), sections, content)
+
+        # With ===== recognized as h3, two subsections -> split into 2+ groups
+        assert len(entries) > 1, (
+            "===== h3 subsections should trigger split. "
+            "If this fails, ===== is not being recognized as h3 (Bug 2 regression)."
+        )
+        all_sections = []
+        for e in entries:
+            all_sections.extend(e['section_range']['sections'])
+        assert 'Subsection A' in all_sections
+        assert 'Subsection B' in all_sections
+
+    def test_equals_h3_with_multiple_h2(self, ctx):
+        """複数h2のうち1つが=====サブセクションを持つ場合も分割される。"""
+        classifier = Step2Classify(ctx)
+
+        h3_body = "\n".join([f"Line {j}" for j in range(1, 201)])
+        content = (
+            "Main Title\n==========\n\nPreamble.\n\n"
+            "Small Section\n----------\nSmall content.\n\n"
+            "Large Section\n----------\n"
+            f"Subsection A\n=============\n{h3_body}\n"
+            f"Subsection B\n=============\n{h3_body}\n"
+        )
+
+        sections = classifier.analyze_rst_sections(content)
+        assert len(sections) == 2
+
+        entries = classifier.split_file_entry(self._base_entry(), sections, content)
+
+        assert len(entries) > 1
+        all_sections = []
+        for e in entries:
+            all_sections.extend(e['section_range']['sections'])
+        assert 'Subsection A' in all_sections
+        assert 'Subsection B' in all_sections
+
+    def test_preamble_title_phantom_no_incorrect_split(self, ctx):
+        """h1タイトル(=====)のファントムh3が誤った分割を起こさないこと。
+
+        When the first h2 range includes preamble with 'Title\n=====',
+        the ===== line may be detected as a phantom h3 marker.
+        If no real h3 subsections exist, this should result in 1 group (no split).
+        """
+        classifier = Step2Classify(ctx)
+
+        # Large h2 (>400 lines) with NO real h3, only the h1 title ===== in preamble
+        body = "\n".join([f"Line {j}" for j in range(1, 402)])
+        content = (
+            "Main Title\n==========\n\nPreamble.\n\n"
+            "Large Section\n----------\n" + body + "\n"
+        )
+
+        sections = classifier.analyze_rst_sections(content)
+        # First h2 start_line is expanded to 0 (includes preamble with Main Title/=====)
+        assert sections[0]['start_line'] == 0
+        assert sections[0]['line_count'] > 400
+
+        entries = classifier.split_file_entry(self._base_entry(), sections, content)
+
+        # No real h3 -> phantom alone forms 1 group -> no split
+        assert len(entries) == 1, (
+            "Phantom h3 from h1 title should not cause incorrect split "
+            "when no real h3 subsections exist."
+        )
