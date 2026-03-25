@@ -233,7 +233,7 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
     For each week, compute:
       - deployment_frequency: merged PRs count
       - lead_time_hours: avg hours from first commit to merge
-      - change_failure_rate: % of PRs with bug/fix label
+      - change_failure_rate: % of PRs with bug label
       - mttr_hours: avg hours from bug issue open to close
       - issues_opened, issues_closed, prs_opened, prs_merged, contributors
     """
@@ -263,10 +263,10 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
                 lead_times.append(hours)
         avg_lead_time = sum(lead_times) / len(lead_times) if lead_times else 0.0
 
-        # Change failure rate: PRs with bug or fix label
+        # Change failure rate: PRs with bug label
         def has_failure_label(pr: dict) -> bool:
             labels = [lbl.get("name", "").lower() for lbl in pr.get("labels", [])]
-            return any(l in ("bug", "fix") for l in labels)
+            return "bug" in labels
 
         failure_prs = [pr for pr in week_prs if has_failure_label(pr)]
         cfr = (len(failure_prs) / dep_freq * 100) if dep_freq > 0 else 0.0
@@ -519,7 +519,7 @@ def _delta_str(current: int, previous: int) -> str:
 def _pie_chart(title: str, slices: list[tuple[str, int]]) -> str:
     """Render a Mermaid pie chart. slices = [(label, value), ...]"""
     inner = "\n".join(f'  "{label}" : {value}' for label, value in slices if value > 0)
-    return f"```mermaid\npie title \"{title}\"\n{inner}\n```"
+    return f"```mermaid\npie title {title}\n{inner}\n```"
 
 
 def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> list[str]:
@@ -545,19 +545,13 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
         lines.append(mermaid_xychart_line("Total SLOC Trend (all categories)", hist_labels, "Lines", [h["total"] for h in history]))
         lines.append("")
 
-    # --- Nabledge v6 ---
-    lines.append("### Nabledge v6")
-    lines.append("")
-    lines.append(_pie_chart("Nabledge v6 SLOC (Scripts vs Prompts)", [
+    lines.append(_pie_chart("Nabledge v6 SLOC", [
         ("Scripts (.sh)", cur_ns),
         ("Prompts (.md)", cur_np),
     ]))
     lines.append("")
 
-    # --- Knowledge Creator ---
-    lines.append("### Knowledge Creator")
-    lines.append("")
-    lines.append(_pie_chart("Knowledge Creator SLOC (Production / Test / Prompts)", [
+    lines.append(_pie_chart("Knowledge Creator SLOC", [
         ("Production (.py)", cur_kp),
         ("Test (.py)", cur_kt),
         ("Prompts (.md)", cur_kpr),
@@ -650,7 +644,7 @@ LEVEL_SCORE = {"Elite": 4, "High": 3, "Medium": 2, "Low": 1, "N/A": 0}
 
 
 def render_scorecard(weekly: list[dict]) -> str:
-    """Render DORA scorecard: metric/level table + benchmark reference."""
+    """Render DORA scorecard: metric/level table + weekly trend charts + benchmark reference."""
     def latest_nonzero(vals: list[float]) -> float:
         for v in reversed(vals):
             if v > 0:
@@ -686,15 +680,51 @@ def render_scorecard(weekly: list[dict]) -> str:
         lines.append(f"| {name} | {val} | {LEVEL_BADGE[level]} |")
     lines.append("")
 
-    # Benchmark reference (small text via HTML)
+    # Benchmark reference
     lines.append("<details><summary>Benchmark criteria</summary>")
     lines.append("")
-    lines.append("- **Deployment Frequency** — Elite: ≥7/week · High: ≥1/week · Medium: ≥1/month · Low: <1/month")
-    lines.append("- **Lead Time for Changes** — Elite: <1h · High: <1 week · Medium: <1 month · Low: ≥1 month")
-    lines.append("- **Change Failure Rate** — Elite: ≤5% · High: ≤10% · Medium: ≤15% · Low: >15%")
-    lines.append("- **MTTR** — Elite: <1h · High: <1 day · Medium: <1 week · Low: ≥1 week")
+    lines.append("**Deployment Frequency**")
+    lines.append("- Elite: ≥7/week")
+    lines.append("- High: ≥1/week")
+    lines.append("- Medium: ≥1/month")
+    lines.append("- Low: <1/month")
+    lines.append("")
+    lines.append("**Lead Time for Changes**")
+    lines.append("- Elite: <1h")
+    lines.append("- High: <1 week")
+    lines.append("- Medium: <1 month")
+    lines.append("- Low: ≥1 month")
+    lines.append("")
+    lines.append("**Change Failure Rate**")
+    lines.append("- Elite: ≤5%")
+    lines.append("- High: ≤10%")
+    lines.append("- Medium: ≤15%")
+    lines.append("- Low: >15%")
+    lines.append("")
+    lines.append("**MTTR**")
+    lines.append("- Elite: <1h")
+    lines.append("- High: <1 day")
+    lines.append("- Medium: <1 week")
+    lines.append("- Low: ≥1 week")
     lines.append("")
     lines.append("</details>")
+    lines.append("")
+
+    # Weekly trend charts
+    labels = [w["label"] for w in weekly]
+    dep_freq_vals = [w["deployment_frequency"] for w in weekly]
+    lead_time_vals = [w["lead_time_hours"] for w in weekly]
+    cfr_vals = [w["change_failure_rate"] for w in weekly]
+    mttr_vals = [w["mttr_hours"] for w in weekly]
+
+    lines.append(mermaid_xychart_bar("Deployment Frequency (PRs merged to main per week)", labels, "PRs / week", dep_freq_vals))
+    lines.append("")
+    lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
+    lines.append("")
+    lines.append(mermaid_xychart_bar("Change Failure Rate (bug labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
+    lines.append("")
+    lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
+
     return "\n".join(lines)
 
 
@@ -709,11 +739,6 @@ def render_metrics_md(
 ) -> str:
     labels = [w["label"] for w in weekly]
 
-    dep_freq_vals = [w["deployment_frequency"] for w in weekly]
-    lead_time_vals = [w["lead_time_hours"] for w in weekly]
-    cfr_vals = [w["change_failure_rate"] for w in weekly]
-    mttr_vals = [w["mttr_hours"] for w in weekly]
-
     lines = []
 
     # Header
@@ -726,23 +751,6 @@ def render_metrics_md(
     lines.append("## DORA Scorecard")
     lines.append("")
     lines.append(render_scorecard(weekly))
-    lines.append("")
-
-    # --- Development Productivity ---
-    lines.append("## Development Productivity")
-    lines.append("")
-
-    lines.append(mermaid_xychart_bar("Deployment Frequency (PRs merged to main per week)", labels, "PRs / week", dep_freq_vals))
-    lines.append("")
-    lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
-    lines.append("")
-    lines.append(mermaid_xychart_bar("Change Failure Rate (bug or fix labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
-    lines.append("")
-    lines.append("> **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100")
-    lines.append("")
-    lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
-    lines.append("")
-    lines.append("> **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）")
     lines.append("")
 
     # --- Activity ---
@@ -786,7 +794,17 @@ def render_metrics_md(
     lines.append("```")
     lines.append("")
 
-    lines.append(mermaid_xychart_bar("Active Contributors (unique PR authors per week)", labels, "Contributors", [w["contributors"] for w in weekly]))
+    contributor_vals = [w["contributors"] for w in weekly]
+    ymax_contrib = max(5, y_axis_max(contributor_vals))
+    x_str_contrib = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
+    contrib_str = "[" + ", ".join(str(v) for v in contributor_vals) + "]"
+    lines.append("```mermaid")
+    lines.append("xychart-beta")
+    lines.append('  title "Active Contributors (unique PR authors per week)"')
+    lines.append(f"  x-axis {x_str_contrib}")
+    lines.append(f'  y-axis "Contributors" 0 --> {ymax_contrib}')
+    lines.append(f"  bar {contrib_str}")
+    lines.append("```")
     lines.append("")
 
     # --- SLOC ---
