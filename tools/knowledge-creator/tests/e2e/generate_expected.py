@@ -20,7 +20,6 @@ from collections import Counter
 # Constants
 # ============================================================
 
-SPLIT_SECTION_THRESHOLD = 2
 LINE_GROUP_THRESHOLD = 400
 
 
@@ -236,11 +235,11 @@ def analyze_rst_sections(content: str) -> list:
 def analyze_h3_subsections(content: str, h2_start: int, h2_end: int) -> list:
     lines = content.splitlines()
     subsections = []
-    h3_pattern = re.compile(r'^[\^~+*.]{5,}$')
+    h3_pattern = re.compile(r'^[\^~+*.=]{5,}$')
 
     for i in range(h2_start, h2_end - 1):
         if i + 1 < len(lines):
-            if h3_pattern.match(lines[i + 1]) and not re.match(r'^[-=]{5,}$', lines[i + 1]):
+            if h3_pattern.match(lines[i + 1]) and not re.match(r'^-{5,}$', lines[i + 1]):
                 subsections.append({'title': lines[i].strip(), 'start_line': i, 'level': 'h3'})
 
     for i in range(len(subsections)):
@@ -452,9 +451,9 @@ def classify_all(sources: list, repo: str, version: str = "6") -> list:
             content = f.read()
 
         sections = analyze_rst_sections(content)
-        if len(sections) >= SPLIT_SECTION_THRESHOLD:
-            expanded = expand_large_sections(sections, content)
-            groups = group_sections_by_lines(expanded)
+        expanded = expand_large_sections(sections, content)
+        groups = group_sections_by_lines(expanded)
+        if len(groups) > 1:
             split_entries = generate_split_entries(entry, groups)
             final.extend(split_entries)
         else:

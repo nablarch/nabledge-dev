@@ -86,7 +86,6 @@ def filter_for_test(classified: list, test_file_ids: set) -> list:
 
 class Step2Classify:
     # Thresholds for section-unit splitting
-    SPLIT_SECTION_THRESHOLD = 2  # h2セクションがこの数以上あれば分割
     LINE_GROUP_THRESHOLD = 400  # セクションをグループ化する行数の閾値（h3展開とグループ化の両方に使用）
 
     def __init__(self, ctx, sources_data=None):
@@ -247,15 +246,15 @@ class Step2Classify:
         subsections = []
 
         # Find h3 sections within the h2 range
-        # h3 can be marked with various underlines: ^^^^^ ~~~~~ +++++ etc.
-        # Exclude ----- (h2) and ===== (h1)
-        h3_pattern = re.compile(r'^[\^~+*.]{5,}$')
+        # h3 can be marked with various underlines: ^^^^^ ~~~~~ +++++ ===== etc.
+        # Exclude ----- (h2)
+        h3_pattern = re.compile(r'^[\^~+*.=]{5,}$')
 
         for i in range(h2_start, h2_end - 1):
             if i + 1 < len(lines):
                 next_line = lines[i + 1]
-                # Check if next line is an h3 marker (not h1/h2)
-                if h3_pattern.match(next_line) and not re.match(r'^[-=]{5,}$', next_line):
+                # Check if next line is an h3 marker (not h2)
+                if h3_pattern.match(next_line) and not re.match(r'^-{5,}$', next_line):
                     title = lines[i].strip()
                     subsections.append({
                         'title': title,
@@ -290,9 +289,7 @@ class Step2Classify:
         total_lines = len(lines)
         sections = self.analyze_rst_sections(content)
 
-        # h2セクションが2個以上あれば分割
-        should_split = len(sections) >= self.SPLIT_SECTION_THRESHOLD
-        return should_split, sections, total_lines
+        return True, sections, total_lines
 
     def split_file_entry(self, base_entry: dict, sections: list, content: str) -> list:
         """Split a file entry into groups of sections based on line count.
@@ -564,14 +561,12 @@ class Step2Classify:
                 content = read_file(full_path)
 
                 split_entries = self.split_file_entry(entry, sections, content)
-                final_classified.extend(split_entries)
-                split_count += 1
-                self.logger.info(f"   ✂️Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
-            else:
-                # 非分割ファイルにも section_map を生成（RSTのみ）
-                if entry['format'] == 'rst':
-                    full_path = os.path.join(self.ctx.repo, entry['source_path'])
-                    content = read_file(full_path)
+                if len(split_entries) > 1:
+                    final_classified.extend(split_entries)
+                    split_count += 1
+                    self.logger.info(f"   ✂️Split {entry['id']}: {total_lines} lines → {len(split_entries)} parts")
+                else:
+                    # 0 or 1 group: treat as non-split (no --s1 suffix)
                     rst_labels = self._extract_rst_labels_with_positions(content)
                     counter = 1
                     section_map = []
@@ -592,6 +587,9 @@ class Step2Classify:
                             "rst_labels": [label for label, _ in rst_labels]
                         })
                     entry['section_map'] = section_map
+                    final_classified.append(entry)
+            else:
+                # Non-RST files: no section_map
                 final_classified.append(entry)
 
         if split_count > 0:

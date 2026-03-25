@@ -107,13 +107,15 @@ def pull_official_repos(ctx) -> dict:
 
 
 def detect_changed_files(ctx) -> list:
-    """Detect file_ids whose source files changed since last generation.
+    """Detect source paths whose files changed since last generation.
 
     Compares recorded commit in knowledge-creator.json with current HEAD,
-    then maps changed file paths to file_ids via classified.json.
+    then maps changed file paths to source_path values via catalog.json.
 
     Returns:
-        list of changed file_ids, or None if commit is empty (= first generation).
+        list of changed source paths (relative to repo root), or None if commit is
+        empty (= first generation). Caller maps source paths to catalog IDs after
+        Phase A produces an up-to-date catalog.
     """
     meta = load_meta(ctx)
     if not meta or not meta.get("sources"):
@@ -157,33 +159,33 @@ def detect_changed_files(ctx) -> list:
     if not changed_paths:
         return []
 
-    # Map changed paths to file_ids using classified files in catalog.json
+    # Map changed paths to source_path values using catalog.json
     # meta is already loaded; "files" key is added by Phase A
     if "files" not in meta:
         print("   ⚠️ catalog.json に files がありません。先に Phase A を実行してください")
         return None
 
-    changed_ids = []
+    # Collect unique source paths that changed (deduplicate split parts)
+    seen_source_paths = set()
+    changed_source_paths = []
 
     for fi in meta["files"]:
         source_path = fi.get("source_path", "")
+        if source_path in seen_source_paths:
+            continue
         # source_path is relative to repo root, e.g.:
         #   .lw/nab-official/v6/nablarch-document/ja/application_framework/...
         # git diff output is relative to the repo clone dir, e.g.:
         #   ja/application_framework/...
-        # So we check if source_path ends with the git diff path
-        #
-        # Note: split files share the same source_path with different file_ids
-        # (e.g. handlers-sample--section-1, handlers-sample--section-2).
-        # Since we iterate all entries, all split parts are correctly detected.
         abs_source = os.path.join(ctx.repo, source_path)
         for local_repo, diff_path in changed_paths:
             abs_diff = os.path.join(local_repo, diff_path)
             if os.path.normpath(abs_source) == os.path.normpath(abs_diff):
-                changed_ids.append(fi["id"])
+                changed_source_paths.append(source_path)
+                seen_source_paths.add(source_path)
                 break
 
-    return changed_ids
+    return changed_source_paths
 
 
 def update_knowledge_meta(ctx):

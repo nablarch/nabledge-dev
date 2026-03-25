@@ -259,6 +259,24 @@ def _make_args(ctx, phase=None, clean_phase=None, target=None, regen=False):
     )
 
 
+def _clean_stale_cache(ctx):
+    """Delete .cache/knowledge/**/*.json whose stem is not in the current catalog."""
+    import glob as _glob
+    from common import load_json
+    if not os.path.exists(ctx.classified_list_path):
+        return
+    catalog = load_json(ctx.classified_list_path)
+    catalog_ids = {f["id"] for f in catalog.get("files", [])}
+    removed = 0
+    for json_file in _glob.glob(f"{ctx.knowledge_cache_dir}/**/*.json", recursive=True):
+        stem = os.path.splitext(os.path.basename(json_file))[0]
+        if stem not in catalog_ids:
+            os.remove(json_file)
+            removed += 1
+    if removed:
+        get_logger().info(f"   🗑️Deleted {removed} stale cache files")
+
+
 def _run_pipeline(ctx, args):
     """Run the full pipeline for a single version context."""
     logger = get_logger()
@@ -288,7 +306,42 @@ def _run_pipeline(ctx, args):
     # --target from CLI is the default; --regen may override per version
     effective_target = args.target
 
-    # Resolve --target base_name to split IDs
+    # --regen: pull official repos, detect source changes
+    # Note: detect_changed_files returns source paths (not file IDs).
+    # Resolution to new catalog IDs happens AFTER Phase A.
+    changed_source_paths = None  # None = first run (all files); [] = no changes
+    if args.regen:
+        from knowledge_meta import pull_official_repos, detect_changed_files
+        logger.info("\n📥 公式リポジトリを更新中...")
+        pull_official_repos(ctx)
+
+        logger.info("\n🔍 ソース変更を検知中...")
+        changed_source_paths = detect_changed_files(ctx)
+
+        if changed_source_paths is not None and len(changed_source_paths) == 0:
+            logger.info("   ✨ ソース変更なし")
+            # Phase M の update_knowledge_meta を通らずに終了する（意図通り）
+            return
+
+        if changed_source_paths is not None:
+            logger.info(f"   🔄 変更検知 (ソースファイル): {len(changed_source_paths)} ファイル")
+            for sp in changed_source_paths[:10]:
+                logger.info(f"     - {sp}")
+            if len(changed_source_paths) > 10:
+                logger.info(f"     ... 他 {len(changed_source_paths) - 10} ファイル")
+        # changed_source_paths is None → 初回生成扱い、全件実行
+
+    # Phase A
+    if "A" in phases:
+        logger.info("\n📋Phase A: Prepare")
+        logger.info("   └─ Scanning documentation sources...")
+        from step1_list_sources import Step1ListSources
+        from step2_classify import Step2Classify
+        sources = Step1ListSources(ctx).run()
+        Step2Classify(ctx, sources_data=sources).run()
+        _clean_stale_cache(ctx)
+
+    # Resolve --target base_name to split IDs using the new catalog
     if effective_target and os.path.exists(ctx.classified_list_path):
         from common import load_json
         catalog = load_json(ctx.classified_list_path)
@@ -301,49 +354,29 @@ def _run_pipeline(ctx, args):
                 resolved.append(t)
         effective_target = resolved
 
-    # --clean-phase: remove artifacts before run
+    # --regen: map changed source paths to new catalog IDs, then clean affected
+    if args.regen and changed_source_paths is not None:
+        from common import load_json
+        catalog = load_json(ctx.classified_list_path)
+        path_to_ids = {}
+        for f in catalog.get("files", []):
+            path_to_ids.setdefault(f["source_path"], []).append(f["id"])
+        changed_ids = []
+        for sp in changed_source_paths:
+            changed_ids.extend(path_to_ids.get(sp, []))
+        if changed_ids:
+            logger.info(f"   🔄 変更検知 (カタログID): {len(changed_ids)} エントリ")
+            for fid in changed_ids[:10]:
+                logger.info(f"     - {fid}")
+            if len(changed_ids) > 10:
+                logger.info(f"     ... 他 {len(changed_ids) - 10} エントリ")
+        effective_target = changed_ids
+
+    # --clean-phase: remove artifacts after target resolution (uses correct resolved IDs)
     if args.clean_phase:
         from cleaner import clean_phase_artifacts
         clean_phase_artifacts(ctx, args.clean_phase,
                               target_ids=effective_target, yes=args.yes)
-
-    # --regen: pull official repos, detect source changes, clean affected
-    # Note: This runs BEFORE Phase A. detect_changed_files reads the
-    # PREVIOUS run's classified.json (from .logs/) to map git diff paths
-    # to file_ids. If classified.json does not exist (first run), it
-    # returns None → all files will be generated (same as UC1).
-    if args.regen:
-        from knowledge_meta import pull_official_repos, detect_changed_files
-        logger.info("\n📥 公式リポジトリを更新中...")
-        pull_official_repos(ctx)
-
-        logger.info("\n🔍 ソース変更を検知中...")
-        changed = detect_changed_files(ctx)
-
-        if changed is not None and len(changed) == 0:
-            logger.info("   ✨ ソース変更なし")
-            # Phase M の update_knowledge_meta を通らずに終了する（意図通り）
-            return
-
-        if changed is not None:
-            logger.info(f"   🔄 変更検知: {len(changed)} ファイル")
-            for fid in changed[:10]:
-                logger.info(f"     - {fid}")
-            if len(changed) > 10:
-                logger.info(f"     ... 他 {len(changed) - 10} ファイル")
-            from cleaner import clean_phase_artifacts
-            clean_phase_artifacts(ctx, "BD", target_ids=changed, yes=args.yes)
-            effective_target = changed
-        # changed is None → 初回生成扱い、effective_target = None のまま全件実行
-
-    # Phase A
-    if "A" in phases:
-        logger.info("\n📋Phase A: Prepare")
-        logger.info("   └─ Scanning documentation sources...")
-        from step1_list_sources import Step1ListSources
-        from step2_classify import Step2Classify
-        sources = Step1ListSources(ctx).run()
-        Step2Classify(ctx, sources_data=sources).run()
 
     # Phase B
     if "B" in phases:

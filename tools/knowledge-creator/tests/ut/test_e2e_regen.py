@@ -211,7 +211,7 @@ class TestRegenWithChanges:
         write_json(meta_path, meta)
 
     def test_changed_source_file_detected(self, tmp_path):
-        """Modified source file → only that file_id returned."""
+        """Modified source file → only that source path returned."""
         repo_root, local_repos, ctx = _setup_repo_and_meta(tmp_path)
         repo_name = "nablarch-document"
         local_repo = local_repos[repo_name]
@@ -235,9 +235,11 @@ class TestRegenWithChanges:
 
         changed = detect_changed_files(ctx)
 
+        expected_path = f".lw/nab-official/v{ctx.version}/{repo_name}/ja/application_framework/handlers/sample.rst"
+        other_path = f".lw/nab-official/v{ctx.version}/{repo_name}/ja/application_framework/handlers/other.rst"
         assert changed is not None, "Should detect changes"
-        assert "handlers-sample" in changed, "Changed file should be detected"
-        assert "handlers-other" not in changed, "Unchanged file should not be detected"
+        assert expected_path in changed, "Changed file should be detected"
+        assert other_path not in changed, "Unchanged file should not be detected"
 
     def test_multiple_changed_files_all_detected(self, tmp_path):
         """Multiple modified source files → all returned."""
@@ -275,7 +277,9 @@ class TestRegenWithChanges:
 
         changed = detect_changed_files(ctx)
 
-        assert set(changed) == {"handlers-sample", "handlers-other"}, (
+        sample_path = f".lw/nab-official/v{ctx.version}/{repo_name}/ja/application_framework/handlers/sample.rst"
+        other_path = f".lw/nab-official/v{ctx.version}/{repo_name}/ja/application_framework/handlers/other.rst"
+        assert set(changed) == {sample_path, other_path}, (
             "All changed files should be detected"
         )
 
@@ -297,8 +301,8 @@ class TestRegenWithChanges:
             "No source changes should return empty list to skip generation"
         )
 
-    def test_split_files_all_parts_detected(self, tmp_path):
-        """When source file has split parts, all parts are detected as changed."""
+    def test_split_files_source_path_returned(self, tmp_path):
+        """When source file has split parts, the source path is returned once (deduplicated)."""
         repo_root, local_repos, ctx = _setup_repo_and_meta(tmp_path)
         repo_name = "nablarch-document"
         local_repo = local_repos[repo_name]
@@ -351,8 +355,11 @@ class TestRegenWithChanges:
 
         changed = detect_changed_files(ctx)
 
-        assert set(changed) == {"handlers-large--section-1", "handlers-large--section-2"}, (
-            "All split parts sharing the same source file should be detected"
+        # Returns source path (deduplicated), not individual split part IDs
+        # Caller resolves to new catalog IDs after Phase A
+        expected_source = f".lw/nab-official/v{ctx.version}/{repo_name}/{source_path}"
+        assert changed == [expected_source], (
+            "Source path should be returned once (deduplicated across split parts)"
         )
 
 
@@ -431,6 +438,7 @@ class TestRegenPullAndDetect:
         # Run --regen detection
         changed = detect_changed_files(ctx)
 
-        assert changed == ["handlers-sample"], (
-            "After upstream update, only the changed file_id should be returned"
+        expected_source = f".lw/nab-official/v{ctx.version}/{repo_name}/{source_path}"
+        assert changed == [expected_source], (
+            "After upstream update, only the changed source path should be returned"
         )

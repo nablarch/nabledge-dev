@@ -16,8 +16,8 @@ class TestSectionSplit:
             parts.append(f"Section {i}\n----------\n{body}\n")
         return "\n".join(parts)
 
-    def test_single_section_not_split(self, ctx):
-        """h2セクション1個 → 分割しない。"""
+    def test_single_section_no_split_suffix(self, ctx):
+        """h2セクション1個 → split_file_entry が1エントリを返し --s1 サフィックスなし。"""
         classifier = Step2Classify(ctx)
         content = self._make_rst(1)
 
@@ -26,8 +26,18 @@ class TestSectionSplit:
             f.write(content)
 
         should_split, sections, _ = classifier.should_split_file("test/test.rst", "rst")
-        assert not should_split
+        assert should_split  # always True for RST
         assert len(sections) == 1
+
+        # split_file_entry returns 1 group; run() checks len > 1 before treating as split
+        base_entry = {
+            'id': 'test-file', 'type': 'component', 'category': 'test',
+            'source_path': 'test/test.rst', 'format': 'rst', 'filename': 'test.rst',
+            'output_path': 'component/test/test-file.json',
+            'assets_dir': 'component/test/assets/test-file/'
+        }
+        entries = classifier.split_file_entry(base_entry, sections, content)
+        assert len(entries) == 1  # 1 group → run() will use base_entry (no --s1 suffix)
 
     def test_two_sections_split(self, ctx):
         """h2セクション2個 → 分割する。"""
@@ -219,7 +229,7 @@ class TestSectionSplit:
         assert 'second-section' in all_labels
 
     def test_section_map_for_non_split_files(self, ctx, tmp_path):
-        """非分割RSTファイルにも section_map が生成されること。"""
+        """RSTファイルに section_map が生成されること（1グループ → 非分割扱い）。"""
         classifier = Step2Classify(ctx)
 
         content = (
@@ -234,9 +244,9 @@ class TestSectionSplit:
             f.write(content)
 
         should_split, sections, _ = classifier.should_split_file("test/single.rst", "rst")
-        assert not should_split, "File with 1 section should not split"
+        assert should_split  # always True for RST
 
-        # run() を通して section_map が付与されることを確認するため
+        # 1グループ → run() は非分割扱いで section_map を付与する
         # _extract_rst_labels_with_positions を直接テスト
         labels = classifier._extract_rst_labels_with_positions(content)
         assert any(label == 'only-section' for label, _ in labels)
