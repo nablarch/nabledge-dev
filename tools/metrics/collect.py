@@ -712,29 +712,30 @@ def render_scorecard(weekly: list[dict]) -> str:
         out.append("```")
         return out
 
-    # Deployment Frequency: higher is better; Elite ≥7 (green line)
-    # bar gets 1st palette color — use default-matching blue; Elite line gets green
+    _palette4 = "#4C82C3,#00C853,#FFD600,#FF8C00"
+
+    # Deployment Frequency: higher is better; Elite≥7, High≥1, Medium≥0.25 (/week)
     lines += _chart_with_thresholds(
         "bar", "Deployment Frequency (PRs merged to main per week)", "PRs / week",
-        dep_freq_vals, [7], "#4C82C3,#00C853")
+        dep_freq_vals, [7, 1, 0.25], _palette4)
     lines.append("")
 
-    # Lead Time: lower is better; Elite <1h only (High=168h would distort scale)
+    # Lead Time: lower is better; Elite<1h, High<168h (1wk), Medium<730h (1mo)
     lines += _chart_with_thresholds(
         "line", "Lead Time for Changes (avg hours: first commit to merge)", "Hours",
-        lead_time_vals, [1], "#4C82C3,#00C853")
+        lead_time_vals, [1, 168, 730], _palette4)
     lines.append("")
 
-    # CFR: lower is better; Elite ≤5%, High ≤10%, Medium/Low boundary ≤15%
+    # CFR: lower is better; Elite≤5%, High≤10%, Medium≤15%
     lines += _chart_with_thresholds(
         "bar", "Change Failure Rate (bug labeled PRs / all merged PRs %)", "% of PRs",
-        cfr_vals, [5, 10, 15], "#4C82C3,#00C853,#FFD600,#FF4444")
+        cfr_vals, [5, 10, 15], _palette4)
     lines.append("")
 
-    # MTTR: lower is better; Elite <1h, High <24h
+    # MTTR: lower is better; Elite<1h, High<24h, Medium<168h (1wk)
     lines += _chart_with_thresholds(
         "line", "Mean Time to Recovery (avg hours: bug issue opened to closed)", "Hours",
-        mttr_vals, [1, 24], "#4C82C3,#00C853,#FFD600")
+        mttr_vals, [1, 24, 168], _palette4)
     lines.append("")
 
     return "\n".join(lines)
