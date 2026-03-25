@@ -706,7 +706,7 @@ def render_scorecard(weekly: list[dict]) -> str:
 
     # Legend (once for all threshold lines below)
     lines.append(
-        "> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)"
+        "> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium (threshold lines; beyond 🟠 = Low)"
     )
     lines.append("")
 

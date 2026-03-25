@@ -32,7 +32,7 @@
 
 </details>
 
-> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)
+> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium (threshold lines; beyond 🟠 = Low)
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF8C00'}}}}%%
