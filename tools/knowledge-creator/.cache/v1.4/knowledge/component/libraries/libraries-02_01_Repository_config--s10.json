@@ -1,0 +1,72 @@
+{
+  "id": "libraries-02_01_Repository_config--s10",
+  "title": "property 要素の value 属性で設定できる型",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "property 要素の value 属性で設定できる型",
+      "hints": [
+        "プロパティの簡易設定機能",
+        "PrimitiveValueHolder",
+        "java.lang.String[]",
+        "int[]",
+        "java.lang.Integer[]",
+        "プリミティブ型のインジェクション",
+        "配列型のプロパティ設定",
+        "value属性による型変換",
+        "SystemRepository"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "List と Map をコンポーネントとして登録する",
+      "hints": [
+        "list要素",
+        "map要素",
+        "component-ref",
+        "value-component",
+        "key-component",
+        "entry",
+        "ListコンポーネントのDI設定",
+        "MapコンポーネントのDI設定",
+        "コレクション型プロパティの設定",
+        "KeyComponent",
+        "コンポーネントキーによるMap取得",
+        "ComponentA",
+        "ComponentB"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "コンポーネント設定ファイルからの環境設定ファイル読み込み",
+      "hints": [
+        "config-file要素",
+        "環境設定ファイルの読み込み",
+        "SystemRepository.getString",
+        "設定値の取得",
+        ".configファイル"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "複数のコンポーネント設定ファイルの読み込み",
+      "hints": [
+        "import要素",
+        "XmlComponentDefinitionLoader",
+        "DiContainer",
+        "SystemRepository.load",
+        "複数コンポーネント設定ファイルのインポート",
+        "ブートストラップ処理",
+        "HelloImport"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`property` 要素の `value` 属性で設定できる型（プロパティの簡易設定機能）:\n\n1. `java.lang.String`\n2. `boolean`\n3. `java.lang.Boolean`\n4. `int`\n5. `java.lang.Integer`\n6. `long`\n7. `java.lang.Long`\n8. `java.lang.String[]`\n9. `int[]`\n10. `java.lang.Integer[]`\n\n配列型は `,` 区切りの文字列で設定する（例: `value=\"abc,def,ghi\"`、`value=\"1,2,3\"`）。\n\n```xml\n<component name=\"primitiveValueHolder\" class=\"nablarch.core.repository.di.example.primitivevalue.PrimitiveValueHolder\">\n    <property name=\"stringValue\" value=\"string value\" />\n    <property name=\"boolValue\" value=\"true\" />\n    <property name=\"boolWrapperValue\" value=\"false\" />\n    <property name=\"intValue\" value=\"2\" />\n    <property name=\"intWrapperValue\" value=\"3\" />\n    <property name=\"longValue\" value=\"5\" />\n    <property name=\"longWrapperValue\" value=\"6\" />\n    <property name=\"stringArrayValue\" value=\"abc,def,ghi\" />\n    <property name=\"intArrayValue\" value=\"1,2,3\" />\n    <property name=\"integerArrayValue\" value=\"4,5,6\" />\n</component>\n```\n\n設定後は `SystemRepository.getObject(\"primitiveValueHolder\")` でインスタンスを取得できる。",
+    "s2": "`List` や `Map` のプロパティを持つコンポーネントは、`list` 要素・`map` 要素でコンポーネントとして登録する。詳細仕様は :ref:`repository_elements_list` および :ref:`repository_elements_map` を参照。\n\n## list 要素\n\n`list` 要素の子要素:\n- `component-ref`: 登録済みコンポーネントへの参照\n- `component`: インラインのコンポーネント定義\n- `value`: 文字列値\n\n```xml\n<list name=\"listComponent\">\n    <component-ref name=\"valueComponent\"/>\n    <component class=\"nablarch.core.repository.di.example.collection.ComponentB\">\n        <property name=\"name\" value=\"compB_1\"/>\n    </component>\n    <value>String value</value>\n</list>\n```\n\n## map 要素\n\n`entry` 要素でキーと値を定義する。キー・値にはそれぞれ文字列属性・コンポーネント参照・インラインコンポーネントが使用可能。\n\n```xml\n<map name=\"mapComponent\">\n    <!-- キー:文字列, 値:コンポーネント参照 -->\n    <entry key=\"compB_0\" value-name=\"valueComponent\"/>\n    <!-- キー:文字列, 値:インラインコンポーネント -->\n    <entry key=\"compB_2\">\n        <value-component class=\"nablarch.core.repository.di.example.collection.ComponentB\">\n            <property name=\"name\" value=\"compB_2\"/>\n        </value-component>\n    </entry>\n    <!-- キー:文字列, 値:文字列 -->\n    <entry key=\"stringKey\" value=\"String value\"/>\n    <!-- キー:インラインコンポーネント, 値:インラインコンポーネント -->\n    <entry>\n        <key-component class=\"nablarch.core.repository.di.example.collection.KeyComponent\">\n            <property name=\"id\" value=\"00001\"/>\n            <property name=\"lang\" value=\"ja\"/>\n        </key-component>\n        <value-component class=\"nablarch.core.repository.di.example.collection.ComponentB\">\n            <property name=\"name\" value=\"compB_3\"/>\n        </value-component>\n    </entry>\n</map>\n```\n\nコンポーネントキーを使って値を取得するには、同じプロパティ値を持つ新しいインスタンスをキーとして `map.get()` に渡す。\n\n```java\nComponentA compA = (ComponentA) SystemRepository.getObject(\"compA\");\nMap<?, ?> map = compA.getMapProperty();\n\n// 文字列キーの場合\nComponentB compB_0 = (ComponentB) map.get(\"compB_0\");\n\n// コンポーネントキーの場合: key-component で設定したプロパティ値と一致するインスタンスを生成してキーに使用する\nKeyComponent key = new KeyComponent();\nkey.setId(\"00001\");\nkey.setLang(\"ja\");\nComponentB compB_3 = (ComponentB) map.get(key);\n// \"compB_3\" が取得できる\nSystem.out.println(compB_3.getName());\n```",
+    "s3": "`config-file` 要素を使用すると、環境設定ファイル（`.config` 形式）の設定値をコンポーネント設定ファイルから読み込める。\n\n```xml\n<config-file file=\"nablarch/core/repository/di/example/configfile/hello.config\"/>\n```\n\n読み込んだ設定値は `SystemRepository.getString(\"key\")` で取得できる。\n\n```java\nString helloMessage = SystemRepository.getString(\"hello.message\");\n```",
+    "s4": "`import` 要素を使用すると、他のコンポーネント設定ファイルを読み込める。\n\n```xml\n<import file=\"nablarch/core/repository/di/example/imp/imported1.xml\"/>\n<import file=\"nablarch/core/repository/di/example/imp/imported2.xml\"/>\n```\n\n> **注意**: 以下のブートストラップ処理は通常のアプリケーションでは実装不要。フレームワーク使用時、アプリケーション・プログラマはこのような実装を行わない。\n\n```java\nXmlComponentDefinitionLoader loader = new XmlComponentDefinitionLoader(\"nablarch/core/repository/di/example/imp/import.xml\");\nDiContainer container = new DiContainer(loader);\nSystemRepository.load(container);\n```\n\n読み込まれた各設定ファイルのコンポーネントは `SystemRepository.getObject(\"name\")` で取得できる。\n\n```java\nHelloImport helloImport1 = (HelloImport) SystemRepository.getObject(\"helloImport1\");\nHelloImport helloImport2 = (HelloImport) SystemRepository.getObject(\"helloImport2\");\n```"
+  }
+}

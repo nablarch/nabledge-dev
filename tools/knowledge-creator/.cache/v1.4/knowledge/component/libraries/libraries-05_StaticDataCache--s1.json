@@ -1,0 +1,186 @@
+{
+  "id": "libraries-05_StaticDataCache--s1",
+  "title": "静的データのキャッシュ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "StaticDataCache",
+        "StaticDataLoader",
+        "静的データキャッシュ",
+        "キャッシュ機構",
+        "repository"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "StaticDataCache",
+        "インデックス機能",
+        "インデックスキー",
+        "キャッシュ実装負荷軽減",
+        "静的データキャッシュ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "静的データキャッシュ",
+        "オンデマンドロード",
+        "一括ロード",
+        "再ロード",
+        "インデックスキー"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構成",
+      "hints": [
+        "StaticDataCache",
+        "StaticDataLoader",
+        "BasicStaticDataCache",
+        "クラス図"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "インタフェース定義",
+      "hints": [
+        "nablarch.core.cache.StaticDataCache",
+        "nablarch.core.cache.StaticDataLoader",
+        "インタフェース定義",
+        "キャッシュインタフェース"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "クラス定義",
+      "hints": [
+        "nablarch.core.cache.StaticDataCache",
+        "BasicStaticDataCache",
+        "HashMap",
+        "キャッシュ実装クラス"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "キャッシュした静的データの取得",
+      "hints": [
+        "StaticDataCache",
+        "getValue",
+        "getValues",
+        "DIコンテナ",
+        "静的データ取得",
+        "キャッシュ取得",
+        "di-container"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "キャッシュされるデータを保持するクラス(ExampleData)",
+      "hints": [
+        "ExampleData",
+        "キャッシュデータクラス",
+        "StaticDataCache"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "キャッシュしたデータを使用するクラス",
+      "hints": [
+        "StaticDataUseExample",
+        "StaticDataCache",
+        "getValue",
+        "フィールド保持禁止",
+        "リロード"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "インデックスを使用した静的データの取得",
+      "hints": [
+        "StaticDataUseExample",
+        "StaticDataCache",
+        "getValues",
+        "インデックス取得",
+        "インデックスキー"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "キャッシュにデータをロードする方法",
+      "hints": [
+        "オンデマンドロード",
+        "一括ロード",
+        "キャッシュロード",
+        "バッチ",
+        "Webアプリケーション",
+        "ロード方法"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "オンデマンドロードの使用方法",
+      "hints": [
+        "StaticDataLoader",
+        "getValue",
+        "getValues",
+        "getId",
+        "オンデマンドロード",
+        "インデックス",
+        "データロード実装"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "ExampleDataをロードするクラス",
+      "hints": [
+        "ExampleDataLoader",
+        "StaticDataLoader",
+        "SimpleDbTransactionExecutor",
+        "getValue",
+        "getValues",
+        "getId",
+        "データロード実装",
+        "AppDbConnection",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow"
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "設定ファイル",
+      "hints": [
+        "BasicStaticDataCache",
+        "ExampleDataLoader",
+        "BasicApplicationInitializer",
+        "XML設定",
+        "キャッシュ設定",
+        "initializeList",
+        "loader"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "静的データキャッシュ機能は、静的データをよりアクセス速度が速い媒体にキャッシュすることで、アクセスを高速化する機構を提供する。\n\n- 本機能はリポジトリに登録して使用する。初期化処理は :ref:`repository` が実行する。\n- 本機能は他の機能の一部として使用されることを想定しており、単体では使用しない。アプリケーションプログラマは本機能を直接使用しない。",
+    "s2": "**静的データキャッシュの実装負荷軽減**\n\nキャッシュを使用する機能の実装は以下の2点のみに集約される:\n1. 静的データをRDBMSやXMLファイル等の媒体からロードする処理\n2. キャッシュした静的データを使用する処理\n\n**インデックス機能**\n\nID以外の特定のキー（インデックスキー）を指定してキャッシュから静的データを取得できる機能。1つのキーに複数の静的データを紐付けられる。",
+    "s3": "**実装済み**\n- 任意のクラスの静的データをキャッシュできる\n- IDを指定してキャッシュから静的データを取得できる\n- 任意のインデックスキーを指定して、キャッシュから複数の静的データを取得できる\n- アプリケーション起動時に永続化した媒体から静的データをロードできる\n- 静的データが必要になったタイミングで永続化した媒体からロードできる\n- プロセスを再起動することなく再ロードできる\n\n**未検討**\n- 頻繁に参照されない静的データをキャッシュから削除することでメモリを節約できる\n- 複数のJavaプロセスでキャッシュした静的データを共有できる\n- ファイルから静的データをロードできる\n- SQL文を記述するだけで、データベース上にある静的データをキャッシュできる",
+    "s4": "![静的データキャッシュ クラス図](assets/libraries-05_StaticDataCache--s1/05_StaticDataCache_Class.jpg)",
+    "s5": "| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.core.cache.StaticDataCache` | 静的データのキャッシュを保持するインタフェース |\n| `nablarch.core.cache.StaticDataLoader` | 静的データをロードするインタフェース。RDBMSやXMLファイル等の媒体から静的データをロードするクラスはこのインタフェースを実装する |",
+    "s6": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.cache.StaticDataCache` | StaticDataCacheインタフェースの基本実装クラス。静的データをHashMapに保持する |",
+    "s7": "`StaticDataCache` インタフェースをフィールドに持ち、 :ref:`di-container` の機能で実装クラスを設定する。\n\n`StaticDataCache#getValue` または `StaticDataCache#getValues` を使用して静的データを取得する。キャッシュにデータが存在しない場合は自動的にロードされるため、呼び出し元はキャッシュの有無を意識する必要がない。",
+    "s8": "```java\npublic class ExampleData {\n    private String id;\n    private String name;\n    // setter, getterは省略\n}\n```",
+    "s9": "```java\npublic class StaticDataUseExample {\n    // DIによりStaticDataを設定\n    private StaticDataCache<ExampleData> cache;\n\n    public void setCache(StaticDataCache<ExampleData> cache) {\n        this.cache = cache;\n    }\n\n    public void getById(String id) {\n        // キャッシュからデータを取得する\n        // 利用者は、キャッシュにデータがあるかを意識する必要はない\n        ExampleData obj = cache.getValue(id);\n        System.out.println(\"id = \" + obj.getId());\n        System.out.println(\"name = \" + obj.getName());\n    }\n}\n```\n\n> **警告**: `StaticDataCache#getValue` または `StaticDataCache#getValues` で取得した静的データは、クラスおよびインスタンスのフィールドに保持しないこと。StaticDataCacheのリロード機能が呼ばれた際に更新されないためである。",
+    "s10": "本機能は、ID以外のキーを指定して静的データを取得できるインデックス機能を持つ。1つのキーに複数の静的データを紐付けられる。\n\nインデックスを使用する場合は `StaticDataCache#getValues` メソッドを使用する。\n\n```java\npublic class StaticDataUseExample {\n    // DIによりStaticDataを設定\n    private StaticDataCache<ExampleData> cache;\n\n    public void setCache(StaticDataCache<ExampleData> cache) {\n        this.cache = cache;\n    }\n\n    public void getByName(String name) {\n        // キャッシュからデータを取得する\n        // 利用者は、キャッシュにデータがあるかを意識する必要はない\n        List<ExampleData> objs = cache.getValues(\"name\", name);\n        for (ExampleData obj : objs) {\n            System.out.println(\"id = \" + obj.getId());\n            System.out.println(\"name = \" + obj.getName());\n        }\n    }\n}\n```",
+    "s11": "**オンデマンドロード**: キャッシュにデータがなかった際に自動的にロード。使用するデータがキャッシュデータの一部に偏る場面（バッチ処理、テスト時のメッセージ等）に有利。起動が速い。\n\n![オンデマンドロード シーケンス図](assets/libraries-05_StaticDataCache--s1/05_StaticDataCache_LoadOnDemandSequence.jpg)\n\n**一括ロード**: アプリケーション起動時に全データをロード。キャッシュミスヒット時の遅延を回避でき、使用するデータがキャッシュデータのほぼ全てとなる場面（Webアプリケーションのメッセージ等）に有利。\n\n![一括ロード シーケンス図](assets/libraries-05_StaticDataCache--s1/05_StaticDataCache_LoadOnStartupSequence.jpg)\n\nいずれの方法でも、キャッシュを使用する実装はデータのロード方法を意識する必要がない。",
+    "s12": "**IDを指定してデータを取得する場合**: `StaticDataLoader#getValue` のみを実装すればよい。\n\n**インデックスを指定してデータを取得する場合**: 以下の2メソッドを実装する必要がある:\n- `getValues`: データをロードする目的でフレームワークから呼び出される\n- `getId`: 同一の静的データを2重に保持しないためにフレームワークから呼び出される。静的データを一意に決定する値を返すように実装する必要がある",
+    "s13": "> **注意**: 下記はフレームワークが行う処理であり、通常のアプリケーション開発者は実装不要。\n\n```java\npublic class ExampleDataLoader implements StaticDataLoader<ExampleData> {\n    private SimpleDbTransactionManager dbManager;\n\n    public ExampleData getValue(final Object id) {\n        return new SimpleDbTransactionExecutor<ExampleData>(dbManager) {\n            @Override\n            public ExampleData execute(AppDbConnection connection) {\n                SqlPStatement stmt = connection.prepareStatement(\n                    \"select id, name from example_data where id = ? order by id\");\n                stmt.setString(1, (String) id);\n                SqlResultSet results = stmt.retrieve();\n                if (results.size() > 0) {\n                    return createData(results.get(0));\n                }\n                return null;\n            }\n        }.doTransaction();\n    }\n\n    public List<ExampleData> getValues(final String indexName, final Object key) {\n        return new SimpleDbTransactionExecutor<List<ExampleData>>(dbManager) {\n            @Override\n            public List<ExampleData> execute(AppDbConnection connection) {\n                if (indexName.equals(\"name\")) {\n                    SqlPStatement stmt = connection.prepareStatement(\n                        \"select id, name from example_data where name = ? order by id\");\n                    stmt.setString(1, (String) key);\n                    SqlResultSet results = stmt.retrieve();\n                    List<ExampleData> objs = new ArrayList<ExampleData>();\n                    for (SqlRow row : results) {\n                        objs.add(createData(row));\n                    }\n                    return objs;\n                }\n                throw new IllegalArgumentException(\"invalid indexName: indexName = \" + indexName);\n            }\n        }.doTransaction();\n    }\n\n    public Object getId(ExampleData value) {\n        return value.getId();\n    }\n}\n```",
+    "s14": "```xml\n<!-- cashLoaderの定義 -->\n<component name=\"exampleDataCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n    <property name=\"loader\">\n        <component class=\"nablarch.core.cache.example.ExampleDataLoader\" />\n    </property>\n</component>\n\n<!-- cacheを使用するコンポーネントの定義 -->\n<component name=\"staticDataUseExample\" class=\"nablarch.core.cache.example.StaticDataUseExample\">\n    <property name=\"cache\" ref=\"exampleDataCache\" />\n</component>\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <component-ref name=\"exampleDataCache\"/>\n        </list>\n    </property>\n</component>\n```"
+  }
+}

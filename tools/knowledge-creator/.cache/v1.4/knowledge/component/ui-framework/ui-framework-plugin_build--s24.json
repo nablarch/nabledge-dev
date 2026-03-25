@@ -1,0 +1,78 @@
+{
+  "id": "ui-framework-plugin_build--s24",
+  "title": "インストールコマンド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "インストールコマンド",
+      "hints": [
+        "インストールコマンド",
+        "install.bat",
+        "install.sh",
+        "PROJECT_ROOT",
+        "UI_PLUGINS_DIRS",
+        "プラグインインストール",
+        "キャッシュ削除",
+        "nablarch_plugins_bundle"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "UIビルドコマンド",
+      "hints": [
+        "UIビルドコマンド",
+        "ui_build.bat",
+        "ui_build.sh",
+        "PROJECT_CONF",
+        "UIビルド",
+        "JavaScript自動生成",
+        "CSS自動生成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "lessインポート定義雛形生成コマンド",
+      "hints": [
+        "lessインポート定義",
+        "ui_genless.bat",
+        "ui_genless.sh",
+        "PROJECT_CONF",
+        "lessファイル",
+        "インポート順序",
+        "プラグイングループ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ローカル動作確認用サーバ起動コマンド",
+      "hints": [
+        "ローカル動作確認サーバ",
+        "localServer.sh",
+        "ローカル画面確認.bat",
+        "ローカルサーバ起動",
+        "ui_test",
+        "ui_demo"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "サーバ動作確認用サーバ起動コマンド",
+      "hints": [
+        "サーバ動作確認",
+        "uiTestServer.sh",
+        "サーバ動作確認.bat",
+        "動作確認サーバ起動",
+        "ui_test"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## インストールコマンド\n\n**実行ファイル**\n\n| 配置プロジェクト | 配置フォルダ | Windows | Linux |\n|---|---|---|---|\n| nablarch_plugins_bundle | /bin | install.bat | install.sh |\n\n**環境変数**\n\n| 環境変数名 | 必須 | 設定内容 |\n|---|---|---|\n| PROJECT_ROOT | ○ | インストール先業務プロジェクトのルートフォルダ |\n| UI_PLUGINS_DIRS | | プラグインのインストール先（プロジェクトルートからの相対パス）。複数はカンマ区切り。省略時は`ui_plugins` |\n\n**処理内容**\n\n1. package.jsonとlastInstallPackage.jsonを比較し不要パッケージを削除、キャッシュ情報を削除\n2. 全プラグインをキャッシュとして登録し、ローカルレジストリサーバを起動。package.jsonのdependencies/devDependenciesに従いパッケージをインストール\n\n> **注意**: install.batで変更管理済みのpluginを削除するとIDE上からコミットできないことがある。その場合、別のクライアントを利用してコミットすること。",
+    "s2": "## UIビルドコマンド\n\n**実行ファイル**\n\n| 配置プロジェクト | 配置フォルダ | Windows | Linux |\n|---|---|---|---|\n| 業務プロジェクト(tutorial_project) | /ui_plugins/bin | ui_build.bat | ui_build.sh |\n\n**環境変数**\n\n| 環境変数名 | 必須 | 設定内容 |\n|---|---|---|\n| PROJECT_CONF | ○ | 使用するファイル展開設定ファイルのパス |\n\n**処理内容**\n\n1. 前回ビルドファイルの削除\n2. Nablarch提供プラグインの展開\n3. 外部ライブラリの展開\n4. JavaScriptの自動生成\n5. CSSの自動生成\n6. ドキュメントの生成\n7. 画像ファイルのコピー\n8. 重複ファイルの表示",
+    "s3": "## lessインポート定義雛形生成コマンド\n\n**実行ファイル**\n\n| 配置プロジェクト | 配置フォルダ | Windows | Linux |\n|---|---|---|---|\n| 業務プロジェクト(tutorial_project) | /ui_plugins/bin | ui_genless.bat | ui_genless.sh |\n\n**環境変数**\n\n| 環境変数名 | 必須 | 設定内容 |\n|---|---|---|\n| PROJECT_CONF | ○ | 使用するファイル展開設定ファイルのパス |\n\n**処理内容**\n\nlessファイルを抽出しlessインポート定義ファイルの雛形を自動生成する。lessファイルはインポート順序が重要なため、生成された雛形を適宜修正すること。\n\nインポート定義のソート順:\n\n1. nablarch-css-core/**/reset.less\n2. nablarch-css-core/**/*.less\n3. nablarch-css-*/**/*.less\n4. (プラグイングループ)-base/**/*.less\n5. (プラグイングループ)-base/**/*-(表示モード).less\n6. (プラグイングループ)-*/**/*.less\n7. (プラグイングループ)-*/**/*-(表示モード).less\n\nプラグイングループ: プラグイン名の最後のハイフンより前の部分（例: nablarch-widget-box-base, nablarch-widget-box-content, nablarch-widget-box-imgは`nablarch-widget-box`として同一グループ）。\n\nnablarch-css-*以外のプラグインは :ref:`pjconf_json` のpluginsで指定された順序でソートされる。",
+    "s4": "## ローカル動作確認用サーバ起動コマンド\n\n**実行ファイル**\n\n| 配置プロジェクト | 配置フォルダ | Windows | Linux |\n|---|---|---|---|\n| 業務プロジェクト(tutorial_project) | /ui_test, /ui_demo | ローカル画面確認.bat | localServer.sh |\n\n**処理内容**\n\nローカル動作確認用のサーバを起動する。",
+    "s5": "## サーバ動作確認用サーバ起動コマンド\n\n**実行ファイル**\n\n| 配置プロジェクト | 配置フォルダ | Windows | Linux |\n|---|---|---|---|\n| 業務プロジェクト(tutorial_project) | /ui_test | サーバ動作確認.bat | uiTestServer.sh |\n\n**処理内容**\n\nサーバ動作確認用のサーバを起動する。"
+  }
+}

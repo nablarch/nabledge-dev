@@ -1,0 +1,81 @@
+{
+  "id": "libraries-02_01_Repository_config--s1",
+  "title": "設定ファイルの種類とフレームワークが行うリポジトリの初期化",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定ファイルの種類とフレームワークが行うリポジトリの初期化",
+      "hints": [
+        "環境設定ファイル",
+        "コンポーネント設定ファイル",
+        "リポジトリ初期化",
+        "SystemRepository",
+        "ConfigFileLoader",
+        "DIコンテナ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "環境設定ファイルからの読み込み",
+      "hints": [
+        "ConfigFileLoader",
+        "SystemRepository",
+        "ObjectLoader",
+        "getString",
+        "getBoolean",
+        "環境設定の取得",
+        "設定値取得",
+        "repository_get_config"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リポジトリに保持するインスタンスの生成(DIコンテナ) — コンポーネント登録条件とクラス例",
+      "hints": [
+        "DIコンテナ",
+        "コンポーネント登録",
+        "デフォルトコンストラクタ",
+        "セッタメソッド",
+        "HelloMessageProvider",
+        "HelloComponent",
+        "setHelloMessage",
+        "setHelloMessageProvider"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "コンポーネント設定ファイルの記述とDIコンテナの使用例",
+      "hints": [
+        "XmlComponentDefinitionLoader",
+        "DiContainer",
+        "component要素",
+        "property要素",
+        "コンポーネント設定ファイル",
+        "hello.xml",
+        "getComponentByName",
+        "ビジネスロジック登録"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "DIコンテナを ObjectLoader として使用する",
+      "hints": [
+        "DiContainer",
+        "SystemRepository",
+        "ObjectLoader",
+        "getObject",
+        "SystemRepositoryへのコンポーネント登録",
+        "XmlComponentDefinitionLoader"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リポジトリの設定には2種類の設定ファイルを使用する。\n\n- **環境設定ファイル**: 文字列による設定値をプロパティファイルに似た形式で記述\n- **コンポーネント設定ファイル**: リポジトリに保持するインスタンスを設定（DIコンテナ用XML）\n\n> **注意**: Webフレームワークやバッチフレームワークはリポジトリの初期化を自動的に行うため、通常のアプリケーションでは初期化処理の実装は不要。設定ファイルを記述するだけでリポジトリが使用できる。",
+    "s2": "**クラス**: `ConfigFileLoader`, `SystemRepository`\n\nリポジトリの内部に保持するオブジェクトはObjectLoaderで読み込む必要がある。ObjectLoaderからリポジトリにオブジェクトを読み込む処理には、`SystemRepository.load()`を呼び出す。\n\n環境設定ファイルの形式（プロパティファイルに似た形式）:\n\n```bash\nsample.value1=example-setting\nsample.value2=true\n```\n\n初期化処理（ブートストラップの責務）:\n\n```java\nConfigFileLoader loader = new ConfigFileLoader(\"sample.config\");\nSystemRepository.load(loader);\n```\n\n環境設定の取得には `SystemRepository.getString(key)` または `SystemRepository.getBoolean(key)` を使用する。\n\n```java\nString value1 = SystemRepository.getString(\"sample.value1\");\nboolean value2 = SystemRepository.getBoolean(\"sample.value2\");\n```\n\n> **警告**: 環境設定値取得時のキー値にはユーザー入力値やDBから取得した値を使用しないこと。取得失敗時にキー値が可変だと障害解析が困難になる。キー値は常に固定値にすること。\n\n> **注意**: 環境設定ファイルの記述ルール詳細は :ref:`repository_config_loader_setting` を参照。",
+    "s3": "## DIコンテナの責務\n\n- コンポーネントをインスタンス化\n- インスタンスのプロパティに設定ファイルの値を設定\n- コンポーネント間を関連付け\n\n## コンポーネント登録条件\n\nコンポーネントとして登録するクラスは以下の2条件を満たす必要がある:\n\n1. デフォルトコンストラクタを持つこと\n2. プロパティに対応したセッタメソッドを持つこと\n\n## コンポーネントクラスの実装例\n\n`HelloMessageProvider`: メッセージ文字列を保持し、`getHelloMessage()`で返す。\n\n```java\npublic class HelloMessageProvider {\n    private String helloMessage;\n\n    public void setHelloMessage(String hello) {\n        this.helloMessage = hello;\n    }\n\n    public String getHelloMessage() {\n        return helloMessage;\n    }\n}\n```\n\n`HelloComponent`: `HelloMessageProvider`を保持し、`printHello()`でメッセージをコンソール出力する。\n\n```java\npublic class HelloComponent {\n\n    private HelloMessageProvider helloMessageProvider;\n\n    public void setHelloMessageProvider(HelloMessageProvider helloProvider) {\n        this.helloMessageProvider = helloProvider;\n    }\n\n    public void printHello() {\n        System.out.println(helloMessageProvider.getHelloMessage());\n    }\n}\n```",
+    "s4": "## コンポーネント設定ファイル（XML）\n\n- `component`要素: 登録するコンポーネントを定義。`name`属性=コンポーネント名、`class`属性=完全修飾名\n- `property`要素: プロパティ設定。`name`=プロパティ名、`value`=設定値、`ref`=参照コンポーネント名\n\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd\">\n    <component name=\"helloComponent\" class=\"nablarch.core.repository.di.example.hello.HelloComponent\">\n        <property name=\"helloMessageProvider\" ref=\"helloMessageProvider\"/>\n    </component>\n    <component name=\"helloMessageProvider\"\n       class=\"nablarch.core.repository.di.example.hello.HelloMessageProvider\">\n        <property name=\"helloMessage\" value=\"hello!\" />\n    </component>\n</component-configuration>\n```\n\nコンポーネント設定ファイルの要素・属性の詳細は :ref:`repository_elements` を参照。\n\nIDEでのXSD活用: :download:`component-configuration.xsd <./component-configuration.xsd>` をコンポーネント設定ファイルと同一ディレクトリに配置し`xsi:schemaLocation`を設定することで、XMLバリデーション・入力補完・コメント確認が利用できる。\n\n## DIコンテナの直接使用例\n\n```java\nXmlComponentDefinitionLoader loader\n    = new XmlComponentDefinitionLoader(\"nablarch/core/repository/di/example/hello/hello.xml\");\nDiContainer container = new DiContainer(loader);\nHelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\");\nhelloComponent.printHello();\n```\n\n> **注意**: リポジトリはフレームワーク提供クラスのみをコンポーネントとして保持することを前提としており、Spring FrameworkやSeasar2といった他のDIコンテナのようにビジネスロジックやデータアクセスを行うオブジェクトの登録は想定していない。この前提により、リポジトリはこれらDIコンテナが持つレイジーロードの機能を持っていない。このため、DIコンテナにビジネスロジックやデータアクセスを行うオブジェクトを登録するとアプリケーション起動が遅くなり、ユニットテストやローカルテストの効率が悪化する。このような使用方法を行う際は、このデメリットが許容範囲にあるか十分に検討すること。",
+    "s5": "**クラス**: `DiContainer`, `SystemRepository`\n\n`DiContainer`は`ConfigFileLoader`と同様にObjectLoaderとして`SystemRepository.load()`に渡すことで、登録コンポーネントをSystemRepositoryに登録できる。\n\nSystemRepositoryの初期化（ブートストラップ処理）:\n\n```java\nXmlComponentDefinitionLoader loader\n    = new XmlComponentDefinitionLoader(\"nablarch/core/repository/di/example/hello/hello.xml\");\nDiContainer container = new DiContainer(loader);\nSystemRepository.load(container);\n```\n\nSystemRepositoryからのコンポーネント取得:\n\n```java\nHelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\");\nhelloComponent.printHello();\n```"
+  }
+}
