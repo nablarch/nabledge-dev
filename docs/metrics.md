@@ -4,6 +4,34 @@
 
 ## DORA Scorecard
 
+<details><summary>Benchmark criteria</summary>
+
+**Deployment Frequency**
+- Elite: ≥7/week
+- High: ≥1/week
+- Medium: ≥1/month
+- Low: <1/month
+
+**Lead Time for Changes**
+- Elite: <1h
+- High: <1 week
+- Medium: <1 month
+- Low: ≥1 month
+
+**Change Failure Rate**
+- Elite: ≤5%
+- High: ≤10%
+- Medium: ≤15%
+- Low: >15%
+
+**MTTR**
+- Elite: <1h
+- High: <1 day
+- Medium: <1 week
+- Low: ≥1 week
+
+</details>
+
 > 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)
 
 ```mermaid

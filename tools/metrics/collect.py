@@ -674,11 +674,37 @@ def render_scorecard(weekly: list[dict]) -> str:
 
     lines = []
 
-    # Legend with current values (once for all threshold lines below)
-    dep_str = f"{dep:.0f} PRs/week" if dep > 0 else "—"
-    lt_str = f"{lt:.1f}h" if lt > 0 else "—"
-    cfr_str = f"{cfr:.0f}%" if dep > 0 else "—"
-    mttr_str = f"{mttr:.1f}h" if mttr > 0 else "—"
+    # Benchmark reference
+    lines.append("<details><summary>Benchmark criteria</summary>")
+    lines.append("")
+    lines.append("**Deployment Frequency**")
+    lines.append("- Elite: ≥7/week")
+    lines.append("- High: ≥1/week")
+    lines.append("- Medium: ≥1/month")
+    lines.append("- Low: <1/month")
+    lines.append("")
+    lines.append("**Lead Time for Changes**")
+    lines.append("- Elite: <1h")
+    lines.append("- High: <1 week")
+    lines.append("- Medium: <1 month")
+    lines.append("- Low: ≥1 month")
+    lines.append("")
+    lines.append("**Change Failure Rate**")
+    lines.append("- Elite: ≤5%")
+    lines.append("- High: ≤10%")
+    lines.append("- Medium: ≤15%")
+    lines.append("- Low: >15%")
+    lines.append("")
+    lines.append("**MTTR**")
+    lines.append("- Elite: <1h")
+    lines.append("- High: <1 day")
+    lines.append("- Medium: <1 week")
+    lines.append("- Low: ≥1 week")
+    lines.append("")
+    lines.append("</details>")
+    lines.append("")
+
+    # Legend (once for all threshold lines below)
     lines.append(
         "> 🔵 Actual  ·  🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)"
     )
