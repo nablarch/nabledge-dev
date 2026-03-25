@@ -122,8 +122,8 @@ xychart-beta
 xychart-beta
   title "Total SLOC Trend (all categories)"
   x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-25"]
-  y-axis "Lines" 0 --> 14045
-  line [0, 789, 1503, 1293, 10339, 11613, 11704]
+  y-axis "Lines" 0 --> 14621
+  line [0, 789, 1503, 1293, 10339, 11613, 12184]
 ```
 
 ```mermaid
@@ -134,8 +134,8 @@ pie title Nabledge v6 SLOC
 
 ```mermaid
 pie title Knowledge Creator SLOC
-  "Production (.py)" : 4119
-  "Test (.py)" : 5145
+  "Production (.py)" : 4234
+  "Test (.py)" : 5510
   "Prompts (.md)" : 509
 ```
 
@@ -143,9 +143,9 @@ pie title Knowledge Creator SLOC
 xychart-beta
   title "KC Scripts Trend (upper=Production  lower=Test)"
   x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-25"]
-  y-axis "Lines" 0 --> 6174
-  line [0, 0, 0, 0, 3183, 4109, 4119]
-  line [0, 0, 0, 0, 4802, 5064, 5145]
+  y-axis "Lines" 0 --> 6612
+  line [0, 0, 0, 0, 3183, 4109, 4234]
+  line [0, 0, 0, 0, 4802, 5064, 5510]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
@@ -168,8 +168,8 @@ xychart-beta
 
 ```mermaid
 xychart-beta
-  title "Git Clones (weekly)"
+  title "Unique Cloners (weekly)"
   x-axis ["03/09", "03/16", "03/23"]
-  y-axis "Clones" 0 --> 3387
-  bar [1448, 2822, 522]
+  y-axis "Cloners" 0 --> 149
+  bar [124, 87, 14]
 ```
