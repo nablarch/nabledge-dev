@@ -725,7 +725,10 @@ def render_scorecard(weekly: list[dict]) -> str:
     cfr_ymax = y_axis_max(cfr_vals + [15])
     x_str = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
     cfr_str = "[" + ", ".join(str(round(v, 1)) if v != int(v) else str(int(v)) for v in cfr_vals) + "]"
+    lines.append("> 🟢 Elite ≤5% · 🟡 High ≤10% · 🟠 Medium ≤15% · 🔴 Low >15%")
+    lines.append("")
     lines.append("```mermaid")
+    lines.append("%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#6B7280,#00C853,#FFD600,#FF4444'}}}}%%")
     lines.append("xychart-beta")
     lines.append('  title "Change Failure Rate (bug labeled PRs / all merged PRs %)"')
     lines.append(f"  x-axis {x_str}")

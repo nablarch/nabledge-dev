@@ -55,7 +55,10 @@ xychart-beta
   line [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
 ```
 
+> 🟢 Elite ≤5% · 🟡 High ≤10% · 🟠 Medium ≤15% · 🔴 Low >15%
+
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#6B7280,#00C853,#FFD600,#FF4444'}}}}%%
 xychart-beta
   title "Change Failure Rate (bug labeled PRs / all merged PRs %)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
