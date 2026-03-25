@@ -47,9 +47,9 @@ gantt
 - ワークフロー拡充
   - 影響調査
   - レビュー
-- Nablarch改善
-  - テスティングフレームワークのAI対応（Excel→YAML対応）
-  - Java 25対応（無償利用期限が2026年9月）
+- Nablarch改善（v6のみ）
+  - テスティングフレームワークのAI対応（Excel→テキスト形式）
+  - Java 25対応
 
 ## Outlook
 
