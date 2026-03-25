@@ -13,10 +13,29 @@
 
 <details><summary>Benchmark criteria</summary>
 
-- **Deployment Frequency** — Elite: ≥7/week · High: ≥1/week · Medium: ≥1/month · Low: <1/month
-- **Lead Time for Changes** — Elite: <1h · High: <1 week · Medium: <1 month · Low: ≥1 month
-- **Change Failure Rate** — Elite: ≤5% · High: ≤10% · Medium: ≤15% · Low: >15%
-- **MTTR** — Elite: <1h · High: <1 day · Medium: <1 week · Low: ≥1 week
+**Deployment Frequency**
+- Elite: ≥7/week
+- High: ≥1/week
+- Medium: ≥1/month
+- Low: <1/month
+
+**Lead Time for Changes**
+- Elite: <1h
+- High: <1 week
+- Medium: <1 month
+- Low: ≥1 month
+
+**Change Failure Rate**
+- Elite: ≤5%
+- High: ≤10%
+- Medium: ≤15%
+- Low: >15%
+
+**MTTR**
+- Elite: <1h
+- High: <1 day
+- Medium: <1 week
+- Low: ≥1 week
 
 </details>
 
@@ -44,8 +63,6 @@ xychart-beta
   bar [0, 0, 16, 11.1, 25, 29.6, 0]
 ```
 
-> **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100
-
 ```mermaid
 xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
@@ -53,8 +70,6 @@ xychart-beta
   y-axis "Hours" 0 --> 51
   line [0, 0, 2, 4.3, 6.8, 42, 0]
 ```
-
-> **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）
 
 ## Activity
 
@@ -83,7 +98,7 @@ xychart-beta
 xychart-beta
   title "Active Contributors (unique PR authors per week)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Contributors" 0 --> 2
+  y-axis "Contributors" 0 --> 5
   bar [0, 1, 1, 1, 1, 1, 0]
 ```
 
