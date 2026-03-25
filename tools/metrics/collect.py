@@ -710,36 +710,62 @@ def render_scorecard(weekly: list[dict]) -> str:
     lines.append("</details>")
     lines.append("")
 
+    # Legend (once for all threshold lines below)
+    lines.append("> 🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)")
+    lines.append("")
+
     # Weekly trend charts
     labels = [w["label"] for w in weekly]
     dep_freq_vals = [w["deployment_frequency"] for w in weekly]
     lead_time_vals = [w["lead_time_hours"] for w in weekly]
     cfr_vals = [w["change_failure_rate"] for w in weekly]
     mttr_vals = [w["mttr_hours"] for w in weekly]
-
-    lines.append(mermaid_xychart_bar("Deployment Frequency (PRs merged to main per week)", labels, "PRs / week", dep_freq_vals))
-    lines.append("")
-    lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
-    lines.append("")
     n = len(labels)
-    cfr_ymax = y_axis_max(cfr_vals + [15])
     x_str = "[" + ", ".join(f'"{l}"' for l in labels) + "]"
-    cfr_str = "[" + ", ".join(str(round(v, 1)) if v != int(v) else str(int(v)) for v in cfr_vals) + "]"
-    lines.append("> 🟢 Elite ≤5% · 🟡 High ≤10% · 🟠 Medium ≤15% · 🔴 Low >15%")
+
+    def _fmt(vals: list[float]) -> str:
+        return "[" + ", ".join(str(round(v, 1)) if v != int(v) else str(int(v)) for v in vals) + "]"
+
+    def _chart_with_thresholds(kind: str, title: str, y_label: str, data_vals: list[float],
+                                thresholds: list[float], palette: str) -> list[str]:
+        """Render a xychart-beta with colored threshold lines via %%{init}%%."""
+        ymax = y_axis_max(data_vals + thresholds)
+        out = ["```mermaid",
+               f"%%{{init: {{'theme': 'base', 'themeVariables': {{'xyChart': {{'plotColorPalette': '{palette}'}}}}}}}}%%",
+               "xychart-beta",
+               f'  title "{title}"',
+               f"  x-axis {x_str}",
+               f'  y-axis "{y_label}" 0 --> {ymax}',
+               f"  {kind} {_fmt(data_vals)}"]
+        for t in thresholds:
+            out.append(f"  line {[t] * n}")
+        out.append("```")
+        return out
+
+    # Deployment Frequency: higher is better; Elite ≥7 (green line)
+    # bar gets 1st palette color — use default-matching blue; Elite line gets green
+    lines += _chart_with_thresholds(
+        "bar", "Deployment Frequency (PRs merged to main per week)", "PRs / week",
+        dep_freq_vals, [7], "#4C82C3,#00C853")
     lines.append("")
-    lines.append("```mermaid")
-    lines.append("%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#6B7280,#00C853,#FFD600,#FF4444'}}}}%%")
-    lines.append("xychart-beta")
-    lines.append('  title "Change Failure Rate (bug labeled PRs / all merged PRs %)"')
-    lines.append(f"  x-axis {x_str}")
-    lines.append(f'  y-axis "% of PRs" 0 --> {cfr_ymax}')
-    lines.append(f"  bar {cfr_str}")
-    lines.append(f"  line {[5] * n}")
-    lines.append(f"  line {[10] * n}")
-    lines.append(f"  line {[15] * n}")
-    lines.append("```")
+
+    # Lead Time: lower is better; Elite <1h only (High=168h would distort scale)
+    lines += _chart_with_thresholds(
+        "line", "Lead Time for Changes (avg hours: first commit to merge)", "Hours",
+        lead_time_vals, [1], "#4C82C3,#00C853")
     lines.append("")
-    lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
+
+    # CFR: lower is better; Elite ≤5%, High ≤10%, Medium/Low boundary ≤15%
+    lines += _chart_with_thresholds(
+        "bar", "Change Failure Rate (bug labeled PRs / all merged PRs %)", "% of PRs",
+        cfr_vals, [5, 10, 15], "#4C82C3,#00C853,#FFD600,#FF4444")
+    lines.append("")
+
+    # MTTR: lower is better; Elite <1h, High <24h
+    lines += _chart_with_thresholds(
+        "line", "Mean Time to Recovery (avg hours: bug issue opened to closed)", "Hours",
+        mttr_vals, [1, 24], "#4C82C3,#00C853,#FFD600")
+    lines.append("")
 
     return "\n".join(lines)
 

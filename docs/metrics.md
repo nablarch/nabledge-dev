@@ -39,26 +39,30 @@
 
 </details>
 
+> 🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)
+
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853'}}}}%%
 xychart-beta
   title "Deployment Frequency (PRs merged to main per week)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "PRs / week" 0 --> 33
   bar [0, 2, 25, 9, 20, 27, 0]
+  line [7, 7, 7, 7, 7, 7, 7]
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853'}}}}%%
 xychart-beta
   title "Lead Time for Changes (avg hours: first commit to merge)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Hours" 0 --> 24
   line [0, 2.7, 8.9, 14.8, 19.6, 11.3, 0]
+  line [1, 1, 1, 1, 1, 1, 1]
 ```
 
-> 🟢 Elite ≤5% · 🟡 High ≤10% · 🟠 Medium ≤15% · 🔴 Low >15%
-
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#6B7280,#00C853,#FFD600,#FF4444'}}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF4444'}}}}%%
 xychart-beta
   title "Change Failure Rate (bug labeled PRs / all merged PRs %)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
@@ -70,12 +74,16 @@ xychart-beta
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600'}}}}%%
 xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
   y-axis "Hours" 0 --> 51
   line [0, 0, 2, 4.3, 6.8, 42, 0]
+  line [1, 1, 1, 1, 1, 1, 1]
+  line [24, 24, 24, 24, 24, 24, 24]
 ```
+
 
 ## Activity
 
