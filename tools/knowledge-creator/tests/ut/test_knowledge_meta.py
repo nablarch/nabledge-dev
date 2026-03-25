@@ -126,7 +126,7 @@ class TestDetectChangedFiles:
             "sources": [{
                 "repo": f"https://github.com/nablarch/{repo_name}",
                 "branch": "main",
-                "commit": initial_commit
+                "revision": initial_commit
             }],
             "version": "6",
             "files": [{
@@ -183,7 +183,7 @@ class TestDetectChangedFiles:
             "sources": [{
                 "repo": "https://github.com/nablarch/nablarch-document",
                 "branch": "main",
-                "commit": ""
+                "revision": ""
             }]
         })
         result = detect_changed_files(ctx)
@@ -209,7 +209,7 @@ class TestDetectChangedFiles:
         # Update recorded commit to current
         meta_path = get_meta_path(ctx)
         meta = load_json(meta_path)
-        meta["sources"][0]["commit"] = _get_head_commit(local_repo)
+        meta["sources"][0]["revision"] = _get_head_commit(local_repo)
         write_json(meta_path, meta)
 
         # Now modify both files
@@ -249,7 +249,7 @@ class TestUpdateKnowledgeMeta:
             "sources": [{
                 "repo": "https://github.com/nablarch/nablarch-document",
                 "branch": "main",
-                "commit": ""
+                "revision": ""
             }]
         })
 
@@ -257,7 +257,7 @@ class TestUpdateKnowledgeMeta:
 
         updated = load_json(meta_path)
         assert updated["generated_at"] != ""
-        assert updated["sources"][0]["commit"] == expected_sha
+        assert updated["sources"][0]["revision"] == expected_sha
 
     def test_test_mode_skips_update(self, tmp_path):
         """テストモード時は knowledge-creator.json を更新しない。"""
@@ -278,7 +278,7 @@ class TestUpdateKnowledgeMeta:
             "sources": [{
                 "repo": "https://github.com/nablarch/nablarch-document",
                 "branch": "main",
-                "commit": ""
+                "revision": ""
             }]
         }
         write_json(meta_path, original)
@@ -287,7 +287,7 @@ class TestUpdateKnowledgeMeta:
 
         after = load_json(meta_path)
         assert after["generated_at"] == "", "テストモードでは generated_at を更新してはいけない"
-        assert after["sources"][0]["commit"] == "", "テストモードでは commit を更新してはいけない"
+        assert after["sources"][0]["revision"] == "", "テストモードでは commit を更新してはいけない"
 
 
 # ============================================================
@@ -422,7 +422,7 @@ class TestDetectChangedFilesSvn:
             "sources": [{
                 "repo": svn_source_url,
                 "type": "svn",
-                "commit": initial_rev,
+                "revision": initial_rev,
             }],
             "version": ctx.version,
             "files": [{
@@ -479,7 +479,7 @@ class TestDetectChangedFilesSvn:
             "sources": [{
                 "repo": "file:///dummy/1.3_maintain",
                 "type": "svn",
-                "commit": ""
+                "revision": ""
             }]
         })
         result = detect_changed_files(ctx)
@@ -519,7 +519,7 @@ class TestUpdateKnowledgeMetaSvn:
             "sources": [{
                 "repo": svn_source_url,
                 "type": "svn",
-                "commit": ""
+                "revision": ""
             }]
         })
 
@@ -528,8 +528,8 @@ class TestUpdateKnowledgeMetaSvn:
         updated = load_json(get_meta_path(test_ctx))
         assert updated["generated_at"] != ""
         assert updated["sources"][0]["type"] == "svn"
-        assert updated["sources"][0]["commit"] == expected_rev
-        assert updated["sources"][0]["commit"] != ""
+        assert updated["sources"][0]["revision"] == expected_rev
+        assert updated["sources"][0]["revision"] != ""
 
     def test_git_source_unchanged(self, ctx, tmp_path):
         """Git sources are still handled correctly alongside SVN."""
@@ -570,12 +570,12 @@ class TestUpdateKnowledgeMetaSvn:
                 {
                     "repo": f"https://github.com/nablarch/{git_repo_name}",
                     "branch": "main",
-                    "commit": ""
+                    "revision": ""
                 },
                 {
                     "repo": svn_source_url,
                     "type": "svn",
-                    "commit": ""
+                    "revision": ""
                 }
             ]
         })
@@ -583,9 +583,9 @@ class TestUpdateKnowledgeMetaSvn:
         update_knowledge_meta(test_ctx)
 
         updated = load_json(get_meta_path(test_ctx))
-        assert updated["sources"][0].get("commit") == expected_sha
-        assert updated["sources"][0].get("type") != "svn"
-        assert updated["sources"][1].get("commit") == expected_rev
+        assert updated["sources"][0].get("revision") == expected_sha
+        assert updated["sources"][0].get("type") == "git"
+        assert updated["sources"][1].get("revision") == expected_rev
         assert updated["sources"][1].get("type") == "svn"
 
 
@@ -623,7 +623,7 @@ class TestPullOfficialReposSvn:
         os.makedirs(os.path.dirname(get_meta_path(test_ctx)), exist_ok=True)
         write_json(get_meta_path(test_ctx), {
             "generated_at": "",
-            "sources": [{"repo": svn_source_url, "type": "svn", "commit": before_rev}]
+            "sources": [{"repo": svn_source_url, "type": "svn", "revision": before_rev}]
         })
 
         results = pull_official_repos(test_ctx)
@@ -657,7 +657,7 @@ class TestPullOfficialReposSvn:
         os.makedirs(os.path.dirname(get_meta_path(test_ctx)), exist_ok=True)
         write_json(get_meta_path(test_ctx), {
             "generated_at": "",
-            "sources": [{"repo": svn_source_url, "type": "svn", "commit": current_rev}]
+            "sources": [{"repo": svn_source_url, "type": "svn", "revision": current_rev}]
         })
 
         results = pull_official_repos(test_ctx)
@@ -708,7 +708,7 @@ class TestEffectiveTargetIsolation:
                 "sources": [{
                     "repo": "https://github.com/nablarch/nablarch-document",
                     "branch": "main" if ver == "6" else "v5-main",
-                    "commit": commit
+                    "revision": commit
                 }],
                 "version": ver,
                 "files": [{
@@ -787,7 +787,7 @@ class TestDetectChangedFilesSvnDiffFailure:
             "sources": [{
                 "repo": svn_source_url,
                 "type": "svn",
-                "commit": old_rev,
+                "revision": old_rev,
             }],
             "version": ctx.version,
             "files": [],

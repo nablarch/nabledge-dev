@@ -626,9 +626,9 @@ class TestGenPreserveSources:
 
         pre_sources = [
             {"repo": "https://github.com/nablarch/nablarch-document",
-             "branch": "main", "commit": "abc123"},
+             "branch": "main", "revision": "abc123"},
             {"repo": "https://github.com/Fintan-contents/nablarch-system-development-guide",
-             "branch": "main", "commit": "def456"},
+             "branch": "main", "revision": "def456"},
         ]
         os.makedirs(os.path.dirname(ctx.classified_list_path), exist_ok=True)
         with open(ctx.classified_list_path, 'w', encoding='utf-8') as f:
@@ -659,7 +659,7 @@ class TestGenPreserveSources:
                 )
                 # commit may be updated by update_knowledge_meta (to HEAD of local repo,
                 # or "" if repo not found); assert it is not silently cleared to None
-                assert actual.get("commit") is not None, (
+                assert actual.get("revision") is not None, (
                     f"sources[{i}].commit should not be None after kc_gen"
                 )
 
