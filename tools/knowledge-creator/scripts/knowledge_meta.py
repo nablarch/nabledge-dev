@@ -232,19 +232,22 @@ def detect_changed_files(ctx) -> list:
             result = _svn(
                 ["diff", "--summarize", f"-r{old_rev}:{current_rev}"] + _svn_auth_args() + [local_path]
             )
-            if result.returncode == 0:
-                local_norm = os.path.normpath(local_path)
-                for line in result.stdout.strip().splitlines():
-                    if not line.strip():
-                        continue
-                    parts = line.split(None, 1)
-                    if len(parts) != 2:
-                        continue
-                    _, path = parts
-                    abs_path = os.path.normpath(path)
-                    if abs_path.startswith(local_norm):
-                        rel = abs_path[len(local_norm):].lstrip(os.sep)
-                        changed_paths.add((local_path, rel))
+            if result.returncode != 0:
+                print(f"   ❌ SVN差分取得失敗: {repo_url}")
+                print(f"      SVN_USERNAME / SVN_PASSWORD 環境変数を設定してから再実行してください")
+                raise SystemExit(1)
+            local_norm = os.path.normpath(local_path)
+            for line in result.stdout.strip().splitlines():
+                if not line.strip():
+                    continue
+                parts = line.split(None, 1)
+                if len(parts) != 2:
+                    continue
+                _, path = parts
+                abs_path = os.path.normpath(path)
+                if abs_path.startswith(local_norm):
+                    rel = abs_path[len(local_norm):].lstrip(os.sep)
+                    changed_paths.add((local_path, rel))
         else:
             repo_url = source.get("repo", "")
             old_commit = source.get("commit", "")

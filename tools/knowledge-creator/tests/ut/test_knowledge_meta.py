@@ -4,6 +4,7 @@ import os
 import subprocess
 import pytest
 from common import load_json, write_json
+import knowledge_meta
 from knowledge_meta import (
     get_meta_path,
     load_meta,
@@ -11,6 +12,7 @@ from knowledge_meta import (
     get_local_svn_path,
     _get_head_commit,
     _get_svn_revision,
+    _svn_auth_args,
     detect_changed_files,
     update_knowledge_meta,
     pull_official_repos,
@@ -728,3 +730,98 @@ class TestEffectiveTargetIsolation:
         ctx5 = Context(version="5", repo=str(repo), concurrency=1)
         result5 = detect_changed_files(ctx5)
         assert result5 == []
+
+
+# ============================================================
+# SVN auth args
+# ============================================================
+
+class TestSvnAuthArgs:
+    """Unit tests for _svn_auth_args() — no SVN binary needed."""
+
+    def test_no_env_vars_returns_empty(self, monkeypatch):
+        monkeypatch.delenv("SVN_USERNAME", raising=False)
+        monkeypatch.delenv("SVN_PASSWORD", raising=False)
+        assert _svn_auth_args() == []
+
+    def test_username_only(self, monkeypatch):
+        monkeypatch.setenv("SVN_USERNAME", "alice")
+        monkeypatch.delenv("SVN_PASSWORD", raising=False)
+        assert _svn_auth_args() == ["--username", "alice", "--non-interactive"]
+
+    def test_password_only(self, monkeypatch):
+        monkeypatch.delenv("SVN_USERNAME", raising=False)
+        monkeypatch.setenv("SVN_PASSWORD", "s3cr3t")
+        assert _svn_auth_args() == ["--password", "s3cr3t", "--no-auth-cache", "--non-interactive"]
+
+    def test_both_username_and_password(self, monkeypatch):
+        monkeypatch.setenv("SVN_USERNAME", "alice")
+        monkeypatch.setenv("SVN_PASSWORD", "s3cr3t")
+        assert _svn_auth_args() == [
+            "--username", "alice",
+            "--password", "s3cr3t",
+            "--no-auth-cache",
+            "--non-interactive",
+        ]
+
+
+# ============================================================
+# SVN diff failure → full regeneration
+# ============================================================
+
+class TestDetectChangedFilesSvnDiffFailure:
+    """SVN diff failure (e.g. auth error) must trigger full regeneration, not silent empty list."""
+
+    def _setup_svn_source_meta(self, ctx, tmp_path, wc_name, old_rev="1"):
+        """Write catalog.json with an SVN source pointing to a dummy WC dir."""
+        wc_path = str(
+            tmp_path / "repo" / ".lw" / "nab-official" / f"v{ctx.version}" / wc_name
+        )
+        os.makedirs(wc_path, exist_ok=True)
+
+        svn_source_url = f"file:///dummy/{wc_name}"
+        meta_path = get_meta_path(ctx)
+        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
+        write_json(meta_path, {
+            "generated_at": "2026-01-01",
+            "sources": [{
+                "repo": svn_source_url,
+                "type": "svn",
+                "commit": old_rev,
+            }],
+            "version": ctx.version,
+            "files": [],
+        })
+        return wc_path, svn_source_url
+
+    def _mock_svn_diff_failure(self, args, cwd=None):
+        if args[0] == "info":
+            return subprocess.CompletedProcess(args, returncode=0, stdout="2\n", stderr="")
+        if args[0] == "diff":
+            return subprocess.CompletedProcess(
+                args, returncode=1, stdout="",
+                stderr="svn: E170001: Authentication required for 'SVN repo'"
+            )
+        return subprocess.CompletedProcess(args, returncode=0, stdout="", stderr="")
+
+    def test_diff_failure_exits(self, ctx, tmp_path, monkeypatch):
+        """svn diff --summarize failure → SystemExit(1), not silent [] or None."""
+        wc_name = "nablarch-1x-docs"
+        self._setup_svn_source_meta(ctx, tmp_path, wc_name, old_rev="1")
+        monkeypatch.setattr(knowledge_meta, "_svn", self._mock_svn_diff_failure)
+
+        with pytest.raises(SystemExit) as exc_info:
+            detect_changed_files(ctx)
+        assert exc_info.value.code == 1
+
+    def test_diff_failure_prints_auth_hint(self, ctx, tmp_path, monkeypatch, capsys):
+        """svn diff failure prints an error mentioning SVN_USERNAME/SVN_PASSWORD."""
+        wc_name = "nablarch-1x-docs"
+        self._setup_svn_source_meta(ctx, tmp_path, wc_name, old_rev="1")
+        monkeypatch.setattr(knowledge_meta, "_svn", self._mock_svn_diff_failure)
+
+        with pytest.raises(SystemExit):
+            detect_changed_files(ctx)
+
+        captured = capsys.readouterr()
+        assert "SVN_USERNAME" in captured.out or "SVN_PASSWORD" in captured.out
