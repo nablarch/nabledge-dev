@@ -43,14 +43,13 @@ Apply labels to all Issues and PRs when creating them:
 | Label | Use on | When to apply |
 |-------|--------|---------------|
 | `bug` | Issues, PRs | Defects, regressions, incorrect behavior |
-| `fix` | PRs | Bug-fix PRs (may not have a corresponding `bug` issue) |
 | `enhancement` | Issues, PRs | New features, improvements, additions |
 | `documentation` | Issues, PRs | Docs-only changes |
 | `chore` | PRs | Maintenance, tooling, CI, refactoring without behavior change |
 
 **Default label for most feature work**: `enhancement`
 
-**Why labels matter**: `bug` and `fix` labels feed into DORA Change Failure Rate and MTTR metrics. Mislabeled PRs will skew these metrics.
+**Why labels matter**: `bug` label feeds into DORA Change Failure Rate and MTTR metrics. Mislabeled PRs will skew these metrics.
 
 ## Example
 

@@ -233,7 +233,7 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
     For each week, compute:
       - deployment_frequency: merged PRs count
       - lead_time_hours: avg hours from first commit to merge
-      - change_failure_rate: % of PRs with bug/fix label
+      - change_failure_rate: % of PRs with bug label
       - mttr_hours: avg hours from bug issue open to close
       - issues_opened, issues_closed, prs_opened, prs_merged, contributors
     """
@@ -263,10 +263,10 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
                 lead_times.append(hours)
         avg_lead_time = sum(lead_times) / len(lead_times) if lead_times else 0.0
 
-        # Change failure rate: PRs with bug or fix label
+        # Change failure rate: PRs with bug label
         def has_failure_label(pr: dict) -> bool:
             labels = [lbl.get("name", "").lower() for lbl in pr.get("labels", [])]
-            return any(l in ("bug", "fix") for l in labels)
+            return "bug" in labels
 
         failure_prs = [pr for pr in week_prs if has_failure_label(pr)]
         cfr = (len(failure_prs) / dep_freq * 100) if dep_freq > 0 else 0.0
@@ -721,7 +721,7 @@ def render_scorecard(weekly: list[dict]) -> str:
     lines.append("")
     lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
     lines.append("")
-    lines.append(mermaid_xychart_bar("Change Failure Rate (bug or fix labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
+    lines.append(mermaid_xychart_bar("Change Failure Rate (bug labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
     lines.append("")
     lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
 
