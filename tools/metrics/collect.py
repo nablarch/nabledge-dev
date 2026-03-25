@@ -865,8 +865,8 @@ def render_metrics_md(
             lines.append("")
 
         if snap_clones:
-            c_labels, c_counts, _ = aggregate_traffic_weekly(snap_clones)
-            lines.append(mermaid_xychart_bar("Git Clones (weekly)", c_labels, "Clones", c_counts))
+            c_labels, _, c_uniques = aggregate_traffic_weekly(snap_clones)
+            lines.append(mermaid_xychart_bar("Unique Cloners (weekly)", c_labels, "Cloners", c_uniques))
             lines.append("")
     elif traffic_snapshot is None:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
