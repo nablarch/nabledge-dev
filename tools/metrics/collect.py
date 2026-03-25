@@ -650,7 +650,7 @@ LEVEL_SCORE = {"Elite": 4, "High": 3, "Medium": 2, "Low": 1, "N/A": 0}
 
 
 def render_scorecard(weekly: list[dict]) -> str:
-    """Render DORA scorecard: metric/level table + benchmark reference."""
+    """Render DORA scorecard: metric/level table + weekly trend charts + benchmark reference."""
     def latest_nonzero(vals: list[float]) -> float:
         for v in reversed(vals):
             if v > 0:
@@ -686,7 +686,7 @@ def render_scorecard(weekly: list[dict]) -> str:
         lines.append(f"| {name} | {val} | {LEVEL_BADGE[level]} |")
     lines.append("")
 
-    # Benchmark reference (small text via HTML)
+    # Benchmark reference
     lines.append("<details><summary>Benchmark criteria</summary>")
     lines.append("")
     lines.append("- **Deployment Frequency** — Elite: ≥7/week · High: ≥1/week · Medium: ≥1/month · Low: <1/month")
@@ -695,6 +695,27 @@ def render_scorecard(weekly: list[dict]) -> str:
     lines.append("- **MTTR** — Elite: <1h · High: <1 day · Medium: <1 week · Low: ≥1 week")
     lines.append("")
     lines.append("</details>")
+    lines.append("")
+
+    # Weekly trend charts
+    labels = [w["label"] for w in weekly]
+    dep_freq_vals = [w["deployment_frequency"] for w in weekly]
+    lead_time_vals = [w["lead_time_hours"] for w in weekly]
+    cfr_vals = [w["change_failure_rate"] for w in weekly]
+    mttr_vals = [w["mttr_hours"] for w in weekly]
+
+    lines.append(mermaid_xychart_bar("Deployment Frequency (PRs merged to main per week)", labels, "PRs / week", dep_freq_vals))
+    lines.append("")
+    lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
+    lines.append("")
+    lines.append(mermaid_xychart_bar("Change Failure Rate (bug or fix labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
+    lines.append("")
+    lines.append("> **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100")
+    lines.append("")
+    lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
+    lines.append("")
+    lines.append("> **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）")
+
     return "\n".join(lines)
 
 
@@ -709,11 +730,6 @@ def render_metrics_md(
 ) -> str:
     labels = [w["label"] for w in weekly]
 
-    dep_freq_vals = [w["deployment_frequency"] for w in weekly]
-    lead_time_vals = [w["lead_time_hours"] for w in weekly]
-    cfr_vals = [w["change_failure_rate"] for w in weekly]
-    mttr_vals = [w["mttr_hours"] for w in weekly]
-
     lines = []
 
     # Header
@@ -726,23 +742,6 @@ def render_metrics_md(
     lines.append("## DORA Scorecard")
     lines.append("")
     lines.append(render_scorecard(weekly))
-    lines.append("")
-
-    # --- Development Productivity ---
-    lines.append("## Development Productivity")
-    lines.append("")
-
-    lines.append(mermaid_xychart_bar("Deployment Frequency (PRs merged to main per week)", labels, "PRs / week", dep_freq_vals))
-    lines.append("")
-    lines.append(mermaid_xychart_line("Lead Time for Changes (avg hours: first commit to merge)", labels, "Hours", lead_time_vals))
-    lines.append("")
-    lines.append(mermaid_xychart_bar("Change Failure Rate (bug or fix labeled PRs / all merged PRs %)", labels, "% of PRs", cfr_vals))
-    lines.append("")
-    lines.append("> **Change Failure Rate**: bug/fix ラベル付き PR 数 ÷ mainへマージされた全 PR 数 × 100")
-    lines.append("")
-    lines.append(mermaid_xychart_line("Mean Time to Recovery (avg hours: bug issue opened to closed)", labels, "Hours", mttr_vals))
-    lines.append("")
-    lines.append("> **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）")
     lines.append("")
 
     # --- Activity ---

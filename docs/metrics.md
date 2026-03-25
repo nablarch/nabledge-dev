@@ -1,6 +1,6 @@
 # Nabledge Dev Metrics
 
-> Last updated: 2026-03-24 (auto-generated weekly — [view source](tools/metrics/collect.py))
+> Last updated: 2026-03-25 (auto-generated weekly — [view source](tools/metrics/collect.py))
 
 ## DORA Scorecard
 
@@ -9,7 +9,7 @@
 | Deployment Frequency | 27 PRs/week | **Elite** |
 | Lead Time for Changes | 11.3h | High |
 | Change Failure Rate | 30% | Low |
-| MTTR | — | N/A |
+| MTTR | 42.0h | Medium |
 
 <details><summary>Benchmark criteria</summary>
 
@@ -19,8 +19,6 @@
 - **MTTR** — Elite: <1h · High: <1 day · Medium: <1 week · Low: ≥1 week
 
 </details>
-
-## Development Productivity
 
 ```mermaid
 xychart-beta
@@ -52,8 +50,8 @@ xychart-beta
 xychart-beta
   title "Mean Time to Recovery (avg hours: bug issue opened to closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Hours" 0 --> 5
-  line [0, 0, 0, 0, 0, 0, 0]
+  y-axis "Hours" 0 --> 51
+  line [0, 0, 2, 4.3, 6.8, 42, 0]
 ```
 
 > **Mean Time to Recovery**: bug ラベル付き Issue の closed_at − created_at の平均（時間）
@@ -67,9 +65,9 @@ xychart-beta
 xychart-beta
   title "Issues (bar=Opened  line=Closed)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
-  y-axis "Count" 0 --> 5
-  bar [0, 0, 0, 0, 0, 0, 0]
-  line [0, 0, 0, 0, 0, 0, 0]
+  y-axis "Count" 0 --> 38
+  bar [0, 6, 26, 3, 25, 31, 0]
+  line [0, 3, 24, 5, 21, 29, 0]
 ```
 
 ```mermaid
@@ -96,9 +94,9 @@ xychart-beta
 ```mermaid
 xychart-beta
   title "Total SLOC Trend (all categories)"
-  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-24"]
-  y-axis "Lines" 0 --> 13936
-  line [0, 789, 1503, 1293, 10339, 11613, 11613]
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-25"]
+  y-axis "Lines" 0 --> 14045
+  line [0, 789, 1503, 1293, 10339, 11613, 11704]
 ```
 
 ### Nabledge v6
@@ -113,42 +111,20 @@ pie title "Nabledge v6 SLOC (Scripts vs Prompts)"
 
 ```mermaid
 pie title "Knowledge Creator SLOC (Production / Test / Prompts)"
-  "Production (.py)" : 4109
-  "Test (.py)" : 5064
+  "Production (.py)" : 4119
+  "Test (.py)" : 5145
   "Prompts (.md)" : 509
 ```
 
 ```mermaid
 xychart-beta
   title "KC Scripts Trend (upper=Production  lower=Test)"
-  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-24"]
-  y-axis "Lines" 0 --> 6077
-  line [0, 0, 0, 0, 3183, 4109, 4109]
-  line [0, 0, 0, 0, 4802, 5064, 5064]
+  x-axis ["02-02", "02-09", "02-16", "02-23", "03-02", "03-13", "03-25"]
+  y-axis "Lines" 0 --> 6174
+  line [0, 0, 0, 0, 3183, 4109, 4119]
+  line [0, 0, 0, 0, 4802, 5064, 5145]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
 
-```mermaid
-xychart-beta
-  title "Page Views (weekly)"
-  x-axis ["03/09", "03/16", "03/23"]
-  y-axis "Views" 0 --> 400
-  bar [333, 278, 68]
-```
-
-```mermaid
-xychart-beta
-  title "Unique Visitors (weekly)"
-  x-axis ["03/09", "03/16", "03/23"]
-  y-axis "Visitors" 0 --> 48
-  bar [28, 40, 10]
-```
-
-```mermaid
-xychart-beta
-  title "Git Clones (weekly)"
-  x-axis ["03/09", "03/16", "03/23"]
-  y-axis "Clones" 0 --> 3387
-  bar [1448, 2822, 522]
-```
+_Skipped: NABLEDGE_TOKEN not available._
