@@ -679,12 +679,13 @@ def render_scorecard(weekly: list[dict]) -> str:
     lt_str = f"{lt:.1f}h" if lt > 0 else "—"
     cfr_str = f"{cfr:.0f}%" if dep > 0 else "—"
     mttr_str = f"{mttr:.1f}h" if mttr > 0 else "—"
+    _e = {"Elite": "🟢", "High": "🟡", "Medium": "🟠", "Low": "🔴", "N/A": "—"}
     lines.append(
         f"> 🟢 Elite · 🟡 High · 🟠 Medium · 🔴 Low  (threshold lines)"
-        f"  |  DF: {LEVEL_BADGE[dep_lvl]} {dep_str}"
-        f"  LT: {LEVEL_BADGE[lt_lvl]} {lt_str}"
-        f"  CFR: {LEVEL_BADGE[cfr_lvl]} {cfr_str}"
-        f"  MTTR: {LEVEL_BADGE[mttr_lvl]} {mttr_str}"
+        f"  |  DF: {_e[dep_lvl]} {dep_str}"
+        f"  ·  LT: {_e[lt_lvl]} {lt_str}"
+        f"  ·  CFR: {_e[cfr_lvl]} {cfr_str}"
+        f"  ·  MTTR: {_e[mttr_lvl]} {mttr_str}"
     )
     lines.append("")
 
