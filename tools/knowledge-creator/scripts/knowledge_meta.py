@@ -2,10 +2,12 @@
 
 Manages plugin/knowledge-creator.json which records:
 - generated_at: ISO datetime when generation completed
-- sources: list of {repo, branch, commit} for each official doc repository
+- sources: list of source entries, each either:
+    {repo, branch, commit} for Git sources, or
+    {repo, type, revision} for SVN sources (type="svn")
 
-Provides source change detection by comparing recorded commits
-with current HEAD of local clones.
+Provides source change detection by comparing recorded commits/revisions
+with the current state of local clones/working copies.
 """
 
 import os
@@ -53,12 +55,42 @@ def _git(args: list, cwd: str) -> subprocess.CompletedProcess:
     )
 
 
+def _svn(args: list, cwd: str = None) -> subprocess.CompletedProcess:
+    """Run an svn command and return CompletedProcess."""
+    return subprocess.run(
+        ["svn"] + args,
+        cwd=cwd,
+        capture_output=True,
+        text=True
+    )
+
+
 def _get_head_commit(repo_path: str) -> str:
     """Get current HEAD commit SHA of a local git repository."""
     if not os.path.isdir(repo_path):
         return ""
     result = _git(["rev-parse", "HEAD"], cwd=repo_path)
     return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def _get_svn_revision(wc_path: str) -> str:
+    """Get current revision of an SVN working copy."""
+    if not os.path.isdir(wc_path):
+        return ""
+    result = _svn(["info", "--show-item", "revision"], cwd=wc_path)
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def get_local_svn_path(repo_url: str, version: str, repo_root: str) -> str:
+    """Derive local SVN working copy path from repo URL and version.
+
+    Mirrors the directory layout used by setup.sh:
+      .lw/nab-official/v{version}/{wc_name}
+
+    where wc_name is the last path component of the SVN repo URL.
+    """
+    wc_name = repo_url.rstrip("/").split("/")[-1]
+    return os.path.join(repo_root, f".lw/nab-official/v{version}", wc_name)
 
 
 def pull_official_repos(ctx) -> dict:
@@ -125,30 +157,70 @@ def detect_changed_files(ctx) -> list:
     has_empty_commit = False
 
     for source in meta.get("sources", []):
-        repo_url = source.get("repo", "")
-        old_commit = source.get("commit", "")
-        local_path = get_local_repo_path(repo_url, ctx.version, ctx.repo)
+        source_type = source.get("type", "git")
 
-        if not old_commit:
-            has_empty_commit = True
-            continue
+        if source_type == "svn":
+            repo_url = source.get("repo", "")
+            old_rev = source.get("revision", "")
 
-        if not os.path.isdir(local_path):
-            continue
+            if not repo_url:
+                print("   ⚠️ SVNソースの repo が未設定です")
+                continue
+            if not old_rev:
+                has_empty_commit = True
+                continue
 
-        head = _get_head_commit(local_path)
-        if head == old_commit:
-            continue
+            local_path = get_local_svn_path(repo_url, ctx.version, ctx.repo)
 
-        # Get changed files between old commit and HEAD
-        result = _git(
-            ["diff", "--name-only", old_commit, "HEAD"],
-            cwd=local_path
-        )
-        if result.returncode == 0:
-            for line in result.stdout.strip().splitlines():
-                if line:
-                    changed_paths.add((local_path, line.strip()))
+            if not os.path.isdir(local_path):
+                continue
+
+            current_rev = _get_svn_revision(local_path)
+            if current_rev == old_rev:
+                continue
+
+            # Get changed files between old revision and current revision
+            result = _svn(
+                ["diff", "--summarize", f"-r{old_rev}:{current_rev}", local_path]
+            )
+            if result.returncode == 0:
+                local_norm = os.path.normpath(local_path)
+                for line in result.stdout.strip().splitlines():
+                    if not line.strip():
+                        continue
+                    parts = line.split(None, 1)
+                    if len(parts) != 2:
+                        continue
+                    _, path = parts
+                    abs_path = os.path.normpath(path)
+                    if abs_path.startswith(local_norm):
+                        rel = abs_path[len(local_norm):].lstrip(os.sep)
+                        changed_paths.add((local_path, rel))
+        else:
+            repo_url = source.get("repo", "")
+            old_commit = source.get("commit", "")
+            local_path = get_local_repo_path(repo_url, ctx.version, ctx.repo)
+
+            if not old_commit:
+                has_empty_commit = True
+                continue
+
+            if not os.path.isdir(local_path):
+                continue
+
+            head = _get_head_commit(local_path)
+            if head == old_commit:
+                continue
+
+            # Get changed files between old commit and HEAD
+            result = _git(
+                ["diff", "--name-only", old_commit, "HEAD"],
+                cwd=local_path
+            )
+            if result.returncode == 0:
+                for line in result.stdout.strip().splitlines():
+                    if line:
+                        changed_paths.add((local_path, line.strip()))
 
     if has_empty_commit:
         print("   ⚠️ 初回生成前のため全ファイルが再生成対象です")
@@ -212,17 +284,30 @@ def update_knowledge_meta(ctx):
 
     updated_sources = []
     for source in meta.get("sources", []):
+        source_type = source.get("type", "git")
         repo_url = source.get("repo", "")
-        branch = source.get("branch", "main")
-        local_path = get_local_repo_path(repo_url, ctx.version, ctx.repo)
-        commit = _get_head_commit(local_path) if os.path.isdir(local_path) else ""
-        if not commit:
-            print(f"   ⚠️ コミット取得失敗: {repo_url} (path: {local_path})")
-        updated_sources.append({
-            "repo": repo_url,
-            "branch": branch,
-            "commit": commit
-        })
+
+        if source_type == "svn":
+            local_path = get_local_svn_path(repo_url, ctx.version, ctx.repo) if repo_url else ""
+            revision = _get_svn_revision(local_path) if local_path and os.path.isdir(local_path) else ""
+            if not revision:
+                print(f"   ⚠️ リビジョン取得失敗: {repo_url} (path: {local_path})")
+            updated_sources.append({
+                "repo": repo_url,
+                "type": "svn",
+                "revision": revision,
+            })
+        else:
+            branch = source.get("branch", "main")
+            local_path = get_local_repo_path(repo_url, ctx.version, ctx.repo)
+            commit = _get_head_commit(local_path) if os.path.isdir(local_path) else ""
+            if not commit:
+                print(f"   ⚠️ コミット取得失敗: {repo_url} (path: {local_path})")
+            updated_sources.append({
+                "repo": repo_url,
+                "branch": branch,
+                "commit": commit
+            })
 
     meta["generated_at"] = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y-%m-%dT%H:%M:%S+09:00")
     meta["sources"] = updated_sources
@@ -230,5 +315,9 @@ def update_knowledge_meta(ctx):
     write_json(meta_path, meta)
     print(f"   💾 catalog.json 更新完了: {meta_path}")
     for s in updated_sources:
-        commit_short = s['commit'][:7] if s['commit'] else '(取得失敗)'
-        print(f"     {s['repo']} @ {commit_short}")
+        if s.get("type") == "svn":
+            rev = s.get("revision") or "(取得失敗)"
+            print(f"     {s['repo']} @ r{rev}")
+        else:
+            commit_short = s['commit'][:7] if s['commit'] else '(取得失敗)'
+            print(f"     {s['repo']} @ {commit_short}")
