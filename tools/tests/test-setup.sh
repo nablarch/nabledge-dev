@@ -17,6 +17,10 @@ set -e
 #   all/test-cc/  - all versions x Claude Code
 #   all/test-ghc/ - all versions x GitHub Copilot
 #
+# Prerequisites:
+#   Run setup.sh first to populate .lw/nab-official/ with source projects.
+#   For v1.4, also run setup-svn.sh to check out the tutorial project.
+#
 # Usage:
 #   cd /path/to/test-workspace
 #   bash /path/to/tools/tests/test-setup.sh
@@ -26,14 +30,17 @@ set -e
 #   NABLEDGE_BRANCH  Branch or tag (default: develop)
 # ============================================================
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NABLEDGE_DEV_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+LW_DIR="${NABLEDGE_DEV_ROOT}/.lw/nab-official"
+
+V6_PROJECT_SRC="${LW_DIR}/v6/nablarch-example-batch"
+V5_PROJECT_SRC="${LW_DIR}/v5/nablarch-example-batch"
+V14_PROJECT_SRC="${LW_DIR}/v1.4/tutorial/tutorial"
+
 NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-develop}"
 NABLEDGE_REPO_URL="https://github.com/${NABLEDGE_REPO}"
-
-EXAMPLE_REPO_URL="https://github.com/nablarch/nablarch-example-batch"
-EXAMPLE_REPO_V6_BRANCH="main"
-EXAMPLE_REPO_V5_BRANCH="v5-main"
-EXAMPLE_REPO_V14_BRANCH="v5-main"
 
 # Single temp dir for downloaded setup scripts
 TEMP_DIR=$(mktemp -d)
@@ -61,18 +68,29 @@ echo ""
 #
 # Args:
 #   $1 - target directory (e.g. "v6/test-cc")
-#   $2 - example repo branch (e.g. "main" or "v5-main")
-#   $3 - setup script path (e.g. "$TEMP_DIR/setup-cc.sh")
-#   $4 - version flag value for -v (e.g. "6", "5", "all")
+#   $2 - source project directory in .lw/ (e.g. "$V6_PROJECT_SRC")
+#   $3 - project directory name inside target (e.g. "nablarch-example-batch")
+#   $4 - setup script path (e.g. "$TEMP_DIR/setup-cc.sh")
+#   $5 - version flag value for -v (e.g. "6", "5", "1.4", "all")
+#   $6 - setup hint shown when source is missing (e.g. "Run setup.sh first")
 # ------------------------------------------------------------
 setup_env() {
     local target_dir="$1"
-    local repo_branch="$2"
-    local setup_script="$3"
-    local version_flag="$4"
+    local src_dir="$2"
+    local project_name="$3"
+    local setup_script="$4"
+    local version_flag="$5"
+    local setup_hint="$6"
 
     echo "------------------------------------------------------------"
     echo "[${target_dir}] Setting up..."
+
+    # Pre-flight: verify source project exists
+    if [ ! -d "$src_dir" ]; then
+        echo "ERROR: Source project not found: ${src_dir}"
+        echo "  ${setup_hint}"
+        exit 1
+    fi
 
     # Idempotency: skip if directory already exists and is non-empty
     if [ -d "$target_dir" ] && [ -n "$(ls -A "$target_dir" 2>/dev/null)" ]; then
@@ -83,14 +101,14 @@ setup_env() {
 
     mkdir -p "$target_dir"
 
-    # Clone example repo
-    echo "[${target_dir}] Cloning nablarch-example-batch (branch: ${repo_branch})..."
-    git clone --depth 1 --branch "$repo_branch" "$EXAMPLE_REPO_URL" "$target_dir/nablarch-example-batch"
+    # Copy source project
+    echo "[${target_dir}] Copying ${src_dir}..."
+    cp -r "$src_dir" "$target_dir/$project_name"
 
-    # Run setup script inside the cloned repo
+    # Run setup script inside the copied project
     echo "[${target_dir}] Running setup script (version: ${version_flag}, branch: ${NABLEDGE_BRANCH})..."
     (
-        cd "$target_dir/nablarch-example-batch"
+        cd "$target_dir/$project_name"
         NABLEDGE_BRANCH="$NABLEDGE_BRANCH" bash "$setup_script" -v "$version_flag"
     )
 
@@ -102,17 +120,19 @@ setup_env() {
 # Set up all 8 environments
 # ------------------------------------------------------------
 
-setup_env "v6/test-cc"   "$EXAMPLE_REPO_V6_BRANCH"  "$TEMP_DIR/setup-cc.sh"  "6"
-setup_env "v6/test-ghc"  "$EXAMPLE_REPO_V6_BRANCH"  "$TEMP_DIR/setup-ghc.sh" "6"
-setup_env "v5/test-cc"   "$EXAMPLE_REPO_V5_BRANCH"  "$TEMP_DIR/setup-cc.sh"  "5"
-setup_env "v5/test-ghc"  "$EXAMPLE_REPO_V5_BRANCH"  "$TEMP_DIR/setup-ghc.sh" "5"
-# nabledge-1.4 uses v5-main as base project: no v1.4-specific branch exists in nablarch-example-batch.
-setup_env "v1.4/test-cc"  "$EXAMPLE_REPO_V14_BRANCH" "$TEMP_DIR/setup-cc.sh"  "1.4"
-setup_env "v1.4/test-ghc" "$EXAMPLE_REPO_V14_BRANCH" "$TEMP_DIR/setup-ghc.sh" "1.4"
-# "all" uses v6 repo branch: nabledge-5 and nabledge-1.4 content is installed by the setup script (-v all),
-# but nablarch-example-batch only has a v6 (main) branch as the base project.
-setup_env "all/test-cc"   "$EXAMPLE_REPO_V6_BRANCH"  "$TEMP_DIR/setup-cc.sh"  "all"
-setup_env "all/test-ghc"  "$EXAMPLE_REPO_V6_BRANCH"  "$TEMP_DIR/setup-ghc.sh" "all"
+HINT_V6="Run setup.sh to clone .lw/nab-official/v6/nablarch-example-batch."
+HINT_V5="Run setup.sh to clone .lw/nab-official/v5/nablarch-example-batch."
+HINT_V14="Run setup-svn.sh to check out .lw/nab-official/v1.4/tutorial."
+
+setup_env "v6/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "6"   "$HINT_V6"
+setup_env "v6/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "6"   "$HINT_V6"
+setup_env "v5/test-cc"   "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "5"   "$HINT_V5"
+setup_env "v5/test-ghc"  "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "5"   "$HINT_V5"
+setup_env "v1.4/test-cc"  "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.4" "$HINT_V14"
+setup_env "v1.4/test-ghc" "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.4" "$HINT_V14"
+# "all" uses the v6 project as base; all skill versions are installed by setup-cc.sh (-v all).
+setup_env "all/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "all" "$HINT_V6"
+setup_env "all/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "all" "$HINT_V6"
 
 # ------------------------------------------------------------
 # Summary
@@ -125,12 +145,12 @@ echo "  v6/test-cc/nablarch-example-batch    - nabledge-6 x Claude Code"
 echo "  v6/test-ghc/nablarch-example-batch   - nabledge-6 x GitHub Copilot"
 echo "  v5/test-cc/nablarch-example-batch    - nabledge-5 x Claude Code"
 echo "  v5/test-ghc/nablarch-example-batch   - nabledge-5 x GitHub Copilot"
-echo "  v1.4/test-cc/nablarch-example-batch  - nabledge-1.4 x Claude Code"
-echo "  v1.4/test-ghc/nablarch-example-batch - nabledge-1.4 x GitHub Copilot"
+echo "  v1.4/test-cc/tutorial                - nabledge-1.4 x Claude Code"
+echo "  v1.4/test-ghc/tutorial               - nabledge-1.4 x GitHub Copilot"
 echo "  all/test-cc/nablarch-example-batch   - all versions x Claude Code"
 echo "  all/test-ghc/nablarch-example-batch  - all versions x GitHub Copilot"
 echo ""
 echo "Verify with:"
 echo "  ls v6/test-cc/nablarch-example-batch/.claude/skills/"
-echo "  ls v6/test-ghc/nablarch-example-batch/.claude/skills/"
+echo "  ls v1.4/test-cc/tutorial/.claude/skills/"
 echo "============================================================"

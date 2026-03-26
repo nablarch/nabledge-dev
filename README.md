@@ -83,6 +83,11 @@ flowchart LR
 
 このスクリプトは全バージョン × ツールの組み合わせのテスト環境を一括セットアップします。
 
+**前提条件：**
+
+- `setup.sh` を実行済みであること（`.lw/nab-official/v6/`、`v5/` に example プロジェクトが存在すること）
+- nabledge-1.4 をテストする場合は `setup-svn.sh` を実行済みであること（`.lw/nab-official/v1.4/tutorial/` が存在すること）
+
 **セットアップ手順：**
 
 1. テスト用ワークスペースディレクトリを作成してスクリプトを実行：
@@ -98,18 +103,20 @@ flowchart LR
    | `v6/test-ghc/` | nabledge-6 × GitHub Copilot |
    | `v5/test-cc/` | nabledge-5 × Claude Code |
    | `v5/test-ghc/` | nabledge-5 × GitHub Copilot |
+   | `v1.4/test-cc/` | nabledge-1.4 × Claude Code |
+   | `v1.4/test-ghc/` | nabledge-1.4 × GitHub Copilot |
    | `all/test-cc/` | 全バージョン × Claude Code |
    | `all/test-ghc/` | 全バージョン × GitHub Copilot |
 
 2. セットアップを確認：
    ```bash
    ls v6/test-cc/nablarch-example-batch/.claude/skills/
-   ls v6/test-ghc/nablarch-example-batch/.claude/skills/
+   ls v1.4/test-cc/tutorial/.claude/skills/
    ```
 
-3. 各ディレクトリの `nablarch-example-batch/` で動作確認：
-   - Claude Code の場合：`claude` を起動して `/nabledge-6`
-   - GitHub Copilot の場合：VS Code でフォルダを開き、GitHub Copilot Chat で `/n6`
+3. 各ディレクトリのプロジェクトで動作確認：
+   - Claude Code の場合：`claude` を起動して `/nabledge-6`（または `/n1.4`）
+   - GitHub Copilot の場合：VS Code でフォルダを開き、GitHub Copilot Chat で `/n6`（または `/n1.4`）
 
 ### リリース手順
 
