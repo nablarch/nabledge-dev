@@ -153,22 +153,28 @@ verify_fail=0
 #   $1 - label (e.g. "v6/test-cc")
 #   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
 #   $3 - comma-separated versions installed (e.g. "6", "1.4", "6,5,1.4")
+#   $4 - tool type: "cc" or "ghc"
 #
 # Checks per version:
 #   - SKILL.md exists          (detects: setup script failed to copy skill)
 #   - knowledge/ exists        (detects: knowledge directory missing entirely)
 #   - knowledge/ file count    (detects: empty knowledge directory)
+#   - knowledge/ count matches expected from nabledge-dev repo (detects: files missing)
+#   - docs/ exists             (detects: docs directory missing entirely)
+#   - docs/ entry count matches expected from nabledge-dev repo (detects: entries missing)
 #   - /n{v} command file exists (detects: command not installed)
+#   - .github/prompts/n{v}.prompt.md (GHC only: detects prompt not installed)
 #
 # Does NOT detect:
 #   - Corrupt or incorrect file contents
 #   - Runtime errors during nabledge skill execution
 #   - Wrong knowledge file content or missing entries
-#   → Use nabledge-test skill for dynamic/functional verification
+#   → Use dynamic check (verify_dynamic) for runtime verification
 verify_env() {
     local label="$1"
     local project_dir="${OUTPUT_DIR}/$2"
     local versions_str="$3"
+    local tool="$4"
     local fail=0
 
     IFS=',' read -ra versions <<< "$versions_str"
@@ -182,6 +188,7 @@ verify_env() {
             continue
         fi
 
+        # knowledge/ check
         local knowledge_dir="$skill_dir/knowledge"
         local knowledge_count=0
         if [ -d "$knowledge_dir" ]; then
@@ -192,23 +199,114 @@ verify_env() {
             continue
         fi
 
+        local expected_knowledge_count
+        expected_knowledge_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/knowledge" 2>/dev/null | wc -l)
+        if [ "$knowledge_count" -ne "$expected_knowledge_count" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: knowledge/ has ${knowledge_count} files, expected ${expected_knowledge_count}"
+            fail=1
+        fi
+
+        # docs/ check
+        local docs_dir="$skill_dir/docs"
+        local docs_count=0
+        if [ -d "$docs_dir" ]; then
+            docs_count=$(ls "$docs_dir" | wc -l)
+        else
+            echo "  [FAIL] ${label} nabledge-${v}: docs/ directory not found"
+            fail=1
+        fi
+
+        local expected_docs_count
+        expected_docs_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/docs" 2>/dev/null | wc -l)
+        if [ -d "$docs_dir" ] && [ "$docs_count" -ne "$expected_docs_count" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: docs/ has ${docs_count} entries, expected ${expected_docs_count}"
+            fail=1
+        fi
+
+        # command file check
         local cmd_status="ok"
         [ ! -f "$cmd_file" ] && cmd_status="WARN: /n${v} command missing"
 
-        echo "  [OK]   ${label} nabledge-${v}: SKILL.md ok, knowledge/ ${knowledge_count} files, command ${cmd_status}"
+        # GHC prompt file check
+        local ghc_status=""
+        if [ "$tool" = "ghc" ]; then
+            local prompt_file="$project_dir/.github/prompts/n${v}.prompt.md"
+            if [ -f "$prompt_file" ]; then
+                ghc_status=", prompt ok"
+            else
+                ghc_status=", WARN: n${v}.prompt.md missing"
+            fi
+        fi
+
+        echo "  [OK]   ${label} nabledge-${v}: SKILL.md ok, knowledge/ ${knowledge_count} files, docs/ ${docs_count} entries, command ${cmd_status}${ghc_status}"
     done
 
     [ "$fail" -eq 1 ] && verify_fail=1
 }
 
-verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"
-verify_env "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"
-verify_env "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"
-verify_env "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"
-verify_env "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4"
-verify_env "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4"
-verify_env "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6,5,1.4"
-verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4"
+# verify_dynamic: dynamic check by running a knowledge search via claude -p
+# Only runs for CC environments (GHC requires GitHub Copilot, not applicable here).
+# Args:
+#   $1 - label (e.g. "v6/test-cc")
+#   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
+#   $3 - nabledge version to query (e.g. "6", "5", "1.4")
+#   $4 - test query to ask nabledge
+#   $5 - comma-separated keywords expected in the response
+verify_dynamic() {
+    local label="$1"
+    local project_dir="${OUTPUT_DIR}/$2"
+    local v="$3"
+    local query="$4"
+    local keywords_str="$5"
+
+    if ! command -v claude &>/dev/null; then
+        echo "  [SKIP] ${label} nabledge-${v}: claude CLI not found, skipping dynamic check"
+        return
+    fi
+
+    echo "  [RUN]  ${label} nabledge-${v}: running knowledge search..."
+    local output
+    output=$(cd "$project_dir" && claude -p "nabledge-${v} \"${query}\"" 2>&1) || true
+
+    local byte_count=${#output}
+    if [ "$byte_count" -eq 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: dynamic check returned empty output"
+        verify_fail=1
+        return
+    fi
+
+    local missing_keywords=()
+    IFS=',' read -ra keywords <<< "$keywords_str"
+    for kw in "${keywords[@]}"; do
+        if ! echo "$output" | grep -q "$kw"; then
+            missing_keywords+=("$kw")
+        fi
+    done
+
+    if [ "${#missing_keywords[@]}" -gt 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: dynamic check missing keywords: ${missing_keywords[*]} (output: ${byte_count} bytes)"
+        verify_fail=1
+    else
+        echo "  [OK]   ${label} nabledge-${v}: dynamic check ok (output: ${byte_count} bytes, all keywords found)"
+    fi
+}
+
+echo "[Static checks]"
+verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"       "cc"
+verify_env "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"       "ghc"
+verify_env "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"       "cc"
+verify_env "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"       "ghc"
+verify_env "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4"     "cc"
+verify_env "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4"     "ghc"
+verify_env "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6,5,1.4" "cc"
+verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4" "ghc"
+
+echo ""
+echo "[Dynamic checks]"
+verify_dynamic "v6/test-cc"   "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v5/test-cc"   "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v1.4/test-cc" "v1.4/test-cc/tutorial"                "1.4" "コードリストとは何ですか" "コードリスト,設定"
+verify_dynamic "all/test-cc"  "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
