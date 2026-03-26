@@ -33,8 +33,6 @@ cp .env.example .env
 
 ### 3. Nablarch 1.x ドキュメントのセットアップ（v1.4/1.3/1.2 の知識ファイルを生成する場合）
 
-`setup.sh` 実行時に SVN セットアップを行うか確認されます。その場で設定するか、後から以下のコマンドで実行できます：
-
 ```bash
 SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh
 ```
@@ -77,41 +75,18 @@ flowchart LR
 
 ### 開発バージョンのテスト
 
-`nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を使います。
+`nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を実行します。
 
-このスクリプトは全バージョン × ツールの組み合わせのテスト環境を一括セットアップします。
+```bash
+bash tools/tests/test-setup.sh
+```
 
-**前提条件：**
+スクリプトは以下の処理を行います：
 
-- `setup.sh` を実行済みであること（`.lw/nab-official/v6/`、`v5/` に example プロジェクトが存在すること）
-- nabledge-1.4 をテストする場合は SVN セットアップ済みであること（`.lw/nab-official/v1.4/tutorial/` が存在すること）
-
-**セットアップ手順：**
-
-1. リポジトリルートからスクリプトを実行（`.tmp/nabledge-test/` に自動作成）：
-   ```bash
-   bash tools/tests/test-setup.sh
-   ```
-
-   スクリプトは以下のディレクトリを作成します：
-   | ディレクトリ | 内容 |
-   |---|---|
-   | `v6/test-cc/` | nabledge-6 × Claude Code |
-   | `v6/test-ghc/` | nabledge-6 × GitHub Copilot |
-   | `v5/test-cc/` | nabledge-5 × Claude Code |
-   | `v5/test-ghc/` | nabledge-5 × GitHub Copilot |
-   | `v1.4/test-cc/` | nabledge-1.4 × Claude Code |
-   | `v1.4/test-ghc/` | nabledge-1.4 × GitHub Copilot |
-   | `all/test-cc/` | 全バージョン × Claude Code |
-   | `all/test-ghc/` | 全バージョン × GitHub Copilot |
-
-2. スクリプトがセットアップ後に自動検証を実行し、結果を出力します。
-
-3. 各ディレクトリのプロジェクトで動作確認：
-   ```bash
-   cd .tmp/nabledge-test/v6/test-cc/nablarch-example-batch
-   claude  # 起動後 /nabledge-6 で動作確認
-   ```
+1. `nablarch/nabledge:develop` からセットアップスクリプトをダウンロード
+2. 全バージョン × ツールの組み合わせのテスト環境を `.tmp/nabledge-test/` に構築（v6/v5/v1.4 × CC/GHC、計8環境）
+3. 静的チェック: スキル・knowledge/・docs/ の存在とファイル数を検証
+4. 動的チェック: `claude -p` / `copilot -p` で知識検索を実行し、レスポンスサイズとキーワードを検証
 
 ### リリース手順
 
