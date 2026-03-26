@@ -153,7 +153,7 @@ else
 export UV_CA_BUNDLE="/usr/local/share/ca-certificates/ca.crt"
 export SSL_CERT_FILE="/usr/local/share/ca-certificates/ca.crt"
 export NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/ca.crt"
-export PATH="$HOME/venv/bin:$PATH"
+export PATH="$HOME/venv/bin:$HOME/.local/bin:$PATH"
 EOF
     print_status ok "Environment variables added"
     print_status info "Sourcing $BASHRC..."
@@ -290,8 +290,38 @@ else
     fi
 fi
 
+# Install GitHub Copilot CLI
+print_header "9. Installing GitHub Copilot CLI"
+
+if command -v copilot &> /dev/null; then
+    print_status ok "GitHub Copilot CLI already installed ($(copilot --version 2>/dev/null | head -n 1))"
+else
+    print_status info "Installing GitHub Copilot CLI..."
+    COPILOT_INSTALL_DIR="$HOME/.local/bin"
+    mkdir -p "$COPILOT_INSTALL_DIR"
+
+    COPILOT_VERSION=$(gh api repos/github/copilot-cli/releases/latest --jq '.tag_name' 2>/dev/null)
+    if [ -z "$COPILOT_VERSION" ]; then
+        print_status error "Failed to fetch GitHub Copilot CLI version"
+        exit 1
+    fi
+
+    COPILOT_URL="https://github.com/github/copilot-cli/releases/download/${COPILOT_VERSION}/copilot-linux-x64.tar.gz"
+    print_status info "Downloading ${COPILOT_VERSION}..."
+    if curl -sSfL "$COPILOT_URL" | tar -xz -C "$COPILOT_INSTALL_DIR" copilot; then
+        chmod +x "$COPILOT_INSTALL_DIR/copilot"
+        print_status ok "GitHub Copilot CLI installed at ${COPILOT_INSTALL_DIR}/copilot"
+        if [[ ":$PATH:" != *":${COPILOT_INSTALL_DIR}:"* ]]; then
+            print_status info "Add ${COPILOT_INSTALL_DIR} to PATH if not already set."
+        fi
+    else
+        print_status error "Failed to install GitHub Copilot CLI"
+        exit 1
+    fi
+fi
+
 # Clone Nablarch official repositories
-print_header "9. Cloning Nablarch Official Repositories"
+print_header "10. Cloning Nablarch Official Repositories"
 
 NAB_OFFICIAL_V6_DIR=".lw/nab-official/v6"
 NAB_OFFICIAL_V5_DIR=".lw/nab-official/v5"
@@ -379,7 +409,7 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$
 
 
 # Setup Nablarch 1.x documentation (SVN)
-print_header "10. Setting Up Nablarch 1.x Documentation (SVN)"
+print_header "11. Setting Up Nablarch 1.x Documentation (SVN)"
 
 if [ -n "${SVN_BASE_URL:-}" ]; then
     print_status info "SVN_BASE_URL is set. Running SVN checkout..."
