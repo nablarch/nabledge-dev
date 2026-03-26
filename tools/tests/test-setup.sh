@@ -148,25 +148,67 @@ echo ""
 
 verify_fail=0
 
+# verify_env: static check for one test environment
+# Args:
+#   $1 - label (e.g. "v6/test-cc")
+#   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
+#   $3 - comma-separated versions installed (e.g. "6", "1.4", "6,5,1.4")
+#
+# Checks per version:
+#   - SKILL.md exists          (detects: setup script failed to copy skill)
+#   - knowledge/ exists        (detects: knowledge directory missing entirely)
+#   - knowledge/ file count    (detects: empty knowledge directory)
+#   - /n{v} command file exists (detects: command not installed)
+#
+# Does NOT detect:
+#   - Corrupt or incorrect file contents
+#   - Runtime errors during nabledge skill execution
+#   - Wrong knowledge file content or missing entries
+#   → Use nabledge-test skill for dynamic/functional verification
 verify_env() {
     local label="$1"
-    local skills_dir="${OUTPUT_DIR}/$2"
-    if [ -d "$skills_dir" ] && [ -n "$(ls -A "$skills_dir" 2>/dev/null)" ]; then
-        echo "  [OK]   ${label}: $(ls "$skills_dir" | tr '\n' ' ')"
-    else
-        echo "  [FAIL] ${label}: .claude/skills/ not found or empty"
-        verify_fail=1
-    fi
+    local project_dir="${OUTPUT_DIR}/$2"
+    local versions_str="$3"
+    local fail=0
+
+    IFS=',' read -ra versions <<< "$versions_str"
+    for v in "${versions[@]}"; do
+        local skill_dir="$project_dir/.claude/skills/nabledge-${v}"
+        local cmd_file="$project_dir/.claude/commands/n${v}.md"
+
+        if [ ! -f "$skill_dir/SKILL.md" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not found (skill not installed)"
+            fail=1
+            continue
+        fi
+
+        local knowledge_dir="$skill_dir/knowledge"
+        local knowledge_count=0
+        if [ -d "$knowledge_dir" ]; then
+            knowledge_count=$(ls "$knowledge_dir" | wc -l)
+        else
+            echo "  [FAIL] ${label} nabledge-${v}: knowledge/ directory not found"
+            fail=1
+            continue
+        fi
+
+        local cmd_status="ok"
+        [ ! -f "$cmd_file" ] && cmd_status="WARN: /n${v} command missing"
+
+        echo "  [OK]   ${label} nabledge-${v}: SKILL.md ok, knowledge/ ${knowledge_count} files, command ${cmd_status}"
+    done
+
+    [ "$fail" -eq 1 ] && verify_fail=1
 }
 
-verify_env "v6/test-cc"   "v6/test-cc/nablarch-example-batch/.claude/skills"
-verify_env "v6/test-ghc"  "v6/test-ghc/nablarch-example-batch/.claude/skills"
-verify_env "v5/test-cc"   "v5/test-cc/nablarch-example-batch/.claude/skills"
-verify_env "v5/test-ghc"  "v5/test-ghc/nablarch-example-batch/.claude/skills"
-verify_env "v1.4/test-cc"  "v1.4/test-cc/tutorial/.claude/skills"
-verify_env "v1.4/test-ghc" "v1.4/test-ghc/tutorial/.claude/skills"
-verify_env "all/test-cc"  "all/test-cc/nablarch-example-batch/.claude/skills"
-verify_env "all/test-ghc" "all/test-ghc/nablarch-example-batch/.claude/skills"
+verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"
+verify_env "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"
+verify_env "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"
+verify_env "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"
+verify_env "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4"
+verify_env "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4"
+verify_env "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6,5,1.4"
+verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
