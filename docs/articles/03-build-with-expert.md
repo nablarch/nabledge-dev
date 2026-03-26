@@ -2,7 +2,7 @@
 
 ## AIの子守りから抜け出すには？
 
-TIS 生成AIイノベーション室の伊藤です。今年からBLACKPINKにハマってます。
+TIS 生成AIイノベーション室の伊藤です。今年から奮発して購入した[BLACKPINKのDVD](https://ygex.jp/blackpink/discography/detail.php?id=1017534)にハマってます。
 
 [前回](<!-- 第2弾のURLを挿入 -->)、[前々回](<!-- 第1弾のURLを挿入 -->)と、Nablarchの知識をAIに教える「Nabledge」と、その知識ファイルを生成する「Knowledge Creator」について紹介しました。
 
