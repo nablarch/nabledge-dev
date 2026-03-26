@@ -244,32 +244,42 @@ verify_env() {
     [ "$fail" -eq 1 ] && verify_fail=1
 }
 
-# verify_dynamic: dynamic check by running a knowledge search via claude -p
-# Runs for both CC and GHC environments.
-# GHC environments also install .claude/skills/ so claude -p works the same way.
-# The .github/prompts/ files are entry points for GitHub Copilot and do not affect claude -p.
+# verify_dynamic: dynamic check by running a knowledge search
+# CC environments use claude -p; GHC environments use copilot -p.
 # Args:
 #   $1 - label (e.g. "v6/test-cc")
 #   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
 #   $3 - nabledge version to query (e.g. "6", "5", "1.4")
 #   $4 - test query to ask nabledge
 #   $5 - comma-separated keywords expected in the response
+#   $6 - tool type: "cc" or "ghc"
 verify_dynamic() {
     local label="$1"
     local project_dir="${OUTPUT_DIR}/$2"
     local v="$3"
     local query="$4"
     local keywords_str="$5"
+    local tool="$6"
 
-    if ! command -v claude &>/dev/null; then
-        echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
-        verify_fail=1
-        return
+    if [ "$tool" = "ghc" ]; then
+        if ! command -v copilot &>/dev/null; then
+            echo "  [FAIL] ${label} nabledge-${v}: copilot CLI not found"
+            verify_fail=1
+            return
+        fi
+        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
+        local output
+        output=$(cd "$project_dir" && copilot -p "nabledge-${v} \"${query}\"" 2>&1) || true
+    else
+        if ! command -v claude &>/dev/null; then
+            echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
+            verify_fail=1
+            return
+        fi
+        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p..."
+        local output
+        output=$(cd "$project_dir" && claude -p "nabledge-${v} \"${query}\"" 2>&1) || true
     fi
-
-    echo "  [RUN]  ${label} nabledge-${v}: running knowledge search..."
-    local output
-    output=$(cd "$project_dir" && claude -p "nabledge-${v} \"${query}\"" 2>&1) || true
 
     local byte_count=${#output}
     if [ "$byte_count" -eq 0 ]; then
@@ -306,14 +316,14 @@ verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4" "ghc
 
 echo ""
 echo "[Dynamic checks]"
-verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストとは何ですか" "コードリスト,設定"
-verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストとは何ですか" "コードリスト,設定"
-verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "cc"
+verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "ghc"
+verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoとは何ですか" "UniversalDao,検索" "cc"
+verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoとは何ですか" "UniversalDao,検索" "ghc"
+verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストとは何ですか" "コードリスト,設定" "cc"
+verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストとは何ですか" "コードリスト,設定" "ghc"
+verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "cc"
+verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "ghc"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
