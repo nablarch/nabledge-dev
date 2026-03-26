@@ -42,6 +42,8 @@ NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-develop}"
 NABLEDGE_REPO_URL="https://github.com/${NABLEDGE_REPO}"
 
+OUTPUT_DIR="${NABLEDGE_DEV_ROOT}/.tmp/nabledge-test"
+
 # Single temp dir for downloaded setup scripts
 TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT
@@ -51,7 +53,7 @@ echo "Nabledge Test Environment Setup"
 echo "============================================================"
 echo "Nabledge repository: ${NABLEDGE_REPO}"
 echo "Nabledge branch:     ${NABLEDGE_BRANCH}"
-echo "Output directory:    $(pwd)"
+echo "Output directory:    ${OUTPUT_DIR}"
 echo ""
 
 # Download setup scripts once
@@ -122,7 +124,10 @@ setup_env() {
 
 HINT_V6="Run setup.sh to clone .lw/nab-official/v6/nablarch-example-batch."
 HINT_V5="Run setup.sh to clone .lw/nab-official/v5/nablarch-example-batch."
-HINT_V14="Run setup-svn.sh to check out .lw/nab-official/v1.4/tutorial."
+HINT_V14="Run setup.sh (SVN section) to check out .lw/nab-official/v1.4/tutorial."
+
+mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
 
 setup_env "v6/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "6"   "$HINT_V6"
 setup_env "v6/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "6"   "$HINT_V6"
@@ -135,12 +140,51 @@ setup_env "all/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR
 setup_env "all/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "all" "$HINT_V6"
 
 # ------------------------------------------------------------
+# Verification
+# ------------------------------------------------------------
+echo "============================================================"
+echo "Verifying installations..."
+echo ""
+
+verify_fail=0
+
+verify_env() {
+    local label="$1"
+    local skills_dir="${OUTPUT_DIR}/$2"
+    if [ -d "$skills_dir" ] && [ -n "$(ls -A "$skills_dir" 2>/dev/null)" ]; then
+        echo "  [OK]   ${label}: $(ls "$skills_dir" | tr '\n' ' ')"
+    else
+        echo "  [FAIL] ${label}: .claude/skills/ not found or empty"
+        verify_fail=1
+    fi
+}
+
+verify_env "v6/test-cc"   "v6/test-cc/nablarch-example-batch/.claude/skills"
+verify_env "v6/test-ghc"  "v6/test-ghc/nablarch-example-batch/.claude/skills"
+verify_env "v5/test-cc"   "v5/test-cc/nablarch-example-batch/.claude/skills"
+verify_env "v5/test-ghc"  "v5/test-ghc/nablarch-example-batch/.claude/skills"
+verify_env "v1.4/test-cc"  "v1.4/test-cc/tutorial/.claude/skills"
+verify_env "v1.4/test-ghc" "v1.4/test-ghc/tutorial/.claude/skills"
+verify_env "all/test-cc"  "all/test-cc/nablarch-example-batch/.claude/skills"
+verify_env "all/test-ghc" "all/test-ghc/nablarch-example-batch/.claude/skills"
+
+echo ""
+if [ "$verify_fail" -eq 0 ]; then
+    echo "All environments verified successfully."
+else
+    echo "ERROR: Some environments failed verification. See [FAIL] entries above."
+    exit 1
+fi
+
+# ------------------------------------------------------------
 # Summary
 # ------------------------------------------------------------
 echo "============================================================"
 echo "Test environment setup complete!"
 echo ""
-echo "Directories created:"
+echo "Output: ${OUTPUT_DIR}"
+echo ""
+echo "Environments:"
 echo "  v6/test-cc/nablarch-example-batch    - nabledge-6 x Claude Code"
 echo "  v6/test-ghc/nablarch-example-batch   - nabledge-6 x GitHub Copilot"
 echo "  v5/test-cc/nablarch-example-batch    - nabledge-5 x Claude Code"
@@ -149,8 +193,4 @@ echo "  v1.4/test-cc/tutorial                - nabledge-1.4 x Claude Code"
 echo "  v1.4/test-ghc/tutorial               - nabledge-1.4 x GitHub Copilot"
 echo "  all/test-cc/nablarch-example-batch   - all versions x Claude Code"
 echo "  all/test-ghc/nablarch-example-batch  - all versions x GitHub Copilot"
-echo ""
-echo "Verify with:"
-echo "  ls v6/test-cc/nablarch-example-batch/.claude/skills/"
-echo "  ls v1.4/test-cc/tutorial/.claude/skills/"
 echo "============================================================"

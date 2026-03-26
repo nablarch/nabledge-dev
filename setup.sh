@@ -378,6 +378,40 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V5_DIR" "v5-main"
 
 
+# Setup Nablarch 1.x documentation (SVN)
+print_header "10. Setting Up Nablarch 1.x Documentation (SVN)"
+
+if [ -n "${SVN_BASE_URL:-}" ]; then
+    print_status info "SVN_BASE_URL is set. Running SVN checkout..."
+    SVN_BASE_URL="$SVN_BASE_URL" \
+      SVN_USERNAME="${SVN_USERNAME:-}" \
+      SVN_PASSWORD="${SVN_PASSWORD:-}" \
+      bash "$(dirname "$0")/setup-svn.sh"
+elif [ -t 0 ]; then
+    echo "Nablarch 1.x documentation (v1.4/1.3/1.2) requires SVN access."
+    echo "This is needed for knowledge file generation and test-setup.sh v1.4 environments."
+    echo ""
+    read -p "Set up Nablarch 1.x documentation now? [y/N] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        read -p "SVN repository URL: " SVN_BASE_URL_INPUT
+        read -p "SVN username (optional): " SVN_USERNAME_INPUT
+        read -sp "SVN password (optional): " SVN_PASSWORD_INPUT
+        echo
+        SVN_BASE_URL="$SVN_BASE_URL_INPUT" \
+          SVN_USERNAME="$SVN_USERNAME_INPUT" \
+          SVN_PASSWORD="$SVN_PASSWORD_INPUT" \
+          bash "$(dirname "$0")/setup-svn.sh"
+    else
+        print_status info "Skipped. To set up later:"
+        print_status info "  SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup-svn.sh"
+    fi
+else
+    print_status info "Non-interactive mode: skipping SVN setup."
+    print_status info "To set up later: SVN_BASE_URL=<url> ./setup-svn.sh"
+fi
+
+
 # Final summary
 print_header "Setup Completed Successfully!"
 
@@ -391,7 +425,6 @@ echo "  3. Load environment and start Claude Code:"
 echo "     source .env"
 echo "     claude"
 echo ""
-echo "  (Optional) To generate knowledge files for Nablarch 1.x (v1.4/1.3/1.2):"
-echo "     SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh"
-echo "     # Then: ./tools/knowledge-creator/kc.sh gen 1.4"
+echo "  4. Verify test environments (optional):"
+echo "     bash tools/tests/test-setup.sh"
 echo ""
