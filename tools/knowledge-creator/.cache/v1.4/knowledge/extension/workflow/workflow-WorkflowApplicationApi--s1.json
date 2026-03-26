@@ -1,0 +1,137 @@
+{
+  "id": "workflow-WorkflowApplicationApi--s1",
+  "title": "ワークフローAPI",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ワークフローの開始",
+      "hints": [
+        "WorkflowManager",
+        "startInstance",
+        "WorkflowInstance",
+        "ワークフロー開始",
+        "バージョン選択",
+        "please.change.me.workflow.WorkflowManager"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "インスタンスIDの取得",
+      "hints": [
+        "WorkflowInstance",
+        "getInstanceId",
+        "インスタンスID取得",
+        "業務テーブル紐付け",
+        "please.change.me.workflow.WorkflowInstance"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "開始済みワークフローの検索",
+      "hints": [
+        "WorkflowManager",
+        "findInstance",
+        "WorkflowInstance",
+        "ワークフロー検索",
+        "isCompleted",
+        "isActive"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ワークフローの進行",
+      "hints": [
+        "WorkflowInstance",
+        "completeUserTask",
+        "completeGroupTask",
+        "ワークフロー進行",
+        "タスク完了",
+        "ThreadContext"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "境界イベントによるワークフローの進行",
+      "hints": [
+        "WorkflowInstance",
+        "triggerEvent",
+        "境界イベント",
+        "タスク中断",
+        "eventTriggerId"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ユーザ/グループの割り当て",
+      "hints": [
+        "WorkflowInstance",
+        "assignUser",
+        "assignGroup",
+        "assignUsers",
+        "assignGroups",
+        "assignUserToLane",
+        "assignGroupToLane",
+        "assignUsersToLane",
+        "assignGroupsToLane",
+        "ユーザ割り当て",
+        "グループ割り当て",
+        "マルチインスタンス"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "割り当て済みユーザ/グループの変更",
+      "hints": [
+        "WorkflowInstance",
+        "changeAssignedUser",
+        "changeAssignedGroup",
+        "ユーザ振り替え",
+        "グループ振り替え"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "フローノードがアクティブか否かの問い合わせ",
+      "hints": [
+        "WorkflowInstance",
+        "isActive",
+        "フローノード状態確認",
+        "flowNodeId"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "ユーザ/グループのアクティブタスクが存在するか否かの問い合わせ",
+      "hints": [
+        "WorkflowInstance",
+        "hasActiveUserTask",
+        "hasActiveGroupTask",
+        "アクティブタスク確認"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "ワークフローが完了したか否かの問い合わせ",
+      "hints": [
+        "WorkflowInstance",
+        "isCompleted",
+        "ワークフロー完了確認",
+        "停止イベント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `please.change.me.workflow.WorkflowManager`\n\n**メソッド**: `startInstance(workflowId)` / `startInstance(workflowId, parameter)`\n\n- `workflowId` (String): 開始対象のワークフローID\n- `parameter` (Map<String,?>): :ref:`flowProceedCondition` や :ref:`completionCondition` で使用するパラメータ（任意。:ref:`workflow_element_event_start` から最初のタスクへの遷移に :ref:`workflow_element_gateway_xor` が存在する場合などに指定）\n- 戻り値: `please.change.me.workflow.WorkflowInstance`\n\n同一ワークフローIDに複数バージョンがある場合、適用日がシステム日付以前で最もバージョンの大きい定義を使用する。\n\n```java\nWorkflowInstance workflow = WorkflowManager.startInstance(\"WF00001\");\nString instanceId = workflow.getInstanceId();\n```",
+    "s2": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n**メソッド**: `getInstanceId()` → `String`\n\n業務テーブル（申請フォーム情報を保持するテーブル）とワークフロー進行状態管理テーブルを紐付けるため、取得したインスタンスIDを業務テーブルに保存すること。\n\n```java\nWorkflowInstance workflow = WorkflowManager.startInstance(\"WF00001\");\nString instanceId = workflow.getInstanceId();\nLeaveApplicationEntity entity = new LeaveApplicationEntity();\nentity.setInstanceId(instanceId);\nregister(entity);\n```",
+    "s3": "**クラス**: `please.change.me.workflow.WorkflowManager`\n\n**メソッド**: `findInstance(instanceId)` → `please.change.me.workflow.WorkflowInstance`\n\n- `instanceId` (String): インスタンスID\n\n指定インスタンスIDのワークフローが取得できない場合（既に完了している場合）、完了状態を表すインスタンスを返す。この完了状態インスタンスの挙動:\n- `isCompleted()` は常に `true` を返す\n- `isActive()` は常に `false` を返す\n- タスクの進行・担当ユーザ/グループの割り当てを行うと実行時例外が送出される\n\n```java\n// ワークフロー開始時点のバージョンに対応するワークフロー定義が自動適用される\nWorkflowInstance workflow = WorkflowManager.findInstance(instanceId);\n```",
+    "s4": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n担当ユーザとして割り当てられているタスクには `completeUserTask`、担当グループとして割り当てられているタスクには `completeGroupTask` を使用すること。\n\n**メソッド一覧**:\n- `completeUserTask()`\n- `completeUserTask(parameter)`\n- `completeUserTask(assigned)`\n- `completeUserTask(parameter, assigned)`\n- `completeGroupTask(assigned)`\n- `completeGroupTask(parameter, assigned)`\n\n**パラメータ**:\n- `parameter` (Map<String,?>): :ref:`flowProceedCondition` や :ref:`completionCondition` で使用するパラメータ（任意）\n- `assigned` (String): 処理対象ユーザまたはグループID。グループの場合は必須。ユーザの場合は未指定時に `ThreadContext` 内のユーザを使用。\n\n```java\nWorkflowInstance workflow = WorkflowManager.findInstance(instanceId);\nworkflow.completeUserTask();\nworkflow.completeGroupTask(groupId);\nMap<String, Integer> parameter = new HashMap<String, Integer>();\nparameter.put(\"amount\", amount);\nworkflow.completeGroupTask(parameter, groupId);\n```",
+    "s5": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n:ref:`workflow_element_boundary_event` を発生させてタスクを中断しワークフローを進行させる場合に使用する。\n\n**メソッド**: `triggerEvent(eventTriggerId)` / `triggerEvent(eventTriggerId, parameter)`\n\n- `eventTriggerId` (String): 境界イベントトリガーID\n- `parameter` (Map<String,?>): :ref:`flowProceedCondition` で使用するパラメータ（任意）\n\n`triggerEvent` でタスクが中断された場合、:ref:`completionCondition` は実行されない（`completeUserTask`/`completeGroupTask` との相違点）。\n\n```java\nWorkflowInstance workflow = WorkflowManager.findInstance(instanceId);\nworkflow.triggerEvent(CANCEL_TRIGGER);\n```",
+    "s6": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\nタスクへの割り当て実行時、以前割り当てられていたユーザ/グループ情報はすべて削除され、今回指定したユーザ/グループのみが割り当てられる。\n\n**メソッド一覧**:\n\n| メソッド | 対象 | 説明 |\n|---|---|---|\n| `assignUser(taskId, assignee)` | タスク | 単一ユーザを割り当て |\n| `assignGroup(taskId, assignee)` | タスク | 単一グループを割り当て |\n| `assignUsers(taskId, List<String> assignee)` | タスク | ユーザリストを割り当て |\n| `assignGroups(taskId, List<String> assignee)` | タスク | グループリストを割り当て |\n| `assignUserToLane(laneId, assignee)` | レーン全タスク | 単一ユーザを割り当て |\n| `assignGroupToLane(laneId, assignee)` | レーン全タスク | 単一グループを割り当て |\n| `assignUsersToLane(laneId, List<String> assignee)` | レーン全タスク | ユーザリストを割り当て |\n| `assignGroupsToLane(laneId, List<String> assignee)` | レーン全タスク | グループリストを割り当て |\n\n非マルチインスタンスのタスクに複数ユーザ/グループを指定した場合はエラー。順次 :ref:`workflow_element_multi_instance_task` の場合、指定した順序でユーザ/グループがタスクを実行する必要がある。\n\n```java\nWorkflowInstance workflow = WorkflowManager.startInstance(\"WF00001\");\nworkflow.assignUser(\"T01\", userId);\nworkflow.assignUsers(\"T02\", users);\nworkflow.assignUserToLane(\"T03\", userId);\nworkflow.assignUsersToLane(\"T04\", users);\n```",
+    "s7": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n特定ユーザ/グループを別のユーザ/グループに振り替える場合に使用する。タスク全体の再割り当てには「ユーザ/グループの割り当て」メソッドを使用すること。\n\n**メソッド**: `changeAssignedUser(taskId, oldAssignee, newAssignee)` / `changeAssignedGroup(taskId, oldAssignee, newAssignee)`\n\n- `taskId` (String): 振り替え対象のタスクID\n- `oldAssignee` (String): 振り替え対象のユーザ/グループ\n- `newAssignee` (String): 振り替え後のユーザ/グループ\n\n> **注意**: 一つのタスクにはユーザまたはグループのいずれかしか割り当てられない。`changeAssignedUser`/`changeAssignedGroup` を使ってユーザからグループへの変更（またはその逆）を行うことはできない。\n\n```java\nWorkflowInstance workflow = WorkflowManager.findInstance(instanceId);\nworkflow.changeAssignedUser(\"T02\", oldUserId, newUserId);\n```",
+    "s8": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n**メソッド**: `isActive(flowNodeId)` → `boolean`\n\n- `flowNodeId` (String): フローノードID\n- 戻り値: 指定フローノードIDがアクティブな場合 `true`\n\n```java\nif (workflow.isActive(\"t01\")) {\n  // フローノードID:t01がアクティブな場合の処理\n}\n```",
+    "s9": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n**メソッド**:\n- `hasActiveUserTask(user)` → `boolean`: ユーザ (String) のアクティブタスクが存在する場合 `true`\n- `hasActiveGroupTask(group)` → `boolean`: グループ (String) のアクティブタスクが存在する場合 `true`\n\n```java\nif (workflow.hasActiveUserTask(\"0000000001\")) {\n  // ユーザ:0000000001 のアクティブタスクが存在する場合の処理\n}\n```",
+    "s10": "**クラス**: `please.change.me.workflow.WorkflowInstance`\n\n**メソッド**: `isCompleted()` → `boolean`\n\nワークフローが完了状態になると管理データ（:ref:`instanceTable`）は削除される。完了確認はワークフローの進行と同一トランザクション内でのみ有効。他トランザクションからは完了状態のワークフローインスタンスを取得できない。\n\n> **注意**: ワークフローの完了状態とは、停止イベントがアクティブになった状態を指す。\n\n```java\nif (workflow.isCompleted()) {\n  // ワークフローが完了した場合の処理\n}\n```"
+  }
+}

@@ -50,6 +50,29 @@ Apply labels to all Issues and PRs when creating them:
 
 **Why labels matter**: `bug` label feeds into DORA Change Failure Rate and MTTR metrics. Mislabeled PRs will skew these metrics.
 
+## Markdown in gh CLI Commands
+
+When creating or editing issues/PRs via `gh issue create` / `gh issue edit`, use a single-quoted heredoc:
+
+```bash
+gh issue create --body "$(cat <<'EOF'
+...body...
+EOF
+)"
+```
+
+**Do not escape backticks** inside a single-quoted heredoc. `\`` is not valid GitHub Markdown escaping — the backslash renders literally, breaking inline code spans.
+
+```
+# Wrong - backslash appears in output
+\`run_claude()\` in \`common.py\`
+
+# Correct - plain backticks work fine in single-quoted heredoc
+`run_claude()` in `common.py`
+```
+
+**Do not put `#` comments inside fenced code blocks** in issue bodies created via the CLI. GitHub may render them as Markdown headings. Move comment text outside the code block as prose instead.
+
 ## Example
 
 **Title:** As a developer, I want standardized PR formats so that I can review changes efficiently

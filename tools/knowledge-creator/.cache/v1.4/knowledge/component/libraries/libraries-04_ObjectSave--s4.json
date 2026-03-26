@@ -1,0 +1,43 @@
+{
+  "id": "libraries-04_ObjectSave--s4",
+  "title": "クラス定義",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "クラス定義",
+      "hints": [
+        "BasicSqlParameterParserFactory",
+        "BasicSqlParameterParser",
+        "SqlConvertorSupport",
+        "VariableConditionSyntaxConvertor",
+        "VariableInSyntaxConvertor",
+        "VariableOrderBySyntaxConvertor",
+        "FieldAnnotationHandlerSupport",
+        "CurrentDateTimeAnnotationHandler",
+        "UserIdAnnotationHandler",
+        "RequestIdAnnotationHandler",
+        "FieldAndAnnotationLoader",
+        "@CurrentDateTime",
+        "@UserId",
+        "@RequestId",
+        "SQL可変条件構文",
+        "可変IN構文",
+        "可変ORDER BY構文",
+        "名前付きバインド変数",
+        "LIKE検索",
+        "AutoPropertyHandler",
+        "システム日時設定",
+        "$if構文",
+        "$sort構文",
+        "SqlParameterParserFactory",
+        "SqlParameterParser",
+        "SqlConvertor"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## クラス定義\n\n### a) SqlParameterParserFactory実装クラス (`nablarch.core.db.statement`パッケージ)\n\n| クラス名 | 概要 |\n|---|---|\n| `BasicSqlParameterParserFactory` | BasicSqlParameterParserを生成するSqlParameterParserFactoryの基本実装クラス |\n\n### b) SqlParameterParser実装クラス (`nablarch.core.db.statement`パッケージ)\n\n**クラス**: `BasicSqlParameterParser`\n\nSQL文の解析およびJDBC実行用SQL文への変換処理ルール:\n\n- 名前付きバインド変数はコロン(`:`)で開始され、英数字・アンダースコア(`_`)・パーセント(`%`)で構成される\n- LIKE検索パターン:\n  - 前方一致: バインド変数名末尾に`%`を付加 (例: `:userName%`)\n  - 後方一致: バインド変数名先頭に`%`を付加 (例: `:%userName`)\n  - 部分一致: バインド変数名前後に`%`を付加 (例: `:%userName%`)\n\n> **警告**: 後方・部分一致検索はインデックスが使用されずテーブルフルスキャンとなり、極端な性能劣化が発生する。顧客要件で回避不可能な場合にのみ、顧客と合意の上で使用すること。\n\nデフォルトで変換する拡張構文:\n- :ref:`可変条件構文<variable_condition_syntax_convertor-label>`\n- :ref:`可変IN構文<variable_in_syntax_convertor-label>`\n- :ref:`可変ORDER BY構文<variable_order_by_syntax_convertor-label>`\n\n### c) SqlConvertor実装クラス (`nablarch.core.db.statement.sqlconvertor`パッケージ)\n\n| クラス名 | 概要 |\n|---|---|\n| `SqlConvertorSupport` | SQL文変換クラスをサポートするクラス。バインド変数に対応するフィールドの値を取得する機能を提供 |\n| `VariableConditionSyntaxConvertor` | SQL文の可変条件構文を変換するクラス |\n| `VariableInSyntaxConvertor` | SQL文の可変IN構文を変換するクラス |\n| `VariableOrderBySyntaxConvertor` | SQL文の可変ORDER BY構文を変換するクラス |\n\n#### VariableConditionSyntaxConvertor\n\n可変条件は `$if(フィールド名) {SQL文の条件}` 形式で記述する。\n\n- フィールド値がnullでも空文字列でもない場合（配列の場合はサイズ1以上）: `(0 = 1 OR (条件))` に変換→条件が評価される\n- フィールド値がnullまたは空文字列の場合（配列の場合はサイズ0）: `(0 = 0 OR (条件))` に変換→条件が評価されない\n\n> **警告**: `$if`構文が使用できる箇所はWHERE句のみ。SELECT句などその他の箇所で使用した場合は不正なSQL文が生成される。また`$if`のネストも不可。これらの誤った使い方をした場合はSQL実行時エラーとなる。\n\n```java\npublic class UserMtr {\n    private String userName;\n    private String userKbn;\n}\n\nString sql =\n      \"SELECT USER_ID, USER_NAME, USER_KBN \"\n    + \"FROM USER_MTR \"\n    + \"WHERE \"\n    + \"$if (userName) {USER_NAME = :user_name} \"\n    + \"AND $if (userKbn) {USER_KBN IN ('1', '2')}\";\n// UserMtr#userNameがnull・空文字列以外の場合: \"USER_NAME = :user_name\" が有効な条件となる\n// UserMtr#userKbnがnull・空文字列以外の場合: \"USER_KBN IN ('1', '2')\" が有効な条件となる\n```\n\n#### VariableInSyntaxConvertor\n\nIN句の条件部分を動的に生成する場合、バインド変数名の末尾を`[]`で終わらせる。\n\n- IN句バインド変数に対応するフィールドは配列またはCollectionとして定義すること\n- 配列(Collection)の要素数がIN句の条件数となる\n\n```java\npublic class UserSearchCondition {\n    private List userKbn;\n}\n\nString sql =\n      \"SELECT USER_ID, USER_NAME, USER_KBN \"\n    + \"FROM USER_MTR \"\n    + \"WHERE $if (userKbn) {USER_KBN IN (:userKbn[])}\";\n// ['1', '2']のListを設定: (0 = 1 OR (USER_KBN IN (?, ?))) に変換\n// サイズ0のListを設定: (0 = 0 OR (USER_KBN IN (?))) に変換 ※条件式には固定で\"null\"が設定される\n```\n\n> **注意**: IN句の条件数はデータベースベンダーによって上限が設けられている。各アプリケーションでこの上限を超えないよう設計すること。\n\n> **警告**: IN句の拡張構文では、検索条件オブジェクトにMapインタフェースの実装クラスを指定することは不可。Mapは値に対する型情報が存在しないため、IN句構築時に値が配列またはCollectionであることのチェックが確実に行えないため。\n\n> **警告**: IN句の条件項目に設定する配列(Collection)がnullやサイズ0になる可能性がある場合は、必ず可変条件と組み合わせて使用すること。可変条件としなかった場合にサイズ0の配列やnullを設定すると、条件が`IN (null)`となり想定したデータが取得できない可能性がある。\n\n> **警告**: IN句以外の箇所にIN句用バインド変数(末尾`[]`)を設定しないこと。不正なSQL文が生成されSQL実行時エラーとなる。例: `USER_ID = :userId[]` にフィールド値`[\"00001\", \"00002\"]`を設定すると`USER_ID = ?, ?`という不正なSQLが生成される。\n\nリテラル処理のルール:\n\n- リテラル部分に名前付きバインド変数と同じ形式の文字列が記述されていてもバインド変数として扱わない\n- リテラル文字は、シングルクォート(`'`)で囲われている\n- リテラル文字のエスケープ文字は、シングルクォート(`'`)である\n- SQL文にコメントが存在しない\n\n> **警告**: 本クラスでは、SQL文の妥当性のチェックは行わない。不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。\n\n#### VariableOrderBySyntaxConvertor\n\n可変ORDER BY構文の書き方:\n\n```\n$sort(フィールド名) {(ケース1)(ケース2)・・・(ケースn)}\n```\n\n- `フィールド名`: 検索条件オブジェクトからソートIDを取得する際に使用するフィールド名\n- 各ケースは `(ソートID ケース本体)` 形式（半角丸括弧で囲む、ソートIDとケース本体は半角スペースで区切る）\n- ソートIDには半角スペース不可、ケース本体には半角スペース可\n- 括弧開き以降で最初に登場する文字列をソートIDとする\n- ソートID以降で括弧閉じまでの間をケース本体とする\n- ソートIDおよびケース本体はトリミングする\n- デフォルトケースはソートIDに`default`を指定する\n\n動作:\n- フィールド値が一致するケースのケース本体をORDER BY句としてSQL文に追加\n- 一致ケースなし＋デフォルトケースあり: デフォルトのケース本体をORDER BY句として追加\n- 一致ケースなし＋デフォルトケースなし: 可変ORDER BY構文を削除したSQL文を返す\n\n```java\npublic class UserMtr {\n    private String userName;\n    private String sortId;\n}\n\nString sql =\n      \"SELECT USER_ID, USER_NAME FROM USER_MTR \"\n    + \"WHERE USER_NAME = :user_name \"\n    + \"$sort(sortId) {(1 USER_ID ASC) (2 USER_ID DESC) (3 USER_NAME ASC) (4 USER_NAME DESC) (default USER_ID)}\";\n// sortId=null → ORDER BY USER_ID (デフォルト)\n// sortId=1   → ORDER BY USER_ID ASC\n// sortId=2   → ORDER BY USER_ID DESC\n// sortId=5   → ORDER BY USER_ID (デフォルト)\n```\n\n> **警告**: `VariableOrderBySyntaxConvertor`はSQL文の妥当性チェックを行わない。不正な構文のSQL文があった場合はSQL実行時エラーとなる。\n\n### d) AutoPropertyHandler実装クラス (`nablarch.core.db.statement.autoproperty`パッケージ)\n\n| クラス名 | 概要 |\n|---|---|\n| `FieldAnnotationHandlerSupport` | フィールドのアノテーション情報を元に値を設定するクラスをサポートするクラス |\n| `CurrentDateTimeAnnotationHandler` | `@CurrentDateTime`アノテーションが設定されているフィールドにシステム日時を設定するクラス |\n| `UserIdAnnotationHandler` | `@UserId`アノテーションが設定されているフィールドにThreadContextからユーザIDを設定するクラス |\n| `RequestIdAnnotationHandler` | `@RequestId`アノテーションが設定されているフィールドにThreadContextからリクエストIDを設定するクラス |\n\n`CurrentDateTimeAnnotationHandler` のフィールド型別設定方法:\n\n| フィールドのデータ型 | 設定方法 |\n|---|---|\n| `java.sql.Date` | システム日時をjava.sql.Dateに変換して設定 |\n| `Timestamp` | システム日時をjava.sql.Timestampに変換して設定 |\n| `Time` | システム日時をjava.sql.Timeに変換して設定 |\n| `String`, `Integer`, `Long` | `CurrentDateTime`のformatプロパティに設定されている値でSimpleDateFormatを使用してフォーマットして設定。formatプロパティが未指定の場合は :ref:`設定ファイル<db-object-config-label>` のデフォルトフォーマットを使用 |\n\n> **注意**: システム日時は :ref:`system-date-time-feature` を使用して取得する。\n\n`UserIdAnnotationHandler`: ユーザIDはThreadContextから取得する。ThreadContextに設定されるユーザIDについては :ref:`thread-context-label` を参照。\n\n`RequestIdAnnotationHandler`: リクエストIDはThreadContextから取得する。ThreadContextに設定されるリクエストIDについては :ref:`thread-context-label` を参照。\n\n### e) フィールド値をデータベースに登録するためのクラス (`nablarch.core.db.statement.autoproperty`パッケージ)\n\n**クラス**: `FieldAndAnnotationLoader`\n\nオブジェクトに定義されたフィールド情報とフィールドのアノテーション情報をロードするクラス。ロードした値は :doc:`../05_StaticDataCache` を使用してキャッシュされるため、同一クラスに対するフィールド情報取得処理が複数回実行されることはない（リフレクションコストを軽減）。"
+  }
+}

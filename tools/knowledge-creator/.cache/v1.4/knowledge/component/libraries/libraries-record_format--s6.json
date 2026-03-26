@@ -1,0 +1,41 @@
+{
+  "id": "libraries-record_format--s6",
+  "title": "フォーマット定義ファイルの書式",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーマット定義ファイルの書式",
+      "hints": [
+        "フォーマット定義ファイル",
+        "ディレクティブ宣言部",
+        "レコードフォーマット定義部",
+        "file-type",
+        "text-encoding",
+        "record-separator",
+        "record-length",
+        "field-separator",
+        "positive-zone-sign-nibble",
+        "negative-zone-sign-nibble",
+        "positive-pack-sign-nibble",
+        "negative-pack-sign-nibble",
+        "required-decimal-point",
+        "fixed-sign-position",
+        "required-plus-sign",
+        "quoting-delimiter",
+        "requires-title",
+        "ignore-blank-lines",
+        "max-record-length",
+        "title-record-type-name",
+        "FILLER項目",
+        "マルチフォーマット",
+        "固定長データ形式",
+        "可変長データ形式"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フォーマット定義ファイルの書式\n\nフォーマット定義ファイルは以下の2つの部分で構成される:\n1. **ディレクティブ宣言部**: データ形式（固定長/可変長/XML/JSON）、エンコーディングなどの共通設定\n2. **レコードフォーマット定義部**: 各フィールドの開始位置、データ型、変換処理。マルチフォーマット形式では複数レコードフォーマットを定義し条件で動的切り替え可能\n\n**行末コメント**: `#` から行末までの文字列はコメントとして扱われる。任意の行で使用可能。\n\n**文字コード**: デフォルトはUTF-8。他の文字コードを使用する場合は**フォーマッターファクトリ**に設定を追加すること。\n\n**リテラル表記**:\n\n| リテラル型 | 例 | 備考 |\n|---|---|---|\n| 文字列 | `\"Nablarch\"`, `\"\\\\r\\\\n\"` | Javaの文字リテラルと同じ仕様。`\\\\Uxxxx` のUnicodeエスケープは非サポート |\n| 10進整数 | `0`, `123`, `-456`, `+78` | 小数は不可 |\n| 真偽値 | `true`, `false`, `TRUE`, `FALSE` | |\n\n**任意識別子**: レコードタイプ名・フィールド名等には以下の正規表現に合致する文字列を使用する（ASCIIでのJava識別子定義と同じ）:\n```\n/[a-zA-Z_$][a-zA-Z0-9_$]*/\n```\n\n### ディレクティブ宣言部\n\n書式: `[ディレクティブ名] : [ディレクティブ値(リテラル)]`\n\n**共通ディレクティブ**:\n\n| ディレクティブ名 | 内容 |\n|---|---|\n| `file-type` | データ形式。`\"Fixed\"`(固定長)、`\"Variable\"`(可変長)、`\"JSON\"`、`\"XML\"` のいずれかを指定。**必須** |\n| `text-encoding` | 文字列フィールドの読み書きエンコーディング。JDKで利用可能なエンコーディング名（`\"UTF-8\"`, `\"SJIS\"`, `\"MS932\"` など）。**必須**。JSONの場合はUTF-8/UTF-16(BE or LE)/UTF-32(BE or LE)のみ対応（その他はエラー）。XMLの読み込み時はXML宣言部のエンコーディングが優先 |\n| `record-separator` | レコード終端文字列。可変長では**必須**（レコード終端判断用）。固定長では各レコード直後に付加する文字列として扱う。XML/JSONでは不使用。バイト長は`record-length`に含まれない |\n\n**固定長データ形式でのみ指定可能なディレクティブ**:\n\n| ディレクティブ名 | 内容 |\n|---|---|\n| `record-length` | 1レコードのバイト長。**必須** |\n| `positive-zone-sign-nibble` / `negative-zone-sign-nibble` | 符号付きゾーン数値の符号Nibble値。デフォルト: ASCII互換（UTF-8/SJISなど）は正=0x3/負=0x7、EBCDIC互換は正=0xC/負=0xD |\n| `positive-pack-sign-nibble` / `negative-pack-sign-nibble` | 符号付きパック数値の符号Nibble値。デフォルト: ASCII互換は正=0x3/負=0x7、EBCDIC互換は正=0xC/負=0xD |\n| `required-decimal-point` | 符号なし/符号付き数値の小数点の要否。`true`で書き込みデータに小数点付与。デフォルト: `true` |\n| `fixed-sign-position` | 符号位置の固定/非固定。`true`で符号はフィールド左端に固定、`false`で符号は数値直前に付与。デフォルト: `true` |\n| `required-plus-sign` | 正の符号の要否。`true`で読み込みデータに正の符号がなければエラー、書き込みデータに正の符号を出力。デフォルト: `false` |\n\n**可変長データ形式でのみ指定可能なディレクティブ**:\n\n| ディレクティブ名 | 内容 |\n|---|---|\n| `field-separator` | フィールドの区切り文字。**必須** |\n| `quoting-delimiter` | フィールド値クォート文字。デフォルト: ダブルクォート(`\"`) |\n| `ignore-blank-lines` | 空行を無視するか。`true`で空行の読み込みをスキップ。デフォルト: `true` |\n| `requires-title` | 最初の行をタイトルとして読み書きするか。`true`でレコードタイプ名`[Title]`で読み書き可能。デフォルト: `false` |\n| `max-record-length` | 1行の許容文字数。デフォルト: `1000000` |\n| `title-record-type-name` | タイトルのレコードタイプ名。デフォルト: `[Title]` |\n\nJSONおよびXMLデータ形式専用のディレクティブは存在しない。\n\n### レコードフォーマット定義部\n\n書式（シングルフォーマット）:\n```\n[レコードタイプ名]\n[フィールド定義]\n...\n```\n\nフィールド定義の書式:\n```\n[フィールド開始位置] [フィールド名] [フィールドタイプ定義] ([フィールドコンバータ定義]...)\n```\n\n| 要素名 | 必須 | 内容 |\n|---|---|---|\n| フィールド開始位置 | ○ | 固定長: 開始バイト数(1起算)、可変長: カラム通番、JSON/XML: 要素通番 |\n| フィールド名 | ○ | Mapのキーとなる任意識別子。先頭に`?`を付与するとFILLER項目（入力時にMapに格納されない）。数字のみのフィールド名は不可（実行時に例外発生）。XMLの場合、先頭に`@`を付与で属性項目として入出力 |\n| 多重度 | △(階層構造) | JSON/XMLなど階層構造データ形式の場合に出現回数を指定。`[]`が付与されていない項目は`[1]`を指定されたものと見なして出現回数は1回に限定される。`[2]`=2回固定、`[*]`=出現回数に条件なし（`[0..*]`と同義）、`[1..3]`=1〜3回、`[1..*]`=1回以上、`[0..*]`=出現回数に条件なし |\n| フィールドタイプ定義 | ○ | フィールドのデータ型定義。詳細は :ref:`types_and_converters` 参照 |\n| フィールドコンバータ定義 | - | 入出力の事前処理（トリム・パディング、デフォルト値等）。複数指定可。詳細は :ref:`types_and_converters` 参照 |\n\n> **注意**: レコードタイプ名は1つのフォーマット定義ファイル内で一意であること。重複は不可。\n\n記述例（固定長）:\n```\nfile-type:     \"Fixed\"\ntext-encoding: \"ms932\"\nrecord-length:  120\n\n[Default]\n1    dataKbn       X(1)  \"2\"\n2    FIcode        X(4)\n6    FIname        X(15)\n39  ?tegataNum     X(4)  \"9999\"\n114 ?unused        X(7)  pad(\"0\")\n```"
+  }
+}

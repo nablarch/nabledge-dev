@@ -1,0 +1,78 @@
+{
+  "id": "libraries-07_FormTag--s16",
+  "title": "hiddenの暗号化処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    ""
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "hiddenの暗号化処理",
+      "hints": [
+        "Encryptor",
+        "hiddenEncryptor",
+        "AES暗号化",
+        "hidden暗号化",
+        "改竄検知",
+        "plainHidden",
+        "WebView_PlainHiddenTag",
+        "セッション鍵生成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "hiddenの復号処理",
+      "hints": [
+        "NablarchTagHandler",
+        "hiddenの復号",
+        "改竄検知条件",
+        "入力データの復元",
+        "リクエストパラメータ復元",
+        "ページスコープ",
+        "セッションスコープ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "textタグの出力例",
+      "hints": [
+        "confirmationPage",
+        "WebView_ConfirmationPageTag",
+        "確認画面出力",
+        "textタグ",
+        "n:text",
+        "入力項目確認画面"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "passwordタグの出力例",
+      "hints": [
+        "WebView_PasswordTag",
+        "passwordタグ",
+        "確認画面マスク",
+        "n:password",
+        "文字置換"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "selectタグの出力例",
+      "hints": [
+        "WebView_SelectTag",
+        "selectタグ",
+        "確認画面選択肢",
+        "n:select",
+        "brタグ区切り"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "暗号化は`Encryptor`インタフェースを実装したクラスが行う。デフォルトの暗号化アルゴリズムはAES(128bit)。アルゴリズムを変更する場合は、Encryptorを実装したクラスをリポジトリに`hiddenEncryptor`という名前で登録する。\n\n暗号化はformタグ毎に行い、以下のデータをまとめて1つのhiddenタグで出力する（hiddenのパラメータ名も含めて暗号化するため、改竄自体を困難にする）:\n\n- カスタムタグのhiddenタグで明示的に指定したhiddenパラメータ\n- ウィンドウスコープの値\n- サブミットタグ(submit、submitLink、button)で指定したリクエストID\n- サブミットタグで指定した :ref:`変更パラメータ<WebView_ChangeableParams>`\n\n改竄検知のためハッシュ値を含める。リクエストIDは異なる画面間での値置き換えによる改竄検知、ハッシュ値は値の書き換えによる改竄検知に使用する。暗号化結果はBASE64でエンコードしてhiddenタグに出力する。\n\n> **注意**: カスタムタグのhiddenタグで明示的に指定したhiddenパラメータは暗号化に含まれるため、クライアント側JavaScriptで値を操作できない。JavaScriptでhiddenパラメータを操作する必要がある場合は :ref:`WebView_PlainHiddenTag` を使用すること。:ref:`WebView_PlainHiddenTag` に指定された値はhidden暗号化対象とならず、常にHTMLの`input type=\"hidden\"`として出力される。\n\n```html\n<%-- JSPの実装例 --%>\n<n:plainHidden name=\"user.id\" />\n\n<%-- HTMLの出力例 --%>\n<input type=\"hidden\" name=\"user.id\" value=\"U0000000001\" />\n```\n\n暗号化に使用する鍵はセッション毎に生成する（鍵の有効期間を短くするため）。同じユーザでもログインをやり直すと、ログイン前の画面から処理を継続できない。\n\n> **注意**: 本フレームワークが出力したHTML以外からのリクエスト（業務アプリのログイン画面、ショッピングサイトの商品ページ等）は暗号化できない。暗号化できないリクエストが多数を占めるアプリケーションでは、別途パラメータの改竄と情報漏洩への対策が必要。",
+    "s2": "hiddenの復号処理は`NablarchTagHandler`が行う。設定方法については :ref:`WebView_NablarchTagHandler` 参照。\n\n設定では、改竄を検知した場合に遷移する画面のリソースパスとレスポンスステータスを指定する。以下の場合に改竄と判定する:\n\n- 暗号化したhiddenパラメータ(nablarch_hidden)が存在しない\n- BASE64のデコードに失敗する\n- 復号に失敗する\n- 暗号化時のハッシュ値と復号後のハッシュ値が一致しない\n- 暗号化時のリクエストIDと受け付けたリクエストIDが一致しない\n\n## 入力データの復元\n\n入力画面では、入力エラー時と確認画面から戻る場合に入力データを復元した状態で再表示する。カスタムタグがリクエストパラメータから入力データを復元するため、アプリケーションプログラマは入力データの取得先を意識した実装が不要。\n\nカスタムタグはname属性に対応する値を以下の順に検索し、最初に見つかった値を出力する（writeタグはリクエストパラメータを検索対象に含めない）:\n\n1. Servlet APIのページスコープ\n2. Servlet APIのリクエストスコープ\n3. Servlet APIのリクエストパラメータ\n4. Servlet APIのセッションスコープ",
+    "s3": "入力項目のカスタムタグは、入力画面と全く同じ記述のまま確認画面用の出力ができる。確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する:\n\n```java\n<n:confirmationPage />\n```\n\n:ref:`WebView_TextTag` は確認画面でそのまま出力する。\n\n```jsp\n<n:text name=\"systemAccount.loginId\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"text\" name=\"systemAccount.loginId\" value=\"nablarch2\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面 --%>\nnablarch2\n```",
+    "s4": ":ref:`WebView_PasswordTag` は確認画面では文字を置き換えて出力する。置換文字はpasswordタグの属性で変更可能。\n\n```jsp\n<n:password name=\"systemAccount.newPassword\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"password\" name=\"systemAccount.newPassword\" value=\"password\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面 --%>\n<%-- '*'に置換。置換文字は変更可能。 --%>\n********\n```",
+    "s5": ":ref:`WebView_SelectTag` は確認画面では指定されたフォーマットで出力する。デフォルトはbrタグ区切り。確認画面では選択されたオプションのみが出力される（divタグ、ulタグ、olタグ、スペース区切りに変更可能）。\n\n```jsp\n<n:select name=\"systemAccount.useCase\" multiple=\"true\" size=\"5\"\n          listName=\"allUseCase\" elementLabelProperty=\"useCaseName\" elementValueProperty=\"useCaseId\"\n          elementLabelPattern=\"${VALUE}:${LABEL}\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<select name=\"systemAccount.useCase\" size=\"5\" multiple=\"multiple\">\n  <option value=\"UC00000000\" selected=\"selected\">UC00000000:ログイン</option>\n  <option value=\"UC00000001\">UC00000001:ユーザ一覧照会</option>\n  <option value=\"UC00000002\" selected=\"selected\">UC00000002:ユーザ情報登録</option>\n</select>\n\n<%-- 確認画面 --%>\n<%-- brタグ区切りに出力。divタグ、ulタグ、olタグ、スペース区切りに変更可能。 --%>\nUC00000000:ログイン<br />UC00000002:ユーザ情報登録<br />\n```"
+  }
+}
