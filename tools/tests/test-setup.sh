@@ -245,7 +245,9 @@ verify_env() {
 }
 
 # verify_dynamic: dynamic check by running a knowledge search via claude -p
-# Only runs for CC environments (GHC requires GitHub Copilot, not applicable here).
+# Runs for both CC and GHC environments.
+# GHC environments also install .claude/skills/ so claude -p works the same way.
+# The .github/prompts/ files are entry points for GitHub Copilot and do not affect claude -p.
 # Args:
 #   $1 - label (e.g. "v6/test-cc")
 #   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
@@ -303,10 +305,14 @@ verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4" "ghc
 
 echo ""
 echo "[Dynamic checks]"
-verify_dynamic "v6/test-cc"   "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "v5/test-cc"   "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoとは何ですか" "UniversalDao,検索"
-verify_dynamic "v1.4/test-cc" "v1.4/test-cc/tutorial"                "1.4" "コードリストとは何ですか" "コードリスト,設定"
-verify_dynamic "all/test-cc"  "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストとは何ですか" "コードリスト,設定"
+verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストとは何ですか" "コードリスト,設定"
+verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
+verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoとは何ですか" "UniversalDao,検索"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
