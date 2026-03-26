@@ -6,11 +6,15 @@ Workflow for creating knowledge-sharing articles from nabledge development insig
 
 ```
 docs/articles/
-├── review-guidelines.md           # General review criteria (maintained separately)
-├── review-prompt-{series}.md      # Series-specific facts and check items
 ├── 01-{slug}.md                   # Article 1
 ├── 02-{slug}.md                   # Article 2
 └── ...
+
+.claude/rules/
+└── article-review.md              # General review criteria
+
+.pr/{issue_number}/
+└── review-prompt-{series}.md      # Series-specific facts and check items (work log)
 ```
 
 ## Workflow
@@ -54,14 +58,14 @@ Propose to user and wait for approval before proceeding.
 
 After story approval, create the article in `docs/articles/{NN}-{slug}.md`.
 
-Follow series-specific rules in `review-prompt-{series}.md` if applicable.
+Follow series-specific rules in `.pr/{issue_number}/review-prompt-{series}.md` if applicable.
 Open a PR for story review before writing the full article when the story is complex.
 
 ### Step 3: Self-Check
 
-After article creation, review against `docs/articles/review-guidelines.md`.
+After article creation, review against `.claude/rules/article-review.md`.
 
-Also apply series-specific check items from `review-prompt-{series}.md`.
+Also apply series-specific check items from `.pr/{issue_number}/review-prompt-{series}.md`.
 
 **Output to `.pr/{issue_number}/notes.md`:**
 
@@ -114,8 +118,8 @@ PR body should include:
 
 ## Review Guidelines
 
-General review criteria: `docs/articles/review-guidelines.md`
+General review criteria: `.claude/rules/article-review.md`
 
-Series-specific facts and style notes: `docs/articles/review-prompt-{series}.md`
+Series-specific facts and style notes: `.pr/{issue_number}/review-prompt-{series}.md` (work log)
 
-Both files are maintained separately and should be updated when review standards evolve.
+The general review guidelines are maintained in `.claude/rules/` and should be updated when review standards evolve. Series-specific prompts live in the PR work log as they are tied to a specific article creation task.
