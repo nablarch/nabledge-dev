@@ -41,6 +41,10 @@ nabledge-5 code-analysis
 **"code-analysis" argument** (`nabledge-5 code-analysis`):
 - Execute `workflows/code-analysis.md` to analyze user's code
 
+**"upgrade-check" argument** (`nabledge-5 upgrade-check [--from <ver>] [--to <ver>] [--project-dir <path>]`):
+- Execute `workflows/upgrade-check.md` to analyze upgrade impact
+- This workflow detects affected items between Nablarch 5 versions using rule-based analysis
+
 ## Critical Constraints
 
 **Knowledge files only**: Answer using ONLY information in `knowledge/*.json`. DO NOT use external knowledge or LLM training data.

@@ -42,13 +42,13 @@ Markdown impact assessment report presented to the user
 **Tool**: Bash
 
 **Action**:
-1. Determine the release notes JSON directory based on the major version:
-   - v5: `~/nabledge-dev/tools/knowledge-creator/.cache/v5/knowledge/releases/releases/`
-   - v6: `~/nabledge-dev/tools/knowledge-creator/.cache/v6/knowledge/releases/releases/`
+1. Determine the release notes JSON directory:
+   - Default path (Nablarch 5): `knowledge/releases/releases/` (within nabledge-5 skill directory)
+   - To resolve the absolute path, use `$SKILL_DIR/knowledge/releases/releases/` where `SKILL_DIR` is the nabledge-5 skill root
 2. Run the upgrade checker script:
    ```bash
-   bash .claude/skills/nabledge-1.4/scripts/upgrade-checker.sh \
-     --release-notes-dir <json-dir> \
+   bash .claude/skills/nabledge-5/scripts/upgrade-checker.sh \
+     --release-notes-dir .claude/skills/nabledge-5/knowledge/releases/releases \
      --project-dir <project-path> \
      --from <from-version> \
      --to <to-version>
@@ -62,9 +62,9 @@ Markdown impact assessment report presented to the user
 - If 0 affected items and 0 undecidable items → inform user that no impact was found, skip to Step 3
 
 **Error handling**:
-- JSON directory not found: show expected path (`~/.cache/v5/knowledge/releases/releases/`), advise user to run the knowledge-creator tool to populate the cache
+- JSON directory not found: show expected path (`knowledge/releases/releases/`), advise user to verify the nabledge-5 skill is properly installed
 - grep errors in script stderr: display stderr output and continue (non-fatal)
-- Script not found: verify `.claude/skills/nabledge-1.4/scripts/upgrade-checker.sh` exists
+- Script not found: verify `.claude/skills/nabledge-5/scripts/upgrade-checker.sh` exists
 
 ---
 
@@ -76,7 +76,7 @@ Markdown impact assessment report presented to the user
 1. For each item marked as `"undecidable"` in Step 1 output:
    a. Read the corresponding section content from the release note JSON:
       ```bash
-      bash .claude/skills/nabledge-1.4/scripts/read-sections.sh \
+      bash .claude/skills/nabledge-5/scripts/read-sections.sh \
         "<release-note-json-path>:<section-id>"
       ```
    b. Evaluate whether the change affects the target project based on the section text
@@ -137,7 +137,7 @@ The following items were evaluated and confirmed to have no impact on this proje
 | Scenario | Action |
 |----------|--------|
 | `pom.xml` not found | Ask user to specify the project root path |
-| JSON cache directory not found | Show expected path; advise user to run knowledge-creator to populate cache |
+| JSON cache directory not found | Show expected path; advise user to verify nabledge-5 skill installation |
 | `upgrade-checker.sh` not found | Verify the scripts directory exists; report path to user |
 | `grep` errors in script output | Display stderr and continue (non-fatal) |
-| Version range produces no JSON files | Confirm the version range is correct; list available JSON files in the cache directory |
+| Version range produces no JSON files | Confirm the version range is correct; list available JSON files in the releases directory |
