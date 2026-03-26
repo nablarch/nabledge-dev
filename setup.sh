@@ -293,30 +293,13 @@ fi
 # Install GitHub Copilot CLI
 print_header "9. Installing GitHub Copilot CLI"
 
-COPILOT_INSTALL_DIR="$HOME/.local/bin"
-
-if command -v copilot &> /dev/null || [ -x "$COPILOT_INSTALL_DIR/copilot" ]; then
-    COPILOT_PATH=$(command -v copilot 2>/dev/null || echo "$COPILOT_INSTALL_DIR/copilot")
-    COPILOT_VER=$("$COPILOT_PATH" --version --no-auto-update 2>/dev/null | head -n 1 || echo "unknown")
+if command -v copilot &> /dev/null; then
+    COPILOT_VER=$(copilot --version --no-auto-update 2>/dev/null | head -n 1 || echo "unknown")
     print_status ok "GitHub Copilot CLI already installed ($COPILOT_VER)"
 else
     print_status info "Installing GitHub Copilot CLI..."
-    mkdir -p "$COPILOT_INSTALL_DIR"
-
-    COPILOT_VERSION=$(gh api repos/github/copilot-cli/releases/latest --jq '.tag_name' 2>/dev/null || true)
-    if [ -z "$COPILOT_VERSION" ]; then
-        print_status error "Failed to fetch GitHub Copilot CLI version"
-        exit 1
-    fi
-
-    COPILOT_URL="https://github.com/github/copilot-cli/releases/download/${COPILOT_VERSION}/copilot-linux-x64.tar.gz"
-    print_status info "Downloading ${COPILOT_VERSION}..."
-    if curl -sSfL "$COPILOT_URL" | tar -xz -C "$COPILOT_INSTALL_DIR" copilot; then
-        chmod +x "$COPILOT_INSTALL_DIR/copilot"
-        print_status ok "GitHub Copilot CLI installed at ${COPILOT_INSTALL_DIR}/copilot"
-        if [[ ":$PATH:" != *":${COPILOT_INSTALL_DIR}:"* ]]; then
-            print_status info "Add ${COPILOT_INSTALL_DIR} to PATH if not already set."
-        fi
+    if curl -fsSL https://gh.io/copilot-install | bash; then
+        print_status ok "GitHub Copilot CLI installed"
     else
         print_status error "Failed to install GitHub Copilot CLI"
         exit 1
