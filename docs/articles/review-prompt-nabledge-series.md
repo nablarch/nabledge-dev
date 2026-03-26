@@ -81,11 +81,11 @@ Nabledge（Nablarch + Knowledge）のブログ記事3本シリーズ。Fintanへ
 - [ ] JSON例のhintsが実データと一致しているか？（実際: `["UniversalDao.per", "UniversalDao.page", "Pagination", "EntityList", "ページング", "件数取得SQL"]`）
 - [ ] セットアップコマンドが正確か？（`setup-cc.sh`、`-v 6` オプション付き）
 - [ ] Mermaid図がパイプラインの実装と矛盾していないか？（簡略化だが嘘がないか）
-- [ ] 数字が正確か？（339ページ、296エントリ、上位15件）
+- [ ] 数字が正確か？（339ページ、295エントリ、上位15件）
 
 **リポジトリの実データ:**
 
-- 知識ファイル: `plugins/nabledge-6/skills/nabledge-6/knowledge/`（296エントリのindex.toon）
+- 知識ファイル: `plugins/nabledge-6/skills/nabledge-6/knowledge/`（295エントリのindex.toon）
 - セットアップスクリプト: `setup-cc.sh`（CC用）、`setup-ghc.sh`（GHC用）
 - 全文検索スクリプト: `plugins/nabledge-6/skills/nabledge-6/scripts/full-text-search.sh`
 - ワークフロー: `plugins/nabledge-6/skills/nabledge-6/workflows/_knowledge-search.md`
