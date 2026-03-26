@@ -262,7 +262,8 @@ verify_dynamic() {
     local keywords_str="$5"
 
     if ! command -v claude &>/dev/null; then
-        echo "  [SKIP] ${label} nabledge-${v}: claude CLI not found, skipping dynamic check"
+        echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
+        verify_fail=1
         return
     fi
 
