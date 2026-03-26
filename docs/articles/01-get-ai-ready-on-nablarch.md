@@ -68,7 +68,7 @@ flowchart LR
     Q[質問] --> A[キーワード抽出]
     A --> B[全文検索]
     B --> C[セクション判定]
-    C --> D[ポインタJSON返却]
+    C --> D["JSON返却（ポインタのみ）"]
 
     style A fill:#4a90d9,color:#fff
     style B fill:#7cb342,color:#fff
