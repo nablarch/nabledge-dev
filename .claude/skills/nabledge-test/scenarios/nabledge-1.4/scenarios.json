@@ -1,0 +1,203 @@
+{
+  "metadata": {
+    "version": "1.4.0",
+    "created": "2026-03-25",
+    "updated": "2026-03-26",
+    "description": "Test scenarios for nabledge-1.4: Detects expected keywords/components in responses. No performance targets.",
+    "total_scenarios": 7,
+    "by_type": {
+      "qa": 5,
+      "code-analysis": 2
+    },
+    "evaluation_method": "Keyword/component detection via string search. Performance metrics measured but not used for pass/fail."
+  },
+  "scenarios": [
+    {
+      "id": "qa-001",
+      "type": "qa",
+      "benchmark": true,
+      "question": "コードリストのプルダウン入力を実装するには？",
+      "expectations": [
+        "n:codeSelect",
+        "codeId",
+        "n:select",
+        "コード値"
+      ]
+    },
+    {
+      "id": "qa-002",
+      "type": "qa",
+      "question": "一覧検索でページングを実装するには？",
+      "expectations": [
+        "ListSearchInfo",
+        "search",
+        "DbAccessSupport",
+        "ページング"
+      ]
+    },
+    {
+      "id": "qa-003",
+      "type": "qa",
+      "question": "バッチのリクエスト単体テストで起動パラメータを指定するには？",
+      "expectations": [
+        "-requestPath",
+        "requestPath",
+        "BatchRequestTestSupport",
+        "リクエスト単体テスト"
+      ]
+    },
+    {
+      "id": "qa-004",
+      "type": "qa",
+      "question": "二重サブミット防止の実装方法は？",
+      "expectations": [
+        "OnDoubleSubmission",
+        "token",
+        "useToken",
+        "doubleSubmission"
+      ]
+    },
+    {
+      "id": "qa-005",
+      "type": "qa",
+      "question": "相関バリデーションの実装方法は？",
+      "expectations": [
+        "ValidateFor",
+        "ValidationContext",
+        "Validation",
+        "相関バリデーション"
+      ]
+    },
+    {
+      "id": "ca-001",
+      "type": "code-analysis",
+      "question": "code-analysis W11AC02Action",
+      "target_file": ".lw/nab-official/v1.4/tutorial/tutorial/main/java/please/change/me/tutorial/ss11AC/W11AC02Action.java",
+      "expectations": {
+        "overview": [
+          "W11AC02Action",
+          "DbAccessSupport",
+          "OnDoubleSubmission",
+          "MailRequester",
+          "MessageSender"
+        ],
+        "class_diagram": {
+          "classes": [
+            "W11AC02Action",
+            "DbAccessSupport",
+            "SystemAccountEntity",
+            "UsersEntity",
+            "W11AC02Form",
+            "CM311AC1Component"
+          ],
+          "relationships": [
+            "W11AC02Action --|> DbAccessSupport"
+          ]
+        },
+        "component_summary": [
+          "W11AC02Action",
+          "SystemAccountEntity",
+          "UsersEntity",
+          "W11AC02Form"
+        ],
+        "processing_flow": [
+          "doRW11AC0201",
+          "doRW11AC0202",
+          "doRW11AC0204",
+          "doRW11AC0205",
+          "sendMailToRegisteredUser",
+          "checkLoginId"
+        ],
+        "sequence_diagram": {
+          "objects": [
+            "W11AC02Action",
+            "CM311AC1Component",
+            "MailRequester"
+          ],
+          "messages": [
+            "doRW11AC0204",
+            "doRW11AC0205",
+            "sendMailToRegisteredUser"
+          ]
+        },
+        "nablarch_usage": [
+          "DbAccessSupport",
+          "OnDoubleSubmission",
+          "MailRequester",
+          "MessageSender",
+          "SyncMessage"
+        ],
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
+    },
+    {
+      "id": "ca-002",
+      "type": "code-analysis",
+      "benchmark": true,
+      "question": "code-analysis B11AC014Action",
+      "target_file": ".lw/nab-official/v1.4/tutorial/tutorial/main/java/please/change/me/tutorial/ss11AC/B11AC014Action.java",
+      "expectations": {
+        "overview": [
+          "B11AC014Action",
+          "FileBatchAction",
+          "ValidatableFileDataReader",
+          "BusinessDateUtil",
+          "UserInfoTempEntity"
+        ],
+        "class_diagram": {
+          "classes": [
+            "B11AC014Action",
+            "FileBatchAction",
+            "FileLayoutValidatorAction",
+            "UserInfoTempEntity",
+            "ValidatableFileDataReader"
+          ],
+          "relationships": [
+            "B11AC014Action --|> FileBatchAction"
+          ]
+        },
+        "component_summary": [
+          "B11AC014Action",
+          "FileLayoutValidatorAction",
+          "UserInfoTempEntity"
+        ],
+        "processing_flow": [
+          "initialize",
+          "doHeader",
+          "doData",
+          "doTrailer",
+          "doEnd",
+          "getValidatorAction"
+        ],
+        "sequence_diagram": {
+          "objects": [
+            "B11AC014Action",
+            "FileLayoutValidatorAction",
+            "UserInfoTempEntity"
+          ],
+          "messages": [
+            "initialize",
+            "doData",
+            "getValidatorAction"
+          ]
+        },
+        "nablarch_usage": [
+          "FileBatchAction",
+          "ValidatableFileDataReader",
+          "BusinessDateUtil",
+          "TransactionAbnormalEnd",
+          "ParameterizedSqlPStatement"
+        ],
+        "output": [
+          "Component Summary",
+          "Nablarch Framework Usage",
+          ".nabledge/"
+        ]
+      }
+    }
+  ]
+}

@@ -123,6 +123,7 @@ svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integra
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.4_maintain" "${V14_DIR}/fw-integration-mail"
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.4_maintain" "${V14_DIR}/fw-integration-wmq"
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.4_maintain" "${V14_DIR}/statistics_report"
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/tutorial_project/branches/1.4_maintain" "${V14_DIR}/tutorial"
 
 # ============================================================
 # v1.3 modules (same structure as v1.4; skip if not exists)
@@ -142,6 +143,7 @@ svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integra
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.3_maintain" "${V13_DIR}/fw-integration-mail" || true
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.3_maintain" "${V13_DIR}/fw-integration-wmq" || true
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.3_maintain" "${V13_DIR}/statistics_report" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/tutorial/branches/1.3_maintain" "${V13_DIR}/tutorial" || true
 
 # ============================================================
 # v1.2 modules (same structure as v1.4; skip if not exists)
@@ -161,6 +163,7 @@ svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integra
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.2_maintain" "${V12_DIR}/fw-integration-mail" || true
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.2_maintain" "${V12_DIR}/fw-integration-wmq" || true
 svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.2_maintain" "${V12_DIR}/statistics_report" || true
+svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/sample/branches/1.2_maintain" "${V12_DIR}/tutorial" || true
 
 print_header "SVN checkout completed"
 echo "Checked out into:"
