@@ -94,13 +94,6 @@ setup_env() {
         exit 1
     fi
 
-    # Idempotency: skip if directory already exists and is non-empty
-    if [ -d "$target_dir" ] && [ -n "$(ls -A "$target_dir" 2>/dev/null)" ]; then
-        echo "[${target_dir}] WARNING: Directory already exists and is non-empty. Skipping."
-        echo ""
-        return
-    fi
-
     mkdir -p "$target_dir"
 
     # Copy source project
@@ -126,6 +119,7 @@ HINT_V6="Run setup.sh to clone .lw/nab-official/v6/nablarch-example-batch."
 HINT_V5="Run setup.sh to clone .lw/nab-official/v5/nablarch-example-batch."
 HINT_V14="Run setup.sh (SVN section) to check out .lw/nab-official/v1.4/tutorial."
 
+rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 cd "$OUTPUT_DIR"
 
