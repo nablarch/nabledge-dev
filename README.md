@@ -26,13 +26,12 @@ sudo update-ca-certificates
 ### 2. 環境セットアップ
 
 ```bash
-./setup.sh
-SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh
+SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.sh
 cp .env.example .env
 # .env を編集して認証情報を設定する
 ```
 
-`setup-svn.sh` は `.lw/nab-official/v1.4/`、`.lw/nab-official/v1.3/`、`.lw/nab-official/v1.2/` にモジュールをチェックアウトします。v1.3/v1.2 に存在しないモジュールはスキップされます。
+`SVN_BASE_URL` を指定すると Nablarch 1.x のドキュメント（v1.4/1.3/1.2）を SVN からチェックアウトします。不要な場合は省略できます。
 
 設定後、knowledge-creator で v1.4 の知識ファイルを生成できます：
 
