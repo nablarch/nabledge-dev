@@ -66,10 +66,14 @@ flowchart LR
 `nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を実行します。
 
 ```bash
+# 全バージョン
 bash tools/tests/test-setup.sh
+
+# バージョン指定（v6 / v5 / v1.4 / all）
+bash tools/tests/test-setup.sh v6
 ```
 
-スクリプトは `.tmp/nabledge-test/` に全 8 環境（v6/v5/v1.4 × CC/GHC の 6 環境 + all × CC/GHC の 2 環境）を構築し、静的チェックと動的チェックを実行します。
+スクリプトは `.tmp/nabledge-test/` に環境を構築し、静的チェックを実行します。
 
 **静的チェック**（ファイル構成の検証）
 
@@ -79,14 +83,11 @@ bash tools/tests/test-setup.sh
 - `/n{v}` コマンドファイルが存在すること（CC/GHC 共通）
 - `n{v}.prompt.md` が存在すること（GHC のみ）
 
-**動的チェック**（知識検索の動作検証）
+**動的チェック**（知識検索の動作検証）— 現在無効
 
-CC は `claude -p`、GHC は `copilot -p` で知識検索を実行し、以下を検証します。
+CC（`claude -p`）・GHC（`copilot -p`）ともにヘッドレスモードで安定動作しないため、現在コメントアウトされています。[#252](https://github.com/nablarch/nabledge-dev/issues/252) で対応予定。
 
-- レスポンスサイズが 1000 バイト以上であること
-- nabledge-test ベンチマークシナリオのキーワードがレスポンスに含まれること
-  - v6/v5: クエリ「UniversalDao でページング検索を実装するには？」→ キーワード `findAllBySqlFile`, `page`, `per`, `Pagination`, `getPagination`
-  - v1.4: クエリ「コードリストのプルダウン入力を実装するには？」→ キーワード `n:codeSelect`, `codeId`, `コード値`
+ランタイム検証は、構築済み環境を Claude Code または GitHub Copilot で開き、`/n6`（または `/n5`、`/n1.4`）を手動実行して確認してください。
 
 ### リリース手順
 
