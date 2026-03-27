@@ -71,8 +71,22 @@ bash tools/tests/test-setup.sh
 
 スクリプトは `.tmp/nabledge-test/` に全 8 環境（v6/v5/v1.4 × CC/GHC の 6 環境 + all × CC/GHC の 2 環境）を構築し、静的チェックと動的チェックを実行します。
 
-- **静的チェック**: スキル・knowledge/・docs/ の存在とファイル数を検証
-- **動的チェック**: `claude -p` / `copilot -p` で知識検索を実行し、レスポンスサイズ（1000 バイト以上）と nabledge-test ベンチマークシナリオに基づくキーワードを検証（v6/v5: `findAllBySqlFile,page,per,Pagination,getPagination`、v1.4: `n:codeSelect,codeId,コード値`）
+**静的チェック**（ファイル構成の検証）
+
+- `SKILL.md` が存在すること
+- `knowledge/` ディレクトリが存在し、nabledge-dev と同数のファイルがあること
+- `docs/` ディレクトリが存在し、nabledge-dev と同数のエントリがあること
+- `/n{v}` コマンドファイルが存在すること（CC/GHC 共通）
+- `n{v}.prompt.md` が存在すること（GHC のみ）
+
+**動的チェック**（知識検索の動作検証）
+
+CC は `claude -p`、GHC は `copilot -p` で知識検索を実行し、以下を検証します。
+
+- レスポンスサイズが 1000 バイト以上であること
+- nabledge-test ベンチマークシナリオのキーワードがレスポンスに含まれること
+  - v6/v5: クエリ「UniversalDao でページング検索を実装するには？」→ キーワード `findAllBySqlFile`, `page`, `per`, `Pagination`, `getPagination`
+  - v1.4: クエリ「コードリストのプルダウン入力を実装するには？」→ キーワード `n:codeSelect`, `codeId`, `コード値`
 
 ### リリース手順
 
