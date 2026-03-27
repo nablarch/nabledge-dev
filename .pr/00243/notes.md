@@ -2,7 +2,18 @@
 
 ## 2026-03-27
 
-### Review Response (/fb)
+### Review Response (/fb) — Session 2
+
+18 unresolved review comments on PR #246 processed (continuation of session 1):
+
+- **1 new fix**: comments 2998607241 + 2998710092 — moved sequenceDiagram to immediately follow the 3-commands intro sentence in article 03, satisfying both "テキスト削除して図だけ" and "のすぐ下にシーケンス図" requests (commit d256aff7)
+- **Already fixed in session 1**: 11 comments (2993490278, 2993572831, 2998516175, 2998518188, 2998525595, 2998536532, 2998537369, 2998541488, 2998546016, 2998549624, 2998553342)
+- **No-action in session 1**: 3 comments (2998529167, 2998533483, 2998558891)
+- **No-action in session 2**: 2 comments (2998560557 — AI利用者前提なので不要, 2998562523 — 文脈から判断可能)
+
+All 18 thread roots now have at least one reply. Verification confirmed via GitHub API (checking replies to thread root IDs, since all 18 target comments are themselves replies to roots).
+
+### Review Response (/fb) — Session 1
 
 17 unresolved review comments on PR #246 processed:
 
