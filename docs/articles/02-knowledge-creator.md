@@ -151,7 +151,7 @@ with patch("phase_b_generate._default_run_claude", mock_fn), \
 
 ログも全量保存しています。パイプラインの1回の実行に対して一意のIDが振られ、その配下にプロンプト（IN）、構造化出力（OUT）、ストリームJSON、メタデータ（ターン数・コスト・ツール呼び出し）が全て残ります。「生成されなかった？」「指摘が残っている？」といった問題を調査するとき、ログがないと原因を特定できません。AIの実行をブラックボックスにしないログ出力を、最初から準備しておくのがおすすめです。
 
-実際の実行ログを[こちら](https://github.com/nablarch/nabledge-dev/tree/kc-5-20260313/tools/knowledge-creator/.logs/v5/20260313T084017)に残してあるので、パイプラインの動きのイメージを掴みたい方は覗いてみてください。
+実際の[実行ログ](https://github.com/nablarch/nabledge-dev/tree/kc-5-20260313/tools/knowledge-creator/.logs/v5/20260313T084017)を残してあるので、パイプラインの動きのイメージを掴みたい方は覗いてみてください。
 
 ## まとめ
 
@@ -165,7 +165,7 @@ AIの行動範囲は「お願い」ではなく「制約」で絞ることが効
 
 テストはルールベースのモックで決定的にし、ログはAI実行のすべてを残す。確率的な出力を扱う以上、テストとログへの投資は最初から惜しまない方がいいです。
 
-KCのソースコードと実行レポートは[こちら](https://github.com/nablarch/nabledge-dev/tree/main/tools/knowledge-creator)で公開しています。AIで大量の知識を構造化するパイプラインを作ろうとしている方の参考になればうれしいです。
+KCのソースコードと実行レポートは[GitHubで公開](https://github.com/nablarch/nabledge-dev/tree/main/tools/knowledge-creator)しています。AIで大量の知識を構造化するパイプラインを作ろうとしている方の参考になればうれしいです。
 
 次回は、このKCやNabledgeの開発自体で生成AIをどう活用しているかについて書く予定です。
 

@@ -75,7 +75,7 @@ Who benefits and how? Use "[who] can [what]" format.
 - [ ] Verifiable outcomes as checkboxes
 ```
 
-他にもリリースプロセス、作業ノートの書き方、言語ポリシーなど12ファイルがあります。（[ルールの一覧はこちら](https://github.com/nablarch/nabledge-dev/tree/main/.claude/rules)）
+他にもリリースプロセス、作業ノートの書き方、言語ポリシーなど12ファイルがあります。（[ルール一覧](https://github.com/nablarch/nabledge-dev/tree/main/.claude/rules)）
 
 ルールに書いてあることについては、AIに口頭で説明する必要がなくなります。「それ違う」と軌道修正する回数が減る。ルールを書くことは、未来の自分の対話を先払いしているようなものです。
 
@@ -112,7 +112,7 @@ sequenceDiagram
 
 <img src="03/review-comment.png" width="600" alt="PRレビューコメントへのAI対応レス">
 
-**人間の主な役割は「何を作るか決める」と「できたものを判断する」こと**です。（[コマンドの定義はこちら](https://github.com/nablarch/nabledge-dev/tree/main/.claude/commands)）
+**人間の主な役割は「何を作るか決める」と「できたものを判断する」こと**です。（[コマンド定義](https://github.com/nablarch/nabledge-dev/tree/main/.claude/commands)）
 
 ## レビューの判断ポイントを絞る
 
@@ -153,7 +153,7 @@ Deployment Frequency（PRマージ数/週）のピークは25〜27で、DORAのE
 
 一方、課題もあります。Change Failure Rate（バグPR比率）は稼働週で平均20%。速度を優先した突貫工事の裏返しですが、ルール整備で収束するか経過を見ています。収束しないなら、立ち止まって根本改善が必要です。
 
-メトリクスは「いい数字を出すため」ではなく「判断の材料にするため」に取っています。メトリクスの自動収集自体もAIに作ってもらった仕組みで、GitHub Actionsで週次実行しています。（[メトリクスの詳細はこちら](https://github.com/nablarch/nabledge-dev/blob/main/docs/metrics.md)）
+メトリクスは「いい数字を出すため」ではなく「判断の材料にするため」に取っています。メトリクスの自動収集自体もAIに作ってもらった仕組みで、GitHub Actionsで週次実行しています。（[メトリクス](https://github.com/nablarch/nabledge-dev/blob/main/docs/metrics.md)）
 
 ## nabledge-test — AIの回答品質を追いかける
 
