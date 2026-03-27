@@ -83,7 +83,7 @@ Who benefits and how? Use "[who] can [what]" format.
 
 ## `/hi` `/fb` `/bb` — 3コマンドで開発を回す
 
-子守りしない前提で設計すると、人間のアクションは自然と絞られます。Claude Codeの[カスタムスラッシュコマンド](https://code.claude.com/docs/ja/custom-slash-commands)で定義した3つのコマンドで、開発サイクルのほぼ全部を回しています。
+子守りしない前提で設計すると、人間のアクションは自然と絞られます。Claude Codeの[カスタムスラッシュコマンド](https://code.claude.com/docs/ja/commands)で定義した3つのコマンドで、開発サイクルのほぼ全部を回しています。
 
 ```mermaid
 sequenceDiagram
