@@ -26,9 +26,8 @@ set -e
 #   bash /path/to/tools/tests/test-setup.sh
 #
 # Environment variables (optional):
-#   NABLEDGE_REPO           GitHub repository (default: nablarch/nabledge)
-#   NABLEDGE_SCRIPT_BRANCH  Branch to download setup scripts from (default: main)
-#   NABLEDGE_BRANCH         Branch to install skill content from (default: develop)
+#   NABLEDGE_REPO    GitHub repository (default: nablarch/nabledge)
+#   NABLEDGE_BRANCH  Branch to install skill content from (default: develop)
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,7 +39,6 @@ V5_PROJECT_SRC="${LW_DIR}/v5/nablarch-example-batch"
 V14_PROJECT_SRC="${LW_DIR}/v1.4/tutorial/tutorial"
 
 NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
-NABLEDGE_SCRIPT_BRANCH="${NABLEDGE_SCRIPT_BRANCH:-main}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-develop}"
 NABLEDGE_REPO_URL="https://github.com/${NABLEDGE_REPO}"
 
@@ -54,15 +52,25 @@ echo "============================================================"
 echo "Nabledge Test Environment Setup"
 echo "============================================================"
 echo "Nabledge repository: ${NABLEDGE_REPO}"
-echo "Setup script branch: ${NABLEDGE_SCRIPT_BRANCH}"
-echo "Skill content branch: ${NABLEDGE_BRANCH}"
+echo "Nabledge branch:     ${NABLEDGE_BRANCH}"
 echo "Output directory:    ${OUTPUT_DIR}"
 echo ""
 
-# Download setup scripts once (from main, same as users)
-echo "[Setup] Downloading setup scripts from ${NABLEDGE_SCRIPT_BRANCH}..."
-SETUP_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_SCRIPT_BRANCH}/setup-cc.sh"
-SETUP_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_SCRIPT_BRANCH}/setup-ghc.sh"
+# Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
+# This ensures we use the same URL as users, and detects if the URL changes in the guide.
+echo "[Setup] Fetching setup script URLs from GUIDE files (branch: ${NABLEDGE_BRANCH})..."
+GUIDE_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-CC.md"
+GUIDE_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-GHC.md"
+SETUP_CC_URL=$(curl -sSfL "$GUIDE_CC_URL" | grep -m1 'curl -sSL.*setup-cc\.sh' | grep -oP 'https://\S+setup-cc\.sh')
+SETUP_GHC_URL=$(curl -sSfL "$GUIDE_GHC_URL" | grep -m1 'curl -sSL.*setup-ghc\.sh' | grep -oP 'https://\S+setup-ghc\.sh')
+if [ -z "$SETUP_CC_URL" ] || [ -z "$SETUP_GHC_URL" ]; then
+    echo "ERROR: Could not extract setup script URLs from GUIDE files."
+    echo "  GUIDE-CC.md: ${GUIDE_CC_URL}"
+    echo "  GUIDE-GHC.md: ${GUIDE_GHC_URL}"
+    exit 1
+fi
+echo "[Setup] Setup CC script URL:  ${SETUP_CC_URL}"
+echo "[Setup] Setup GHC script URL: ${SETUP_GHC_URL}"
 curl -sSfL "$SETUP_CC_URL" -o "$TEMP_DIR/setup-cc.sh"
 curl -sSfL "$SETUP_GHC_URL" -o "$TEMP_DIR/setup-ghc.sh"
 echo "[Setup] Setup scripts downloaded."
