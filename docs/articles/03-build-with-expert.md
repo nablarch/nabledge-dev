@@ -147,7 +147,17 @@ pie title "エキスパートレビューの指摘対応（192件）"
 
 ここまで紹介した仕組みで開発を回した結果を、DORAメトリクスで見てみます。
 
-<!-- metrics.mdのDeployment Frequencyチャートを挿入 -->
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#4C82C3,#00C853,#FFD600,#FF8C00'}}}}%%
+xychart-beta
+  title "Deployment Frequency (PRs merged to main per week)"
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16"]
+  y-axis "PRs / week" 0 --> 33
+  bar [0, 2, 25, 9, 20, 27, 0]
+  line [7, 7, 7, 7, 7, 7, 7]
+  line [1, 1, 1, 1, 1, 1, 1]
+  line [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+```
 
 Deployment Frequency（PRマージ数/週）のピークは25〜27で、DORAのElite基準（7/week）の3〜4倍です。
 
