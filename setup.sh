@@ -168,7 +168,6 @@ if command -v uv &> /dev/null; then
 else
     print_status info "Installing uv..."
     if curl -LsSf https://astral.sh/uv/install.sh | sh; then
-        source "$HOME/.cargo/env" || true
         print_status ok "uv installed"
     else
         print_status error "Failed to install uv"
@@ -252,7 +251,7 @@ else
 
     # Install nvm
     if [ ! -d "$HOME/.nvm" ]; then
-        if curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash; then
+        if curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash; then
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             print_status ok "nvm installed"
