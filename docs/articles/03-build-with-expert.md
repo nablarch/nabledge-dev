@@ -85,12 +85,6 @@ Who benefits and how? Use "[who] can [what]" format.
 
 子守りしない前提で設計すると、人間のアクションは自然と絞られます。Claude Codeの[カスタムスラッシュコマンド](https://code.claude.com/docs/ja/custom-slash-commands)で定義した3つのコマンドで、開発サイクルのほぼ全部を回しています。
 
-`/hi` を打った後は、AIが自律的に動くので人間は待つ必要がありません。Gitのworktree（同一リポジトリを複数ディレクトリで並行作業できる機能）でmainに加えてwork1〜work4の5面を開いて、あるworktreeで `/hi` を打ったら別のworktreeに移って次のIssueに取りかかる。通知が来たらPRを見てフィードバックか、OKか判断する。
-
-`/fb` が特に楽で、GitHubのPR上でコードの該当箇所にレビューコメントを書いておくだけです。場所を指定できるのでフィードバックが伝わりやすいですし、スレッドで何度でもやりとりできます。AIが修正を終えると、コミットリンク付きで「ここを直しました」とレスが返ってきます。ただし、現状は指摘ごとの個別コミットではなくまとめてコミットされるので、このあたりは改善余地があります。
-
-<img src="03/review-comment.png" width="600" alt="PRレビューコメントへのAI対応レス">
-
 ```mermaid
 sequenceDiagram
     participant H as 人間
@@ -111,6 +105,12 @@ sequenceDiagram
         AI->>GH: approve → マージ → ブランチ削除
     end
 ```
+
+`/hi` を打った後は、AIが自律的に動くので人間は待つ必要がありません。Gitのworktree（同一リポジトリを複数ディレクトリで並行作業できる機能）でmainに加えてwork1〜work4の5面を開いて、あるworktreeで `/hi` を打ったら別のworktreeに移って次のIssueに取りかかる。通知が来たらPRを見てフィードバックか、OKか判断する。
+
+`/fb` が特に楽で、GitHubのPR上でコードの該当箇所にレビューコメントを書いておくだけです。場所を指定できるのでフィードバックが伝わりやすいですし、スレッドで何度でもやりとりできます。AIが修正を終えると、コミットリンク付きで「ここを直しました」とレスが返ってきます。ただし、現状は指摘ごとの個別コミットではなくまとめてコミットされるので、このあたりは改善余地があります。
+
+<img src="03/review-comment.png" width="600" alt="PRレビューコメントへのAI対応レス">
 
 **人間の主な役割は「何を作るか決める」と「できたものを判断する」こと**です。（[コマンドの定義はこちら](https://github.com/nablarch/nabledge-dev/tree/main/.claude/commands)）
 
