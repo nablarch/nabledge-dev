@@ -287,8 +287,12 @@ verify_dynamic() {
     fi
 
     local byte_count=${#output}
+    local log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
+    echo "$output" > "$log_file"
+
     if [ "$byte_count" -lt 1000 ]; then
         echo "  [FAIL] ${label} nabledge-${v}: dynamic check response too short (${byte_count} bytes, expected >= 1000)"
+        echo "         Log: ${log_file}"
         verify_fail=1
         return
     fi
@@ -303,6 +307,7 @@ verify_dynamic() {
 
     if [ "${#missing_keywords[@]}" -gt 0 ]; then
         echo "  [FAIL] ${label} nabledge-${v}: dynamic check missing keywords: ${missing_keywords[*]} (output: ${byte_count} bytes)"
+        echo "         Log: ${log_file}"
         verify_fail=1
     else
         echo "  [OK]   ${label} nabledge-${v}: dynamic check ok (output: ${byte_count} bytes, all keywords found)"
