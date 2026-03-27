@@ -316,14 +316,15 @@ verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4" "ghc
 
 echo ""
 echo "[Dynamic checks]"
-verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "cc"
-verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "ghc"
-verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoとは何ですか" "UniversalDao,検索" "cc"
-verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoとは何ですか" "UniversalDao,検索" "ghc"
-verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストとは何ですか" "コードリスト,設定" "cc"
-verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストとは何ですか" "コードリスト,設定" "ghc"
-verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "cc"
-verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoとは何ですか" "UniversalDao,検索" "ghc"
+# Queries and keywords derived from nabledge-test benchmark scenarios (qa-002 for v6/v5, qa-001 for v1.4)
+verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,Pagination,getPagination" "cc"
+verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,Pagination,getPagination" "ghc"
+verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,Pagination,getPagination" "cc"
+verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,Pagination,getPagination" "ghc"
+verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId,コード値" "cc"
+verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId,コード値" "ghc"
+verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,Pagination,getPagination" "cc"
+verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,Pagination,getPagination" "ghc"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then

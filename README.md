@@ -33,12 +33,6 @@ cp .env.example .env
 
 `SVN_BASE_URL` 等には v1.4/v1.3/v1.2 が格納されている SVN リポジトリの URL を指定します。
 
-設定後、knowledge-creator で v1.4 の知識ファイルを生成できます：
-
-```bash
-./tools/knowledge-creator/kc.sh gen 1.4
-```
-
 ## 使い方
 
 ```bash
@@ -75,10 +69,10 @@ flowchart LR
 bash tools/tests/test-setup.sh
 ```
 
-スクリプトは `.tmp/nabledge-test/` に全 8 環境（v6/v5/v1.4/all × CC/GHC）を構築し、静的チェックと動的チェックを実行します。
+スクリプトは `.tmp/nabledge-test/` に全 8 環境（v6/v5/v1.4 × CC/GHC の 6 環境 + all × CC/GHC の 2 環境）を構築し、静的チェックと動的チェックを実行します。
 
 - **静的チェック**: スキル・knowledge/・docs/ の存在とファイル数を検証
-- **動的チェック**: `claude -p` / `copilot -p` で知識検索を実行し、レスポンスサイズとキーワードを検証
+- **動的チェック**: `claude -p` / `copilot -p` で知識検索を実行し、空レスポンスの検出と nabledge-test ベンチマークシナリオに基づくキーワードを検証（v6/v5: `findAllBySqlFile,Pagination,getPagination`、v1.4: `n:codeSelect,codeId,コード値`）
 
 ### リリース手順
 
