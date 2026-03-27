@@ -241,7 +241,7 @@ verify_env() {
         echo "  [OK]   ${label} nabledge-${v}: SKILL.md ok, knowledge/ ${knowledge_count} files, docs/ ${docs_count} entries, command ${cmd_status}${ghc_status}"
     done
 
-    [ "$fail" -eq 1 ] && verify_fail=1
+    if [ "$fail" -eq 1 ]; then verify_fail=1; fi
 }
 
 # verify_dynamic: dynamic check by running a knowledge search
