@@ -61,14 +61,17 @@ echo ""
 echo "[Setup] Fetching setup script URLs from GUIDE files (branch: ${NABLEDGE_BRANCH})..."
 GUIDE_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-CC.md"
 GUIDE_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-GHC.md"
-SETUP_CC_URL=$(curl -sSfL "$GUIDE_CC_URL" | grep -m1 'curl -sSL.*setup-cc\.sh' | grep -oP 'https://\S+setup-cc\.sh')
-SETUP_GHC_URL=$(curl -sSfL "$GUIDE_GHC_URL" | grep -m1 'curl -sSL.*setup-ghc\.sh' | grep -oP 'https://\S+setup-ghc\.sh')
-if [ -z "$SETUP_CC_URL" ] || [ -z "$SETUP_GHC_URL" ]; then
-    echo "ERROR: Could not extract setup script URLs from GUIDE files."
+# Extract script filename from GUIDE (detects filename changes), then replace branch with NABLEDGE_BRANCH
+SETUP_CC_FILENAME=$(curl -sSfL "$GUIDE_CC_URL" | grep -m1 'curl -sSL.*setup-cc\.sh' | grep -oP 'setup-cc\.sh')
+SETUP_GHC_FILENAME=$(curl -sSfL "$GUIDE_GHC_URL" | grep -m1 'curl -sSL.*setup-ghc\.sh' | grep -oP 'setup-ghc\.sh')
+if [ -z "$SETUP_CC_FILENAME" ] || [ -z "$SETUP_GHC_FILENAME" ]; then
+    echo "ERROR: Could not extract setup script filenames from GUIDE files."
     echo "  GUIDE-CC.md: ${GUIDE_CC_URL}"
     echo "  GUIDE-GHC.md: ${GUIDE_GHC_URL}"
     exit 1
 fi
+SETUP_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/${SETUP_CC_FILENAME}"
+SETUP_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/${SETUP_GHC_FILENAME}"
 echo "[Setup] Setup CC script URL:  ${SETUP_CC_URL}"
 echo "[Setup] Setup GHC script URL: ${SETUP_GHC_URL}"
 curl -sSfL "$SETUP_CC_URL" -o "$TEMP_DIR/setup-cc.sh"
