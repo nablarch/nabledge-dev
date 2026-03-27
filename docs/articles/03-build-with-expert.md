@@ -124,7 +124,7 @@ PRが来たら確認するのは、IssueのPain/BenefitとSuccess Criteria（そ
 
 その上でエキスパートレビューの結果を確認します。`/hi` のワークフローの中に、AIが自分の変更をレビューするステップを組み込んでいて、変更内容に応じてSoftware Engineer、QA Engineerなどのペルソナで指摘を出します。
 
-> **[PR #193 QA Engineerレビュー](https://github.com/nablarch/nabledge-dev/blob/main/.pr/00193/review-by-qa-engineer.md):**
+> **[QA Engineerレビュー](https://github.com/nablarch/nabledge-dev/blob/main/.pr/00193/review-by-qa-engineer.md)（PR #193）:**
 > E2Eテストが実際のバグ修正パスを通っていない — `clean.py` はPythonファサードからは呼ばれず `kc.sh` からのみ呼ばれる。`tests/ut/` に `clean_version` を直接呼ぶユニットテストを追加すべき。
 > → **Decision: Implement Now**
 
