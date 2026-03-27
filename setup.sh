@@ -426,7 +426,7 @@ else
 
         if [ -d "${target_dir}/.svn" ]; then
             print_status info "Updating ${name}..."
-            if svn update "${SVN_AUTH_OPTS[@]}" "$target_dir" 2>&1; then
+            if svn update "${SVN_AUTH_OPTS[@]}" --ignore-externals "$target_dir" 2>&1; then
                 print_status ok "${name} updated"
             else
                 print_status warning "Failed to update ${name} (may not exist in this version)"
@@ -435,7 +435,7 @@ else
         else
             print_status info "Checking out ${name}..."
             mkdir -p "$(dirname "$target_dir")"
-            if svn checkout "${SVN_AUTH_OPTS[@]}" "$svn_url" "$target_dir" 2>&1; then
+            if svn checkout "${SVN_AUTH_OPTS[@]}" --ignore-externals "$svn_url" "$target_dir" 2>&1; then
                 print_status ok "${name} checked out"
             else
                 print_status warning "Failed to checkout ${name} (may not exist in this version)"
