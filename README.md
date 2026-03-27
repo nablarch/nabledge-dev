@@ -31,7 +31,7 @@ cp .env.example .env
 # .env を編集して認証情報を設定する
 ```
 
-`SVN_BASE_URL` 等には v1.4/v1.3/v1.2 が格納されている SVN リポジトリの URL を指定します。v1.4 の知識ファイル生成や `test-setup.sh` の v1.4 環境構築に必要です。
+`SVN_BASE_URL` 等には v1.4/v1.3/v1.2 が格納されている SVN リポジトリの URL を指定します。
 
 設定後、knowledge-creator で v1.4 の知識ファイルを生成できます：
 
