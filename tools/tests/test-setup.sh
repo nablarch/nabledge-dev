@@ -282,8 +282,8 @@ verify_dynamic() {
     fi
 
     local byte_count=${#output}
-    if [ "$byte_count" -eq 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check returned empty output"
+    if [ "$byte_count" -lt 1000 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: dynamic check response too short (${byte_count} bytes, expected >= 1000)"
         verify_fail=1
         return
     fi
