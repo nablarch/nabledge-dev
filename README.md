@@ -26,28 +26,12 @@ sudo update-ca-certificates
 ### 2. 環境セットアップ
 
 ```bash
-./setup.sh
+SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.sh
 cp .env.example .env
 # .env を編集して認証情報を設定する
 ```
 
-### 3. Nablarch 1.x ドキュメントのセットアップ（v1.4/1.3/1.2 の知識ファイルを生成する場合）
-
-Nablarch 1.x のドキュメントは社内 SVN リポジトリで管理されています。`setup-svn.sh` を使って各バージョンのモジュールをチェックアウトします。
-
-SVN リポジトリの URL と認証情報を指定して実行します：
-
-```bash
-SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh
-```
-
-スクリプトは `.lw/nab-official/v1.4/`、`.lw/nab-official/v1.3/`、`.lw/nab-official/v1.2/` にモジュールをチェックアウトします。v1.3/v1.2 に存在しないモジュールはスキップされます。
-
-設定後、knowledge-creator で知識ファイルを生成できます：
-
-```bash
-./tools/knowledge-creator/kc.sh gen 1.4
-```
+`SVN_BASE_URL` 等には v1.4/v1.3/v1.2 が格納されている SVN リポジトリの URL を指定します。
 
 ## 使い方
 
@@ -79,37 +63,31 @@ flowchart LR
 
 ### 開発バージョンのテスト
 
-`nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を使います。
+`nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を実行します。
 
-このスクリプトは全バージョン × ツールの組み合わせのテスト環境を一括セットアップします。
+```bash
+# 全バージョン
+bash tools/tests/test-setup.sh
 
-**セットアップ手順：**
+# バージョン指定（v6 / v5 / v1.4 / all）
+bash tools/tests/test-setup.sh v6
+```
 
-1. テスト用ワークスペースディレクトリを作成してスクリプトを実行：
-   ```bash
-   mkdir -p /tmp/nabledge-test && cd /tmp/nabledge-test
-   bash /path/to/tools/tests/test-setup.sh
-   ```
+スクリプトは `.tmp/nabledge-test/` に環境を構築し、静的チェックを実行します。
 
-   スクリプトは以下のディレクトリを作成します：
-   | ディレクトリ | 内容 |
-   |---|---|
-   | `v6/test-cc/` | nabledge-6 × Claude Code |
-   | `v6/test-ghc/` | nabledge-6 × GitHub Copilot |
-   | `v5/test-cc/` | nabledge-5 × Claude Code |
-   | `v5/test-ghc/` | nabledge-5 × GitHub Copilot |
-   | `all/test-cc/` | 全バージョン × Claude Code |
-   | `all/test-ghc/` | 全バージョン × GitHub Copilot |
+**静的チェック**（ファイル構成の検証）
 
-2. セットアップを確認：
-   ```bash
-   ls v6/test-cc/nablarch-example-batch/.claude/skills/
-   ls v6/test-ghc/nablarch-example-batch/.claude/skills/
-   ```
+- `SKILL.md` が存在すること
+- `knowledge/` ディレクトリが存在し、nabledge-dev と同数のファイルがあること
+- `docs/` ディレクトリが存在し、nabledge-dev と同数のエントリがあること
+- `/n{v}` コマンドファイルが存在すること（CC/GHC 共通）
+- `n{v}.prompt.md` が存在すること（GHC のみ）
 
-3. 各ディレクトリの `nablarch-example-batch/` で動作確認：
-   - Claude Code の場合：`claude` を起動して `/nabledge-6`
-   - GitHub Copilot の場合：VS Code でフォルダを開き、GitHub Copilot Chat で `/n6`
+**動的チェック**（知識検索の動作検証）— 現在無効
+
+CC（`claude -p`）・GHC（`copilot -p`）ともにヘッドレスモードで安定動作しないため、現在コメントアウトされています。[#252](https://github.com/nablarch/nabledge-dev/issues/252) で対応予定。
+
+ランタイム検証は、構築済み環境を Claude Code または GitHub Copilot で開き、`/n6`（または `/n5`、`/n1.4`）を手動実行して確認してください。
 
 ### リリース手順
 
