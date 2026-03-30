@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-top-nablarch--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — mobile/ sub-folders",
+      "description": "The `mobile/doc/` folder is omitted. In the source, `mobile/doc/` is listed as a sibling to `mobile/ios/` at the `mobile/` level, containing architecture documentation (arch_doc/index.html). The KF only lists `mobile/ios/` as a sub-entry, so an AI cannot correctly answer questions about where the Nablarch mobile library architecture documentation is located.",
+      "source_evidence": "Source row: `mobile/doc/` — 解説書が格納されています（app_dev_env/mobile/doc/arch_doc/index.html）。KF lists `nablarch/app_dev_env/mobile/ios/` but has no entry for `nablarch/app_dev_env/mobile/doc/`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — app_lib/operation_sample/",
+      "description": "The `operation_sample/` parent folder is omitted. The source explicitly lists it as a folder with description「運用機能サンプルが格納されています」. The KF skips directly to `operation_sample/log_statistics_sample/`, so the intermediate container and its description are absent.",
+      "source_evidence": "Source row: `operation_sample/` — 運用機能サンプルが格納されています。KF has `nablarch/app_dev_env/app_lib/operation_sample/log_statistics_sample/` but no entry for `nablarch/app_dev_env/app_lib/operation_sample/`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The hint \"Nablarch Toolbox\" (or \"Toolbox\") is absent. `toolbox/` is an explicit top-level sub-folder of `app_dev_env/` listed in the source. Without this hint, the section may not be retrieved when a user asks where Nablarch Toolbox is located.",
+      "source_evidence": "Source row: `toolbox/` — Nablarch Toolbox が格納されています。Current hints do not include \"Nablarch Toolbox\" or \"Toolbox\"."
+    }
+  ]
+}

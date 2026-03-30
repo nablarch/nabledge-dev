@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-10_submitParameter--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7",
+      "description": "The private method `getWindowScopeObject` is omitted from the Java code example. The source includes its signature, Javadoc comment (\"更新対象ユーザの検索結果を設定したFormを返す\"), parameter descriptions, and the explanatory comment `// 【説明】検索結果を設定したFormを返すメソッド`. While the method body is truncated in the source (～中略～), the method signature and description establish that it converts SqlResultSet results into a W11AC03Form — part of the overall implementation pattern.",
+      "source_evidence": "private W11AC03Form getWindowScopeObject(SqlResultSet sysAcct, SqlResultSet users, SqlResultSet permissionUnit, SqlResultSet ugroup) { W11AC03Form userForm = new W11AC03Form(); // ～中略～ return userForm; } — with Javadoc: \"更新対象ユーザの検索結果を設定したFormを返す\""
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "RST-specific `:download:` syntax is embedded verbatim inside the markdown table cells (e.g., `:download:\\`W11AC03Action.java<./_source/download/W11AC03Action.java>\\``). This syntax is not valid markdown and will not render as links in any markdown environment. The file names remain readable as plain text, but the links are non-functional.",
+      "source_evidence": "Source uses RST :download: directives; knowledge file reproduces them as-is inside markdown table cells instead of converting them to plain filenames or markdown links."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7",
+      "description": "The hints for s7 do not include `W11AC03Action` (the class whose implementation is shown in s7) or `doRW11AC0301` (the specific action method implemented in the code block). Users or retrieval systems searching for these identifiers may not reach s7, which contains their implementation.",
+      "source_evidence": "Source: `public class W11AC03Action extends DbAccessSupport { ... public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) { ... } }` — both identifiers appear in the code shown in s7 but are absent from s7's hints array."
+    }
+  ]
+}

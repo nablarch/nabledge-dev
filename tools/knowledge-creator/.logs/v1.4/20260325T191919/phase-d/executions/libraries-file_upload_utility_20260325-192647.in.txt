@@ -1,0 +1,612 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/common_library/file_upload_utility.rst`
+- Format: `rst`
+
+```
+======================================================
+ファイルアップロード業務処理用ユーティリティ
+======================================================
+
+----
+概要
+----
+ファイルアップロードを伴う業務処理では、ファイルの内容を業務アクション内で同期処理するのではなく、
+ファイルの内容を一旦DB(中間テーブルなど)に格納した時点でレスポンスを返し、
+ファイル内の各レコードに対する業務処理は後続のバッチで行う形をとることが多い。(下図)
+  
+  .. image:: ../_image/FileUploadUtility_abstract.png
+    
+本機能では、このような処理を実装する際に必要となる以下のような共通処理をユーティリティとして提供する。
+
+* `ファイルを一時ディレクトリから移動する`_
+* `ファイルをバイナリとして読み込む`_
+* `ファイルをデータベースに登録する`_
+
+----
+要求
+----
+
+
+実装済み
+========
+
+* アップロードファイルの形式が正しくない場合、アップロードを禁止できる。
+
+  - アップロードユーティリティを使用する場合、固定長ファイルやCSVファイルの形式が不正な場合に例外をスローするので、その例外をハンドリングすることでエラー画面への遷移が可能。
+
+* アップロードファイルを指定のディレクトリに移動する機能
+
+
+未実装機能
+==========
+
+* トランザクション制御
+
+  - １件づつコミット
+    ユーティリティがActionとは別のトランザクションを開始し、１件づつコミットする。
+
+
+----
+特徴
+----
+
+アプリケーションプログラマは必要な情報をユーティリティに設定して実行するだけで、
+ファイルデータをDBに登録できる。このユーティリティを使用することで、生産性が大幅に向上する。
+
+
+----
+構造
+----
+
+
+.. image:: ../_image/FileUploadUtility.png
+
+
+\
+
+
+
+クラス図
+========
+
+.. image:: ../_image/FileUploadUtility_class.png
+    :scale: 85
+
+
+
+クラス定義
+----------
+
+nablarch.fw.web.uploadパッケージのクラス
+
+======================= ===============================================================================
+クラス名                概要
+======================= ===============================================================================
+UploadHelper            ユーティリティクラス本体。アプリケーションプログラマは本クラスを使用する。
+BulkValidator           ファイルの各レコードに対して一括精査処理を行う。
+BulkValidationDriver    精査処理を呼び出す。
+BulkValidationResult    全精査結果を保持する。精査済みフォームの一括登録を受け付ける
+ValidatingStrategy      １レコード毎の精査処理を行う。アプリケーション開発者が実装する。
+BasicValidatingStrategy 典型的な精査ロジックを提供するValidationStrategy実装クラス。
+InsertionStrategy       フォーム１件のINSERT処理を行う。アプリケーション開発者が実装する。
+BasicInsertionStrategy  典型的なINSERT処理を提供するInsertionValidationStrategy実装クラス。
+======================= ===============================================================================
+
+
+シーケンス図
+============
+
+特に複雑な処理である、「\ `ファイルをデータベースに登録する`_\ 」機能について、
+以下ににシーケンスを示す。
+
+
+.. image:: ../_image/FileUploadUtility_sequence.png
+    :scale: 90
+
+
+--------
+使用方法
+--------
+
+
+
+ファイルを一時ディレクトリから移動する
+======================================
+
+アップロードファイルを一時ディレクトリから移動する。
+第１引数には、移動先のディレクトリを、PathSettingsで管理されている論理ディレクトリ名で指定する。
+第２引数には、移動後のファイル名を指定する。
+
+.. code-block:: java
+
+    // ファイルを所定のフォルダに移動する。
+    public void doMoveFile(HttpRequest req, ExecutionContext ctx) {
+        PartInfo part = req.getPart("fileToMove").get(0);
+        UploadHelper helper = new UploadHelper(part);
+        helper.moveFileTo("basePathName", "newFileName");
+    }
+
+
+ファイルをバイナリとして読み込む
+================================
+
+ファイルをバイト配列に変換して扱いたい場合の簡易的なメソッドを用意している。
+
+.. code-block:: java
+
+    // アップロードされたファイル内容をバイナリ読み込む
+    public void doSaveBinary(HttpRequest req, ExecutionContext ctx) {
+        PartInfo part = req.getPart("image").get(0);
+        byte[] bytes = new UploadHelper(part).toByteArray();
+        // 以下省略
+    }
+
+
+ファイルをデータベースに登録する
+================================
+
+ファイルをデータベースに登録する場合、UploadHelperクラスを起点として
+各種クラスのメソッドをチェーンすることで、ファイルの精査および登録を簡易的に行うことができる。
+
+本ユーティリティが行う処理の概要は以下のとおり。
+
++--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+| 処理                           | 説明                                                           | 業務処理側で必要な実装内容                    |
++================================+================================================================+===============================================+
+| フォーマット定義のロード       | アップロードされるファイルのデータフォーマットを定義した       | `フォーマット定義ファイルパスの指定`_\        |
+|                                | ファイルを決定し読み込む。                                     |                                               |
++--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+| レコード内容チェック           | アップロードされたファイル中の各レコードに対して以下の検査を   |                                               |
+|                                | 行う。                                                         |                                               |
+|                                |                                                                |                                               |
+|                                | **形式チェック**                                               | `精査エラー発生時のメッセージID指定`_\        | 
+|                                |   アップロードされたファイル中の各レコードを                   |                                               |
+|                                |   フレームワークが読み込む際に、自動的に行う検証。             |                                               |
+|                                |   ファイル内のデータが、                                       |                                               |
+|                                |   フォーマット定義ファイルに記述されている                     |                                               |
+|                                |   1レコードあたりの項目数、各項目のデータ形式などの定義に合致  |                                               |
+|                                |   していることを検証する。                                     |                                               |
+|                                |   形式チェックを通過したレコードはMap型のオブジェクトに        |                                               |
+|                                |   変換される。                                                 |                                               |
+|                                |                                                                |                                               |
+|                                | **精査処理**                                                   |                                               |
+|                                |   形式チェックを通過した各レコードに対して行われる検証。       | `精査処理を実装したクラス、メソッドの指定`_\  |
+|                                |   通常の業務Actionと同様の実装を行うことができるので、         |                                               |
+|                                |   ドメインベースの単項目精査やDB精査、ビジネスロジックを伴う   |                                               |
+|                                |   複雑な精査処理を実装することができる。                       |                                               |
++--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+| レコードの登録                 | アップロードされたファイル中の全てのレコードが上記の検査を     | `データベース一括登録`_\                      |
+|                                | 通過したした場合は、それらをDBに登録する。                     |                                               |
++--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+ 
+コード例を以下に示す。
+
+.. code-block:: java
+
+    // ファイルをDBに投入する
+    @OnError(type = ApplicationException.class, path = "/path/to/forward")
+    public void doSaveFile(HttpRequest req, ExecutionContext ctx) {
+        // 保存対象のパート
+        PartInfo part = req.getPart("fileToSave").get(0);
+        UploadHelper helper = new UploadHelper(part);
+        helper.applyFormat("FORMAT0001")                         // フォーマットを適用する
+              .setUpMessageIdOnError("MSG_FORMAT_ERR",           // 形式エラー時のメッセージIDを指定する
+                                     "MSG_VALIDATION_ERROR",     // 精査エラー時のメッセージIDを指定する
+                                     "MSG_EMPTY_FILE")           // ファイルが空の場合のメッセージIDを指定する
+              .validateWith(HogeForm.class, "validateUpload")    // 精査メソッドを指定する
+              .importWith(this, "SQL0001");                      // 精査済みフォームをINSERTする
+    }
+
+
+フォーマット定義ファイルパスの指定
+------------------------------------------
+
+以下のいずれかのメソッドを使用し、アップロードファイルに適用するフォーマットを指定する。
+
+* UploadHelper#applyFormat(String layoutFileName) 
+* UploadHelper#applyFormat(String basePathName, String layoutFileName)
+
+精査エラー発生時のメッセージID指定
+--------------------------------------
+
+以下のメソッドを使用し、エラー発生時のメッセージIDを指定する。
+
+
+* BulkValidator#setUpMessageIdOnError(String messageIdOnFormatError, String messageIdOnValidationError, String messageIdOnEmptyFile)
+
+引数には、以下のエラーに対するメッセージIDを指定する。
+
+1. `形式エラー`_\ 時のメッセージID
+2. `精査エラー`_\ 時のメッセージID
+3. `ファイルが空の場合`_\ のメッセージID
+
+
+形式エラー
+~~~~~~~~~~
+
+アップロードしたファイルがapplyFormatメソッドで指定したフォーマットで書かれていなかった場合、
+フレームワーク内部で以下のようにMessageが生成され蓄積される\ [1]_\ 。
+
+.. code-block:: java
+
+        MessageUtil.createMessage(
+               MessageLevel.ERROR,               // エラーレベル
+               errors.msgIdOnValidationError,    // setUpMessageIdOnError第1引数のメッセージID
+               e.getRecordNumber());             // フォーマットエラーが発生したレコード番号
+
+よって、setUpMessageIdOnErrorの第1引数には以下のようなメッセージを指定すれば良い。
+
+**【メッセージ例】**
+
+.. code-block:: text
+
+ {0}行目の形式に誤りがあります。
+
+そうすると、形式エラー発生時には以下のようなメッセージとなる。
+
+**【メッセージ出力例】**
+
+.. code-block:: text
+
+ 12行目の形式に誤りがあります。
+
+
+精査エラー
+~~~~~~~~~~
+
+同様に、精査エラー発生時には、フレームワーク内部で以下のようにMessageが生成され蓄積される\ [1]_\ 。
+
+.. code-block:: java
+
+       MessageUtil.createMessage(
+               MessageLevel.ERROR,               // エラーレベル
+               errors.msgIdOnFormatError,        // setUpMessageIdOnError第2引数のメッセージID
+               errorRecord.getRecordNumber(),    // 精査エラーが発生したレコードのレコード番号
+               e.formatMessage());               // 精査エラーの内容
+
+よって、setUpMessageIdOnErrorの第２引数には以下のようなメッセージを指定すれば良い。
+
+**【メッセージ例】**
+
+.. code-block:: text
+
+ {0}行目にエラーがあります。[ {1} ]
+
+そうすると、精査エラー発生時、以下のようなメッセージとなる。
+
+**【メッセージ出力例】**
+
+.. code-block:: text
+
+ 1行目にエラーがあります。[ 電話番号は半角数字で入力してください。]
+
+.. [1]
+ エラー発生時、即座に例外が発生するのではなく、そのエラーに対応するMessageが蓄積される。
+ これは、全レコードの形式エラー、精査エラーをまとめてユーザに通知するためである。
+ 例外の送出要否は、\ `データベース一括登録`_ のタイミングで判断される。
+
+
+ファイルが空の場合
+~~~~~~~~~~~~~~~~~~
+
+空のファイルがアップデートされた場合には、以下のようにMessageが生成され例外が送出される。
+
+.. code-block:: java
+
+        throw new ApplicationException(
+                MessageUtil.createMessage(
+                        MessageLevel.ERROR,         // エラーレベル
+                        errors.msgIdOnEmptyFile,    // setUpMessageIdOnError第3引数のメッセージID
+                        fileName));                 // アップロードされたファイル名
+
+
+よって、setUpMessageIdOnErrorの第３引数には以下のようなメッセージを指定すれば良い。
+
+**【メッセージ例】**
+
+.. code-block:: text
+
+ 空のファイルがアップロードされました。 [ {0} ]
+
+そうすると、精査エラー発生時、以下のようなメッセージとなる。
+
+**【メッセージ出力例】**
+
+.. code-block:: text
+
+ 空のファイルがアップロードされました。 [ new_users.csv ]
+
+\
+
+ファイル名のみが表示され、ファイルパスは表示されない。
+
+
+.. note::
+ 一括登録のような業務において、空のファイルがアップロードされた場合、
+ 0件のデータを登録するというのは意味をなさない。このような場合は、
+ ユーザのオペレーションミス（ファイル選択誤り）であると考えるべきである。
+ 本ユーティリティが空ファイルの場合のメッセージIDを必須としているのは、
+ このような理由からである。
+
+精査処理を実装したクラス、メソッドの指定
+------------------------------------------
+
+以下のメソッドを起動し、精査に使用するフォームクラスと精査メソッド名を指定する。
+
+* BulkValidator.MsgIdHolder#validateWith(Class<F> formClass, String validateFor) 
+
+指定された精査メソッドで精査が実行される。
+そのエラーメッセージは蓄積され、\ `データベース一括登録`_\ まで例外は送出されない。
+
+
+データベース一括登録
+--------------------
+
+以下のメソッドを起動し、精査済みのフォームを一括登録する。
+
+* BulkValidationResult#importWith(DbAccessSupport dbAccessSupport, String insertSqlId)
+
+第１引数にはDbAccessSupportクラスのインスタンスを指定する。
+通常ActionクラスはDbAccessSupportクラスを継承しているので、自分自身の参照(this参照)を使用すれば良い。
+第２引数には、INSERT文のSQLIDを指定する。
+
+形式エラー、精査エラーが１件でも存在する場合には、ApplicationExceptionが送出される。
+エラーが発生した場合、\ `精査エラー発生時のメッセージID指定`_\ で指定した精査エラー時のメッセージが生成される。
+この例外には、これまでに蓄積されたメッセージ（形式エラー、精査エラー）が全て設定される。
+
+
+データベース一括登録（独自実装）
+--------------------------------
+
+`データベース一括登録`_\ で説明した機能は、単純なINSERT処理を実行する。
+INSERTに際して何らかの処理が必要な場合は、独自のINSERT処理を差し込むことができる。
+
+importWithメソッドの代わりに以下のメソッドを使用する。
+引数には、独自のINSERT処理を実装したInsertionStrategy実装クラスを指定する。
+
+``BulkValidationResult#importAll(InsertionStrategy<FORM> strategy)``
+
+
+以下に、INSERT時にIDを採番して登録する例を示す。
+
+.. code-block:: java
+
+        helper.applyFormat("N11AA002")
+              .setUpMessageIdOnError("MSG00037", "MSG00038")
+              .validateWith(UserInfoTempEntity.class, "validateRegister")
+              .importAll(new UserInfoInsertionStrategy());     // 独自INSERT処理
+
+.. code-block:: java
+
+    /** ユーザ情報テンポラリテーブルに登録するクラス。 */
+    private class UserInfoInsertionStrategy implements InsertionStrategy<UserInfoTempEntity> {
+
+        /** {@inheritDoc} */
+        public ParameterizedSqlPStatement prepareStatement(UserInfoTempEntity userInfoTempEntity) {
+            return getParameterizedSqlStatement(
+                    "INSERT_USER_INFO_TEMP", userInfoTempEntity);
+        }
+
+        /** {@inheritDoc} */
+        public void addBatch(ParameterizedSqlPStatement statement, UserInfoTempEntity userInfoTempEntity) {
+            // ユーザ情報IDを採番する。
+            String id = IdGeneratorUtil.generateUserInfoId();
+            userInfoTempEntity.setUserInfoId(id);
+            statement.addBatchObject(userInfoTempEntity);
+        }
+    }
+
+```
+
+## Knowledge File
+
+- ID: `libraries-file_upload_utility`
+
+```json
+{
+  "id": "libraries-file_upload_utility",
+  "title": "ファイルアップロード業務処理用ユーティリティ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "UploadHelper",
+        "ファイルアップロード",
+        "中間テーブル",
+        "バッチ処理",
+        "DB一時格納"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "ファイル形式チェック",
+        "ApplicationException",
+        "ディレクトリ移動",
+        "トランザクション制御",
+        "未実装機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "特徴",
+      "hints": [
+        "UploadHelper",
+        "ファイルデータDB登録",
+        "設定と実行"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構造（クラス定義）",
+      "hints": [
+        "UploadHelper",
+        "BulkValidator",
+        "BulkValidationDriver",
+        "BulkValidationResult",
+        "ValidatingStrategy",
+        "BasicValidatingStrategy",
+        "InsertionStrategy",
+        "BasicInsertionStrategy",
+        "nablarch.fw.web.upload"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ファイルを一時ディレクトリから移動する",
+      "hints": [
+        "UploadHelper",
+        "moveFileTo",
+        "PathSettings",
+        "ファイル移動",
+        "論理ディレクトリ名"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ファイルをバイナリとして読み込む",
+      "hints": [
+        "UploadHelper",
+        "toByteArray",
+        "バイト配列",
+        "バイナリ読み込み"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ファイルをデータベースに登録する",
+      "hints": [
+        "UploadHelper",
+        "BulkValidator",
+        "BulkValidationResult",
+        "applyFormat",
+        "setUpMessageIdOnError",
+        "validateWith",
+        "importWith",
+        "importAll",
+        "InsertionStrategy",
+        "ApplicationException",
+        "DbAccessSupport",
+        "フォーマット定義",
+        "精査処理",
+        "一括登録",
+        "形式エラー",
+        "精査エラー",
+        "空ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルアップロードを伴う業務処理向けのユーティリティ。アップロードファイルの内容をDB（中間テーブル等）に一時格納してレスポンスを返し、各レコードへの業務処理を後続バッチで行うパターンの共通処理を提供する。\n\n提供する共通処理:\n- ファイルを一時ディレクトリから移動する\n- ファイルをバイナリとして読み込む\n- ファイルをデータベースに登録する",
+    "s2": "## 実装済み\n\n- アップロードファイルの形式が正しくない場合にアップロードを禁止できる: 固定長ファイル・CSVファイルの形式が不正な場合に例外をスローする。その例外をハンドリングすることでエラー画面への遷移が可能。\n- アップロードファイルを指定のディレクトリに移動する機能\n\n## 未実装機能\n\n- トランザクション制御（1件づつコミット）: ユーティリティがActionとは別のトランザクションを開始し、1件づつコミットする機能は未実装。",
+    "s3": "アプリケーションプログラマは必要な情報をユーティリティに設定して実行するだけで、ファイルデータをDBに登録できる。",
+    "s4": "**クラス**: `nablarch.fw.web.upload` パッケージ\n\n| クラス名 | 概要 |\n|---|---|\n| `UploadHelper` | ユーティリティクラス本体。アプリケーションプログラマが使用する |\n| `BulkValidator` | ファイルの各レコードに対して一括精査処理を行う |\n| `BulkValidationDriver` | 精査処理を呼び出す |\n| `BulkValidationResult` | 全精査結果を保持する。精査済みフォームの一括登録を受け付ける |\n| `ValidatingStrategy` | 1レコード毎の精査処理を行う。アプリケーション開発者が実装する |\n| `BasicValidatingStrategy` | 典型的な精査ロジックを提供するValidationStrategy実装クラス |\n| `InsertionStrategy` | フォーム1件のINSERT処理を行う。アプリケーション開発者が実装する |\n| `BasicInsertionStrategy` | 典型的なINSERT処理を提供するInsertionValidationStrategy実装クラス |\n\n![ファイルをデータベースに登録するシーケンス図](assets/libraries-file_upload_utility/FileUploadUtility_sequence.png)",
+    "s5": "`UploadHelper#moveFileTo(String basePathName, String newFileName)` で一時ディレクトリからファイルを移動する。\n- 第1引数 `basePathName`: 移動先ディレクトリ（PathSettingsで管理されている論理ディレクトリ名）\n- 第2引数 `newFileName`: 移動後のファイル名\n\n```java\nPartInfo part = req.getPart(\"fileToMove\").get(0);\nUploadHelper helper = new UploadHelper(part);\nhelper.moveFileTo(\"basePathName\", \"newFileName\");\n```",
+    "s6": "`UploadHelper#toByteArray()` でファイルをバイト配列に変換する。\n\n```java\nPartInfo part = req.getPart(\"image\").get(0);\nbyte[] bytes = new UploadHelper(part).toByteArray();\n```",
+    "s7": "`UploadHelper` を起点としてメソッドをチェーンし、ファイルの精査および登録を行う。\n\n| 処理 | 説明 | 業務処理側で必要な実装 |\n|---|---|---|\n| フォーマット定義のロード | アップロードファイルのデータフォーマット定義ファイルを読み込む | `applyFormat` でパス指定 |\n| 形式チェック | フォーマット定義の項目数・データ形式と一致するか検証。チェック通過レコードはMap型に変換 | `setUpMessageIdOnError` で形式エラー時メッセージID指定 |\n| 精査処理 | 形式チェック通過レコードへの業務検証（ドメイン単項目精査、DB精査、ビジネスロジック精査が可能） | `validateWith` で精査フォームクラス・メソッド指定 |\n| レコードの登録 | 全レコードが検査通過した場合にDBへ一括登録 | `importWith` または `importAll` |\n\n```java\n@OnError(type = ApplicationException.class, path = \"/path/to/forward\")\npublic void doSaveFile(HttpRequest req, ExecutionContext ctx) {\n    PartInfo part = req.getPart(\"fileToSave\").get(0);\n    UploadHelper helper = new UploadHelper(part);\n    helper.applyFormat(\"FORMAT0001\")\n          .setUpMessageIdOnError(\"MSG_FORMAT_ERR\", \"MSG_VALIDATION_ERROR\", \"MSG_EMPTY_FILE\")\n          .validateWith(HogeForm.class, \"validateUpload\")\n          .importWith(this, \"SQL0001\");\n}\n```\n\n## フォーマット定義ファイルパスの指定\n\n以下のいずれかを使用:\n- `UploadHelper#applyFormat(String layoutFileName)`\n- `UploadHelper#applyFormat(String basePathName, String layoutFileName)`\n\n## 精査エラー発生時のメッセージID指定\n\n`BulkValidator#setUpMessageIdOnError(String messageIdOnFormatError, String messageIdOnValidationError, String messageIdOnEmptyFile)`\n\n各引数に対応するエラー:\n1. 第1引数（形式エラー）: `{0}行目の形式に誤りがあります。` → 出力例: `12行目の形式に誤りがあります。`\n2. 第2引数（精査エラー）: `{0}行目にエラーがあります。[ {1} ]` → 出力例: `1行目にエラーがあります。[ 電話番号は半角数字で入力してください。]`\n3. 第3引数（ファイルが空の場合）: `空のファイルがアップロードされました。 [ {0} ]`（`{0}` はファイル名のみ、パスなし）\n\n> **注意**: 形式エラー・精査エラー発生時は即座に例外は送出されず、Messageが蓄積される。例外の送出は `importWith`/`importAll` のタイミングで判断され、蓄積された全メッセージが `ApplicationException` に設定される。\n\n> **注意**: 空ファイルの場合は `ApplicationException` が即座に送出される（他のエラーとは異なる）。空ファイルメッセージIDは必須（0件登録は業務上無意味であり、ユーザのオペレーションミスと判断するため）。\n\n## 精査処理を実装したクラス・メソッドの指定\n\n`BulkValidator.MsgIdHolder#validateWith(Class<F> formClass, String validateFor)` で精査フォームクラスと精査メソッド名を指定する。精査エラーはMessageに蓄積され、`importWith`/`importAll` まで例外は送出されない。\n\n## データベース一括登録\n\n`BulkValidationResult#importWith(DbAccessSupport dbAccessSupport, String insertSqlId)`\n- 第1引数: `DbAccessSupport` インスタンス（ActionクラスはDbAccessSupportを継承しているので `this` を指定）\n- 第2引数: INSERT文のSQLID\n- 形式エラー・精査エラーが1件でも存在する場合、蓄積された全メッセージを含む `ApplicationException` を送出\n\n## データベース一括登録（独自実装）\n\n単純なINSERT以外の処理が必要な場合は `BulkValidationResult#importAll(InsertionStrategy<FORM> strategy)` を使用。`InsertionStrategy` 実装クラスを引数に指定する。\n\n`InsertionStrategy` の実装メソッド:\n- `prepareStatement(FORM form)`: `ParameterizedSqlPStatement` を返す\n- `addBatch(ParameterizedSqlPStatement statement, FORM form)`: バッチ処理（IDの採番なども可能）\n\n```java\nhelper.applyFormat(\"N11AA002\")\n      .setUpMessageIdOnError(\"MSG00037\", \"MSG00038\")\n      .validateWith(UserInfoTempEntity.class, \"validateRegister\")\n      .importAll(new UserInfoInsertionStrategy());\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 7 < source headings 11
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

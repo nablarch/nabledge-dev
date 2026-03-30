@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-03_userQueryMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — error code table, row 4",
+      "description": "The source table row 4 原因 reads「その他の意図しないエラーにより業務処理が失敗した場合。」but the knowledge file truncates it to「その他の意図しないエラー」, dropping the clarifying clause「により業務処理が失敗した場合」.",
+      "source_evidence": "No 4 | 500 | NR11AA5000 | その他の意図しないエラーにより業務処理が失敗した場合。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "`RM11AC0101Action` is a PascalCase class name that appears prominently in the s1 code example (the concrete MessagingAction subclass) but is absent from the s1 hints array.",
+      "source_evidence": "public class RM11AC0101Action extends MessagingAction {"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-MessagingAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — Java code block comments",
+      "description": "The source code comments mark receive(), commit(), and send(res) with \"(フレームワークが...)\" to explicitly indicate these are framework-managed operations (not user-implemented code). The knowledge file drops this qualification: receive() loses its comment entirely, commit() becomes just \"業務トランザクションをコミット\", and send(res) becomes \"応答電文を送信\". Without the \"(フレームワークが)\" prefix, the distinction between framework-provided methods and user-implemented template methods is less clear in the code example.",
+      "source_evidence": "req = receive(); // (フレームワークが要求電文を受信) | commit(); // (フレームワークが業務トランザクションをコミットする。) | send(res); // (フレームワークが応答電文を送信)"
+    }
+  ]
+}

@@ -1,0 +1,534 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/MessagingSimu/doc/index.rst`
+- Format: `rst`
+
+```
+
+================================================
+メッセージング基盤テストシミュレータサンプル
+================================================
+
+----
+概要
+----
+
+本サンプルは、NablarchのMOMメッセージング、HTTPメッセージング機能を使用する
+アプリケーションのテストにて、対向先システムをシミュレートするサンプル実装を提供する。
+
+テスト環境構築後の疎通テストやアプリケーションの結合テスト等で、アプリケーションの接続先として、
+利用することを想定している。
+
+
+用途
+====
+
+疎通テスト
+----------
+
+テスト環境を構築後のNAF、ミドルウェア、ハードウェア等の設定を確認するための疎通テストにて、
+簡易的に通信を行う対向先システムとして利用することができる。
+
+
+結合テスト
+----------
+
+アプリケーションの結合テストの際に、システム間通信の擬似的な対向先システムとして利用することができる。
+シミュレータに要求電文/応答電文として利用するデータを設定することで、シナリオを用いたテストを行うことができる。
+
+シナリオを用いたテストは取引単体テストにて可能であるが、
+シミュレータを使用したテストではOSやミドルウェアも含めた動作を確認することができる点が異なる。
+
+.. note::
+ 利用者がシミュレータの処理を一部Javaで記述することで、応答電文の送信を意図的に遅延させるといったテストも可能である。
+
+
+負荷テスト
+----------
+
+アプリケーションの負荷テストを行う際に、負荷をかけるための大量のメッセージ送受信を行うことができる。
+
+
+構成例
+======
+
+シミュレータは、以下の通信方法を対象としている。
+
+- MOM同期応答メッセージ受信
+- MOM同期応答メッセージ送信
+- MOM応答不要メッセージ送信
+- HTTPメッセージ受信
+- HTTPメッセージ送信
+
+以下に利用形態ごとにシミュレータの構成例を示す。
+
+| 
+
+シミュレータがMOM同期応答メッセージ受信を行う場合
+-----------------------------------------------------
+.. image:: ./_images/overview01.png
+   :scale: 70
+
+| 
+
+シミュレータがMOM同期応答メッセージ送信を行う場合
+-----------------------------------------------------
+.. image:: ./_images/overview02.png
+   :scale: 70
+   
+
+| 
+
+シミュレータがMOM応答不要メッセージ送信を行う場合
+-----------------------------------------------------
+.. image:: ./_images/overview03.png
+   :scale: 70
+
+| 
+
+シミュレータがHTTPメッセージ受信を行う場合
+-----------------------------------------------------
+.. image:: ./_images/overview04.png
+   :scale: 70
+
+| 
+
+シミュレータがHTTPメッセージ送信を行う場合
+-----------------------------------------------------
+.. image:: ./_images/overview05.png
+   :scale: 70
+
+
+----
+特徴
+----
+
+
+取引単体テストで作成したテストデータを流用可能
+====================================================================================================
+
+取引単体テストで作成したExcelファイルのテストデータを、シミュレータが送受信するメッセージとして利用することができるため、
+取引単体テストで実施したテストシナリオをシミュレータを用いて再現することが可能である。
+
+その場合には、フォーマット定義ファイルに関しても、テスト対象アプリケーションにて作成したファイルを
+流用する想定である。
+
+
+
+特殊および複雑なテストケースにも、カスタマイズすることで対応可能(メッセージ受信)
+====================================================================================================
+
+ソースコード提供しているシミュレータのソースコードを修正することによって、
+特殊および複雑なテストケースに合わせた、以下のようなテストが可能である。
+
+* 要求電文の内容に応じて、応答電文の内容を動的に変更する必要があるテストを行う。
+* 意図的に応答の時間を遅らせることによってタイムアウトを発生させるなど、異常系のテストを行う。
+
+
+マルチスレッドで要求電文を送信することが可能（メッセージ送信）
+====================================================================================================
+
+Nablarchのマルチスレッド実行制御ハンドラをシミュレータ内部で使用しており、
+マルチスレッドで要求電文を送信するこで、大量メッセージを送信した負荷テストが可能である。
+
+----
+要求
+----
+
+実装済み
+========================
+
+シミュレータがメッセージ受信する場合
+-------------------------------------
+
+* HTTPメッセージ受信、MOM同期応答メッセージ受信用の応答電文を送信することができる。
+* 要求電文のログを出力することができる。
+* 任意のHTTPステータスコードを返却できる。
+* シミュレータへの要求順序にあわせた応答電文を送信可能(単体テスト時と同様、Excelファイルに記述された内容を上から順に返却する)。
+
+シミュレータがメッセージ送信する場合
+-------------------------------------
+
+* HTTPメッセージ送信、MOM同期応答メッセージ送信、MOM応答不要メッセージ送信用の要求電文を送信することができる。
+* 指定回数、同じ電文を送信する。
+* 応答電文のログを出力することができる。
+* Excelファイルに記述された内容を順に送信することができる。
+
+
+未実装
+======
+
+シミュレータがメッセージ受信する場合
+-------------------------------------
+
+* 受信した電文の一部を応答に含めた応答電文を作成できる（未実装だが、カスタマイズにより可能となる）。
+* 送信間隔を指定できる(例：5秒毎)。
+
+
+未検討
+======
+
+全般
+----
+
+シミュレータがメッセージ受信する場合
+-------------------------------------
+* MOM応答不要メッセージ受信のシミュレートができる。
+* 窓口数の調整及び、窓口が足りなくなった場合の応答設定(即時エラー、10秒まで待つ等)ができる。
+
+
+シミュレータがメッセージ送信する場合
+-------------------------------------
+
+* 要求電文の送信間隔を設定できる。例えば、「5秒ごとに送信する電文を10％、10秒ごとに送信する電文を20％…」といった間隔設定ができる。
+
+
+------------
+動作イメージ
+------------
+
+シミュレータの動作イメージを以下に示す。
+
+シミュレータがメッセージ受信する場合
+======================================
+
+アプリケーションからシミュレータがメッセージ受信する場合の動作イメージは以下の通り。
+
+.. image:: ./_images/behavior_illustration01.png
+   :scale: 70
+
+
+
+シミュレータがメッセージ送信する場合
+======================================
+
+シミュレータからアプリケーションにメッセージ送信する場合の動作イメージは以下の通り。
+
+.. image:: ./_images/behavior_illustration02.png
+   :scale: 70
+
+
+--------
+利用手順
+--------
+シミュレータの詳細は :download:`利用手順<利用手順.xlsx>` を参照。
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-doc--s1`
+
+```json
+{
+  "id": "biz-samples-doc--s1",
+  "title": "メッセージング基盤テストシミュレータサンプル",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "疎通テスト",
+      "hints": [
+        "疎通テスト",
+        "シミュレータ",
+        "NAF",
+        "テスト環境確認",
+        "通信対向先"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "結合テスト",
+      "hints": [
+        "結合テスト",
+        "システム間通信",
+        "シナリオテスト",
+        "取引単体テスト",
+        "OSミドルウェア動作確認"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "負荷テスト",
+      "hints": [
+        "負荷テスト",
+        "大量メッセージ",
+        "メッセージ送受信"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "シミュレータがMOM同期応答メッセージ受信を行う場合",
+      "hints": [
+        "MOM",
+        "同期応答",
+        "メッセージ受信",
+        "構成例"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "シミュレータがMOM同期応答メッセージ送信を行う場合",
+      "hints": [
+        "MOM",
+        "同期応答",
+        "メッセージ送信",
+        "構成例"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "シミュレータがMOM応答不要メッセージ送信を行う場合",
+      "hints": [
+        "MOM",
+        "応答不要",
+        "メッセージ送信",
+        "構成例"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "シミュレータがHTTPメッセージ受信を行う場合",
+      "hints": [
+        "HTTP",
+        "メッセージ受信",
+        "構成例"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "シミュレータがHTTPメッセージ送信を行う場合",
+      "hints": [
+        "HTTP",
+        "メッセージ送信",
+        "構成例"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "取引単体テストで作成したテストデータを流用可能",
+      "hints": [
+        "テストデータ流用",
+        "取引単体テスト",
+        "Excelファイル",
+        "フォーマット定義ファイル"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "特殊および複雑なテストケースにも、カスタマイズすることで対応可能(メッセージ受信)",
+      "hints": [
+        "カスタマイズ",
+        "異常系テスト",
+        "応答遅延",
+        "タイムアウト",
+        "応答電文動的変更"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "マルチスレッドで要求電文を送信することが可能（メッセージ送信）",
+      "hints": [
+        "マルチスレッド",
+        "要求電文送信",
+        "大量メッセージ",
+        "負荷テスト",
+        "マルチスレッド実行制御ハンドラ"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "シミュレータがメッセージ受信する場合",
+      "hints": [
+        "実装済み",
+        "メッセージ受信",
+        "HTTPステータスコード",
+        "応答電文",
+        "要求電文ログ",
+        "MOM同期応答"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "シミュレータがメッセージ受信する場合",
+      "hints": [
+        "未実装",
+        "未検討",
+        "メッセージ受信",
+        "応答電文作成",
+        "送信間隔",
+        "MOM応答不要",
+        "窓口数"
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "シミュレータがメッセージ送信する場合",
+      "hints": [
+        "実装済み",
+        "メッセージ送信",
+        "要求電文",
+        "Excelファイル",
+        "応答電文ログ",
+        "MOM応答不要"
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "シミュレータがメッセージ送信する場合",
+      "hints": [
+        "未検討",
+        "メッセージ送信",
+        "送信間隔設定"
+      ]
+    },
+    {
+      "id": "s16",
+      "title": "動作イメージ",
+      "hints": [
+        "動作イメージ",
+        "メッセージ受信",
+        "動作確認",
+        "アプリケーション"
+      ]
+    },
+    {
+      "id": "s17",
+      "title": "シミュレータがメッセージ送信する場合",
+      "hints": [
+        "動作イメージ",
+        "メッセージ送信",
+        "動作確認"
+      ]
+    },
+    {
+      "id": "s18",
+      "title": "利用手順",
+      "hints": [
+        "利用手順",
+        "シミュレータ設定",
+        "Excelファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "NAF、ミドルウェア、ハードウェア等の設定確認を目的とした疎通テストにおいて、簡易的な通信対向先システムとして使用可能。",
+    "s2": "アプリケーションの結合テストにおいて、システム間通信の擬似的な対向先システムとして使用可能。\n\n- シミュレータに要求電文/応答電文として利用するデータを設定することでシナリオを用いたテストが可能。\n- 取引単体テストとの違い: OSやミドルウェアも含めた動作確認ができる。\n\n> **注意**: シミュレータ処理の一部をJavaで記述することで、応答電文の送信を意図的に遅延させるといったテストも可能。",
+    "s3": "アプリケーションの負荷テストを行う際に、負荷をかけるための大量のメッセージ送受信を行うことができる。",
+    "s4": "![シミュレータがMOM同期応答メッセージ受信を行う場合の構成例](assets/biz-samples-doc--s1/overview01.png)",
+    "s5": "![シミュレータがMOM同期応答メッセージ送信を行う場合の構成例](assets/biz-samples-doc--s1/overview02.png)",
+    "s6": "![シミュレータがMOM応答不要メッセージ送信を行う場合の構成例](assets/biz-samples-doc--s1/overview03.png)",
+    "s7": "![シミュレータがHTTPメッセージ受信を行う場合の構成例](assets/biz-samples-doc--s1/overview04.png)",
+    "s8": "![シミュレータがHTTPメッセージ送信を行う場合の構成例](assets/biz-samples-doc--s1/overview05.png)",
+    "s9": "取引単体テストで作成したExcelファイルのテストデータをシミュレータが送受信するメッセージとして流用可能。フォーマット定義ファイルもテスト対象アプリケーションのものを流用可能。",
+    "s10": "ソースコードのカスタマイズにより以下のテストが可能:\n\n- 要求電文の内容に応じた応答電文の動的変更\n- 応答遅延によるタイムアウト等の異常系テスト",
+    "s11": "Nablarchのマルチスレッド実行制御ハンドラをシミュレータ内部で使用しており、マルチスレッドで要求電文を送信することで大量メッセージの負荷テストが可能。",
+    "s12": "実装済みの機能:\n\n- HTTPメッセージ受信・MOM同期応答メッセージ受信用の応答電文を送信できる\n- 要求電文のログを出力できる\n- 任意のHTTPステータスコードを返却できる\n- シミュレータへの要求順序に合わせた応答電文を送信可能（Excelファイルの内容を上から順に返却）",
+    "s13": "未実装の機能:\n\n- 受信した電文の一部を応答に含めた応答電文の作成（カスタマイズで対応可能）\n- 送信間隔の指定（例：5秒毎）\n\n未検討の機能:\n\n- MOM応答不要メッセージ受信のシミュレート\n- 窓口数の調整および窓口不足時の応答設定（即時エラー、10秒まで待つ等）",
+    "s14": "実装済みの機能:\n\n- HTTPメッセージ送信・MOM同期応答メッセージ送信・MOM応答不要メッセージ送信用の要求電文を送信できる\n- 指定回数、同じ電文を送信できる\n- 応答電文のログを出力できる\n- Excelファイルの内容を順に送信できる",
+    "s15": "未検討の機能:\n\n- 要求電文の送信間隔設定（例：5秒ごとに10%、10秒ごとに20%等の比率での間隔設定）",
+    "s16": "アプリケーションからシミュレータがメッセージ受信する場合の動作イメージ:\n\n![シミュレータがメッセージ受信する場合の動作イメージ](assets/biz-samples-doc--s1/behavior_illustration01.png)",
+    "s17": "シミュレータからアプリケーションにメッセージ送信する場合の動作イメージ:\n\n![シミュレータがメッセージ送信する場合の動作イメージ](assets/biz-samples-doc--s1/behavior_illustration02.png)",
+    "s18": "シミュレータの詳細は利用手順ファイルを参照。\n\n利用手順ファイル: `assets/biz-samples-doc--s1/利用手順.xlsx`"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

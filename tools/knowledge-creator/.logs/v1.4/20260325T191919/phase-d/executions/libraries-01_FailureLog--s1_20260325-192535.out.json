@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — ProcessAbnormalEnd code example comment",
+      "description": "Source code comment explaining the first parameter of ProcessAbnormalEnd is omitted: '終了コードとはプロセスを終了する際に System#exit(int) メソッドに設定する値である。' This explains what the integer argument (e.g., 100) represents in the constructor, which is important API documentation for developers using this class.",
+      "source_evidence": "// 終了コードとはプロセスを終了する際に System#exit(int) メソッドに設定する値である。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — 障害ログの出力方法 (message-not-found log output example)",
+      "description": "The source includes a concrete log output example for the message-not-found case, showing how the failure code and fallback message appear in the actual notification log line. This example is omitted from the knowledge file. It demonstrates the format: 'fail_code = [AP112233] failed to get the message to output the failure log. failureCode = [AP112233]'.",
+      "source_evidence": "# 障害コード(fail_code = [AP112233])の後にメッセージを出力している。\n2011-02-23 18:23:45.680 -FATAL- usr_id = [9999999999] fail_code = [AP112233] failed to get the message to output the failure log. failureCode = [AP112233]"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — 障害ログの出力例 (log.properties configuration)",
+      "description": "The source includes a complete log.properties configuration in the output example section that shows the concrete format strings used to produce the log output examples (e.g., '$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$$information$$stackTrace$'). This configuration, especially the format strings with $information$ and $stackTrace$ placeholders, explains why the analysis log includes 'Stack Trace Information' while the notification log does not. The knowledge file only includes app-log.properties but omits log.properties for this section.",
+      "source_evidence": "writer.monitorFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$\nwriter.appFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$$information$$stackTrace$"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 index hints",
+      "description": "Several property names from the configuration table in s5 are missing from the hints array: failureLogFormatter.defaultMessage, failureLogFormatter.language, failureLogFormatter.appFailureCodeFilePath, failureLogFormatter.fwFailureCodeFilePath. Additionally, failureLogFormatter.derivedRequestIdPropName and failureLogFormatter.derivedUserIdPropName appear in the config example but are absent from hints. The $contact$ placeholder (from the placeholder table) is also missing.",
+      "source_evidence": "failureLogFormatter.defaultMessage(必須), failureLogFormatter.language, failureLogFormatter.appFailureCodeFilePath, failureLogFormatter.fwFailureCodeFilePath, failureLogFormatter.derivedRequestIdPropName=insertRequestId, failureLogFormatter.derivedUserIdPropName=updatedUserId, $contact$"
+    }
+  ]
+}

@@ -1,0 +1,491 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/01/01_FailureLog.rst`
+- Format: `rst`
+
+```
+障害の連絡先情報の追加方法
+==================================================================
+障害ログの出力では、リクエストIDに1次切り分け担当者を特定するための情報として、業務コードなどを含めることを推奨している。\
+しかし、プロジェクトによっては、リクエストIDに1次切り分け担当者を特定するための情報を含めることができないケースが考えられる。\
+このため、障害ログの出力では、リクエストID毎に1次切り分け担当者の連絡先情報を指定する機能を提供する。
+
+連絡先情報の追加は、プロパティファイルに指定する。キーにリクエストID、値に連絡先情報を指定する。\
+キーに指定されたリクエストIDは、ThreadContextから取得したリクエストIDに対して、前方一致で検索する。\
+このため、プロパティファイルの内容は読み込み後に、より限定的なリクエストIDから検索するように、キー名の長さの降順にソートする。
+
+連絡先情報の追加例を下記に示す。
+
+ます、プロパティファイルを準備する。\
+"failure-log-contact.properties"というファイル名でクラスパス直下に配置しているものとする。
+
+failure-log-contact.propertiesの設定例
+
+.. code-block:: bash
+
+ # リクエストID=連絡先情報
+ USERS=USRMGR999
+ USERS003=USRMGR300
+ USERS00301=USRMGR301
+ USERS00302=USRMGR302
+ USERS00303=USRMGR303
+
+上記プロパティファイルは、読み込み後下記の通りソートされ、上から順に検索に使用する。
+
+.. code-block:: bash
+
+ # 上3つの並び順は、キー名の長さが等しいため、実行毎に変わる。
+ USERS00301=USRMGR301
+ USERS00302=USRMGR302
+ USERS00303=USRMGR303
+ USERS003=USRMGR300
+ USERS=USRMGR999
+
+次に、障害ログのフォーマットで連絡先情報を表すプレースホルダ$contact$を指定する。\
+さらに、プロパティファイルのパスを指定する。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # FailureLogFormatterの設定
+ failureLogFormatter.defaultFailureCode=ZZ999999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.notificationFormat=[$failureCode$:$message$] <$contact$>
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$ <$contact$>
+ failureLogFormatter.contactFilePath=classpath:failure-log-contact.properties
+
+上記の設定により、リクエストID毎に連絡先情報が出力される。\
+リクエストIDが"USERS00302"の場合に発生した障害の出力例を下記に示す。\
+$contact$を指定した箇所(<>で囲った部分)に"USRMGR"が出力される。
+
+.. code-block:: bash
+
+ # 障害通知ログ
+ 2011-02-15 15:09:57.691 -FATAL- [APUSRMGR0001201102151509320020009] R[USERS00302] U[0000000001] [ZZ999999:an unexpected exception occurred.] <USRMGR302>
+ 
+ # 障害解析ログ
+ 2011-02-15 15:09:57.707 -FATAL- [APUSRMGR0001201102151509320020009] R[USERS00302] U[0000000001] fail_code = [ZZ999999] an unexpected exception occurred. <USRMGR302>
+ # スタックトレースは省略。
+
+リクエストIDに対応する連絡先情報が見つからない場合はnullが出力される。\
+連絡先情報が見つからない場合の障害通知ログの出力例を下記に示す。
+
+.. code-block:: bash
+
+ # 障害通知ログ
+ # プロパティファイルにリクエストID"USERS00333"が定義されていないので連絡先情報はnullとなる。
+ 2011-02-15 15:09:57.691 -FATAL- [APUSRMGR0001201102151509320020009] R[USERS00333] U[0000000001] [ZZ999999:an unexpected exception occurred.] <null>
+
+.. _FailureLog_AppMsgId:
+
+アプリケーションの障害コードの変更方法
+==================================================================================================================
+アプリケーションでは、TransactionAbnormalEnd(ProcessAbnormalEnd)やFailureLogUtilを使用して障害ログの出力を行う。\
+この場合、アプリケーションでは、ソースコード上に直接障害コードを書き込む(ハードコーディング)。\
+障害ログの出力では、ソースコードに修正を加えることなく、アプリケーションの実行時にソースコード上にハードコードされた障害コードを変更することができる。
+
+障害コードの変更は、プロパティファイルに指定する。\
+プロパティファイルには、ソースコード上の障害コード毎に出力に使用する障害コードを指定する。
+
+アプリケーションの障害コードの変更例を下記に示す。\
+アプリケーションで下記のProcessAbnormalEndを送出していることを想定する。
+※TransactionAbnormalEndの使用方法は、ProcessAbnormalEndと全く同じであるためここでの説明は省略する。
+
+.. code-block:: java
+
+ if (userId == null) {
+     throw new ProcessAbnormalEnd(100, "UM900003");
+ }
+
+ます、プロパティファイルを準備する。\
+"failure-log-app-codes.properties"というファイル名でクラスパス直下に配置しているものとする。
+
+failure-log-app-codes.propertiesの設定例
+
+.. code-block:: bash
+
+ # ソース上の障害コード=出力に使用する障害コード
+ UM900003=MSG9003
+
+次に、FailureLogFormatterの設定でプロパティファイルのパスを指定する。\
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # FailureLogFormatterの設定
+ failureLogFormatter.defaultFailureCode=ZZ999999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.notificationFormat=[$failureCode$:$message$]
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$
+ failureLogFormatter.appFailureCodeFilePath=classpath:failure-log-app-codes.properties
+
+上記の設定により、ソース上で指定された障害コード毎に出力に使用する障害コードが変更される。\
+ProcessAbnormalEndが送出された場合の出力例を下記に示す。\
+障害コードが"UM900003"から"MSG9003"に変更されて出力される。
+
+.. code-block:: bash
+
+ # 障害通知ログ
+ 2011-02-15 15:52:30.394 -FATAL- [APUSRMGR0001201102151552085470006] R[USERS00302] U[0000000001] [MSG9003:userId was invalid.]
+ 
+ # 障害解析ログ
+ 2011-02-15 15:52:30.394 -FATAL- [APUSRMGR0001201102151552085470006] R[USERS00302] U[0000000001] fail_code = [MSG9003] userId was invalid.
+ # スタックトレースは省略。
+
+ソース上で指定された障害コードに対応する出力に使用する障害コードが見つからない場合は、ソース上で指定された障害コードを使用する。
+
+.. _FailureLog_FwMsgId:
+
+フレームワークの障害コードの変更方法
+==================================================================================================================
+フレームワークでは、想定しないエラーが発生した際にRuntimeException系の例外を送出している。\
+その結果、フレームワークが送出した例外は、全てデフォルトの障害コードが使用されて障害ログが出力される。\
+障害監視において、障害コードにより監視対象をフィルタリングしたいケースが考えられるため、\
+障害ログの出力では、フレームワークの障害コードを指定する機能を提供する。
+
+フレームワークの障害コードは、例外が送出されたクラス名毎に指定することができる。\
+「例外が送出されたクラス」とは、スタックトレースのルート要素を指している。\
+例えば、下記のスタックトレースであれば、nablarch.core.message.StringResourceHolderクラスとなる。
+
+.. code-block:: bash
+
+ Stack Trace Information : 
+ java.lang.RuntimeException: ValidateFor method invocation failed. targetClass = java.lang.Class, method = validateForRegisterUser
+     at nablarch.core.validation.ValidationManager.validateAndConvert(ValidationManager.java:202)
+     # 途中のスタックトレースは省略。
+ Caused by: nablarch.core.message.MessageNotFoundException: message was not found. message id = MSG00010
+     at nablarch.core.message.StringResourceHolder.get(StringResourceHolder.java:40)
+     # 以降のスタックトレースは省略。(以降Caused byは出現しない)
+
+ただし、フレームワークのクラス毎に障害コードを設定するのは、分類が細かすぎるため現実的ではない。\
+基本はパッケージ名単位に障害コードを指定することで、フレームワークのどの機能で例外が送出されたか判断することができる。\
+
+フレームワークの障害コードは、プロパティファイルに指定する。\
+プロパティファイルでは、キーにフレームワークのパッケージ名、値に障害コードを指定する。\
+キーに指定されたパッケージ名は、スタックトレースから取得した例外が送出されたクラスのFQCN(完全修飾クラス名)に対して、前方一致で検索する。\
+このため、プロパティファイルの内容は読み込み後に、より限定的なパッケージ名から検索するように、キー名の長さの降順にソートする。
+
+フレームワークの障害コードの変更例を下記に示す。
+
+ます、プロパティファイルを準備する。\
+"failure-log-fw-codes.properties"というファイル名でクラスパス直下に配置しているものとする。
+nablarchというパッケージ名を指定することで、個別に指定していない全てのパッケージに対して障害コードを指定できる。
+
+failure-log-fw-codes.propertiesの設定例
+
+.. code-block:: bash
+
+ # フレームワークのパッケージ名=障害コード
+ nablarch=FW999999
+ nablarch.core.cache=FW020100
+ nablarch.core.date=FW020200
+ nablarch.core.db=FW020300
+ nablarch.core.message=FW020400
+ nablarch.core.repository=FW020500
+ nablarch.core.transaction=FW020600
+
+上記プロパティファイルは、読み込み後下記の通りソートされ、上から順に検索に使用する。
+
+.. code-block:: bash
+
+ nablarch.core.transaction=FW020600
+ nablarch.core.repository=FW020500
+ nablarch.core.message=FW020400
+ nablarch.core.cache=FW020100
+ nablarch.core.date=FW020200
+ nablarch.core.db=FW020300
+ nablarch=FW999999
+
+次に、FailureLogFormatterの設定でプロパティファイルのパスを指定する。\
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # FailureLogFormatterの設定
+ failureLogFormatter.defaultFailureCode=ZZ999999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.notificationFormat=[$failureCode$:$message$]
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$
+ failureLogFormatter.fwFailureCodeFilePath=classpath:failure-log-fw-codes.properties
+
+上記の設定により、フレームワークの障害コードが変更される。\
+障害通知ログでいくつか出力例を下記に示す。
+
+nablarch.core.date.BasicBusinessDateProviderクラスで例外を送出した場合
+
+.. code-block:: bash
+
+ # プロパティファイルのnablarch.core.date=FW020200が該当する。
+ 2011-02-15 16:48:54.993 -FATAL- [APUSRMGR0001201102151648315060002] R[LOGIN00102] U[9999999999] fail_code = [FW020200] segment was not found. segment:00.
+ Stack Trace Information : 
+ java.lang.IllegalStateException: segment was not found. segment:00.
+     at nablarch.core.date.BasicBusinessDateProvider.getDate(BasicBusinessDateProvider.java:103)
+     # 以降のスタックトレースは省略。
+
+nablarch.core.message.StringResourceHolderクラスで例外を送出した場合
+
+.. code-block:: bash
+
+ # プロパティファイルのnablarch.core.message=FW020400が該当する。
+ 2011-02-15 16:54:06.413 -FATAL- [APUSRMGR0001201102151653476260011] R[USERS00201] U[0000000001] fail_code = [FW020400] ValidateFor method invocation failed. targetClass = java.lang.Class, method = validateForRegisterUser
+ Stack Trace Information : 
+ java.lang.RuntimeException: ValidateFor method invocation failed. targetClass = java.lang.Class, method = validateForRegisterUser
+     at nablarch.core.validation.ValidationManager.validateAndConvert(ValidationManager.java:202)
+     # 途中のスタックトレースは省略。
+ Caused by: nablarch.core.message.MessageNotFoundException: message was not found. message id = MSG00010
+     at nablarch.core.message.StringResourceHolder.get(StringResourceHolder.java:40)
+     # 以降のスタックトレースは省略。
+
+nablarch.common.authentication.PasswordAuthenticatorクラスで例外を送出した場合
+
+.. code-block:: bash
+
+ # プロパティファイルのnablarch=FW999999が該当する。
+ 2011-02-15 16:59:03.076 -FATAL- [APUSRMGR0001201102151658551890017] R[LOGIN00102] U[9999999999] fail_code = [FW999999] authentication failed.
+ Stack Trace Information : 
+ nablarch.common.authentication.AuthenticationFailedException
+     at nablarch.common.authentication.PasswordAuthenticator.authenticate(PasswordAuthenticator.java:302)
+     # 以降のスタックトレースは省略。
+
+.. _FailureLog_DerivedExecutionInfo:
+
+派生元実行時情報の出力方法
+==============================================================================
+派生元実行時情報とは、例えば、画面処理からバッチ処理にデータ連携する場合であれば、
+画面処理を実行した時点の実行時情報がバッチ処理での派生元実行時情報となる。\
+以降では、処理方式間でデータ連携した場合に、先に処理を行う側を前段処理、後に処理を行う側を後段処理と呼ぶ。\
+後段処理における障害発生時に、前段処理の追跡作業を軽減するために派生元実行時情報を出力する。
+
+派生元実行時情報の出力には、本機能のプレースホルダ「$data$」が使用できる。\
+プレースホルダ「$data$」が指定された場合、データリーダを使用して読み込まれたデータが障害ログに出力される。\
+この機能を使用して、前段処理において予め実行時情報をデータに含めておくことで、\
+後段処理の障害発生時に処理対象データとして前段処理の実行時情報が出力されることになる。
+
+前段処理における実行時情報の設定には、 :ref:`db-object-store-label` を使用する。\
+スレッドコンテキストに設定されたリクエストID、実行時ID、ユーザIDをオブジェクトに設定するアノテーションを提供している。\
+アノテーションの詳細については、 :ref:`AutoPropertyHandlerの実装クラス<db-object-save-class-label>` を参照。
+
+ここでは、データベースを使用したデータ連携における派生元実行時情報の出力例を示す。\
+前段処理において下記のカラム名で実行時情報が設定されていることとする。
+
+ ======================== ========================
+ 項目                     カラム名
+ ======================== ========================
+ リクエストID             INSERT_REQUEST_ID
+ 実行時ID                 INSERT_EXECUTION_ID
+ ユーザID                 UPDATED_USER_ID
+ ======================== ========================
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # FailureLogFormatterの設定
+ failureLogFormatter.defaultFailureCode=MSG99999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$
+ # 処理対象データのプレースホルダ「data」を障害解析ログのフォーマットに指定する。
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nInput Data :\n$data$
+ 
+障害解析ログの出力例
+
+.. code-block:: bash
+ 
+ # 障害解析ログ
+ 2011-09-26 21:06:35.745 -FATAL- root [EXECUTION_ID_0000000123456789] boot_proc = [] proc_sys = [] req_id = [RB11AC0160] usr_id = [batchuser1] fail_code = [NB11AA0107] ユーザ情報の登録に失敗しました。
+ Input Data :
+ {MOBILE_PHONE_NUMBER_AREA_CODE=002, KANJI_NAME=山本太郎, USER_INFO_ID=00000000000000000113, INSERT_EXECUTION_ID=EXECUTION_ID_2000000123456789, MAIL_ADDRESS=yamamoto@sample.com, MOBILE_PHONE_NUMBER_CITY_CODE=0003, UPDATED_USER_ID=batch_user, MOBILE_PHONE_NUMBER_SBSCR_CODE=0004, KANA_NAME=ヤマモトタロウ, EXTENSION_NUMBER_BUILDING=13, LOGIN_ID=12345678901234567890, EXTENSION_NUMBER_PERSONAL=1235, INSERT_REQUEST_ID=RB11AC0140}
+ Stack Trace Information : 
+ [100 TransactionAbnormalEnd] ユーザ情報の登録に失敗しました。
+     at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:73)
+     at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:1)
+     at nablarch.fw.action.BatchAction.handle(BatchAction.java:1)
+     # 以降のスタックトレースは省略。
+
+処理対象データ(出力例の「Input Data :」)に下記の実行時情報が出力される。
+
+.. code-block:: bash
+
+ INSERT_REQUEST_ID=RB11AC0140
+ INSERT_EXECUTION_ID=EXECUTION_ID_2000000123456789
+ UPDATED_USER_ID=batch_user
+
+.. _FailureLog_PlaceholderCustomize:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-01_FailureLog--s7`
+
+```json
+{
+  "id": "libraries-01_FailureLog--s7",
+  "title": "障害の連絡先情報の追加方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "障害の連絡先情報の追加方法",
+      "hints": [
+        "FailureLogFormatter",
+        "failureLogFormatter.contactFilePath",
+        "$contact$",
+        "連絡先情報",
+        "リクエストID前方一致",
+        "障害ログ連絡先",
+        "1次切り分け担当者"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "アプリケーションの障害コードの変更方法",
+      "hints": [
+        "FailureLogFormatter",
+        "failureLogFormatter.appFailureCodeFilePath",
+        "TransactionAbnormalEnd",
+        "ProcessAbnormalEnd",
+        "FailureLogUtil",
+        "障害コード変更",
+        "アプリケーション障害コード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "フレームワークの障害コードの変更方法",
+      "hints": [
+        "FailureLogFormatter",
+        "failureLogFormatter.fwFailureCodeFilePath",
+        "障害コード変更",
+        "フレームワーク障害コード",
+        "パッケージ名前方一致",
+        "RuntimeException",
+        "FQCN"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "派生元実行時情報の出力方法",
+      "hints": [
+        "FailureLogFormatter",
+        "failureLogFormatter.analysisFormat",
+        "$data$",
+        "派生元実行時情報",
+        "バッチ処理データ連携",
+        "db-object-store-label",
+        "前段処理",
+        "後段処理",
+        "AutoPropertyHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リクエストIDに1次切り分け担当者の連絡先情報をプロパティファイルで指定する機能。\n\n- **プロパティファイル形式**: キー=リクエストID、値=連絡先情報\n- 前方一致で検索（ThreadContextから取得したリクエストIDに対して）\n- 読み込み後にキー名の長さの**降順にソート**（より限定的なリクエストIDが優先して検索される）\n- 連絡先情報が見つからない場合は `null` が出力される\n\n**failure-log-contact.properties 設定例**:\n```bash\nUSERS=USRMGR999\nUSERS003=USRMGR300\nUSERS00301=USRMGR301\nUSERS00302=USRMGR302\nUSERS00303=USRMGR303\n```\n\n読み込み後のソート順（上から検索に使用）:\n```bash\nUSERS00301=USRMGR301\nUSERS00302=USRMGR302\nUSERS00303=USRMGR303\nUSERS003=USRMGR300\nUSERS=USRMGR999\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| `failureLogFormatter.contactFilePath` | 連絡先プロパティファイルのパス（例: `classpath:failure-log-contact.properties`） |\n| `failureLogFormatter.notificationFormat` | `$contact$` プレースホルダで連絡先を出力 |\n| `failureLogFormatter.analysisFormat` | `$contact$` プレースホルダで連絡先を出力 |\n\n**app-log.properties 設定例**:\n```bash\nfailureLogFormatter.defaultFailureCode=ZZ999999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=[$failureCode$:$message$] <$contact$>\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$ <$contact$>\nfailureLogFormatter.contactFilePath=classpath:failure-log-contact.properties\n```",
+    "s2": "TransactionAbnormalEnd/ProcessAbnormalEnd や FailureLogUtil を使用した障害コードを、ソース修正なしで実行時に変更できる機能。\n\n- **プロパティファイル形式**: キー=ソース上の障害コード、値=出力に使用する障害コード\n- 対応する出力コードが見つからない場合はソース上の障害コードをそのまま使用する\n\nアプリケーションでは障害コードをソースコード上に直接ハードコーディングする。例:\n```java\nif (userId == null) {\n    throw new ProcessAbnormalEnd(100, \"UM900003\");\n}\n```\nこの `\"UM900003\"` がプロパティファイルのキーに対応する障害コード文字列となる。\n\n**failure-log-app-codes.properties 設定例**:\n```bash\nUM900003=MSG9003\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| `failureLogFormatter.appFailureCodeFilePath` | アプリケーション障害コードマッピングファイルのパス（例: `classpath:failure-log-app-codes.properties`） |\n\n**app-log.properties 設定例**:\n```bash\nfailureLogFormatter.defaultFailureCode=ZZ999999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=[$failureCode$:$message$]\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.appFailureCodeFilePath=classpath:failure-log-app-codes.properties\n```",
+    "s3": "フレームワークが送出した例外（RuntimeException系）に対して、障害コードをパッケージ名単位で指定できる機能。\n\n- **「例外が送出されたクラス」**: スタックトレースのルート要素（最後のCaused byのクラス）のFQCN\n- **プロパティファイル形式**: キー=フレームワークのパッケージ名、値=障害コード\n- FQCNに対して前方一致で検索\n- 読み込み後にキー名の長さの**降順にソート**（より限定的なパッケージ名が優先して検索される）\n- `nablarch` を指定すると個別に設定されていない全パッケージに対して障害コードを指定できる\n- クラス毎に障害コードを設定するのは分類が細かすぎるため現実的ではない。**基本はパッケージ名単位**で障害コードを指定し、フレームワークのどの機能で例外が送出されたか判断する\n\n**failure-log-fw-codes.properties 設定例**:\n```bash\nnablarch=FW999999\nnablarch.core.cache=FW020100\nnablarch.core.date=FW020200\nnablarch.core.db=FW020300\nnablarch.core.message=FW020400\nnablarch.core.repository=FW020500\nnablarch.core.transaction=FW020600\n```\n\n読み込み後のソート順（上から検索に使用）:\n```bash\nnablarch.core.transaction=FW020600\nnablarch.core.repository=FW020500\nnablarch.core.message=FW020400\nnablarch.core.cache=FW020100\nnablarch.core.date=FW020200\nnablarch.core.db=FW020300\nnablarch=FW999999\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| `failureLogFormatter.fwFailureCodeFilePath` | フレームワーク障害コードマッピングファイルのパス（例: `classpath:failure-log-fw-codes.properties`） |\n\n**app-log.properties 設定例**:\n```bash\nfailureLogFormatter.defaultFailureCode=ZZ999999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=[$failureCode$:$message$]\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.fwFailureCodeFilePath=classpath:failure-log-fw-codes.properties\n```",
+    "s4": "後段処理（例: バッチ処理）の障害発生時に、前段処理（例: 画面処理）の実行時情報を出力する機能。\n\n- プレースホルダ `$data$` を使用すると、データリーダが読み込んだデータが障害ログに出力される\n- 前段処理で :ref:`db-object-store-label` を使用して予め実行時情報をデータに含めておくことで、後段処理の障害発生時に前段処理の実行時情報が出力される\n- スレッドコンテキストのリクエストID・実行時ID・ユーザIDをオブジェクトに設定するアノテーションを提供。詳細は :ref:`AutoPropertyHandlerの実装クラス<db-object-save-class-label>` を参照\n\n**app-log.properties 設定例** (`$data$` プレースホルダを analysisFormat に指定):\n```bash\nfailureLogFormatter.defaultFailureCode=MSG99999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\\nInput Data :\\n$data$\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

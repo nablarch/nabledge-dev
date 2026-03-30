@@ -1,0 +1,13 @@
+{
+  "file_id": "web-application-function--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index[id=s4].hints",
+      "description": "s4のhintsに\"setMaxResultCount\"が含まれているが、s4のソース（ページングを使用しない一覧表示）では`setMaxResultCount`は呼び出されていない。s4で使用されているのは`setMax(condition.getMaxResultCount())`のみであり、`setMaxResultCount`はs2（表示件数と検索結果件数の個別設定）で使用されるメソッド。",
+      "source_evidence": "s4ソース: `condition.setMax(condition.getMaxResultCount());` のみ。setMaxResultCountが登場するのはs2のアクション実装例: `condition.setMaxResultCount(MAX_RESULT_COUNT);`"
+    }
+  ]
+}

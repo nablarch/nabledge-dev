@@ -1,0 +1,27 @@
+{
+  "file_id": "workflow-SampleApplicationImplementation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s4 (SQL code example)",
+      "description": "The SQL code example in s4 omits two elements from the source: (1) the Nablarch SQL statement identifier `SELECT_ACTIVE_APPLICATION_BY_CONDITION=` that precedes the WITH clause, and (2) the `ORDER BY WORK_ITEM.APPLICATION_DATE` clause at the end of the query. The statement identifier is how Java code references this SQL via `getParameterizedSqlStatement()`.",
+      "source_evidence": "Source SQL begins with `SELECT_ACTIVE_APPLICATION_BY_CONDITION=\\nWITH` and ends with `ORDER BY\\n    WORK_ITEM.APPLICATION_DATE`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "`ThreadContext` is a PascalCase class name used in the s1 code example (`ThreadContext.getUserId()`) but is absent from the s1 hints array.",
+      "source_evidence": "Source s1 code: `workflow.assignUser(REAPPLICATION_TASK, ThreadContext.getUserId());`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[4].hints (s5)",
+      "description": "Three identifiers from the s5 source code are missing from hints: `@OnError` and `@OnErrors` (annotation names on the example action methods) and `ExclusiveCtrlTransExpeApplicationContext` (PascalCase class name passed to `prepareVersion`).",
+      "source_evidence": "Source s5 code uses `@OnError(type = ApplicationException.class, ...)`, `@OnErrors({ @OnError(type = OptimisticLockException.class, ...) })`, and `new ExclusiveCtrlTransExpeApplicationContext(applicationId)`"
+    }
+  ]
+}

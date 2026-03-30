@@ -1,0 +1,184 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation_messaging/04_Explanation_http_real/02_basic.rst`
+- Format: `rst`
+
+```
+======================================================
+HTTP同期応答型メッセージ受信処理のアプリケーション構造
+======================================================
+
+HTTP同期応答型メッセージ受信処理で共通の基本的なクラス構造については、
+\ :doc:`../04_Explanation_real/02_basic`\ を参照すること。
+
+本項では、\ :doc:`../04_Explanation_real/02_basic`\ と異なる箇所の解説を行う。
+
+
+概要
+====
+
+Nablarch Application Frameworkでは、複雑になりがちなメッセージング処理を簡潔かつ堅牢に作成できるように以下のような機能を備えている。
+
+* Nablarch共通の実装方法
+
+ 業務Actionの実装内容は、MOMによるメッセージング処理と同様の実装にて、HTTPメッセージングを実現できる。
+
+* データ形式
+
+ HTTP同期応答型メッセージングのデータ形式として一般的に用いるJSON/XML形式についても、
+ 汎用データフォーマッターでサポートしており、従来の固定長ファイルやCSV/TSVと同様に扱うことができる。
+
+
+処理の流れ
+==========
+
+WebコンテナからNablarch Application Frameworkへ要求電文が到達する毎に、以下の処理が実行される。
+
+ 
+#. Nablarch Application Frameworkはmessaging.configのURIをもとに、業務アクションクラスを起動する。
+#. 業務アクションは、要求電文を受け取り業務処理を実行し、応答電文を戻り値として返却する。
+#. Nablarch Application Frameworkは、返却された応答電文をWebコンテナへ返却する。
+
+
+.. image:: ./_image/sequence.png
+
+```
+
+## Knowledge File
+
+- ID: `http-messaging-02_basic-04_Explanation_http_real`
+
+```json
+{
+  "id": "http-messaging-02_basic-04_Explanation_http_real",
+  "title": "HTTP同期応答型メッセージ受信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "HTTP同期応答型メッセージング",
+        "MOMメッセージング",
+        "JSON/XMLデータ形式",
+        "汎用データフォーマッター",
+        "HTTPメッセージング実装"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "処理の流れ",
+      "hints": [
+        "HTTP同期応答型メッセージング処理フロー",
+        "messaging.config",
+        "業務アクション",
+        "要求電文",
+        "応答電文"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 概要\n\n- 業務Actionの実装内容はMOMによるメッセージング処理と同様の実装でHTTPメッセージングを実現できる\n- HTTP同期応答型メッセージングのデータ形式として一般的に用いるJSON/XML形式は汎用データフォーマッターでサポートされており、固定長ファイルやCSV/TSVと同様に扱える",
+    "s2": "## 処理の流れ\n\nWebコンテナからNablarch Application Frameworkへ要求電文が到達するたびに以下の処理が実行される:\n\n1. Nablarch Application Frameworkは`messaging.config`のURIをもとに業務アクションクラスを起動する\n2. 業務アクションは要求電文を受け取り業務処理を実行し、応答電文を戻り値として返却する\n3. Nablarch Application Frameworkは返却された応答電文をWebコンテナへ返却する"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

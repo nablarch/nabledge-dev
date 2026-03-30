@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-0402_ExtendedFieldType--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "s6のヒントにPascalCaseクラス名が欠けている。s6の本文には実装クラス名 `EbcdicDoubleByteCharacterString` と `EbcdicNoShiftCodeDoubleByteCharacterString` が明示されているが、s6のhintsには含まれていない。",
+      "source_evidence": "s6テーブルの「サンプル実装クラス」欄: `please.change.me.core.dataformat.converter.datatype.EbcdicDoubleByteCharacterString` および `EbcdicNoShiftCodeDoubleByteCharacterString`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s6 (ESN行)",
+      "description": "ESNの入力処理に関する「特になにもせず」という記述が省略されている。原典では入力時にシフトコードに対して何も特別な処理をせずそのまま文字列化することが明示されており、ENの「内部で補完する」動作との対比として意味がある。",
+      "source_evidence": "原典s6のESN行: 「入力時はシフトアウト・シフトインのコードを付加された状態を想定し特になにもせず文字列化を行い」"
+    }
+  ]
+}

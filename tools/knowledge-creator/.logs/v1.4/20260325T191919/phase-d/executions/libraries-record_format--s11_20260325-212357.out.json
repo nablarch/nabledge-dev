@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-record_format--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — XMLデータ例",
+      "description": "The XML code example was modified from the source. The source uses `<header>` and `<data>` (opening-tag syntax) as closing tags, while the knowledge file changed them to `</header>` and `</data>` (proper closing tags). The code was not faithfully reproduced from the source.",
+      "source_evidence": "Source: `  <header>\\n    <msg_id>123456</msg_id>\\n  <header>` and `  <data>\\n    <name>nablarch</name>\\n    <age>30</age>\\n  <data>` — knowledge file shows `</header>` and `</data>` instead."
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — XMLデータ例",
+      "description": "The XML code example was modified from the source. The source uses `<header>` and `<data>` (opening-tag syntax) as closing tags for all repeated `<data>` blocks, while the knowledge file changed them to `</header>` and `</data>`. The code was not faithfully reproduced from the source.",
+      "source_evidence": "Source: `  <header>\\n    <msg_id>123456</msg_id>\\n  <header>` and each `<data>` block ends with `  <data>` — knowledge file shows `</header>` and `</data>` instead."
+    }
+  ]
+}

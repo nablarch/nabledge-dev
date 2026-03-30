@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-KeitaiAccessHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s1 — NablarchTagHandlerの配置ルール行",
+      "description": "知識ファイルs1のハンドラキュー配置順テーブルで、NablarchTagHandlerの説明に`nablarch_sumbit`というパラメータ名を使用しているが、ソースファイルでは一貫して`nablarch_sumit`（bなし）が使われている。`nablarch_sumbit`はソースファイルのどこにも存在しない。",
+      "source_evidence": "ソースの関連するハンドラ表: 「本ハンドラで設定したリクエストパラメータ **nablarch_sumit** の値をもとに」。ハンドラ処理フロー ステップ2でも同様に「リクエストパラメータ **nablarch_sumit** の値を設定する」と記載。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index[1].hints (s2) — \"nablarch_sumbit\"エントリ",
+      "description": "s2のhintsに`nablarch_sumbit`が含まれているが、このパラメータ名はソースファイルのどこにも存在しない。ソースが使用するのは`nablarch_sumit`のみ。",
+      "source_evidence": "ソースファイル全体を通じて`nablarch_sumbit`は一切登場せず、`nablarch_sumit`のみが使用されている。"
+    }
+  ]
+}

@@ -1,0 +1,621 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/04/04_QueryCache.rst`
+- Format: `rst`
+
+```
+.. -*- mode: rst; coding: utf-8 -*-
+
+=========================
+SQLクエリ結果のキャッシュ
+=========================
+
+
+----
+概要
+----
+
+SQLクエリ結果のキャッシュを行う。
+SQL IDとパラメータが等価である参照系クエリに対して、キャッシュした結果を返却できる（DBアクセスが発生しない）。
+
+本機能は、以下のようなクエリに対して使用することを想定している。
+
+* トレンドを把握するためのクエリであり、結果が厳密に最新の値でなくても構わないクエリ（例：売れ筋ランキング）。
+* データ更新のタイミングが予め分かっており、その期間中は毎回結果が同じになるクエリ（例：データが夜間バッチで更新される）。
+
+このようなクエリに対して本機能を使用することで、DBアクセス回数を減らし、
+システム負荷を軽減することができる。
+
+このようなキャッシュ機構は、セッションやテンポラリテーブルなどに明示的に値をキャッシュすることでも実現可能であるが、
+本機能を使用することで、そのような個別の作り込みを行わなくても、
+データベースアクセスに対して透過的にキャッシュ機能を付加することができる。
+
+**【キャッシュヒット時の動作イメージ】**
+
+.. image:: ../_images/04/DbCache_abstract_seq_cache_hit.png
+
+
+**【キャッシュミス時の動作イメージ】**
+
+.. image:: ../_images/04/DbCache_abstract_seq_cache_miss.png
+
+
+
+本機能と類似した機能としてRDBMSのクエリキャッシュが挙げられるが、
+RDBMSのクエリキャッシュは、キャッシュアルゴリズムがRDBMS依存であり、
+どのクエリがどのくらいの期間キャッシュに残るかというコントロールが難しい。
+
+本機能では、アプリケーションおよび各クエリの特性を考慮した上で、キャッシュを柔軟に管理することができる。
+
+.. warning::
+ 本機能は、参照系のデータベースアクセスを、省略可能な場合に限り省略することにより、
+ システム負荷を軽減することを目的としている。
+ 本機能はデータベースアクセスそのものを高速化するものではない。
+ よって、データベースアクセス高速化の目的で本機能を使用してはならない。
+ （クエリやDBのチューニングで対処すること）
+
+.. warning::
+ 本機能では、データベースの更新を監視しておらず、データベースが更新された場合でもキャッシュの値は変更されない。
+ よって、最新のデータが必要なクエリには、絶対に本機能を使用してはならない。
+ 最新の値でなくても構わない場合、更新タイミングが完全にコントロール可能な場合にのみ使用すること。
+ （すなわち、大半のクエリは本機能の対象とはならない）
+ 
+ **本機能を適用するかどうかの判断はアーキテクトが行い、開発者が個別に判断しないようにすること。**
+
+ 
+
+----
+特徴
+----
+
+* SQL ID毎にキャッシュ要否を設定できる。
+* SQL ID毎にキャッシュ有効期限を設定できる。
+* アプリケーションプログラマが、キャッシュ機構を意識せずにプログラミングできる。
+
+----
+要求
+----
+
+実装済み
+========
+
+
+キャッシュ機能
+--------------
+
+* SQLクエリ結果をキャッシュできる。
+* **SQL IDとパラメータが等価である**\ \ [#]_ 参照系クエリに対して、キャッシュした結果を返却できる（DBアクセスが発生しない）。
+* アプリケーションから、明示的にキャッシュをクリアすることができる。
+* キャッシュ実装クラスを差し替えることができる。
+
+ .. [#]
+  正確には、以下の4要素が全て等価である場合に、同一のクエリと判定する。
+  
+  * SQL ID
+  * パラメータ
+  * 検索開始位置
+  * 検索最大件数
+  
+  同一SQL、同一パラメータであっても、開始位置、最大件数が異なる場合、クエリ結果も異なってくる。
+  よって、これらの値もクエリを同定するための要素としている。
+  ただし、開始位置、最大件数については省略可能である。省略時はそれぞれ1（開始位置先頭から）, 0（無制限）が使用される。
+  （SqlPStatement#retrieve()と同様）
+
+
+有効期限
+--------
+
+* キャッシュの有効期限を設定できる。
+
+ .. note::
+   有効期限がないと、いつまでも古いデータを参照し続ける可能性があるため。
+
+* SQL ID毎にキャッシュ要否、有効期限を設定できる。
+
+ .. note:: 
+   これは、SQLによって用途やデータ更新頻度などが異なるためである。
+   通常、キャッシュ対象とするクエリは限られており、それ以外のクエリではキャッシュ機能は不要である。
+   また、比較的最新に近いデータが必要な場合と、それほど精度が求められない場合とで有効期限を使い分けることができる。
+
+
+キャッシュ保存先
+----------------
+
+* キャッシュ保存先を切り替えることができる。
+
+ .. note::
+  キャッシュ実装クラスを差し替えることにより実現可能としている。
+  キャッシュ保存先には、JVMヒープ、KVS等を想定。\ `基本実装`_\ では、JVMヒープを使用する。
+
+
+その他の要件
+------------
+
+* キャッシュ対象外のSQL実行性能に影響を与えない。
+* アプリケーションプログラマがキャッシュ機構を意識せずプログラミングできる。
+* パフォーマンスチューニングに必要な情報が出力される。
+ 
+ .. note :: 
+  基本実装では、以下のイベント発生時にログ出力が行われる。
+ 
+  * キャッシュに値取得の要求が来て、キャッシュにヒットした場合
+  * キャッシュに値取得の要求が来て、キャッシュにヒットしなかった場合
+  * キャッシュ有効期限切れが検知された場合
+  * キャッシュに値が設定された場合
+  * キャッシュに対して削除要求が発生した場合
+  * キャッシュ全クリア要求が発生した場合
+  * LRUアルゴリズムにより、古いエントリが削除された場合
+
+基本実装
+--------
+
+* キャッシュ記憶領域をJVMヒープ上に持つ。
+* キャッシュ保存上限件数を指定することができる。LRUアルゴリズムを使用してヒープ逼迫を防止する。
+* キャッシュは同一アプリケーション内で共有される（アプリケーション、サーバを跨る共有はされない）。
+* 有効期限切れの判定は遅延評価で行う（キャッシュ取得時に有効期限切れ判定を行う）。
+
+未実装
+======
+
+* キャッシュ保存先にKVSを使用するキャッシュ実装。
+* ソフト参照を使用したキャッシュ実装。
+
+
+未検討
+======
+
+* キャッシュの有効期限判定をリアルタイムに行う（デーモンスレッド）。
+
+.. note::
+ 基本実装でも上限件数が設定できるので、遅延評価でもキャッシュが肥大化することはない。
+ 
+
+-----
+構成
+-----
+
+クラス図
+========
+
+全体図
+------
+
+StatementFactory実装クラスを差し替えることにより本機能を実現する。
+
+このStatementFactory実装クラスは、
+キャッシュ対象SQLの場合のみ、キャッシュ機能付きのSqlPStatementを生成し、
+キャッシュ対象でない場合は基本実装(BasicSqlPStatement)を生成する。
+
+.. image:: ../_images/04/DbCache_ClassDiagram.png
+   :scale: 100
+
+
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~
+
+===================================== ==============================================
+インタフェース名                      概要
+===================================== ==============================================
+nablarch.core.db.cache.ResultSetCache クエリ結果を保持するキャッシュインタフェース。
+===================================== ==============================================
+
+
+クラス定義
+~~~~~~~~~~
+
+========================================================== ===========================================================================================
+クラス名                                                   概要
+========================================================== ===========================================================================================
+nablarch.core.db.cache.statement.CacheableStatementFactory キャッシュ可能なSqlPStatementを生成するStatementFactory実装クラス。
+nablarch.core.db.cache.statement.CacheableSqlPStatement    キャッシュ可能なSqlPStatement実装クラス。
+nablarch.core.db.cache.InMemoryResultSetCache              メモリ上にキャッシュを持つResultSetCache実装クラス（\ `有効期限付きキャッシュ`_\ を参照）。
+nablarch.core.db.cache.ResultSetCacheKey                   キャッシュのキーを表すクラス（SQL ID, パラメータ,開始位置,最大件数）。 
+========================================================== ===========================================================================================
+
+
+
+
+有効期限付きキャッシュ
+----------------------
+
+.. image:: ../_images/04/DbCache_ExpirableCache_ClassDiagram.png
+   :scale: 100
+
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~
+
+======================================================= =========================================================
+インタフェース名                                        概要
+======================================================= =========================================================
+nablarch.core.cache.expirable.ExpirableCache             有効期限付きキャッシュのインタフェース。
+nablarch.core.cache.expirable.ExpirableCacheListener     イベント発生時にコールバックされるリスナーインタフェース
+======================================================= =========================================================
+
+クラス定義
+~~~~~~~~~~
+
+======================================================= ============================================================================================
+クラス名                                                概要
+======================================================= ============================================================================================
+nablarch.core.cache.expirable.InMemoryExpirableCache     キャッシュをメモリ上に保持する有効期限付きキャッシュ実装クラス
+nablarch.core.db.cache.InMemoryResultSetCache            メモリ上にキャッシュを持つResultSetCache実装クラス。
+                                                         各イベント発生時にログ出力を行う。
+nablarch.core.util.map.LRUMap                            LRUアルゴリズムを持つ件数上限付きMap実装クラス
+======================================================= ============================================================================================
+
+
+キャッシュしたSqlResultSetの保護
+--------------------------------
+
+キャッシュされたSqlResultSetをキャッシュから取り出す際、
+専用のSqlResultSetサブクラスに値のコピーを行う。
+
+また、以下のオブジェクトは変更可能であるため、
+これらに対して取得要求が発生した場合、値をコピーして返却する。
+ 
+* java.util.Date
+* java.sql.Timestamp
+* byte[]
+
+
+これは、キャッシュから取得されたSqlResultSetが変更された場合に、
+キャッシュが変更されることを防ぐためである。
+
+
+.. image:: ../_images/04/DbCache_SqlResultSetGuard.png
+   :scale: 100
+
+クラス定義
+~~~~~~~~~~
+
+================================================================================== ==========================================================================
+クラス名                                                                           概要
+================================================================================== ==========================================================================
+nablarch.core.db.cache.statement.MutableGuardingSqlResultSet                        変更可能なプロパティが書き換えられることを防止するSqlResultSetサブクラス  
+nablarch.core.db.cache.statement.MutableGuardingSqlResultSet.MutableGuardingSqlRow  変更可能なプロパティが書き換えられることを防止するSqlRowサブクラス  
+================================================================================== ==========================================================================
+
+
+シーケンス図
+============
+
+SqlPStatementの生成
+-------------------
+
+キャッシュ対象のSQL IDが指定された場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. image:: ../_images/04/DbCache_cache_target_sql.png
+
+
+キャッシュ対象でないSQL IDが指定された場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. image:: ../_images/04/DbCache_not_cache_target_sql.png
+
+
+キャッシュへのアクセス
+----------------------
+
+キャッシュにヒットしない場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- 指定されたSQLの検索結果をキャッシュから取得する。
+- キャッシュから取得できないので、DBアクセスを行う。
+- 有効期限を算出し、検索結果をキャッシュに格納する。
+
+.. image:: ../_images/04/DbCache_cache_miss.png
+
+
+キャッシュにヒットする場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- 指定されたSQLの検索結果をキャッシュから取得する。
+- キャッシュから取得できたので、そのまま検索結果を返却する。
+
+
+.. image:: ../_images/04/DbCache_cache_hit.png
+
+キャッシュにヒットするが有効期限切れの場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- 指定されたSQLの検索結果をキャッシュから取得する。
+- キャッシュに存在するが有効期限切れのため、キャッシュから削除する。
+- キャッシュから取得できないので、DBアクセスを行う。
+- 有効期限を算出し、検索結果をキャッシュに格納する。
+
+
+
+.. image:: ../_images/04/DbCache_cache_expired.png
+
+
+
+----------------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-04_QueryCache--s1`
+
+```json
+{
+  "id": "libraries-04_QueryCache--s1",
+  "title": "SQLクエリ結果のキャッシュ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "キャッシュ機能",
+      "hints": [
+        "キャッシュ機能",
+        "SQLクエリキャッシュ",
+        "同一クエリ判定",
+        "CacheableStatementFactory",
+        "CacheableSqlPStatement",
+        "ResultSetCacheKey",
+        "ResultSetCache",
+        "キャッシュクリア",
+        "DBアクセス省略"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "有効期限",
+      "hints": [
+        "有効期限",
+        "キャッシュ有効期限",
+        "SQL ID毎",
+        "キャッシュ設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "キャッシュ保存先",
+      "hints": [
+        "キャッシュ保存先",
+        "JVMヒープ",
+        "KVS",
+        "キャッシュ実装差し替え"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "その他の要件",
+      "hints": [
+        "ログ出力",
+        "キャッシュヒット",
+        "キャッシュミス",
+        "LRU",
+        "パフォーマンスチューニング",
+        "ログイベント"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "基本実装",
+      "hints": [
+        "基本実装",
+        "JVMヒープ",
+        "LRUアルゴリズム",
+        "LRUMap",
+        "キャッシュ上限",
+        "遅延評価",
+        "InMemoryResultSetCache"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "未実装・未検討",
+      "hints": [
+        "未実装",
+        "KVSキャッシュ",
+        "ソフト参照",
+        "デーモンスレッド",
+        "未検討"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "構成",
+      "hints": [
+        "構成",
+        "StatementFactory",
+        "CacheableStatementFactory",
+        "CacheableSqlPStatement",
+        "BasicSqlPStatement",
+        "ResultSetCache"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "全体図",
+      "hints": [
+        "全体図",
+        "クラス図",
+        "CacheableStatementFactory",
+        "CacheableSqlPStatement",
+        "InMemoryResultSetCache",
+        "ResultSetCacheKey"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "有効期限付きキャッシュ",
+      "hints": [
+        "有効期限付きキャッシュ",
+        "ExpirableCache",
+        "ExpirableCacheListener",
+        "InMemoryExpirableCache",
+        "InMemoryResultSetCache",
+        "LRUMap"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "キャッシュしたSqlResultSetの保護",
+      "hints": [
+        "MutableGuardingSqlResultSet",
+        "MutableGuardingSqlRow",
+        "SqlResultSet保護",
+        "Date",
+        "Timestamp",
+        "byte[]",
+        "コピー"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "SqlPStatementの生成",
+      "hints": [
+        "SqlPStatement生成",
+        "キャッシュ対象SQL",
+        "CacheableStatementFactory",
+        "CacheableSqlPStatement",
+        "BasicSqlPStatement",
+        "StatementFactory"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "キャッシュへのアクセス",
+      "hints": [
+        "キャッシュアクセス",
+        "キャッシュヒット",
+        "キャッシュミス",
+        "有効期限切れ",
+        "DBアクセス",
+        "キャッシュ格納"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "概要・特徴",
+      "hints": [
+        "概要",
+        "SQLクエリキャッシュ",
+        "警告",
+        "適用条件",
+        "アーキテクト",
+        "キャッシュ適用判断",
+        "特徴"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "SQLクエリ結果をキャッシュし、SQL IDとパラメータが等価である参照系クエリに対してキャッシュした結果を返却（DBアクセスが発生しない）する機能。\n\n同一クエリの判定条件（以下4要素がすべて等価の場合に同一とみなす）:\n1. SQL ID\n2. パラメータ\n3. 検索開始位置（省略時: 1=先頭）\n4. 検索最大件数（省略時: 0=無制限）\n\n提供機能:\n- アプリケーションから明示的にキャッシュをクリアできる\n- キャッシュ実装クラスを差し替えられる\n\n**インタフェース**: `nablarch.core.db.cache.ResultSetCache`\n\n**クラス**:\n- `nablarch.core.db.cache.statement.CacheableStatementFactory`: キャッシュ可能なSqlPStatementを生成するStatementFactory実装クラス\n- `nablarch.core.db.cache.statement.CacheableSqlPStatement`: キャッシュ可能なSqlPStatement実装クラス\n- `nablarch.core.db.cache.ResultSetCacheKey`: キャッシュのキーを表すクラス（SQL ID, パラメータ, 開始位置, 最大件数）",
+    "s2": "- キャッシュの有効期限を設定できる（期限なしの場合、古いデータを参照し続ける可能性がある）\n- SQL ID毎にキャッシュ要否・有効期限を設定できる",
+    "s3": "- キャッシュ保存先を切り替えられる（キャッシュ実装クラスの差し替えにより実現）\n- 保存先候補: JVMヒープ、KVS等（基本実装ではJVMヒープを使用）",
+    "s4": "- キャッシュ対象外のSQL実行性能に影響を与えない\n- アプリケーションプログラマがキャッシュ機構を意識せずプログラミングできる\n\n基本実装でのログ出力イベント:\n1. キャッシュヒット時\n2. キャッシュミス時\n3. キャッシュ有効期限切れ検知時\n4. キャッシュに値が設定された時\n5. キャッシュに対して削除要求が発生した時\n6. キャッシュ全クリア要求が発生した時\n7. LRUアルゴリズムにより古いエントリが削除された時",
+    "s5": "- キャッシュ記憶領域はJVMヒープ上\n- キャッシュ保存上限件数を指定可能。LRUアルゴリズムでヒープ逼迫を防止\n- キャッシュは同一アプリケーション内で共有（アプリケーション・サーバを跨る共有はされない）\n- 有効期限切れ判定は遅延評価（キャッシュ取得時に判定）\n\n**クラス**: `nablarch.core.db.cache.InMemoryResultSetCache`",
+    "s6": "未実装:\n- KVSを使用するキャッシュ実装\n- ソフト参照を使用したキャッシュ実装\n\n未検討:\n- キャッシュ有効期限判定のリアルタイム実施（デーモンスレッド）（上限件数設定により遅延評価でも肥大化しないため、現状は遅延評価で対応）",
+    "s7": "StatementFactory実装クラスの差し替えにより本機能を実現する。\n\n- キャッシュ対象SQLの場合: キャッシュ機能付きSqlPStatement（`CacheableSqlPStatement`）を生成\n- キャッシュ対象でない場合: 基本実装（`BasicSqlPStatement`）を生成\n\n**インタフェース**: `nablarch.core.db.cache.ResultSetCache` — クエリ結果を保持するキャッシュインタフェース",
+    "s8": "**クラス**:\n- `nablarch.core.db.cache.statement.CacheableStatementFactory`: キャッシュ可能なSqlPStatementを生成するStatementFactory実装クラス\n- `nablarch.core.db.cache.statement.CacheableSqlPStatement`: キャッシュ可能なSqlPStatement実装クラス\n- `nablarch.core.db.cache.InMemoryResultSetCache`: メモリ上にキャッシュを持つResultSetCache実装クラス（:ref:`有効期限付きキャッシュ`参照）\n- `nablarch.core.db.cache.ResultSetCacheKey`: キャッシュのキーを表すクラス（SQL ID, パラメータ, 開始位置, 最大件数）",
+    "s9": "**インタフェース**:\n- `nablarch.core.cache.expirable.ExpirableCache`: 有効期限付きキャッシュのインタフェース\n- `nablarch.core.cache.expirable.ExpirableCacheListener`: イベント発生時にコールバックされるリスナーインタフェース\n\n**クラス**:\n- `nablarch.core.cache.expirable.InMemoryExpirableCache`: キャッシュをメモリ上に保持する有効期限付きキャッシュ実装クラス\n- `nablarch.core.db.cache.InMemoryResultSetCache`: メモリ上にキャッシュを持つResultSetCache実装クラス。各イベント発生時にログ出力\n- `nablarch.core.util.map.LRUMap`: LRUアルゴリズムを持つ件数上限付きMap実装クラス",
+    "s10": "キャッシュから取得されたSqlResultSetが変更された場合にキャッシュが変更されることを防ぐため、専用のSqlResultSetサブクラスに値のコピーを行う。\n\n以下のオブジェクトは変更可能なため、取得要求時に値をコピーして返却:\n- `java.util.Date`\n- `java.sql.Timestamp`\n- `byte[]`\n\n**クラス**:\n- `nablarch.core.db.cache.statement.MutableGuardingSqlResultSet`: 変更可能なプロパティが書き換えられることを防止するSqlResultSetサブクラス\n- `nablarch.core.db.cache.statement.MutableGuardingSqlResultSet.MutableGuardingSqlRow`: 変更可能なプロパティが書き換えられることを防止するSqlRowサブクラス",
+    "s11": "キャッシュ対象のSQL IDが指定された場合:\n- `CacheableStatementFactory`がキャッシュ機能付きの`CacheableSqlPStatement`を生成\n\nキャッシュ対象でないSQL IDが指定された場合:\n- `CacheableStatementFactory`が基本実装`BasicSqlPStatement`を生成",
+    "s12": "キャッシュにヒットしない場合:\n1. 指定SQLの検索結果をキャッシュから取得\n2. キャッシュに存在しないのでDBアクセスを行う\n3. 有効期限を算出し、検索結果をキャッシュに格納\n\nキャッシュにヒットする場合:\n1. 指定SQLの検索結果をキャッシュから取得\n2. キャッシュに存在するのでそのまま検索結果を返却\n\nキャッシュにヒットするが有効期限切れの場合:\n1. 指定SQLの検索結果をキャッシュから取得\n2. キャッシュに存在するが有効期限切れのためキャッシュから削除\n3. キャッシュに存在しないのでDBアクセスを行う\n4. 有効期限を算出し、検索結果をキャッシュに格納",
+    "s13": "SQLクエリ結果のキャッシュ機能の概要:\n- SQL IDとパラメータが等価である参照系クエリに対してキャッシュした結果を返却（DBアクセスが発生しない）\n- 適用想定クエリ: トレンド把握クエリ（最新値不要）、更新タイミングが予め分かっているクエリ（例: 夜間バッチ更新データ）\n- RDBMSのクエリキャッシュと異なり、アプリケーションおよびクエリの特性を考慮した柔軟なキャッシュ管理が可能\n\n> **警告**: 本機能はDBアクセス高速化のためではない。DBアクセス高速化を目的とした使用禁止（クエリ・DBのチューニングで対処すること）。\n\n> **警告**: データベースが更新されてもキャッシュの値は変更されない。最新データが必要なクエリには絶対に使用禁止。更新タイミングが完全にコントロール可能な場合のみ使用すること。**本機能を適用するかどうかの判断はアーキテクトが行い、開発者が個別に判断しないようにすること。**\n\n特徴:\n- SQL ID毎にキャッシュ要否を設定できる\n- SQL ID毎にキャッシュ有効期限を設定できる\n- アプリケーションプログラマがキャッシュ機構を意識せずにプログラミングできる"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-SessionConcurrentAccessHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file states the handler guarantees consistency: '本ハンドラはセッションスコープへの並行アクセス制御をフレームワークレベルで実装することで、この整合性を保証する。' The source only says '本ハンドラはセッションスコープに対する並行アクセス制御をフレームワークレベルで実装するものである' — no claim of 'guarantee' is made. In fact, under CONCURRENT policy the source explicitly describes a case where changes are NOT reflected (conflict → warning logged), so the claim of full consistency guarantee is inaccurate.",
+      "source_evidence": "本ハンドラはセッションスコープに対する並行アクセス制御をフレームワークレベルで実装するものである。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section s2 covers exception handling (例外処理) as a distinct subsection with rules for steps 2a and 3a, but '例外処理' is absent from the hints array.",
+      "source_evidence": "**[例外処理]** 2a. (後続ハンドラ処理でエラー) ... 3a (同期ポリシーCONCURRENT: セッション変更反映の際に論理排他エラー)"
+    }
+  ]
+}

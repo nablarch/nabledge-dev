@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — DIコンテナの直接使用例 (値を取得する実装例)",
+      "description": "The source code block for direct DiContainer usage includes an explicit and prominent warning comment — '注意: しかし通常、コンポーネントの取得は以下で説明するSystemRepositoryからコンポーネントを取得する方法で実装する。従って、本フレームワークを使用する場合、このような実装は行わない。' — indicating that this pattern is NOT for normal application code. The knowledge file presents the `container.getComponentByName()` code example without any such caution. An AI using this section could recommend the direct DiContainer approach without the critical guidance to prefer SystemRepository for normal usage.",
+      "source_evidence": "Source 値を取得する実装例 section code comment: '// ******** 注意 ******** // 直下のコードでは、DIコンテナの動作を説明するために、DIコンテナを直接使用してコンポーネントを取得している。// しかし通常、コンポーネントの取得は以下で説明するSystemRepository からコンポーネントを取得する方法で実装する。// 従って、本フレームワークを使用する場合、このような実装は行わない。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — overall section structure",
+      "description": "Automated pre-check S9: 5 knowledge sections vs 9 source headings. The source has 4 h2-level and 9 h3-level headings; the knowledge file consolidates these into 5 sections. The consolidation is logically sound — the long h2 section 'リポジトリに保持するインスタンスの生成(DIコンテナ)' is correctly split into s3 and s4, and h3 subsections within each h2 are merged appropriately. No content appears lost, and the V3 split rule (h2 >= 2000 chars with unsplit h3 children) is not violated.",
+      "source_evidence": "Source headings counted: (h2) 環境設定ファイルからの読み込み, リポジトリに保持するインスタンスの生成(DIコンテナ), DIコンテナをObjectLoaderとして使用する; (h3) 読み込む環境設定ファイルの記述例, 環境設定ファイルの読み込み, 環境設定の取得, 登録するクラスのソースコード×2, コンポーネント設定ファイルの記述, 値を取得する実装例, SystemRepositoryの初期化処理, SystemRepositoryからのコンポーネント取得"
+    }
+  ]
+}

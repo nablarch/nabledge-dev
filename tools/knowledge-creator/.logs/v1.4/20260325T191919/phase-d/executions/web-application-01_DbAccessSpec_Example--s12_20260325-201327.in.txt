@@ -1,0 +1,557 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/DB/01_DbAccessSpec_Example.rst`
+- Format: `rst`
+
+```
+バイナリデータへのアクセス
+--------------------------
+データベースのデータタイプがバイナリ型(BLOBやbyte)の場合の参照、更新方法の実装例
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- パスワード取得用
+   -- SQL_ID:GET_PASSWORD
+   --------------------------
+   GET_PASSWORD =
+   SELECT
+       PWD
+   FROM
+       USER_MST
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- パスワード更新用
+   -- SQL_ID:UPDATE_PASSWORD
+   --------------------------
+   UPDATE_PASSWORD =
+   UPDATE
+       USER_MST
+   SET
+       PWD = ?
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- PDF更新用
+   -- SQL_ID:UPDATE_PDF
+   --------------------------
+   UPDATE_PDF =
+   UPDATE
+       PDF_LIST
+   SET
+       PDF_DATA = ?
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- PDF取得用
+   -- SQL_ID:GET_PDF
+   --------------------------
+   GET_PDF =
+   SELECT
+       PDF_DATA
+   FROM
+       PDF_LIST
+   WHERE
+       USER_ID = ?
+
+.. _searching_binary_data:
+
+バイナリデータの検索方法
+========================
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public byte[] getPassword(String userId) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement select = getSqlPStatement("GET_PASSWORD");
+
+            select.setString(1, userId);
+            SqlResultSet rs = select.retrieve();
+
+            SqlRow row = rs.get(0);
+
+            // 【説明】バイナリデータは、SqlRow#getBytesで取得する。
+            return row.getBytes("pwd");
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. warning::
+ 本実装例は、getBytesメソッドでバイナリデータを一括で取得しているが、ファイルデータのようにデータ量が大きい場合には、 :ref:`generate_binary_file` の実装例にしたがうこと。
+
+
+.. _insert_binary_data:
+
+バイナリデータの登録方法
+========================
+
+.. code-block:: java
+
+    SqlPStatement statement = getSqlPStatement("UPDATE_PASSWORD");
+
+    statement.setBytes(1, pwd);
+    statement.setString(2, "00001");
+    int updNo = statement.executeUpdate();
+
+.. warning::
+ | 本実装例は、setBytesを使用してバイナリデータの設定しているが、データベースベンダーによってはsetBytesをサポートしない場合がある。
+ | どのsetメソッドを使用すればよいかは、データベースベンダーのJDBCマニュアルを参照すること。
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. _insert_file_data_as_binary_data:
+
+ファイルの内容をバイナリデータとして登録する方法
+================================================
+
+.. code-block:: java
+
+    SqlPStatement statement = getSqlPStatement("UPDATE_PDF");
+
+    File file = new File("hoge.pdf");
+    FileInputStream fis = new FileInputStream(file);
+
+    try {
+        // 【説明】setBinaryStream(int, InputStream, int)を使用してファイルのストリームをバインド変数に設定
+        statement.setBinaryStream(1, fis, (int) file.length());
+        statement.setString(2, "00001");
+        statement.executeUpdate();
+    } finally {
+        fis.close();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. warning::
+ 上記実装例は、\ *java.io*\ パッケージを使用した実装となっている。
+ この実装は、リソースの開放漏れなどが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。
+
+ 必要な場合には、アーキテクトがコンポーネントを作成するなどして対処すること。
+
+.. _generate_binary_file:
+
+バイナリデータをファイルとして出力する方法
+==========================================
+
+.. code-block:: java
+
+    SqlPStatement select = getSqlPStatement("GET_PDF");
+
+    select.setString(1, "00001");
+    SqlResultSet rs = select.retrieve();
+
+    // 【説明】データベースからBlobとしてデータを取得する。
+    Blob fileData = (Blob) rs.get(0).get("PDF_DATA");
+
+    InputStream pdfData = null;
+    FileOutputStream output = null;
+    try {
+        // 【説明】Blobデータからストリームを取得し、バイナリデータを読み込む
+        pdfData = fileData.getBinaryStream();
+
+        // 【説明】出力ファイルを開く
+        output = new FileOutputStream("hoge.pdf");
+
+        byte[] b = new byte[1024];
+        int size = 0;
+        while ((size = pdfData.read(b)) != -1) {
+            output.write(b, 0, size);
+            output.flush();
+        }
+    } finally {
+        try {
+            if (pdfData != null) {
+                pdfData.close();
+            }
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. warning::
+ 上記実装例は、\ *java.io*\ パッケージを使用した実装となっている。
+ この実装は、リソースの開放漏れなどが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。
+
+ 必要な場合には、アーキテクトがコンポーネントを作成するなどして対処すること。
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _db-object-save-samole:
+
+--------------------------------------------------------------
+オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)
+--------------------------------------------------------------
+オブジェクトのフィールドの値を登録する際の実装例
+
+画面処理の場合で、精査済みリクエストパラメータの値をJavaBeansで保持している場合には、本機能を使用することにより実装ステップ数を軽減することができる。
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+ ファイル名:nablarch/sample/ss11AE/CM211AE1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- 売上登録
+   -- SQL_ID:REGISTER_SALES
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「オブジェクトのフィールド名」とすること。
+   REGISTER_SALES =
+   INSERT INTO
+       SALES
+       (
+       CST_ID,
+       KINGAKU,
+       INS_DATE_TIME,
+       INS_USER_ID,
+       UPD_DATE_TIME,
+       UPD_USER_ID,
+       EXECUTION_ID,
+       REQUEST_ID
+       )
+   VALUES
+       (
+       :cstId,
+       :kingaku,
+       :insDateTime,
+       :insUserId,
+       :updDateTime,
+       :updUserId,
+       :executionId,
+       :requestId
+       )
+
+   --------------------------
+   -- 売上更新
+   -- SQL_ID:UPDATE_SALES
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「Mapのキー名」とすること。
+   UPDATE_SALES =
+   UPDATE
+       SALES
+   SET
+       KINGAKU = :KINGAKU
+   WHERE
+       CST_ID = :CST_ID
+
+
+.. _update_single_data_by_object:
+
+1件のデータを更新する場合
+=========================
+
+| 下記実装例はinsert文となっているが、update文やdelete文でも同じように実装することができる。
+
+.. code-block:: java
+
+    // オブジェクト実装
+    public class W11AE01Form {
+        // 顧客ID
+        private String cstId;
+
+        // 金額
+        private long kingaku;
+
+        // 登録日時
+        @CurrentDateTime(format="yyyyMMddHHmmss")
+        private String insDateTime;
+
+        // 登録ユーザID
+        @UserId
+        private String insUserId;
+
+        // 更新日時
+        @CurrentDateTime(format="yyyyMMddHHmmss")
+        private String updDateTime;
+
+        // 更新ユーザID
+        @UserId
+        private String updUserId;
+
+        // リクエストID
+        @RequestId
+        private String requestId;
+
+        // 【説明】本来はここに各フィールド項目のアクセスメソッドを定義する。
+
+    }
+
+    public void doRW11AE0101() {
+        // 【説明】オブジェクトを生成し、自動設定項目以外を設定する。
+        W11AE01Form form = new W11AE01Form();
+        form.setCstId("0001");
+        form.setKingaku(100);
+
+        CM211AE1Component component = new CM211AE1Component();
+        component.registerSales(form);
+    }
+
+    package nablarch.sample.ss11AE;
+
+    public class CM211AE1Component extends DbAccessSupport {
+
+        public void registerSales(W11AE01Form form) {
+
+            // 【説明】SQL_IDを指定して、Statementオブジェクトを取得する。
+            ParameterizedSqlPStatement insert = getParameterizedSqlStatement("REGISTER_SALES");
+
+            // 【説明】executeUpdateByObjectを呼び出してオブジェクトのフィールドの値を登録する。
+            insert.executeUpdateByObject(form);
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _update_multiple_data_by_object:
+
+複数件を更新する場合
+====================
+複数件を一括で更新する場合の注意点は、 :ref:`JDBC標準機能<executeBatch-label>` と同じである。
+
+.. code-block:: java
+
+    // 1回のexecuteBatchで更新する最大の件数
+    private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+    // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+
+    ParameterizedSqlPStatement insert = getParameterizedSqlStatement("REGISTER_SALES");
+
+    for (W11AE02Form form : forms) {
+        statement.addBatchObject(form);
+        if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+            insert.executeBatch();
+        }
+    }
+    if (insert.getBatchSize() != 0) {
+        insert.executeBatch();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _map-save-label:
+
+----------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-01_DbAccessSpec_Example--s12`
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s12",
+  "title": "バイナリデータへのアクセス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バイナリデータへのアクセス",
+      "hints": [
+        "バイナリデータ",
+        "BLOB",
+        "byte型",
+        "SQLファイル定義",
+        "GET_PASSWORD",
+        "UPDATE_PASSWORD",
+        "GET_PDF",
+        "UPDATE_PDF"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "SqlRow",
+        "getBytes",
+        "setBytes",
+        "setBinaryStream",
+        "Blob",
+        "getBinaryStream",
+        "バイナリデータ検索",
+        "バイナリデータ登録",
+        "ファイル登録",
+        "ファイル出力",
+        "SqlPStatement",
+        "CM311AC1Component",
+        "DbAccessSupport",
+        "SqlResultSet",
+        "FileInputStream",
+        "FileOutputStream"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "バインド変数",
+        "オブジェクト登録",
+        "Form",
+        "REGISTER_SALES",
+        "executeUpdateByObject"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "executeUpdateByObject",
+        "addBatchObject",
+        "executeBatch",
+        "ParameterizedSqlPStatement",
+        "バッチ更新",
+        "一括登録",
+        "CurrentDateTime",
+        "UserId",
+        "RequestId",
+        "W11AE01Form",
+        "W11AE02Form"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データベースのバイナリ型(BLOBやbyte)データの参照・更新で使用するSQLファイル。\n\n**SQLファイル**: `nablarch/sample/ss11AC/CM311AC1Component.sql`\n\n```sql\n-- SQL_ID:GET_PASSWORD (パスワード取得)\nGET_PASSWORD =\nSELECT PWD FROM USER_MST WHERE USER_ID = ?\n\n-- SQL_ID:UPDATE_PASSWORD (パスワード更新)\nUPDATE_PASSWORD =\nUPDATE USER_MST SET PWD = ? WHERE USER_ID = ?\n\n-- SQL_ID:UPDATE_PDF (PDF更新)\nUPDATE_PDF =\nUPDATE PDF_LIST SET PDF_DATA = ? WHERE USER_ID = ?\n\n-- SQL_ID:GET_PDF (PDF取得)\nGET_PDF =\nSELECT PDF_DATA FROM PDF_LIST WHERE USER_ID = ?\n```",
+    "s2": "## バイナリデータの検索方法\n\n`SqlRow#getBytes` でバイナリデータを取得する。\n\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    public byte[] getPassword(String userId) {\n        SqlPStatement select = getSqlPStatement(\"GET_PASSWORD\");\n        select.setString(1, userId);\n        SqlResultSet rs = select.retrieve();\n        SqlRow row = rs.get(0);\n        return row.getBytes(\"pwd\");  // バイナリデータはgetBytesで取得\n    }\n}\n```\n\n> **警告**: データ量が大きい場合（ファイルデータ等）は `getBytes` で一括取得せず、:ref:`generate_binary_file` の実装例に従うこと。\n\n## バイナリデータの登録方法\n\n`SqlPStatement#setBytes` でバイナリデータを設定する。\n\n```java\nSqlPStatement statement = getSqlPStatement(\"UPDATE_PASSWORD\");\nstatement.setBytes(1, pwd);\nstatement.setString(2, \"00001\");\nint updNo = statement.executeUpdate();\n```\n\n> **警告**: `setBytes` はデータベースベンダーによってはサポートされない場合がある。使用するsetメソッドはDBベンダーのJDBCマニュアルを確認すること。\n\n## ファイルの内容をバイナリデータとして登録する方法\n\n`setBinaryStream(int, InputStream, int)` でファイルのストリームをバインド変数に設定する。\n\n```java\nSqlPStatement statement = getSqlPStatement(\"UPDATE_PDF\");\nFile file = new File(\"hoge.pdf\");\nFileInputStream fis = new FileInputStream(file);\ntry {\n    statement.setBinaryStream(1, fis, (int) file.length());\n    statement.setString(2, \"00001\");\n    statement.executeUpdate();\n} finally {\n    fis.close();\n}\n```\n\n> **警告**: `java.io` パッケージを直接使用する実装はリソース開放漏れが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。必要な場合はアーキテクトがコンポーネントを作成すること。\n\n## バイナリデータをファイルとして出力する方法\n\nデータベースからBlobとして取得し、ストリームを使ってファイル出力する。\n\n```java\nSqlPStatement select = getSqlPStatement(\"GET_PDF\");\nselect.setString(1, \"00001\");\nSqlResultSet rs = select.retrieve();\n\nBlob fileData = (Blob) rs.get(0).get(\"PDF_DATA\");  // BlobとしてDBから取得\nInputStream pdfData = null;\nFileOutputStream output = null;\ntry {\n    pdfData = fileData.getBinaryStream();  // Blobからストリームを取得\n    output = new FileOutputStream(\"hoge.pdf\");\n    byte[] b = new byte[1024];\n    int size = 0;\n    while ((size = pdfData.read(b)) != -1) {\n        output.write(b, 0, size);\n        output.flush();\n    }\n} finally {\n    try { if (pdfData != null) pdfData.close(); }\n    finally { if (output != null) output.close(); }\n}\n```\n\n> **警告**: `java.io` パッケージを直接使用する実装はリソース開放漏れが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。必要な場合はアーキテクトがコンポーネントを作成すること。",
+    "s3": "JavaBeansのフィールド値をSQLのバインド変数に直接設定して登録できる機能。画面処理で精査済みリクエストパラメータをJavaBeansで保持している場合に実装ステップ数を軽減できる。\n\n**SQLファイル**: `nablarch/sample/ss11AE/CM211AE1Component.sql`\n\nバインド変数には `?` の代わりに `:`+フィールド名（またはMapのキー名）を使用する。\n\n```sql\n-- SQL_ID:REGISTER_SALES\n-- バインド変数は「:フィールド名」形式\nREGISTER_SALES =\nINSERT INTO SALES (CST_ID, KINGAKU, INS_DATE_TIME, INS_USER_ID, UPD_DATE_TIME, UPD_USER_ID, EXECUTION_ID, REQUEST_ID)\nVALUES (:cstId, :kingaku, :insDateTime, :insUserId, :updDateTime, :updUserId, :executionId, :requestId)\n\n-- SQL_ID:UPDATE_SALES\n-- バインド変数は「:Mapのキー名」形式\nUPDATE_SALES =\nUPDATE SALES SET KINGAKU = :KINGAKU WHERE CST_ID = :CST_ID\n```",
+    "s4": "## 1件のデータを更新する場合\n\n`ParameterizedSqlPStatement#executeUpdateByObject` でオブジェクトのフィールド値を登録する（INSERT/UPDATE/DELETE 共通）。\n\n```java\n// Formオブジェクト定義\npublic class W11AE01Form {\n    private String cstId;\n    private long kingaku;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\") private String insDateTime;\n    @UserId private String insUserId;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\") private String updDateTime;\n    @UserId private String updUserId;\n    @RequestId private String requestId;\n    // 各フィールドのアクセスメソッドを定義すること\n}\n\n// 登録処理\nW11AE01Form form = new W11AE01Form();\nform.setCstId(\"0001\");\nform.setKingaku(100);\n\nParameterizedSqlPStatement insert = getParameterizedSqlStatement(\"REGISTER_SALES\");\ninsert.executeUpdateByObject(form);\n```\n\n## 複数件を更新する場合\n\n`addBatchObject(form)` でオブジェクトをバッチに追加し、`executeBatch()` で一括更新する。注意点は :ref:`JDBC標準機能 <executeBatch-label>` と同じ。\n\n```java\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nParameterizedSqlPStatement insert = getParameterizedSqlStatement(\"REGISTER_SALES\");\nfor (W11AE02Form form : forms) {\n    statement.addBatchObject(form);\n    if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        insert.executeBatch();\n    }\n}\nif (insert.getBatchSize() != 0) {\n    insert.executeBatch();\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

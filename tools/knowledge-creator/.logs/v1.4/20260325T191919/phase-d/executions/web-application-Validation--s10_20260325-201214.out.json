@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Validation--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — JSP実装例",
+      "description": "JSPコード例から各入力欄の `<n:error>` タグ（`<n:error name=\"form.value1\" />`、`<n:error name=\"form.value2\" />`、`<n:error name=\"form.value3\" />`）が省略されている。これらは単項目精査エラーを各フィールドに表示するためのパターンであり、実装判断に必要な情報。",
+      "source_evidence": "ソースJSPの各 `<td>` ブロックに `<n:error name=\"form.valueN\" />` が `<n:text>` の直前に配置されている。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — Formクラス実装例（validate静的メソッド）",
+      "description": "「`validationName`パラメータで呼び出す`@ValidateFor`メソッドを動的に切り替えるために、`validate`静的メソッドを用意する」という説明はソースに存在しない。ソースのコメントは `// 【説明】JavaDocは省略。` のみで、このメソッドの目的についての説明は含まれていない。",
+      "source_evidence": "ソースのFormクラスコメントは `// 【説明】JavaDocは省略。` のみ。`validate`メソッドの目的に関する説明文はソースに記載されていない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "`validate`メソッドのシグネチャに含まれる `HttpRequest` クラス、および同メソッド内で使用される `createObject` メソッドがhintsに含まれていない。",
+      "source_evidence": "`public static Example3Form validate(HttpRequest req, String validationName)` および `return context.createObject();` がソースのFormクラスに記載されている。"
+    }
+  ]
+}

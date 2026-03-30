@@ -1,0 +1,226 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/04/04_ObjectSave.rst`
+- Format: `rst`
+
+```
+.. _db-object-store-label:
+
+----------------------------------------------------------------------------------------------------
+オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)
+----------------------------------------------------------------------------------------------------
+本章では、 :ref:`db-feature-5-label` 、 :ref:`db-feature-6-label` 、 :ref:`db-feature-7-label` の機能説明を行う。
+本機能を使用した場合、SQL文のバインド変数には「?」ではなく、名前付きの変数名を記述する必要がある。
+
+下記は、名前付き変数を使用した場合とJDBCの標準機能を使用した場合のSQL文の記述例である。
+
+.. code-block:: sql
+
+  -- JDBC標準機能の場合
+
+  INSERT INTO USER_MTR
+  VALUES (?, ?, ?, ?)
+
+  -- 本機能を使用した場合
+  INSERT INTO USER_MTR
+  VALUES (:userId, :userName, :userNameKana, :tel)
+
+  -- 部分一致検索の「%」を使用した場合
+  SELECT USER_NAME
+    FROM USER_MTR
+   WHERE USER_NAME LIKE :userName%
+
+  -- 可変条件を定義できる。
+  SELECT USER_NAME
+    FROM USER_MTR
+   WHERE $if(userName) {USER_NAME LIKE :userName%}
+
+クラス図
+========
+.. image:: ../_images/04/DbAccessSpec_ObjectStatementClassDesign.jpg
+   :scale: 60
+
+各クラスの責務
+--------------
+本章に記載のないインタフェース、クラスは、 :ref:`db-sqlstatement-label` を参照。
+
+インタフェース定義
+^^^^^^^^^^^^^^^^^^
+
+  ===================================== ====================================================================================================
+  インタフェース名                      概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statementパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  SqlParameterParserFactory             名前付きバインド変数をもつSQL文を解析するためのオブジェクト(SqlParameterParser)を
+                                        取得するンタフェース
+
+  SqlParameterParser                    名前付きバインド変数をもつSQL文を解析するインタフェース
+
+                                        実装クラスでは、SQL文を解析し下記情報を取得できるようにすること。
+
+                                        * java.sql.PreparedStatementで実行できる形式のSQL文(バインド変数を「?」に置き換えたSQL文)
+                                        * 名前付きバインド変数のList
+
+  SqlConvertor                          SQL文の変換を行うインタフェース。
+
+  AutoPropertyHandler                   オブジェクトの自動設定項目のフィールドに値を設定するインタフェース。
+
+                                        実装クラスでは、フィールドのアノテーションやフィールド名等を元に値を自動設定する。
+  ===================================== ====================================================================================================
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-04_ObjectSave--s1`
+
+```json
+{
+  "id": "libraries-04_ObjectSave--s1",
+  "title": "オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "名前付きバインド変数",
+        "SQL文",
+        "$if構文",
+        "可変条件",
+        "部分一致検索",
+        "バインド変数"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "クラス図",
+      "hints": [
+        "クラス図",
+        "オブジェクトフィールド値",
+        "データベース登録",
+        "クラス設計"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "インタフェース定義",
+      "hints": [
+        "SqlParameterParserFactory",
+        "SqlParameterParser",
+        "SqlConvertor",
+        "AutoPropertyHandler",
+        "名前付きバインド変数解析",
+        "インタフェース",
+        "PreparedStatement"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "SQL文のバインド変数には `?` ではなく名前付き変数名（`:変数名`）を記述する必要がある。\n\n```sql\n-- 名前付き変数を使用した INSERT\nINSERT INTO USER_MTR\nVALUES (:userId, :userName, :userNameKana, :tel)\n\n-- 部分一致検索（% はそのまま記述可能）\nSELECT USER_NAME\n  FROM USER_MTR\n WHERE USER_NAME LIKE :userName%\n\n-- 可変条件（条件が存在する場合のみ WHERE 句に追加）\nSELECT USER_NAME\n  FROM USER_MTR\n WHERE $if(userName) {USER_NAME LIKE :userName%}\n```",
+    "s2": "![クラス図](assets/libraries-04_ObjectSave--s1/DbAccessSpec_ObjectStatementClassDesign.jpg)",
+    "s3": "| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.core.db.statement.SqlParameterParserFactory` | 名前付きバインド変数をもつSQL文を解析するための `SqlParameterParser` を取得するインタフェース |\n| `nablarch.core.db.statement.SqlParameterParser` | 名前付きバインド変数をもつSQL文を解析するインタフェース。解析結果として (1) `PreparedStatement` で実行可能な形式のSQL文（バインド変数を `?` に置き換え）、(2) 名前付きバインド変数のList を取得できる |\n| `nablarch.core.db.statement.SqlConvertor` | SQL文の変換を行うインタフェース |\n| `nablarch.core.db.statement.AutoPropertyHandler` | オブジェクトの自動設定項目のフィールドに値を設定するインタフェース。フィールドのアノテーションやフィールド名等を元に値を自動設定する |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

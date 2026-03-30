@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-enterprise_messaging_http--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "End of source file",
+      "description": "The source file ends with `.. _messaging_api:` anchor followed by `------------------------------------` overline, indicating an h2 section exists beyond what is shown. The knowledge file has 5 sections (s1–s5) and does not include any section corresponding to this anchor. If the source file contains additional content (e.g., メッセージングAPI), it is absent from the knowledge file.",
+      "source_evidence": ".. _messaging_api:\n\n------------------------------------\n(content cut off)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 (データモデル) — hints array",
+      "description": "Section s4 covers the フレームワーク制御ヘッダー table which references seven PascalCase handler class names. None of these are included in s4's hints: RequestPathJavaPackageMapping, RequestHandlerEntry, ServiceAvailabilityCheckHandler, PermissionCheckHandler, FwHeaderReader, MessageResendHandler, MessageReplyHandler.",
+      "source_evidence": "Source table row: リクエストID — :doc:`../handler/RequestPathJavaPackageMapping` | :doc:`../handler/RequestHandlerEntry` | :doc:`../handler/ServiceAvailabilityCheckHandler` | :doc:`../handler/PermissionCheckHandler` | :doc:`../reader/FwHeaderReader`; 再送要求フラグ — :doc:`../handler/MessageResendHandler`; ステータスコード — :doc:`../handler/MessageReplyHandler`"
+    }
+  ]
+}

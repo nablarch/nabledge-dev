@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-11_exclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4",
+      "description": "`@OnDoubleSubmission(path = \"forward://RW11AC0303\", statusCode = 400)` annotation on `doRW11AC0304` is missing from the code example. The source shows this annotation alongside `@OnErrors` on the update-commit method, demonstrating that double submission prevention is applied together with exclusive control in this action.",
+      "source_evidence": "@OnDoubleSubmission(path = \"forward://RW11AC0303\", statusCode = 400)\npublic HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "`@OnDoubleSubmission` annotation is missing from s4 hints. It appears in the source code for the `doRW11AC0304` method.",
+      "source_evidence": "@OnDoubleSubmission(path = \"forward://RW11AC0303\", statusCode = 400)"
+    }
+  ]
+}

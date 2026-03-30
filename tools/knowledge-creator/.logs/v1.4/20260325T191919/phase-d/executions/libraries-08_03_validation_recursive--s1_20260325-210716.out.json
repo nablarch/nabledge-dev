@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — footnote on @ValidateFor matching mechanism",
+      "description": "The source footnote's code comment explains the matching rule: 「@ValidateFor アノテーションに設定した文字列のうち、ValidationUtil.validateAndConvertRequest の第4引数と1つでも一致した validateFor メソッドが呼び出される」(any one string matching the 4th argument triggers the method). The knowledge file's note only states that multiple strings can be specified, but does not explain the 'any match' semantics. An AI could incorrectly infer that all strings must match.",
+      "source_evidence": "Source footnote code comment in UserEntity block: '// @ValidateFor アノテーションに設定した文字列のうち、ValidationUtil.validateAndConvertRequest // の第4引数と1つでも一致した validateFor メソッドが呼び出される。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "ValidationUtil appears in the s2 Form code example (`ValidationUtil.validate(context, new String[] {\"entityArray\"})`) but is absent from the s2 hints list.",
+      "source_evidence": "Source s2 (Form の実装) code block: `ValidationUtil.validate(context, new String[] {\"entityArray\"});`"
+    }
+  ]
+}

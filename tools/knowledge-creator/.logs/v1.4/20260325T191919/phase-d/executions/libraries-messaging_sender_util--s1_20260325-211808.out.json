@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sender_util--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 — メッセージID採番処理の追加",
+      "description": "The warning that the example implementation does not guarantee uniqueness of generated IDs is missing. The source explicitly states: 「以下は簡易的な実装であり、IDがユニークである保証は無い。」 This is decision-necessary information — implementers must know not to use the example (`System.currentTimeMillis()`) as-is in production without addressing uniqueness.",
+      "source_evidence": "「以下は簡易的な実装であり、IDがユニークである保証は無い。」 — appears in source immediately before the DefaultHttpMessageIdGenerator code block"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — 送信定義ファイルの設定項目 (hints)",
+      "description": "`SyncMessageConvertor` is referenced by name in the source property tables (both DEFAULT and per-request-ID rows for `messageConvertorName`) but is absent from the s2 hints array. A user asking about SyncMessageConvertor configuration would not have s2 retrieved.",
+      "source_evidence": "messageSender.DEFAULT.messageConvertorName row: 「`SyncMessageConvertor`_ をリポジトリから取得する際に使用するコンポーネント名」; same in リクエストID毎設定 row"
+    }
+  ]
+}

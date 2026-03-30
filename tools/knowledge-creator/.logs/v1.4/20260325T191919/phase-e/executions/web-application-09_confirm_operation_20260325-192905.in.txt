@@ -1,0 +1,100 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-09_confirm_operation",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The 5 verification steps (a–e) from the source are entirely absent. The knowledge file captures only the キャンセルボタン note, discarding the complete operational verification procedure: (a) display the registration screen, (b) change values and press 確認, (c) verify values on the confirmation screen and press 確定, (d) verify registered values on the completion screen, (e) check the USERS table for stored data. These steps document the expected screen flow (登録→確認→完了), button interactions, and database verification — substantive information an AI needs to explain the feature's behavior or guide testing.",
+      "source_evidence": ":a): ユーザ情報登録画面を表示する。 / :b): 入力フォームの値を変更して **確認** ボタンを押下する。 / :c): ユーザ情報登録確認画面に遷移するので、登録する値が表示されていることを確認し、 **確定** ボタンを押下する。 / :d): ユーザ情報登録完了画面に遷移するので、登録した値が表示されていることを確認する。 / :e): USERSテーブルを確認し、登録したユーザ情報が格納されていることを確認する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 contains fewer than 50 characters of content. This is a consequence of the omission above — only the キャンセルボタン note was captured, leaving the section with a single short sentence.",
+      "source_evidence": "s1 value: \"> **注意**: ユーザ情報登録確認画面のキャンセルボタンは未実装のため動作しない。\" (~40 characters)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Hints are missing key terms from the omitted procedure steps: 'USERSテーブル' (database table referenced in step e), '確認ボタン', '確定ボタン' (distinct buttons referenced in steps b and c), and screen names '登録完了画面' / '登録確認画面' (distinct screens in the flow).",
+      "source_evidence": ":c): **確定** ボタンを押下する / :e): USERSテーブルを確認し / ユーザ情報登録完了画面に遷移"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+--------------
+動作確認の実施
+--------------
+
+本開発手順で作成したユーザ情報登録機能の動作確認を行う。
+
+ :a): ユーザ情報登録画面を表示する。
+ :b): 入力フォームの値を変更して **確認** ボタンを押下する。
+ :c): ユーザ情報登録確認画面に遷移するので、登録する値が表示されていることを確認し、 **確定** ボタンを押下する。
+ :d): ユーザ情報登録完了画面に遷移するので、登録した値が表示されていることを確認する。
+ :e): USERSテーブルを確認し、登録したユーザ情報が格納されていることを確認する。
+ 
+ .. note::
+   ユーザ情報登録確認画面に表示される **キャンセル** ボタンは、今回は実装していないため動作しない。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-09_confirm_operation",
+  "title": "動作確認の実施",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "動作確認の実施",
+      "hints": [
+        "動作確認",
+        "ユーザ情報登録",
+        "キャンセルボタン",
+        "未実装"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: ユーザ情報登録確認画面のキャンセルボタンは未実装のため動作しない。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

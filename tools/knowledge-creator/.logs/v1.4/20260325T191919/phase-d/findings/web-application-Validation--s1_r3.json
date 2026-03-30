@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s3 — CustomerEntity code block",
+      "description": "The knowledge file has `ValidationContext<CustomerEntity> context` (with correct closing `>`), but the source has the unclosed generic `ValidationContext<CustomerEntity context` — a documentation typo. The knowledge file silently corrects the source error, adding a `>` that is not in the source.",
+      "source_evidence": "Source line: `public static void validate(ValidationContext<CustomerEntity context) throws Exception {`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s4 — image alt text",
+      "description": "The knowledge file adds an alt text description 'ラジオボタンで精査条件を切り替える入力画面' for the screen image. The source RST image directive has no alt text (`.. image:: ../_image/examples/containsKeyView.png` with only a `:scale:` option), so this text is invented by the knowledge file.",
+      "source_evidence": "Source: `.. image:: ../_image/examples/containsKeyView.png\\n   :scale: 55` — no alt text present"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) — hints array",
+      "description": "`@ValidateFor` and `ValidationContext` both appear in the `CustomerEntity.validate()` code example in s3 but are absent from s3's hints. They are meaningful API names a user might ask about in the context of code-value validation.",
+      "source_evidence": "Source s3 code: `@ValidateFor(\"validate\")` and `ValidationContext<CustomerEntity context)` used in CustomerEntity class"
+    }
+  ]
+}

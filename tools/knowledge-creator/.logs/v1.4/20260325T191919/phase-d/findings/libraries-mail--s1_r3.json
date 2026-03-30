@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-mail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "Several table column names (first column of テーブル定義 tables) are absent from s4 hints: ステータス (has specific code values 未送信/送信済/送信失敗), 送信者メールアドレス, 返信先メールアドレス, 差戻し先メールアドレス. Users asking about these specific fields would not be routed to s4.",
+      "source_evidence": "Source メール送信要求テーブル: ステータス (未送信／送信済／送信失敗コード値), 送信者メールアドレス (Fromヘッダ), 返信先メールアドレス (Reply-Toヘッダ), 差戻し先メールアドレス (Return-Pathヘッダ)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "The method `addAttachedFile` is called in the s6 code example but is not listed in s6 hints.",
+      "source_evidence": "Source code example: `ctx.addAttachedFile(attachedFile);`"
+    }
+  ]
+}

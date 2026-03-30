@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — sorted properties order example",
+      "description": "The knowledge file shows the sorted order of failure-log-contact.properties but omits the behavioral caveat that equal-length keys (e.g., USERS00301, USERS00302, USERS00303) are not deterministically ordered — they change on every execution. The source includes the comment '# 上3つの並び順は、キー名の長さが等しいため、実行毎に変わる。' in the sorted output example. This is decision-necessary for anyone relying on ordering between equal-length request IDs.",
+      "source_evidence": "# 上3つの並び順は、キー名の長さが等しいため、実行毎に変わる。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — 「例外が送出されたクラス」の定義",
+      "description": "The knowledge file defines 「例外が送出されたクラス」 as 'スタックトレースのルート要素（最後のCaused byのクラス）'. The parenthetical '（最後のCaused byのクラス）' does not appear in the source. The source only states 'スタックトレースのルート要素を指している' without specifying 'Caused by'. While the interpretation is consistent with the stack trace example given, the specific phrasing '最後のCaused by' is added content with no basis in the source text.",
+      "source_evidence": "「例外が送出されたクラス」とは、スタックトレースのルート要素を指している。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_ServiceAvailability--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section content is ~49 characters, just under the 50-character threshold. The entire 特徴 section is captured as a single short sentence.",
+      "source_evidence": "Source 特徴 section: 「リクエスト、各機能（複数のリクエストの集合）、システム全体の単位で、サービス提供可否状態を設定することが可能。」 — the source itself is a single sentence, so the brevity is faithful, but the section is near-empty."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4, s5",
+      "description": "s4 already contains a complete combined table of all 4 classes/interfaces including `nablarch.common.availability.ServiceAvailability` and `nablarch.common.availability.BasicServiceAvailability` with their descriptions. s5 then redundantly covers these same two entries in prose form, creating duplicate content across two sections. This could confuse an AI agent choosing between s4 and s5 for questions about the interface or BasicServiceAvailability.",
+      "source_evidence": "Source structure has a single 各クラスの責務 section with インタフェース定義 and クラス定義 subsections. The knowledge file splits this into s4 (which includes all 4 entries in a table) and s5 (which repeats only the interface and BasicServiceAvailability descriptions). Neither s4 nor s5 omits content, but the same content appears in both."
+    }
+  ]
+}

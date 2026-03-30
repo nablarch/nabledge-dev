@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "s3 merges two large h3 subsections (Map型/フォームのプロパティを受け渡す場合 and List型/配列の要素のプロパティを受け渡す場合) under a single section. The source h2 'JSPとActionクラスの間でデータを受け渡す方法' contains well over 2000 chars of plain text (two full Action-class + JSP example pairs) and has named h3 subsections — per the V3 split rule, this should be two separate sections (e.g., s3 for Map/Form and s4 for List/Array).",
+      "source_evidence": "Source has h3 headings '== Map型/フォームのプロパティを受け渡す場合 ==' and '== List型/配列の要素のプロパティを受け渡す場合 ==' each with multiple Java/JSP code blocks; total plain-text length of the parent h2 section clearly exceeds 2000 chars."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 hints are missing `n:submit`, which is a custom tag used in JSP code examples in both the Map型 sub-section and the List型 sub-section of s3. Other sections consistently include all custom tags that appear in their examples (e.g., s1 includes `n:form`, s2 includes `n:img` and `n:a`, s3 includes `n:text` and `n:hidden`).",
+      "source_evidence": "Source JSP example (Map型): `<n:submit cssClass=\"mainBtn\" type=\"button\" name=\"confirm\" value=\"確認\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />`. Source JSP example (List型): `<n:submit cssClass=\"buttons\" type=\"button\" name=\"update\" value=\"確認\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />`."
+    }
+  ]
+}

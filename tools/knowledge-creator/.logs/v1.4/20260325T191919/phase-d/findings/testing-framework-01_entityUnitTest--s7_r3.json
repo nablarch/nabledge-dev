@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "The source contains a complete major section 「プロパティ名の一覧を簡易的に取得する手順」 (underlined with `====`, the same heading level as the コンストラクタ (s4) and setter/getter (s5) sections). It includes a 4-step procedure with example replacement strings. This section has no corresponding index entry; its content is summarised in a single sentence appended to s5. Given that peer sections at the same heading level (s4, s5) each received their own knowledge section, this section should also have its own entry (e.g., s6).",
+      "source_evidence": "RST heading: 「プロパティ名の一覧を簡易的に取得する手順\n========================================」 with ①–④ steps and the replacement example 「検索する文字列：nablarch.sample.management.user.SystemAccountEntity.」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "PascalCase class `SystemAccountEntity` appears in the s3 code example (`private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;`) but is absent from s3's hints array.",
+      "source_evidence": "Source code block in テストメソッドの作成方法: `private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "PascalCase class `SystemAccountEntity` appears in the s5 code example and in the property-name procedure example (`nablarch.sample.management.user.SystemAccountEntity.`) but is absent from s5's hints array.",
+      "source_evidence": "Source code block in setter/getterテスト: `Class<?> entityClass = SystemAccountEntity.class;` and replacement example: 「検索する文字列：nablarch.sample.management.user.SystemAccountEntity.」"
+    }
+  ]
+}

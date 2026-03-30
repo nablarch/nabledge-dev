@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-thread_context--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (introduction)",
+      "description": "The source introduction states that 業務アクションハンドラ (business action handlers) can also set arbitrary variables in the thread context. This is omitted from s1. It is decision-relevant information because developers may need to know they can set custom thread-context variables directly from their business logic.",
+      "source_evidence": "業務アクションハンドラから任意の変数を設定することも可能である。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s11 (設定例)",
+      "description": "The XML configuration example in s11 demonstrates two property names — `defaultLanguage` (for LanguageAttribute) and `defaultTimeZone` (for TimeZoneAttribute) — that appear nowhere else in the knowledge file as documented properties. These property names are absent from s11's hints, making the section undiscoverable when a user asks about configuring a default language or timezone.",
+      "source_evidence": "<property name=\"defaultLanguage\" value=\"ja\" /> and <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" /> in the 設定例 XML block."
+    }
+  ]
+}

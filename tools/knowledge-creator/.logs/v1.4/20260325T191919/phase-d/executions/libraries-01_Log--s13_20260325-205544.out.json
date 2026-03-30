@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s2.hints",
+      "description": "SynchronousFileLogWriterの設定プロパティがヒントに含まれていない。s2のコードブロックにlockFilePath、failureCodeCreateLockFile、failureCodeReleaseLockFile、failureCodeForceDeleteLockFile、failureCodeInterruptLockWaitが使用されている。",
+      "source_evidence": "writer.monitorFile.lockFilePath=/var/log/lock/monitor.lock\nwriter.monitorFile.failureCodeCreateLockFile=MSG00101\nwriter.monitorFile.failureCodeReleaseLockFile=MSG00102\nwriter.monitorFile.failureCodeForceDeleteLockFile=MSG00103\nwriter.monitorFile.failureCodeInterruptLockWait=MSG00104"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s4.hints",
+      "description": "FileLogWriterの設定プロパティ `formatter.className` がヒントに含まれていない。s4のプロパティ表および設定例で使用されているプロパティキー名。",
+      "source_evidence": "writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    }
+  ]
+}

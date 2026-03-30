@@ -1,0 +1,330 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/introduction.rst`
+- Format: `rst`
+
+```
+=========================================================
+序 : Nablarch Application Framework (NAF)とは ?
+=========================================================
+Nablarch Application Framework (以下NAFと呼称する) は、Nablarchプロジェクトにおける、
+Javaベースの基幹システム向けアプリケーションフレームワークです。
+
+本節では、NAFの開発にあたり特に重視してきた設計思想と、そこから導かれるNAFの特色について説明することで、
+世に溢れるフレームワークの中から、どのような場合にNAFを選択すべきなのかということを
+読者の方に理解していただくことを目的としています。
+
++++++++++++++++++++
+
+NAFの設計思想
+================================
+NAFの設計において、特に重視されている設計思想は以下の3つです。
+
+**1. エンタープライズシステムに必要な機能要素を包括的に提供**
+  一般に、多くのフレームワークは、「コンテナ」と呼ばれる一種の箱のような状態で提供されます。
+  この「コンテナ」に対して、画面オンライン処理で利用するテンプレートエンジンや、リッチクライアントフレームワーク、
+  バッチ系処理を行うフレームワーク、メッセージング処理を行うフレームワーク、データベースアクセスを抽象化するフレームワーク… 
+  といった個別の機能を必要に応じて追加していくことによって一つのフレームワークとして機能します。
+  このように一通りの機能を備えた状態のフレームワークを一般に「フルスタック」フレームワークと呼びます。
+
+  しかし、実際の基幹システム開発を行う上で、「フルスタック」フレームワークだけでは、機能的に十分とは言えません。
+
+  開閉局制御、業務日付管理、帳票出力といった業務系共通機能の実装や、
+  運用ログや障害ログのフォーマットやローテーションのように、実際の運用を前提とした諸々の考慮が必要であり、
+  それらはこれまで、各開発プロジェクト毎に個別に設計・実装されてきました。
+  
+  NAFでは、TISがこれまで培った、ミッションクリティカル・大規模開発での経験をもとに、
+  実際のシステム開発で必要な全ての機能を備えた、真の意味での「フルスタック」フレームワークを実現しています。
+
+  それには、以下の内容が含まれます。
+
+    - 画面オンライン入力、バッチ入力、他システムからの要求電文といった基本的な外部入力に対するアプリケーション実行機能
+    - 電文送信、メール送信、帳票出力、ファイル出力、DB接続といった外部出力機能
+    - ログ出力、入力精査、認証認可、開閉局制御、業務日付管理、採番処理、コード値管理といった共通機能
+
+    
+**2. 単体テストからシステムテスト、リグレッションテストを含めた工程全体でのテスト工数の極小化** 
+  JUnitのローンチ以降、テスト駆動開発の概念はエンタープライズシステム開発でも一般のものになりつつあります。
+  しかし、実際のプロジェクトでJUnit等を導入し、テスト駆動開発を行っても、思うような効果を挙げることはなかなか難しいようです。
+  それどころか、開発側から「かえって手間が増えて逆効果だ」との声が上がることさえあります。
+
+  なぜでしょうか。
+
+  テスト駆動開発の最大のメリットは、開発の初期段階からソースコードを頻繁に動作させ、その挙動を随時確認しながら開発することにより、
+  高速にフィードバックが得られ、問題が深刻化する前に修正できるという点にあります。
+  このメリットを開発者が実感できなければテスト駆動開発を行う意味はほとんど無いと言えます。
+
+  しかし、実際の開発現場では、以下のような要因により「高速なフィードバック」というテスト駆動開発のメリットを十分に
+  享受できていないことが多いのです。
+      
+  **要因1.** GUIをともなう機能では、そもそも画面打鍵をしなければフィードバックが得られない。
+    GUIを伴う業務機能では、打鍵作業を行わなければ挙動を確認できません。
+    JUnit等を用いてロジック部分のみをテスト駆動で開発し、その後画面部分の作り込みを行った場合、
+    テスト駆動で開発者が得られるのはあくまで部分的なフィードバックのみであり、
+    画面を作成して打鍵確認を実施するまで、全体の挙動に対するフィードバックを得ることはできなくなります。
+
+    結果として、テスト駆動を行うことでフィードバックの受け取りが遅れることになります。
+    これは、テスト駆動の目的から考えるとまさに本末転倒であり、開発者からしても非常にストレスを感じる開発手法といえます。
+    結局のところ、ロジック側が複雑な一部のケースを除けば、先に画面を作成し、そこに業務機能を埋め込みながら動作を
+    確認していくという従来の手法が、テスト駆動の観点から見てもより効率的であると言えます。
+
+
+  **要因2.** 事前条件のセットアップがテストケース内で完結しないため、本番環境で打鍵しないとフィードバックが得られない。
+    業務機能のテストを実施するためには、 そのテストケースの事前条件をセットアップする必要があります。
+    これには、業務機能が参照する他サブシステム主管のマスタテーブルの内容や、HTTPセッションスコープの内容、
+    外部システムから送信される要求電文など、様々な情報が含まれます。
+    これらの内容をテストケース内でセットアップできなければ、その部分は自動テストの対象から除外し、モック化した状態で
+    テストすることになります。
+     
+    その結果、自動テストの対象となるのは純粋なビジネスロジックを中心とした部分となります。
+    しかし、一般的な業務機能をにおいて、純粋なビジネスロジックは機能全体のせいぜい2～3割程度でしかありません。
+    そのため、テストケースから得られるフィードバックも非常に限定されたものとなり、
+    テストケースを整備することによるメリットが失われることになります。
+
+  このように、開発者がテスト駆動開発メリットを享受できていない状況では、自動テストの整備が自発的に行われることもなく、
+  早晩に形骸化することになります。
+
+  また、上述のような状況では、自動テストによって検証可能な範囲が限られているので、修正後のリグレッションテストにおいても
+  打鍵テストの再実施とエビデンスの再提出を求められることが一般的です。
+  このため、自動テストを整備していても再帰テストの工数が落ちることはほとんどありません。
+  
+  端的にいえば、
+
+    **「どうせ毎回打鍵テストしてエビデンスもとっているのに、わざわざ工数を使って自動テストをメンテナンスする必要があるのか？」**
+
+  ということになります。
+
+  これに対し、Nablarchでは、TISが過去の大規模プロジェクトにおいて実際にテスト駆動開発を適用することで得られた知見を、
+  NAFと並行開発されたテスティングフレームワークである NTF(Nablarch Testing Framework) として集約し提供しています。
+
+  NTFおよびNAFでは、自動テスト内で、DBのテーブル、HTTPセッションの内容、バッチの入力ファイルの内容、メッセージングキュー上の電文など、
+  業務機能の実行に必要なあらゆる事前条件をテストケースの中でセットアップできるようにしています。
+  また、打鍵テスト作業中の状態をテストの事前条件としてエクスポートするなど、
+  事前条件のセットアップが簡便に行える機能を整備しています。
+  
+  その上で、単体テスト工程だけでなく、結合テスト、システムテストも含めた開発工程全体の中で、テストに要する工数を極小化するためには、
+  どこまでを自動テストで担保し、どの部分を打鍵で確認すべきかを再考してベストプラクティスとして体系化しています。
+  これにより、開発者の観点から見て本当に効果が実感できるテスト駆動開発を実現しています。
+
+
+**3. 自前主義**
+  近年のシステム開発では、オープンソースを中心とした既存のプログラムを組み合わせることによって、
+  より手早く、より低コストに開発するという考え方が主流になってきています。
+  また、上で述べたように、近年の「コンテナ」型のフレームワークは、必要に応じて複数のフレームワークを組み合わせて利用することを
+  前提とした構造となっており、そのような開発形態を容易に行うことができるようになっています。
+
+  しかし、このような開発形態には以下に挙げるようなデメリットも存在します。
+
+    - アーキテクチャ一貫性の喪失
+    - 構成管理の複雑化
+    - ソースコードガバナンスに関するOSS特有の問題
+
+  まず1点目は、複数のプロダクトが混在することにより、様々な規約やアーキテクチャを基に開発されたコンポーネントが乱立し、
+  全体的な一貫性が失われる点です。
+  また、プロダクト間で重複する機能が実装されていた場合は、そのどちらか一方のみを使用することになるのですが、
+  この場合、フレームワーク内に決して利用されない機能が発生することになります。
+  
+  2点目は、長期的にみた管理のむずかしさです。各プロジェクトにはそれぞれ独立した運営方針があり、機能追加や不具合の改修について、
+  こちらで制御することはできません。もし、独自に対応を行ったとしても、その内容が開発側でマージしてもらえるという保証はありません。
+  マージされるまでの間は、バージョンアップ毎に修正点をマージしなおす必要があり、場合によってはデグレーションを誘発する危険性もあります。
+
+  3点目は、ソースコードのガバナンスの問題です。
+  オープンソースは、その「クリーン」なイメージにとは裏腹に、その黎明期から常に訴訟の対象となってきました。
+
+  実際に、企業が主体で推進するオープンソースプロジェクトのコードの中に、競合する商用ソフトウェアから流用したとみられる
+  コードが混在していたという過去の事例もあります。
+  特に高いガバナンスが求められる金融系基幹システム開発において、このような問題は喫緊の課題といえます。
+
+  しかし、オープンソースプロジェクトでは、様々な開発者が参加することが可能であり、
+  そこにコミットされるコードの出所を管理することは実質的に不可能です。
+
+  NAFでは、OSやJDK、データベース、アプリケーションサーバ等の基盤ソフト/ミドルウェア製品を除けば、
+  全ての部品をスクラッチ開発しています。
+  これは、全ての機能を一貫した指針のもとに実装し、上に挙げた問題点を回避するために不可欠と判断したためです。
+
+
++++++++++++++++++++
+
+..  
+  Nablarchプロジェクト内の他プロダクトとの関係
+  =========================================================
+  
+  1. **Nablarch Testing Framework (NTF)**
+    Nablarch Testing Framework (以下NTFと呼称) は、NAFと並行して開発が進められてきたテスティングフレームワークです。
+    前節でも述べたように、NAFのアーキテクチャはNTFにおけるテスト作業の効率性を考慮した設計となっています。
+  
+    NTFは、実際のプロジェクトにおいて、テスト駆動開発を適用する場合に、必ずネックとなる問題を解決し、
+    テスト工程全体の徹底した自動化、省力化を実現しています。
+  
+    具体的には、以下の内容が含まれます。
+  
+      - Excelを用いたマトリクス形式でのテストデータ記述
+      - HTTPリクエスト単位でのテストケース実施と目視確認用画面スナップショットの自動取得
+      - 画面上の特定操作を再現するセットアップ用データを生成
+      - データベースのセットアップとアサート
+      - データファイルのセットアップとアサート
+      - 要求電文のセットアップと応答電文のアサート
+      - 複数の処理方式を跨った結合テストの自動化
+  
+  
+  2. **Nablarch Business Components (NBC)**
+    Nablarch Business Components (以下NBCと呼称) は、NAFをベースとする業務アプリケーションで、
+    アカウント権限管理、企業組織管理といった、多くの企業システムで必要となる共通機能を実装しています。
+    
+    NBCは、NAFなどとは異なり一定のカスタマイズを前提としており、ソースコードをはじめ、各種設計書、テストケースを一括した形で
+    提供しています。
+    
+    このため、新規システムの開発においてNBCを採用することで、共通系業務機能の開発工数を大幅に圧縮するだけでなく、
+    既に実績のあるコードベース、プロジェクト構成などを元に開発を進めることでき、
+    プロジェクトの立ち上がりをスムーズに進めることができます。
+
+
+..
+  NAFおよびNTFでは、これらの問題を解決するため、クラス単位で自動テストを作成するのではなく、
+  リクエスト単位で自動テストを作成することを基本とし、これをリクエスト単体テストと呼んでいます。
+  リクエスト単体テストでは、業務トランザクションの実行単位を1テストケース対象とし、
+  その実行に必要な全ての事前条件のセットアップと、全ての処理結果のアサートを可能としています。
+  例えば、画面オンライン処理であれば、HTTPリクエストからHTTPレスポンスまでの範囲がリクエスト単体テストの対象となり、
+  HTTPリクエストの内容(リクエストURIや、入力項目など)、セッションスコープの内容(ログインIDなど)、参照する業務テーブルの内容などが
+  事前条件となり、これらをテストケース内でセットアップすることができるようになっています。
+  テストケースの実行により、業務処理の実行に加え、遷移先画面JSPの実行、レスポンスまでが行われ、
+  レスポンスの内容や、実行後のリクエストスコープの内容、セッションスコープの内容、テーブルの内容をアサートすることができます。
+  さらに、レスポンスされた画面の内容は静的HTMLとして出力され、それらを各種ブラウザで直接確認することにより、
+  レイアウト上の問題に関する目視検証をまとめて実施することができます。
+  外部システムとのメッセージング処理であれば、要求電文の受信から応答電文の送信までの単位、
+  バッチ処理であれば、処理対象データのレコードに対する処理がリクエスト単体テストの範囲となります。
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-introduction`
+
+```json
+{
+  "id": "about-nablarch-introduction",
+  "title": "序 : Nablarch Application Framework (NAF)とは ?",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "NAFの設計思想",
+      "hints": [
+        "NAF設計思想",
+        "Nablarchフレームワーク選択基準",
+        "エンタープライズシステム",
+        "フルスタックフレームワーク",
+        "テスト工数極小化",
+        "NTF",
+        "自前主義",
+        "コードガバナンス",
+        "業務日付管理",
+        "認証認可",
+        "開閉局制御"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "NAF（Nablarch Application Framework）はTISが開発した、Javaベースの基幹システム向けアプリケーションフレームワーク。以下3つの設計思想を持つ。\n\n## 1. エンタープライズシステムに必要な機能要素を包括的に提供\n\n一般的な「フルスタック」フレームワークが提供する範囲を超え、実際の基幹システム開発に必要な全機能を包括的に提供する。含まれる機能要素：\n\n- **外部入力処理**: 画面オンライン入力、バッチ入力、他システムからの要求電文\n- **外部出力機能**: 電文送信、メール送信、帳票出力、ファイル出力、DB接続\n- **共通機能**: ログ出力、入力精査、認証認可、開閉局制御、業務日付管理、採番処理、コード値管理\n\n## 2. テスト工数の極小化\n\nエンタープライズシステムでテスト駆動開発が効果を発揮しない主な要因として以下の2点がある：\n\n- **要因1（GUIのフィードバック遅延）**: GUIを伴う機能では画面打鍵をしなければ挙動を確認できないため、JUnit等でロジック部分をテスト駆動開発しても部分的なフィードバックしか得られず、画面打鍵確認まで全体の挙動に対するフィードバックを得ることができない。結果としてテスト駆動を行うことでフィードバック受け取りが遅延し、本末転倒となる。\n- **要因2（事前条件のセットアップ不完結）**: 業務機能のテストに必要な事前条件（他サブシステム主管のマスタテーブル、HTTPセッションスコープの内容、外部システムから送信される要求電文など）がテストケース内で完結しないため、純粋なビジネスロジック（機能全体の2〜3割程度）しか自動テストの対象にできない。テストから得られるフィードバックが限定され、修正後のリグレッションテストでも打鍵テストの再実施とエビデンスの再提出が求められ、自動テスト整備によっても再帰テスト工数が下がらない。\n\nこれらの問題を解決するため、NAFと並行開発されたNTF（Nablarch Testing Framework）により、以下を実現：\n\n- 業務機能の実行に必要なすべての事前条件（DBテーブル、HTTPセッション、バッチ入力ファイル、メッセージングキュー上の電文）をテストケース内でセットアップ可能\n- 打鍵テスト作業中の状態をテストの事前条件としてエクスポートする機能を提供\n- 単体テスト・結合テスト・システムテストを含む開発工程全体でのテスト工数極小化のベストプラクティスを体系化\n\n## 3. 自前主義\n\nOS、JDK、データベース、アプリケーションサーバ等の基盤ソフト／ミドルウェア製品を除き、全部品をスクラッチ開発。理由：\n\n- **アーキテクチャ一貫性の確保**: 複数プロダクト混在による規約・アーキテクチャの乱立を回避\n- **構成管理の簡素化**: 外部プロジェクトの運営方針に依存せず、不具合修正・機能追加を自己制御\n- **コードガバナンスの確保**: 特に高いガバナンスが求められる金融系基幹システムにおいて、コードの出所を完全に管理可能"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

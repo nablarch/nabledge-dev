@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-07_UserAgent--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3, s5 (versionConvertor property description)",
+      "description": "The behavioral constraint that UserAgentVersionConvertor splits a version string into exactly 3 elements is missing. The source explicitly states '文字列を「\\D(数字以外)」で分割し、３つの要素にする' — meaning only the first 3 segments are used. This explains why '34.0.1847.116' (4 parts) becomes '_34 __0 ___1847' (3 parts), with the 4th segment discarded. This is a concrete behavioral constraint relevant to understanding the convertor's output.",
+      "source_evidence": "Source ItemPattern.versionConvertor: 'UserAgentVersionConvertorは、文字列を「\\D(数字以外)」で分割し、３つの要素にする。それぞれの要素をパディングし、スペース区切りで結合した値を変換値とする。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "`UserAgentNameConvertor` and `UserAgentVersionConvertor` are referenced by name in s5 content (as standard implementations of nameConvertor and versionConvertor properties respectively) but are absent from s5 hints.",
+      "source_evidence": "Source ItemPattern.nameConvertor: '標準の実装としてUserAgentNameConvertorが提供される。' ItemPattern.versionConvertor: '標準の実装としてUserAgentVersionConvertorが提供される。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "`HttpResponse` appears in the usage example method signature (`public HttpResponse doUserAgentJudgment(...)`) but is absent from s7 hints.",
+      "source_evidence": "Source 使用例: 'public HttpResponse doUserAgentJudgment(HttpRequest req, ExecutionContext context) {'"
+    }
+  ]
+}

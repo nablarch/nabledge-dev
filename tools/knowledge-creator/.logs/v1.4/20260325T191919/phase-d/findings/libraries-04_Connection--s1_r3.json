@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_Connection--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s3 — DbConnectionContext row",
+      "description": "The knowledge file states \"任意の名前（データベースコネクション名）を付加して複数のAppDbConnectionを管理できる\" (can manage multiple AppDbConnections), but the source only says \"保持するAppDbConnectionには、任意の名前(データベースコネクション名)を付加することができる\" — it says a name can be attached to the held AppDbConnection; it never says multiple AppDbConnections can be managed.",
+      "source_evidence": "保持するAppDbConnectionには、任意の名前(データベースコネクション名)を付加することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[4] (s5) — hints",
+      "description": "PascalCase class `OracleDataSource` (used in the XML configuration example as oracle.jdbc.pool.OracleDataSource) is absent from s5 hints.",
+      "source_evidence": "<component class=\"oracle.jdbc.pool.OracleDataSource\">"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[4] (s5) — hints",
+      "description": "Property names `duplicateErrorSqlState` and `duplicateErrorErrCode` (set on BasicSqlStatementExceptionFactory in the XML configuration) are absent from s5 hints.",
+      "source_evidence": "<property name=\"duplicateErrorSqlState\" value=\"\"/>\n<property name=\"duplicateErrorErrCode\" value=\"1\"/>"
+    }
+  ]
+}

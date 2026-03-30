@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ページング画面要素テーブル（ページ番号行）",
+      "description": "ページ番号の表示条件として「総ページ数が2以上の場合のみ表示」のみ記載されているが、ソースには続けて「各ページ番号は、上記の「最初」や「前へ」と同様に、遷移可否に応じて表示される」という記述がある。個々のページ番号リンクもナビゲーション可否によって状態が変わる（クリック可/不可）という実装上重要な挙動が省略されている。",
+      "source_evidence": "「ページ番号全体(1..n)は、総ページ数が2以上の場合のみ表示される。各ページ番号は、上記の「最初」や「前へ」と同様に、遷移可否に応じて表示される。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "ボディ行フラグメントの仕組みを説明する上で中心的なJSTLタグ `c:forEach` がs3のhintsに含まれていない。ソースではvarRowName・varStatusName等の属性の文脈でc:forEachが繰り返し言及されており、「c:forEach ループ内でボディ行フラグメントが評価される」という重要な動作を検索するキーワードとして有用である。",
+      "source_evidence": "「ボディ行のJSPフラグメントは、検索結果のループ内(JSTLのc:forEachタグ)で呼び出され評価される。」「行データ(c:forEachタグのvar属性)とステータス(c:forEachタグのstatus属性)にアクセスするために」"
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/FileRecordWriterDisposeHandler.rst`
+- Format: `rst`
+
+```
+
+.. include:: ../api/link.rst
+
+===============================
+出力ファイル開放ハンドラ
+===============================
+
+**クラス名:** ``nablarch.common.handler.FileRecordWriterDisposeHandler``
+
+
+----------------------------------------------
+概要
+----------------------------------------------
+業務アクションハンドラで書き込みを行うために開いた全ての出力ファイルを開放（クローズ）するハンドラ。
+後続のハンドラの処理結果に関わらず全ての出力ファイルを解放する。
+本ハンドラを使用する場合、業務アクションハンドラ内で出力ファイルを開放する必要はない。
+
+.. warning::
+ 本ハンドラは、 `FileRecordWriterHolder`_ クラス経由で書き込みが行われた出力ファイルのみ開放する。\ 
+  `FileRecordWriterHolder`_ 以外のクラスを使用して書き込んだ出力ファイルは、開放の対象外となるので注意すること。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = ["FileRecordWriterDisposeHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラに対する処理委譲)**
+    後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+ 
+**[復路処理]**
+  **2. (出力ファイルの開放)**
+    `FileRecordWriterHolder`_ によって書き込みを行った全てのファイルの開放処理を行う。
+
+  **2a. (開放処理中のエラー)**
+    なお、開放処理中にIOエラーが発生した場合は、ワーニングログのみ出力し、再送出は行なわない。
+    それ以外のエラーが発生した場合は再送出して終了する。
+
+  **3. (正常終了)**
+    **1.** で取得した処理結果を返却して終了する。
+
+.. _error:
+
+**[例外処理]**
+  **1a. (後続ハンドラの処理でエラー)**
+    後続ハンドラの処理中にエラーが発生した場合、 **2. (出力ファイルの開放)** を行った後、
+    発生した元例外を再送出して終了する。
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの実装内容は基本的に変更不要なものであり、そのまま使用することができる。
+以下はDIリポジトリ設定ファイルへの記述例である。
+
+  .. code-block:: xml
+
+    <component class="nablarch.common.handler.FileRecordWriterDisposeHandler" />
+
+++++++++++
+
+-----------------------------------------------
+未実装機能・要望
+-----------------------------------------------
+(とくになし。)
+
+```
+
+## Knowledge File
+
+- ID: `handlers-FileRecordWriterDisposeHandler--s1`
+
+```json
+{
+  "id": "handlers-FileRecordWriterDisposeHandler--s1",
+  "title": "出力ファイル開放ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "FileRecordWriterDisposeHandler",
+        "nablarch.common.handler.FileRecordWriterDisposeHandler",
+        "FileRecordWriterHolder",
+        "出力ファイル開放",
+        "ファイルクローズ",
+        "業務アクションハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "FileRecordWriterHolder",
+        "ハンドラ処理フロー",
+        "出力ファイル開放",
+        "IOエラー処理",
+        "例外処理",
+        "往路復路"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "FileRecordWriterDisposeHandler",
+        "DI設定",
+        "XML設定例",
+        "コンポーネント設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "未実装機能・要望",
+      "hints": [
+        "未実装機能",
+        "要望"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.FileRecordWriterDisposeHandler`\n\n業務アクションハンドラで書き込みを行うために開いた全ての出力ファイルを開放（クローズ）するハンドラ。後続のハンドラの処理結果に関わらず全ての出力ファイルを解放する。本ハンドラ使用時、業務アクションハンドラ内で出力ファイルを開放する必要はない。\n\n> **警告**: `FileRecordWriterHolder` クラス経由で書き込みが行われた出力ファイルのみ開放する。`FileRecordWriterHolder` 以外のクラスを使用して書き込んだ出力ファイルは開放の対象外。",
+    "s2": "**往路処理**\n1. 後続ハンドラに処理を委譲し、その結果を取得する。\n\n**復路処理**\n2. `FileRecordWriterHolder` によって書き込んだ全ファイルの開放処理を行う。\n   - 2a. 開放処理中にIOエラーが発生した場合はワーニングログのみ出力し、再送出しない。それ以外のエラーは再送出して終了。\n3. 往路で取得した処理結果を返却して終了。\n\n**例外処理**\n- 1a. 後続ハンドラ処理中にエラーが発生した場合、出力ファイルの開放を行った後、元例外を再送出して終了する。",
+    "s3": "実装内容の変更は基本的に不要。そのまま使用可能。\n\n```xml\n<component class=\"nablarch.common.handler.FileRecordWriterDisposeHandler\" />\n```",
+    "s4": "現時点では未実装機能・要望はとくになし。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

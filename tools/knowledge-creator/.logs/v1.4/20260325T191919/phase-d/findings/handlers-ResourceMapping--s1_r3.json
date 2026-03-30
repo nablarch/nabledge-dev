@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-ResourceMapping--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — property table",
+      "description": "The knowledge file introduces a 'デフォルト値' column that does not exist in the source table. Source table columns are: 設定項目 | プロパティ名 | データ型 | 備考. The knowledge file restructures this to: プロパティ名 | 型 | 必須 | デフォルト値 | 説明. The 'デフォルト値' column has no basis in the source.",
+      "source_evidence": "Source table header: 設定項目 / プロパティ名 / データ型 / 備考 (no デフォルト値 column)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "Hints for s2 are missing 'マッピング元ベースURI' and 'マッピング先ベースコンテンツパス', which are the primary conceptual terms used throughout the processing flow description (steps 1, 2, 3). Users searching by these Japanese setting names would not find s2.",
+      "source_evidence": "Source uses these terms prominently: 'マッピング元ベースURI が、リクエストパス...に対して前方一致するかどうかを判定', 'リクエストパス中の...前方一致した部分文字列を、本ハンドラに設定された マッピング先ベースコンテンツパス に置換し'"
+    }
+  ]
+}

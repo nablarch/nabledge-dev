@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The sentence '障害通知ログのフォーマットには`$message$`のみ含まれ、障害解析ログのフォーマットには`$message$$information$$stackTrace$`が含まれる。これにより障害解析ログのみにStack Trace Informationが出力される。' is editorial interpretation not explicitly stated in the source. The source only shows the configuration format strings; it does not make this comparative statement.",
+      "source_evidence": "The source provides log.properties configuration examples with format strings (e.g., `$date$ -$logLevel$- ... $message$` and `... $message$$information$$stackTrace$`) but does not include any explanatory sentence describing or comparing the presence of these placeholders across log types."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`BasicLogFormatter` is a PascalCase class name appearing in the s2 configuration example (`writer.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter`) but is absent from the s2 hints array.",
+      "source_evidence": "Source s2 configuration: `writer.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter` and `writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`UserNotFoundException` (XxxException pattern) and `ApplicationException` (PascalCase class name) appear in the s4 code examples but are absent from the s4 hints array.",
+      "source_evidence": "Source s4 code example: `catch (UserNotFoundException e) { throw new ProcessAbnormalEnd(100, e, \"UM900003\"); }` and `throw new ProcessAbnormalEnd(100, new ApplicationException(context.getMessages()), \"UM900001\");`"
+    }
+  ]
+}

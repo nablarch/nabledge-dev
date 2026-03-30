@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — バージョン番号の準備 note",
+      "description": "The source defines formal method signatures via `.. function::` directives for `prepareVersion` and `prepareVersions`, including full parameter types: `boolean prepareVersion(ExecutionContext context, ExclusiveControlContext exclusiveControlContext)` and `boolean prepareVersions(ExecutionContext context, List<? extends ExclusiveControlContext> exclusiveControlContexts)`. The knowledge file mentions the boolean return and usage but omits the formal signatures — in particular the generic bound `List<? extends ExclusiveControlContext>` for `prepareVersions` is not captured.",
+      "source_evidence": ".. function:: boolean prepareVersion(ExecutionContext context, ExclusiveControlContext exclusiveControlContext)\n  .. function:: boolean prepareVersions(ExecutionContext context, List<? extends ExclusiveControlContext> exclusiveControlContexts)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`MessageUtil` and `MessageLevel` appear in the `CommonExclusiveControlUtil` wrapper class code example in s1 but are not listed in the hints array.",
+      "source_evidence": "Message message = MessageUtil.createMessage(MessageLevel.ERROR, \"M001101\");"
+    }
+  ]
+}

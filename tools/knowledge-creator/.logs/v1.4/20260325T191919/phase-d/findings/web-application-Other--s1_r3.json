@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-Other--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "sections s7 and beyond (コード値の取得方法, 警告メッセージ, and additional sections)",
+      "description": "The knowledge file covers only 6 of the 13 h2 sections identified by the automated check. The source ToC explicitly references two more sections not present in the knowledge file: `other_example_code_get` (コード値の取得方法) and `other_example_warn_message` (警告メッセージ). The automated check reports 13 source headings vs 6 knowledge sections, indicating at least 7 sections with substantive implementation content (class names, method signatures, code examples) are completely absent.",
+      "source_evidence": "ToC in source lists: `other_example_code_get`, `other_example_warn_message` as distinct h2 sections. Automated check: Section count 6 < source headings 13."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (設定値の取得方法) — warning block",
+      "description": "The warning block's bad code examples are omitted. The source provides two concrete anti-pattern code snippets showing exactly what invalid usage looks like (using an entity getter value and a DB row value as part of the key string). These examples help an AI assistant recognize and flag incorrect code.",
+      "source_evidence": "Source warning block contains:\n```java\nString message = SystemRepository.getString(\"user\" + userEntity.getUserId() + \".message\");\nString message = SystemRepository.getString(\"user\" + row.getString(\"userId\") + \".message\");\n```\nKnowledge file captures the warning concept but omits both bad code examples."
+    }
+  ]
+}

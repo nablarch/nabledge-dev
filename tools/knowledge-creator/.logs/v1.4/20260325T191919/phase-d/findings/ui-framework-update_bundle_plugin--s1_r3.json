@@ -1,0 +1,20 @@
+{
+  "file_id": "ui-framework-update_bundle_plugin--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The source specifies that `bin/update.bat` contains two configurable variables — `PROJECT` and `UI_PLUGIN` — that must be set to match the project's directory structure, with example values `../../xxx_project` and `ui_plugins` respectively. The knowledge file only says to modify `update.bat` to match the directory structure without mentioning these variable names or their example values.",
+      "source_evidence": "下記の構造の場合、 `PROJECT` は\"../../xxx_project\"、 `UI_PLUGIN` は\"ui_plugins\"となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The `updated_plugin.json` output example in the source contains a third entry — a second occurrence of `tutorial-dev-ui_test-support` at version `1.0.0` — along with inline comments explaining each line (e.g., `// nablarch-css-coreが更新されていた場合`, `// 後述する_fromで指定したプラグインが更新されていた場合`). The knowledge file omits this third entry and all comments, losing the explanation that the `_from`-specified plugin also appears in the output.",
+      "source_evidence": "{ \"nablarch-css-core\" : \"1.0.0\" // nablarch-css-coreが更新されていた場合\n , \"tutorial-dev-ui_test-support\" : \"1.0.1\" // 後述する_fromで指定したプラグインが更新されていた場合\n , \"tutorial-dev-ui_test-support\" : \"1.0.0\"\n}"
+    }
+  ]
+}

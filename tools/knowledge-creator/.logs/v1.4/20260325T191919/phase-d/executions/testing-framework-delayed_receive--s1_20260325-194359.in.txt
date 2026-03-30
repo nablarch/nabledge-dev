@@ -1,0 +1,227 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/05_UnitTestGuide/02_RequestUnitTest/delayed_receive.rst`
+- Format: `rst`
+
+```
+====================================================================
+リクエスト単体テストの実施方法（応答不要メッセージ受信処理）
+====================================================================
+
+--------------------
+概要
+--------------------
+応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される。
+このため、リクエスト単体テストではこのアクションクラスを使用して、以下の\ `テスト対象の成果物`_ の確認を行う。
+
+**※ 他のテストのようにアクションクラスに対する条件網羅や、限界値テストなどは実施不要である。**
+
+テスト対象の成果物
+===================
+* 電文のレイアウトを定義したフォーマット定義ファイル
+* データベースへ電文を登録する際に使用するFormクラス
+* データベースへ電文を登録するためのINSERT文
+
+--------------------
+テストクラスの書き方
+--------------------
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象機能のパッケージとする。
+* <電文のリクエストID>RequestTestというクラス名でテストクラスを作成する。
+* \ ``nablarch.test.core.messaging.MessagingReceiveTestSupport``\ を継承する。
+
+例えば、テスト対象機能のパッケージがnablarch.sample.ss21AA、電文のリクエストIDがRM21AA100だとすると、テストクラスは以下のようになる。
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  
+  // ～中略～
+
+  public class RM21AA100RequestTest extends MessagingReceiveTestSupport {
+
+--------------------
+データシートの書き方
+--------------------
+`テスト対象の成果物`_ のテストを行うために必要なデータシートの記述方法を説明する。
+
+データシートの記述方法は、\ :ref:`real_request_test`\ を参照すること。
+本項では、\ :ref:`real_request_test`\ と記述方法が異なる箇所の解説を行う。
+
+
+正常系のケース
+==============
+
+  このケースでは、電文が正しくデータベースに取り込まれることを確認する。
+
+  .. note::
+
+   応答不要メッセージ受信処理では、応答電文は存在しないため応答電文が期待値通りであることの確認を行う必要はない。
+   このため、データシートには、下記の記述は不要である。
+
+   * 期待値及び準備データの定義
+
+     * 「MESSAGE=expectedMessages」の定義は不要
+   
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-delayed_receive--s1`
+
+```json
+{
+  "id": "testing-framework-delayed_receive--s1",
+  "title": "リクエスト単体テストの実施方法（応答不要メッセージ受信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ受信処理",
+        "リクエスト単体テスト",
+        "テスト対象成果物",
+        "フォーマット定義ファイル",
+        "Formクラス",
+        "INSERT文",
+        "条件網羅不要",
+        "限界値テスト不要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingReceiveTestSupport",
+        "nablarch.test.core.messaging.MessagingReceiveTestSupport",
+        "テストクラス命名規則",
+        "RequestTest",
+        "応答不要メッセージ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データシートの書き方",
+      "hints": [
+        "正常系テスト",
+        "応答電文",
+        "expectedMessages",
+        "MESSAGE=expectedMessages",
+        "データシート",
+        "応答不要メッセージ受信処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "応答不要メッセージ処理用のアクションクラスはNablarchが提供するため、リクエスト単体テストでは以下の成果物を確認する:\n\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- データベースへ電文を登録する際に使用するFormクラス\n- データベースへ電文を登録するためのINSERT文\n\n> **重要**: 他のテストのようなアクションクラスに対する条件網羅や限界値テストは実施不要。",
+    "s2": "テストクラス作成ルール:\n1. テスト対象機能と同一パッケージに配置する\n2. クラス名は `{電文のリクエストID}RequestTest` とする\n3. `nablarch.test.core.messaging.MessagingReceiveTestSupport` を継承する",
+    "s3": "基本的な記述方法は :ref:`real_request_test` に従う。\n\n**正常系ケース**\n\n電文が正しくデータベースに取り込まれることを確認する。\n\n応答不要メッセージ受信処理では応答電文が存在しないため、応答電文の期待値確認は不要。\n\n> **注意**: データシートに「MESSAGE=expectedMessages」の定義は不要。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

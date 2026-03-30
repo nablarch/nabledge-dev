@@ -1,0 +1,34 @@
+{
+  "file_id": "biz-samples-useragent_sample--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — isTablet method code comment",
+      "description": "Code comment in isTablet() was rewritten. Source has `// OS名およびOSタイプにより判定する` but knowledge file replaced it with `// OS名が\"ipad\"、またはandroidでOSタイプが\"tablet\"の場合`.",
+      "source_evidence": "Source code: `private boolean isTablet(UserAgent userAgent) { // OS名およびOSタイプにより判定する`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — isSmartPhone method code comment",
+      "description": "Code comment in isSmartPhone() was rewritten. Source has `// OS名およびOSタイプにより判定する` but knowledge file replaced it with `// OS名が\"iphone\"、またはandroidでOSタイプが\"mobilePhone\"の場合`.",
+      "source_evidence": "Source code: `private boolean isSmartPhone(UserAgent userAgent) { // OS名およびOSタイプにより判定する`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — isFeaturePhone method code comment",
+      "description": "Code comment in isFeaturePhone() was extended. Source has `// タブレットでもスマートフォンでもなく、キャリア名が含まれる場合` but knowledge file changed it to `// タブレットでもスマートフォンでもなく、UserAgent文字列にキャリア名（DoCoMo/kddi/vodafone）が含まれる場合`, adding \"UserAgent文字列に\" and the carrier name enumeration.",
+      "source_evidence": "Source code: `// タブレットでもスマートフォンでもなく、キャリア名が含まれる場合`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`UserAgentValueConvertor` is missing from hints. This name appears in the section title (\"UserAgentValueConvertor実装クラスの設定サンプル\") and in the prose description, making it a likely search term for users.",
+      "source_evidence": "Source section title: `UserAgentValueConvertor実装クラスの設定サンプル`; prose: `\\`UserAgentValueConvertor\\`によって \\`_11 __0 ___\\`に変換される`"
+    }
+  ]
+}

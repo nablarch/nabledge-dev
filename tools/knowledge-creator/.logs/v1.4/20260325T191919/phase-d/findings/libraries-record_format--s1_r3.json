@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-record_format--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — format definition file code example",
+      "description": "The inline field-description comments were stripped from the format definition file code example. The source includes comments such as `# 1. データ区分`, `# 2. 振込先金融機関コード`, `# 3. 振込先金融機関名称`, `# 4. 振込先営業所コード`, etc. on every field line, providing the business meaning (Japanese name) of each field. Also stripped are the parenthetical field notes: `# (手形交換所番号)` and `# (未使用領域)`. These comments are part of the documentation of the sample format and aid understanding of what each field represents.",
+      "source_evidence": "Source lines such as: `1    dataKbn       X(1)  \"2\"      # 1. データ区分` / `2    FIcode        X(4)           # 2. 振込先金融機関コード` / `39  ?tegataNum     X(4)  \"9999\"   # (手形交換所番号)` / `114 ?unused        X(7)  pad(\"0\") # (未使用領域)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The s1 hints are missing `ゾーン10進数` and `パック10進数` (or `パック形式`). The source explicitly lists \"パックおよびゾーン10進数形式のサポート\" as a named feature of the library. These are specific technical terms a user might search for when asking about host-environment data format support.",
+      "source_evidence": "Source: `EBCDICへの対応や、パックおよびゾーン10進数形式のサポートなど、ホスト環境での利用を想定した機能`"
+    }
+  ]
+}

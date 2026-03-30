@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-08_HtmlMail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The knowledge file states that the context class changes from `TemplateMailContext` to `TemplateHtmlMailContext`. The source section for HTMLメールの送信 only says '業務アクションで利用するコンテキストクラスが異なるだけ' without naming the original class. `TemplateMailContext` is mentioned in a different section (the メールの形式 table), not in this section.",
+      "source_evidence": "業務アクションで利用するコンテキストクラスが異なるだけなので、実装例は省略する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The content width guidance in the attention note omits the specific sizing criterion: 'PCのみをサポートする場合でも、メールクライアントのプレビュー機能で確認できる程度のサイズ'. This parenthetical gives developers a concrete target size even for PC-only support scenarios.",
+      "source_evidence": "コンテンツの横幅。(PCのみをサポートする場合でも、メールクライアントのプレビュー機能で確認できる程度のサイズ。)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The property '言語' (second PK field in HTMLメール用代替テキストテンプレートテーブル) is missing from the hints array. It is a table first-column property name that should be included per V4 rules.",
+      "source_evidence": "言語 | java.lang.String | PK (in HTMLメール用代替テキストテンプレートテーブル)"
+    }
+  ]
+}

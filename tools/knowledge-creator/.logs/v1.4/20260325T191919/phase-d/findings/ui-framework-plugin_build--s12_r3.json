@@ -1,0 +1,19 @@
+{
+  "file_id": "ui-framework-plugin_build--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Several property names from the configuration sub-tables are missing from hints. The `plugins` sub-options `pattern` and `exclude`, and the `imgcopy` sub-options `fromdirs` and `todirs` appear in the source tables but are not included in s1 hints. Users asking about these specific properties would not match s1.",
+      "source_evidence": "Source tables define: plugins sub-options: pattern（必須）, exclude（任意）; imgcopy sub-options: fromdirs（必須）, todirs（必須）"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning: S9 section count 9 < source headings 12",
+      "description": "The automated check flagged 12 source headings vs 9 knowledge sections. However, counting actual RST heading underlines in the provided source excerpt yields exactly 9 headings (matching the 9 knowledge sections). The discrepancy of 3 is likely caused by the automated tool counting bold `**text**` markers (e.g., **設定ファイル**, **ファイル概要**, **設定例**) as headings, or counting from beyond the provided excerpt boundary at `.. _install:`. No content is actually missing based on the visible source."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-07_insert--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections s4, s5, s6, s7",
+      "description": "Section ordering is inverted relative to the source document. In the source, 二重サブミットの防止 and its subsections (JavaScriptを使用した二重サブミットの防止, トークンを使用した二重サブミットの防止, まとめ) appear first within 作成手順, followed by 自動設定項目の指定, ビジネスロジック, Actionの作成, JSPの作成. In the knowledge file, s4 covers 自動設定項目+ビジネスロジック+Action+JSP before s5–s7 cover the 二重サブミット content. The source order is: 二重サブミット → 自動設定項目 → ビジネスロジック → Action → JSP; the knowledge file order is the reverse.",
+      "source_evidence": "Source section ordering under 作成手順: `.. _double_submit: 二重サブミットの防止` (h2) precedes `.. _insert_auto_setting_item: 自動設定項目の指定` and subsequent sections. Knowledge file places s4 (自動設定項目 etc.) at index position 4 and s5–s7 (二重サブミット) at positions 5–7."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3] (s4) hints",
+      "description": "The s4 hints are missing `StringUtil`, `MessageUtil`, and `MessageLevel`, all of which appear in the Java code examples within s4 (`StringUtil.isNullOrEmpty(...)`, `MessageUtil.createMessage(...)`, `MessageLevel.ERROR`).",
+      "source_evidence": "Source CM311AC1Component.java code block: `if (!StringUtil.isNullOrEmpty(systemAccount.getPermissionUnit()))`, `throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\"))`."
+    }
+  ]
+}

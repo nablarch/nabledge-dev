@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-03_listSearch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The Map-based constructor of W11AC01FormBase is omitted from the code example. The source shows a constructor taking `Map<String, Object> params` that sets both domain properties (loginId, kanjiName, etc.) and calls `setPageNumber((Integer) params.get(\"pageNumber\"))` and `setSortId((String) params.get(\"sortId\"))`. This demonstrates that the overridden setters are called during construction, which is part of the ListSearchInfo initialization pattern.",
+      "source_evidence": "public W11AC01FormBase(Map<String, Object> params) { loginId = (String) params.get(\"loginId\"); ... setPageNumber((Integer) params.get(\"pageNumber\")); setSortId((String) params.get(\"sortId\")); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "`HttpRequest` is a PascalCase Nablarch class used in the `W11AC01Form.validate(HttpRequest req, String validationName)` method signature shown in the code example, but it is absent from the hints array.",
+      "source_evidence": "public static W11AC01Form validate(HttpRequest req, String validationName) { ValidationContext<W11AC01Form> context = ValidationUtil.validateAndConvertRequest(...) }"
+    }
+  ]
+}

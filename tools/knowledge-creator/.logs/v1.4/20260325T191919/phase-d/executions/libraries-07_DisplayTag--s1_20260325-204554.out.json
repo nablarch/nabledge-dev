@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_DisplayTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 入力画面でのフォーマット出力",
+      "description": "Source explains the underlying mechanism: 「本機能では、入力項目に指定されたフォーマットを入力項目と紐付けてウィンドウスコープで管理を行なっている」— that the framework links the format to the input field and manages it in window scope. This explains WHY the window scope setting is required. The knowledge file only states the requirement without the mechanism.",
+      "source_evidence": "「本機能では、入力項目に指定されたフォーマットを入力項目と紐付けてウィンドウスコープで管理を行なっている。このため、入力値をウィンドウスコープに設定しないと、ウィンドウスコープにフォーマットが設定されずフォーマット編集が行えない。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index — s1 hints",
+      "description": "PascalCase class names BigDecimalConvertor, IntegerConvertor, LongConvertor are referenced in the decimal section's note (for textタグ numeric convertor integration) but are absent from s1's hints array.",
+      "source_evidence": ":ref:`数値コンバータ(BigDecimalConvertor、IntegerConvertor、LongConvertor)<validator_and_convertor>` を使用する。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7 — errorタグ（参照ラベル）",
+      "description": "The section title 'errorタグ' is stated as fact but cannot be verified from the source. The source file is truncated immediately after the reference label `.. _WebView_ErrorViewErrorTag:` and the RST heading underline `------------------`; the actual heading text (which would appear between them) is not present in the provided source.",
+      "source_evidence": "Source ends with: `.. _WebView_ErrorViewErrorTag:\\n\\n\\n------------------` — heading text not shown."
+    }
+  ]
+}

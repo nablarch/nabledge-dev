@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — getDeletedUsers code example",
+      "description": "The source code for getDeletedUsers includes `StringBuilder sb = new StringBuilder();` declaration and `sb.delete(0, sb.length());` inside the loop. These lines are omitted from the knowledge file's code example. While the StringBuilder appears to be vestigial/unused in the shown snippet, the code example no longer faithfully matches the source.",
+      "source_evidence": "Source: `StringBuilder sb = new StringBuilder();` declared before the loop; `sb.delete(0, sb.length());` called inside the for loop at each iteration."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "PascalCase class names SqlResultSet and SqlRow appear in the 検索結果表示Action code example in s2 but are absent from the hints array.",
+      "source_evidence": "Source 検索結果表示Action code: `SqlResultSet result = searchUser(request, context);` and `SqlRow row = result.get(i);`"
+    }
+  ]
+}

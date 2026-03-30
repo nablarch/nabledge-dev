@@ -1,0 +1,20 @@
+{
+  "file_id": "workflow-WorkflowArchitecture--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — ワークフローインスタンステーブル / インスタンスID",
+      "description": "ソースには「インスタンスIDは、業務側のワークフローデータを保持するテーブルに格納する**必要がある**」と明示的な要件（必須制約）が記載されているが、知識ファイルでは「業務側テーブルに格納し」と行為として記述されており、「必要がある（must）」という制約が省略されている。この要件はワークフロー実装において業務テーブル設計上の必須対応事項を示しており、省略すると実装判断に影響する。",
+      "source_evidence": "インスタンスID列の制約説明: 「インスタンスIDは、業務側のワークフローデータを保持するテーブルに格納する必要がある。業務側テーブルに格納することで、ワークフローの進行状態と業務データを紐付けて管理することができる。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "s4のコンテンツが「なし」（2文字）であり、50文字未満。ソース上は `.. _workflowComponentDefinition:` というアンカー定義のみのセクションであり、実質的なコンテンツが存在しないため「なし」と記載されているが、V3チェック基準（< 50文字）に該当する。",
+      "source_evidence": "ソース末尾: `.. _workflowComponentDefinition:` の後に `----` のみ（次セクション区切り）。コンテンツなし。"
+    }
+  ]
+}

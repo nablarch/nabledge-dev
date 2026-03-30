@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3] (s4 hints)",
+      "description": "The interface name 'Retryable' is referenced in the source for both the DB接続エラー flow and DB接続リトライ失敗 flow ('Retryableを実装した例外') but is absent from s4 hints. It is a searchable API name a user might query when implementing retry-capable exceptions.",
+      "source_evidence": "connectionerror flow: 'リトライ可能実行時例外(Retryableを実装した例外)が送出される'; retryerror flow: same phrase repeated"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3] (s4 hints)",
+      "description": "'NoMoreRecord' (inner class/constant of DataReader) is referenced in the notfound flow as 'DataReader.NoMoreRecord' but is not included in s4 hints. While 'DataReader' is present, 'NoMoreRecord' is the specific return value name users may search for.",
+      "source_evidence": "notfound flow step 2: 'DataReadHandler (outbound): 要求データが存在しない場合、DataReader.NoMoreRecordをリターンする。'"
+    }
+  ]
+}

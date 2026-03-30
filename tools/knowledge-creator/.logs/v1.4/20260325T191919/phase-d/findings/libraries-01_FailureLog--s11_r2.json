@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-01_FailureLog--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — FailureLogFormatter拡張クラスのコード例",
+      "description": "ソースの第2コードブロック（CustomDataFailureLogFormatter）では `private static final class CustomDataItem extends DataItem { // 省略。 }` のインナークラス宣言が含まれており、CustomDataItemがフォーマッタ拡張クラスのインナークラスとして定義されることを明示している。知識ファイルの対応コード例ではこのインナークラス宣言が省略されており、`getLogItems` 内の `new CustomDataItem()` がどこで定義されたクラスかがコードブロック単体では不明確になっている。",
+      "source_evidence": "ソース第1コードブロックの先頭コメント: `// FailureLogFormatterの拡張クラスにインナークラスとして定義している。` および第2コードブロック内の `private static final class CustomDataItem extends DataItem { // 省略。 }`"
+    }
+  ]
+}

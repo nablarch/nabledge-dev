@@ -1,0 +1,390 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_DisplayTag.rst`
+- Format: `rst`
+
+```
+codeCheckboxタグ
+-----------------------------
+codeCheckboxタグでは、XHTMLの属性以外に下記の属性を追加している。\
+説明のために、下記ではXHTMLのvalue属性を含めている。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+value                                  | XHTMLのvalue属性。
+                                       | チェックありの場合に使用するコード値。
+                                       | デフォルトは"1"。
+codeId(必須)                           | コードID。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       |
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       |
+                                       | デフォルトは"$NAME$"。
+offCodeValue                           | チェックなしの場合に使用するコード値。
+                                       | offCodeValue属性が指定されない場合は、
+                                       | codeId属性の値からチェックなしの場合に使用するコード値を検索する。
+                                       | 検索結果が2件、かつ1件がvalue属性の値である場合は、
+                                       | 残りの1件をチェックなしのコード値として使用する。
+====================================== ==========================================================================================
+
+チェックなしに対応する値をリクエストパラメータに設定する仕組みについては、checkboxタグと同じため、 :ref:`WebView_SingleCheckBoxTag` の解説を参照。
+
+value属性、offCodeValue属性、labelPattern属性のデフォルト値は、\
+:ref:`WebView_CustomTagConfig` のonCheckboxValueプロパティ、offCheckboxValueプロパティ、codeLabelPatternプロパティで指定する。\
+設定方法については、 :ref:`WebView_CustomTagConfig` を参照。
+
+codeCheckboxタグの使用例を下記に示す。
+
+コード管理のテーブルには、下記のデータが入っているものとする。\
+codeCheckboxタグは、フラグに相当する値を扱うため、コード管理のパターン指定は使用しない。
+
+CODE_PATTERN テーブルのデータ例
+
+  ============ ===========
+  ID           VALUE
+  ============ ===========
+  0001         1
+  0001         0
+  0001         9
+  0002         Y
+  0002         N
+  0002         Z
+  ============ ===========
+
+CODE_NAME テーブルのデータ例
+
+  ============ =========== =================== =================== ================================ ================= =====================
+  ID           VALUE       SORT_ORDER          LANG                NAME                             SHORT_NAME        OPTION01
+  ============ =========== =================== =================== ================================ ================= =====================
+  0001         1           1                   ja                  許可                             OK                オーケー
+  0001         0           2                   ja                  不許可                           NG                エヌジー
+  0002         Y           1                   ja                  はい                             YES               イエス
+  0002         N           2                   ja                  いいえ                           NO                ノー
+  0002         Z           3                   ja                  未設定                           NOT SET           ノットセット
+  ============ =========== =================== =================== ================================ ================= =====================
+
+**コード値が2件のデータ(codeId:0001)を使用する場合**
+
+JSPの実装例を下記に示す。
+
+.. code-block:: jsp
+
+  <%-- 入力画面(JSP)
+
+       value属性、labelPattern属性は、
+       デフォルトの値(value:1、labelPattern:$NAME$)を使用する。
+
+       offCodeValue属性の値は、codeId属性から検索し、
+       検索結果が2件、かつ1件がvalue属性の値(=1)であるため、
+       残り1件(=0)の値を使用される。
+       --%>
+  <n:codeCheckbox name="user.canUpdate" codeId="0001" />
+
+入力画面の出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- 入力画面(HTML) --%>
+  <input id="nablarch_checkbox1" type="checkbox" name="user.canUpdate" value="1" />
+      <label for="nablarch_checkbox1">許可</label>
+
+codeCheckboxタグは、ラベルを出力する際にlabelタグを出力する。\
+codeCheckboxタグのラベルは、ラベルがブランクでない場合のみ出力する。\
+id属性の指定がない場合は、フレームワークで「nablarch_<checkbox><連番>」形式でid属性の値を生成して使用する。\
+<連番>部分には、画面内でcheckboxタグの出現順に1から番号を振る。
+
+確認画面の出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- チェックありの場合。
+       コード値:1に対するNAME列が出力される。
+       リクエストパラメータのuser.canUpdateには、"1"が設定されている。 --%>
+  許可
+
+  <%-- チェックなしの場合。
+       コード値:0に対するNAME列が出力される。
+       リクエストパラメータのuser.canUpdateには、"0"が設定されている。 --%>
+  不許可
+
+**コード値が2件以上のデータ(codeId:0002)を使用する場合**
+
+JSPの実装例を下記に示す。
+
+.. code-block:: jsp
+
+  <%-- 入力画面(JSP)
+
+       コード値が2件以上存在するため、
+       codeId属性から検索してもoffCodeValue属性が見つからない。
+       このため、明示的にoffCodeValue属性を指定する。
+       デフォルト値と異なるため、value属性も明示的に指定する。
+       今回は、説明のためlabelPattern属性も指定する。--%>
+  <n:codeCheckbox name="user.join" codeId="0002"
+                  value="Y" offCodeValue="N"
+                  labelPattern="$VALUE$:$SHORTNAME$($OPTIONALNAME$)"
+                  optionColumnName="OPTION01" />
+
+入力画面の出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- 入力画面(HTML) --%>
+  <input id="nablarch_checkbox1" type="checkbox" name="user.join" value="Y" />
+      <label for="nablarch_checkbox1">Y:YES(イエス)</label>
+
+確認画面の出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- チェックありの場合。
+       コード値:Yに対するラベルが出力される。
+       リクエストパラメータのuser.joinには、"Y"が設定されている。 --%>
+  Y:YES(イエス)
+
+  <%-- チェックなしの場合。
+       コード値:Nに対するラベルが出力される。
+       リクエストパラメータのuser.joinには、"N"が設定されている。 --%>
+  N:NO(ノー)
+
+.. _WebView_Message:
+
+===================================================
+メッセージの表示
+===================================================
+メッセージの表示とは、メッセージ機能を使用して取得したメッセージを出力する機能である。\
+メッセージ機能については、 :doc:`../../01_Core/07_Message` 機能を参照。\
+メッセージの表示には :ref:`WebView_MessageTag` を使用する。
+
+国際化を行うアプリケーションにおいて1つのJSPファイルで多言語に対応する場合、\
+messageタグを使用することでユーザが選択した言語に応じて画面の文言を切り替えることができる。
+
+言語はスレッドコンテキストから取得する。\
+スレッドコンテキストへの言語設定については、 :ref:`thread-context-label` を参照。
+
+messageタグの属性を下記に示す。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+messageId(必須)                        | メッセージID。
+option0～option9                       | メッセージフォーマットに使用するインデックスが0～9のオプション引数。
+                                       | 最大10個までオプション引数が指定できる。
+language                               | メッセージの言語。
+                                       | デフォルトはスレッドコンテキストに設定された言語。
+var                                    | リクエストスコープに格納する際に使用する変数名。
+                                       | var属性が指定された場合はメッセージを出力せずにリクエストスコープに設定する。
+                                       | リクエストスコープに設定する場合はHTMLエスケープとHTMLフォーマットを行わない。
+htmlEscape                             | HTMLエスケープをするか否か。
+                                       | HTMLエスケープをする場合はtrue、しない場合はfalse。
+                                       | デフォルトはtrue。
+withHtmlFormat                         | HTMLフォーマット(改行と半角スペースの変換)をするか否か。
+                                       | HTMLフォーマットはHTMLエスケープをする場合のみ有効となる。
+                                       | デフォルトはtrue。
+====================================== ==========================================================================================
+
+言語を切り替えるためのリンクを表示する場合など、ユーザが選択した言語と異なる言語で一部の文言だけ表示したい場合がある。\
+下記にログイン画面での例を示す。\
+下記の例ではログインボタンのすぐ下に言語を切り替えるリンクを表示しており、そのリンクのみユーザが選択した言語と異なり、\
+切り替え後の言語で表示している。
+
+.. image:: ./_images/WebView_LoginEn.jpg
+   :scale: 60
+
+一部の文言だけ特定の言語で出力したい場合はlanguage属性を指定する。
+
+.. code-block:: jsp
+
+ <%-- スレッドコンテキストに設定された言語に応じたメッセージが出力される。--%>
+ <n:message messageId="M7770001" language="ja" />
+
+ <%-- 常に日本語(ja)に応じたメッセージが出力される。 --%>
+ <n:message messageId="M7770001" language="ja" />
+
+|
+
+:doc:`../../01_Core/07_Message` 機能は埋め込み文字をフォーマットして出力することができる。\
+JSP上で埋め込み文字を直接指定する場合はoption0～option9属性に指定すればよいが、
+埋め込み文字もメッセージ機能で管理されたリソースから取得する場合は下記の手順で行う。
+
+* var属性を指定してmessageタグを使用し埋め込み用の文言を取得する。
+* 取得した埋め込み用の文言をoption0～option9属性に指定する。
+
+.. code-block:: jsp
+
+ <%-- var属性を指定して埋め込み用の文言を取得する。--%>
+ <n:message var="title" messageId="M7770001" />
+ <n:message var="appName" messageId="M7770099" />
+
+ <%-- 埋め込み用の文言をoption属性に設定する。--%>
+ <n:message messageId="M7770008" option0="${title}" option1="${appName}" />
+
+メッセージテーブルの内容が下記の場合の出力例を示す。
+
+ ================= ========== =============================
+ メッセージID      言語       メッセージ
+ ================= ========== =============================
+ M7770001          en         User Registration
+ M7770001          ja         ユーザ登録
+ M7770099          en         Sample Application
+ M7770099          ja         サンプルアプリケーション
+ M7770008          en         {0}-{1}
+ M7770008          ja         {0}-{1}
+ ================= ========== =============================
+
+.. code-block:: bash
+
+ # 【説明】スレッドコンテキストに設定された言語がenの場合。
+ User Registration-Sample Application
+
+ # 【説明】スレッドコンテキストに設定された言語がjaの場合。
+ ユーザ登録-サンプルアプリケーション
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_DisplayTag--s20`
+
+```json
+{
+  "id": "libraries-07_DisplayTag--s20",
+  "title": "codeCheckboxタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "codeCheckboxタグ",
+      "hints": [
+        "codeCheckboxタグ",
+        "n:codeCheckbox",
+        "codeId",
+        "optionColumnName",
+        "labelPattern",
+        "offCodeValue",
+        "コード値チェックボックス",
+        "チェックボックスコード管理",
+        "$NAME$",
+        "$SHORTNAME$",
+        "$OPTIONALNAME$",
+        "$VALUE$",
+        "onCheckboxValue",
+        "offCheckboxValue",
+        "codeLabelPattern",
+        "確認画面",
+        "CODE_PATTERN",
+        "CODE_NAME"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## codeCheckboxタグ\n\n`n:codeCheckbox` タグの属性:\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| value | | \"1\" | チェックありの場合に使用するコード値 |\n| codeId | ○ | | コードID |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | \"$NAME$\" | ラベルを整形するパターン。プレースホルダ: $NAME$（コード名称）、$SHORTNAME$（略称）、$OPTIONALNAME$（オプション名称、optionColumnName属性指定が必須）、$VALUE$（コード値） |\n| offCodeValue | | | チェックなしの場合に使用するコード値。未指定の場合はcodeId属性の値から検索し、検索結果が2件かつ1件がvalue属性の値の場合、残りの1件を使用 |\n\nチェックなしの値をリクエストパラメータに設定する仕組みは :ref:`WebView_SingleCheckBoxTag` を参照。\n\nvalue属性・offCodeValue属性・labelPattern属性のデフォルト値は :ref:`WebView_CustomTagConfig` のonCheckboxValueプロパティ・offCheckboxValueプロパティ・codeLabelPatternプロパティで指定する。\n\ncodeCheckboxタグはフラグに相当する値を扱うため、コード管理のパターン指定は使用しない。\n\nラベルはブランクでない場合のみ出力する。id属性未指定の場合、フレームワークが「nablarch_checkbox<連番>」形式でid属性を生成（<連番>は画面内でcheckboxタグの出現順に1から採番）。\n\n使用例のデータ（CODE_PATTERNテーブル）:\n\n| ID | VALUE |\n|---|---|\n| 0001 | 1 |\n| 0001 | 0 |\n| 0001 | 9 |\n| 0002 | Y |\n| 0002 | N |\n| 0002 | Z |\n\n使用例のデータ（CODE_NAMEテーブル）:\n\n| ID | VALUE | SORT_ORDER | LANG | NAME | SHORT_NAME | OPTION01 |\n|---|---|---|---|---|---|---|\n| 0001 | 1 | 1 | ja | 許可 | OK | オーケー |\n| 0001 | 0 | 2 | ja | 不許可 | NG | エヌジー |\n| 0002 | Y | 1 | ja | はい | YES | イエス |\n| 0002 | N | 2 | ja | いいえ | NO | ノー |\n| 0002 | Z | 3 | ja | 未設定 | NOT SET | ノットセット |\n\n**コード値が2件のデータ（offCodeValue属性省略可能）**:\n\n```jsp\n<n:codeCheckbox name=\"user.canUpdate\" codeId=\"0001\" />\n```\n\n出力HTML（入力画面）:\n```html\n<input id=\"nablarch_checkbox1\" type=\"checkbox\" name=\"user.canUpdate\" value=\"1\" />\n    <label for=\"nablarch_checkbox1\">許可</label>\n```\n\n確認画面の出力（codeId:0001）:\n- チェックありの場合: `許可`（リクエストパラメータ user.canUpdate=\"1\"）\n- チェックなしの場合: `不許可`（リクエストパラメータ user.canUpdate=\"0\"）\n\n**コード値が2件以上のデータ（offCodeValue属性を明示指定）**:\n\n```jsp\n<n:codeCheckbox name=\"user.join\" codeId=\"0002\"\n                value=\"Y\" offCodeValue=\"N\"\n                labelPattern=\"$VALUE$:$SHORTNAME$($OPTIONALNAME$)\"\n                optionColumnName=\"OPTION01\" />\n```\n\n出力HTML（入力画面）:\n```html\n<input id=\"nablarch_checkbox1\" type=\"checkbox\" name=\"user.join\" value=\"Y\" />\n    <label for=\"nablarch_checkbox1\">Y:YES(イエス)</label>\n```\n\n確認画面の出力（codeId:0002）:\n- チェックありの場合: `Y:YES(イエス)`（リクエストパラメータ user.join=\"Y\"）\n- チェックなしの場合: `N:NO(ノー)`（リクエストパラメータ user.join=\"N\"）"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

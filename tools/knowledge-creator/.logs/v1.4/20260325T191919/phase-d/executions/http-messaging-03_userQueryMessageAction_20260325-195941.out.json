@@ -1,0 +1,20 @@
+{
+  "file_id": "http-messaging-03_userQueryMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 電文受信時の処理",
+      "description": "The source Javadoc for onReceive states: \"精査エラーとなった場合は、処理をロールバックしてエラー応答を送信する。\" This rollback-on-validation-error behavior is substantive implementation information not captured anywhere in s1's prose.",
+      "source_evidence": "Source Javadoc: 「精査エラーとなった場合は、処理をロールバックしてエラー応答を送信する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — エラー時の処理 hints",
+      "description": "s2's code example contains the onError method signature with ResponseMessage, RequestMessage, and ExecutionContext, but none of these class names appear in s2's hints array.",
+      "source_evidence": "Source onError signature: protected ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context)"
+    }
+  ]
+}

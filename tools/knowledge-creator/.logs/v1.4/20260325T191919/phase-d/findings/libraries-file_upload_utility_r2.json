@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Missing `PartInfo` hint. The code example uses `PartInfo part = req.getPart(\"fileToMove\").get(0)` which is a PascalCase class name from the section content.",
+      "source_evidence": "PartInfo part = req.getPart(\"fileToMove\").get(0);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints",
+      "description": "Missing `PartInfo` hint. The code example uses `PartInfo part = req.getPart(\"image\").get(0)` which is a PascalCase class name from the section content.",
+      "source_evidence": "PartInfo part = req.getPart(\"image\").get(0);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "Missing `@OnError` annotation hint and `PartInfo` class hint. The code example for doSaveFile uses `@OnError(type = ApplicationException.class, path = \"/path/to/forward\")` and `PartInfo part = req.getPart(\"fileToSave\").get(0)`, both of which are present in the section content.",
+      "source_evidence": "@OnError(type = ApplicationException.class, path = \"/path/to/forward\")\npublic void doSaveFile(HttpRequest req, ExecutionContext ctx) {\n    PartInfo part = req.getPart(\"fileToSave\").get(0);"
+    }
+  ]
+}

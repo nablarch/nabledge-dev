@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-mail--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s4",
+      "description": "The knowledge file adds a \"必須\" column marking properties 1–11 as required (○) for MailRequestTable. The source table has no required/optional column or any explicit marker for properties 1–11. Only property 12 (mailSendPatternIdColumnName) is explicitly marked as optional (任意) in the source. Furthermore, unlike MailRecipientTable, MailAttachedFileTable, MailTemplateTable, and MailRequestConfig — whose section titles include \"(全て必須)\" or \"(すべて必須)\" — the MailRequestTable section title carries no such qualifier. Adding a required column with ○ for all 11 properties is not supported by the source.",
+      "source_evidence": "Source MailRequestTable table has only two columns: No and プロパティ名/説明. No required/optional column exists. Section title: \"nablarch.common.mail.MailRequestTableの設定\" (no \"すべて必須\" qualifier). Only property 12 has explicit optionality: \"メール送信パターンIDのカラム名(任意) 設定を省略した場合は、メール送信パターンIDは使用しない。\""
+    }
+  ]
+}

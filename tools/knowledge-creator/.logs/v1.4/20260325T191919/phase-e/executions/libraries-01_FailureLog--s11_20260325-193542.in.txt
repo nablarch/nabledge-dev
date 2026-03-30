@@ -1,0 +1,190 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-01_FailureLog--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — FailureLogFormatter拡張クラスのコード例",
+      "description": "ソースの第2コードブロック（CustomDataFailureLogFormatter）では `private static final class CustomDataItem extends DataItem { // 省略。 }` のインナークラス宣言が含まれており、CustomDataItemがフォーマッタ拡張クラスのインナークラスとして定義されることを明示している。知識ファイルの対応コード例ではこのインナークラス宣言が省略されており、`getLogItems` 内の `new CustomDataItem()` がどこで定義されたクラスかがコードブロック単体では不明確になっている。",
+      "source_evidence": "ソース第1コードブロックの先頭コメント: `// FailureLogFormatterの拡張クラスにインナークラスとして定義している。` および第2コードブロック内の `private static final class CustomDataItem extends DataItem { // 省略。 }`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+プレースホルダのカスタマイズ方法
+================================================================================================
+処理対象データ($data$)はデフォルトでtoStringメソッドにより全てのデータ項目が出力されるため、\
+プロジェクトのセキュリティ要件で特定項目をマスクした出力が要求されるケースが考えられる。\
+このように、プレースホルダに対する出力処理をカスタマイズしたい場合は、\
+フォーマット処理を行うFailureLogFormatterの拡張と各項目の出力内容を提供するLogItemインタフェースの実装を行う。
+
+ここでは、処理対象データ($data$)に対する出力処理のカスタマイズ例を示す。
+
+まず、処理対象データ($data$)に対する出力内容を提供するクラスの実装例を示す。\
+今回はフレームワークが提供するDataItemクラスを継承して作成し、\
+処理対象データがMap型の場合のみマスク処理を行うように実装している。
+
+処理対象データ($data$)に対する出力内容を提供するクラスの実装例
+
+.. code-block:: java
+
+    // FailureLogFormatterの拡張クラスにインナークラスとして定義している。
+    private static final class CustomDataItem extends DataItem {
+        
+        /** マスク文字 */
+        private static final char MASKING_CHAR = '*';
+        
+        /** マスク対象のパターン */
+        private static final Pattern[] MASKING_PATTERNS
+                = new Pattern[] { Pattern.compile(".*MOBILE_PHONE_NUMBER.*"),
+                                  Pattern.compile(".*MAIL.*")};
+        
+        /**
+         * マップの値をマスキングするエディタ。
+         * フレームワークが提供するMap編集用のユーティリティ。
+         */
+        private MapValueEditor mapValueEditor = new MaskingMapValueEditor(MASKING_CHAR, MASKING_PATTERNS);
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public String get(FailureLogContext context) {
+            
+            // FailureLogContextのgetDataメソッドを呼び出し処理対象データを取得する。
+            Object data = context.getData();
+            
+            // Mapでない場合はフレームワークのデフォルト実装を呼び出す。
+            if (!(data instanceof Map)) {
+                return super.get(context);
+            }
+            
+            // Mapをマスクした文字列を返す。
+            Map<String, String> editedMap = new TreeMap<String, String>();
+            for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) data).entrySet()) {
+                String key = entry.getKey().toString();
+                editedMap.put(key, mapValueEditor.edit(key, entry.getValue()));
+            }
+            return editedMap.toString();
+        }
+    }
+
+次にFailureLogFormatterのgetLogItemsメソッドをオーバライドし、\
+プレースホルダ「$data$」に対して上記のCustomDataItemを設定する。\
+FailureLogFormatterを拡張したクラスの実装例を下記に示す。
+
+FailureLogFormatterを拡張したクラスの実装例
+
+.. code-block:: java
+
+ public class CustomDataFailureLogFormatter extends FailureLogFormatter {
+    
+     @Override
+     protected Map<String, LogItem<FailureLogContext>> getLogItems(Map<String, String> props) {
+         
+         Map<String, LogItem<FailureLogContext>> logItems = super.getLogItems(props);
+         
+         // CustomDataItemで$data$を上書き設定する。
+         logItems.put("$data$", new CustomDataItem());
+         
+         return logItems;
+     }
+     
+     private static final class CustomDataItem extends DataItem {
+         // 省略。
+     }
+  }
+
+障害ログのフォーマッタとしてCustomDataFailureLogFormatterを使用するようにapp-log.propertiesに設定を行う。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # CustomDataFailureLogFormatterを指定する。
+ failureLogFormatter.className=nablarch.core.log.app.CustomDataFailureLogFormatter
+ failureLogFormatter.defaultFailureCode=MSG99999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nInput Data :\n$data$
+
+障害解析ログの出力例を下記に示す。\
+CustomDataItemクラスに定義したマスク対象のパターンにマッチするデータはマスクされて出力される。
+
+.. code-block:: bash
+
+ # 障害解析ログ
+ 2011-09-26 21:06:35.745 -FATAL- root [EXECUTION_ID_0000000123456789] boot_proc = [] proc_sys = [] req_id = [RB11AC0160] usr_id = [batchuser1] fail_code = [NB11AA0107] ユーザ情報の登録に失敗しました。
+ Input Data :
+ {EXTENSION_NUMBER_BUILDING=13, EXTENSION_NUMBER_PERSONAL=1235, INSERT_EXECUTION_ID=EXECUTION_ID_2000000123456789, INSERT_REQUEST_ID=RB11AC0140, KANA_NAME=ヤマモトタロウ, KANJI_NAME=山本太郎, LOGIN_ID=12345678901234567890, MAIL_ADDRESS=********************, MOBILE_PHONE_NUMBER_AREA_CODE=***, MOBILE_PHONE_NUMBER_CITY_CODE=****, MOBILE_PHONE_NUMBER_SBSCR_CODE=****, UPDATED_USER_ID=batch_user, USER_INFO_ID=00000000000000000113}
+ Stack Trace Information : 
+ [100 TransactionAbnormalEnd] ユーザ情報の登録に失敗しました。
+     at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:73)
+     at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:1)
+     at nablarch.fw.action.BatchAction.handle(BatchAction.java:1)
+     # 以降のスタックトレースは省略。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-01_FailureLog--s11",
+  "title": "プレースホルダのカスタマイズ方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "プレースホルダのカスタマイズ方法",
+      "hints": [
+        "FailureLogFormatter",
+        "DataItem",
+        "LogItem",
+        "FailureLogContext",
+        "MapValueEditor",
+        "MaskingMapValueEditor",
+        "CustomDataItem",
+        "CustomDataFailureLogFormatter",
+        "getLogItems",
+        "getData",
+        "TreeMap",
+        "プレースホルダカスタマイズ",
+        "障害ログマスク処理",
+        "$data$プレースホルダ",
+        "FailureLogFormatter拡張"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "処理対象データ(`$data$`)はデフォルトでtoStringにより全データ項目が出力される。特定項目のマスク出力が必要な場合は、`FailureLogFormatter`を拡張し`LogItem`インタフェースを実装する。\n\nカスタマイズ手順:\n1. `DataItem`を継承したカスタムクラスを実装し、`get(FailureLogContext context)`をオーバーライド\n2. `FailureLogFormatter`のサブクラスで`getLogItems`をオーバーライドし、`$data$`キーにカスタムクラスを設定\n3. `app-log.properties`でカスタムフォーマッタクラスを指定\n\nMap型でない場合は`super.get(context)`（デフォルト実装）を呼び出すこと。\n\n`CustomDataItem`実装例（Map型のみマスクする`DataItem`サブクラス）:\n\n```java\nprivate static final class CustomDataItem extends DataItem {\n    private static final char MASKING_CHAR = '*';\n    private static final Pattern[] MASKING_PATTERNS\n            = new Pattern[] { Pattern.compile(\".*MOBILE_PHONE_NUMBER.*\"),\n                              Pattern.compile(\".*MAIL.*\")};\n    private MapValueEditor mapValueEditor = new MaskingMapValueEditor(MASKING_CHAR, MASKING_PATTERNS);\n\n    @Override\n    public String get(FailureLogContext context) {\n        Object data = context.getData();\n        if (!(data instanceof Map)) {\n            return super.get(context);\n        }\n        Map<String, String> editedMap = new TreeMap<String, String>();\n        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) data).entrySet()) {\n            String key = entry.getKey().toString();\n            editedMap.put(key, mapValueEditor.edit(key, entry.getValue()));\n        }\n        return editedMap.toString();\n    }\n}\n```\n\n`FailureLogFormatter`拡張クラスの実装例:\n\n```java\npublic class CustomDataFailureLogFormatter extends FailureLogFormatter {\n    @Override\n    protected Map<String, LogItem<FailureLogContext>> getLogItems(Map<String, String> props) {\n        Map<String, LogItem<FailureLogContext>> logItems = super.getLogItems(props);\n        logItems.put(\"$data$\", new CustomDataItem());\n        return logItems;\n    }\n}\n```\n\n`app-log.properties`設定例:\n\n```\nfailureLogFormatter.className=nablarch.core.log.app.CustomDataFailureLogFormatter\nfailureLogFormatter.defaultFailureCode=MSG99999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\\nInput Data :\\n$data$\n```\n\n障害解析ログの出力例（`CustomDataItem`のマスク対象パターンにマッチするデータはマスクされて出力される）:\n\n```\n2011-09-26 21:06:35.745 -FATAL- root [EXECUTION_ID_0000000123456789] boot_proc = [] proc_sys = [] req_id = [RB11AC0160] usr_id = [batchuser1] fail_code = [NB11AA0107] ユーザ情報の登録に失敗しました。\nInput Data :\n{EXTENSION_NUMBER_BUILDING=13, EXTENSION_NUMBER_PERSONAL=1235, ..., MAIL_ADDRESS=********************, MOBILE_PHONE_NUMBER_AREA_CODE=***, MOBILE_PHONE_NUMBER_CITY_CODE=****, MOBILE_PHONE_NUMBER_SBSCR_CODE=****, ...}\n```\n\n`MAIL_ADDRESS`は`********************`、`MOBILE_PHONE_NUMBER_*`は`***`または`****`にマスクされる。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

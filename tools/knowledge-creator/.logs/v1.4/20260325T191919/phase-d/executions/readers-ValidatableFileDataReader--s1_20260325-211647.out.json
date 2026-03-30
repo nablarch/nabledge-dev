@@ -1,0 +1,34 @@
+{
+  "file_id": "readers-ValidatableFileDataReader--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — doHeader validator method in code example",
+      "description": "The knowledge file's doHeader implementation inside FileLayoutValidatorAction omits the date field validation logic present in the source. The source checks `inputData.getString(\"date\")` against `BusinessDateUtil.getDate()` and throws `TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate)` on mismatch. This is the only example in the source showing how to read field values from DataRecord and perform business-level (non-layout) validation within a FileValidatorAction.",
+      "source_evidence": "public Result doHeader(...) { ... String date = inputData.getString(\"date\"); String businessDate = BusinessDateUtil.getDate(); if (!businessDate.equals(date)) { throw new TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate); } ... }"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — onFileEnd implementation in code example",
+      "description": "The knowledge file's onFileEnd omits the two writeLog calls present in the source that log total record count and data record count after successful validation. The source shows `writeLog(\"M000000002\", ctx.getLastRecordNumber())` and `writeLog(\"M000000003\", dataRecordCount)` as the expected pattern for post-validation logging in onFileEnd.",
+      "source_evidence": "public void onFileEnd(ExecutionContext ctx) { ... writeLog(\"M000000002\", ctx.getLastRecordNumber()); writeLog(\"M000000003\", dataRecordCount); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "s1 content references `FileBatchAction` (\"FileBatchAction を継承する場合は getValidatorAction() をオーバーライド\") and `getValidatorAction` by name, but neither is listed in the s1 hints array. Both are PascalCase class/method names directly referenced in the s1 section text.",
+      "source_evidence": "なお、FileBatchAction を継承したバッチ業務アクションを作成する場合は、getValidatorAction()メソッドをオーバーライドし"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`RecordTypeBinding` is referenced in s2 text (\"詳細は RecordTypeBinding を参照\") as a class to consult for the dispatch naming convention, but is absent from the s2 hints array.",
+      "source_evidence": "規約についての詳細は RecordTypeBinding を参照すること。"
+    }
+  ]
+}

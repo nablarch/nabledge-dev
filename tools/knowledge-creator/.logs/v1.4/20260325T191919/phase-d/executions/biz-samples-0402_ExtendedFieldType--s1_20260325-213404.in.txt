@@ -1,0 +1,331 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/biz_sample/doc/0402_ExtendedFieldType.rst`
+- Format: `rst`
+
+```
+======================================================
+データフォーマッタ機能におけるフィールドタイプの拡張
+======================================================
+
+本サンプルで提供するフォーマッタ機能の仕様を解説する。
+
+フォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、Nablarch Application Framework解説書の汎用データフォーマット機能に関する解説を参照すること。
+
+----------------------------
+概要
+----------------------------
+
+EBCDIC（CP930）のダブルバイト文字をデータ連携する場合に、
+項目の前後にシフトコードを付与することがあるが、
+ホストコンピュータとのデータ連携などでは、ダブルバイト文字であってもシフトアウト状態で始まっていることを想定しシフトコードを付与しないこともある。
+
+このように、接続先のシステムとのインターフェースにより、シフトコードが付与される場合とされない場合があるため、それぞれに対応する必要がある。
+
+そこで、本サンプルではシフトコード付きEBCDIC（CP930）のダブルバイト文字に対応するデータタイプクラスと、
+シフトコード無しEBCDIC（CP930）のダブルバイト文字に対応するデータタイプクラスを提供する。
+
+なお、Nablarchがデフォルトで提供しているダブルバイト文字列のデータタイプ(DoubleByteCharacterString)は、
+ファイルの文字コードがShift_JISやMS932の場合に全角文字（ダブルバイト文字）フィールドの入出力に使用することを想定しているため、
+EBCDIC（CP930）を扱う際には、各プロジェクトによる拡張が必要となる。
+
+（シフトコードが付与されるかどうかは、JDKに依存するものであり、
+JDKで使用されるCP930はダブルバイト文字に対して必ずシフトコードが付加されている必要がある。）
+
+このデータタイプを使用すると、透過的にシフトコードの付加および除去を行うため、上記の差を吸収して文字列化したりバイトシーケンスにエンコードすることが可能となる。
+
+
+
+提供パッケージ
+--------------------------------------------------------------------
+
+本機能は、下記のパッケージで提供される。
+
+  *please.change.me.* **core.dataformat.convertor.datatype**
+
+
+フィールドタイプの構成
+--------------------------------------------------------------------
+
+本サンプルでは、EBCDIC（CP930）の固定長ファイルの全角文字列の項目に
+シフトコードが付与されている場合といない場合の両方に対応することを想定しているため、
+下記のフィールドタイプのクラスを追加することとなる。
+
+以下に本機能で使用するクラス一覧を記す。
+
+  .. list-table::
+   :widths: 130 150 200
+   :header-rows: 1
+
+   * - パッケージ名
+     - クラス名
+     - 概要
+   * - *please.change.me.* **core.dataformat.** **convertor.datatype**
+     - EbcdicDoubleByteCharacterString
+     - | EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。
+       | 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に利用する。
+       | 入出力のバイトデータに **シフトコードが付与されるケース** を想定しているデータタイプとして実装する。
+   * - *please.change.me.* **core.dataformat.** **convertor.datatype**
+     - EbcdicNoShiftCodeDoubleByteCharacterString
+     - | EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。
+       | 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に利用する。
+       | 入出力のバイトデータに **シフトコードが付与されないケース** を想定しているデータタイプとして実装する。
+
+
+
+フィールドタイプの使用方法
+--------------------------------------------------------------------
+  追加したデータタイプクラスを使用する場合、以下の設定を行う必要がある。
+  下記のサンプルでは、デフォルトの設定に、"ESN"と"EN"のデータタイプを追加している。
+
+  .. code-block:: xml
+  
+    <component name="fixedLengthConvertorSetting"
+        class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
+      <property name="convertorTable">
+        <map>
+          <!-- EBCDIC(CP930)用のデータタイプ ESN, EN を追加する -->
+          <entry key="ESN" value="please.change.me.core.dataformat.convertor.datatype.EbcdicDoubleByteCharacterString"/>
+          <entry key="EN" value="please.change.me.core.dataformat.convertor.datatype.EbcdicNoShiftCodeDoubleByteCharacterString"/>
+          
+          <!-- 以下はデフォルト設定 -->
+          <entry key="X" value="nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString"/>
+          <entry key="N" value="nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString"/>
+          <entry key="XN" value="nablarch.core.dataformat.convertor.datatype.ByteStreamDataString"/>
+          <entry key="Z" value="nablarch.core.dataformat.convertor.datatype.ZonedDecimal"/>
+          <entry key="SZ" value="nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal"/>
+          <entry key="P" value="nablarch.core.dataformat.convertor.datatype.PackedDecimal"/>
+          <entry key="SP" value="nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal"/>
+          <entry key="B" value="nablarch.core.dataformat.convertor.datatype.Bytes"/>
+          <entry key="X9" value="nablarch.core.dataformat.convertor.datatype.NumberStringDecimal"/>
+          <entry key="SX9" value="nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal"/>
+          <entry key="pad" value="nablarch.core.dataformat.convertor.value.Padding"/>
+          <entry key="encoding" value="nablarch.core.dataformat.convertor.value.UseEncoding"/>
+          <entry key="_LITERAL_" value="nablarch.core.dataformat.convertor.value.DefaultValue"/>
+          <entry key="number" value="nablarch.core.dataformat.convertor.value.NumberString"/>
+          <entry key="signed_number" value="nablarch.core.dataformat.convertor.value.SignedNumberString"/>
+          <entry key="replacement" value="nablarch.core.dataformat.convertor.value.CharacterReplacer"/>
+        </map>
+      </property>
+    </component>
+
+
+
+フィールドタイプ・フィールドコンバータ定義一覧
+--------------------------------------------------------------------
+  追加したフィールドタイプについて解説する。
+
+  **フィールドタイプ**
+
+  .. list-table::
+   :widths: 130 150 200
+   :header-rows: 1
+
+   * - タイプ識別子
+     - Java型
+     - 内容
+   * - ESN
+     - String
+     - | ダブルバイト文字列 (バイト長 = 文字数 × 2 + 2(シフトコード分))
+       | 本サンプルは、デフォルトでは全角空白による右トリム・パディングを行う。
+       | 入力時はシフトアウト・シフトインのコードを付加された状態を想定し特になにもせず文字列化を行い、
+       |  出力時はシフトアウト・シフトインのコードを自動で付加する。
+       | サンプル実装クラス: please.change.me.core.dataformat.converter.datatype.EbcdicDoubleByteCharacterString
+       | 引数: バイト長(数値、必須指定)
+   * - EN
+     - String
+     - | ダブルバイト文字列 (バイト長 = 文字数 × 2)
+       | 本サンプルは、デフォルトでは全角空白による右トリム・パディングを行う。
+       | 入力時はシフトアウト・シフトインのコードを内部で補完して文字列化を行い、
+       | 出力時はシフトアウト・シフトインのコードを付加しない。
+       | サンプル実装クラス: please.change.me.core.dataformat.converter.datatype.EbcdicNoShiftCodeDoubleByteCharacterString
+       | 引数: バイト長(数値、必須指定)
+```
+
+## Knowledge File
+
+- ID: `biz-samples-0402_ExtendedFieldType--s1`
+
+```json
+{
+  "id": "biz-samples-0402_ExtendedFieldType--s1",
+  "title": "データフォーマッタ機能におけるフィールドタイプの拡張",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "データフォーマッタ",
+        "フィールドタイプ拡張",
+        "EBCDIC",
+        "CP930",
+        "ダブルバイト文字"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "EbcdicDoubleByteCharacterString",
+        "EbcdicNoShiftCodeDoubleByteCharacterString",
+        "DoubleByteCharacterString",
+        "EBCDIC CP930",
+        "シフトコード",
+        "ダブルバイト文字列"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.core.dataformat.convertor.datatype",
+        "提供パッケージ",
+        "データタイプクラス"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "フィールドタイプの構成",
+      "hints": [
+        "EbcdicDoubleByteCharacterString",
+        "EbcdicNoShiftCodeDoubleByteCharacterString",
+        "シフトコード付き",
+        "シフトコード無し",
+        "フィールドタイプ構成"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "フィールドタイプの使用方法",
+      "hints": [
+        "FixedLengthConvertorSetting",
+        "convertorTable",
+        "ESN",
+        "EN",
+        "固定長コンバータ設定",
+        "データタイプ登録"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+      "hints": [
+        "ESN",
+        "EN",
+        "バイト長",
+        "フィールドタイプ定義",
+        "シフトコード",
+        "タイプ識別子"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "なし",
+    "s2": "EBCDIC(CP930)のダブルバイト文字データ連携では、接続先システムのインターフェースによりシフトコードが付与される場合とされない場合があるため、それぞれに対応するデータタイプクラスが必要。\n\nNablarchデフォルトの`DoubleByteCharacterString`はShift_JIS/MS932の全角文字フィールド用であり、EBCDIC(CP930)を扱う場合は各プロジェクトによる拡張が必要。\n\n本サンプルが提供するデータタイプ:\n- シフトコード付きEBCDIC(CP930)用: `EbcdicDoubleByteCharacterString`\n- シフトコード無しEBCDIC(CP930)用: `EbcdicNoShiftCodeDoubleByteCharacterString`\n\n> **注意**: CP930はダブルバイト文字に対して必ずシフトコードが付加されている必要がある(JDK依存)。本データタイプを使用することで、シフトコードの付加・除去を透過的に行い文字列化・エンコードが可能。",
+    "s3": "**パッケージ**: `please.change.me.core.dataformat.convertor.datatype`",
+    "s4": "EBCDIC(CP930)固定長ファイルの全角文字列項目に対応するフィールドタイプクラス:\n\n| パッケージ名 | クラス名 | 概要 |\n|---|---|---|\n| `please.change.me.core.dataformat.convertor.datatype` | `EbcdicDoubleByteCharacterString` | EBCDIC(CP930)ダブルバイト文字列用。固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に利用する。入出力バイトデータに**シフトコードが付与されるケース**用 |\n| `please.change.me.core.dataformat.convertor.datatype` | `EbcdicNoShiftCodeDoubleByteCharacterString` | EBCDIC(CP930)ダブルバイト文字列用。固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に利用する。入出力バイトデータに**シフトコードが付与されないケース**用 |",
+    "s5": "`FixedLengthConvertorSetting`の`convertorTable`に`ESN`と`EN`のデータタイプを追加する。\n\n```xml\n<component name=\"fixedLengthConvertorSetting\"\n    class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">\n  <property name=\"convertorTable\">\n    <map>\n      <!-- EBCDIC(CP930)用のデータタイプ ESN, EN を追加する -->\n      <entry key=\"ESN\" value=\"please.change.me.core.dataformat.convertor.datatype.EbcdicDoubleByteCharacterString\"/>\n      <entry key=\"EN\" value=\"please.change.me.core.dataformat.convertor.datatype.EbcdicNoShiftCodeDoubleByteCharacterString\"/>\n      <!-- 以下はデフォルト設定 -->\n      <entry key=\"X\" value=\"nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString\"/>\n      <entry key=\"N\" value=\"nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString\"/>\n      <entry key=\"XN\" value=\"nablarch.core.dataformat.convertor.datatype.ByteStreamDataString\"/>\n      <entry key=\"Z\" value=\"nablarch.core.dataformat.convertor.datatype.ZonedDecimal\"/>\n      <entry key=\"SZ\" value=\"nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal\"/>\n      <entry key=\"P\" value=\"nablarch.core.dataformat.convertor.datatype.PackedDecimal\"/>\n      <entry key=\"SP\" value=\"nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal\"/>\n      <entry key=\"B\" value=\"nablarch.core.dataformat.convertor.datatype.Bytes\"/>\n      <entry key=\"X9\" value=\"nablarch.core.dataformat.convertor.datatype.NumberStringDecimal\"/>\n      <entry key=\"SX9\" value=\"nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal\"/>\n      <entry key=\"pad\" value=\"nablarch.core.dataformat.convertor.value.Padding\"/>\n      <entry key=\"encoding\" value=\"nablarch.core.dataformat.convertor.value.UseEncoding\"/>\n      <entry key=\"_LITERAL_\" value=\"nablarch.core.dataformat.convertor.value.DefaultValue\"/>\n      <entry key=\"number\" value=\"nablarch.core.dataformat.convertor.value.NumberString\"/>\n      <entry key=\"signed_number\" value=\"nablarch.core.dataformat.convertor.value.SignedNumberString\"/>\n      <entry key=\"replacement\" value=\"nablarch.core.dataformat.convertor.value.CharacterReplacer\"/>\n    </map>\n  </property>\n</component>\n```",
+    "s6": "| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| ESN | String | ダブルバイト文字列 (バイト長 = 文字数 × 2 + 2(シフトコード分))。デフォルトで全角空白による右トリム・パディング。入力時はシフトアウト・シフトインコード付きの状態を想定して文字列化、出力時はシフトコードを自動付加。実装クラス: `please.change.me.core.dataformat.converter.datatype.EbcdicDoubleByteCharacterString`。引数: バイト長(数値、必須) |\n| EN | String | ダブルバイト文字列 (バイト長 = 文字数 × 2)。デフォルトで全角空白による右トリム・パディング。入力時はシフトコードを内部で補完して文字列化、出力時はシフトコードを付加しない。実装クラス: `please.change.me.core.dataformat.converter.datatype.EbcdicNoShiftCodeDoubleByteCharacterString`。引数: バイト長(数値、必須) |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

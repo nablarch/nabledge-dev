@@ -1,0 +1,34 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — file:// コンテンツパス",
+      "description": "`file://` の相対パス基点（JVMプロセスのワーキングディレクトリ）と絶対パス基点（ファイルシステムのルートディレクトリ）の情報が欠落している。コード例は存在するが、基点の説明がないため実装判断に影響する可能性がある。",
+      "source_evidence": "相対パス指定の場合: JVMプロセスのワーキングディレクトリが起点とするパス。/ 絶対パス指定の場合: ファイルシステムのルートディレクトリが起点とするパス。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — servlet:// コンテンツパス",
+      "description": "`servlet://` の相対パス基点（現在のリクエストURI）と絶対パス基点（サーブレットコンテキスト）の説明が欠落している。コード例は存在するが説明中に明示されていない。",
+      "source_evidence": "相対パス指定の場合: 現在のリクエストURIを起点とするパス。/ 絶対パス指定の場合: サーブレットコンテキストを起点とするパス。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — forward:// コンテンツパス",
+      "description": "`forward://` の相対パス基点（現在のリクエストURI）と絶対パス基点（サーブレットコンテキスト名）の説明が欠落している。コード例は存在するが説明中に明示されていない。",
+      "source_evidence": "相対パス指定の場合: 現在のリクエストURIを起点とするパス。/ 絶対パス指定の場合: サーブレットコンテキスト名を起点とするパス。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints",
+      "description": "コンテンツパスのリダイレクションスキームとして `http://` および `https://` がソースに明示されているが、s5の hints に含まれていない。",
+      "source_evidence": "スキーム名を **http://** とした場合は、サーブレットコンテキスト外へのリダイレクションが可能であり、ホスト名を含めた完全なURLを指定することができる。(書式) http(s)://(リダイレクト先URL)"
+    }
+  ]
+}

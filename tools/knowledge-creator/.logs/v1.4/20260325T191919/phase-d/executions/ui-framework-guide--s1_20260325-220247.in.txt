@@ -1,0 +1,264 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/guide/index.rst`
+- Format: `rst`
+
+```
+JSP/HTML作成ガイド
+==========================================
+
+この文書では、業務画面JSPの作成方法について記載する。
+
+業務画面JSP作成フロー
+----------------------------------------------------------------------------
+
+UI開発基盤を利用し、業務画面JSPを作成する際の開発概要を以下に示す。
+
+.. image:: widget_usage/_image/create_jsp.png
+   :align: center
+   :scale: 80
+
+作成する業務画面JSPは、ブラウザで開くことで画面遷移も含めた動作確認を行うことができる。
+また、画面に表示されている項目からシステム機能設計書に記載する項目定義を生成することもできる。
+
+なお、ここで作成された業務画面JSPにPG/UT工程でサーバサイドでの処理に必要な情報が追加され、本番環境で動作する業務画面JSPとなる。
+
+
+業務画面JSP作成に利用する開発環境
+----------------------------------------------------------------------------
+
+業務画面JSPを作成する際に、ブラウザで動作確認を行うためには指定されたディレクトリ構造でファイルを配置する必要がある。
+
+ディレクトリ構造の詳細については、以下を参照。
+
+.. toctree::
+   :maxdepth: 1
+
+   widget_usage/project_structure
+
+
+
+業務画面JSPは、統合開発環境(IDE)を利用して作成することを推奨している。
+
+統合開発環境での開発方法は以下を参照。
+
+.. toctree::
+   :maxdepth: 1
+
+   widget_usage/develop_environment
+
+また、下記ドキュメントを参考にEclipseのテンプレートを導入すると、より効率的に開発を行うことができる。
+
+.. toctree::
+   :maxdepth: 1
+
+   widget_usage/template_list.rst
+
+
+
+業務画面JSPの作成方法
+----------------------------------------------------------------------------
+
+開発環境を構築した後は、業務画面テンプレートと、UI部品（JavaScript、ウィジェット）を利用して業務画面JSPを作成していく。
+
+.. toctree::
+   :maxdepth: 1
+
+   widget_usage/create_with_widget
+
+
+画面項目定義一覧の作成方法
+----------------------------------------------------------------------------
+作成した業務画面JSPから、システム機能設計書に張り付ける画面項目定義を作成する。
+
+.. toctree::
+   :maxdepth: 1
+
+   widget_usage/create_screen_item_list
+
+
+フォームクラスの自動生成方法
+----------------------------------------------------------------------------
+作成した業務画面JSPから、サーバサイドの実装時に使用するフォームクラスのJavaソースコードを生成する。
+
+.. toctree::
+   :maxdepth: 1
+
+   widget_usage/generating_form_class
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-guide--s1`
+
+```json
+{
+  "id": "ui-framework-guide--s1",
+  "title": "JSP/HTML作成ガイド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務画面JSP作成フロー",
+      "hints": [
+        "業務画面JSP",
+        "UI開発基盤",
+        "動作確認",
+        "画面遷移",
+        "項目定義生成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務画面JSP作成に利用する開発環境",
+      "hints": [
+        "ディレクトリ構造",
+        "IDE",
+        "Eclipse",
+        "統合開発環境",
+        "テンプレート",
+        "project_structure",
+        "develop_environment",
+        "template_list"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "業務画面JSPの作成方法",
+      "hints": [
+        "業務画面テンプレート",
+        "UI部品",
+        "ウィジェット",
+        "JavaScript",
+        "create_with_widget"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "画面項目定義一覧の作成方法",
+      "hints": [
+        "画面項目定義",
+        "システム機能設計書",
+        "create_screen_item_list"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "フォームクラスの自動生成方法",
+      "hints": [
+        "フォームクラス",
+        "自動生成",
+        "Javaソースコード",
+        "generating_form_class"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面JSPはブラウザで開くことで画面遷移を含む動作確認が可能。画面に表示された項目からシステム機能設計書の項目定義を生成できる。なお、PG/UT工程でサーバサイド処理に必要な情報が追加され、本番環境で動作する業務画面JSPとなる。\n\n![業務画面JSP作成フロー](assets/ui-framework-guide--s1/create_jsp.png)",
+    "s2": "ブラウザでの動作確認には、指定されたディレクトリ構造でファイルを配置する必要がある（:doc:`widget_usage/project_structure`）。\n\n業務画面JSPの作成にはIDE（統合開発環境）の利用を推奨（:doc:`widget_usage/develop_environment`）。\n\nEclipseのテンプレートを導入することで、より効率的な開発が可能（:doc:`widget_usage/template_list.rst`）。",
+    "s3": "業務画面テンプレートとUI部品（JavaScript、ウィジェット）を利用して業務画面JSPを作成する（:doc:`widget_usage/create_with_widget`）。",
+    "s4": "作成した業務画面JSPから、システム機能設計書に貼り付ける画面項目定義を作成できる（:doc:`widget_usage/create_screen_item_list`）。",
+    "s5": "作成した業務画面JSPから、サーバサイド実装時に使用するフォームクラスのJavaソースコードを自動生成できる（:doc:`widget_usage/generating_form_class`）。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

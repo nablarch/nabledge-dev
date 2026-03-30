@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-RequestPathJavaPackageMapping--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — ハンドラ処理概要 block (between +++ separators in 概要 section)",
+      "description": "The handler queue ordering for the messaging_request_reply architectural pattern is not captured. The source contains an explicit HandlerQueue definition: [\"DataReadHandler_messaging\", \"RequestPathJavaPackageMapping\", \"MessagingAction\"], which shows the typical positioning of this handler relative to its neighbors in the messaging context.",
+      "source_evidence": "var HandlerQueue = [\"DataReadHandler_messaging\", \"RequestPathJavaPackageMapping\", \"MessagingAction\"];"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "PascalCase class name \"Main\" is referenced in the related handlers table in s1 content but is absent from the s1 hints array.",
+      "source_evidence": "| :doc:`Main` | :doc:`../architectural_pattern/batch` では、プロセス起動引数 **--requestPath** に指定された ..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "The cross-reference label \"requestHandlerEntry\" is cited in s3 content as the authority for the Glob-like pattern syntax used in optionalPackageMappingEntries, but is absent from the s3 hints array.",
+      "source_evidence": "詳細は、 :ref:`requestHandlerEntry` を参照すること（リクエストハンドラエントリと同一の記法でパターンを指定できる）。"
+    }
+  ]
+}

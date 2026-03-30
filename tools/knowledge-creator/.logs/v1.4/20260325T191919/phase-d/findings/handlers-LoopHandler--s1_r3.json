@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-LoopHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`TransactionManagementHandler` (without `.Callback` suffix) is referenced in s1 content as an exclusively-used handler, but only `TransactionManagementHandler.Callback` is listed in hints. These are distinct identifiers and a user asking about `TransactionManagementHandler` exclusivity may not match s1.",
+      "source_evidence": "「:doc:`TransactionManagementHandler` および :doc:`RequestThreadLoopHandler` とは排他利用」「:doc:`TransactionManagementHandler` とは異なり、この時点ではまだトランザクションのコミットが確定していない」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "`TransactionManagementHandler.Callback` is referenced in s2 content (steps 5 and 5b describe calling callbacks on handlers that implement this interface), but it is absent from s2's hints array.",
+      "source_evidence": "「後続ハンドラのうち、イベントリスナ **TransactionManagementHandler.Callback** を実装しているハンドラに対して以下のコールバックを呼び出す」(steps 5 and 5b)"
+    }
+  ]
+}

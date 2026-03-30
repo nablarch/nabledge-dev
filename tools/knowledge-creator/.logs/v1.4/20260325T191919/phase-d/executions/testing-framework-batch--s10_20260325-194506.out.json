@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-batch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s11 — データベースの結果検証",
+      "description": "Knowledge file states 'そのグループIDのテストデータで実際のDB状態を確認する' but the source says 'そのグループIDのテストデータで実際のファイル出力結果を確認することができる' in the database verification section. The source text appears to be a copy-paste error in the original docs (same phrasing as the file verification section), but the knowledge file silently corrected it to a meaning not present in the source.",
+      "source_evidence": "データベースの結果検証: 'テストケース一覧のexpectedTable欄にグループIDを記載することにより、そのグループIDのテストデータで実際のファイル出力結果を確認することができる。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s6, s8, s10",
+      "description": "Three sections (s6, s8, s10) have empty titles and content 'なし' (3 characters), well below the 50-character threshold. These appear to be placeholder sections representing RST major section headings ('各種期待値', 'テストメソッドの書き方', 'テスト結果検証') that carry no body content of their own. While this is a recognizable design pattern, the 'なし' content provides no information value and the sections serve only as structural markers.",
+      "source_evidence": "RST source contains heading-only sections: '各種期待値' (===), '---------------------- テストメソッドの書き方 ----------------------', '--------------  テスト結果検証 --------------' — all have no direct body text, only subsections."
+    }
+  ]
+}

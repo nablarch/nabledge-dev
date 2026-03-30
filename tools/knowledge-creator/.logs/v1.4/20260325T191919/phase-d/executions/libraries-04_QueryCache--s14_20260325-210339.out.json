@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_QueryCache--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "The class name `ConnectionFactorySupport` is referenced in the s1 section content but is absent from the s1 hints array.",
+      "source_evidence": "ConnectionFactorySupportサブクラスのプロパティ`statementFactory`に、本機能が提供するCacheableStatementFactoryを設定する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "The log format string `cache entry removed` appears in the s3 event table but is missing from the s3 hints array. All other log format strings are present.",
+      "source_evidence": "キャッシュに対して削除要求が発生した場合: cache entry removed: key=[<SQL ID>]"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "Section s1 consolidates three distinct == subsections (クエリ結果キャッシュ実装クラスの登録, StatementFactory実装クラスの差し替え, SQL ID毎のキャッシュ設定) into one knowledge section. Combined content with multiple XML code blocks and property tables substantially exceeds 2000 characters while source h3 (== level) headings exist, satisfying the V3 split criterion.",
+      "source_evidence": "Source contains three == headings under キャッシュ機能を有効にする設定方法, each with XML examples and configuration details."
+    }
+  ]
+}

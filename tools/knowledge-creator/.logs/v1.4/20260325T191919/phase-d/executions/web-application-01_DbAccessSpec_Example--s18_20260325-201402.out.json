@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1 shows all SQL file examples including GET_LIST2 ($if) and GET_LIST4 ($sort) in full, but neither `$if` nor `$sort` appear in s1's hints. Users searching for these SQL constructs via hints would only reach s4/s6, missing the complete SQL file definitions in s1.",
+      "source_evidence": "Source GET_LIST2 SQL uses `$if (loginId) {...}` etc.; GET_LIST4 uses `$sort(sortId) {...}`; both are in the SQL block that s1 covers."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "`Map` or `Mapインタフェース` is absent from s5's hints, despite the section containing an explicit warning that Map interface implementations cannot be used as condition objects for dynamic IN clause generation.",
+      "source_evidence": "Source warning: 「IN句を動的に生成する場合、条件オブジェクトにはMapインタフェースの実装クラスを指定することは出来ないので注意すること。」"
+    }
+  ]
+}

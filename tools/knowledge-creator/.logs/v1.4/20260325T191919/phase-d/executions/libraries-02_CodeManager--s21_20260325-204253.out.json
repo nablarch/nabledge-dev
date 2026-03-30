@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-02_CodeManager--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5, s6, s7 — property tables, \"型\" column",
+      "description": "The property tables in s5 (CodePatternSchema), s6 (CodeNameSchema), and s7 (CodeValueValidator) include a \"型\" column with \"String\" type annotations for column-name and string properties (e.g., tableName, idColumnName, valueColumnName, langColumnName, messageId, etc.). The source RST tables have only two columns (property名, 設定内容) and do not specify Java types for these properties.",
+      "source_evidence": "Source tables for CodePatternSchema and CodeNameSchema only define columns 「property名」and「設定内容」with entries like「テーブル名。」,「コードIDカラムの名前。」— no type information is given. The knowledge file adds 型=String for all such properties without source basis."
+    }
+  ]
+}

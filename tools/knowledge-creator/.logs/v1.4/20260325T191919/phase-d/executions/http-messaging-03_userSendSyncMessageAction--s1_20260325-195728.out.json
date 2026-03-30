@@ -1,0 +1,27 @@
+{
+  "file_id": "http-messaging-03_userSendSyncMessageAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (要求電文のフォーマット定義ファイル)",
+      "description": "The comment `#フレームワーク制御項目(自動追加)` on the `_nbctlhdr[0..1]` field is omitted. This label is behaviorally significant — it tells developers the field is automatically added by the framework and does not need to be manually populated.",
+      "source_evidence": "Source line: `9                    _nbctlhdr[0..1]          OB    #フレームワーク制御項目(自動追加)`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (応答電文のフォーマット定義ファイル)",
+      "description": "The comment `#フレームワーク制御項目(自動追加)` on the `_nbctlhdr[0..1]` field is omitted. Same issue as s5 — developers need to know this field is automatically added by the framework.",
+      "source_evidence": "Source line: `5                _nbctlhdr[0..1]       OB      #フレームワーク制御項目(自動追加)`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (フォーマット定義ファイル)",
+      "description": "The XML comment clarifying that the hardcoded path is simplified for documentation purposes is omitted. The source notes that in the actual sample the value attribute uses a placeholder, not a hardcoded path. This is relevant for implementers who would otherwise copy the hardcoded value directly.",
+      "source_evidence": "Source comment: `<!-- 実際のサンプルでは、以下のvalue属性の部分はプレースホルダになっているが、ここでは説明を分かりやすくするため、直接パスをvalue属性に記載する。-->`"
+    }
+  ]
+}

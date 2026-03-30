@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-MessageResendHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — 再送制御の4ケース, case 4",
+      "description": "Knowledge file describes case 4 as \"業務処理が異常終了しエラー応答電文が未達\" but the source's behavior section heading reads \"業務処理が正常終了したがエラー応答電文が未達\". The knowledge file changed \"正常終了\" to \"異常終了\", which contradicts the source text (even though the source's state description earlier says \"異常終了\", the behavior heading the KF is summarizing says \"正常終了\").",
+      "source_evidence": "Source behavior section: \"4. 業務処理が正常終了したがエラー応答電文が未達 / 再送要求電文を初回電文として処理する。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "The hints for s2 do not include \"例外処理\", which is a major subsection heading in the source's ハンドラ処理フロー and directly covered in s2 content.",
+      "source_evidence": "Source section: \"[例外処理]\" containing steps 3a, 3c, and 4."
+    }
+  ]
+}

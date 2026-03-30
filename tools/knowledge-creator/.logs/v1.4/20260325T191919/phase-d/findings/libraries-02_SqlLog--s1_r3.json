@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The full log.properties example shown in the 'SQLログの出力方法' section is not captured. This complete example includes `availableLoggersNamesOrder=SQL` and the full `appFile` FileLogWriter configuration. Only the shorter SQL-logger-only snippet (from the output policy section) appears in the knowledge file. The `availableLoggersNamesOrder=SQL` entry in particular is a necessary configuration for activating the SQL logger.",
+      "source_evidence": "availableLoggersNamesOrder=SQL\n\n# SQL\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=appFile"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 through s12",
+      "description": "The note from the 'SQLログの出力項目' section — that the individual output item tables omit common items from BasicLogFormatter, and that the combined format is documented in AppLog_Format — is not captured anywhere in the knowledge file. An AI answering questions about complete log output may present the individual-item tables (s3–s12) as exhaustive, without knowing they deliberately exclude common fields.",
+      "source_evidence": "ここでは、:ref:`Log_BasicLogFormatter` の設定で指定できる共通項目については省略する。共通項目と個別項目を組み合わせたフォーマットについては、:ref:`AppLog_Format` を参照。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-FileBatchAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s4 — step 6a description",
+      "description": "The knowledge file adds \"(6. の代替)\" as an annotation to step 6a, but this phrase does not appear anywhere in the source. The source simply labels the step as \"6a. (業務トランザクションロールバック時の処理)\" with no editorial note about it being an alternative to step 6.",
+      "source_evidence": "**6a. (業務トランザクションロールバック時の処理)** — no \"代替\" annotation exists in source"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "s4 hints are missing `getRecordType`, which is the specific method called in step 3 of the handler processing flow (\"入力レコードの getRecordType() メソッドを実行し、レコード種別名を取得する\"). A user asking about how record type is determined in FileBatchAction would benefit from this hint routing them to s4.",
+      "source_evidence": "入力レコードの getRecordType() メソッドを実行し、レコード種別名を取得する。 (step 3 in ハンドラ処理フロー)"
+    }
+  ]
+}

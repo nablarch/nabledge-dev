@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s5",
+      "description": "Section s5「リクエスト処理終了時のログ出力に使用するフォーマット」のプレースホルダ一覧（$statusCode$, $contentPath$ を beginFormat のプレースホルダに加えて指定できる、という記述）は、提供されたソースファイルに存在しない。ソースファイルはディスパッチ先クラス決定後のフォーマットセクションで終了しており、終了時フォーマットの明示的なプレースホルダ定義セクションが含まれていない。endFormat のデフォルト値は app-log.properties 設定例から確認できるが、「リクエスト処理開始時のプレースホルダ一覧に加えて下記のプレースホルダを指定できる」という文言はソースに根拠がない。",
+      "source_evidence": "ソースファイルは「ディスパッチ先クラス決定後のログ出力に使用するフォーマット」のデフォルトフォーマット（`@@@@ DISPATCHING CLASS @@@@ class = [$dispatchingClass$]`）で終了しており、その後の「リクエスト処理終了時のログ出力に使用するフォーマット」セクションは存在しない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "「リクエストIDとユーザIDは、Log_BasicLogFormatter が出力を提供する共通項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために個別項目として指定できるようにしている」という設計上の説明が知識ファイルに含まれていない。この情報は共通項目と個別項目の重複の意図を理解するために有用。",
+      "source_evidence": "ソース：「リクエストIDとユーザIDは、:ref:`Log_BasicLogFormatter` が出力を提供する共通項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために個別項目として指定できるようにしている。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "`ThreadContextHandler` がs1のhintsに含まれていない。ソースではハンドラの設定順序の筆頭として明示されており、「ハンドラの設定順番は？」等の質問でs1を検索する際に有用なヒントとなる。",
+      "source_evidence": "ソース handler ordering: `ThreadContextHandler → HttpAccessLogHandler → NablarchTagHandler → HttpRequestJavaPackageMapping`"
+    }
+  ]
+}

@@ -1,0 +1,700 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/core_library/record_format.rst`
+- Format: `rst`
+
+```
+JSONおよびXMLデータ形式における固有の仕様について
+--------------------------------------------------------------------
+この節では、JSONおよびXMLデータ形式における固有の仕様について解説する。
+
+**1.取り扱い対象のデータについて**
+
+  JSONおよびXMLデータ形式ではデータレコードの概念が存在しない。
+  そのため、入出力はデータ全体を１レコードとして取り扱い、複数レコードが設定されている場合は処理対象外とする。
+
+  なお、本機能で取り扱うMapオブジェクトの形式は :doc:`../core_library/validation` で取り扱うMapオブジェクトの形式と等しい。
+  そのため、本機能で取り扱うMapオブジェクトとForm形式を相互に変換して、階層構造および繰り返しデータを容易に扱うことが可能である。
+  詳細は :doc:`../core_library/validation` を参照すること。
+
+**2.階層構造について**
+
+  JSONおよびXMLデータ形式では階層構造でデータが表現される。
+  本機能で取り扱うMapオブジェクトは"."で区切られたキー名を使用して階層構造を表現し、Mapオブジェクトとしては１階層のものとする。
+
+  フィールド名に対応するレコードタイプ定義が存在する場合は、そのフィールドを階層オブジェクトとして認識し、子要素を再帰的に解析・構築する。
+  階層の深さについて制限は無い。
+
+  以下にフォーマット定義ファイルとおよびJSON/XMLデータ変換されるMapオブジェクトの例を示す。
+
+    **フォーマット定義ファイル**
+
+      .. code-block:: bash
+      
+        #-------------------------------------------------------------------------------
+        # ユーザデータのJSONデータフォーマット
+        #-------------------------------------------------------------------------------
+        file-type:       "JSON"      # JSONデータ形式
+        text-encoding:   "UTF-8"     # ファイルエンコーディング
+        
+        [UserData]                   # ユーザデータ(ルート要素)のレコードタイプ
+        1  header OB                 # ヘッダ項目
+        2  data   OB                 # データ項目
+
+        [header]                     # ヘッダ項目のレコードタイプ
+        1  msg_id X                  # メッセージID
+
+        [data]                       # データ項目のレコードタイプ
+        1  name   N                  # 氏名
+        2  age    X9                 # 年齢
+
+    **JSONデータ**
+
+      .. code-block:: json
+      
+        {
+          "header":{
+            "msg_id":"123456"
+          },
+          "data":{
+            "name":"nablarch",
+            "age":30
+          }
+        }
+
+    **XMLデータ**
+
+      .. code-block:: xml
+      
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!--
+          ユーザデータ
+        -->
+        <UserData>
+          <header>
+            <msg_id>123456</msg_id>
+          <header>
+          <data>
+            <name>nablarch</name>
+            <age>30</age>
+          <data>
+        </UserData>
+
+    **Mapオブジェクト**
+
+      +--------------------------+--------------------------+
+      | キー                     | 値                       |
+      +==========================+==========================+
+      | "header.msg_id"          | "123456"                 |
+      +--------------------------+--------------------------+
+      | "data.name"              | "nablarch"               |
+      +--------------------------+--------------------------+
+      | "data.age"               | "30"                     |
+      +--------------------------+--------------------------+
+
+**3.繰り返しデータについて**
+
+  JSONおよびXMLデータ形式では繰り返し出現するデータが存在する。
+  本機能では以下のように繰り返し項目を表現しMapオブジェクトに格納する。
+
+    +--------------------------+---------------------------------------------------------------------------+
+    | 対象データ               | 格納形式                                                                  |
+    +==========================+===========================================================================+
+    | 文字列                   | String配列としてデータを格納する。                                        |
+    +--------------------------+---------------------------------------------------------------------------+
+    | オブジェクト             | Mapのキー名に配列添字([0],[1]など)を付与し階層構造格納時と同様に格納する。|
+    +--------------------------+---------------------------------------------------------------------------+
+
+  以下にフォーマット定義ファイルとおよびJSON/XMLデータ変換されるMapオブジェクトの例を示す。
+
+    **フォーマット定義ファイル**
+
+      .. code-block:: bash
+      
+        #-------------------------------------------------------------------------------
+        # ユーザデータのJSONデータフォーマット
+        #-------------------------------------------------------------------------------
+        file-type:       "JSON"       # JSONデータ形式
+        text-encoding:   "UTF-8"      # ファイルエンコーディング
+        
+        [UserData]                    # ユーザデータ(ルート要素)のレコードタイプ
+        1  header      OB             # ヘッダ項目
+        2  data [1..3] OB             # データ項目(最大３要素)
+
+        [header]                      # ヘッダ項目のレコードタイプ
+        1  msg_id      X              # メッセージID
+
+        [data]                        # データ項目のレコードタイプ
+        1  name        N              # 氏名
+        2  age         XS9            # 年齢
+        3  mail [0..2] X              # メールアドレス(省略可能、最大２要素)
+
+    **JSONデータ**
+
+      .. code-block:: json
+      
+        {
+          "header":{
+            "msg_id":"123456"
+          },
+          "data":[
+            {
+              "name":"nablarch1",
+              "age":30,
+              "mail":["nablarch1-1@tis.co.jp", "nablarch1-2@tis.co.jp"]
+            },
+            {
+              "name":"nablarch2",
+              "age":31,
+              "mail":["nablarch2-1@tis.co.jp"]
+            },
+            {
+              "name":"nablarch3",
+              "age":32
+            }
+          ]
+        }
+
+    **XMLデータ**
+
+      .. code-block:: xml
+      
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!--
+          ユーザデータ
+        -->
+        <UserData>
+          <header>
+            <msg_id>123456</msg_id>
+          <header>
+          <data>
+            <name>nablarch1</name>
+            <age>30</age>
+            <mail>nablarch1-1@tis.co.jp</mail>
+            <mail>nablarch1-2@tis.co.jp</mail>
+          <data>
+          <data>
+            <name>nablarch2</name>
+            <age>31</age>
+            <mail>nablarch2-1@tis.co.jp</mail>
+          <data>
+          <data>
+            <name>nablarch3</name>
+            <age>32</age>
+          <data>
+        </UserData>
+
+    **Mapオブジェクト**
+
+      +--------------------------+----------------------------------------------------------------+
+      | キー                     | 値                                                             |
+      +==========================+================================================================+
+      | "header.msg_id"          | "123456"                                                       |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[0].name"           | "nablarch1"                                                    |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[0].age"            | "30"                                                           |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[0].mail"           | ["nablarch1-1@tis.co.jp", "nablarch1-2@tis.co.jp"](String配列) |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[1].name"           | "nablarch2"                                                    |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[1].age"            | "31"                                                           |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[1].mail"           | ["nablarch2-1@tis.co.jp"](String配列)                          |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[2].name"           | "nablarch3"                                                    |
+      +--------------------------+----------------------------------------------------------------+
+      | "data[2].age"            | "32"                                                           |
+      +--------------------------+----------------------------------------------------------------+
+
+
+**4.データ型について**
+
+  JSON形式ではJSONの仕様として文字列型や数値型、真偽値などのデータ型が規定されている。
+  本機能では内部的にはすべて文字列として取り扱い、出力時にフォーマット定義ファイルに従い適切な型でデータ出力を行う。
+
+  また、XML形式ではスキーマ定義を併用した場合を除き、特にデータ型は規定されていないため、本機能ではすべて文字列として取り扱う。
+
+
+**5.XMLでDTDを使う**
+
+  .. warning::
+
+    本機能でXMLを入力する場合、DTDをデフォルトで使用することはできない。DTDを使用したXMLを読み込もうとした場合、例外が発生する。
+    これは `XML外部実体参照(XXE) <https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing>`_ を防止するための措置である。
+
+  読み込み対象となるXMLが信頼できる場合は、nablarch.core.dataformat.XmlDataParserのallowDTDプロパティを使用してDTDの使用を許可することができる。
+  使用方法は下記の通り。
+
+  XmlDataParserという名前で明示的にコンポーネント設定ファイルに設定を記載し、DTDの使用を許可する。
+
+  .. code-block:: xml
+
+    <?xml version="1.0" encoding="UTF-8"?>
+      <component-configuration
+          xmlns="http://tis.co.jp/nablarch/component-configuration"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration component-configuration.xsd">
+
+        <component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+          <!--
+              DTDの使用を許可する。
+              XXE攻撃の危険性があるため、信頼できるXML以外には使用してはならない。
+           -->
+          <property name="allowDTD" value="true" />
+        </component>
+      </component-configuration>
+
+  .. note::
+
+    以下のバージョンのJDKにはAPIに不具合があり、本機能を使用した場合にNullPointerExceptionが発生する。
+    本バグを回避するには、JDKのバージョンをアップする。
+    
+    - JDK6 6u65 未満
+    - JDK7 7u6 b15 未満
+
+    不具合詳細は `JDK-7157610 : NullPointerException occurs when parsing XML doc <https://bugs.java.com/bugdatabase/view_bug.do?bug_id=7157610>`_ 参照。
+
+
+**6.名前空間について(XMLデータ形式のみ)**
+
+  XMLデータ形式では、名前空間を使用した要素を扱うことができる。
+  本機能で取り扱うMapオブジェクトでは、「:」を取り除いて、次の項目を大文字したキー名を使用して名前空間つきの要素名を表現する。
+  
+  以下にフォーマット定義ファイルとXMLデータ変換されるMapオブジェクトの例を示す。
+
+    **フォーマット定義ファイル**
+
+      .. code-block:: bash
+      
+        #-------------------------------------------------------------------------------
+        # ユーザデータのXMLデータフォーマット
+        #-------------------------------------------------------------------------------
+        file-type:       "JSON"       # JSONデータ形式
+        text-encoding:   "UTF-8"      # ファイルエンコーディング
+
+        [tns:response]
+        1 ?@xmlns:tns X  #名前空間の接頭辞の定義
+        2 tns:key1    X  #名前空間つきの項目
+
+
+      .. note::
+        
+        名前空間の接頭辞の定義については、フィールド名の先頭に「?」をつけることにより読み飛ばす必要がある。
+
+
+    **XMLデータ**
+
+      .. code-block:: xml
+      
+        <?xml version="1.0" encoding="UTF-8"?>
+        <tns:response xmlns:tns="http://foo.jp/general">
+            <tns:key1>200</tns:key1>
+        </tns:response>
+
+    **Mapオブジェクト**
+
+      +--------------------------+----------------------------------------------------------------+
+      | キー                     | 値                                                             |
+      +==========================+================================================================+
+      | "tnsKey1"                | "200"                                                          |
+      +--------------------------+----------------------------------------------------------------+
+
+**7.XMLで属性を持つ要素にコンテンツを定義する方法について**
+
+  XMLで属性を持つ要素にコンテンツを定義したい場合は、 フォーマット定義ファイルにコンテンツを表すフィールドを定義する。
+
+  設定例を以下に示す。
+
+    **フォーマット定義ファイル**
+
+      .. code-block:: bash
+
+        file-type:        "XML"
+        text-encoding:    "UTF-8"
+
+        [parent]
+        1 child   OB
+
+        [child]
+        1 @attr   X
+        2 body    X   # コンテンツを表すフィールド名には body を指定する。
+
+
+    **XMLデータ**
+
+      .. code-block:: xml
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <parent>
+          <child attr="value1">value2</child>
+        </parent>
+
+    **Mapオブジェクト**
+
+      +--------------------------+----------------------------------------------------------------+
+      | キー                     | 値                                                             |
+      +==========================+================================================================+
+      | "child.attr"             | "value1"                                                       |
+      +--------------------------+----------------------------------------------------------------+
+      | "child.body"             | "value2"                                                       |
+      +--------------------------+----------------------------------------------------------------+
+
+  コンテンツを表すフィールド名をデフォルトのbodyから変更したい場合は、
+  以下のクラスをコンポーネント設定ファイルに設定し、contentNameプロパティに変更後のコンテンツ名をそれぞれ設定する。
+
+  * XmlDataParser
+  * XmlDataBuilder
+
+  コンポーネント設定ファイルの設定例を以下に示す。
+
+    .. code-block:: xml
+
+      <!-- XmlDataParser のコンポーネント名は XmlDataParser とすること -->
+      <component name="XmlDataParser" class="nablarch.core.dataformat.XmlDataParser">
+        <property name="contentName" value="change" />
+      </component>
+
+      <!-- XmlDataBuilder のコンポーネント名は XmlDataBuilder とすること -->
+      <component name="XmlDataBuilder" class="nablarch.core.dataformat.XmlDataBuilder">
+        <property name="contentName" value="change" />
+      </component>
+
+ノード名に関する制約事項
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+\ `レコードタイプ名に関する注意事項`_\ にて述べたとおり、
+レイアウト定義において、レコードタイプ名の重複は許容されない。
+このため、\ **親ノード名が重複するXML、JSONは許容されない**\ 。
+ 
+例を以下に示す。
+
+**フォーマット定義ファイル**
+
+.. code-block:: bash
+   
+ file-type:        "XML"
+ text-encoding:    "UTF-8"
+ [a]               #この要素と
+ 1 b OB
+ [b]
+ 1 a OB
+ [a]               #この要素が重複(NG)
+ 1 c X
+
+**XMLデータ**
+
+.. code-block:: xml
+   
+ <?xml version="1.0" encoding="UTF-8"?>
+ <a>       <!-- この要素と -->
+   <b>
+     <a>   <!-- この要素が重複(NG) -->
+       <c>val1</c>
+     </a>
+   </b>
+ </a>
+
+なお、\ **レコードタイプ名とフィールド名の重複は許容される**\ （レコードタイプ名が一意になることを妨げないため）。
+
+例を以下に示す。
+
+**フォーマット定義ファイル**
+
+.. code-block:: bash
+   
+ file-type:        "XML"
+ text-encoding:    "UTF-8"
+ [a]               #このレコードタイプ名と
+ 1 a X             #このフィールド名が重複(OK)
+ 2 b X9
+
+**XMLデータ**
+
+.. code-block:: xml
+   
+ <?xml version="1.0" encoding="UTF-8"?>
+ <a>             <!-- このレコードタイプ名と -->
+   <a>val</a>   <!-- このフィールド名が重複(OK) -->
+   <b>123</b>
+ </a>
+
+同様に、\ **異なるレコードタイプ間でフィールド名が重複することも許容される**\ 。
+
+例を以下に示す。
+
+**フォーマット定義ファイル**
+
+.. code-block:: bash
+   
+ file-type:        "XML"
+ text-encoding:    "UTF-8"
+ [a]
+ 1 b OB             
+ 2 c OB
+ [b]
+ 1 d X9            #このフィールド名と
+ [c] 
+ 1 d X             #このフィールド名が重複(OK)
+
+**XMLデータ**
+
+.. code-block:: xml
+   
+ <?xml version="1.0" encoding="UTF-8"?>
+ <a>
+   <b>
+     <d>val</d>   <!-- このフィールド名と -->
+   </b>
+   <c>
+     <d>123</d>   <!-- このフィールド名が重複(OK) -->
+   </c>
+ </a>
+
+```
+
+## Knowledge File
+
+- ID: `libraries-record_format--s11`
+
+```json
+{
+  "id": "libraries-record_format--s11",
+  "title": "JSONおよびXMLデータ形式における固有の仕様について",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "取り扱い対象のデータについて",
+      "hints": [
+        "JSONデータ形式",
+        "XMLデータ形式",
+        "データレコード概念なし",
+        "1レコード",
+        "複数レコード処理対象外",
+        "Mapオブジェクト形式",
+        "Form形式相互変換",
+        "階層構造",
+        "繰り返しデータ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "階層構造について",
+      "hints": [
+        "階層構造",
+        "ドット区切りキー",
+        "Mapオブジェクト",
+        "1階層",
+        "レコードタイプ定義",
+        "再帰的解析",
+        "再帰的構築",
+        "深さ制限なし",
+        "フォーマット定義ファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "繰り返しデータについて",
+      "hints": [
+        "繰り返しデータ",
+        "String配列",
+        "配列添字",
+        "[0]",
+        "[1]",
+        "繰り返し項目",
+        "Mapキー",
+        "配列インデックス",
+        "data[0].name",
+        "XMLデータ",
+        "mail要素繰り返し"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データ型について",
+      "hints": [
+        "データ型",
+        "JSON文字列型",
+        "JSON数値型",
+        "JSON真偽値",
+        "内部的に文字列",
+        "出力時型変換",
+        "フォーマット定義ファイル",
+        "XMLデータ型なし",
+        "スキーマ定義"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "XMLでDTDを使う",
+      "hints": [
+        "DTD",
+        "XXE",
+        "XML外部実体参照",
+        "セキュリティ",
+        "allowDTD",
+        "XmlDataParser",
+        "DTD禁止",
+        "例外",
+        "JDK NullPointerException",
+        "JDK-7157610"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "名前空間について（XMLデータ形式のみ）",
+      "hints": [
+        "名前空間",
+        "namespace",
+        "xmlns",
+        "コロン除去",
+        "キャメルケース変換",
+        "tns:key1",
+        "tnsKey1",
+        "接頭辞定義",
+        "?フィールド名",
+        "読み飛ばし"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "XMLで属性を持つ要素にコンテンツを定義する方法について",
+      "hints": [
+        "XML属性",
+        "コンテンツ定義",
+        "bodyフィールド",
+        "contentName",
+        "XmlDataParser",
+        "XmlDataBuilder",
+        "属性とコンテンツ",
+        "child.body",
+        "child.attr"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ノード名に関する制約事項",
+      "hints": [
+        "ノード名制約",
+        "レコードタイプ名重複禁止",
+        "親ノード名重複",
+        "フィールド名重複許容",
+        "XMLデータ形式",
+        "JSONデータ形式"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSONおよびXMLデータ形式ではデータレコードの概念が存在しない。そのため、入出力はデータ全体を１レコードとして取り扱い、複数レコードが設定されている場合は処理対象外とする。\n\n本機能で取り扱うMapオブジェクトの形式はバリデーション機能で取り扱うMapオブジェクトの形式と等しい。そのため、本機能で取り扱うMapオブジェクトとForm形式を相互に変換して、階層構造および繰り返しデータを容易に扱うことが可能である。",
+    "s2": "JSONおよびXMLデータ形式では階層構造でデータが表現される。本機能で取り扱うMapオブジェクトは \".\" で区切られたキー名を使用して階層構造を表現し、Mapオブジェクトとしては１階層のものとする。\n\nフィールド名に対応するレコードタイプ定義が存在する場合は、そのフィールドを階層オブジェクトとして認識し、子要素を再帰的に解析・構築する。階層の深さについて制限は無い。\n\n**フォーマット定義ファイル例:**\n\n```bash\n#-------------------------------------------------------------------------------\n# ユーザデータのJSONデータフォーマット\n#-------------------------------------------------------------------------------\nfile-type:       \"JSON\"      # JSONデータ形式\ntext-encoding:   \"UTF-8\"     # ファイルエンコーディング\n\n[UserData]                   # ユーザデータ(ルート要素)のレコードタイプ\n1  header OB                 # ヘッダ項目\n2  data   OB                 # データ項目\n\n[header]                     # ヘッダ項目のレコードタイプ\n1  msg_id X                  # メッセージID\n\n[data]                       # データ項目のレコードタイプ\n1  name   N                  # 氏名\n2  age    X9                 # 年齢\n```\n\n**JSONデータ例:**\n\n```json\n{\n  \"header\":{\n    \"msg_id\":\"123456\"\n  },\n  \"data\":{\n    \"name\":\"nablarch\",\n    \"age\":30\n  }\n}\n```\n\n**XMLデータ例:**\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<UserData>\n  <header>\n    <msg_id>123456</msg_id>\n  </header>\n  <data>\n    <name>nablarch</name>\n    <age>30</age>\n  </data>\n</UserData>\n```\n\n**Mapオブジェクト（変換結果）:**\n\n| キー | 値 |\n|------|----|\n| `\"header.msg_id\"` | `\"123456\"` |\n| `\"data.name\"` | `\"nablarch\"` |\n| `\"data.age\"` | `\"30\"` |",
+    "s3": "JSONおよびXMLデータ形式では繰り返し出現するデータが存在する。本機能では以下のように繰り返し項目を表現しMapオブジェクトに格納する。\n\n| 対象データ | 格納形式 |\n|-----------|----------|\n| 文字列 | String配列としてデータを格納する |\n| オブジェクト | Mapのキー名に配列添字（`[0]`、`[1]` など）を付与し、階層構造格納時と同様に格納する |\n\n**フォーマット定義ファイル例:**\n\n```bash\n#-------------------------------------------------------------------------------\n# ユーザデータのJSONデータフォーマット\n#-------------------------------------------------------------------------------\nfile-type:       \"JSON\"       # JSONデータ形式\ntext-encoding:   \"UTF-8\"      # ファイルエンコーディング\n\n[UserData]                    # ユーザデータ(ルート要素)のレコードタイプ\n1  header      OB             # ヘッダ項目\n2  data [1..3] OB             # データ項目(最大３要素)\n\n[header]                      # ヘッダ項目のレコードタイプ\n1  msg_id      X              # メッセージID\n\n[data]                        # データ項目のレコードタイプ\n1  name        N              # 氏名\n2  age         XS9            # 年齢\n3  mail [0..2] X              # メールアドレス(省略可能、最大２要素)\n```\n\n**JSONデータ例:**\n\n```json\n{\n  \"header\":{\n    \"msg_id\":\"123456\"\n  },\n  \"data\":[\n    {\n      \"name\":\"nablarch1\",\n      \"age\":30,\n      \"mail\":[\"nablarch1-1@tis.co.jp\", \"nablarch1-2@tis.co.jp\"]\n    },\n    {\n      \"name\":\"nablarch2\",\n      \"age\":31,\n      \"mail\":[\"nablarch2-1@tis.co.jp\"]\n    },\n    {\n      \"name\":\"nablarch3\",\n      \"age\":32\n    }\n  ]\n}\n```\n\n**XMLデータ例:**\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<UserData>\n  <header>\n    <msg_id>123456</msg_id>\n  </header>\n  <data>\n    <name>nablarch1</name>\n    <age>30</age>\n    <mail>nablarch1-1@tis.co.jp</mail>\n    <mail>nablarch1-2@tis.co.jp</mail>\n  </data>\n  <data>\n    <name>nablarch2</name>\n    <age>31</age>\n    <mail>nablarch2-1@tis.co.jp</mail>\n  </data>\n  <data>\n    <name>nablarch3</name>\n    <age>32</age>\n  </data>\n</UserData>\n```\n\nXMLでは `<data>` 要素の繰り返し出現がオブジェクトの繰り返しを表し、`<mail>` 要素の繰り返し出現がString配列（文字列の繰り返し）を表す。JSONの `[]` 構文とは異なり、XMLでは同名要素の繰り返しによって配列を表現する。\n\n**Mapオブジェクト（変換結果）:**\n\n| キー | 値 |\n|------|----|\n| `\"header.msg_id\"` | `\"123456\"` |\n| `\"data[0].name\"` | `\"nablarch1\"` |\n| `\"data[0].age\"` | `\"30\"` |\n| `\"data[0].mail\"` | `[\"nablarch1-1@tis.co.jp\", \"nablarch1-2@tis.co.jp\"]`（String配列） |\n| `\"data[1].name\"` | `\"nablarch2\"` |\n| `\"data[1].age\"` | `\"31\"` |\n| `\"data[1].mail\"` | `[\"nablarch2-1@tis.co.jp\"]`（String配列） |\n| `\"data[2].name\"` | `\"nablarch3\"` |\n| `\"data[2].age\"` | `\"32\"` |",
+    "s4": "JSON形式ではJSONの仕様として文字列型や数値型、真偽値などのデータ型が規定されている。本機能では内部的にはすべて文字列として取り扱い、出力時にフォーマット定義ファイルに従い適切な型でデータ出力を行う。\n\nXML形式ではスキーマ定義を併用した場合を除き、特にデータ型は規定されていないため、本機能ではすべて文字列として取り扱う。",
+    "s5": "> **警告**: 本機能でXMLを入力する場合、DTDをデフォルトで使用することはできない。DTDを使用したXMLを読み込もうとした場合、例外が発生する。これはXML外部実体参照（XXE）を防止するための措置である。\n\n読み込み対象となるXMLが信頼できる場合は、`nablarch.core.dataformat.XmlDataParser` の `allowDTD` プロパティを使用してDTDの使用を許可することができる。`XmlDataParser` という名前で明示的にコンポーネント設定ファイルに設定を記載し、DTDの使用を許可する。\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<component-configuration\n    xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration component-configuration.xsd\">\n\n  <component name=\"XmlDataParser\" class=\"nablarch.core.dataformat.XmlDataParser\">\n    <!--\n        DTDの使用を許可する。\n        XXE攻撃の危険性があるため、信頼できるXML以外には使用してはならない。\n     -->\n    <property name=\"allowDTD\" value=\"true\" />\n  </component>\n</component-configuration>\n```\n\n> **注意**: 以下のバージョンのJDKにはAPIに不具合があり、本機能を使用した場合に `NullPointerException` が発生する。本バグを回避するには、JDKのバージョンをアップする。\n> - JDK6 6u65 未満\n> - JDK7 7u6 b15 未満",
+    "s6": "XMLデータ形式では、名前空間を使用した要素を扱うことができる。本機能で取り扱うMapオブジェクトでは、「:」を取り除いて、次の項目を大文字したキー名を使用して名前空間つきの要素名を表現する。\n\n例: `tns:key1` → `tnsKey1`\n\n名前空間の接頭辞の定義については、フィールド名の先頭に「?」をつけることにより読み飛ばす必要がある。\n\n**フォーマット定義ファイル例:**\n\n```bash\n#-------------------------------------------------------------------------------\n# ユーザデータのXMLデータフォーマット\n#-------------------------------------------------------------------------------\nfile-type:       \"JSON\"       # JSONデータ形式\ntext-encoding:   \"UTF-8\"      # ファイルエンコーディング\n\n[tns:response]\n1 ?@xmlns:tns X  #名前空間の接頭辞の定義\n2 tns:key1    X  #名前空間つきの項目\n```\n\n**XMLデータ例:**\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<tns:response xmlns:tns=\"http://foo.jp/general\">\n    <tns:key1>200</tns:key1>\n</tns:response>\n```\n\n**Mapオブジェクト（変換結果）:**\n\n| キー | 値 |\n|------|----|\n| `\"tnsKey1\"` | `\"200\"` |",
+    "s7": "XMLで属性を持つ要素にコンテンツを定義したい場合は、フォーマット定義ファイルにコンテンツを表すフィールドを定義する。コンテンツを表すフィールド名のデフォルトは `body` である。\n\n**フォーマット定義ファイル例:**\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n\n[parent]\n1 child   OB\n\n[child]\n1 @attr   X\n2 body    X   # コンテンツを表すフィールド名には body を指定する。\n```\n\n**XMLデータ例:**\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<parent>\n  <child attr=\"value1\">value2</child>\n</parent>\n```\n\n**Mapオブジェクト（変換結果）:**\n\n| キー | 値 |\n|------|----|\n| `\"child.attr\"` | `\"value1\"` |\n| `\"child.body\"` | `\"value2\"` |\n\nコンテンツを表すフィールド名をデフォルトの `body` から変更したい場合は、以下のクラスをコンポーネント設定ファイルに設定し、`contentName` プロパティに変更後のコンテンツ名をそれぞれ設定する。\n\n- `XmlDataParser`（コンポーネント名は `XmlDataParser` とすること）\n- `XmlDataBuilder`（コンポーネント名は `XmlDataBuilder` とすること）\n\n```xml\n<!-- XmlDataParser のコンポーネント名は XmlDataParser とすること -->\n<component name=\"XmlDataParser\" class=\"nablarch.core.dataformat.XmlDataParser\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n\n<!-- XmlDataBuilder のコンポーネント名は XmlDataBuilder とすること -->\n<component name=\"XmlDataBuilder\" class=\"nablarch.core.dataformat.XmlDataBuilder\">\n  <property name=\"contentName\" value=\"change\" />\n</component>\n```",
+    "s8": "\\`レコードタイプ名に関する注意事項\\`_ のとおり、レイアウト定義においてレコードタイプ名の重複は許容されない。そのため、**親ノード名が重複するXML・JSONは許容されない**。\n\n**禁止例（NG）** — フォーマット定義ファイル:\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n[a]               #この要素と\n1 b OB\n[b]\n1 a OB\n[a]               #この要素が重複(NG)\n1 c X\n```\n\nXMLデータ:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<a>       <!-- この要素と -->\n  <b>\n    <a>   <!-- この要素が重複(NG) -->\n      <c>val1</c>\n    </a>\n  </b>\n</a>\n```\n\n以下の重複は許容される:\n\n- **レコードタイプ名とフィールド名の重複**: レコードタイプ名が一意であることを妨げないため許容。\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n[a]               #このレコードタイプ名と\n1 a X             #このフィールド名が重複(OK)\n2 b X9\n```\n\n- **異なるレコードタイプ間でのフィールド名の重複**: 別レコードタイプに同名フィールドが存在しても許容。\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n[a]\n1 b OB\n2 c OB\n[b]\n1 d X9            #このフィールド名と\n[c]\n1 d X             #このフィールド名が重複(OK)\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

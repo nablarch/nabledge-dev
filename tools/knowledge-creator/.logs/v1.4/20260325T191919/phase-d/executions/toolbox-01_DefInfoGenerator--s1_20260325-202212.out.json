@@ -1,0 +1,13 @@
+{
+  "file_id": "toolbox-01_DefInfoGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s12].hints",
+      "description": "s12のhintsに、CodeDefinitionFileLoader固有のプロパティ名（`codeNameKey`、`codeDescriptionKey`、`valueKeys`）が含まれていない。これらは他のローダークラスには存在しないプロパティであり、ユーザーがこれらの名前で検索した際にこのセクションが見つからない可能性がある。",
+      "source_evidence": "コード設計書の読込設定のXMLに `<property name=\"codeNameKey\" value=\"codeName\"/>`, `<property name=\"codeDescriptionKey\" value=\"codeDescription\"/>`, `<property name=\"valueKeys\"><list>...</list></property>` が含まれているが、s12のhintsに `codeNameKey`、`codeDescriptionKey`、`valueKeys` は記載されていない。"
+    }
+  ]
+}

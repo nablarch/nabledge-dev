@@ -1,0 +1,13 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — assertSqlResultSetEqualsメソッドの注意点",
+      "description": "The knowledge file states \"ORDER BY指定がある場合は順序も厳密に比較する必要がある\" (when ORDER BY is specified, strict order comparison is needed), but the source says \"SELECT実行時はORDER BY指定がなされる場合がほとんどであり、順序についても厳密に比較する必要がある\" — meaning ORDER BY is typically used, therefore strict ordering is always enforced. The knowledge file incorrectly frames this as a conditional (\"when ORDER BY exists\") rather than stating it as universal behavior justified by the common use of ORDER BY.",
+      "source_evidence": "SELECT実行時はORDER BY指定がなされる場合がほとんどであり、順序についても厳密に比較する必要がある為。"
+    }
+  ]
+}

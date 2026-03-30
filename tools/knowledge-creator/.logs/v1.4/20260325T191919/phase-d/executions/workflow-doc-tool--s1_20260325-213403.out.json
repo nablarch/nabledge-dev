@@ -1,0 +1,20 @@
+{
+  "file_id": "workflow-doc-tool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Table first-column values `output`, `resources`, `log` are absent from hints. These directory names are useful for retrieval when users ask where output files or configuration files are stored.",
+      "source_evidence": "Source table lists: output（自動生成されるワークフロー定義データの出力ディレクトリ）、resources（本ツールの設定ファイル格納ディレクトリ）、log（エラー情報出力ファイルの出力ディレクトリ）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`WorkflowDefinitionGenerator.xml` (the component definition file name) is missing from hints, even though it is a first-column value in the configuration file table and is a key file name for retrieval.",
+      "source_evidence": "Source configuration file table lists WorkflowDefinitionGenerator.xml as コンポーネント定義ファイル alongside WorkflowDefinitionGenerator.config (which is correctly included in hints)."
+    }
+  ]
+}

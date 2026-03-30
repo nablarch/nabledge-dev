@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-09_confirm_operation",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The 5 verification steps (a–e) from the source are entirely absent. The knowledge file captures only the キャンセルボタン note, discarding the complete operational verification procedure: (a) display the registration screen, (b) change values and press 確認, (c) verify values on the confirmation screen and press 確定, (d) verify registered values on the completion screen, (e) check the USERS table for stored data. These steps document the expected screen flow (登録→確認→完了), button interactions, and database verification — substantive information an AI needs to explain the feature's behavior or guide testing.",
+      "source_evidence": ":a): ユーザ情報登録画面を表示する。 / :b): 入力フォームの値を変更して **確認** ボタンを押下する。 / :c): ユーザ情報登録確認画面に遷移するので、登録する値が表示されていることを確認し、 **確定** ボタンを押下する。 / :d): ユーザ情報登録完了画面に遷移するので、登録した値が表示されていることを確認する。 / :e): USERSテーブルを確認し、登録したユーザ情報が格納されていることを確認する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 contains fewer than 50 characters of content. This is a consequence of the omission above — only the キャンセルボタン note was captured, leaving the section with a single short sentence.",
+      "source_evidence": "s1 value: \"> **注意**: ユーザ情報登録確認画面のキャンセルボタンは未実装のため動作しない。\" (~40 characters)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Hints are missing key terms from the omitted procedure steps: 'USERSテーブル' (database table referenced in step e), '確認ボタン', '確定ボタン' (distinct buttons referenced in steps b and c), and screen names '登録完了画面' / '登録確認画面' (distinct screens in the flow).",
+      "source_evidence": ":c): **確定** ボタンを押下する / :e): USERSテーブルを確認し / ユーザ情報登録完了画面に遷移"
+    }
+  ]
+}

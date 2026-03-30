@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_SubmitTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (サブミット先の指定方法)",
+      "description": "The source includes a bash code block that concretely illustrates how the uri attribute value maps to the final submitted URI (with context path prepended). This example shows the input screen URI vs the back/register button submitted URIs, helping confirm understanding of the URI construction mechanism. The knowledge file captures the concept in prose but omits the concrete example.",
+      "source_evidence": "Source bash block:\n  # ユーザ登録確認画面を表示したURI\n  <コンテキストパス>/action/management/user/UserAction/USER00202\n  # 戻るボタンを押した場合のサブミット先のURI\n  <コンテキストパス>/action/management/user/UserAction/USER00301\n  # 登録ボタンを押した場合のサブミット先のURI\n  <コンテキストパス>/action/management/user/UserAction/USER00302"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (ボタン又はリンク毎にパラメータを変更する方法)",
+      "description": "The source includes an HTML output example showing the rendered <a> tags and the nablarch_hidden hidden input. This example also reveals that the generated HTML uses `window.nablarch_submit` (with the `window.` prefix) in the onclick attribute, which differs subtly from the bare function reference shown elsewhere. The knowledge file mentions nablarch_hidden in prose but omits the rendered HTML example.",
+      "source_evidence": "Source HTML output block:\n  <a name=\"R0001_0\" href=\"./R0001\" onclick=\"return window.nablarch_submit(event, this);\">ユーザ1</a>\n  ...\n  <input type=\"hidden\" name=\"nablarch_hidden\" value=\"・・・省略・・・\" />"
+    }
+  ]
+}

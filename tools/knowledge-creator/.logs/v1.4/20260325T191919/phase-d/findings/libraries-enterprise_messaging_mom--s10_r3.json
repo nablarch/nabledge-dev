@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-enterprise_messaging_mom--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 同期応答メッセージ送信 (Pattern 2) description",
+      "description": "The knowledge file omits the key benefit statement of Pattern 2: that receiving a response allows some degree of assurance that processing on the destination side completed correctly. Source states: 「応答電文を受信するので、通信先で処理が正しく行われることをある程度保証することができる」. This is decision-necessary information for choosing between Pattern 1 (応答不要) and Pattern 2 (同期応答).",
+      "source_evidence": "通信先システムに対してメッセージを送信し、その応答を待機する。応答不要メッセージ送信 とは異なり、応答電文を受信するので、通信先で処理が正しく行われることをある程度保証することができる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — JMS メッセージングプロバイダ Poison電文退避 note",
+      "description": "The knowledge file states 'サポート確認済みMOM: Websphere MQ, WebLogic MQ, ActiveMQ' but omits the qualifier '最新版における' from the source. The source only confirms that the *latest version* of these MOMs supports JMSXDeliveryCount. Omitting this qualifier could mislead implementers into assuming all versions are confirmed to work.",
+      "source_evidence": "なお、以下のMOMについては最新版における同ヘッダのサポートを確認している。"
+    }
+  ]
+}

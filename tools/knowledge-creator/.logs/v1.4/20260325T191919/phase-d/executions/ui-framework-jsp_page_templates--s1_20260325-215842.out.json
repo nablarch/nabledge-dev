@@ -1,0 +1,27 @@
+{
+  "file_id": "ui-framework-jsp_page_templates--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index.s2",
+      "description": "s2 has content \"なし\" but its hints include \"JSPタグファイル\", \"インクルードJSP\", \"タグファイル配置\" — terms that describe the actual content found in s3, not s2. An AI retrieving s2 based on these hints will receive empty content.",
+      "source_evidence": "ファイル構成 > 概要 section in source contains: \"JSPタグファイルとインクルードJSPファイルの形式で提供される\" and \"JSPタグファイルは/WEB-INF/tags/template/配下、インクルードJSPファイルは/include/配下\" — all substantive content is in the child section (s3), not the parent container."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s3",
+      "description": "s3 is missing hints \"JSPタグファイル\" and \"インクルードJSP\", which are the central topics of s3's content. These terms are currently placed on s2 (empty section) instead of s3 where the actual content resides.",
+      "source_evidence": "s3 content reads: \"JSPタグファイルとインクルードJSPファイルの形式で提供される。業務画面JSPからはタグファイルを参照し、インクルードJSPはタグファイルから読み込まれる。\" The terms JSPタグファイル and インクルードJSP are fundamental to this section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s4",
+      "description": "s4 hints are missing the subwindow JSP file names: subwindow_app_top_nav.jsp, subwindow_app_header.jsp, subwindow_app_footer.jsp. These files appear explicitly in the source's 構成ファイル一覧 table and are distinct from their non-subwindow counterparts.",
+      "source_evidence": "Source table rows for トップナビゲーション領域JSP list both app_top_nav.jsp and subwindow_app_top_nav.jsp; ヘッダー領域JSP lists app_header.jsp and subwindow_app_header.jsp; フッター領域JSP lists app_footer.jsp and subwindow_app_footer.jsp. Only subwindow_page_template.tag is currently in s4 hints."
+    }
+  ]
+}

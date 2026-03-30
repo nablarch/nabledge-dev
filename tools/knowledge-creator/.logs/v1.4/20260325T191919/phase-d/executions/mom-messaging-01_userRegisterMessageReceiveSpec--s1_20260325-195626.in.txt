@@ -1,0 +1,239 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation_messaging/04_Explanation_delayed_receive/01_userRegisterMessageReceiveSpec.rst`
+- Format: `rst`
+
+```
+
+.. _userRegisterMessageReceiveSpec:
+
+======================================
+ユーザ登録情報電文受信処理の仕様
+======================================
+
+--------
+機能概要
+--------
+外部システムからの送信電文を入力として、ユーザ登録情報受信テーブルにレコードを登録する。
+
+
+.. image:: _image/userRegisterMessageReceive.png
+
+
+ユーザ登録情報受信テーブルは、後続処理(常駐バッチ)によって一定時間間隔で監視され、
+未処理のデータが存在する場合にユーザ情報を登録する。
+
+常駐バッチの実装方法は、\ :doc:`../../04_Explanation_batch/index`\ を参照すること。
+
+主な仕様は、以下の通り。
+
+1.ユーザ登録情報電文受信処理
+
+  ユーザ登録情報電文を受信しデータレコードの内容をユーザ登録情報受信テーブルに登録する。
+
+  【INPUTデータ】
+
+  * ユーザ登録情報電文
+
+  【OUTPUTデータ】
+
+  * ユーザ登録情報受信テーブル
+
+
+電文仕様
+========
+【ヘッダレコード:50バイト】
+
+  ==================== ============== ==========  ============ ========================================================================
+  項目名               データタイプ   開始位置    バイト数     説明
+  ==================== ============== ==========  ============ ========================================================================
+  リクエストID         X              1           20           'RM11AC0201' 固定 (要求電文ID)
+  再送要求フラグ       X              21          1            '0': 初回送信(未使用)
+  (未使用)             X              22          29           空白（半角スペース）
+  ==================== ============== ==========  ============ ========================================================================
+
+【データレコード:420バイト】
+
+  ==================== ============== ==========  ============ ========================================================================
+  項目名               データタイプ   開始位置    バイト数     説明
+  ==================== ============== ==========  ============ ========================================================================
+  ログインID           X              1           20           
+  漢字氏名             N              21          100          
+  カナ氏名             N              121         100          
+  FILLER1              X              221         50           
+  メールアドレス       X              271         100          
+  内線番号(ビル番号)   X              371         2            
+  内線番号(個人番号)   X              373         4            
+  携帯電話番号(市外)   X              377         3            
+  携帯電話番号(市内)   X              380         4            
+  携帯電話番号(加入)   X              384         4            
+  FILLER2              X              388         33           
+  ==================== ============== ==========  ============ ========================================================================
+
+
+エンティティ情報
+================
+エンティティ論理名：ユーザ登録情報受信テーブル
+
+ ===========================    ======================================================
+ カラム論理名                   入力値
+ ===========================    ======================================================
+ 受信電文連番                   Nablarch Application Frameworkが採番した値
+ ログインID                     ユーザ登録情報電文.ログインID
+ 漢字名称                       ユーザ登録情報電文.漢字名称
+ カナ名称                       ユーザ登録情報電文.カナ名称
+ メールアドレス                 ユーザ登録情報電文.メールアドレス
+ 内線番号(ビル番号)             ユーザ登録情報電文.内線番号(ビル番号)
+ 内線番号(個人番号)             ユーザ登録情報電文.内線番号(個人番号)
+ 携帯電話番号(市外)             ユーザ登録情報電文.携帯電話番号(市外)
+ 携帯電話番号(市内)             ユーザ登録情報電文.携帯電話番号(市内)
+ 携帯電話番号(加入)             ユーザ登録情報電文.携帯電話番号(加入)
+ ステータス                     未処理('0')
+ ===========================    ======================================================
+
+ ※共通項目の記載は省略している。
+
+```
+
+## Knowledge File
+
+- ID: `mom-messaging-01_userRegisterMessageReceiveSpec--s1`
+
+```json
+{
+  "id": "mom-messaging-01_userRegisterMessageReceiveSpec--s1",
+  "title": "ユーザ登録情報電文受信処理の仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "MOMメッセージング受信処理",
+        "ユーザ登録情報電文受信",
+        "ユーザ登録情報受信テーブル登録",
+        "電文受信処理",
+        "常駐バッチ連携"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "電文仕様・エンティティ情報",
+      "hints": [
+        "電文仕様",
+        "ヘッダレコード",
+        "データレコード",
+        "エンティティ情報",
+        "ユーザ登録情報受信テーブル",
+        "リクエストID",
+        "RM11AC0201",
+        "ログインID",
+        "メールアドレス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "外部システムからの送信電文を入力として、ユーザ登録情報受信テーブルにレコードを登録する。\n\n![ユーザ登録情報電文受信処理フロー](assets/mom-messaging-01_userRegisterMessageReceiveSpec--s1/userRegisterMessageReceive.png)\n\nユーザ登録情報受信テーブルは、後続処理（常駐バッチ）によって一定時間間隔で監視され、未処理のデータが存在する場合にユーザ情報を登録する。\n\n**処理概要**:\n1. ユーザ登録情報電文受信処理: ユーザ登録情報電文を受信し、データレコードの内容をユーザ登録情報受信テーブルに登録する。\n   - INPUT: ユーザ登録情報電文\n   - OUTPUT: ユーザ登録情報受信テーブル",
+    "s2": "## 電文仕様\n\n**ヘッダレコード（50バイト）**:\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| リクエストID | X | 1 | 20 | 'RM11AC0201' 固定（要求電文ID） |\n| 再送要求フラグ | X | 21 | 1 | '0': 初回送信（未使用） |\n| （未使用） | X | 22 | 29 | 空白（半角スペース） |\n\n**データレコード（420バイト）**:\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| ログインID | X | 1 | 20 | |\n| 漢字氏名 | N | 21 | 100 | |\n| カナ氏名 | N | 121 | 100 | |\n| FILLER1 | X | 221 | 50 | |\n| メールアドレス | X | 271 | 100 | |\n| 内線番号（ビル番号） | X | 371 | 2 | |\n| 内線番号（個人番号） | X | 373 | 4 | |\n| 携帯電話番号（市外） | X | 377 | 3 | |\n| 携帯電話番号（市内） | X | 380 | 4 | |\n| 携帯電話番号（加入） | X | 384 | 4 | |\n| FILLER2 | X | 388 | 33 | |\n\n## エンティティ情報\n\n**エンティティ論理名**: ユーザ登録情報受信テーブル\n\n| カラム論理名 | 入力値 |\n|---|---|\n| 受信電文連番 | Nablarch Application Frameworkが採番した値 |\n| ログインID | ユーザ登録情報電文.ログインID |\n| 漢字名称 | ユーザ登録情報電文.漢字名称 |\n| カナ名称 | ユーザ登録情報電文.カナ名称 |\n| メールアドレス | ユーザ登録情報電文.メールアドレス |\n| 内線番号（ビル番号） | ユーザ登録情報電文.内線番号（ビル番号） |\n| 内線番号（個人番号） | ユーザ登録情報電文.内線番号（個人番号） |\n| 携帯電話番号（市外） | ユーザ登録情報電文.携帯電話番号（市外） |\n| 携帯電話番号（市内） | ユーザ登録情報電文.携帯電話番号（市内） |\n| 携帯電話番号（加入） | ユーザ登録情報電文.携帯電話番号（加入） |\n| ステータス | 未処理（'0'） |\n\n※共通項目の記載は省略している。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

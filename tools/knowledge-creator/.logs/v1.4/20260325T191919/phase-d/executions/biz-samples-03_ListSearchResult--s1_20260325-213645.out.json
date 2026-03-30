@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (ListSearchInfoクラス) — action code example",
+      "description": "The source code for `W11AC01Action.doRW11AC0102` includes `@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")` on the action method, which is omitted from the knowledge file's action code snippet. This annotation is part of the complete action implementation pattern for handling ApplicationException in list-search actions.",
+      "source_evidence": "@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")\npublic HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 (ListSearchInfoクラス) — hints array",
+      "description": "`@OnError` annotation appears in the source code example for the action class but is absent from s5 hints. Per V4 rules, @Annotation names from section content should be included in hints.",
+      "source_evidence": "@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")"
+    }
+  ]
+}

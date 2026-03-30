@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_QueryCache--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s13 (概要・特徴)",
+      "description": "The source's 概要 section explains that manual session/temp-table caching is possible as an alternative, but this feature provides transparent caching without individual implementation ('セッションやテンポラリテーブルなどに明示的に値をキャッシュすることでも実現可能であるが、本機能を使用することで、そのような個別の作り込みを行わなくても、データベースアクセスに対して透過的にキャッシュ機能を付加することができる'). This design context is absent from s13.",
+      "source_evidence": "このようなキャッシュ機構は、セッションやテンポラリテーブルなどに明示的に値をキャッシュすることでも実現可能であるが、本機能を使用することで、そのような個別の作り込みを行わなくても、データベースアクセスに対して透過的にキャッシュ機能を付加することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 (基本実装) — hints array",
+      "description": "The hint 'LRUMap' is listed for s5 but s5's content does not mention the LRUMap class. LRUMap appears as a defined class only in the 有効期限付きキャッシュ class diagram section (covered in s9). s5 only mentions the LRU algorithm conceptually. A user searching for LRUMap would be misrouted to s5 before reaching s9 where the class definition actually lives.",
+      "source_evidence": "有効期限付きキャッシュ クラス定義: nablarch.core.util.map.LRUMap — LRUアルゴリズムを持つ件数上限付きMap実装クラス (under 有効期限付きキャッシュ, not under 基本実装)"
+    }
+  ]
+}

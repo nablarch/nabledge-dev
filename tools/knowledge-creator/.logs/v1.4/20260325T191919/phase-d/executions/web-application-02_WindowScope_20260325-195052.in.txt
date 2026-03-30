@@ -1,0 +1,223 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/20_Appendix/02_WindowScope.rst`
+- Format: `rst`
+
+```
+.. _guide_appendix_windowScope:
+
+=======================================
+Appendix A: ウィンドウスコープ概要
+=======================================
+
+ウィンドウスコープとは、リクエストを跨るデータを格納する領域である。\
+セッションスコープがアプリケーションサーバ上でデータを格納するのに対して、\
+ウィンドウスコープは、複数画面間をhiddenタグで持ちまわることにより実現される。
+ウィンドウスコープを使用することで、ブラウザで複数のウィンドウを立ち上げても\
+並列に動作させることができる。また、ブラウザのヒストリバックによる遷移が可能となる。
+
+動作イメージ
+============
+
+以下に、複数の入力画面で構成されるアンケートアプリケーションの例を記載する。\
+ユーザからの入力項目をhiddenタグで持ちまわることで、\
+セッションスコープを使用せずに複数画面をまたがって情報を保持している。
+
+
+
+.. image:: ./_image/sequence.png
+
+
+上記のように、hiddenで引き継がれる情報は特定のウィンドウ内のHTMLに記載されている。\
+このようにして、他のウィンドウやタブに影響を与えずに、複数のリクエストをまたがったデータ共有を実現している。
+
+.. note::
+ ウィンドウスコープに格納された変数は、カスタムタグを使用することで自動的にhiddenタグに変換されるので、
+ **アプリケーションプログラマがJSPにhiddenタグを書く必要はない。**\
+ （具体的な実装方法は、\ :ref:`window_scope_guide_links`\ のリンク先を参照。）
+
+
+セッションスコープとの使い分け
+==============================
+
+基本的に、セッションスコープではなく、\ **ウィンドウスコープを使用**\ する。
+
+ただし、ウィンドウスコープは、その名の通りウィンドウ内のデータ領域である為、
+ウィンドウ間でのデータを共有する用途\ [#]_\ には使用できない。\
+よって、ウィンドウ間でデータを共有する必要がある場合はセッションスコープにデータを格納する。\
+逆に、ウィンドウ間で共有する必要の無いデータについては、ウィンドウスコープを使用する。
+つまり、ほとんどの場合ではウィンドウスコープを使用することになる。
+
+
+ .. [#] 例えば、ショッピングサイトにおけるショッピングカート内の商品情報は、ユーザが複数のウィンドウを使用していても、ユーザに対して１つにしなければならない。このような用途にはセッションスコープを使用する。
+
+.. _`window_scope_guide_links`:
+
+詳細情報
+========
+
+詳細については、以下の文書を参照すること。
+
+* ウィンドウスコープ、セッションスコープ等の変数スコープについて
+
+  画面オンライン処理用業務アクションハンドラ - `変数スコープの利用  <../../../fw/reference/handler/HttpMethodBinding.html#web-scope>`_
+
+* カスタムタグを使用したウィンドウスコープの使用方法について
+
+  カスタムタグ実装例集 - :ref:`howto_window_scope` 
+
+ 
+
+```
+
+## Knowledge File
+
+- ID: `web-application-02_WindowScope`
+
+```json
+{
+  "id": "web-application-02_WindowScope",
+  "title": "Appendix A: ウィンドウスコープ概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "動作イメージ",
+      "hints": [
+        "ウィンドウスコープ",
+        "hiddenタグ",
+        "複数ウィンドウ並列動作",
+        "ヒストリバック",
+        "カスタムタグ自動変換",
+        "ウィンドウ内HTML",
+        "クロスリクエストデータ共有"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "セッションスコープとの使い分け",
+      "hints": [
+        "ウィンドウスコープ",
+        "セッションスコープ",
+        "スコープ使い分け",
+        "ウィンドウ間データ共有",
+        "ショッピングカート"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "詳細情報",
+      "hints": [
+        "ウィンドウスコープ実装",
+        "変数スコープ",
+        "howto_window_scope",
+        "カスタムタグ実装"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ウィンドウスコープはリクエストを跨るデータを格納する領域。セッションスコープ（アプリサーバ上のデータ格納）と異なり、hiddenタグで複数画面間を持ちまわることで実現される。複数ウィンドウの並列動作が可能で、ブラウザのヒストリバックによる遷移もできる。\n\n![複数画面をhiddenタグで引き継ぐシーケンス図](assets/web-application-02_WindowScope/sequence.png)\n\nhiddenで引き継がれる情報は特定のウィンドウ内のHTMLに記載されており、他のウィンドウやタブに影響を与えずに複数のリクエストをまたがったデータ共有を実現している。\n\n> **注意**: ウィンドウスコープに格納された変数はカスタムタグにより自動的にhiddenタグに変換される。アプリケーションプログラマがJSPにhiddenタグを書く必要はない。（実装方法は :ref:`window_scope_guide_links` 参照）",
+    "s2": "基本的にセッションスコープではなく**ウィンドウスコープを使用**する。\n\n| ケース | 使用するスコープ |\n|---|---|\n| ウィンドウ間でデータを共有しない（ほとんどの場合） | ウィンドウスコープ |\n| ウィンドウ間でデータを共有する必要がある場合 | セッションスコープ |\n\nウィンドウ間でデータを共有する用途の例: ショッピングサイトのショッピングカート内の商品情報は、ユーザが複数のウィンドウを使用していても、ユーザに対して１つにしなければならない。このような用途にはセッションスコープを使用する。",
+    "s3": "- 変数スコープ（ウィンドウスコープ・セッションスコープ等）の利用方法: [変数スコープの利用](../../../fw/reference/handler/HttpMethodBinding.html#web-scope)\n- カスタムタグを使用したウィンドウスコープの使用方法: :ref:`howto_window_scope`"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

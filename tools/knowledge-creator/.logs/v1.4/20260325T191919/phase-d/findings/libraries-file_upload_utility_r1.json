@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "`ParameterizedSqlPStatement` is a PascalCase class name referenced in s7 content (in both the description of `prepareStatement` return type and the `addBatch` parameter) but is absent from the s7 hints array.",
+      "source_evidence": "Source code shows `ParameterizedSqlPStatement prepareStatement(...)` and `void addBatch(ParameterizedSqlPStatement statement, ...)` in the InsertionStrategy implementation section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "`BulkValidator.MsgIdHolder` (the inner class) is referenced in s7 content as the declaring class of `validateWith`, but the hints only list `BulkValidator` (the outer class). A user searching for `MsgIdHolder` would not be routed to this section.",
+      "source_evidence": "Source specifies `BulkValidator.MsgIdHolder#validateWith(Class<F> formClass, String validateFor)` as the method to call for specifying the validation class and method name."
+    }
+  ]
+}

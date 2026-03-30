@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (アプリケーションの障害コードの変更方法)",
+      "description": "Source includes a Java code example showing how ProcessAbnormalEnd is used in application code (`throw new ProcessAbnormalEnd(100, \"UM900003\");`). This illustrates the usage pattern — that the second argument is the failure code string being mapped — but is absent from the knowledge file.",
+      "source_evidence": "アプリケーションで下記のProcessAbnormalEndを送出していることを想定する。\n```java\nif (userId == null) {\n    throw new ProcessAbnormalEnd(100, \"UM900003\");\n}\n```"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (フレームワークの障害コードの変更方法)",
+      "description": "Source includes a best-practice recommendation that configuring failure codes per class is too granular and that package-level granularity is the recommended approach. This guidance is omitted from the knowledge file.",
+      "source_evidence": "ただし、フレームワークのクラス毎に障害コードを設定するのは、分類が細かすぎるため現実的ではない。基本はパッケージ名単位に障害コードを指定することで、フレームワークのどの機能で例外が送出されたか判断することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`AutoPropertyHandler` is a PascalCase class name referenced in the section content (as `AutoPropertyHandlerの実装クラス`) but is absent from the s4 hints list.",
+      "source_evidence": "アノテーションの詳細については、 :ref:`AutoPropertyHandlerの実装クラス<db-object-save-class-label>` を参照。"
+    }
+  ]
+}

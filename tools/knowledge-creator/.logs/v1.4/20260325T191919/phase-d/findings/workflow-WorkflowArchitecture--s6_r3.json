@@ -1,0 +1,27 @@
+{
+  "file_id": "workflow-WorkflowArchitecture--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "`SimpleDbTransactionManager` is referenced in the source XML comment as the database access configuration class type (\"データベースへアクセスするための設定(SimpleDbTransactionManager)\") but is not present in the hints array.",
+      "source_evidence": "<!-- データベースへアクセスするための設定(SimpleDbTransactionManager ) ..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "`SystemTimeProvider` (interface `nablarch.core.date.SystemTimeProvider`) is referenced in the source component table as an interface whose implementation class must be configured in `WorkflowDefinitionHolder`, but is not present in the hints array.",
+      "source_evidence": "ワークフローの適用日判定に使用するためのシステム日付(nablarch.core.date.SystemTimeProviderの実装クラス)を設定する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — WorkflowDefinitionHolder table row",
+      "description": "The purpose of `SystemTimeProvider` in `WorkflowDefinitionHolder` — that it is used for **workflow effective date determination** (ワークフローの適用日判定) — is omitted. The knowledge file only says \"設定する\" without stating what the system time is used for.",
+      "source_evidence": "ワークフローの適用日判定に使用するためのシステム日付(nablarch.core.date.SystemTimeProviderの実装クラス)を設定する。"
+    }
+  ]
+}

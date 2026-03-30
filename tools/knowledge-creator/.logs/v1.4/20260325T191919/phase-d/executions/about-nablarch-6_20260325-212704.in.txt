@@ -1,0 +1,273 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/FAQ/all/6.rst`
+- Format: `rst`
+
+```
+DB2やSQLServerでのバイナリ型のカラムへのアクセス方法を教えてください
+=======================================================================
+
+.. admonition:: question
+
+    DB2のBLOB型のデータへアクセスすると「操作が無効です: Lob はクローズされています。」エラーが発生します。
+    このエラーを回避する方法はありますか？
+
+    SQLServerのLONGVARBINARY(VARBINARY(max)で定義されたカラム)にアクセスすると、
+    ヒープが大量に消費されますが、回避方法はありますか？
+
+
+.. admonition:: answer
+
+    * DB2の場合
+
+      **回答内容は、バージョン10.1のドキュメントを元に作成しています。
+      他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に
+      設定及び実装を行うようにしてください。**
+
+      BLOB型に格納されるサイズにより、以下の2通りの対応方法があります。
+      それぞれに対して対応案を例示しますので、アーキテクトの方はどちらがプロジェクトに適しているかを判断し、対応を行なってください。
+
+      1) BLOBに格納される値のサイズが小さい場合（ヒープに展開されても問題ない場合）
+      2) BLOBに格納される値のサイズが大きい場合（ヒープに展開されるとメモリが不足する可能性がある場合）
+
+      * BLOBに格納されるサイズが小さい場合
+
+       BLOB型のカラムに格納されるデータサイズが小さい(ヒープサイズから見てメモリ上に展開されても問題ないサイズ)場合は、
+       DB2のDataSourceのプロパティへの設定でバイナリデータをヒープに展開されるようにしてください。
+       これにより、「Lobはクローズされています。」エラーを回避することができます。
+
+       なお、この設定はアーキテクトが行うものであり、各開発者が行う必要はありません。
+
+       以下に設定例を示します。
+
+       .. code-block:: xml
+
+         <component class="com.ibm.db2.jcc.DB2SimpleDataSource">
+           <!-- 接続先情報などは省略 -->
+
+           <!-- progressiveStreamingには、「2」を設定する。 -->
+           <property name="progressiveStreaming" value="2" />
+         </component>
+
+      * BLOBに格納されるサイズが大きい場合
+
+       BLOB型のカラムに格納されるデータサイズが大きい(ヒープサイズから見てメモリ上に展開されることが好ましくない)場合は、
+       ロケータを使用してアクセスする必要があります。
+       なお、この場合は設定ファイルと実装の両方へ影響があります。
+
+       * 設定ファイルの例
+
+         .. code-block:: xml
+
+            <component class="com.ibm.db2.jcc.DB2SimpleDataSource">
+              <!-- 接続先情報などは省略 -->
+
+              <!-- progressiveStreamingには、「1」を設定する。 -->
+              <property name="progressiveStreaming" value="1" />
+            </component>
+
+       * 実装例
+
+         java.sql.ResultSetがカレントレコードの場合のみBLOBのデータにアクセスできます。
+         このため、retrieveではなくexecuteQueryを使用してカレントレコードのBLOBデータへアクセスする必要があります。
+
+         .. code-block:: java
+
+           // retrieveではなく、executeQueryを使用する。
+           // retrieveを使用すると、「Lobはクローズされています。」エラーが発生します。
+           ResultSetIterator rows = statement.executeQuery();
+
+           // ResultSetIterator#nextを使って次のレコードへカレントを進めてからBLOBのデータにアクセスします。
+           if (rows.next()) {
+               // データが取得できている場合は、BLOBのデータを取得する。
+               SqlRow row = rows.getRow();
+               Blob blobColumn = (Blob) row.get("blob_column");
+
+               // Blobのデータにアクセスする処理は省略
+           }
+
+    * SQLServerの場合
+
+      **回答内容は、バージョン2008R2のドキュメントを元に作成しています。
+      他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に
+      設定及び実装を行うようにしてください。**
+
+      LONGVARBINARY(VARBINARY(max)と定義したカラム)の場合には、ストリーム経由でデータへアクセスすることを推奨します。
+      VARBINARY(max)以外の場合は、指定できる上限が8000であることからストリーム経由ではなく、ヒープ上にデータを展開する実装でも問題ないでしょう。
+      
+      LONGVARBINARYをストリーム経由で取得するためには、ResultSetConvertorの実装クラスを作成しストリームオブジェクトを返却する必要があります。
+      アプリケーションプログラムでは、ストリームオブジェクトからデータを読み込む必要があります。
+
+      * ResultSetConvertorの実装
+
+        実装サンプルとして提供される、nablarch.core.db.statement.SqlServerResultSetConvertorを参考にしてください。
+        必要に応じてパッケージの変更や実装変更を行ってください。
+
+        なお、ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はありません。
+
+      * アプリケーション実装
+
+        java.sql.ResultSetがカレントレコードの場合のみLONGVARBINARYのデータにアクセスできます。
+        このため、retrieveではなくexecuteQueryを使用してカレントレコードのLONGVARBINARYデータへアクセスする必要があります。
+
+        また、LONGVARBINARYと同時にその他のバイナリ型(BINARYやVARBINARY)のカラムを取得することはできないので、
+        LONGVARBINARY型のカラムを取得する際は、その他のバイナリ型のカラムをSELECT句に含めないようにしてください。
+
+        .. code-block:: java
+        
+          // retrieveではなく、executeQueryを使用する。
+          // retrieveを使用すると、「ストリームは閉じられています。」エラーが発生します。
+          ResultSetIterator rows = statement.executeQuery();
+
+          // ResultSetIterator#nextを使って次のレコードへカレントを進めてからLONGVARBINARYのデータにアクセスします。
+          if (rows.next()) {
+              // データが取得できている場合は、BLOBのデータを取得する。
+              SqlRow row = rows.getRow();
+              InputStream binaryColumn = (InputStream) row.get("binary_column");
+
+              // InputStreamにアクセスする処理は省略
+          }
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-6`
+
+```json
+{
+  "id": "about-nablarch-6",
+  "title": "DB2やSQLServerでのバイナリ型のカラムへのアクセス方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "DB2およびSQLServerでのバイナリ型カラムアクセス方法",
+      "hints": [
+        "DB2",
+        "SQLServer",
+        "BLOB",
+        "LONGVARBINARY",
+        "VARBINARY",
+        "バイナリ型",
+        "progressiveStreaming",
+        "DB2SimpleDataSource",
+        "ResultSetConvertor",
+        "SqlServerResultSetConvertor",
+        "executeQuery",
+        "ResultSetIterator",
+        "Lob",
+        "InputStream",
+        "バイナリ型カラムアクセス",
+        "LOBエラー回避",
+        "ストリームアクセス",
+        "SqlRow",
+        "Blob"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DB2およびSQLServerでバイナリ型カラムへアクセスする際の問題と対処方法。\n\n> **注意**: DB2の情報はバージョン10.1、SQLServerの情報はバージョン2008R2のドキュメントを元にしています。他のバージョンでは動作が異なる場合があります。必ずベンダーのマニュアルを参照してください。\n\n## DB2 BLOB型へのアクセス\n\n「Lobはクローズされています。」エラーの回避方法はBLOBサイズにより異なる。\n\n### BLOBサイズが小さい場合（ヒープに展開しても問題ない場合）\n\n`com.ibm.db2.jcc.DB2SimpleDataSource`の`progressiveStreaming`プロパティに`2`を設定する。この設定はアーキテクトが行うものであり、各開発者が行う必要はない。\n\n```xml\n<component class=\"com.ibm.db2.jcc.DB2SimpleDataSource\">\n  <property name=\"progressiveStreaming\" value=\"2\" />\n</component>\n```\n\n### BLOBサイズが大きい場合（ヒープ展開するとメモリ不足の可能性がある場合）\n\nロケータを使用してアクセスする必要がある。設定ファイルと実装の両方に影響がある。\n\n**設定**:\n```xml\n<component class=\"com.ibm.db2.jcc.DB2SimpleDataSource\">\n  <property name=\"progressiveStreaming\" value=\"1\" />\n</component>\n```\n\n> **重要**: `retrieve`ではなく`executeQuery`を使用すること。`retrieve`を使用すると「Lobはクローズされています。」エラーが発生する。`java.sql.ResultSet`がカレントレコードの場合のみBLOBデータにアクセス可能。\n\n**実装例**:\n```java\nResultSetIterator rows = statement.executeQuery();\nif (rows.next()) {\n    SqlRow row = rows.getRow();\n    Blob blobColumn = (Blob) row.get(\"blob_column\");\n}\n```\n\n## SQLServer LONGVARBINARY（VARBINARY(max)）へのアクセス\n\nVARBINARY(max)で定義されたカラムはストリーム経由でアクセスすることを推奨する。VARBINARY(max)以外（上限8000）はヒープ展開でも問題ない。\n\n> **重要**: `retrieve`ではなく`executeQuery`を使用すること。`retrieve`を使用すると「ストリームは閉じられています。」エラーが発生する。`java.sql.ResultSet`がカレントレコードの場合のみLONGVARBINARYデータにアクセス可能。\n\n> **重要**: LONGVARBINARYと同時に他のバイナリ型（BINARYやVARBINARY）カラムを取得することはできない。LONGVARBINARY取得時はSELECT句に他のバイナリ型カラムを含めないこと。\n\nストリーム経由で取得するには`ResultSetConvertor`の実装クラスを作成してストリームオブジェクトを返却する。実装サンプル: `nablarch.core.db.statement.SqlServerResultSetConvertor`。ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はない。\n\n**実装例**:\n```java\nResultSetIterator rows = statement.executeQuery();\nif (rows.next()) {\n    SqlRow row = rows.getRow();\n    InputStream binaryColumn = (InputStream) row.get(\"binary_column\");\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

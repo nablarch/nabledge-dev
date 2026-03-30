@@ -1,0 +1,278 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/MessagingContextHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+メッセージングコンテキスト管理ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.messaging.handler.MessagingContextHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+メッセージングコンテキストの管理を行うハンドラ。
+
+リクエストスレッド毎にメッセージングコンテキスト初期化とスレッドローカル変数への格納、
+および終端処理を行う。
+メッセージングコンテキストをはじめとする、本フレームワークのメッセージング機能の内容については、
+:doc:`../core_library/enterprise_messaging_mom` を参照すること。
+
++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "MultiThreadExecutionHandler"
+      , "MessagingContextHandler"
+      , "MessageReplyHandler"
+      , "DataReadHandler_messaging"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+
+  =============================================  ======================================================================
+  ハンドラ                                       内容
+  =============================================  ======================================================================
+  :doc:`DataReadHandler` (MessageReader使用時)   メッセージ受信処理では、 :doc:`../reader/MessageReader`
+                                                 を使用して受信電文の読み込みを行うが、この際、
+                                                 本ハンドラが初期化するメッセージングコンテキストを使用する。
+                                                 そのため、 :doc:`DataReadHandler` は本ハンドラの後続に配置する必要がある。
+
+  :doc:`MessageReplyHandler`                     メッセージ応答処理で、本ハンドラが初期化するメッセージングコンテキストを
+                                                 使用するため、 :doc:`MessageReplyHandler` は、
+                                                 本ハンドラの後続に配置する必要がある。
+  =============================================  ======================================================================
+
+
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (メッセージングコンテキストの取得)**
+    本ハンドラに設定された **メッセージングプロバイダ** からメッセージングコンテキストを取得する。
+    
+  **2. (メッセージングコンテキストをスレッドローカルに設定)**
+    **1.** で取得したインスタンスを、スレッドローカルに保持する。
+  
+  **3. (後続ハンドラへの処理委譲)**
+    ハンドラキュー上の後続ハンドラに対して処理を委譲し、その結果を取得する。
+    
+
+.. _outbound:
+
+**[復路での処理]**
+   **4. (終端処理)**
+     メッセージコンテキストをクローズすることで、使用していたメッセージングサーバへの接続をコネクションプールに返却し、
+     スレッドローカル上からメッセージングコンテキストへの参照を除去する。
+
+   **5. (正常終了)**
+     **3.** での処理結果をリターンし、終了する。
+
+.. _error:
+
+**[例外処理]** 
+   **3a. (終端処理)**
+     本ハンドラ、および後続ハンドラの処理中に実行時例外/エラーが発生した場合でも、
+     **4.** の終端処理を実行してからエラーを再送出する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+メッセージングプロバイダの設定については、 :doc:`../core_library/enterprise_messaging_mom`  を参照すること。
+
+  ============================== ============================ ============================ =================================
+  設定項目                       プロパティ名                 データ型　                   備考
+  ============================== ============================ ============================ =================================
+  メッセージングプロバイダ       messagingProvider            MessagingProvider            必須指定
+  ============================== ============================ ============================ =================================
+
+**標準設定**
+  
+  .. code-block:: xml
+
+    <!-- メッセージコンテキスト管理ハンドラ -->
+    <component class="nablarch.fw.messaging.handler.MessagingContextHandler">
+      <property name="messagingProvider" ref="messagingProvider" />
+    </component>
+
+```
+
+## Knowledge File
+
+- ID: `handlers-MessagingContextHandler--s1`
+
+```json
+{
+  "id": "handlers-MessagingContextHandler--s1",
+  "title": "メッセージングコンテキスト管理ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessagingContextHandler",
+        "nablarch.fw.messaging.handler.MessagingContextHandler",
+        "メッセージングコンテキスト管理",
+        "DataReadHandler",
+        "MessageReplyHandler",
+        "ハンドラ配置順序",
+        "スレッドローカル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "メッセージングコンテキスト取得",
+        "スレッドローカル設定",
+        "終端処理",
+        "コネクションプール返却",
+        "例外時終端処理",
+        "ハンドラ処理フロー"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "messagingProvider",
+        "MessagingProvider",
+        "メッセージングプロバイダ設定",
+        "XML設定例",
+        "必須プロパティ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.handler.MessagingContextHandler`\n\nリクエストスレッド毎にメッセージングコンテキストの初期化とスレッドローカル変数への格納、および終端処理を行う。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`DataReadHandler` (MessageReader使用時) | :doc:`../reader/MessageReader` を使用して受信電文を読み込む際、本ハンドラが初期化するメッセージングコンテキストを使用する。そのため、:doc:`DataReadHandler` は本ハンドラの後続に配置する必要がある。 |\n| :doc:`MessageReplyHandler` | メッセージ応答処理で本ハンドラが初期化するメッセージングコンテキストを使用するため、本ハンドラの後続に配置する必要がある。 |",
+    "s2": "**[往路処理]**\n\n1. 設定された**メッセージングプロバイダ**からメッセージングコンテキストを取得する。\n2. 取得したインスタンスをスレッドローカルに保持する。\n3. 後続ハンドラに処理を委譲し、結果を取得する。\n\n**[復路処理]**\n\n4. メッセージングコンテキストをクローズし、メッセージングサーバへの接続をコネクションプールに返却する。スレッドローカル上からメッセージングコンテキストへの参照を除去する。\n5. 処理結果をリターンして終了する。\n\n**[例外処理]**\n\n3a. 本ハンドラおよび後続ハンドラの処理中に実行時例外/エラーが発生した場合でも、終端処理（手順4）を実行してからエラーを再送出する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| messagingProvider | MessagingProvider | ○ | | メッセージングプロバイダ |\n\nメッセージングプロバイダの設定については、:doc:`../core_library/enterprise_messaging_mom` を参照すること。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessagingContextHandler\">\n  <property name=\"messagingProvider\" ref=\"messagingProvider\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

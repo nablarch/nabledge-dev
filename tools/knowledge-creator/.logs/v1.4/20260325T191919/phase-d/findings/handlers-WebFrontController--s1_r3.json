@@ -1,0 +1,26 @@
+{
+  "file_id": "handlers-WebFrontController--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 例外処理 3a",
+      "description": "The qualifier 'サーバプロセスの継続に影響するような特定の' is dropped before '致命的エラー'. The source specifies 'specific fatal errors affecting server process continuation', while the knowledge file says only '致命的エラー', losing precision about which errors are excluded from GlobalErrorHandler capture.",
+      "source_evidence": "サーバプロセスの継続に影響するような特定の致命的エラーを除けば、ここで例外を捕捉することは無い。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "'GlobalErrorHandler' is a PascalCase class name that appears in the s3 XML configuration example ('nablarch.fw.handler.GlobalErrorHandler') but is absent from s3's hints array. It is only listed in s2 hints.",
+      "source_evidence": "<component class=\"nablarch.fw.handler.GlobalErrorHandler\" /> in the 標準設定 XML example under 設定項目・拡張ポイント"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning S9",
+      "description": "The automated warning 'Section count 3 < source headings 6' is a false positive. The source file contains exactly 3 h2-level headings (概要, 処理フロー, 設定項目・拡張ポイント) delimited by '------' markers. The knowledge file's 3 sections (s1, s2, s3) correctly correspond to these. The inflated count of 6 likely results from counting '+++' decorative separators as headings, which they are not."
+    }
+  ]
+}
